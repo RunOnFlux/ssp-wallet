@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "manifest_version": 3,
+  "name": "The Wallet",
+  "description": "This is the wallet",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "The Wallet"
+  }
+}
