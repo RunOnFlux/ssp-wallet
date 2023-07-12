@@ -10,48 +10,73 @@ import { wordlist } from '@scure/bip39/wordlists/english';
 
 import { hexToBytes, bytesToHex } from '@noble/hashes/utils';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from 'utxo-lib';
 
 function App() {
   const [count, setCount] = useState(0);
 
-  const mnemonic128 =
-    'lab become cluster gesture junior ribbon sunny favorite safe enforce sphere awful'; // bip39.generateMnemonic(wordlist, 128);
-  const seed = bip39.mnemonicToSeedSync(mnemonic128);
+  // 2of2 account following bip48
+  // https://github.com/thetrunk/bips/blob/master/bip-0048.mediawiki
+  const mnemonicA =
+    'lab become cluster gesture junior ribbon sunny favorite safe enforce sphere awful';
+  const mnemonicB =
+    'artist owner stool thought emerge fiber kind rib vague arrest ozone verb'; // bip39.generateMnemonic(wordlist, 128);
 
-  const seedHex = bytesToHex(seed);
+  const seedA = bip39.mnemonicToSeedSync(mnemonicA);
+  const seedB = bip39.mnemonicToSeedSync(mnemonicB);
 
-  const masterKey = HDKey.fromMasterSeed(seed); // bip32 root key
-  console.log(masterKey.toJSON());
-  // console.log(masterKey.privateKey, masterKey.publicKey);
+  const seedHexA = bytesToHex(seedA);
+  const seedHexB = bytesToHex(seedB);
 
-  const newKey = masterKey.derive("m/48'/0'/0'/0'/0"); // bip32 extended key for this derivation path
-  const key = newKey.deriveChild(0);
-  // approach A
-  const node = utxolib.bip32.fromBase58(
-    key.toJSON().xpriv,
-    utxolib.networks.bitcoin,
+  const masterKeyA = HDKey.fromMasterSeed(seedA); // bip32 root key
+  const masterKeyB = HDKey.fromMasterSeed(seedB); // bip32 root key
+
+  // Flux is 19167
+  // p2sh is script type of 0' as per https://github.com/bitcoin/bips/pull/1473/files
+  const externalChainA = masterKeyA.derive("m/48'/19167'/0'/0'/0"); // bip32 extended key for this derivation path
+  const externalChainB = masterKeyB.derive("m/48'/19167'/0'/0'/0"); // bip32 extended key for this derivation path
+
+  const externalAddressA = externalChainA.deriveChild(0);
+  const externalAddressB = externalChainB.deriveChild(0);
+
+  const bitgoExternalAddressA = utxolib.HDNode.fromBase58(
+    externalAddressA.toJSON().xpriv,
+    utxolib.networks.zelcash,
   );
-  const keyPair = utxolib.ECPair.fromPrivateKey(node.privateKey, {
-    network: utxolib.networks.bitcoin,
-    compressed: true,
-  });
-  // approach B
-  // const keyPair = utxolib.ECPair.fromPrivateKey(
-  //   Buffer.from(node.privateKey?.buffer),
-  //   {
-  //     network: utxolib.networks.bitcoin,
-  //     compressed: true,
-  //   },
-  // );
-  console.log(keyPair);
-  console.log('Public Key: ', keyPair.publicKey.toString('hex'));
-  console.log('Private Key: ', keyPair.toWIF());
-  const { address: legacyAddress } = utxolib.payments.p2pkh({
-    pubkey: keyPair.publicKey,
-  });
+  const bitgoExternalAddressB = utxolib.HDNode.fromBase58(
+    externalAddressB.toJSON().xpriv,
+    utxolib.networks.zelcash,
+  );
 
-  console.log('legacyAddress', legacyAddress);
+  console.log(utxolib);
+
+  const privateKeyA = bitgoExternalAddressA.keyPair.toWIF();
+  const privateKeyB = bitgoExternalAddressB.keyPair.toWIF();
+
+  const publicKeyA = bitgoExternalAddressA.keyPair
+    .getPublicKeyBuffer()
+    .toString('hex');
+  const publicKeyB = bitgoExternalAddressB.keyPair
+    .getPublicKeyBuffer()
+    .toString('hex');
+
+  const sortedPublicKeys = [publicKeyA, publicKeyB].sort();
+  console.log(sortedPublicKeys);
+  const publicKeysBuffer = sortedPublicKeys.map((hex: string) =>
+    Buffer.from(hex, 'hex'),
+  );
+
+  const redeemScript = utxolib.script.multisig.output.encode(
+    2,
+    publicKeysBuffer,
+  );
+  const redeemScriptHex = redeemScript.toString('hex');
+  const scriptPubKey = utxolib.script.scriptHash.output.encode(
+    utxolib.crypto.hash160(redeemScript),
+  );
+
+  const network = utxolib.networks.zelcash;
+  const address = utxolib.address.fromOutputScript(scriptPubKey, network);
   return (
     <>
       <div>
@@ -71,13 +96,33 @@ function App() {
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
       </div>
-      {mnemonic128}
+      {mnemonicA}
       <br></br>
-      {seedHex}
+      {mnemonicB}
       <br></br>
-      {masterKey.toJSON().xpriv}
+      {seedHexA}
       <br></br>
-      {newKey.toJSON().xpriv}
+      {seedHexB}
+      <br></br>
+      {masterKeyA.toJSON().xpriv}
+      <br></br>
+      {masterKeyB.toJSON().xpriv}
+      <br></br>
+      {externalChainA.toJSON().xpriv}
+      <br></br>
+      {externalChainB.toJSON().xpriv}
+      <br></br>
+      {publicKeyA}
+      <br></br>
+      {publicKeyB}
+      <br></br>
+      {privateKeyA}
+      <br></br>
+      {privateKeyB}
+      <br></br>
+      {redeemScriptHex}
+      <br></br>
+      {address}
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
