@@ -14,6 +14,7 @@ import * as utxolib from 'utxo-lib';
 
 function App() {
   const [count, setCount] = useState(0);
+  console.log(utxolib);
 
   // 2of2 account following bip48
   // https://github.com/thetrunk/bips/blob/master/bip-0048.mediawiki
@@ -35,9 +36,21 @@ function App() {
   // p2sh is script type of 0' as per https://github.com/bitcoin/bips/pull/1473/files
   const externalChainA = masterKeyA.derive("m/48'/19167'/0'/0'/0"); // bip32 extended key for this derivation path
   const externalChainB = masterKeyB.derive("m/48'/19167'/0'/0'/0"); // bip32 extended key for this derivation path
+  // in wallet-key scenario we ONLY know the xpub part of PARTICULAR coin. Each coin has to be resynced manually
+  const fluxExternalChainfromKEY = masterKeyB.derive("m/48'/19167'/0'/0'");
+  const publicExternalChainForFluxFromKEY =
+    fluxExternalChainfromKEY.toJSON().xpub;
+  const externalChainBB = HDKey.fromExtendedKey(
+    publicExternalChainForFluxFromKEY,
+  ); // bip32 root key. fluxExternalChainfromKEY.toJSON().xpub is what KEY gives to WALLET
+  console.log(externalChainBB); // constains only PUBLIC part
 
   const externalAddressA = externalChainA.deriveChild(0);
   const externalAddressB = externalChainB.deriveChild(0);
+  console.log(externalAddressB);
+  // wallet-key scenario
+  const externalAddressBB = externalChainBB.deriveChild(0).deriveChild(0);
+  console.log(externalAddressBB);
 
   const bitgoExternalAddressA = utxolib.HDNode.fromBase58(
     externalAddressA.toJSON().xpriv,
@@ -48,8 +61,6 @@ function App() {
     utxolib.networks.zelcash,
   );
 
-  console.log(utxolib);
-
   const privateKeyA = bitgoExternalAddressA.keyPair.toWIF();
   const privateKeyB = bitgoExternalAddressB.keyPair.toWIF();
 
@@ -59,8 +70,9 @@ function App() {
   const publicKeyB = bitgoExternalAddressB.keyPair
     .getPublicKeyBuffer()
     .toString('hex');
+  const publicKeyBB = Buffer.from(externalAddressBB.publicKey).toString('hex');
 
-  const sortedPublicKeys = [publicKeyA, publicKeyB].sort();
+  const sortedPublicKeys = [publicKeyA, publicKeyBB].sort();
   console.log(sortedPublicKeys);
   const publicKeysBuffer = sortedPublicKeys.map((hex: string) =>
     Buffer.from(hex, 'hex'),
@@ -115,6 +127,8 @@ function App() {
       {publicKeyA}
       <br></br>
       {publicKeyB}
+      <br></br>
+      {publicKeyBB}
       <br></br>
       {privateKeyA}
       <br></br>
