@@ -6,11 +6,12 @@ import './App.css';
 import { Buffer } from 'buffer';
 import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
-import { wordlist } from '@scure/bip39/wordlists/english';
 
-import { hexToBytes, bytesToHex } from '@noble/hashes/utils';
+import { bytesToHex } from '@noble/hashes/utils';
 
-import * as utxolib from 'utxo-lib';
+import utxolib from 'utxo-lib';
+
+import { generateAddress } from './lib/wallet';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -52,17 +53,33 @@ function App() {
   const externalAddressBB = externalChainBB.deriveChild(0).deriveChild(0);
   console.log(externalAddressBB);
 
-  const bitgoExternalAddressA = utxolib.HDNode.fromBase58(
-    externalAddressA.toJSON().xpriv,
-    utxolib.networks.zelcash,
+  const addresss = generateAddress(
+    masterKeyA.derive("m/48'/19167'/0'/0'").toJSON().xpub,
+    fluxExternalChainfromKEY.toJSON().xpub,
+    0,
+    0,
+    'flux',
   );
-  const bitgoExternalAddressB = utxolib.HDNode.fromBase58(
+  console.log(addresss);
+
+  interface minHDKey {
+    keyPair: {
+      toWIF: () => string;
+      getPublicKeyBuffer: () => Buffer;
+    };
+  }
+
+  const bitgoExternalAddressA: minHDKey = utxolib.HDNode.fromBase58(
+    externalAddressA.toJSON().xpriv,
+    utxolib.networks.flux,
+  );
+  const bitgoExternalAddressB: minHDKey = utxolib.HDNode.fromBase58(
     externalAddressB.toJSON().xpriv,
-    utxolib.networks.zelcash,
+    utxolib.networks.flux,
   );
 
-  const privateKeyA = bitgoExternalAddressA.keyPair.toWIF();
-  const privateKeyB = bitgoExternalAddressB.keyPair.toWIF();
+  const privateKeyA: string = bitgoExternalAddressA.keyPair.toWIF();
+  const privateKeyB: string = bitgoExternalAddressB.keyPair.toWIF();
 
   const publicKeyA = bitgoExternalAddressA.keyPair
     .getPublicKeyBuffer()
@@ -70,7 +87,7 @@ function App() {
   const publicKeyB = bitgoExternalAddressB.keyPair
     .getPublicKeyBuffer()
     .toString('hex');
-  const publicKeyBB = Buffer.from(externalAddressBB.publicKey).toString('hex');
+  const publicKeyBB = Buffer.from(externalAddressBB.publicKey!).toString('hex');
 
   const sortedPublicKeys = [publicKeyA, publicKeyBB].sort();
   console.log(sortedPublicKeys);
@@ -82,13 +99,16 @@ function App() {
     2,
     publicKeysBuffer,
   );
-  const redeemScriptHex = redeemScript.toString('hex');
+  const redeemScriptHex: string = Buffer.from(redeemScript).toString('hex');
   const scriptPubKey = utxolib.script.scriptHash.output.encode(
     utxolib.crypto.hash160(redeemScript),
   );
 
-  const network = utxolib.networks.zelcash;
-  const address = utxolib.address.fromOutputScript(scriptPubKey, network);
+  const network = utxolib.networks.flux;
+  const address: string = utxolib.address.fromOutputScript(
+    scriptPubKey,
+    network,
+  );
   return (
     <>
       <div>
