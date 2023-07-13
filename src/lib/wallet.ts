@@ -4,14 +4,26 @@ import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 
-// generate random mnemonic provided strength
-export function generateMnemonic(strength: 128 | 256 = 128): string {
-  return bip39.generateMnemonic(wordlist, strength);
+interface minHDKey {
+  keyPair: {
+    toWIF: () => string;
+    getPublicKeyBuffer: () => Buffer;
+  };
 }
 
 interface xPrivXpub {
   xpriv: string;
   xpub: string;
+}
+
+interface keyPair {
+  privKey: string;
+  pubKey: string;
+}
+
+interface multisig {
+  address: string;
+  redeemScript: string;
 }
 
 function generatexPubxPriv(
@@ -48,6 +60,11 @@ function generatexPubxPriv(
   return externalChain.toJSON();
 }
 
+// generate random mnemonic provided strength
+export function generateMnemonic(strength: 128 | 256 = 128): string {
+  return bip39.generateMnemonic(wordlist, strength);
+}
+
 // returns xpub of hardened derivation path for a particular coin
 export function getMasterXpub(
   mnemonic: string,
@@ -73,13 +90,13 @@ export function getMasterXpriv(
 }
 
 // given xpubs of two parties, generate multisig address and its redeem script
-export function generateAddress(
+export function generateMultisigAddress(
   xpub1: string,
   xpub2: string,
   typeIndex: 0 | 1,
   addressIndex: number,
   chain: 'flux',
-): { address: string; redeemScript: string } {
+): multisig {
   const externalChain1 = HDKey.fromExtendedKey(xpub1);
   const externalChain2 = HDKey.fromExtendedKey(xpub2);
 
@@ -120,4 +137,31 @@ export function generateAddress(
     address,
     redeemScript: redeemScriptHex,
   };
+}
+
+// given xpriv of our party, generate keypair consisting of privateKey in WIF format and public key belonging to it
+export function generateAddressKeypair(
+  xpriv: string,
+  typeIndex: 0 | 1,
+  addressIndex: number,
+  chain: 'flux',
+): keyPair {
+  const externalChain = HDKey.fromExtendedKey(xpriv);
+
+  const externalAddress = externalChain
+    .deriveChild(typeIndex)
+    .deriveChild(addressIndex);
+
+  const derivedExternalAddress: minHDKey = utxolib.HDNode.fromBase58(
+    externalAddress.toJSON().xpriv,
+    utxolib.networks[chain],
+  );
+
+  const privateKeyWIF: string = derivedExternalAddress.keyPair.toWIF();
+
+  const publicKey = derivedExternalAddress.keyPair
+    .getPublicKeyBuffer()
+    .toString('hex');
+
+  return { privKey: privateKeyWIF, pubKey: publicKey };
 }
