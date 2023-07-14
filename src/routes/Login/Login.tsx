@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAppSelector } from '../../hooks';
 import './Login.css';
 
 import { generateMnemonic } from '../../lib/wallet';
@@ -14,6 +15,8 @@ function App() {
     const mnemonic = generateMnemonic(entValue);
     setMnemonic(mnemonic);
   }
+
+  const xpriv = useAppSelector((state) => state.xpriv.value);
 
   return (
     <>
@@ -39,6 +42,8 @@ function App() {
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
       </div>
+      Master xpriv for Flux from Create:<br></br>
+      {xpriv}
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>

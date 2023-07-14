@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAppDispatch } from '../../hooks';
+
+import { setXpriv } from '../../store';
+
 import './Create.css';
 
-import { generateMnemonic } from '../../lib/wallet';
+import { generateMnemonic, getMasterXpriv } from '../../lib/wallet';
 
 type Entropy = 128 | 256;
 
@@ -10,9 +14,13 @@ function App() {
   const [entropy, setEntropy] = useState<Entropy>(128);
   const [mnemonic, setMnemonic] = useState('');
 
-  function generateMnemonicPhrase(entValue: 128 | 256) {
+  const dispatch = useAppDispatch();
+
+  function GenerateMnemonicPhrase(entValue: 128 | 256) {
     const mnemonic = generateMnemonic(entValue);
     setMnemonic(mnemonic);
+    const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
+    dispatch(setXpriv(xpriv));
   }
 
   return (
@@ -31,7 +39,7 @@ function App() {
         >
           entropy is {entropy}
         </button>
-        <button onClick={() => generateMnemonicPhrase(entropy)}>
+        <button onClick={() => GenerateMnemonicPhrase(entropy)}>
           Generate Mnemonic Seed
         </button>
         <p>{mnemonic}</p>
@@ -42,7 +50,7 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-      <Link to={`/`}>Navigate to Home</Link>
+      <Link to={`/login`}>Navigate to Login</Link>
     </>
   );
 }
