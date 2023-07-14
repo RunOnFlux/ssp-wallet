@@ -16,12 +16,12 @@ function App() {
 
   const dispatch = useAppDispatch();
 
-  function GenerateMnemonicPhrase(entValue: 128 | 256) {
+  const GenerateMnemonicPhrase = (entValue: 128 | 256) => {
     const mnemonic = generateMnemonic(entValue);
     setMnemonic(mnemonic);
     const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
     dispatch(setXpriv(xpriv));
-  }
+  };
 
   return (
     <>

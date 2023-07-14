@@ -11,10 +11,10 @@ function App() {
   const [entropy, setEntropy] = useState<Entropy>(128);
   const [mnemonic, setMnemonic] = useState('');
 
-  function generateMnemonicPhrase(entValue: 128 | 256) {
+  const generateMnemonicPhrase = (entValue: 128 | 256) => {
     const mnemonic = generateMnemonic(entValue);
     setMnemonic(mnemonic);
-  }
+  };
 
   const xpriv = useAppSelector((state) => state.xpriv.value);
 
