@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import secureLocalStorage from 'react-secure-storage';
 import { useAppSelector } from '../../hooks';
 import './Login.css';
 
@@ -8,6 +9,15 @@ import { generateMnemonic } from '../../lib/wallet';
 type Entropy = 128 | 256;
 
 function App() {
+  // if no user, navigate to Welcome
+  const navigate = useNavigate();
+  useEffect(() => {
+    const accPresent = secureLocalStorage.getItem('walletSeed');
+    if (accPresent) {
+      navigate('/welcome');
+      return;
+    }
+  });
   const [entropy, setEntropy] = useState<Entropy>(128);
   const [mnemonic, setMnemonic] = useState('');
 
@@ -47,7 +57,7 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-      <Link to={`/`}>Navigate to Home</Link>
+      <Link to={`/welcome`}>Navigate to Home</Link>
     </>
   );
 }

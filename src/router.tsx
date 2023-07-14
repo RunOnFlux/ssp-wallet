@@ -1,13 +1,13 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom';
 
-import App from './routes/App/App.tsx';
+import Welcome from './routes/Welcome/Welcome.tsx';
 import Create from './routes/Create/Create.tsx';
 import Login from './routes/Login/Login.tsx';
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <App />,
+    path: '/welcome',
+    element: <Welcome />,
   },
   {
     path: '/create',
@@ -19,7 +19,7 @@ const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Navigate to="/" replace />,
+    element: <Navigate to="/login" replace />,
   },
 ]);
 

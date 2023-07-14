@@ -1,33 +1,34 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import reactLogo from '../../assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
+import { useAppDispatch } from '../../hooks';
 
-import { generateMnemonic } from '../../lib/wallet';
+import { setXpriv } from '../../store';
+
+import './Recover.css';
+
+import { generateMnemonic, getMasterXpriv } from '../../lib/wallet';
 
 type Entropy = 128 | 256;
 
 function App() {
+  // use secure local storage for storing mnemonic 'seed', 'xpriv-48-slip-0-0', 'xpub-48-slip-0-0' and '2-xpub-48-slip-0-0' (2- as for second key) of together with encryption of browser-passworder
+  // use localforage to store addresses, balances, transactions and other data. This data is not encrypted for performance reasons and they are not sensitive.
+  // if user exists, navigate to login
   const [entropy, setEntropy] = useState<Entropy>(128);
   const [mnemonic, setMnemonic] = useState('');
 
-  const generateMnemonicPhrase = (entValue: 128 | 256) => {
+  const dispatch = useAppDispatch();
+
+  const GenerateMnemonicPhrase = (entValue: 128 | 256) => {
     const mnemonic = generateMnemonic(entValue);
     setMnemonic(mnemonic);
+    const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
+    dispatch(setXpriv(xpriv));
   };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
+      <h1>Create</h1>
       <div className="card">
         <button
           onClick={() =>
@@ -41,7 +42,7 @@ function App() {
         >
           entropy is {entropy}
         </button>
-        <button onClick={() => generateMnemonicPhrase(entropy)}>
+        <button onClick={() => GenerateMnemonicPhrase(entropy)}>
           Generate Mnemonic Seed
         </button>
         <p>{mnemonic}</p>
@@ -52,8 +53,7 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-
-      <Link to={`create`}>Navigate to Create</Link>
+      <Link to={`/login`}>Navigate to Login</Link>
     </>
   );
 }
