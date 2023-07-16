@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Input } from 'antd';
+import {
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  LockOutlined,
+} from '@ant-design/icons';
 import { useAppDispatch } from '../../hooks';
 
 import { setXpriv } from '../../store';
@@ -86,6 +92,14 @@ function App() {
 
           <div>
             <h2>Create your wallet password</h2>
+            <Input.Password
+              size="large"
+              placeholder="Set Password"
+              prefix={<LockOutlined />}
+              iconRender={(visible) =>
+                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+              }
+            />
             <p>You will need to use password every time you open The Wallet</p>
             tbd input
           </div>

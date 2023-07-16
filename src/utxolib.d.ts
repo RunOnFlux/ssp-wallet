@@ -1,0 +1,83 @@
+declare module 'utxo-lib' {
+  interface minHDKey {
+    keyPair: {
+      toWIF: () => string;
+      getPublicKeyBuffer: () => Buffer;
+    };
+  }
+  interface inInput {
+    hash: Buffer;
+    index: number;
+  }
+  interface builtTx {
+    toHex: () => string;
+  }
+  interface txBuilder {
+    build: () => builtTx;
+    sign: (
+      index: number,
+      keyPair: object,
+      redeemScript: Buffer,
+      hashType: number,
+      value: string,
+    ) => void;
+    buildIncomplete(): builtTx;
+    inputs: input[];
+    tx: {
+      ins: inInput[];
+    };
+  }
+  type networks = Record<string, object>;
+  let address: {
+    fromOutputScript: (scriptPubKey: Buffer, network: object) => string;
+  };
+  let script: {
+    multisig: {
+      output: {
+        encode: (m: number, publicKeysBuffer: Buffer[]) => Uint8Array;
+      };
+    };
+    scriptHash: {
+      output: {
+        encode: (hash160: Buffer) => Uint8Array;
+      };
+    };
+    nullData: {
+      output: {
+        encode: (data: Buffer) => string;
+      };
+    };
+  };
+  let networks: networks;
+  let crypto: {
+    hash160: (redeemScript: Uint8Array) => Buffer;
+  };
+  let HDNode: {
+    fromBase58: (xpubxpriv: string, network: object) => minHDKey;
+  };
+  let Transaction: {
+    fromHex: (txhex: string, network: object) => object;
+    SIGHASH_ALL: number;
+  };
+  // Other methods/properties...
+  // Replace 'any' with the appropriate type // Define the constructor signature and any other methods/properties
+  type TransactionBuilder = new (network: object, fee: string) => {
+    setVersion: (version: number) => void;
+    setVersionGroupId: (versionGroupId: number) => void;
+    addInput: (txid: string, vout: number) => void;
+    addOutput: (address: string, satoshis: string) => void;
+    fromTransaction: (tx: object, network: object) => txBuilder;
+    buildIncomplete: () => builtTx;
+  };
+  let TransactionBuilder: {
+    fromTransaction: (tx: object, network: object) => txBuilder;
+  } & TransactionBuilder;
+  let ECPair: {
+    fromWIF: (
+      privateKey: string,
+      network: object,
+    ) => {
+      sign: (hash: Buffer) => Buffer;
+    };
+  };
+}

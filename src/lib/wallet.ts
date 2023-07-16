@@ -3,28 +3,7 @@ import { Buffer } from 'buffer';
 import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
-
-interface minHDKey {
-  keyPair: {
-    toWIF: () => string;
-    getPublicKeyBuffer: () => Buffer;
-  };
-}
-
-interface xPrivXpub {
-  xpriv: string;
-  xpub: string;
-}
-
-interface keyPair {
-  privKey: string;
-  pubKey: string;
-}
-
-interface multisig {
-  address: string;
-  redeemScript: string;
-}
+import { keyPair, minHDKey, multisig, xPrivXpub } from '../types';
 
 function generatexPubxPriv(
   mnemonic: string,
@@ -95,7 +74,7 @@ export function generateMultisigAddress(
   xpub2: string,
   typeIndex: 0 | 1,
   addressIndex: number,
-  chain: 'flux',
+  chain = 'flux',
 ): multisig {
   const externalChain1 = HDKey.fromExtendedKey(xpub1);
   const externalChain2 = HDKey.fromExtendedKey(xpub2);
@@ -144,7 +123,7 @@ export function generateAddressKeypair(
   xpriv: string,
   typeIndex: 0 | 1,
   addressIndex: number,
-  chain: 'flux',
+  chain = 'flux',
 ): keyPair {
   const externalChain = HDKey.fromExtendedKey(xpriv);
 
