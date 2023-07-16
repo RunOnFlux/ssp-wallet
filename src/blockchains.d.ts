@@ -12,8 +12,6 @@ declare module '@storage/blockchains' {
     wif: string;
     logo: string;
   }
-  let blockchains: {
-    flux: Blockchain;
-    fluxTestnet: Blockchain;
-  };
+  type blockchains = Record<string, Blockchain>;
+  let blockchains: blockchains;
 }

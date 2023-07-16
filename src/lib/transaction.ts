@@ -4,6 +4,8 @@ import BigNumber from 'bignumber.js';
 import { Buffer } from 'buffer';
 import { utxo } from '../types';
 
+import { blockchains } from '@storage/blockchains';
+
 export async function fetchUtxos(
   address: string,
   api: string,
@@ -145,6 +147,171 @@ export function buildUnsignedRawTx(
     return txhex;
   } catch (e) {
     console.log(e);
+    return null;
+  }
+}
+
+function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
+  let selectedUtxos: utxo[] = [];
+  // sorted utxos by satoshis, smallest first
+  const sortedUtxos = utxos.sort((a, b) => {
+    const aSatoshis = new BigNumber(a.satoshis);
+    const bSatoshis = new BigNumber(b.satoshis);
+    if (aSatoshis.isLessThan(bSatoshis)) {
+      return -1;
+    }
+    if (aSatoshis.isGreaterThan(bSatoshis)) {
+      return 1;
+    }
+    return 0;
+  });
+
+  // case one. Find if we have a utxo with exact amount
+  sortedUtxos.forEach((utxo) => {
+    const utxoAmount = new BigNumber(utxo.satoshis);
+    if (utxoAmount.isEqualTo(amount)) {
+      selectedUtxos = [utxo];
+    }
+  });
+  if (selectedUtxos.length && selectedUtxos.length <= 670) {
+    return selectedUtxos;
+  }
+
+  // case two
+  // If the "sum of all your UTXO smaller than the Target" happens to match the Target, they will be used. (This is the case if you sweep a complete wallet.)
+  const utxosSmallerThanTarget = sortedUtxos.filter((utxo) => {
+    const utxoAmount = new BigNumber(utxo.satoshis);
+    return utxoAmount.isLessThan(amount);
+  });
+  let totalAmountSmallerUtxos = new BigNumber(0);
+  utxosSmallerThanTarget.forEach((utxo) => {
+    const utxoAmount = new BigNumber(utxo.satoshis);
+    totalAmountSmallerUtxos = totalAmountSmallerUtxos.plus(utxoAmount);
+  });
+  if (totalAmountSmallerUtxos.isEqualTo(amount)) {
+    selectedUtxos = utxosSmallerThanTarget;
+  }
+  if (selectedUtxos.length && selectedUtxos.length <= 670) {
+    return selectedUtxos;
+  }
+
+  // case three
+  // If the "sum of all your UTXO smaller than the Target" doesn't surpass the target, the smallest UTXO greater than your Target will be used.
+  const utxosBiggestThanTarget = sortedUtxos.filter((utxo) => {
+    const utxoAmount = new BigNumber(utxo.satoshis);
+    return utxoAmount.isGreaterThan(amount);
+  });
+  if (totalAmountSmallerUtxos.isLessThan(amount)) {
+    if (utxosBiggestThanTarget.length) {
+      selectedUtxos = [utxosBiggestThanTarget[0]];
+    }
+  }
+  if (selectedUtxos.length && selectedUtxos.length <= 670) {
+    return selectedUtxos;
+  }
+
+  // case 4
+  // If the "sum of all your UTXO smaller than the Target" surpasses the Target, try using the smallest UTXO first and add more UTXO until you reach the Target.
+  if (totalAmountSmallerUtxos.isGreaterThan(amount)) {
+    let totalAmount = new BigNumber(0);
+    const preselectedUtxos = [];
+    for (const utxo of utxosSmallerThanTarget) {
+      totalAmount = totalAmount.plus(new BigNumber(utxo.satoshis));
+      preselectedUtxos.push(utxo);
+      if (totalAmount.isGreaterThan(amount)) {
+        selectedUtxos = preselectedUtxos;
+        break;
+      }
+    }
+    if (selectedUtxos.length && selectedUtxos.length <= 670) {
+      return selectedUtxos;
+    }
+  }
+
+  // case 5
+  // If the "sum of all your UTXO smaller than the Target" surpasses the Target, try using the biggest UTXO first and add more UTXO until you reach the Target.
+  if (totalAmountSmallerUtxos.isGreaterThan(amount)) {
+    let totalAmount = new BigNumber(0);
+    const preselectedUtxos = [];
+    for (const utxo of utxosSmallerThanTarget.reverse()) {
+      totalAmount = totalAmount.plus(new BigNumber(utxo.satoshis));
+      preselectedUtxos.push(utxo);
+      if (totalAmount.isGreaterThan(amount)) {
+        selectedUtxos = preselectedUtxos;
+        break;
+      }
+    }
+    if (selectedUtxos.length && selectedUtxos.length <= 670) {
+      return selectedUtxos;
+    }
+  }
+
+  // case 6, use utxo bigger than target
+  if (utxosBiggestThanTarget.length) {
+    selectedUtxos = [utxosBiggestThanTarget[0]];
+  }
+  if (selectedUtxos.length && selectedUtxos.length <= 670) {
+    return selectedUtxos;
+  }
+
+  // case 7, transaction can't be constructed, tx size would exceed 100kb. This is a limitation of the blockchain. Fallback to case 5
+  if (totalAmountSmallerUtxos.isGreaterThan(amount)) {
+    let totalAmount = new BigNumber(0);
+    const preselectedUtxos = [];
+    for (const utxo of utxosSmallerThanTarget.reverse()) {
+      totalAmount = totalAmount.plus(new BigNumber(utxo.satoshis));
+      preselectedUtxos.push(utxo);
+      if (totalAmount.isGreaterThan(amount)) {
+        selectedUtxos = preselectedUtxos;
+        break;
+      }
+    }
+  }
+  return selectedUtxos;
+}
+
+export async function constructAndSignTransaction(
+  chain = 'flux',
+  receiver: string,
+  amount: string,
+  fee: string,
+  sender: string,
+  change: string,
+  message: string,
+  privateKey: string,
+  redeemScript: string,
+): Promise<string | null> {
+  try {
+    const blockchainConfig = blockchains[chain];
+    const utxos = await fetchUtxos(sender, blockchainConfig.explorer);
+    const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
+    const pickedUtxos = pickUtxos(utxos, amountToSend);
+    const rawTx = buildUnsignedRawTx(
+      chain,
+      pickedUtxos,
+      receiver,
+      amount,
+      fee,
+      change,
+      message,
+    );
+    if (!rawTx) {
+      throw new Error('Could not construct raw tx');
+    }
+    const signedTx = signTransaction(
+      rawTx,
+      chain,
+      privateKey,
+      redeemScript,
+      utxos,
+    );
+    if (!signedTx) {
+      throw new Error('Could not sign tx');
+    }
+    // wallet is NOT finalising the transaction, the KEY is finalising the transaction
+    return signedTx;
+  } catch (error) {
+    console.log(error);
     return null;
   }
 }
