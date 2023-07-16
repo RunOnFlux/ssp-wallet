@@ -29,3 +29,15 @@ export interface utxo {
   scriptPubKey: string;
   satoshis: string;
 }
+
+export interface balance {
+  address: string;
+  confirmed: string;
+  unconfirmed: string;
+}
+
+export interface balanceInsight {
+  addrStr: string;
+  balanceSat: number;
+  unconfirmedBalanceSat: number;
+}
