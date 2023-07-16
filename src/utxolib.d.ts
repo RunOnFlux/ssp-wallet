@@ -65,7 +65,7 @@ declare module 'utxo-lib' {
     setVersion: (version: number) => void;
     setVersionGroupId: (versionGroupId: number) => void;
     addInput: (txid: string, vout: number) => void;
-    addOutput: (address: string, satoshis: string) => void;
+    addOutput: (address: string, satoshis: number) => void;
     fromTransaction: (tx: object, network: object) => txBuilder;
     buildIncomplete: () => builtTx;
   };

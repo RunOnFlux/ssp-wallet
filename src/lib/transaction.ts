@@ -134,12 +134,12 @@ export function buildUnsignedRawTx(
       });
     }
 
-    recipients.forEach((x) => txb.addOutput(x.address, x.satoshis)); // TOOD check if lib can accept string
+    recipients.forEach((x) => txb.addOutput(x.address, Number(x.satoshis)));
 
     if (message) {
       const data = Buffer.from(message, 'utf8');
       const dataScript = utxolib.script.nullData.output.encode(data);
-      txb.addOutput(dataScript, '0');
+      txb.addOutput(dataScript, 0);
     }
 
     const tx = txb.buildIncomplete();
