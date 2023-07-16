@@ -2,7 +2,7 @@ import utxolib from 'utxo-lib';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { Buffer } from 'buffer';
-import { utxo } from '../types';
+import { utxo, broadcastTxResult } from '../types';
 
 import { blockchains } from '@storage/blockchains';
 
@@ -27,10 +27,7 @@ export async function fetchUtxos(
   }
 }
 
-export function finaliseTransaction(
-  rawTx: string,
-  chain = 'flux',
-): string | null {
+export function finaliseTransaction(rawTx: string, chain = 'flux'): string {
   try {
     const network = utxolib.networks[chain];
     const txhex = rawTx;
@@ -43,7 +40,7 @@ export function finaliseTransaction(
     return finalisedTx;
   } catch (e) {
     console.log(e);
-    return null;
+    throw e;
   }
 }
 
@@ -58,7 +55,7 @@ export function signTransaction(
   privateKey: string,
   redeemScript: string,
   utxos: utxo[], // same or bigger set than was used to construct the tx
-): string | null {
+): string {
   try {
     const network = utxolib.networks[chain];
     const txhex = rawTx;
@@ -91,7 +88,7 @@ export function signTransaction(
     return signedTx;
   } catch (e) {
     console.log(e);
-    return null;
+    throw e;
   }
 }
 
@@ -104,7 +101,7 @@ export function buildUnsignedRawTx(
   fee: string,
   change: string,
   message: string,
-): string | null {
+): string {
   try {
     const network = utxolib.networks[chain];
     const txb = new utxolib.TransactionBuilder(network, fee);
@@ -150,7 +147,7 @@ export function buildUnsignedRawTx(
     return txhex;
   } catch (e) {
     console.log(e);
-    return null;
+    throw e;
   }
 }
 
@@ -283,7 +280,7 @@ export async function constructAndSignTransaction(
   message: string,
   privateKey: string,
   redeemScript: string,
-): Promise<string | null> {
+): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
     const utxos = await fetchUtxos(sender, blockchainConfig.explorer);
@@ -315,6 +312,21 @@ export async function constructAndSignTransaction(
     return signedTx;
   } catch (error) {
     console.log(error);
-    return null;
+    throw error;
+  }
+}
+
+export async function broadcastTx(
+  txHex: string,
+  chain = 'flux',
+): Promise<string> {
+  try {
+    const blockchainConfig = blockchains[chain];
+    const url = `https://${blockchainConfig.explorer}/api/tx/send`;
+    const response = await axios.post<broadcastTxResult>(url, { rawtx: txHex });
+    return response.data.txid;
+  } catch (error) {
+    console.log(error);
+    throw error;
   }
 }

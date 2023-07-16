@@ -30,6 +30,10 @@ export interface utxo {
   satoshis: string;
 }
 
+export interface broadcastTxResult {
+  txid: string;
+}
+
 export interface balance {
   address: string;
   confirmed: string;
