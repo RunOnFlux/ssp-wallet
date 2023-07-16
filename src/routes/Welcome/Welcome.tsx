@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import secureLocalStorage from 'react-secure-storage';
+import { blockchains } from '@storage/blockchains';
 import './Welcome.css';
 
 function App() {
@@ -20,6 +21,8 @@ function App() {
       <h1>THE Wallet</h1>
       <Link to={`/create`}>Create THE Wallet</Link>
       <Link to={`/create`}>Recover existing THE Wallet</Link>
+      {blockchains.flux.name}
+      <img src={blockchains.flux.logo} alt="Flux logo" />
     </>
   );
 }
