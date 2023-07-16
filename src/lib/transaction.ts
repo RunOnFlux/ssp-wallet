@@ -134,7 +134,10 @@ export function buildUnsignedRawTx(
       });
     }
 
-    recipients.forEach((x) => txb.addOutput(x.address, Number(x.satoshis)));
+    // library accepts it as integer. BN is capped with max safe integer, throws otherwise
+    recipients.forEach((x) =>
+      txb.addOutput(x.address, new BigNumber(x.satoshis).toNumber()),
+    );
 
     if (message) {
       const data = Buffer.from(message, 'utf8');
