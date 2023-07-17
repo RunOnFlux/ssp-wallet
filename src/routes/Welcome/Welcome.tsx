@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import secureLocalStorage from 'react-secure-storage';
-import { blockchains } from '@storage/blockchains';
+import { Typography, Button, Image, Space } from 'antd';
 import './Welcome.css';
+
+const { Title } = Typography;
 
 function App() {
   const navigate = useNavigate();
@@ -17,12 +19,20 @@ function App() {
 
   return (
     <>
-      <h2>Welcome to</h2>
-      <h1>THE Wallet</h1>
-      <Link to={`/create`}>Create THE Wallet</Link>
-      <Link to={`/create`}>Recover existing THE Wallet</Link>
-      {blockchains.flux.name}
-      <img src={blockchains.flux.logo} alt="Flux logo" />
+      <Image width={150} preview={false} src="/ssp-logo.svg" />
+      <Title level={2}>Welcome to SSP Wallet</Title>
+      <p className="welcome-text">
+        Multi signature wallet for the decentralized world. <br></br>
+        Simple. Secure. Powerful.
+      </p>
+      <Space direction="vertical" size="large">
+        <Button type="primary" size="large">
+          <Link to={`/create`}>Get Started!</Link>
+        </Button>
+        <Button type="link" block size="small" className="">
+          <Link to={`/recover`}>Recover</Link>
+        </Button>
+      </Space>
     </>
   );
 }

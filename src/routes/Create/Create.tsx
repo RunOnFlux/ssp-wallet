@@ -100,7 +100,7 @@ function App() {
                 visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
               }
             />
-            <p>You will need to use password every time you open The Wallet</p>
+            <p>You will need to use password every time you open your Wallet</p>
             tbd input
           </div>
           <div>

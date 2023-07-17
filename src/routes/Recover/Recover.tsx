@@ -14,7 +14,7 @@ function App() {
   // use secure local storage for storing mnemonic 'seed', 'xpriv-48-slip-0-0', 'xpub-48-slip-0-0' and '2-xpub-48-slip-0-0' (2- as for second key) of together with encryption of browser-passworder
   // use localforage to store addresses, balances, transactions and other data. This data is not encrypted for performance reasons and they are not sensitive.
   // if user exists, navigate to login
-  const [entropy, setEntropy] = useState<Entropy>(128);
+  const [entropy, setEntropy] = useState<Entropy>(256);
   const [mnemonic, setMnemonic] = useState('');
 
   const dispatch = useAppDispatch();

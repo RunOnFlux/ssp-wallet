@@ -40,7 +40,7 @@ function generatexPubxPriv(
 }
 
 // generate random mnemonic provided strength
-export function generateMnemonic(strength: 128 | 256 = 128): string {
+export function generateMnemonic(strength: 128 | 256 = 256): string {
   return bip39.generateMnemonic(wordlist, strength);
 }
 

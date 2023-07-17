@@ -1,1 +1,2 @@
-The Wallet
+SSP Wallet
+Simple. Secure. Powerful.
