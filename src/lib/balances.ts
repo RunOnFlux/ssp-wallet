@@ -17,6 +17,7 @@ export async function fetchBalance(
       confirmed: new BigNumber(response.data.balanceSat).toFixed(),
       unconfirmed: new BigNumber(response.data.unconfirmedBalanceSat).toFixed(),
       address: response.data.addrStr,
+      totalTransactions: response.data.txApperances,
     };
     return bal;
   } catch (error) {

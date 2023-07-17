@@ -38,12 +38,14 @@ export interface balance {
   address: string;
   confirmed: string;
   unconfirmed: string;
+  totalTransactions?: number;
 }
 
 export interface balanceInsight {
   addrStr: string;
   balanceSat: number;
   unconfirmedBalanceSat: number;
+  txApperances: number;
 }
 
 export interface vin {
@@ -102,4 +104,12 @@ export interface transaction {
   fee: string;
   amount: string; // satoshis
   message: string;
+}
+
+export interface getInfoInsight {
+  info: {
+    version: number;
+    blocks: number;
+    testnet: boolean;
+  };
 }

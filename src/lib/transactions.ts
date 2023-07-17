@@ -78,9 +78,9 @@ function processTransaction(
   return tx;
 }
 
-export async function fetchTransactions(
+export async function fetchAddressTransactions(
   address: string,
-  chain: string,
+  chain = 'flux',
   from: number,
   to: number,
 ): Promise<transaction[]> {
