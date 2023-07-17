@@ -13,6 +13,7 @@ function App() {
   const navigate = useNavigate();
   useEffect(() => {
     const accPresent = secureLocalStorage.getItem('walletSeed');
+    // todo !accPresent
     if (accPresent) {
       navigate('/welcome');
       return;

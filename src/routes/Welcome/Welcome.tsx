@@ -19,10 +19,12 @@ function App() {
 
   return (
     <>
-      <Image width={150} preview={false} src="/ssp-logo.svg" />
+      <Image width={120} preview={false} src="/ssp-logo.svg" />
       <Title level={2}>Welcome to SSP Wallet</Title>
       <p className="welcome-text">
-        Multi signature wallet for the decentralized world. <br></br>
+        Dual signature wallet for the decentralized world.
+        <br />
+        <br />
         Simple. Secure. Powerful.
       </p>
       <Space direction="vertical" size="large">
