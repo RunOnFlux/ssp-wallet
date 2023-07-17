@@ -45,3 +45,61 @@ export interface balanceInsight {
   balanceSat: number;
   unconfirmedBalanceSat: number;
 }
+
+export interface vin {
+  txid: string;
+  vout: number;
+  sequence: number;
+  n: number;
+  scriptSig: {
+    hes: string;
+    asm: string;
+  };
+  addr: string;
+  valueSat: number;
+  value: number;
+}
+
+export interface vout {
+  value: string;
+  n: number;
+  scriptPubKey: {
+    hex: string;
+    asm: string;
+    addresses: string[];
+    type: string;
+  };
+}
+export interface transactionInsight {
+  txid: string;
+  version: number;
+  locktime: number;
+  blockhash: string;
+  blockheight: number;
+  confirmations: number;
+  size: number;
+  time: number;
+  blocktime: number;
+  valueOut: number;
+  valueIn: number;
+  fees: number;
+  vin: vin[];
+  vout: vout[];
+}
+
+export interface transacitonsInsight {
+  totalItems: number;
+  from: number;
+  to: number;
+  items: transactionInsight[];
+}
+
+export interface transaction {
+  txid: string;
+  fee: string;
+  blockheight: number;
+  timestamp: number;
+  fee: string;
+  amount: string; // satoshis
+  message: string;
+}
