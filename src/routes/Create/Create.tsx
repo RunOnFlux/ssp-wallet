@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Input,
-  Typography,
   Image,
   Button,
   Checkbox,
   Form,
   Divider,
+  message,
+  Modal,
 } from 'antd';
 
 import {
@@ -17,8 +18,6 @@ import {
   LeftOutlined,
 } from '@ant-design/icons';
 import secureLocalStorage from 'react-secure-storage';
-
-const { Title } = Typography;
 
 import { useAppDispatch } from '../../hooks';
 
@@ -32,6 +31,7 @@ import {
   getMasterXpub,
 } from '../../lib/wallet';
 import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
+import { NoticeType } from 'antd/es/message/interface';
 
 interface passwordForm {
   password: string;
@@ -46,6 +46,31 @@ function App() {
   // use localforage to store addresses, balances, transactions and other data. This data is not encrypted for performance reasons and they are not sensitive.
   // if user exists, navigate to login
   const [password, setPassword] = useState('');
+  const [menominc, setMnemonic] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    setIsModalOpen(false);
+    storeMnemonic(menominc);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setMnemonic('');
+    setPassword('');
+  };
+
+  const [messageApi, contextHolder] = message.useMessage();
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
 
   useEffect(() => {
     // generate seed
@@ -57,6 +82,13 @@ function App() {
   });
 
   useEffect(() => {
+    if (menominc) {
+      showModal();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menominc]);
+
+  useEffect(() => {
     if (password) {
       generateMnemonicPhrase(256);
     }
@@ -65,23 +97,24 @@ function App() {
 
   const onFinish = (values: passwordForm) => {
     if (values.password.length < 8) {
-      console.log('password is too short');
+      displayMessage('error', 'Password must have at least 8 characters.');
       return;
     }
     if (values.password !== values.confirm_password) {
-      console.log('passwords do not match');
+      displayMessage('error', 'Passwords do not match');
       return;
     }
     if (!values.tos) {
-      console.log('tos not checked');
+      displayMessage('error', 'Please agree with Terms of Service');
       return;
     }
     setPassword(values.password);
   };
 
   const generateMnemonicPhrase = (entValue: 128 | 256) => {
+    console.log('fired');
     const generatedMnemonic = generateMnemonic(entValue);
-    storeMnemonic(generatedMnemonic);
+    setMnemonic(generatedMnemonic);
   };
 
   const storeMnemonic = (mnemonic: string) => {
@@ -119,6 +152,7 @@ function App() {
 
   return (
     <>
+      {contextHolder}
       <Button
         type="link"
         block
@@ -130,7 +164,7 @@ function App() {
       </Button>
       <Divider />
       <Image width={80} preview={false} src="/ssp-logo.svg" />
-      <Title level={3}>Create Password</Title>
+      <h2>Create Password</h2>
       <Form
         name="pwdForm"
         initialValues={{ tos: false }}
@@ -176,7 +210,17 @@ function App() {
         </Form.Item>
 
         <Form.Item name="tos" valuePropName="checked">
-          <Checkbox>I agree with not being evil.</Checkbox>
+          <Checkbox>
+            I agree with{' '}
+            <a
+              href="https://www.youtube.com/watch?v=GJVk_LfASxk&ab_channel=FluxLabs"
+              target="_blank"
+              rel="noreferrer"
+            >
+              not being evil
+            </a>
+            .
+          </Checkbox>
         </Form.Item>
 
         <Form.Item>
@@ -195,6 +239,31 @@ function App() {
       >
         Import with Seed Phrase
       </Button>
+      <Modal
+        title="Backup Wallet Seed"
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        okText="Create Wallet"
+      >
+        <p>
+          Wallet weed is used to generate all addresses. Anyone with the access
+          to the wallet seed has partial control over the wallet.
+        </p>
+        <p>Keep your wallet seed backup safe and secure.</p>
+        <p>
+          <b>
+            Loosing the wallet seed will result in the loss of access to your
+            wallet.
+          </b>
+        </p>
+
+        <Divider />
+        <h3 style={{ textAlign: 'center' }}>
+          <i>{menominc}</i>
+        </h3>
+        <Divider />
+      </Modal>
     </>
   );
 }

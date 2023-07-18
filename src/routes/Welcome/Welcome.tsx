@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import secureLocalStorage from 'react-secure-storage';
-import { Typography, Button, Image, Space } from 'antd';
+import { Button, Image, Space } from 'antd';
 import './Welcome.css';
-
-const { Title } = Typography;
 
 function App() {
   const navigate = useNavigate();
@@ -20,7 +18,7 @@ function App() {
   return (
     <>
       <Image width={120} preview={false} src="/ssp-logo.svg" />
-      <Title level={2}>Welcome to SSP Wallet</Title>
+      <h1>Welcome to SSP Wallet</h1>
       <p className="welcome-text">
         Dual signature wallet for the decentralized world.
         <br />
