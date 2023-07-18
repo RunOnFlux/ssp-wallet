@@ -10,6 +10,7 @@ import {
   message,
   Modal,
 } from 'antd';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 
 import {
   EyeInvisibleOutlined,
@@ -48,14 +49,24 @@ function App() {
   const [password, setPassword] = useState('');
   const [menominc, setMnemonic] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mnemonicShow, setMnemonicShow] = useState(false);
+  const [WSPbackedUp, setWSPbackedUp] = useState(false);
+  const [wspWasShown, setWSPwasShown] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
   };
 
   const handleOk = () => {
-    setIsModalOpen(false);
-    storeMnemonic(menominc);
+    if (WSPbackedUp && wspWasShown) {
+      setIsModalOpen(false);
+      storeMnemonic(menominc);
+    } else {
+      displayMessage(
+        'info',
+        'You must backup your wallet seed phrase before you can create a wallet.',
+      );
+    }
   };
 
   const handleCancel = () => {
@@ -148,6 +159,10 @@ function App() {
       .catch((error) => {
         console.log(error);
       });
+  };
+
+  const onChangeWSP = (e: CheckboxChangeEvent) => {
+    setWSPbackedUp(e.target.checked);
   };
 
   return (
@@ -245,6 +260,7 @@ function App() {
         onOk={handleOk}
         onCancel={handleCancel}
         okText="Create Wallet"
+        style={{ textAlign: 'center' }}
       >
         <p>
           Wallet weed is used to generate all addresses. Anyone with the access
@@ -257,12 +273,28 @@ function App() {
             wallet.
           </b>
         </p>
-
+        <br />
         <Divider />
-        <h3 style={{ textAlign: 'center' }}>
-          <i>{menominc}</i>
+        <h3>
+          <i>
+            {mnemonicShow
+              ? menominc
+              : '*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***'}
+          </i>
         </h3>
+        <Button
+          type="dashed"
+          onClick={() => {
+            setMnemonicShow(!mnemonicShow), setWSPwasShown(true);
+          }}
+        >
+          {mnemonicShow ? 'Hide Mnemonic' : 'Show Mnemonic'} Wallet Seed Phrase
+        </Button>
         <Divider />
+        <br />
+        <Checkbox onChange={onChangeWSP}>
+          I have securely backed up my wallet seed phrase.
+        </Checkbox>
       </Modal>
     </>
   );
