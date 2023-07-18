@@ -1,25 +1,25 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface XprivState {
+export interface XpubState {
   value: string;
 }
 
-const initialState: XprivState = { value: '' };
-const xprivSlice = createSlice({
-  name: 'xpriv',
+const initialState: XpubState = { value: '' };
+const xpubSlice = createSlice({
+  name: 'xpub',
   initialState,
   reducers: {
-    setXpriv: (state, action: PayloadAction<string>) => {
+    setXpub: (state, action: PayloadAction<string>) => {
       state.value = action.payload;
     },
   },
 });
 
-export const { setXpriv } = xprivSlice.actions;
+export const { setXpub } = xpubSlice.actions;
 
 export const store = configureStore({
   reducer: {
-    xpriv: xprivSlice.reducer,
+    xpub: xpubSlice.reducer,
   },
 });
 

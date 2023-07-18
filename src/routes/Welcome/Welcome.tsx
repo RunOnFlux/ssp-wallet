@@ -31,7 +31,7 @@ function App() {
         <Button type="primary" size="large">
           <Link to={`/create`}>Get Started!</Link>
         </Button>
-        <Button type="link" block size="small" className="">
+        <Button type="link" block size="small">
           <Link to={`/recover`}>Recover</Link>
         </Button>
       </Space>

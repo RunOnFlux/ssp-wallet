@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppDispatch } from '../../hooks';
 
-import { setXpriv } from '../../store';
+import { setXpub } from '../../store';
 
 import './Recover.css';
 
-import { generateMnemonic, getMasterXpriv } from '../../lib/wallet';
+import { generateMnemonic, getMasterXpub } from '../../lib/wallet';
 
 type Entropy = 128 | 256;
 
@@ -22,8 +22,8 @@ function App() {
   const GenerateMnemonicPhrase = (entValue: 128 | 256) => {
     const mnemonic = generateMnemonic(entValue);
     setMnemonic(mnemonic);
-    const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
-    dispatch(setXpriv(xpriv));
+    const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
+    dispatch(setXpub(xpub));
   };
 
   return (
