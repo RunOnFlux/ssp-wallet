@@ -27,7 +27,7 @@ function App() {
     setMnemonic(mnemonic);
   };
 
-  const xpriv = useAppSelector((state) => state.xpriv.value);
+  const xpub = useAppSelector((state) => state.xpub.value);
 
   return (
     <>
@@ -53,8 +53,8 @@ function App() {
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
       </div>
-      Master xpriv for Flux from Create:<br></br>
-      {xpriv}
+      Master xpub for Flux from Create:<br></br>
+      {xpub}
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
