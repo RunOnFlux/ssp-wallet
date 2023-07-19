@@ -61,7 +61,6 @@ function App() {
     if (WSPbackedUp && wspWasShown) {
       setIsModalOpen(false);
       storeMnemonic(menominc);
-      navigate('/login');
     } else {
       displayMessage(
         'info',
@@ -138,9 +137,23 @@ function App() {
         secureLocalStorage.setItem('walletSeed', blob);
         // generate master xpriv for flux
         const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
+        const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
         passworderEncrypt(password, xpriv)
           .then((blob) => {
             secureLocalStorage.setItem('xpriv-48-19167-0-0', blob);
+            passworderEncrypt(password, xpub)
+              .then((blob) => {
+                secureLocalStorage.setItem('xpub-48-19167-0-0', blob);
+                dispatch(setXpub(xpub));
+                navigate('/login');
+              })
+              .catch((error) => {
+                console.log(error);
+                displayMessage(
+                  'error',
+                  'Code C2: Something went wrong while creating wallet.',
+                );
+              });
           })
           .catch((error) => {
             console.log(error);
@@ -149,20 +162,6 @@ function App() {
               'Code C3: Something went wrong while creating wallet.',
             );
           });
-        const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
-        console.log(xpub);
-        passworderEncrypt(password, xpub)
-          .then((blob) => {
-            secureLocalStorage.setItem('xpub-48-19167-0-0', blob);
-          })
-          .catch((error) => {
-            console.log(error);
-            displayMessage(
-              'error',
-              'Code C2: Something went wrong while creating wallet.',
-            );
-          });
-        dispatch(setXpub(xpub));
       })
       .catch((error) => {
         displayMessage(
@@ -256,8 +255,6 @@ function App() {
           </Button>
         </Form.Item>
       </Form>
-      <br />
-      <br />
       <Button
         type="link"
         block
@@ -305,8 +302,10 @@ function App() {
         <Divider />
         <br />
         <Checkbox onChange={onChangeWSP}>
-          I have securely backed up my wallet seed phrase.
+          I have backed up my wallet seed phrase in a secure location.
         </Checkbox>
+        <br />
+        <br />
       </Modal>
     </>
   );

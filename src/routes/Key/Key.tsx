@@ -334,8 +334,10 @@ function App() {
         <Divider />
         <br />
         <Checkbox onChange={onChangeWSP}>
-          I have securely backed up my wallet seed phrase.
+          I have backed up my wallet seed phrase in a secure location.
         </Checkbox>
+        <br />
+        <br />
       </Modal>
     </>
   );

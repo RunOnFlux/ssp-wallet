@@ -71,7 +71,6 @@ function App() {
     if (WSPbackedUp && wspWasShown) {
       setIsModalOpen(false);
       storeMnemonic(menominc);
-      navigate('/login');
     } else {
       displayMessage(
         'info',
@@ -147,9 +146,23 @@ function App() {
             secureLocalStorage.setItem('walletSeed', blob);
             // generate master xpriv for flux
             const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
+            const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
             passworderEncrypt(password, xpriv)
               .then((blob) => {
                 secureLocalStorage.setItem('xpriv-48-19167-0-0', blob);
+                passworderEncrypt(password, xpub)
+                  .then((blob) => {
+                    secureLocalStorage.setItem('xpub-48-19167-0-0', blob);
+                    dispatch(setXpub(xpub));
+                    navigate('/login');
+                  })
+                  .catch((error) => {
+                    displayMessage(
+                      'error',
+                      'Code R3: Something went wrong while creating wallet.',
+                    );
+                    console.log(error);
+                  });
               })
               .catch((error) => {
                 displayMessage(
@@ -158,19 +171,6 @@ function App() {
                 );
                 console.log(error);
               });
-            const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
-            passworderEncrypt(password, xpub)
-              .then((blob) => {
-                secureLocalStorage.setItem('xpub-48-19167-0-0', blob);
-              })
-              .catch((error) => {
-                displayMessage(
-                  'error',
-                  'Code R3: Something went wrong while creating wallet.',
-                );
-                console.log(error);
-              });
-            dispatch(setXpub(xpub));
           })
           .catch((error) => {
             displayMessage(
@@ -325,8 +325,10 @@ function App() {
         <Divider />
         <br />
         <Checkbox onChange={onChangeWSP}>
-          I have securely backed up my wallet seed phrase.
+          I have backed up my wallet seed phrase in a secure location.
         </Checkbox>
+        <br />
+        <br />
       </Modal>
     </>
   );

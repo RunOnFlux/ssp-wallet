@@ -23,13 +23,16 @@ body {
   margin: 0;
   display: flex;
   place-items: center;
-  min-width: 370px;
+  /* maximum size is 800px */
+  width: 420px;
+  /* maximum size is 600 */
+  height: 600px;
   min-height: 100vh;
 }
 
 #root {
-  max-width: 500px;
   margin: auto;
+  padding: 1rem;
 }
 
 @media (prefers-color-scheme: light) {
@@ -37,4 +40,8 @@ body {
     color: #213547;
     background-color: #ffffff;
   }
+}
+
+.ant-divider-horizontal {
+  margin: 1rem 0;
 }
