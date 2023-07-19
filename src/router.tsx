@@ -4,6 +4,8 @@ import Welcome from './routes/Welcome/Welcome.tsx';
 import Create from './routes/Create/Create.tsx';
 import Restore from './routes/Restore/Restore.tsx';
 import Login from './routes/Login/Login.tsx';
+import Home from './routes/Home/Home.tsx';
+import Key from './routes/Key/Key.tsx';
 
 const router = createBrowserRouter([
   {
@@ -21,6 +23,14 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login />,
+  },
+  {
+    path: '/key',
+    element: <Key />,
+  },
+  {
+    path: '/home',
+    element: <Home />,
   },
   {
     path: '*',

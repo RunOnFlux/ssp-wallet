@@ -24,7 +24,7 @@ import { useAppDispatch } from '../../hooks';
 
 import { setXpub } from '../../store';
 
-import './Restore.css';
+import './Key.css';
 
 import { getMasterXpriv, getMasterXpub } from '../../lib/wallet';
 import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
@@ -93,6 +93,15 @@ function App() {
       content,
     });
   };
+
+  useEffect(() => {
+    // generate seed
+    const accPresent = secureLocalStorage.getItem('walletSeed');
+    if (accPresent) {
+      navigate('/login');
+      return;
+    }
+  });
 
   useEffect(() => {
     if (menominc) {

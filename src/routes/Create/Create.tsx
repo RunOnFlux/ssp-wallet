@@ -150,6 +150,7 @@ function App() {
             );
           });
         const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
+        console.log(xpub);
         passworderEncrypt(password, xpub)
           .then((blob) => {
             secureLocalStorage.setItem('xpub-48-19167-0-0', blob);
