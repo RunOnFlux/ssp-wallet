@@ -2,6 +2,7 @@ import { Navigate, createBrowserRouter } from 'react-router-dom';
 
 import Welcome from './routes/Welcome/Welcome.tsx';
 import Create from './routes/Create/Create.tsx';
+import Restore from './routes/Restore/Restore.tsx';
 import Login from './routes/Login/Login.tsx';
 
 const router = createBrowserRouter([
@@ -12,6 +13,10 @@ const router = createBrowserRouter([
   {
     path: '/create',
     element: <Create />,
+  },
+  {
+    path: '/restore',
+    element: <Restore />,
   },
   {
     path: '/login',

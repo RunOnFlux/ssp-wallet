@@ -24,21 +24,31 @@ import { useAppDispatch } from '../../hooks';
 
 import { setXpub } from '../../store';
 
-import './Create.css';
+import './Restore.css';
 
-import {
-  generateMnemonic,
-  getMasterXpriv,
-  getMasterXpub,
-} from '../../lib/wallet';
+import { getMasterXpriv, getMasterXpub } from '../../lib/wallet';
 import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
 
+import localForage from 'localforage';
+
 interface passwordForm {
+  mnemonic: string;
   password: string;
   confirm_password: string;
   tos: boolean;
 }
+
+const { TextArea } = Input;
+
+localForage.config({
+  name: 'SSPWallet',
+  driver: [localForage.INDEXEDDB, localForage.WEBSQL, localForage.LOCALSTORAGE],
+  version: 1.0,
+  size: 4980736, // Size of database, in bytes. WebSQL-only for now.
+  storeName: 'keyvaluepairs', // Should be alphanumeric, with underscores.
+  description: 'Database for SSP Wallet',
+});
 
 function App() {
   const navigate = useNavigate();
@@ -100,14 +110,21 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menominc]);
 
-  useEffect(() => {
-    if (password) {
-      generateMnemonicPhrase(256);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [password]);
-
   const onFinish = (values: passwordForm) => {
+    const seedPhrase = values.mnemonic.trim();
+    if (!seedPhrase) {
+      displayMessage('error', 'Please enter your seed phrase');
+      return;
+    }
+    const splittedSeed = seedPhrase.split(' ');
+    if (splittedSeed.length < 12) {
+      displayMessage(
+        'error',
+        'Wallet Seed Phrase is invalid. Seed Phrase consists of at least 12 words.',
+      );
+      return;
+    }
+
     if (values.password.length < 8) {
       displayMessage('error', 'Password must have at least 8 characters.');
       return;
@@ -121,52 +138,61 @@ function App() {
       return;
     }
     setPassword(values.password);
-  };
-
-  const generateMnemonicPhrase = (entValue: 128 | 256) => {
-    const generatedMnemonic = generateMnemonic(entValue);
-    setMnemonic(generatedMnemonic);
+    setMnemonic(seedPhrase);
   };
 
   const storeMnemonic = (mnemonic: string) => {
     if (!mnemonic) {
-      displayMessage('error', 'Wallet seed phrase is invalid.');
+      displayMessage('error', 'Your wallet seed phrase is invalid.');
       return;
     }
-    passworderEncrypt(password, mnemonic)
-      .then((blob) => {
-        secureLocalStorage.setItem('walletSeed', blob);
-        // generate master xpriv for flux
-        const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
-        passworderEncrypt(password, xpriv)
+    // first clean all data from localForge and secureLocalStorage
+    secureLocalStorage.clear();
+    localForage
+      .clear()
+      .then(() => {
+        passworderEncrypt(password, mnemonic)
           .then((blob) => {
-            secureLocalStorage.setItem('xpriv-48-19167-0-0', blob);
+            secureLocalStorage.setItem('walletSeed', blob);
+            // generate master xpriv for flux
+            const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
+            passworderEncrypt(password, xpriv)
+              .then((blob) => {
+                secureLocalStorage.setItem('xpriv-48-19167-0-0', blob);
+              })
+              .catch((error) => {
+                displayMessage(
+                  'error',
+                  'Code R4: Something went wrong while creating wallet.',
+                );
+                console.log(error);
+              });
+            const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
+            passworderEncrypt(password, xpub)
+              .then((blob) => {
+                secureLocalStorage.setItem('xpub-48-19167-0-0', blob);
+              })
+              .catch((error) => {
+                displayMessage(
+                  'error',
+                  'Code R3: Something went wrong while creating wallet.',
+                );
+                console.log(error);
+              });
+            dispatch(setXpub(xpub));
           })
           .catch((error) => {
-            console.log(error);
             displayMessage(
               'error',
-              'Code C3: Something went wrong while creating wallet.',
+              'Code R2: Something went wrong while creating wallet.',
             );
-          });
-        const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
-        passworderEncrypt(password, xpub)
-          .then((blob) => {
-            secureLocalStorage.setItem('xpub-48-19167-0-0', blob);
-          })
-          .catch((error) => {
             console.log(error);
-            displayMessage(
-              'error',
-              'Code C2: Something went wrong while creating wallet.',
-            );
           });
-        dispatch(setXpub(xpub));
       })
       .catch((error) => {
         displayMessage(
           'error',
-          'Code C1: Something went wrong while creating wallet.',
+          'Code R1: Something went wrong while creating wallet.',
         );
         console.log(error);
       });
@@ -190,14 +216,26 @@ function App() {
       </Button>
       <Divider />
       <Image width={80} preview={false} src="/ssp-logo.svg" />
-      <h2>Create Password</h2>
+      <h2>Import Wallet Seed Phrase</h2>
       <Form
-        name="pwdForm"
-        initialValues={{ tos: false }}
+        name="seedForm"
         onFinish={(values) => void onFinish(values as passwordForm)}
         autoComplete="off"
         layout="vertical"
       >
+        <Form.Item
+          label="Wallet Seed"
+          name="mnemonic"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your mnemonic wallet seed',
+            },
+          ]}
+        >
+          <TextArea rows={4} placeholder="Input Seed Phrase" />
+        </Form.Item>
+        <br />
         <Form.Item
           label="Set Password"
           name="password"
@@ -251,20 +289,12 @@ function App() {
 
         <Form.Item>
           <Button type="primary" size="large" htmlType="submit">
-            Create Wallet
+            Import Wallet
           </Button>
         </Form.Item>
       </Form>
       <br />
       <br />
-      <Button
-        type="link"
-        block
-        size="small"
-        onClick={() => navigate('/restore')}
-      >
-        Restore with Seed Phrase
-      </Button>
       <Modal
         title="Backup Wallet Seed"
         open={isModalOpen}
@@ -274,7 +304,7 @@ function App() {
         style={{ textAlign: 'center' }}
       >
         <p>
-          Wallet seed is used to generate all addresses. Anyone with the access
+          Wallet weed is used to generate all addresses. Anyone with the access
           to the wallet seed has partial control over the wallet.
         </p>
         <p>Keep your wallet seed backup safe and secure.</p>

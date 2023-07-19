@@ -30,7 +30,7 @@ function App() {
           <Link to={`/create`}>Get Started!</Link>
         </Button>
         <Button type="link" block size="small">
-          <Link to={`/recover`}>Recover</Link>
+          <Link to={`/restore`}>Restore with Seed</Link>
         </Button>
       </Space>
     </>
