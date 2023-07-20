@@ -22,7 +22,7 @@ import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch } from '../../hooks';
 
-import { setXpub } from '../../store';
+import { setXpubWallet } from '../../store';
 
 import './Key.css';
 
@@ -179,7 +179,7 @@ function App() {
                 );
                 console.log(error);
               });
-            dispatch(setXpub(xpub));
+            dispatch(setXpubWallet(xpub));
           })
           .catch((error) => {
             displayMessage(

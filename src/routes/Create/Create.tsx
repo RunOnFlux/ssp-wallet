@@ -22,7 +22,7 @@ import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch } from '../../hooks';
 
-import { setXpub } from '../../store';
+import { setXpubWallet } from '../../store';
 
 import './Create.css';
 
@@ -145,7 +145,7 @@ function App() {
         const pwBlob = await passworderEncrypt(fingerprint, password);
         secureLocalStorage.setItem('xpriv-48-19167-0-0', xprivBlob);
         secureLocalStorage.setItem('xpub-48-19167-0-0', xpubBlob);
-        dispatch(setXpub(xpub));
+        dispatch(setXpubWallet(xpub));
         if (chrome?.storage?.session) {
           await chrome.storage.session.set({
             pwBlob: pwBlob,

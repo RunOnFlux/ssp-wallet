@@ -1,25 +1,30 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface XpubState {
-  value: string;
+  xpubWallet: string;
+  xpubKey: string;
 }
 
-const initialState: XpubState = { value: '' };
+const initialState: XpubState = { xpubWallet: '', xpubKey: '' };
 const xpubSlice = createSlice({
-  name: 'xpub',
+  name: 'xpubFlux',
   initialState,
   reducers: {
-    setXpub: (state, action: PayloadAction<string>) => {
-      state.value = action.payload;
+    setXpubWallet: (state, action: PayloadAction<string>) => {
+      state.xpubWallet = action.payload;
+    },
+    setXpubKey: (state, action: PayloadAction<string>) => {
+      state.xpubKey = action.payload;
     },
   },
 });
 
-export const { setXpub } = xpubSlice.actions;
+export const { setXpubWallet } = xpubSlice.actions;
+export const { setXpubKey } = xpubSlice.actions;
 
 export const store = configureStore({
   reducer: {
-    xpub: xpubSlice.reducer,
+    xpubFlux: xpubSlice.reducer,
   },
 });
 
