@@ -14,7 +14,10 @@ import { useAppDispatch } from '../../hooks';
 import { setXpub } from '../../store';
 
 import './Login.css';
-import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
+import {
+  decrypt as passworderDecrypt,
+  encrypt as passworderEncrypt,
+} from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
 import { getFingerprint } from '../../lib/fingerprint';
 
@@ -40,6 +43,7 @@ function App() {
     // check if we have password
     void (async function () {
       if (chrome?.storage?.session) {
+        // if different browser we will need to be inputting password every time
         const resp: pwdDecrypt = await chrome.storage.session.get('pwBlob');
         const fingerprint: string = getFingerprint();
         const pwd = await passworderDecrypt(fingerprint, resp.pwBlob);
@@ -87,11 +91,19 @@ function App() {
     }
     if (typeof xpubEncrypted === 'string') {
       passworderDecrypt(password, xpubEncrypted)
-        .then((xpub) => {
+        .then(async (xpub) => {
           if (typeof xpub === 'string') {
             console.log(xpub);
             dispatch(setXpub(xpub));
-            // dispatch store of password to redux so we can encrypt/decrypt later
+            dispatch(setXpub(xpub));
+            const fingerprint: string = getFingerprint();
+            const pwBlob = await passworderEncrypt(fingerprint, password);
+            if (chrome?.storage?.session) {
+              // if different browser we will need to be inputting password every time
+              await chrome.storage.session.set({
+                pwBlob: pwBlob,
+              });
+            }
             // disaptch decryption of xpub of key 2-xpub-48-19167-0-0 if exists, if not, navigate to Key
             navigate('/home');
           } else {

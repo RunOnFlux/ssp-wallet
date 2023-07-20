@@ -154,7 +154,7 @@ function App() {
         secureLocalStorage.setItem('xpub-48-19167-0-0', xpubBlob);
         dispatch(setXpub(xpub));
         if (chrome?.storage?.session) {
-          await chrome.storage.session?.set({
+          await chrome.storage.session.set({
             pwBlob: pwBlob,
           });
         }
