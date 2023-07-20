@@ -20,7 +20,7 @@
 }
 
 body {
-  margin: 0;
+  margin: auto;
   display: flex;
   place-items: center;
   /* maximum size is 800px */

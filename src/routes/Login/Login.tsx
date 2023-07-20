@@ -16,10 +16,13 @@ import { setXpub } from '../../store';
 import './Login.css';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
+import { getFingerprint } from '../../lib/fingerprint';
 
 interface loginForm {
   password: string;
 }
+
+type pwdDecrypt = Record<string, string>;
 
 function App() {
   const navigate = useNavigate();
@@ -34,6 +37,19 @@ function App() {
       navigate('/welcome');
       return;
     }
+    // check if we have password
+    void (async function () {
+      if (chrome?.storage?.session) {
+        const resp: pwdDecrypt = await chrome.storage.session.get('pwBlob');
+        const fingerprint: string = getFingerprint();
+        const pwd = await passworderDecrypt(fingerprint, resp.pwBlob);
+        console.log(resp);
+        console.log(pwd);
+        if (typeof pwd === 'string') {
+          setPassword(pwd);
+        }
+      }
+    })();
   });
 
   const [messageApi, contextHolder] = message.useMessage();
@@ -102,7 +118,7 @@ function App() {
       {contextHolder}
       <Image width={80} preview={false} src="/ssp-logo.svg" />
       <h2>Welcome back!</h2>
-      <h3>Unlock your decentralized Cloud</h3>
+      <h3>To your decentralized Cloud</h3>
       <br />
       <br />
       <Form

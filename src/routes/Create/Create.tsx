@@ -33,7 +33,7 @@ import {
 } from '../../lib/wallet';
 import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
-
+import { getFingerprint } from '../../lib/fingerprint';
 interface passwordForm {
   password: string;
   confirm_password: string;
@@ -133,35 +133,25 @@ function App() {
       return;
     }
     passworderEncrypt(password, mnemonic)
-      .then((blob) => {
+      .then(async (blob) => {
         secureLocalStorage.setItem('walletSeed', blob);
         // generate master xpriv for flux
         const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
         const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
-        passworderEncrypt(password, xpriv)
-          .then((blob) => {
-            secureLocalStorage.setItem('xpriv-48-19167-0-0', blob);
-            passworderEncrypt(password, xpub)
-              .then((blob) => {
-                secureLocalStorage.setItem('xpub-48-19167-0-0', blob);
-                dispatch(setXpub(xpub));
-                navigate('/login');
-              })
-              .catch((error) => {
-                console.log(error);
-                displayMessage(
-                  'error',
-                  'Code C2: Something went wrong while creating wallet.',
-                );
-              });
-          })
-          .catch((error) => {
-            console.log(error);
-            displayMessage(
-              'error',
-              'Code C3: Something went wrong while creating wallet.',
-            );
+        const xprivBlob = await passworderEncrypt(password, xpriv);
+        const xpubBlob = await passworderEncrypt(password, xpub);
+        const fingerprint: string = getFingerprint();
+        console.log(fingerprint);
+        const pwBlob = await passworderEncrypt(fingerprint, password);
+        secureLocalStorage.setItem('xpriv-48-19167-0-0', xprivBlob);
+        secureLocalStorage.setItem('xpub-48-19167-0-0', xpubBlob);
+        dispatch(setXpub(xpub));
+        if (chrome?.storage?.session) {
+          await chrome.storage.session?.set({
+            pwBlob: pwBlob,
           });
+        }
+        navigate('/login');
       })
       .catch((error) => {
         displayMessage(

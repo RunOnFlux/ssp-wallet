@@ -10,5 +10,13 @@
     "default_popup": "index.html",
     "default_title": "SSP Wallet"
   },
-  "icons": { "256": "icon-256x256.png" }
+  "icons": { "256": "icon-256x256.png" },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "clipboardWrite",
+    "activeTab",
+    "webRequest",
+    "notifications"
+  ]
 }

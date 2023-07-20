@@ -29,7 +29,7 @@ declare module 'utxo-lib' {
   }
   type networks = Record<string, object>;
   let address: {
-    fromOutputScript: (scriptPubKey: Buffer, network: object) => string;
+    fromOutputScript: (scriptPubKey: Uint8Array, network: object) => string;
   };
   let script: {
     multisig: {
