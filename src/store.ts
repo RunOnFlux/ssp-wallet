@@ -24,7 +24,7 @@ export const { setXpubKey } = xpubSlice.actions;
 
 export const store = configureStore({
   reducer: {
-    xpubFlux: xpubSlice.reducer,
+    xpubs: xpubSlice.reducer,
   },
 });
 
