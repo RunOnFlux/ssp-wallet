@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks';
-import { Spin, Row, Col, Modal, QRCode } from 'antd';
+import { ExclamationCircleFilled } from '@ant-design/icons';
+import { useAppDispatch } from '../../hooks';
+import { setXpubInitialState } from '../../store';
+import { Spin, Row, Col, Modal, QRCode, Button, Input } from 'antd';
+const { TextArea } = Input;
+const { confirm } = Modal;
 import './Home.css';
 
 function App() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [isModalKeyOpen, setIsModalKeyOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [keyInput, setKeyInput] = useState('');
+  const [keyInputVisible, setKeyInputVisible] = useState(false);
   const { xpubKey, xpubWallet } = useAppSelector((state) => state.xpubs);
   console.log(xpubKey);
   console.log(xpubWallet);
@@ -31,11 +39,44 @@ function App() {
   const handleOkModalKey = () => {
     // display dialog awaiting synchronisation. This is automatic stuff
     console.log('here');
+    // validate xpub key is correct
   };
 
   const handleCancelModalKey = () => {
-    console.log('cancel');
     // display confirmation dialog and tell that we are 2fa. If no Key, log out.
+    showConfirmCancelModalKey();
+  };
+
+  const logout = async () => {
+    try {
+      setKeyInputVisible(false);
+      setKeyInput('');
+      if (chrome?.storage?.session) {
+        // if different browser we will need to be inputting password every time
+        await chrome.storage.session.clear();
+      }
+      dispatch(setXpubInitialState());
+      navigate('/login');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const showConfirmCancelModalKey = () => {
+    confirm({
+      title: 'Cancel SSP Key Sync?',
+      icon: <ExclamationCircleFilled />,
+      okText: 'Cancel SSP Sync',
+      cancelText: 'Back to SSP Key Sync',
+      content:
+        'SSP Wallet cannot be used without SSP Key. This will log you out of SSP Wallet.',
+      onOk() {
+        logout().catch((e) => console.log(e));
+      },
+      onCancel() {
+        console.log('Cancel, just hidden');
+      },
+    });
   };
 
   return (
@@ -59,32 +100,46 @@ function App() {
         open={isModalKeyOpen}
         onOk={handleOkModalKey}
         onCancel={handleCancelModalKey}
-        okText="Alrighty"
+        okText="Sync Key"
         style={{ textAlign: 'center' }}
       >
         <p>
           SSP Wallet is a Dual Signature Wallet. You will need to download SSP
           Key on your mobile device to access your wallet.
-          <br />
-          SSP Key acts as a second factor authentication to your wallet, nobody
-          can access your wallet without your SSP Key.
-          <br />
-          SSP Key is a fully self-custody second signature. You will need to
-          backup SSP Key Seed Phrase alongside your SSP Wallet Seed Phrase too!
-          <br />
-          Loss of your SSP Key Seed Phrase will result in loss of access to your
-          wallet.
-          <br />
-          Scan following QR code to sync your SSP Wallet with your SSP Key.
         </p>
-        {xpubWallet}
-
+        <b>
+          Scan the following QR code to sync your SSP Wallet with your SSP Key.
+        </b>
+        <br />
+        <br />
         <QRCode
           errorLevel="H"
           value={xpubWallet}
           icon="/ssp-logo.svg"
           size={256}
+          style={{ margin: '0 auto' }}
         />
+        <br />
+        {!keyInputVisible && (
+          <Button
+            type="link"
+            block
+            size="small"
+            onClick={() => setKeyInputVisible(true)}
+          >
+            Issues syncing? Manual Input
+          </Button>
+        )}
+        {keyInputVisible && (
+          <>
+            <TextArea
+              value={keyInput}
+              onChange={(e) => setKeyInput(e.target.value)}
+              placeholder="Input Extended Public Key xpub-48-19167-0-0 of SSP Key here"
+              autoSize
+            />
+          </>
+        )}
         <br />
         <br />
       </Modal>

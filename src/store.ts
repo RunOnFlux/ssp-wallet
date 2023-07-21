@@ -16,11 +16,16 @@ const xpubSlice = createSlice({
     setXpubKey: (state, action: PayloadAction<string>) => {
       state.xpubKey = action.payload;
     },
+    setXpubInitialState: (state) => {
+      state.xpubWallet = '';
+      state.xpubKey = '';
+    },
   },
 });
 
 export const { setXpubWallet } = xpubSlice.actions;
 export const { setXpubKey } = xpubSlice.actions;
+export const { setXpubInitialState } = xpubSlice.actions;
 
 export const store = configureStore({
   reducer: {
