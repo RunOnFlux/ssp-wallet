@@ -11,7 +11,7 @@ import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch } from '../../hooks';
 
-import { setXpubWallet, setXpubKey } from '../../store';
+import { setXpubWallet, setXpubKey, setPasswordBlob } from '../../store';
 
 import './Login.css';
 import {
@@ -48,8 +48,6 @@ function App() {
         const resp: pwdDecrypt = await chrome.storage.session.get('pwBlob');
         const fingerprint: string = getFingerprint();
         const pwd = await passworderDecrypt(fingerprint, resp.pwBlob);
-        console.log(resp);
-        console.log(pwd);
         if (typeof pwd === 'string') {
           setIsLoading(true);
           setPassword(pwd);
@@ -115,6 +113,7 @@ function App() {
                 pwBlob: pwBlob,
               });
             }
+            dispatch(setPasswordBlob(pwBlob));
             // disaptch decryption of xpub of key 2-xpub-48-19167-0-0 if exists, if not, navigate to Key
             navigate('/home');
           } else {

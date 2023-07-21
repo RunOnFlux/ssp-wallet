@@ -3,13 +3,21 @@ import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface XpubState {
   xpubWallet: string;
   xpubKey: string;
+  passwordBlob: string;
 }
 
-const initialState: XpubState = { xpubWallet: '', xpubKey: '' };
+const initialState: XpubState = {
+  xpubWallet: '',
+  xpubKey: '',
+  passwordBlob: '',
+};
 const xpubSlice = createSlice({
   name: 'xpubFlux',
   initialState,
   reducers: {
+    setPasswordBlob: (state, action: PayloadAction<string>) => {
+      state.passwordBlob = action.payload;
+    },
     setXpubWallet: (state, action: PayloadAction<string>) => {
       state.xpubWallet = action.payload;
     },
@@ -19,13 +27,17 @@ const xpubSlice = createSlice({
     setXpubInitialState: (state) => {
       state.xpubWallet = '';
       state.xpubKey = '';
+      state.passwordBlob = '';
     },
   },
 });
 
-export const { setXpubWallet } = xpubSlice.actions;
-export const { setXpubKey } = xpubSlice.actions;
-export const { setXpubInitialState } = xpubSlice.actions;
+export const {
+  setPasswordBlob,
+  setXpubWallet,
+  setXpubKey,
+  setXpubInitialState,
+} = xpubSlice.actions;
 
 export const store = configureStore({
   reducer: {

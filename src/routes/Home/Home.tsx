@@ -3,11 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../hooks';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import { useAppDispatch } from '../../hooks';
-import { setXpubInitialState } from '../../store';
-import { Spin, Row, Col, Modal, QRCode, Button, Input } from 'antd';
+import { setXpubInitialState, setXpubKey } from '../../store';
+import { Spin, Row, Col, Modal, QRCode, Button, Input, message } from 'antd';
+import { NoticeType } from 'antd/es/message/interface';
+import {
+  decrypt as passworderDecrypt,
+  encrypt as passworderEncrypt,
+} from '@metamask/browser-passworder';
+import { getFingerprint } from '../../lib/fingerprint';
 const { TextArea } = Input;
 const { confirm } = Modal;
 import './Home.css';
+import secureLocalStorage from 'react-secure-storage';
+
+const xpubRegex = /^(xpub[1-9A-HJ-NP-Za-km-z]{79,108})$/; // /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/; later
 
 function App() {
   const navigate = useNavigate();
@@ -16,9 +25,16 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [keyInput, setKeyInput] = useState('');
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const { xpubKey, xpubWallet } = useAppSelector((state) => state.xpubs);
-  console.log(xpubKey);
-  console.log(xpubWallet);
+  const { xpubKey, xpubWallet, passwordBlob } = useAppSelector(
+    (state) => state.xpubs,
+  );
+  const [messageApi, contextHolder] = message.useMessage();
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!xpubWallet) {
@@ -39,7 +55,49 @@ function App() {
   const handleOkModalKey = () => {
     // display dialog awaiting synchronisation. This is automatic stuff
     console.log('here');
+    if (!keyInput) {
+      displayMessage(
+        'warning',
+        'Awaiting SSP Key synhronisation or manual input',
+      );
+      return;
+    }
     // validate xpub key is correct
+    if (xpubRegex.test(keyInput)) {
+      // alright we are in business
+      const xpub2 = keyInput;
+      dispatch(setXpubKey(xpub2));
+      const fingerprint: string = getFingerprint();
+
+      passworderDecrypt(fingerprint, passwordBlob)
+        .then(async (password) => {
+          console.log(password);
+          // encrypt xpub of key it and store it to secure storage
+          if (typeof password === 'string') {
+            const encryptedXpub2 = await passworderEncrypt(password, xpub2);
+            secureLocalStorage.setItem('2-xpub-48-19167-0-0', encryptedXpub2);
+            // now we have both xpubWallet and xpubKey
+            // open our wallet
+            setIsModalKeyOpen(false);
+            setKeyInputVisible(false);
+            setKeyInput('');
+          } else {
+            displayMessage(
+              'error',
+              'Code H2: Something went wrong while decrypting password.',
+            );
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+          displayMessage(
+            'error',
+            'Code H1: Something went wrong while decrypting password.',
+          );
+        });
+    } else {
+      displayMessage('error', 'Invalid SSP Key.');
+    }
   };
 
   const handleCancelModalKey = () => {
@@ -81,6 +139,7 @@ function App() {
 
   return (
     <>
+      {contextHolder}
       {isLoading && <Spin size="large" />}
       {!isLoading && (
         <>

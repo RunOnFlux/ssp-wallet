@@ -22,7 +22,7 @@ import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch } from '../../hooks';
 
-import { setXpubWallet } from '../../store';
+import { setXpubWallet, setPasswordBlob } from '../../store';
 
 import './Create.css';
 
@@ -151,6 +151,7 @@ function App() {
             pwBlob: pwBlob,
           });
         }
+        dispatch(setPasswordBlob(pwBlob));
         navigate('/login');
       })
       .catch((error) => {
