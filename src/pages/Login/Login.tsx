@@ -44,13 +44,17 @@ function App() {
     // check if we have password
     void (async function () {
       if (chrome?.storage?.session) {
-        // if different browser we will need to be inputting password every time
-        const resp: pwdDecrypt = await chrome.storage.session.get('pwBlob');
-        const fingerprint: string = getFingerprint();
-        const pwd = await passworderDecrypt(fingerprint, resp.pwBlob);
-        if (typeof pwd === 'string') {
-          setIsLoading(true);
-          setPassword(pwd);
+        try {
+          // if different browser we will need to be inputting password every time
+          const resp: pwdDecrypt = await chrome.storage.session.get('pwBlob');
+          const fingerprint: string = getFingerprint();
+          const pwd = await passworderDecrypt(fingerprint, resp.pwBlob);
+          if (typeof pwd === 'string') {
+            setIsLoading(true);
+            setPassword(pwd);
+          }
+        } catch (error) {
+          console.log(error);
         }
       }
     })();
