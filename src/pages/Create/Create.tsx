@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Input,
@@ -41,6 +41,7 @@ interface passwordForm {
 }
 
 function App() {
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // use secure local storage for storing mnemonic 'walletSeed', 'xpriv-48-slip-0-0', 'xpub-48-slip-0-0' and '2-xpub-48-slip-0-0' (2- as for second key) of together with encryption of browser-passworder
@@ -84,6 +85,8 @@ function App() {
   };
 
   useEffect(() => {
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
     // generate seed
     const accPresent = secureLocalStorage.getItem('walletSeed');
     if (accPresent) {

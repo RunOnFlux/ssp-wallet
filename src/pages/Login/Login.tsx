@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Image, Button, Form, message, Spin } from 'antd';
 
@@ -28,12 +28,15 @@ interface loginForm {
 type pwdDecrypt = Record<string, string>;
 
 function App() {
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
     // check if existing user
     const accPresent = secureLocalStorage.getItem('walletSeed');
     // no wallet seed present

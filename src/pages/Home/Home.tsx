@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setXpubInitialState } from '../../store';
@@ -7,20 +7,27 @@ import './Home.css';
 import Key from '../../components/Key/Key';
 
 function App() {
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
   const { xpubKey, xpubWallet } = useAppSelector((state) => state.xpubs);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // if not, show modal. onModal close check 2-xpub again
+    // if user exists, navigate to login
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
     if (!xpubWallet) {
       // we do not have it in redux, navigate to login
       navigate('/login');
       return;
     }
-    // if not, show modal. onModal close check 2-xpub again
-    // if user exists, navigate to login
-    setIsLoading(false);
+    if (xpubKey) {
+      console.log('Key already synchronised.');
+      setIsLoading(false);
+    }
   });
 
   const keySynchronised = (status: boolean) => {
@@ -39,6 +46,7 @@ function App() {
       })();
     } else {
       console.log('Key synchronised.');
+      setIsLoading(false);
     }
   };
 
