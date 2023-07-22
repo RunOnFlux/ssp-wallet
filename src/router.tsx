@@ -1,10 +1,10 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom';
 
-import Welcome from './routes/Welcome/Welcome.tsx';
-import Create from './routes/Create/Create.tsx';
-import Restore from './routes/Restore/Restore.tsx';
-import Login from './routes/Login/Login.tsx';
-import Home from './routes/Home/Home.tsx';
+import Welcome from './pages/Welcome/Welcome.tsx';
+import Create from './pages/Create/Create.tsx';
+import Restore from './pages/Restore/Restore.tsx';
+import Login from './pages/Login/Login.tsx';
+import Home from './pages/Home/Home.tsx';
 
 const router = createBrowserRouter([
   {
