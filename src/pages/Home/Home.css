@@ -1,0 +1,9 @@
+.navbar {
+  width: 420px;
+  align-items: center;
+  vertical-align: center;
+  margin: auto;
+  place-items: center;
+  justify-content: center;
+  line-height: 30px;
+}
