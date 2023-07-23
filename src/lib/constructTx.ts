@@ -68,7 +68,7 @@ export function signTransaction(
     // eslint-disable-next-line no-unused-vars
     for (let i = 0; i < txb.inputs.length; i += 1) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const hashHex = (txb.tx.ins[i].hash as Buffer).toString('hex');
+      const hashHex = txb.tx.ins[i].hash.toString('hex');
       const hash = getValueHexBuffer(hashHex);
       const { index } = txb.tx.ins[i];
       const utxoFound = utxos.find((x) => x.txid === hash && x.vout === index);
@@ -80,7 +80,7 @@ export function signTransaction(
         keyPair,
         Buffer.from(redeemScript, 'hex'),
         hashType,
-        utxoFound.satoshis,
+        new BigNumber(utxoFound.satoshis).toNumber(),
       );
     }
     const tx = txb.buildIncomplete();

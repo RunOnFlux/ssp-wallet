@@ -19,7 +19,7 @@ declare module 'utxo-lib' {
       keyPair: object,
       redeemScript: Buffer,
       hashType: number,
-      value: string,
+      value: number,
     ) => void;
     buildIncomplete(): builtTx;
     inputs: input[];

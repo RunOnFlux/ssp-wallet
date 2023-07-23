@@ -16,7 +16,12 @@ function Navbar() {
     <div className="navbar">
       <Row justify="space-evenly">
         <Col span={4}>
-          <Image height={30} preview={false} src="/ssp-logo.svg" />
+          <Image
+            height={30}
+            preview={false}
+            src="/ssp-logo.svg"
+            onClick={() => navigate('/home')}
+          />
         </Col>
         <Col span={16}>Wallet 1</Col>
         <Col span={4}>
