@@ -12,14 +12,26 @@ import {
   setBalance,
   setUnconfirmedBalance,
 } from '../../store';
-import { Spin, Row, Col, Image, Divider, Typography, message } from 'antd';
+import {
+  Spin,
+  Row,
+  Col,
+  Image,
+  Divider,
+  Typography,
+  message,
+  Table,
+  Space,
+} from 'antd';
 const { Paragraph, Text } = Typography;
 import './Home.css';
 import { LockOutlined, SettingOutlined } from '@ant-design/icons';
 import Key from '../../components/Key/Key';
+import Navigation from '../../components/Navigation/Navigation';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { fetchAddressBalance } from '../../lib/balances.ts';
+import { transaction } from '../../types';
 
 function Navbar() {
   const navigate = useNavigate();
@@ -45,8 +57,32 @@ function Navbar() {
   );
 }
 
-function Navigation() {
-  return <>Send button only?</>;
+function TransactionsTable(props: { transactions: transaction[] }) {
+  const tableColumns = [
+    {
+      title: 'Time',
+      dataIndex: 'timestamp',
+      key: 'timestamp',
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
+    },
+  ];
+  return (
+    <>
+      <Table
+        pagination={false}
+        showHeader={false}
+        rowKey="txid"
+        bordered={false}
+        loading={false}
+        columns={tableColumns}
+        dataSource={props.transactions}
+      />
+    </>
+  );
 }
 
 function Transactions() {
@@ -72,8 +108,7 @@ function Transactions() {
   };
   return (
     <>
-      {!transactions.length && <Paragraph>No transactions yet.</Paragraph>}
-      {!!transactions.length && 'Ups Not implemented yet'}
+      <TransactionsTable transactions={transactions} />
     </>
   );
 }
@@ -110,41 +145,21 @@ function Balance() {
   const balanceUSD = totalBalance.multipliedBy(new BigNumber(rate));
   return (
     <>
-      {totalBalance.toFixed(8)} FLUX
-      <br />
-      {balanceUSD.toFixed(2)} USD
+      <h3>{totalBalance.toFixed(8) || '0.00'} FLUX</h3>
+      <h4>${balanceUSD.toFixed(2) || '0.00'} USD</h4>
     </>
   );
 }
 
 function AddressContainer() {
-  const { address, redeemScript } = useAppSelector((state) => state.flux);
-  const EllipsisMiddle: React.FC<{ suffixCount: number; children: string }> = ({
-    suffixCount,
-    children,
-  }) => {
-    const start = children.slice(0, children.length - suffixCount).trim();
-    const suffix = children.slice(-suffixCount).trim();
-    return (
-      <Text style={{ maxWidth: '140px' }} ellipsis={{ suffix }}>
-        {start}
-      </Text>
-    );
-  };
+  const { address } = useAppSelector((state) => state.flux);
 
   return (
     <>
-      <Paragraph
-        copyable={{ text: address }}
-        ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}
-      >
-        <EllipsisMiddle suffixCount={6}>{address}</EllipsisMiddle>
-      </Paragraph>
-      <Paragraph
-        copyable={{ text: redeemScript }}
-        ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}
-      >
-        <EllipsisMiddle suffixCount={6}>{redeemScript}</EllipsisMiddle>
+      <Paragraph copyable={{ text: address }} className="copyableAddress">
+        <Text>
+          {address.substring(0, 7)}...{address.substring(address.length - 6)}
+        </Text>
       </Paragraph>
     </>
   );
@@ -230,10 +245,12 @@ function App() {
         <>
           <Navbar />
           <Divider />
-          <Balance />
-          <AddressContainer />
-          <Navigation />
-          <Transactions />
+          <Space direction="vertical">
+            <AddressContainer />
+            <Balance />
+            <Navigation />
+            <Transactions />
+          </Space>
         </>
       )}
       <Key derivationPath="xpub-48-19167-0-0" synchronised={keySynchronised} />

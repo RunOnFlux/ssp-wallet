@@ -7,3 +7,10 @@
   justify-content: center;
   line-height: 30px;
 }
+
+.copyableAddress {
+  background-color: #f5f5f5;
+  margin: auto;
+  width: 180px;
+  border-radius: 10px;
+}
