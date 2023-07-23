@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BigNumber from 'bignumber.js';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import {
   setFluxInitialState,
@@ -7,7 +8,8 @@ import {
   setAddress,
   setRedeemScript,
 } from '../../store';
-import { Spin, Row, Col, Image, Divider } from 'antd';
+import { Spin, Row, Col, Image, Divider, Typography } from 'antd';
+const { Paragraph, Text } = Typography;
 import './Home.css';
 import { LockOutlined, SettingOutlined } from '@ant-design/icons';
 import Key from '../../components/Key/Key';
@@ -37,14 +39,75 @@ function Navbar() {
   );
 }
 
+function Navigation() {
+  return <>Send button only?</>;
+}
+
+function Transactions() {
+  const { transactions } = useAppSelector((state) => state.flux);
+  return (
+    <>
+      {!transactions.length && <Paragraph>No transactions yet.</Paragraph>}
+      {!!transactions.length && 'Ups Not implemented yet'}
+    </>
+  );
+}
+
+function Balance() {
+  const { balance, unconfirmedBalance } = useAppSelector((state) => state.flux);
+  const totalBalance = new BigNumber(balance).plus(
+    new BigNumber(unconfirmedBalance),
+  );
+  const rate = '0.42';
+  const balanceUSD = totalBalance.multipliedBy(new BigNumber(rate));
+  return (
+    <>
+      {totalBalance.toFixed(8)} FLUX
+      <br />
+      {balanceUSD.toFixed(2)} USD
+    </>
+  );
+}
+
+function AddressContainer() {
+  const { address, redeemScript } = useAppSelector((state) => state.flux);
+  const EllipsisMiddle: React.FC<{ suffixCount: number; children: string }> = ({
+    suffixCount,
+    children,
+  }) => {
+    const start = children.slice(0, children.length - suffixCount).trim();
+    const suffix = children.slice(-suffixCount).trim();
+    return (
+      <Text style={{ maxWidth: '140px' }} ellipsis={{ suffix }}>
+        {start}
+      </Text>
+    );
+  };
+
+  return (
+    <>
+      <Paragraph
+        copyable={{ text: address }}
+        ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}
+      >
+        <EllipsisMiddle suffixCount={6}>{address}</EllipsisMiddle>
+      </Paragraph>
+      <Paragraph
+        copyable={{ text: redeemScript }}
+        ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}
+      >
+        <EllipsisMiddle suffixCount={6}>{redeemScript}</EllipsisMiddle>
+      </Paragraph>
+    </>
+  );
+}
+
 function App() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
-  const { xpubKey, xpubWallet, address, redeemScript } = useAppSelector(
-    (state) => state.flux,
-  );
+  const { xpubKey, xpubWallet } = useAppSelector((state) => state.flux);
 
   const generateAddress = () => {
     const addrInfo = generateMultisigAddress(xpubWallet, xpubKey, 0, 0, 'flux');
@@ -92,7 +155,6 @@ function App() {
       setIsLoading(false);
     }
   };
-
   return (
     <>
       {isLoading && <Spin size="large" />}
@@ -100,10 +162,10 @@ function App() {
         <>
           <Navbar />
           <Divider />
-          {address}
-          {redeemScript}
-          {/* header - logo, Wallet 1, settings, lock address 0.0 FLUX usd value
-          actions - send, receive transactions */}
+          <Balance />
+          <AddressContainer />
+          <Navigation />
+          <Transactions />
         </>
       )}
       <Key derivationPath="xpub-48-19167-0-0" synchronised={keySynchronised} />
