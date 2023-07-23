@@ -60,7 +60,7 @@ const fluxSlice = createSlice({
     setUnconfirmedBalance: (state, action: PayloadAction<string>) => {
       state.unconfirmedBalance = action.payload;
     },
-    setTransaction: (state, action: PayloadAction<transaction[]>) => {
+    setTransactions: (state, action: PayloadAction<transaction[]>) => {
       state.transactions = action.payload;
     },
     setFluxInitialState: (state) => {
@@ -81,6 +81,9 @@ export const {
   setXpubWallet,
   setXpubKey,
   setFluxInitialState,
+  setBalance,
+  setUnconfirmedBalance,
+  setTransactions,
 } = fluxSlice.actions;
 
 export const { setPasswordBlob, setPasswordBlobInitialState } =

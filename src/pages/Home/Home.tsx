@@ -1,19 +1,25 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BigNumber from 'bignumber.js';
+import { NoticeType } from 'antd/es/message/interface';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import {
   setFluxInitialState,
   setPasswordBlobInitialState,
   setAddress,
   setRedeemScript,
+  setTransactions,
+  setBalance,
+  setUnconfirmedBalance,
 } from '../../store';
-import { Spin, Row, Col, Image, Divider, Typography } from 'antd';
+import { Spin, Row, Col, Image, Divider, Typography, message } from 'antd';
 const { Paragraph, Text } = Typography;
 import './Home.css';
 import { LockOutlined, SettingOutlined } from '@ant-design/icons';
 import Key from '../../components/Key/Key';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
+import { fetchAddressTransactions } from '../../lib/transactions.ts';
+import { fetchAddressBalance } from '../../lib/balances.ts';
 
 function Navbar() {
   const navigate = useNavigate();
@@ -44,7 +50,26 @@ function Navigation() {
 }
 
 function Transactions() {
-  const { transactions } = useAppSelector((state) => state.flux);
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
+  const dispatch = useAppDispatch();
+  const { transactions, address } = useAppSelector((state) => state.flux);
+
+  useEffect(() => {
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
+    fetchTransactions();
+  });
+
+  const fetchTransactions = () => {
+    fetchAddressTransactions(address, 'flux', 0, 10)
+      .then((txs) => {
+        dispatch(setTransactions(txs));
+        console.log(txs);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
   return (
     <>
       {!transactions.length && <Paragraph>No transactions yet.</Paragraph>}
@@ -54,10 +79,33 @@ function Transactions() {
 }
 
 function Balance() {
-  const { balance, unconfirmedBalance } = useAppSelector((state) => state.flux);
-  const totalBalance = new BigNumber(balance).plus(
-    new BigNumber(unconfirmedBalance),
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
+  const dispatch = useAppDispatch();
+  const { balance, unconfirmedBalance, address } = useAppSelector(
+    (state) => state.flux,
   );
+
+  useEffect(() => {
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
+    fetchBalance();
+  });
+
+  const fetchBalance = () => {
+    fetchAddressBalance(address, 'flux')
+      .then((balance) => {
+        dispatch(setBalance(balance.confirmed));
+        dispatch(setUnconfirmedBalance(balance.unconfirmed));
+        console.log(balance);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const totalBalance = new BigNumber(balance)
+    .plus(new BigNumber(unconfirmedBalance))
+    .dividedBy(1e8);
   const rate = '0.42';
   const balanceUSD = totalBalance.multipliedBy(new BigNumber(rate));
   return (
@@ -108,12 +156,31 @@ function App() {
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
   const { xpubKey, xpubWallet } = useAppSelector((state) => state.flux);
+  const [messageApi, contextHolder] = message.useMessage();
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
 
   const generateAddress = () => {
-    const addrInfo = generateMultisigAddress(xpubWallet, xpubKey, 0, 0, 'flux');
-    console.log(addrInfo.address, addrInfo.redeemScript);
-    dispatch(setAddress(addrInfo.address));
-    dispatch(setRedeemScript(addrInfo.redeemScript));
+    try {
+      const addrInfo = generateMultisigAddress(
+        xpubWallet,
+        xpubKey,
+        0,
+        0,
+        'flux',
+      );
+      console.log(addrInfo.address, addrInfo.redeemScript);
+      dispatch(setAddress(addrInfo.address));
+      dispatch(setRedeemScript(addrInfo.redeemScript));
+    } catch (error) {
+      // if error, key is invalid! we should never end up here as it is validated before
+      displayMessage('error', 'PANIC: Invalid SSP Key.');
+      console.log(error);
+    }
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,6 +224,7 @@ function App() {
   };
   return (
     <>
+      {contextHolder}
       {isLoading && <Spin size="large" />}
       {!isLoading && (
         <>

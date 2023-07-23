@@ -4,7 +4,7 @@ import { balanceInsight, balance } from '../types';
 
 import { blockchains } from '@storage/blockchains';
 
-export async function fetchBalance(
+export async function fetchAddressBalance(
   address: string,
   chain: string,
 ): Promise<balance> {

@@ -29,8 +29,8 @@ function processTransaction(
 
   let message = '';
 
-  const amountSentInItx = new BigNumber(0);
-  const amountReceivedInItx = new BigNumber(0);
+  let amountSentInItx = new BigNumber(0);
+  let amountReceivedInItx = new BigNumber(0);
   while (numberofvins > 0) {
     numberofvins -= 1;
     const jsonvin = vins[numberofvins];
@@ -39,7 +39,7 @@ function processTransaction(
       const satsSent = new BigNumber(jsonvin.value).multipliedBy(
         new BigNumber(1e8),
       );
-      amountSentInItx.plus(satsSent);
+      amountSentInItx = amountSentInItx.plus(satsSent);
     }
   }
 
@@ -52,7 +52,7 @@ function processTransaction(
         const amountReceived = new BigNumber(jsonvout.value).multipliedBy(
           new BigNumber(1e8),
         );
-        amountReceivedInItx.plus(amountReceived);
+        amountReceivedInItx = amountReceivedInItx.plus(amountReceived);
       }
     }
     // check message

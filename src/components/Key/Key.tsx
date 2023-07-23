@@ -14,6 +14,7 @@ const { TextArea } = Input;
 const { confirm } = Modal;
 import './Key.css';
 import secureLocalStorage from 'react-secure-storage';
+import { generateMultisigAddress } from '../../lib/wallet.ts';
 
 const xpubRegex = /^(xpub[1-9A-HJ-NP-Za-km-z]{79,108})$/; // /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/; later
 
@@ -57,6 +58,15 @@ function Key(props: {
     // validate xpub key is correct
     if (xpubRegex.test(keyInput)) {
       // alright we are in business
+      let keyValid = true;
+      // try generating an address from it
+      try {
+        generateMultisigAddress(xpubWallet, keyInput, 0, 0, 'flux');
+      } catch (error) {
+        keyValid = false;
+        displayMessage('error', 'Invalid SSP Key.');
+      }
+      if (!keyValid) return;
       const xpub2 = keyInput;
       dispatch(setXpubKey(xpub2));
       const fingerprint: string = getFingerprint();
