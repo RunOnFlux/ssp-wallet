@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { setFluxInitialState, setPasswordBlobInitialState } from '../../store';
-import { Spin, Row, Col, Image } from 'antd';
+import {
+  setFluxInitialState,
+  setPasswordBlobInitialState,
+  setAddress,
+  setRedeemScript,
+} from '../../store';
+import { Spin, Row, Col, Image, Divider } from 'antd';
 import './Home.css';
 import { LockOutlined, SettingOutlined } from '@ant-design/icons';
 import Key from '../../components/Key/Key';
@@ -37,17 +42,15 @@ function App() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
-  const { xpubKey, xpubWallet } = useAppSelector((state) => state.flux);
+  const { xpubKey, xpubWallet, address, redeemScript } = useAppSelector(
+    (state) => state.flux,
+  );
 
   const generateAddress = () => {
-    const { address, redeemScript } = generateMultisigAddress(
-      xpubWallet,
-      xpubKey,
-      0,
-      0,
-      'flux',
-    );
-    console.log(address, redeemScript);
+    const addrInfo = generateMultisigAddress(xpubWallet, xpubKey, 0, 0, 'flux');
+    console.log(addrInfo.address, addrInfo.redeemScript);
+    dispatch(setAddress(addrInfo.address));
+    dispatch(setRedeemScript(addrInfo.redeemScript));
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,12 +99,13 @@ function App() {
       {!isLoading && (
         <>
           <Navbar />
+          <Divider />
+          {address}
+          {redeemScript}
           {/* header - logo, Wallet 1, settings, lock address 0.0 FLUX usd value
           actions - send, receive transactions */}
         </>
       )}
-      {/* {xpubWallet}
-      {xpubKey} */}
       <Key derivationPath="xpub-48-19167-0-0" synchronised={keySynchronised} />
     </>
   );

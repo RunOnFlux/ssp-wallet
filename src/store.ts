@@ -1,10 +1,24 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { transaction } from './types';
 
-const initialState = {
+interface FluxState {
+  xpubWallet: string;
+  xpubKey: string;
+  address: string;
+  redeemScript: string;
+  balance: string;
+  unconfirmedBalance: string;
+  transactions: transaction[];
+}
+
+const initialState: FluxState = {
   xpubWallet: '',
   xpubKey: '',
   address: '',
   redeemScript: '',
+  balance: '0.00',
+  unconfirmedBalance: '0.00',
+  transactions: [],
 };
 
 const initialStatePasswordBlob = {
@@ -40,11 +54,23 @@ const fluxSlice = createSlice({
     setXpubKey: (state, action: PayloadAction<string>) => {
       state.xpubKey = action.payload;
     },
+    setBalance: (state, action: PayloadAction<string>) => {
+      state.balance = action.payload;
+    },
+    setUnconfirmedBalance: (state, action: PayloadAction<string>) => {
+      state.unconfirmedBalance = action.payload;
+    },
+    setTransaction: (state, action: PayloadAction<transaction[]>) => {
+      state.transactions = action.payload;
+    },
     setFluxInitialState: (state) => {
       state.xpubWallet = '';
       state.xpubKey = '';
       state.address = '';
       state.redeemScript = '';
+      state.balance = '0.00';
+      state.unconfirmedBalance = '0.00';
+      state.transactions = [];
     },
   },
 });
