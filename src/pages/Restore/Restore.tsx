@@ -51,7 +51,7 @@ localForage.config({
   description: 'Database for SSP Wallet',
 });
 
-function App() {
+function Restore() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // use secure local storage for storing mnemonic 'walletSeed', 'xpriv-48-slip-0-0', 'xpub-48-slip-0-0' and '2-xpub-48-slip-0-0' (2- as for second key) of together with encryption of browser-passworder
@@ -315,4 +315,4 @@ function App() {
   );
 }
 
-export default App;
+export default Restore;

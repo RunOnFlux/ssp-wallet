@@ -5,6 +5,7 @@ import Create from './pages/Create/Create.tsx';
 import Restore from './pages/Restore/Restore.tsx';
 import Login from './pages/Login/Login.tsx';
 import Home from './pages/Home/Home.tsx';
+import Send from './pages/Send/Send.tsx';
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: '/home',
     element: <Home />,
+  },
+  {
+    path: '/send',
+    element: <Send />,
   },
   {
     path: '*',

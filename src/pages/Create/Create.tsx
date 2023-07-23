@@ -40,7 +40,7 @@ interface passwordForm {
   tos: boolean;
 }
 
-function App() {
+function Create() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -305,4 +305,4 @@ function App() {
   );
 }
 
-export default App;
+export default Create;

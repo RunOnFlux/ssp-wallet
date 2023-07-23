@@ -4,7 +4,7 @@ import secureLocalStorage from 'react-secure-storage';
 import { Button, Image, Space, Spin } from 'antd';
 import './Welcome.css';
 
-function App() {
+function Welcome() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -48,4 +48,4 @@ function App() {
   );
 }
 
-export default App;
+export default Welcome;
