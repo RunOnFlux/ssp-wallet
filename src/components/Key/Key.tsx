@@ -26,9 +26,8 @@ function Key(props: {
   const [isModalKeyOpen, setIsModalKeyOpen] = useState(false);
   const [keyInput, setKeyInput] = useState('');
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const { xpubKey, xpubWallet, passwordBlob } = useAppSelector(
-    (state) => state.xpubs,
-  );
+  const { xpubKey, xpubWallet } = useAppSelector((state) => state.flux);
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({

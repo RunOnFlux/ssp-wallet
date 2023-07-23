@@ -1,22 +1,38 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface XpubState {
-  xpubWallet: string;
-  xpubKey: string;
-  passwordBlob: string;
-}
-
-const initialState: XpubState = {
+const initialState = {
   xpubWallet: '',
   xpubKey: '',
+  address: '',
+  redeemScript: '',
+};
+
+const initialStatePasswordBlob = {
   passwordBlob: '',
 };
-const xpubSlice = createSlice({
-  name: 'xpubFlux',
-  initialState,
+
+const passwordBlobSlice = createSlice({
+  name: 'passwordBlob',
+  initialState: initialStatePasswordBlob,
   reducers: {
     setPasswordBlob: (state, action: PayloadAction<string>) => {
       state.passwordBlob = action.payload;
+    },
+    setPasswordBlobInitialState: (state) => {
+      state.passwordBlob = '';
+    },
+  },
+});
+
+const fluxSlice = createSlice({
+  name: 'flux',
+  initialState,
+  reducers: {
+    setAddress: (state, action: PayloadAction<string>) => {
+      state.address = action.payload;
+    },
+    setRedeemScript: (state, action: PayloadAction<string>) => {
+      state.redeemScript = action.payload;
     },
     setXpubWallet: (state, action: PayloadAction<string>) => {
       state.xpubWallet = action.payload;
@@ -24,24 +40,30 @@ const xpubSlice = createSlice({
     setXpubKey: (state, action: PayloadAction<string>) => {
       state.xpubKey = action.payload;
     },
-    setXpubInitialState: (state) => {
+    setFluxInitialState: (state) => {
       state.xpubWallet = '';
       state.xpubKey = '';
-      state.passwordBlob = '';
+      state.address = '';
+      state.redeemScript = '';
     },
   },
 });
 
 export const {
-  setPasswordBlob,
+  setAddress,
+  setRedeemScript,
   setXpubWallet,
   setXpubKey,
-  setXpubInitialState,
-} = xpubSlice.actions;
+  setFluxInitialState,
+} = fluxSlice.actions;
+
+export const { setPasswordBlob, setPasswordBlobInitialState } =
+  passwordBlobSlice.actions;
 
 export const store = configureStore({
   reducer: {
-    xpubs: xpubSlice.reducer,
+    flux: fluxSlice.reducer,
+    passwordBlob: passwordBlobSlice.reducer,
   },
 });
 

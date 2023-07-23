@@ -1,17 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { setXpubInitialState } from '../../store';
+import { setFluxInitialState, setPasswordBlobInitialState } from '../../store';
 import { Spin, Row, Col, Image } from 'antd';
 import './Home.css';
 import { LockOutlined, SettingOutlined } from '@ant-design/icons';
 import Key from '../../components/Key/Key';
+import { generateMultisigAddress } from '../../lib/wallet.ts';
 
 function Navbar() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const logout = () => {
-    dispatch(setXpubInitialState());
+    dispatch(setFluxInitialState());
+    dispatch(setPasswordBlobInitialState());
     navigate('/login');
   };
   return (
@@ -35,7 +37,18 @@ function App() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
-  const { xpubKey, xpubWallet } = useAppSelector((state) => state.xpubs);
+  const { xpubKey, xpubWallet } = useAppSelector((state) => state.flux);
+
+  const generateAddress = () => {
+    const { address, redeemScript } = generateMultisigAddress(
+      xpubWallet,
+      xpubKey,
+      0,
+      0,
+      'flux',
+    );
+    console.log(address, redeemScript);
+  };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -50,7 +63,7 @@ function App() {
     }
     if (xpubKey) {
       console.log('Key already synchronised.');
-      // here generate addresses
+      generateAddress();
       setIsLoading(false);
     }
   });
@@ -66,12 +79,13 @@ function App() {
             console.log(error);
           }
         }
-        dispatch(setXpubInitialState());
+        dispatch(setFluxInitialState());
+        dispatch(setPasswordBlobInitialState());
         navigate('/login');
       })();
     } else {
       console.log('Key synchronised.');
-      // here generate addresses
+      generateAddress();
       setIsLoading(false);
     }
   };
