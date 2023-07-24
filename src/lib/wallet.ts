@@ -144,3 +144,25 @@ export function generateAddressKeypair(
 
   return { privKey: privateKeyWIF, pubKey: publicKey };
 }
+
+// given xpub of our party, generate address of identity of xpub.
+export function generateIdentityAddress(xpub: string, chain = 'flux'): string {
+  const typeIndex = 10; // identity index
+  const addressIndex = 0; // identity index
+
+  const externalChain = HDKey.fromExtendedKey(xpub);
+
+  const externalAddress = externalChain
+    .deriveChild(typeIndex)
+    .deriveChild(addressIndex);
+
+  const publicKey = externalAddress.publicKey;
+  const pubKeyBuffer = Buffer.from(publicKey!);
+
+  const network = utxolib.networks[chain];
+
+  const keyPair = utxolib.ECPair.fromPublicKeyBuffer(pubKeyBuffer, network);
+  const address = keyPair.getAddress();
+
+  return address;
+}

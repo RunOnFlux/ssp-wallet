@@ -79,5 +79,11 @@ declare module 'utxo-lib' {
     ) => {
       sign: (hash: Buffer) => Buffer;
     };
+    fromPublicKeyBuffer: (
+      publicKeyBuffer: Buffer,
+      network: object,
+    ) => {
+      getAddress: () => string;
+    };
   };
 }
