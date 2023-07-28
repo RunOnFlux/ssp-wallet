@@ -161,8 +161,8 @@ export function generateIdentityAddress(xpub: string, chain = 'flux'): string {
 
   const network = utxolib.networks[chain];
 
-  const keyPair = utxolib.ECPair.fromPublicKeyBuffer(pubKeyBuffer, network);
-  const address = keyPair.getAddress();
+  const genKeypair = utxolib.ECPair.fromPublicKeyBuffer(pubKeyBuffer, network);
+  const address = genKeypair.getAddress();
 
   return address;
 }

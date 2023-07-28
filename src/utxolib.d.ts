@@ -61,7 +61,10 @@ declare module 'utxo-lib' {
   };
   // Other methods/properties...
   // Replace 'any' with the appropriate type // Define the constructor signature and any other methods/properties
-  type TransactionBuilder = new (network: object, fee: string) => {
+  type TransactionBuilder = new (
+    network: object,
+    fee: string,
+  ) => {
     setVersion: (version: number) => void;
     setVersionGroupId: (versionGroupId: number) => void;
     addInput: (txid: string, vout: number) => void;
