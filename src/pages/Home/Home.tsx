@@ -51,7 +51,6 @@ function Home() {
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // if not, show modal. onModal close check 2-xpub again
     // if user exists, navigate to login

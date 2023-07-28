@@ -85,7 +85,6 @@ function Login() {
     } else {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [password]);
 
   const decryptWallet = () => {

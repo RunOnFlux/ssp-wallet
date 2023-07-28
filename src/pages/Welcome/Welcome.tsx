@@ -8,7 +8,6 @@ function Welcome() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
@@ -36,10 +35,10 @@ function Welcome() {
           </p>
           <Space direction="vertical" size="large">
             <Button type="primary" size="large">
-              <Link to={`/create`}>Get Started!</Link>
+              <Link to={'/create'}>Get Started!</Link>
             </Button>
             <Button type="link" block size="small">
-              <Link to={`/restore`}>Restore with Seed</Link>
+              <Link to={'/restore'}>Restore with Seed</Link>
             </Button>
           </Space>
         </>

@@ -98,7 +98,6 @@ function Restore() {
     if (menominc) {
       showModal();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menominc]);
 
   const onFinish = (values: passwordForm) => {

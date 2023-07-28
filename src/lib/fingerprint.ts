@@ -39,6 +39,7 @@ export function getFingerprint(): string {
       const txt = 'ClientJS,org <canvas> 1.0';
       ctx.textBaseline = 'top';
       // The most common type
+      // eslint-disable-next-line quotes
       ctx.font = "14px 'Arial'";
       ctx.textBaseline = 'alphabetic';
       ctx.fillStyle = '#f60';
@@ -59,7 +60,6 @@ export function getFingerprint(): string {
     canvas,
     colorDepth,
     cookieEnabled,
-    devicePixelRatio,
     doNotTrack,
     hardwareConcurrency,
     height,
@@ -75,7 +75,6 @@ export function getFingerprint(): string {
     vendor,
     width,
   });
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const fingerprintHash: string = crypto
     .createHash('sha256')
     .update(fingerprint)

@@ -54,7 +54,7 @@ export function signTransaction(
   chain = 'flux',
   privateKey: string,
   redeemScript: string,
-  utxos: utxo[], // same or bigger set than was used to construct the tx
+  utxos: utxo[], // same or bi gger set than was used to construct the tx
 ): string {
   try {
     const network = utxolib.networks[chain];
@@ -65,9 +65,7 @@ export function signTransaction(
       utxolib.Transaction.fromHex(txhex, network),
       network,
     );
-    // eslint-disable-next-line no-unused-vars
     for (let i = 0; i < txb.inputs.length; i += 1) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const hashHex = txb.tx.ins[i].hash.toString('hex');
       const hash = getValueHexBuffer(hashHex);
       const { index } = txb.tx.ins[i];
@@ -167,10 +165,10 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
   });
 
   // case one. Find if we have a utxo with exact amount
-  sortedUtxos.forEach((utxo) => {
-    const utxoAmount = new BigNumber(utxo.satoshis);
+  sortedUtxos.forEach((utxoX) => {
+    const utxoAmount = new BigNumber(utxoX.satoshis);
     if (utxoAmount.isEqualTo(amount)) {
-      selectedUtxos = [utxo];
+      selectedUtxos = [utxoX];
     }
   });
   if (selectedUtxos.length && selectedUtxos.length <= 670) {
@@ -179,13 +177,13 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
 
   // case two
   // If the "sum of all your UTXO smaller than the Target" happens to match the Target, they will be used. (This is the case if you sweep a complete wallet.)
-  const utxosSmallerThanTarget = sortedUtxos.filter((utxo) => {
-    const utxoAmount = new BigNumber(utxo.satoshis);
+  const utxosSmallerThanTarget = sortedUtxos.filter((utxoX) => {
+    const utxoAmount = new BigNumber(utxoX.satoshis);
     return utxoAmount.isLessThan(amount);
   });
   let totalAmountSmallerUtxos = new BigNumber(0);
-  utxosSmallerThanTarget.forEach((utxo) => {
-    const utxoAmount = new BigNumber(utxo.satoshis);
+  utxosSmallerThanTarget.forEach((utxoX) => {
+    const utxoAmount = new BigNumber(utxoX.satoshis);
     totalAmountSmallerUtxos = totalAmountSmallerUtxos.plus(utxoAmount);
   });
   if (totalAmountSmallerUtxos.isEqualTo(amount)) {
@@ -197,8 +195,8 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
 
   // case three
   // If the "sum of all your UTXO smaller than the Target" doesn't surpass the target, the smallest UTXO greater than your Target will be used.
-  const utxosBiggestThanTarget = sortedUtxos.filter((utxo) => {
-    const utxoAmount = new BigNumber(utxo.satoshis);
+  const utxosBiggestThanTarget = sortedUtxos.filter((utxoX) => {
+    const utxoAmount = new BigNumber(utxoX.satoshis);
     return utxoAmount.isGreaterThan(amount);
   });
   if (totalAmountSmallerUtxos.isLessThan(amount)) {
@@ -215,9 +213,9 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
   if (totalAmountSmallerUtxos.isGreaterThan(amount)) {
     let totalAmount = new BigNumber(0);
     const preselectedUtxos = [];
-    for (const utxo of utxosSmallerThanTarget) {
-      totalAmount = totalAmount.plus(new BigNumber(utxo.satoshis));
-      preselectedUtxos.push(utxo);
+    for (const utxoX of utxosSmallerThanTarget) {
+      totalAmount = totalAmount.plus(new BigNumber(utxoX.satoshis));
+      preselectedUtxos.push(utxoX);
       if (totalAmount.isGreaterThan(amount)) {
         selectedUtxos = preselectedUtxos;
         break;
@@ -233,9 +231,9 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
   if (totalAmountSmallerUtxos.isGreaterThan(amount)) {
     let totalAmount = new BigNumber(0);
     const preselectedUtxos = [];
-    for (const utxo of utxosSmallerThanTarget.reverse()) {
-      totalAmount = totalAmount.plus(new BigNumber(utxo.satoshis));
-      preselectedUtxos.push(utxo);
+    for (const utxoX of utxosSmallerThanTarget.reverse()) {
+      totalAmount = totalAmount.plus(new BigNumber(utxoX.satoshis));
+      preselectedUtxos.push(utxoX);
       if (totalAmount.isGreaterThan(amount)) {
         selectedUtxos = preselectedUtxos;
         break;
@@ -258,9 +256,9 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
   if (totalAmountSmallerUtxos.isGreaterThan(amount)) {
     let totalAmount = new BigNumber(0);
     const preselectedUtxos = [];
-    for (const utxo of utxosSmallerThanTarget.reverse()) {
-      totalAmount = totalAmount.plus(new BigNumber(utxo.satoshis));
-      preselectedUtxos.push(utxo);
+    for (const utxoX of utxosSmallerThanTarget.reverse()) {
+      totalAmount = totalAmount.plus(new BigNumber(utxoX.satoshis));
+      preselectedUtxos.push(utxoX);
       if (totalAmount.isGreaterThan(amount)) {
         selectedUtxos = preselectedUtxos;
         break;

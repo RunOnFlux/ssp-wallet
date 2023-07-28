@@ -99,14 +99,12 @@ function Create() {
     if (menominc) {
       showModal();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [menominc]);
 
   useEffect(() => {
     if (password) {
       generateMnemonicPhrase(256);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [password]);
 
   const onFinish = (values: passwordForm) => {

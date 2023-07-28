@@ -36,7 +36,6 @@ function Key(props: {
       content,
     });
   };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // check if we have 2-xpub-48-19167-0-0
     if (!xpubKey) {
@@ -190,5 +189,9 @@ function Key(props: {
     </>
   );
 }
+
+Key.defaultProps = {
+  derivationPath: 'xpub-48-19167-0-0',
+};
 
 export default Key;
