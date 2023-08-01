@@ -48,7 +48,7 @@ function Create() {
   // use localforage to store addresses, balances, transactions and other data. This data is not encrypted for performance reasons and they are not sensitive.
   // if user exists, navigate to login
   const [password, setPassword] = useState('');
-  const [menominc, setMnemonic] = useState('');
+  const [mnemonic, setMnemonic] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mnemonicShow, setMnemonicShow] = useState(false);
   const [WSPbackedUp, setWSPbackedUp] = useState(false);
@@ -61,7 +61,7 @@ function Create() {
   const handleOk = () => {
     if (WSPbackedUp && wspWasShown) {
       setIsModalOpen(false);
-      storeMnemonic(menominc);
+      storeMnemonic(mnemonic);
     } else {
       displayMessage(
         'info',
@@ -96,10 +96,10 @@ function Create() {
   });
 
   useEffect(() => {
-    if (menominc) {
+    if (mnemonic) {
       showModal();
     }
-  }, [menominc]);
+  }, [mnemonic]);
 
   useEffect(() => {
     if (password) {
@@ -279,7 +279,7 @@ function Create() {
         <h3>
           <i>
             {mnemonicShow
-              ? menominc
+              ? mnemonic
               : '*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***'}
           </i>
         </h3>
