@@ -5,11 +5,8 @@ export function getFingerprint(): string {
     cookieEnabled,
     doNotTrack,
     hardwareConcurrency,
-    language,
-    languages,
     maxTouchPoints,
     platform,
-    userAgent,
     vendor,
   } = window.navigator;
 
@@ -63,15 +60,12 @@ export function getFingerprint(): string {
     doNotTrack,
     hardwareConcurrency,
     height,
-    language,
-    languages,
     maxTouchPoints,
     pixelDepth,
     platform,
     timezone,
     timezoneOffset,
     touchSupport,
-    userAgent,
     vendor,
     width,
   });

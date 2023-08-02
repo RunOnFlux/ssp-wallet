@@ -63,10 +63,15 @@ function Home() {
     }
     if (xpubKey) {
       console.log('Key already synchronised.');
-      generateAddress();
-      setIsLoading(false);
     }
   });
+
+  useEffect(() => {
+    if (!xpubKey) return;
+    console.log('Key synchronised.');
+    generateAddress();
+    setIsLoading(false);
+  }, [xpubKey]);
 
   const keySynchronised = (status: boolean) => {
     if (status === false) {
@@ -83,11 +88,7 @@ function Home() {
         dispatch(setPasswordBlobInitialState());
         navigate('/login');
       })();
-    } else {
-      console.log('Key synchronised.');
-      generateAddress();
-      setIsLoading(false);
-    }
+    } // else is handled in useEffect
   };
   return (
     <>
