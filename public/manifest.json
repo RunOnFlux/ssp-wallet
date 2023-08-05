@@ -3,7 +3,7 @@
   "manifest_version": 3,
   "name": "SSP Wallet",
   "short_name": "SSP",
-  "description": "Simple. Secure. Powerful.",
+  "description": "Secure. Simple. Powerful.",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "action": {

@@ -1,5 +1,5 @@
 SSP Wallet
-Simple. Secure. Powerful.
+Secure. Simple. Powerful.
 
 Why another wallet?
 This one is drastically different. Designed with security and self-custody first.

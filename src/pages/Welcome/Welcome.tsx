@@ -31,7 +31,7 @@ function Welcome() {
             Dual signature wallet for the decentralized world.
             <br />
             <br />
-            Simple. Secure. Powerful.
+            Secure. Simple. Powerful.
           </p>
           <Space direction="vertical" size="large">
             <Button type="primary" size="large">
