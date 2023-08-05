@@ -128,17 +128,17 @@ function Create() {
     setMnemonic(generatedMnemonic);
   };
 
-  const storeMnemonic = (mnemonic: string) => {
-    if (!mnemonic) {
+  const storeMnemonic = (mnemonicPhrase: string) => {
+    if (!mnemonicPhrase) {
       displayMessage('error', 'Wallet seed phrase is invalid.');
       return;
     }
-    passworderEncrypt(password, mnemonic)
+    passworderEncrypt(password, mnemonicPhrase)
       .then(async (blob) => {
         secureLocalStorage.setItem('walletSeed', blob);
         // generate master xpriv for flux
-        const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
-        const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
+        const xpriv = getMasterXpriv(mnemonicPhrase, 48, 19167, 0, 'p2sh');
+        const xpub = getMasterXpub(mnemonicPhrase, 48, 19167, 0, 'p2sh');
         const xprivBlob = await passworderEncrypt(password, xpriv);
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();

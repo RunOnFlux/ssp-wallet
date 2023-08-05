@@ -131,8 +131,8 @@ function Restore() {
     setMnemonic(seedPhrase);
   };
 
-  const storeMnemonic = (mnemonic: string) => {
-    if (!mnemonic) {
+  const storeMnemonic = (mnemonicPhrase: string) => {
+    if (!mnemonicPhrase) {
       displayMessage('error', 'Your wallet seed phrase is invalid.');
       return;
     }
@@ -141,10 +141,10 @@ function Restore() {
     localForage
       .clear()
       .then(async () => {
-        const mnemonicBlob = await passworderEncrypt(password, mnemonic);
+        const mnemonicBlob = await passworderEncrypt(password, mnemonicPhrase);
         secureLocalStorage.setItem('walletSeed', mnemonicBlob);
-        const xpriv = getMasterXpriv(mnemonic, 48, 19167, 0, 'p2sh');
-        const xpub = getMasterXpub(mnemonic, 48, 19167, 0, 'p2sh');
+        const xpriv = getMasterXpriv(mnemonicPhrase, 48, 19167, 0, 'p2sh');
+        const xpub = getMasterXpub(mnemonicPhrase, 48, 19167, 0, 'p2sh');
         const xprivBlob = await passworderEncrypt(password, xpriv);
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();
