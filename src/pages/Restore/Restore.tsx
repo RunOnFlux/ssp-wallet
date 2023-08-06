@@ -84,6 +84,8 @@ function Restore() {
     setIsModalOpen(false);
     setMnemonic('');
     setPassword('');
+    setWSPwasShown(false);
+    setWSPbackedUp(false);
   };
 
   const [messageApi, contextHolder] = message.useMessage();
