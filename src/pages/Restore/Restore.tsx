@@ -71,7 +71,7 @@ function Restore() {
   const handleOk = () => {
     if (WSPbackedUp && wspWasShown) {
       setIsModalOpen(false);
-      storeMnemonic(mnemonic);
+      storeMnemonic(mnemonic.trim());
     } else {
       displayMessage(
         'info',
