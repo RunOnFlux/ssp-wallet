@@ -76,6 +76,7 @@ function Create() {
     setPassword('');
     setWSPwasShown(false);
     setWSPbackedUp(false);
+    setMnemonicShow(false);
   };
 
   const [messageApi, contextHolder] = message.useMessage();
