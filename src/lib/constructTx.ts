@@ -1,17 +1,18 @@
 import utxolib from 'utxo-lib';
+import { Buffer } from 'buffer';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
-import { Buffer } from 'buffer';
 import { utxo, broadcastTxResult } from '../types';
 
 import { blockchains } from '@storage/blockchains';
 
 export async function fetchUtxos(
   address: string,
-  api: string,
+  chain: string,
 ): Promise<utxo[]> {
   try {
-    const url = `https://${api}/api/addr/${address}/utxo`;
+    const blockchainConfig = blockchains[chain];
+    const url = `https://${blockchainConfig.explorer}/api/addr/${address}/utxo`;
     const { data } = await axios.get<utxo[]>(url);
     const fetchedUtxos = data;
     const utxos = fetchedUtxos.map((x) => ({
@@ -280,8 +281,7 @@ export async function constructAndSignTransaction(
   redeemScript: string,
 ): Promise<string> {
   try {
-    const blockchainConfig = blockchains[chain];
-    const utxos = await fetchUtxos(sender, blockchainConfig.explorer);
+    const utxos = await fetchUtxos(sender, chain);
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
     const pickedUtxos = pickUtxos(utxos, amountToSend);
     const rawTx = buildUnsignedRawTx(

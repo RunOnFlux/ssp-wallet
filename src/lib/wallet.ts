@@ -72,7 +72,7 @@ export function getMasterXpriv(
 export function generateMultisigAddress(
   xpub1: string,
   xpub2: string,
-  typeIndex: 0 | 1,
+  typeIndex: 0 | 1 | 10,
   addressIndex: number,
   chain = 'flux',
 ): multisig {
