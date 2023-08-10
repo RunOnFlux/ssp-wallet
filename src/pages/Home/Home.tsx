@@ -7,6 +7,8 @@ import {
   setPasswordBlobInitialState,
   setAddress,
   setRedeemScript,
+  setsspWalletIdentity,
+  setSspWalletKeyIdentity,
 } from '../../store';
 import { Spin, Divider, message, Space } from 'antd';
 import './Home.css';
@@ -16,7 +18,10 @@ import Transactions from '../../components/Transactions/Transactions';
 import Balances from '../../components/Balances/Balances';
 import Navbar from '../../components/Navbar/Navbar';
 import AddressContainer from '../../components/AddressContainer/AddressContainer.tsx';
-import { generateMultisigAddress } from '../../lib/wallet.ts';
+import {
+  generateMultisigAddress,
+  generateIdentityAddress,
+} from '../../lib/wallet.ts';
 
 function Home() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
@@ -44,6 +49,20 @@ function Home() {
       console.log(addrInfo.address, addrInfo.redeemScript);
       dispatch(setAddress(addrInfo.address));
       dispatch(setRedeemScript(addrInfo.redeemScript));
+      // generate ssp wallet identity
+      const generatedSspWalletIdentity = generateIdentityAddress(
+        xpubWallet,
+        'flux',
+      );
+      dispatch(setsspWalletIdentity(generatedSspWalletIdentity));
+      const generatedSspWalletKeyIdentity = generateMultisigAddress(
+        xpubWallet,
+        xpubKey,
+        10,
+        0,
+        'flux',
+      );
+      dispatch(setSspWalletKeyIdentity(generatedSspWalletKeyIdentity.address));
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before
       displayMessage('error', 'PANIC: Invalid SSP Key.');

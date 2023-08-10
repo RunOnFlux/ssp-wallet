@@ -11,7 +11,12 @@ import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch } from '../../hooks';
 
-import { setXpubWallet, setXpubKey, setPasswordBlob } from '../../store';
+import {
+  setXpubWallet,
+  setXpubKey,
+  setPasswordBlob,
+  setsspWalletIdentity,
+} from '../../store';
 
 import './Login.css';
 import {
@@ -20,6 +25,8 @@ import {
 } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
 import { getFingerprint } from '../../lib/fingerprint';
+
+import { generateIdentityAddress } from '../../lib/wallet.ts';
 
 interface loginForm {
   password: string;
@@ -105,6 +112,12 @@ function Login() {
           if (typeof xpub === 'string') {
             console.log(xpub);
             dispatch(setXpubWallet(xpub));
+            // generate ssp wallet identity
+            const generatedSspWalletIdentity = generateIdentityAddress(
+              xpub,
+              'flux',
+            );
+            dispatch(setsspWalletIdentity(generatedSspWalletIdentity));
             if (typeof xpub2Encrypted === 'string') {
               const xpub2 = await passworderDecrypt(password, xpub2Encrypted);
               if (typeof xpub2 === 'string') {

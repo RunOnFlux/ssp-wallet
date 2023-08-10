@@ -9,6 +9,8 @@ interface FluxState {
   balance: string;
   unconfirmedBalance: string;
   transactions: transaction[];
+  sspWalletKeyIdentity: string;
+  sspWalletIdentity: string;
 }
 
 const initialState: FluxState = {
@@ -19,6 +21,8 @@ const initialState: FluxState = {
   balance: '0.00',
   unconfirmedBalance: '0.00',
   transactions: [],
+  sspWalletKeyIdentity: '',
+  sspWalletIdentity: '',
 };
 
 const initialStatePasswordBlob = {
@@ -63,7 +67,15 @@ const fluxSlice = createSlice({
     setTransactions: (state, action: PayloadAction<transaction[]>) => {
       state.transactions = action.payload;
     },
+    setSspWalletKeyIdentity: (state, action: PayloadAction<string>) => {
+      state.sspWalletKeyIdentity = action.payload;
+    },
+    setsspWalletIdentity: (state, action: PayloadAction<string>) => {
+      state.sspWalletIdentity = action.payload;
+    },
     setFluxInitialState: (state) => {
+      state.sspWalletKeyIdentity = '';
+      state.sspWalletIdentity = '';
       state.xpubWallet = '';
       state.xpubKey = '';
       state.address = '';
@@ -84,6 +96,8 @@ export const {
   setBalance,
   setUnconfirmedBalance,
   setTransactions,
+  setSspWalletKeyIdentity,
+  setsspWalletIdentity,
 } = fluxSlice.actions;
 
 export const { setPasswordBlob, setPasswordBlobInitialState } =
