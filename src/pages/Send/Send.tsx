@@ -7,6 +7,7 @@ import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { generateAddressKeypair } from '../../lib/wallet';
+import axios from 'axios';
 
 interface sendForm {
   receiver: string;
@@ -17,15 +18,39 @@ interface sendForm {
 
 function Send() {
   const [messageApi, contextHolder] = message.useMessage();
-  const { address: sender, redeemScript } = useAppSelector(
-    (state) => state.flux,
-  );
+  const {
+    address: sender,
+    redeemScript,
+    sspWalletKeyIdentity,
+  } = useAppSelector((state) => state.flux);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
       content,
     });
+  };
+
+  const postAction = (
+    action: string,
+    payload: string,
+    chain: string,
+    wkIdentity: string,
+  ) => {
+    const data = {
+      action,
+      payload,
+      chain,
+      wkIdentity,
+    };
+    axios
+      .post('https://relay.ssp.runonflux.io/v1/action', data)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const onFinish = (values: sendForm) => {
@@ -67,6 +92,8 @@ function Send() {
         )
           .then((tx) => {
             console.log(tx);
+            // post to ssp relay
+            postAction('tx', tx, 'flux', sspWalletKeyIdentity);
           })
           .catch((error: TypeError) => {
             displayMessage('error', error.message);
