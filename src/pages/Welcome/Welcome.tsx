@@ -25,10 +25,12 @@ function Welcome() {
       {isLoading && <Spin size="large" />}
       {!isLoading && (
         <>
-          <br />
-          <br />
-          <br />
-          <Image width={120} preview={false} src="/ssp-logo.svg" />
+          <Image
+            width={120}
+            preview={false}
+            src="/ssp-logo.svg"
+            style={{ paddingTop: 70 }}
+          />
           <h1>Welcome to SSP Wallet</h1>
           <p className="welcome-text">
             Dual signature wallet for the decentralized world.
