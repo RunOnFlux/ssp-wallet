@@ -1,4 +1,5 @@
-import { Form, message, Divider, Button, Input } from 'antd';
+import { Form, message, Divider, Button, Input, Space } from 'antd';
+import { Link } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
 import { constructAndSignTransaction } from '../../lib/constructTx';
@@ -160,9 +161,14 @@ function Send() {
         </Form.Item>
 
         <Form.Item>
-          <Button type="primary" size="large" htmlType="submit">
-            Send
-          </Button>
+          <Space direction="vertical" size="large">
+            <Button type="primary" size="large" htmlType="submit">
+              Send
+            </Button>
+            <Button type="link" block size="small">
+              <Link to={'/home'}>Cancel</Link>
+            </Button>
+          </Space>
         </Form.Item>
       </Form>
     </>

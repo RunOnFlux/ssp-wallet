@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Button } from 'antd';
-import { ArrowUpOutlined } from '@ant-design/icons';
+import { Button, Space } from 'antd';
+import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 
 function Navigation() {
   const navigate = useNavigate();
   return (
     <>
-      <div>
+      <Space direction="horizontal" size="large" style={{ marginBottom: 15 }}>
         <Button
           type="dashed"
           shape="round"
@@ -16,7 +16,16 @@ function Navigation() {
         >
           Send
         </Button>
-      </div>
+        <Button
+          type="dashed"
+          shape="round"
+          icon={<ArrowDownOutlined />}
+          size={'large'}
+          onClick={() => navigate('/send')}
+        >
+          Receive
+        </Button>
+      </Space>
     </>
   );
 }

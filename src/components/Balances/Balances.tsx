@@ -54,8 +54,12 @@ function Balances() {
 
   return (
     <>
-      <h3>{totalBalance.toFixed(8) || '0.00'} FLUX</h3>
-      <h4>${balanceUSD.toFixed(2) || '0.00'} USD</h4>
+      <h3 style={{ marginTop: 0, marginBottom: 10 }}>
+        {totalBalance.toFixed(8) || '0.00'} FLUX
+      </h3>
+      <h4 style={{ marginTop: 0, marginBottom: 15 }}>
+        ${balanceUSD.toFixed(2) || '0.00'} USD
+      </h4>
     </>
   );
 }
