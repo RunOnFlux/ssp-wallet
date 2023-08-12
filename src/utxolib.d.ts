@@ -84,7 +84,7 @@ declare module 'utxo-lib' {
     };
     fromPublicKeyBuffer: (
       publicKeyBuffer: Buffer,
-      network: object,
+      network?: object,
     ) => {
       getAddress: () => string;
     };

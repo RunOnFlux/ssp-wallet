@@ -46,7 +46,6 @@ function Key(props: {
 
   const handleOkModalKey = () => {
     // display dialog awaiting synchronisation. This is automatic stuff
-    console.log('here');
     if (!keyInput) {
       displayMessage(
         'warning',

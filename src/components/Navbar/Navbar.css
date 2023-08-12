@@ -1,0 +1,6 @@
+.navbar {
+  margin: auto;
+  place-items: center;
+  line-height: 30px;
+  min-width: 380px;
+}

@@ -15,7 +15,7 @@ import {
   setXpubWallet,
   setXpubKey,
   setPasswordBlob,
-  setsspWalletIdentity,
+  setSspWalletIdentity,
 } from '../../store';
 
 import './Login.css';
@@ -80,7 +80,7 @@ function Login() {
 
   const onFinish = (values: loginForm) => {
     if (values.password.length < 8) {
-      displayMessage('error', 'Invalid password. Please try again.');
+      displayMessage('error', 'Not a valid password. Please try again.');
       return;
     }
     setPassword(values.password);
@@ -117,7 +117,7 @@ function Login() {
               xpub,
               'flux',
             );
-            dispatch(setsspWalletIdentity(generatedSspWalletIdentity));
+            dispatch(setSspWalletIdentity(generatedSspWalletIdentity));
             if (typeof xpub2Encrypted === 'string') {
               const xpub2 = await passworderDecrypt(password, xpub2Encrypted);
               if (typeof xpub2 === 'string') {

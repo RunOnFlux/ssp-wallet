@@ -1,0 +1,32 @@
+diff --git a/node_modules/utxo-lib/src/ecpair.js b/node_modules/utxo-lib/src/ecpair.js
+index fea5ae9..a234d77 100644
+--- a/node_modules/utxo-lib/src/ecpair.js
++++ b/node_modules/utxo-lib/src/ecpair.js
+@@ -14,7 +14,7 @@ var secp256k1 = ecdsa.__curve
+ 
+ var fastcurve = require('./fastcurve')
+ 
+-function ECPair (d, Q, options) {
++function ECPair(d, Q, options) {
+   if (options) {
+     typeforce({
+       compressed: types.maybe(types.Boolean),
+@@ -31,7 +31,8 @@ function ECPair (d, Q, options) {
+ 
+     this.d = d
+   } else {
+-    typeforce(types.ECPoint, Q)
++    // disable as production code is not working with this line, todo: fix figure out why. Build disable terser not working. TfTypeError$1: message: "Expected Point, got Point$3"
++    // typeforce(types.ECPoint, Q)
+ 
+     this.__Q = Q
+   }
+@@ -71,7 +72,7 @@ ECPair.fromWIF = function (string, network) {
+ 
+     if (!network) throw new Error('Unknown network version')
+ 
+-  // otherwise, assume a network object (or default to bitcoin)
++    // otherwise, assume a network object (or default to bitcoin)
+   } else {
+     network = network || NETWORKS.bitcoin
+ 

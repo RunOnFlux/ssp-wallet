@@ -151,6 +151,7 @@ function Create() {
         secureLocalStorage.setItem('xpub-48-19167-0-0', xpubBlob);
         dispatch(setXpubWallet(xpub));
         if (chrome?.storage?.session) {
+          await chrome.storage.session.clear();
           await chrome.storage.session.set({
             pwBlob: pwBlob,
           });

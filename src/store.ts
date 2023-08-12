@@ -70,7 +70,7 @@ const fluxSlice = createSlice({
     setSspWalletKeyIdentity: (state, action: PayloadAction<string>) => {
       state.sspWalletKeyIdentity = action.payload;
     },
-    setsspWalletIdentity: (state, action: PayloadAction<string>) => {
+    setSspWalletIdentity: (state, action: PayloadAction<string>) => {
       state.sspWalletIdentity = action.payload;
     },
     setFluxInitialState: (state) => {
@@ -97,7 +97,7 @@ export const {
   setUnconfirmedBalance,
   setTransactions,
   setSspWalletKeyIdentity,
-  setsspWalletIdentity,
+  setSspWalletIdentity,
 } = fluxSlice.actions;
 
 export const { setPasswordBlob, setPasswordBlobInitialState } =

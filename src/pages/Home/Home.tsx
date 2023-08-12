@@ -7,7 +7,7 @@ import {
   setPasswordBlobInitialState,
   setAddress,
   setRedeemScript,
-  setsspWalletIdentity,
+  setSspWalletIdentity,
   setSspWalletKeyIdentity,
 } from '../../store';
 import { Spin, Divider, message, Space } from 'antd';
@@ -54,7 +54,7 @@ function Home() {
         xpubWallet,
         'flux',
       );
-      dispatch(setsspWalletIdentity(generatedSspWalletIdentity));
+      dispatch(setSspWalletIdentity(generatedSspWalletIdentity));
       const generatedSspWalletKeyIdentity = generateMultisigAddress(
         xpubWallet,
         xpubKey,

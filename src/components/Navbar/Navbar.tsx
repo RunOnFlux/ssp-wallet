@@ -3,14 +3,24 @@ import { useAppDispatch } from '../../hooks';
 import { setFluxInitialState, setPasswordBlobInitialState } from '../../store';
 import { Row, Col, Image } from 'antd';
 import { LockOutlined, SettingOutlined } from '@ant-design/icons';
+import './Navbar.css';
 
 function Navbar() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const logout = () => {
-    dispatch(setFluxInitialState());
-    dispatch(setPasswordBlobInitialState());
-    navigate('/login');
+    void (async function () {
+      if (chrome?.storage?.session) {
+        try {
+          await chrome.storage.session.clear();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      dispatch(setFluxInitialState());
+      dispatch(setPasswordBlobInitialState());
+      navigate('/login');
+    })();
   };
   return (
     <div className="navbar">
