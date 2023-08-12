@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAppSelector } from '../../hooks';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import { useAppDispatch } from '../../hooks';
@@ -15,19 +15,28 @@ const { confirm } = Modal;
 import './Key.css';
 import secureLocalStorage from 'react-secure-storage';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
+import axios from 'axios';
+import { syncSSPRelay } from '../../types';
 
 const xpubRegex = /^(xpub[1-9A-HJ-NP-Za-km-z]{79,108})$/; // /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/; later
+
+let pollingSyncInterval: string | number | NodeJS.Timer | undefined;
+let syncRunning = false;
 
 function Key(props: {
   derivationPath?: string;
   synchronised: (status: boolean) => void;
 }) {
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { derivationPath = 'xpub-48-19167-0-0', synchronised } = props;
   const dispatch = useAppDispatch();
   const [isModalKeyOpen, setIsModalKeyOpen] = useState(false);
   const [keyInput, setKeyInput] = useState('');
+  const [keyAutomaticInput, setKeyAutomaticInput] = useState('');
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const { xpubKey, xpubWallet } = useAppSelector((state) => state.flux);
+  const { xpubKey, xpubWallet, sspWalletIdentity } = useAppSelector(
+    (state) => state.flux,
+  );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
@@ -37,35 +46,98 @@ function Key(props: {
     });
   };
   useEffect(() => {
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
     // check if we have 2-xpub-48-19167-0-0
     if (!xpubKey) {
       // no xpubKey, show modal of Key
       setIsModalKeyOpen(true);
+      // start polling
+      checkSynced();
+      pollingSyncInterval = setInterval(() => {
+        checkSynced();
+      }, 1000);
     }
   });
 
+  const checkSynced = () => {
+    // check if we have 2-xpub-48-19167-0-0
+    if (!syncRunning && sspWalletIdentity) {
+      axios
+        .get<syncSSPRelay>(
+          `https://relay.ssp.runonflux.io/v1/sync/${sspWalletIdentity}`,
+        )
+        .then((res) => {
+          console.log(res);
+          const xpubKey = res.data.keyXpub;
+          const wkIdentity = res.data.wkIdentity;
+          // check that wkIdentity is correct
+          const generatedSspWalletKeyIdentity = generateMultisigAddress(
+            xpubWallet,
+            xpubKey,
+            10,
+            0,
+            'flux',
+          );
+          const generatedWkIdentity = generatedSspWalletKeyIdentity.address;
+          if (generatedWkIdentity !== wkIdentity) {
+            displayMessage(
+              'error',
+              'Synchronisation failed. Please try again manually.',
+            );
+            syncRunning = false;
+            if (pollingSyncInterval) {
+              clearInterval(pollingSyncInterval);
+            }
+            return;
+          }
+          // synced ok
+          syncRunning = false;
+          if (pollingSyncInterval) {
+            clearInterval(pollingSyncInterval);
+          }
+
+          setKeyInput(xpubKey);
+          setKeyAutomaticInput(xpubKey);
+        })
+        .catch((error) => {
+          console.log(error);
+          syncRunning = false;
+        });
+    }
+  };
+
+  useEffect(() => {
+    if (keyAutomaticInput) {
+      console.log('keyAutomaticInput', keyAutomaticInput);
+      handleOkModalKey();
+    }
+  }, [keyAutomaticInput]);
+
   const handleOkModalKey = () => {
     // display dialog awaiting synchronisation. This is automatic stuff
-    if (!keyInput) {
+    console.log(keyAutomaticInput);
+    if (!keyInput && !keyAutomaticInput) {
       displayMessage(
         'warning',
         'Awaiting SSP Key synhronisation or manual input',
       );
       return;
     }
+    const xpubKeyInput = keyInput || keyAutomaticInput;
     // validate xpub key is correct
-    if (xpubRegex.test(keyInput)) {
+    if (xpubRegex.test(xpubKeyInput)) {
       // alright we are in business
       let keyValid = true;
       // try generating an address from it
       try {
-        generateMultisigAddress(xpubWallet, keyInput, 0, 0, 'flux');
+        generateMultisigAddress(xpubWallet, xpubKeyInput, 0, 0, 'flux');
       } catch (error) {
         keyValid = false;
         displayMessage('error', 'Invalid SSP Key.');
       }
       if (!keyValid) return;
-      const xpub2 = keyInput;
+      const xpub2 = xpubKeyInput;
       dispatch(setXpubKey(xpub2));
       const fingerprint: string = getFingerprint();
 
@@ -80,7 +152,11 @@ function Key(props: {
             setIsModalKeyOpen(false);
             setKeyInputVisible(false);
             setKeyInput('');
+            setKeyAutomaticInput('');
             synchronised(true);
+            if (pollingSyncInterval) {
+              clearInterval(pollingSyncInterval);
+            }
             // tell parent that all is synced
           } else {
             displayMessage(
@@ -110,8 +186,12 @@ function Key(props: {
     try {
       setKeyInputVisible(false);
       setKeyInput('');
+      setKeyAutomaticInput('');
       // tell parent of failiure to logout
       synchronised(false);
+      if (pollingSyncInterval) {
+        clearInterval(pollingSyncInterval);
+      }
     } catch (error) {
       console.log(error);
     }
