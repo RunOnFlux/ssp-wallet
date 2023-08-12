@@ -163,6 +163,9 @@ function Login() {
       {isLoading && <Spin size="large" />}
       {!isLoading && (
         <>
+          <br />
+          <br />
+          <br />
           <Image width={80} preview={false} src="/ssp-logo.svg" />
           <h2>Welcome back!</h2>
           <h3>To your decentralized Cloud</h3>

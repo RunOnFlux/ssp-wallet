@@ -25,6 +25,9 @@ function Welcome() {
       {isLoading && <Spin size="large" />}
       {!isLoading && (
         <>
+          <br />
+          <br />
+          <br />
           <Image width={120} preview={false} src="/ssp-logo.svg" />
           <h1>Welcome to SSP Wallet</h1>
           <p className="welcome-text">

@@ -13,6 +13,7 @@ function Transactions() {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     fetchTransactions();
+    // todo fetch blockheight
   });
 
   const fetchTransactions = () => {

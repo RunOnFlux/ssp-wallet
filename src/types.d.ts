@@ -120,3 +120,10 @@ export interface syncSSPRelay {
   keyXpub: string;
   wkIdentity: string;
 }
+
+export type currencySSPRelay = Record<
+  string,
+  {
+    usd: number;
+  }
+>;

@@ -1,11 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setBalance, setUnconfirmedBalance } from '../../store';
 import { fetchAddressBalance } from '../../lib/balances.ts';
+import { fetchRate } from '../../lib/currency.ts';
 
 function Balances() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
+  const [fiatRate, setFiatRate] = useState(0);
   const dispatch = useAppDispatch();
   const { balance, unconfirmedBalance, address } = useAppSelector(
     (state) => state.flux,
@@ -15,6 +17,7 @@ function Balances() {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     fetchBalance();
+    obtainRate();
   });
 
   const fetchBalance = () => {
@@ -32,8 +35,23 @@ function Balances() {
   const totalBalance = new BigNumber(balance)
     .plus(new BigNumber(unconfirmedBalance))
     .dividedBy(1e8);
-  const rate = '0.42';
-  const balanceUSD = totalBalance.multipliedBy(new BigNumber(rate));
+  let balanceUSD = totalBalance.multipliedBy(new BigNumber(fiatRate));
+
+  useEffect(() => {
+    balanceUSD = totalBalance.multipliedBy(new BigNumber(fiatRate));
+  }, [fiatRate]);
+
+  const obtainRate = () => {
+    fetchRate('flux')
+      .then((rate) => {
+        console.log(rate);
+        setFiatRate(rate.usd);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   return (
     <>
       <h3>{totalBalance.toFixed(8) || '0.00'} FLUX</h3>
