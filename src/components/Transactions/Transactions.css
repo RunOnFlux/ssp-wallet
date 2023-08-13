@@ -1,0 +1,13 @@
+.table-icon {
+  width: 5px;
+}
+
+.table-time {
+  width: fit-content;
+}
+
+.table-amount {
+  line-break: initial;
+  word-break: none;
+  white-space: nowrap;
+}

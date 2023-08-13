@@ -8,6 +8,7 @@ import {
   VerticalAlignBottomOutlined,
 } from '@ant-design/icons';
 import { transaction } from '../../types';
+import './Transactions.css';
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -16,6 +17,7 @@ function TransactionsTable(props: {
   return (
     <>
       <Table
+        className="adjustedWidth"
         pagination={false}
         showHeader={false}
         rowKey="txid"
@@ -23,6 +25,7 @@ function TransactionsTable(props: {
         loading={false}
         dataSource={props.transactions}
         expandable={{
+          showExpandColumn: false,
           expandedRowRender: (record) => (
             <div>
               <p style={{ margin: 0, wordBreak: 'break-all' }}>
@@ -45,6 +48,7 @@ function TransactionsTable(props: {
         <Column
           title="Direction"
           dataIndex="amount"
+          className="table-icon"
           render={(amnt: string) => (
             <>
               {+amnt > 0 ? (
@@ -57,6 +61,7 @@ function TransactionsTable(props: {
         />
         <Column
           title="Date"
+          className="table-time"
           dataIndex="timestamp"
           render={(time: string) => (
             <>
@@ -68,6 +73,7 @@ function TransactionsTable(props: {
         />
         <Column
           title="Amount"
+          className="table-amount"
           dataIndex="amount"
           render={(amnt: string) => (
             <>{new BigNumber(amnt).dividedBy(1e8).toFixed()} FLUX</>
@@ -75,6 +81,7 @@ function TransactionsTable(props: {
         />
         <Column
           title="Confirmations"
+          className="table-icon"
           dataIndex="blockheight"
           render={(height: number) => (
             <>

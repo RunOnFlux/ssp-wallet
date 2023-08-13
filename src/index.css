@@ -35,6 +35,10 @@ body {
   height: calc(100% - 2rem);
 }
 
+.adjustedWidth {
+  width: calc(420px - 2rem);
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

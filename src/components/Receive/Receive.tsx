@@ -16,7 +16,7 @@ function Receive(props: {
   return (
     <>
       <Modal
-        title="Receive to Wallet 1"
+        title="Receive to Flux Wallet 1"
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center' }}

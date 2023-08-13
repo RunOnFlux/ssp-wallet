@@ -33,7 +33,7 @@ function Navbar() {
             onClick={() => navigate('/home')}
           />
         </Col>
-        <Col span={16}>Wallet 1</Col>
+        <Col span={16}>Flux Wallet 1</Col>
         <Col span={4}>
           <SettingOutlined style={{ fontSize: '16px', paddingRight: '6px' }} />{' '}
           <LockOutlined style={{ fontSize: '16px' }} onClick={logout} />
