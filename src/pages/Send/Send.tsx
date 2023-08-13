@@ -142,15 +142,16 @@ function Send() {
           name="amount"
           rules={[{ required: true, message: 'Input Amount to send' }]}
         >
-          <Input size="large" placeholder="Amount to Send" />
+          <Input size="large" placeholder="Amount to Send" suffix="FLUX" />
         </Form.Item>
 
         <Form.Item
           label="Fee"
           name="fee"
+          initialValue={'0.0001'}
           rules={[{ required: true, message: 'Input Fee to send' }]}
         >
-          <Input size="large" placeholder="Fee" />
+          <Input size="large" placeholder="Transaction Fee" suffix="FLUX" />
         </Form.Item>
 
         <Form.Item
@@ -160,7 +161,7 @@ function Send() {
             { required: false, message: 'Include message to transaction' },
           ]}
         >
-          <Input size="large" placeholder="Message" />
+          <Input size="large" placeholder="Payment Note" />
         </Form.Item>
 
         <Form.Item>
