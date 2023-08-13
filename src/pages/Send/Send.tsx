@@ -9,6 +9,7 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { generateAddressKeypair } from '../../lib/wallet';
 import axios from 'axios';
+import BigNumber from 'bignumber.js';
 
 interface sendForm {
   receiver: string;
@@ -80,11 +81,13 @@ function Send() {
           throw new Error('Invalid wallet xpriv, unable to decrypt');
         }
         const keyPair = generateAddressKeypair(xprivFlux, 0, 0, 'flux');
+        const amount = new BigNumber(values.amount).multipliedBy(1e8).toFixed();
+        const fee = new BigNumber(values.fee).multipliedBy(1e8).toFixed();
         constructAndSignTransaction(
           'flux',
           values.receiver,
-          values.amount,
-          values.fee,
+          amount,
+          fee,
           sender,
           sender,
           values.message,
