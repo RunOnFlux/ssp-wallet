@@ -1,9 +1,15 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Space } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import Receive from '../Receive/Receive';
 
 function Navigation() {
   const navigate = useNavigate();
+  const [openReceive, setOpenReceive] = useState(false);
+  const receiveAction = (status: boolean) => {
+    setOpenReceive(status);
+  };
   return (
     <>
       <Space direction="horizontal" size="large" style={{ marginBottom: 15 }}>
@@ -21,11 +27,14 @@ function Navigation() {
           shape="round"
           icon={<ArrowDownOutlined />}
           size={'large'}
-          onClick={() => navigate('/send')}
+          onClick={() => {
+            receiveAction(true);
+          }}
         >
           Receive
         </Button>
       </Space>
+      <Receive open={openReceive} openAction={receiveAction} />
     </>
   );
 }
