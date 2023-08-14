@@ -3,4 +3,11 @@
   place-items: center;
   line-height: 30px;
   width: calc(420px - 2rem);
+  height: 25px;
+}
+
+.ant-menu-submenu-title {
+  height: 30px !important;
+  line-height: 30px !important;
+  width: 35px !important;
 }

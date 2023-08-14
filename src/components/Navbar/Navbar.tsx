@@ -1,11 +1,60 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAppDispatch } from '../../hooks';
 import { setFluxInitialState, setPasswordBlobInitialState } from '../../store';
-import { Row, Col, Image } from 'antd';
+import { Row, Col, Image, Menu } from 'antd';
 import { LockOutlined, SettingOutlined } from '@ant-design/icons';
+import type { MenuProps } from 'antd';
 import './Navbar.css';
 
+const menuItems: MenuProps['items'] = [
+  {
+    key: 'Menu',
+    icon: <SettingOutlined style={{ fontSize: '14px' }} />,
+    style: {
+      border: 'none',
+      width: '30px',
+      height: '30px',
+      lineHeight: '30px',
+      display: 'flex',
+      padding: '4px 0px 4px 9px',
+      margin: 0,
+      marginTop: '-2px',
+    },
+    children: [
+      {
+        label: 'Item 1',
+        key: '1',
+      },
+      {
+        label: 'Item 2',
+        key: '2',
+      },
+    ],
+  },
+  {
+    key: 'Lock',
+    icon: <LockOutlined />,
+    style: {
+      border: 'none',
+      width: '30px',
+      height: '30px',
+      lineHeight: '30px',
+      display: 'flex',
+      padding: '4px 23px 0px 9px',
+      margin: 0,
+    },
+  },
+];
+
 function Navbar() {
+  const [current, setCurrent] = useState('');
+
+  const onClick: MenuProps['onClick'] = (e) => {
+    console.log('click ', e);
+    setCurrent(e.key);
+    if (e.key === 'Lock') logout();
+  };
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const logout = () => {
@@ -33,10 +82,27 @@ function Navbar() {
             onClick={() => navigate('/home')}
           />
         </Col>
-        <Col span={16}>Flux Wallet 1</Col>
+        <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
+          Flux Wallet 1
+        </Col>
         <Col span={4}>
-          <SettingOutlined style={{ fontSize: '16px', paddingRight: '6px' }} />{' '}
-          <LockOutlined style={{ fontSize: '16px' }} onClick={logout} />
+          <Menu
+            triggerSubMenuAction="click"
+            onClick={onClick}
+            selectedKeys={[current]}
+            mode="horizontal"
+            items={menuItems}
+            style={{
+              border: 'none',
+              height: '30px',
+              overflow: 'visible',
+              lineHeight: 'inherit',
+              display: 'flex',
+              padding: '0',
+              paddingInline: 0,
+              marginInline: 0,
+            }}
+          />
         </Col>
       </Row>
     </div>
