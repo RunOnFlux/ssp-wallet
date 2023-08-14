@@ -3,7 +3,8 @@ import { useAppSelector } from '../../hooks';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import { useAppDispatch } from '../../hooks';
 import { setXpubKey } from '../../store';
-import { Modal, QRCode, Button, Input, message } from 'antd';
+import { Modal, QRCode, Button, Input, message, Space, Typography } from 'antd';
+const { Paragraph, Text } = Typography;
 import { NoticeType } from 'antd/es/message/interface';
 import {
   decrypt as passworderDecrypt,
@@ -126,6 +127,13 @@ function Key(props: {
     }
     const xpubKeyInput = keyInput || keyAutomaticInput;
     // validate xpub key is correct
+    if (xpubKeyInput.trim() === xpubWallet.trim()) {
+      displayMessage(
+        'error',
+        'Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.',
+      );
+      return;
+    }
     if (xpubRegex.test(xpubKeyInput)) {
       // alright we are in business
       let keyValid = true;
@@ -234,14 +242,21 @@ function Key(props: {
         </b>
         <br />
         <br />
-        <QRCode
-          errorLevel="H"
-          value={xpubWallet}
-          icon="/ssp-logo.svg"
-          size={256}
-          style={{ margin: '0 auto' }}
-        />
-        <br />
+        <Space direction="vertical" size="small" style={{ marginBottom: 25 }}>
+          <QRCode
+            errorLevel="H"
+            value={xpubWallet}
+            icon="/ssp-logo.svg"
+            size={256}
+            style={{ margin: '0 auto' }}
+          />
+          <Paragraph
+            copyable={{ text: xpubWallet }}
+            className="copyableAddress"
+          >
+            <Text>{xpubWallet}</Text>
+          </Paragraph>
+        </Space>
         {!keyInputVisible && (
           <Button
             type="link"

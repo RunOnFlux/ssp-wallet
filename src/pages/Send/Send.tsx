@@ -98,6 +98,9 @@ function Send() {
             console.log(tx);
             // post to ssp relay
             postAction('tx', tx, 'flux', sspWalletKeyIdentity);
+
+            // todo here modal show qr code with tx to scan for manual synchronisation (in case relay not working)
+            // todo here start listening for txs on the address???
           })
           .catch((error: TypeError) => {
             displayMessage('error', error.message);
