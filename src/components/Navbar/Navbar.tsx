@@ -23,12 +23,12 @@ const menuItems: MenuProps['items'] = [
     },
     children: [
       {
-        label: 'Item 1',
-        key: '1',
+        label: 'Address Details',
+        key: 'account',
       },
       {
-        label: 'Item 2',
-        key: '2',
+        label: 'SSP Wallet Details',
+        key: 'wallet',
       },
     ],
   },

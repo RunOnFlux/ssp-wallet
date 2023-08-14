@@ -1,4 +1,4 @@
-import { Table } from 'antd';
+import { Table, Empty } from 'antd';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import {
@@ -18,6 +18,14 @@ function TransactionsTable(props: {
     <>
       <Table
         className="adjustedWidth"
+        locale={{
+          emptyText: (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="No Transaction History Found"
+            />
+          ),
+        }}
         pagination={false}
         showHeader={false}
         rowKey="txid"
