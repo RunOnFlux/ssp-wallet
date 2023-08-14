@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { useAppDispatch } from '../../hooks';
 import { setFluxInitialState, setPasswordBlobInitialState } from '../../store';
 import { Row, Col, Image, Menu } from 'antd';
@@ -48,11 +47,8 @@ const menuItems: MenuProps['items'] = [
 ];
 
 function Navbar() {
-  const [current, setCurrent] = useState('');
-
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
-    setCurrent(e.key);
     if (e.key === 'Lock') logout();
   };
   const navigate = useNavigate();
@@ -89,7 +85,7 @@ function Navbar() {
           <Menu
             triggerSubMenuAction="click"
             onClick={onClick}
-            selectedKeys={[current]}
+            selectable={false}
             mode="horizontal"
             items={menuItems}
             style={{
