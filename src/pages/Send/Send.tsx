@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Form, message, Divider, Button, Input, Space } from 'antd';
 import { Link } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
@@ -13,6 +14,7 @@ import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
+import { fetchAddressTransactions } from '../../lib/transactions.ts';
 
 interface sendForm {
   receiver: string;
@@ -21,12 +23,16 @@ interface sendForm {
   message: string;
 }
 
+let txSentInterval: string | number | NodeJS.Timeout | undefined;
+
 function Send() {
+  const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const {
     address: sender,
     redeemScript,
     sspWalletKeyIdentity,
+    transactions,
   } = useAppSelector((state) => state.flux);
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
@@ -34,9 +40,19 @@ function Send() {
   const [txid, setTxid] = useState('');
   const confirmTxAction = (status: boolean) => {
     setOpenConfirmTx(status);
+    if (status === false) {
+      // stop refreshing
+      if (txSentInterval) {
+        clearInterval(txSentInterval);
+      }
+    }
   };
   const txSentAction = (status: boolean) => {
     setOpenTxSent(status);
+    if (status === false) {
+      // all ok, navigate back to home
+      navigate('/home');
+    }
   };
 
   useEffect(() => {
@@ -123,8 +139,12 @@ function Send() {
             postAction('tx', tx, 'flux', sspWalletKeyIdentity);
             setTxHex(tx);
             setOpenConfirmTx(true);
-            // todo here start listening for txs on the address to see if it was successful
-            setTxid('123');
+            if (txSentInterval) {
+              clearInterval(txSentInterval);
+            }
+            txSentInterval = setInterval(() => {
+              fetchTransactions();
+            }, 5000);
           })
           .catch((error: TypeError) => {
             displayMessage('error', error.message);
@@ -138,6 +158,31 @@ function Send() {
           'Code S1: Something went wrong while decrypting password.',
         );
       });
+
+    const fetchTransactions = () => {
+      fetchAddressTransactions(sender, 'flux', 0, 3)
+        .then((txs) => {
+          const amount = new BigNumber(0)
+            .minus(new BigNumber(values.amount).multipliedBy(1e8))
+            .toFixed();
+          // amount must be the same and not present in our transactions table
+          txs.forEach((tx) => {
+            if (tx.amount === amount) {
+              const txExists = transactions.find((ttx) => ttx.txid === tx.txid);
+              if (!txExists) {
+                setTxid(tx.txid);
+                // stop interval
+                if (txSentInterval) {
+                  clearInterval(txSentInterval);
+                }
+              }
+            }
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
   };
   return (
     <>
