@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Form, message, Divider, Button, Input, Space } from 'antd';
 import { Link } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
@@ -10,6 +11,7 @@ import secureLocalStorage from 'react-secure-storage';
 import { generateAddressKeypair } from '../../lib/wallet';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
+import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 
 interface sendForm {
   receiver: string;
@@ -25,6 +27,11 @@ function Send() {
     redeemScript,
     sspWalletKeyIdentity,
   } = useAppSelector((state) => state.flux);
+  const [openConfirmTx, setopenConfirmTx] = useState(false);
+  const [txHex, setTxHex] = useState('');
+  const confirmTxAction = (status: boolean) => {
+    setopenConfirmTx(status);
+  };
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -98,9 +105,9 @@ function Send() {
             console.log(tx);
             // post to ssp relay
             postAction('tx', tx, 'flux', sspWalletKeyIdentity);
-
-            // todo here modal show qr code with tx to scan for manual synchronisation (in case relay not working)
-            // todo here start listening for txs on the address???
+            setTxHex(tx);
+            setopenConfirmTx(true);
+            // todo here start listening for txs on the address to see if it was successful
           })
           .catch((error: TypeError) => {
             displayMessage('error', error.message);
@@ -178,6 +185,11 @@ function Send() {
           </Space>
         </Form.Item>
       </Form>
+      <ConfirmTxKey
+        open={openConfirmTx}
+        openAction={confirmTxAction}
+        txHex={txHex}
+      />
     </>
   );
 }
