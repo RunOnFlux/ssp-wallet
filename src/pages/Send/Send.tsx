@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Form, message, Divider, Button, Input, Space } from 'antd';
 import { Link } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
@@ -12,6 +12,7 @@ import { generateAddressKeypair } from '../../lib/wallet';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
+import TxSent from '../../components/TxSent/TxSent';
 
 interface sendForm {
   receiver: string;
@@ -27,11 +28,26 @@ function Send() {
     redeemScript,
     sspWalletKeyIdentity,
   } = useAppSelector((state) => state.flux);
-  const [openConfirmTx, setopenConfirmTx] = useState(false);
+  const [openConfirmTx, setOpenConfirmTx] = useState(false);
+  const [openTxSent, setOpenTxSent] = useState(false);
   const [txHex, setTxHex] = useState('');
+  const [txid, setTxid] = useState('');
   const confirmTxAction = (status: boolean) => {
-    setopenConfirmTx(status);
+    setOpenConfirmTx(status);
   };
+  const txSentAction = (status: boolean) => {
+    setOpenTxSent(status);
+  };
+
+  useEffect(() => {
+    if (txid) {
+      setOpenConfirmTx(false);
+      setTimeout(() => {
+        setOpenTxSent(true);
+      });
+    }
+  }, [txid]);
+
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -106,8 +122,9 @@ function Send() {
             // post to ssp relay
             postAction('tx', tx, 'flux', sspWalletKeyIdentity);
             setTxHex(tx);
-            setopenConfirmTx(true);
+            setOpenConfirmTx(true);
             // todo here start listening for txs on the address to see if it was successful
+            setTxid('123');
           })
           .catch((error: TypeError) => {
             displayMessage('error', error.message);
@@ -190,6 +207,7 @@ function Send() {
         openAction={confirmTxAction}
         txHex={txHex}
       />
+      <TxSent open={openTxSent} openAction={txSentAction} txid={txid} />
     </>
   );
 }
