@@ -65,7 +65,10 @@ function processTransaction(
   }
 
   const fee = new BigNumber(insightTx.fees).multipliedBy(new BigNumber(1e8));
-  const amount = amountReceivedInItx.minus(amountSentInItx);
+  let amount = amountReceivedInItx.minus(amountSentInItx);
+  if (amount.isNegative()) {
+    amount = amount.plus(fee); // we were the ones sending fee
+  }
 
   const tx: transaction = {
     txid: insightTx.txid,

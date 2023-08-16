@@ -39,7 +39,9 @@ function TransactionsTable(props: {
               <p style={{ margin: 0, wordBreak: 'break-all' }}>
                 TXID: {record.txid}
               </p>
-              <p style={{ margin: 0 }}>Fee: {record.fee} FLUX</p>
+              <p style={{ margin: 0 }}>
+                Fee: {new BigNumber(record.fee).dividedBy(1e8).toFixed()} FLUX
+              </p>
               <p style={{ margin: 0 }}>Note: {record.message || '-'}</p>
               <a
                 href={`https://explorer.runonflux.io/tx/${record.txid}`}
