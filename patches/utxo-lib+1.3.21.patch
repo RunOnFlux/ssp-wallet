@@ -30,3 +30,70 @@ index fea5ae9..a234d77 100644
    } else {
      network = network || NETWORKS.bitcoin
  
+diff --git a/node_modules/utxo-lib/src/hdnode.js b/node_modules/utxo-lib/src/hdnode.js
+index 9ee4ec9..e4e0fd3 100644
+--- a/node_modules/utxo-lib/src/hdnode.js
++++ b/node_modules/utxo-lib/src/hdnode.js
+@@ -16,8 +16,9 @@ var bs58checkBase = require('bs58check/base')
+ 
+ var fastcurve = require('./fastcurve')
+ 
+-function HDNode (keyPair, chainCode) {
+-  typeforce(types.tuple('ECPair', types.Buffer256bit), arguments)
++function HDNode(keyPair, chainCode) {
++  // disable as production code is not working with this line. typeforce has a readme about it.
++  // typeforce(types.tuple('ECPair', types.Buffer256bit), arguments)
+ 
+   if (!keyPair.compressed) throw new TypeError('BIP32 only allows compressed keyPairs')
+ 
+@@ -74,12 +75,12 @@ HDNode.fromBase58 = function (string, networks) {
+   if (Array.isArray(networks)) {
+     network = networks.filter(function (x) {
+       return version === x.bip32.private ||
+-             version === x.bip32.public
++        version === x.bip32.public
+     }).pop()
+ 
+     if (!network) throw new Error('Unknown network version')
+ 
+-  // otherwise, assume a network object (or default to bitcoin)
++    // otherwise, assume a network object (or default to bitcoin)
+   } else {
+     network = networks || NETWORKS.bitcoin
+   }
+@@ -112,7 +113,7 @@ HDNode.fromBase58 = function (string, networks) {
+     var d = BigInteger.fromBuffer(buffer.slice(46, 78))
+     keyPair = new ECPair(d, null, { network: network })
+ 
+-  // 33 bytes: public key data (0x02 + X or 0x03 + X)
++    // 33 bytes: public key data (0x02 + X or 0x03 + X)
+   } else {
+     var Q = ecurve.Point.decodeFrom(curve, buffer.slice(45, 78))
+     // Q.compressed is assumed, if somehow this assumption is broken, `new HDNode` will throw
+@@ -203,7 +204,7 @@ HDNode.prototype.toBase58 = function (__isPrivate) {
+     buffer.writeUInt8(0, 45)
+     this.keyPair.d.toBuffer(32).copy(buffer, 46)
+ 
+-  // 33 bytes: the public key
++    // 33 bytes: the public key
+   } else {
+     // X9.62 encoding for public keys
+     this.keyPair.getPublicKeyBuffer().copy(buffer, 45)
+@@ -228,7 +229,7 @@ HDNode.prototype.derive = function (index) {
+     this.keyPair.d.toBuffer(32).copy(data, 1)
+     data.writeUInt32BE(index, 33)
+ 
+-  // Normal child
++    // Normal child
+   } else {
+     // data = serP(point(kpar)) || ser32(index)
+     //      = serP(Kpar) || ser32(index)
+@@ -262,7 +263,7 @@ HDNode.prototype.derive = function (index) {
+       network: this.keyPair.network
+     })
+ 
+-  // Public parent key -> public child key
++    // Public parent key -> public child key
+   } else {
+     // Ki = point(parse256(IL)) + Kpar
+     //    = G*IL + Kpar
