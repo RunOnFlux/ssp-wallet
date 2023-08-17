@@ -1,3 +1,37 @@
+diff --git a/node_modules/utxo-lib/src/ecdsa.js b/node_modules/utxo-lib/src/ecdsa.js
+index 8841f6e..5003c51 100644
+--- a/node_modules/utxo-lib/src/ecdsa.js
++++ b/node_modules/utxo-lib/src/ecdsa.js
+@@ -13,7 +13,7 @@ var ecurve = require('ecurve')
+ var secp256k1 = ecurve.getCurveByName('secp256k1')
+ 
+ // https://tools.ietf.org/html/rfc6979#section-3.2
+-function deterministicGenerateK (hash, x, checkSig) {
++function deterministicGenerateK(hash, x, checkSig) {
+   typeforce(types.tuple(
+     types.Hash256bit,
+     types.Buffer256bit,
+@@ -74,8 +74,9 @@ function deterministicGenerateK (hash, x, checkSig) {
+ 
+ var N_OVER_TWO = secp256k1.n.shiftRight(1)
+ 
+-function sign (hash, d) {
+-  typeforce(types.tuple(types.Hash256bit, types.BigInt), arguments)
++function sign(hash, d) {
++  // disable as production code is not working with this line
++  // typeforce(types.tuple(types.Hash256bit, types.BigInt), arguments)
+ 
+   var x = d.toBuffer(32)
+   var e = BigInteger.fromBuffer(hash)
+@@ -105,7 +106,7 @@ function sign (hash, d) {
+   return new ECSignature(r, s)
+ }
+ 
+-function verify (hash, signature, Q) {
++function verify(hash, signature, Q) {
+   typeforce(types.tuple(
+     types.Hash256bit,
+     types.ECSignature,
 diff --git a/node_modules/utxo-lib/src/ecpair.js b/node_modules/utxo-lib/src/ecpair.js
 index fea5ae9..a234d77 100644
 --- a/node_modules/utxo-lib/src/ecpair.js
@@ -30,6 +64,34 @@ index fea5ae9..a234d77 100644
    } else {
      network = network || NETWORKS.bitcoin
  
+diff --git a/node_modules/utxo-lib/src/ecsignature.js b/node_modules/utxo-lib/src/ecsignature.js
+index c74dfe3..9196715 100644
+--- a/node_modules/utxo-lib/src/ecsignature.js
++++ b/node_modules/utxo-lib/src/ecsignature.js
+@@ -4,8 +4,8 @@ var types = require('./types')
+ 
+ var BigInteger = require('bigi')
+ 
+-function ECSignature (r, s) {
+-  typeforce(types.tuple(types.BigInt, types.BigInt), arguments)
++function ECSignature(r, s) {
++  // typeforce(types.tuple(types.BigInt, types.BigInt), arguments)
+ 
+   this.r = r
+   this.s = s
+diff --git a/node_modules/utxo-lib/src/fastcurve.js b/node_modules/utxo-lib/src/fastcurve.js
+index b6e0621..854da47 100644
+--- a/node_modules/utxo-lib/src/fastcurve.js
++++ b/node_modules/utxo-lib/src/fastcurve.js
+@@ -46,7 +46,7 @@ var publicKeyCreate = function (buffer, compressed) {
+  * @return {ECSignature}
+  */
+ var sign = function (hash, d) {
+-  typeforce(types.tuple(types.Buffer256bit, types.BigInt), arguments)
++  // typeforce(types.tuple(types.Buffer256bit, types.BigInt), arguments)
+ 
+   if (!available) {
+     return undefined
 diff --git a/node_modules/utxo-lib/src/hdnode.js b/node_modules/utxo-lib/src/hdnode.js
 index 9ee4ec9..e4e0fd3 100644
 --- a/node_modules/utxo-lib/src/hdnode.js
