@@ -1,5 +1,6 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
+import utxolib from 'utxo-lib';
 import { transacitonsInsight, transactionInsight, transaction } from '../types';
 
 import { blockchains } from '@storage/blockchains';
@@ -101,4 +102,42 @@ export async function fetchAddressTransactions(
     console.log(error);
     throw error;
   }
+}
+
+interface output {
+  script: Buffer;
+  value: number;
+}
+
+export function decodeTransactionForApproval(
+  rawTx: string,
+  myAddress: string,
+  chain = 'flux',
+) {
+  const network = utxolib.networks[chain];
+  const txhex = rawTx;
+  const txb = utxolib.TransactionBuilder.fromTransaction(
+    utxolib.Transaction.fromHex(txhex, network),
+    network,
+  );
+  console.log(JSON.stringify(txb));
+  let txReceiver = '';
+  let amount = '0';
+  txb.tx.outs.forEach((out: output) => {
+    if (out.value) {
+      const address = utxolib.address.fromOutputScript(out.script, network);
+      console.log(address);
+      if (address !== myAddress) {
+        txReceiver = address;
+        amount = new BigNumber(out.value)
+          .dividedBy(new BigNumber(1e8))
+          .toFixed();
+      }
+    }
+  });
+  const txInfo = {
+    receiver: txReceiver,
+    amount,
+  };
+  return txInfo;
 }
