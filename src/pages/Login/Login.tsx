@@ -62,10 +62,15 @@ function Login() {
           if (typeof pwd === 'string') {
             setIsLoading(true);
             setPassword(pwd);
+          } else {
+            setIsLoading(false);
           }
         } catch (error) {
           console.log(error);
+          setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     })();
   });
@@ -89,8 +94,6 @@ function Login() {
   useEffect(() => {
     if (password) {
       decryptWallet();
-    } else {
-      setIsLoading(false);
     }
   }, [password]);
 
