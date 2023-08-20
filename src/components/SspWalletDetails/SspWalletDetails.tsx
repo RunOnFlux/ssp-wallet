@@ -89,7 +89,7 @@ function Receive(props: {
         title="FLUX SSP Wallet Details (BIP-48)"
         open={open}
         onOk={handleOk}
-        style={{ textAlign: 'center' }}
+        style={{ textAlign: 'center', top: 60 }}
         onCancel={handleOk}
         footer={[
           <Button key="ok" type="primary" onClick={handleOk}>

@@ -19,7 +19,7 @@ function Receive(props: {
         title="Receive to Flux Wallet 1"
         open={open}
         onOk={handleOk}
-        style={{ textAlign: 'center' }}
+        style={{ textAlign: 'center', top: 60 }}
         onCancel={handleOk}
         footer={[
           <Button key="ok" type="primary" onClick={handleOk}>

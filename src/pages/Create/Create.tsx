@@ -265,7 +265,7 @@ function Create() {
         onOk={handleOk}
         onCancel={handleCancel}
         okText="Create Wallet"
-        style={{ textAlign: 'center' }}
+        style={{ textAlign: 'center', top: 60 }}
       >
         <p>
           Wallet seed is used to generate all addresses. Anyone with the access

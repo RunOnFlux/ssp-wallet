@@ -71,7 +71,7 @@ function Receive(props: {
         title="FLUX Address Details (BIP-48)"
         open={open}
         onOk={handleOk}
-        style={{ textAlign: 'center' }}
+        style={{ textAlign: 'center', top: 60 }}
         onCancel={handleOk}
         footer={[
           <Button key="ok" type="primary" onClick={handleOk}>

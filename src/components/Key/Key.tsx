@@ -231,7 +231,7 @@ function Key(props: {
         onOk={handleOkModalKey}
         onCancel={handleCancelModalKey}
         okText="Sync Key"
-        style={{ textAlign: 'center' }}
+        style={{ textAlign: 'center', top: 60 }}
       >
         <p>
           SSP Wallet is a Dual Signature Wallet. You will need to download SSP
