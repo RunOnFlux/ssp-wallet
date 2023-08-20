@@ -27,6 +27,7 @@ import { NoticeType } from 'antd/es/message/interface';
 import { getFingerprint } from '../../lib/fingerprint';
 
 import { generateIdentityAddress } from '../../lib/wallet.ts';
+import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 
 interface loginForm {
   password: string;
@@ -211,6 +212,7 @@ function Login() {
           >
             Forgot Password? <i> Restore</i>
           </Button>
+          <PoweredByFlux />
         </>
       )}
     </>

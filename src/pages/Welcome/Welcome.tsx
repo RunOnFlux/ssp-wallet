@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import secureLocalStorage from 'react-secure-storage';
 import { Button, Image, Space, Spin } from 'antd';
 import './Welcome.css';
+import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux';
 
 function Welcome() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
@@ -48,6 +49,7 @@ function Welcome() {
           </Space>
         </>
       )}
+      <PoweredByFlux />
     </>
   );
 }
