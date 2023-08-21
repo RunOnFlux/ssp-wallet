@@ -1,5 +1,5 @@
 import { QRCode, Typography, Button, Space, Modal } from 'antd';
-import { blockchains } from '@storage/blockchains';
+import { backends } from '@storage/backends';
 const { Paragraph, Text } = Typography;
 
 function TxSent(props: {
@@ -9,14 +9,14 @@ function TxSent(props: {
   chain?: string;
 }) {
   const { open, openAction, chain = 'flux' } = props;
-  const blockchainConfig = blockchains[chain];
+  const backendConfig = backends[chain];
 
   const handleOk = () => {
     openAction(false);
   };
 
   const openInExplorer = () => {
-    window.open(`https://${blockchainConfig.node}/tx/${props.txid}`, '_blank');
+    window.open(`https://${backendConfig.node}/tx/${props.txid}`, '_blank');
   };
   return (
     <>

@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import utxolib from 'utxo-lib';
 import { transacitonsInsight, transactionInsight, transaction } from '../types';
 
-import { blockchains } from '@storage/blockchains';
+import { backends } from '@storage/backends';
 
 function decodeMessage(asm: string) {
   const parts = asm.split('OP_RETURN ', 2);
@@ -89,8 +89,8 @@ export async function fetchAddressTransactions(
   to: number,
 ): Promise<transaction[]> {
   try {
-    const blockchainConfig = blockchains[chain];
-    const url = `https://${blockchainConfig.node}/api/addrs/${address}/txs?from=${from}&to=${to}`;
+    const backendConfig = backends[chain];
+    const url = `https://${backendConfig.node}/api/addrs/${address}/txs?from=${from}&to=${to}`;
     const response = await axios.get<transacitonsInsight>(url);
     const txs = [];
     for (const tx of response.data.items) {

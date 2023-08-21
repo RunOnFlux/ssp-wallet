@@ -1,10 +1,11 @@
-const backends = {
-  flux: {
-    node: 'explorer.runonflux.io',
-  },
-  fluxTestnet: {
-    node: 'testnet.runonflux.io',
-  },
+const flux = {
+  node: 'explorer.runonflux.io',
+};
+const fluxTestnet = {
+  node: 'testnet.runonflux.io',
 };
 
-export default backends;
+export const backends = {
+  flux,
+  fluxTestnet,
+};

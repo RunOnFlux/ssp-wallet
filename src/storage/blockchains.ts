@@ -1,4 +1,4 @@
-import backends from './backends';
+import { backends } from './backends';
 
 const flux = {
   id: 'flux',

@@ -4,15 +4,15 @@ import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { utxo, broadcastTxResult } from '../types';
 
-import { blockchains } from '@storage/blockchains';
+import { backends } from '@storage/backends';
 
 export async function fetchUtxos(
   address: string,
   chain: string,
 ): Promise<utxo[]> {
   try {
-    const blockchainConfig = blockchains[chain];
-    const url = `https://${blockchainConfig.node}/api/addr/${address}/utxo`;
+    const backendConfig = backends[chain];
+    const url = `https://${backendConfig.node}/api/addr/${address}/utxo`;
     const { data } = await axios.get<utxo[]>(url);
     const fetchedUtxos = data;
     const utxos = fetchedUtxos.map((x) => ({
@@ -319,8 +319,8 @@ export async function broadcastTx(
   chain = 'flux',
 ): Promise<string> {
   try {
-    const blockchainConfig = blockchains[chain];
-    const url = `https://${blockchainConfig.node}/api/tx/send`;
+    const backendConfig = backends[chain];
+    const url = `https://${backendConfig.node}/api/tx/send`;
     const response = await axios.post<broadcastTxResult>(url, { rawtx: txHex });
     return response.data.txid;
   } catch (error) {
