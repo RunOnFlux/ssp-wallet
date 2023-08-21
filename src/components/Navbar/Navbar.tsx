@@ -8,6 +8,7 @@ import type { MenuProps } from 'antd';
 import './Navbar.css';
 import SspWalletDetails from '../SspWalletDetails/SspWalletDetails';
 import AddressDetails from '../AddressDetails/AddressDetails';
+import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
 
 const menuItems: MenuProps['items'] = [
   {
@@ -50,6 +51,7 @@ const menuItems: MenuProps['items'] = [
 ];
 
 function Navbar() {
+  const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const sspWalletDetailsAction = (status: boolean) => {
     setOpenSspWalletDetails(status);
@@ -58,11 +60,26 @@ function Navbar() {
   const addressDetailsAction = (status: boolean) => {
     setOpenAddressDetails(status);
   };
+  const [passwordConfirmDialogVisilbe, setPasswordConfirmDialogVisible] =
+    useState(false);
+  const passwordConfirmDialogAction = (status: boolean) => {
+    if (status === true) {
+      if (actionToPerform === 'address') setOpenAddressDetails(true);
+      if (actionToPerform === 'sspwallet') setOpenSspWalletDetails(true);
+    }
+    setPasswordConfirmDialogVisible(false);
+  };
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
     if (e.key === 'Lock') logout();
-    if (e.key === 'address') setOpenAddressDetails(true);
-    if (e.key === 'sspwallet') setOpenSspWalletDetails(true);
+    if (e.key === 'address') {
+      setPasswordConfirmDialogVisible(true);
+      setActionToPerform('address');
+    }
+    if (e.key === 'sspwallet') {
+      setPasswordConfirmDialogVisible(true);
+      setActionToPerform('sspwallet');
+    }
   };
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -123,6 +140,10 @@ function Navbar() {
       <AddressDetails
         open={openAddressDetails}
         openAction={addressDetailsAction}
+      />
+      <PasswordConfirm
+        open={passwordConfirmDialogVisilbe}
+        openAction={passwordConfirmDialogAction}
       />
     </>
   );
