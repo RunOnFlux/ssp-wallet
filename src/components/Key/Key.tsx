@@ -18,6 +18,7 @@ import secureLocalStorage from 'react-secure-storage';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
 import axios from 'axios';
 import { syncSSPRelay } from '../../types';
+import sspConfig from '@storage/ssp';
 
 const xpubRegex = /^(xpub[1-9A-HJ-NP-Za-km-z]{79,108})$/; // /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/; later
 
@@ -66,7 +67,7 @@ function Key(props: {
     if (!syncRunning && sspWalletIdentity) {
       axios
         .get<syncSSPRelay>(
-          `https://relay.ssp.runonflux.io/v1/sync/${sspWalletIdentity}`,
+          `https://${sspConfig.relay}/v1/sync/${sspWalletIdentity}`,
         )
         .then((res) => {
           console.log(res);
