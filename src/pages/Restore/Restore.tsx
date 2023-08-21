@@ -42,15 +42,6 @@ interface passwordForm {
 
 const { TextArea } = Input;
 
-localForage.config({
-  name: 'SSPWallet',
-  driver: [localForage.INDEXEDDB, localForage.WEBSQL, localForage.LOCALSTORAGE],
-  version: 1.0,
-  size: 4980736, // Size of database, in bytes. WebSQL-only for now.
-  storeName: 'keyvaluepairs', // Should be alphanumeric, with underscores.
-  description: 'Database for SSP Wallet',
-});
-
 function Restore() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();

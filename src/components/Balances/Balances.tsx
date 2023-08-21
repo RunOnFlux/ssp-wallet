@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
+import localForage from 'localforage';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setBalance, setUnconfirmedBalance } from '../../store';
 import { fetchAddressBalance } from '../../lib/balances.ts';
@@ -22,9 +23,10 @@ function Balances() {
 
   const fetchBalance = () => {
     fetchAddressBalance(address, 'flux')
-      .then((balance) => {
+      .then(async (balance) => {
         dispatch(setBalance(balance.confirmed));
         dispatch(setUnconfirmedBalance(balance.unconfirmed));
+        await localForage.setItem('balances-flux', balance);
         console.log(balance);
       })
       .catch((error) => {

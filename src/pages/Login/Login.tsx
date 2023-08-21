@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Image, Button, Form, message, Spin } from 'antd';
+import localForage from 'localforage';
+import { setTransactions, setBlockheight } from '../../store';
+import { setBalance, setUnconfirmedBalance } from '../../store';
 
 import {
   EyeInvisibleOutlined,
@@ -28,10 +31,21 @@ import { getFingerprint } from '../../lib/fingerprint';
 
 import { generateIdentityAddress } from '../../lib/wallet.ts';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
+import { transaction } from '../../types';
 
 interface loginForm {
   password: string;
 }
+
+interface balancesObj {
+  confirmed: string;
+  unconfirmed: string;
+}
+
+const balancesObject = {
+  confirmed: '0.00',
+  unconfirmed: '0.00',
+};
 
 type pwdDecrypt = Record<string, string>;
 
@@ -138,6 +152,23 @@ function Login() {
             }
             dispatch(setPasswordBlob(pwBlob));
             // disaptch decryption of xpub of key 2-xpub-48-19167-0-0 if exists, if not, navigate to Key
+            // load txs, balances, settings etc.
+            const txsFlux: transaction[] =
+              (await localForage.getItem('transactions-flux')) ?? [];
+            const blockheightFlux: number =
+              (await localForage.getItem('blockheight-flux')) ?? 0;
+            const balancesFlux: balancesObj =
+              (await localForage.getItem('balances-flux')) ?? balancesObject;
+            if (txsFlux) {
+              dispatch(setTransactions(txsFlux)) ?? balancesObject;
+            }
+            if (balancesFlux) {
+              dispatch(setBalance(balancesFlux.confirmed));
+              dispatch(setUnconfirmedBalance(balancesFlux.unconfirmed));
+            }
+            if (blockheightFlux) {
+              dispatch(setBlockheight(blockheightFlux));
+            }
             navigate('/home');
           } else {
             displayMessage(

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import localForage from 'localforage';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setTransactions, setBlockheight } from '../../store';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
@@ -21,8 +22,9 @@ function Transactions() {
 
   const fetchTransactions = () => {
     fetchAddressTransactions(address, 'flux', 0, 10)
-      .then((txs) => {
+      .then(async (txs) => {
         dispatch(setTransactions(txs));
+        await localForage.setItem('transactions-flux', txs);
       })
       .catch((error) => {
         console.log(error);
@@ -30,8 +32,9 @@ function Transactions() {
   };
   const fetchBlockheight = () => {
     getBlockheight('flux')
-      .then((height) => {
+      .then(async (height) => {
         dispatch(setBlockheight(height));
+        await localForage.setItem('blockheight-flux', height);
       })
       .catch((error) => {
         console.log(error);
