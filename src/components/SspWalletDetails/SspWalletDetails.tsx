@@ -8,7 +8,7 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 
-function Receive(props: {
+function SSPWalletDetails(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
@@ -157,4 +157,4 @@ function Receive(props: {
   );
 }
 
-export default Receive;
+export default SSPWalletDetails;

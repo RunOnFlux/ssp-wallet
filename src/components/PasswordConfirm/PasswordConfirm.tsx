@@ -16,7 +16,7 @@ interface passwordForm {
 }
 
 // check if password is correct
-function ConfirmTxKey(props: {
+function PasswordConfirm(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
@@ -136,4 +136,4 @@ function ConfirmTxKey(props: {
   );
 }
 
-export default ConfirmTxKey;
+export default PasswordConfirm;

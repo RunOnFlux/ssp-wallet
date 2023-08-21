@@ -9,6 +9,7 @@ import './Navbar.css';
 import SspWalletDetails from '../SspWalletDetails/SspWalletDetails';
 import AddressDetails from '../AddressDetails/AddressDetails';
 import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
+import Settings from '../Settings/Settings';
 
 const menuItems: MenuProps['items'] = [
   {
@@ -32,6 +33,10 @@ const menuItems: MenuProps['items'] = [
       {
         label: 'SSP Wallet Details',
         key: 'sspwallet',
+      },
+      {
+        label: 'Settings',
+        key: 'settings',
       },
     ],
   },
@@ -60,6 +65,11 @@ function Navbar() {
   const addressDetailsAction = (status: boolean) => {
     setOpenAddressDetails(status);
   };
+  const [openSettingsDialogVisilbe, setOpenSettingsDialogVisible] =
+    useState(false);
+  const settingsDialogAction = (status: boolean) => {
+    setOpenSettingsDialogVisible(status);
+  };
   const [passwordConfirmDialogVisilbe, setPasswordConfirmDialogVisible] =
     useState(false);
   const passwordConfirmDialogAction = (status: boolean) => {
@@ -80,6 +90,7 @@ function Navbar() {
       setPasswordConfirmDialogVisible(true);
       setActionToPerform('sspwallet');
     }
+    if (e.key === 'settings') setOpenSettingsDialogVisible(true);
   };
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -144,6 +155,10 @@ function Navbar() {
       <PasswordConfirm
         open={passwordConfirmDialogVisilbe}
         openAction={passwordConfirmDialogAction}
+      />
+      <Settings
+        open={openSettingsDialogVisilbe}
+        openAction={settingsDialogAction}
       />
     </>
   );
