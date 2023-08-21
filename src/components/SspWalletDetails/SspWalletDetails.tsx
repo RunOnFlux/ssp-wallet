@@ -6,6 +6,7 @@ import { useAppSelector } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
+import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 
 function Receive(props: {
   open: boolean;
@@ -15,6 +16,11 @@ function Receive(props: {
   const [xpriv, setXpriv] = useState('');
   const [xpub, setXpub] = useState('');
   const [seedPhrase, setSeedPhrase] = useState('');
+  const [extendedPublicKeyVisible, setExtendedPublicKeyVisible] =
+    useState(false);
+  const [extendedPrivateKeyVisible, setExtendedPrivateKeyVisible] =
+    useState(false);
+  const [seedPhraseVisible, setSeedPhraseVisible] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   // SSP is seedPhrase, xpub, xpriv
   const { open, openAction } = props;
@@ -33,6 +39,9 @@ function Receive(props: {
   });
 
   const handleOk = () => {
+    setExtendedPrivateKeyVisible(false);
+    setExtendedPublicKeyVisible(false);
+    setSeedPhraseVisible(false);
     openAction(false);
   };
 
@@ -97,17 +106,51 @@ function Receive(props: {
           </Button>,
         ]}
       >
-        <h3>SSP Wallet Mnemonic Seed Phrase:</h3>
+        <h3>
+          {seedPhraseVisible && (
+            <EyeTwoTone onClick={() => setSeedPhraseVisible(false)} />
+          )}
+          {!seedPhraseVisible && (
+            <EyeInvisibleOutlined onClick={() => setSeedPhraseVisible(true)} />
+          )}{' '}
+          SSP Wallet Mnemonic Seed Phrase:
+        </h3>
         <Paragraph copyable={{ text: seedPhrase }} className="copyableAddress">
-          <Text>{seedPhrase}</Text>
+          <Text>
+            {seedPhraseVisible ? seedPhrase : '*** *** *** *** *** ***'}
+          </Text>
         </Paragraph>
-        <h3>SSP Wallet Extended Public Key:</h3>
+        <h3>
+          {extendedPublicKeyVisible && (
+            <EyeTwoTone onClick={() => setExtendedPublicKeyVisible(false)} />
+          )}
+          {!extendedPublicKeyVisible && (
+            <EyeInvisibleOutlined
+              onClick={() => setExtendedPublicKeyVisible(true)}
+            />
+          )}{' '}
+          SSP Wallet Extended Public Key:
+        </h3>
         <Paragraph copyable={{ text: xpub }} className="copyableAddress">
-          <Text>{xpub}</Text>
+          <Text>
+            {extendedPublicKeyVisible ? xpub : '*** *** *** *** *** ***'}
+          </Text>
         </Paragraph>
-        <h3>SSP Wallet Extended Private Key:</h3>
+        <h3>
+          {extendedPrivateKeyVisible && (
+            <EyeTwoTone onClick={() => setExtendedPrivateKeyVisible(false)} />
+          )}
+          {!extendedPrivateKeyVisible && (
+            <EyeInvisibleOutlined
+              onClick={() => setExtendedPrivateKeyVisible(true)}
+            />
+          )}{' '}
+          SSP Wallet Extended Private Key:
+        </h3>
         <Paragraph copyable={{ text: xpriv }} className="copyableAddress">
-          <Text>{xpriv}</Text>
+          <Text>
+            {extendedPrivateKeyVisible ? xpriv : '*** *** *** *** *** ***'}
+          </Text>
         </Paragraph>
       </Modal>
     </>

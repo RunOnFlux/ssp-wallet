@@ -7,6 +7,7 @@ import { getFingerprint } from '../../lib/fingerprint';
 import { generateAddressKeypair } from '../../lib/wallet';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
+import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 
 function Receive(props: {
   open: boolean;
@@ -14,6 +15,8 @@ function Receive(props: {
 }) {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [privKey, setPrivKey] = useState('');
+  const [redeemScriptVisible, setRedeemScriptVisible] = useState(false);
+  const [privateKeyVisible, setPrivateKeyVisible] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   // private key, redeemScript, address
   const { open, openAction } = props;
@@ -33,6 +36,8 @@ function Receive(props: {
   });
 
   const handleOk = () => {
+    setRedeemScriptVisible(false);
+    setPrivateKeyVisible(false);
     openAction(false);
   };
 
@@ -83,16 +88,36 @@ function Receive(props: {
         <Paragraph copyable={{ text: address }} className="copyableAddress">
           <Text>{address}</Text>
         </Paragraph>
-        <h3>Wallet Redeem Script:</h3>
+        <h3>
+          {redeemScriptVisible && (
+            <EyeTwoTone onClick={() => setRedeemScriptVisible(false)} />
+          )}
+          {!redeemScriptVisible && (
+            <EyeInvisibleOutlined
+              onClick={() => setRedeemScriptVisible(true)}
+            />
+          )}{' '}
+          Wallet Redeem Script:
+        </h3>
         <Paragraph
           copyable={{ text: redeemScript }}
           className="copyableAddress"
         >
-          <Text>{redeemScript}</Text>
+          <Text>
+            {redeemScriptVisible ? redeemScript : '*** *** *** *** *** ***'}
+          </Text>
         </Paragraph>
-        <h3>Wallet Private Key:</h3>
+        <h3>
+          {privateKeyVisible && (
+            <EyeTwoTone onClick={() => setPrivateKeyVisible(false)} />
+          )}
+          {!privateKeyVisible && (
+            <EyeInvisibleOutlined onClick={() => setPrivateKeyVisible(true)} />
+          )}{' '}
+          Wallet Private Key:
+        </h3>
         <Paragraph copyable={{ text: privKey }} className="copyableAddress">
-          <Text>{privKey}</Text>
+          <Text>{privateKeyVisible ? privKey : '*** *** *** *** *** ***'}</Text>
         </Paragraph>
       </Modal>
     </>
