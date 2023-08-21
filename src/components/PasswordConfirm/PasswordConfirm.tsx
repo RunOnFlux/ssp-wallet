@@ -20,6 +20,7 @@ function ConfirmTxKey(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
+  const [form] = Form.useForm();
   const { open, openAction } = props;
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
@@ -30,10 +31,12 @@ function ConfirmTxKey(props: {
   };
 
   const handleOk = () => {
+    form.resetFields();
     openAction(true);
   };
 
   const handleNotOk = () => {
+    form.resetFields();
     openAction(false);
   };
 
@@ -87,6 +90,7 @@ function ConfirmTxKey(props: {
             Grant access with psasword.
           </p>
           <Form
+            form={form}
             name="pwForm"
             onFinish={(values) => void onFinish(values as passwordForm)}
             autoComplete="off"
