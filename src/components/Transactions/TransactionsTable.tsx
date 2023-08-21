@@ -9,11 +9,15 @@ import {
 } from '@ant-design/icons';
 import { transaction } from '../../types';
 import './Transactions.css';
+import { blockchains } from '@storage/blockchains';
 
 function TransactionsTable(props: {
   transactions: transaction[];
   blockheight: number;
+  chain?: string;
 }) {
+  const { chain = 'flux' } = props;
+  const blockchainConfig = blockchains[chain];
   return (
     <>
       <Table
@@ -44,7 +48,7 @@ function TransactionsTable(props: {
               </p>
               <p style={{ margin: 0 }}>Note: {record.message || '-'}</p>
               <a
-                href={`https://explorer.runonflux.io/tx/${record.txid}`}
+                href={`https://${blockchainConfig.explorer}/tx/${record.txid}`}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -107,5 +111,9 @@ function TransactionsTable(props: {
     </>
   );
 }
+
+TransactionsTable.defaultProps = {
+  chain: 'flux',
+};
 
 export default TransactionsTable;

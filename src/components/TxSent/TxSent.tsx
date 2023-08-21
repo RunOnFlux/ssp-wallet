@@ -1,19 +1,25 @@
 import { QRCode, Typography, Button, Space, Modal } from 'antd';
+import { blockchains } from '@storage/blockchains';
 const { Paragraph, Text } = Typography;
 
 function TxSent(props: {
   open: boolean;
   openAction: (status: boolean) => void;
   txid: string;
+  chain?: string;
 }) {
-  const { open, openAction } = props;
+  const { open, openAction, chain = 'flux' } = props;
+  const blockchainConfig = blockchains[chain];
 
   const handleOk = () => {
     openAction(false);
   };
 
   const openInExplorer = () => {
-    window.open(`https://explorer.runonflux.io/tx/${props.txid}`, '_blank');
+    window.open(
+      `https://${blockchainConfig.explorer}/tx/${props.txid}`,
+      '_blank',
+    );
   };
   return (
     <>
@@ -51,5 +57,9 @@ function TxSent(props: {
     </>
   );
 }
+
+TxSent.defaultProps = {
+  chain: 'flux',
+};
 
 export default TxSent;
