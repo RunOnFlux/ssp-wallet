@@ -10,7 +10,7 @@ export async function fetchAddressBalance(
 ): Promise<balance> {
   try {
     const blockchainConfig = blockchains[chain];
-    const url = `https://${blockchainConfig.explorer}/api/addr/${address}?noTxList=1`;
+    const url = `https://${blockchainConfig.node}/api/addr/${address}?noTxList=1`;
     const response = await axios.get<balanceInsight>(url);
     const bal: balance = {
       confirmed: new BigNumber(response.data.balanceSat).toFixed(),

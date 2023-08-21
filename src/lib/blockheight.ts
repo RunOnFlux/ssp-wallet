@@ -6,7 +6,7 @@ import { blockchains } from '@storage/blockchains';
 export async function getBlockheight(chain = 'flux'): Promise<number> {
   try {
     const blockchainConfig = blockchains[chain];
-    const url = `https://${blockchainConfig.explorer}/api/status?getinfo`;
+    const url = `https://${blockchainConfig.node}/api/status?getinfo`;
     const response = await axios.get<getInfoInsight>(url);
 
     const currentBlockheight = response.data.info.blocks;

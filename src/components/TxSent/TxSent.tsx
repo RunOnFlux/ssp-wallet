@@ -16,10 +16,7 @@ function TxSent(props: {
   };
 
   const openInExplorer = () => {
-    window.open(
-      `https://${blockchainConfig.explorer}/tx/${props.txid}`,
-      '_blank',
-    );
+    window.open(`https://${blockchainConfig.node}/tx/${props.txid}`, '_blank');
   };
   return (
     <>

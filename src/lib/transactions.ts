@@ -90,7 +90,7 @@ export async function fetchAddressTransactions(
 ): Promise<transaction[]> {
   try {
     const blockchainConfig = blockchains[chain];
-    const url = `https://${blockchainConfig.explorer}/api/addrs/${address}/txs?from=${from}&to=${to}`;
+    const url = `https://${blockchainConfig.node}/api/addrs/${address}/txs?from=${from}&to=${to}`;
     const response = await axios.get<transacitonsInsight>(url);
     const txs = [];
     for (const tx of response.data.items) {

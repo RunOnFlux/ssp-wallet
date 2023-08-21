@@ -1,5 +1,6 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { transaction } from './types';
+import backends from '@storage/backends';
 
 interface FluxState {
   xpubWallet: string;
@@ -30,6 +31,34 @@ const initialState: FluxState = {
 const initialStatePasswordBlob = {
   passwordBlob: '',
 };
+
+const initialBackendState = {
+  ssp: 'relay.ssp.runonflux.io',
+  backends: backends,
+};
+
+interface backendObject {
+  chain: string;
+  node: string;
+}
+
+export const backendSlice = createSlice({
+  name: 'backends',
+  initialState: initialBackendState,
+  reducers: {
+    setSSPBackend: (state, action: PayloadAction<string>) => {
+      state.ssp = action.payload;
+    },
+    setAssetBackend: (state, action: PayloadAction<backendObject>) => {
+      const { chain, node } = action.payload;
+      // todo: fix this
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      state.backends[chain].node = node;
+    },
+  },
+});
 
 const passwordBlobSlice = createSlice({
   name: 'passwordBlob',
@@ -110,10 +139,13 @@ export const {
 export const { setPasswordBlob, setPasswordBlobInitialState } =
   passwordBlobSlice.actions;
 
+export const { setSSPBackend, setAssetBackend } = backendSlice.actions;
+
 export const store = configureStore({
   reducer: {
     flux: fluxSlice.reducer,
     passwordBlob: passwordBlobSlice.reducer,
+    backends: backendSlice.reducer,
   },
 });
 

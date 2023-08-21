@@ -12,7 +12,7 @@ export async function fetchUtxos(
 ): Promise<utxo[]> {
   try {
     const blockchainConfig = blockchains[chain];
-    const url = `https://${blockchainConfig.explorer}/api/addr/${address}/utxo`;
+    const url = `https://${blockchainConfig.node}/api/addr/${address}/utxo`;
     const { data } = await axios.get<utxo[]>(url);
     const fetchedUtxos = data;
     const utxos = fetchedUtxos.map((x) => ({
@@ -320,7 +320,7 @@ export async function broadcastTx(
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
-    const url = `https://${blockchainConfig.explorer}/api/tx/send`;
+    const url = `https://${blockchainConfig.node}/api/tx/send`;
     const response = await axios.post<broadcastTxResult>(url, { rawtx: txHex });
     return response.data.txid;
   } catch (error) {

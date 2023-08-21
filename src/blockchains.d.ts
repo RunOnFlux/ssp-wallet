@@ -4,7 +4,7 @@ declare module '@storage/blockchains' {
     name: string;
     symbol: string;
     decimals: number;
-    explorer: string;
+    node: string;
     slip: number;
     messagePrefix: string;
     pubKeyHash: string;

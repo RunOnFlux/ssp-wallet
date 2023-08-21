@@ -48,7 +48,7 @@ function TransactionsTable(props: {
               </p>
               <p style={{ margin: 0 }}>Note: {record.message || '-'}</p>
               <a
-                href={`https://${blockchainConfig.explorer}/tx/${record.txid}`}
+                href={`https://${blockchainConfig.node}/tx/${record.txid}`}
                 target="_blank"
                 rel="noreferrer"
               >

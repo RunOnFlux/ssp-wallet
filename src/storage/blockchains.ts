@@ -1,9 +1,11 @@
+import backends from './backends';
+
 const flux = {
   id: 'flux',
   name: 'Flux',
   symbol: 'FLUX',
   decimals: 8,
-  explorer: 'explorer.runonflux.io',
+  node: backends.flux.node,
   slip: 19167,
   messagePrefix: '\u0018Zelcash Signed Message:\n',
   pubKeyHash: '1cb8',
@@ -17,7 +19,7 @@ const fluxTestnet = {
   name: 'TESTNET Flux',
   symbol: 'TESTNET FLUX',
   decimals: 8,
-  explorer: 'testnet.runonflux.io',
+  node: backends.fluxTestnet.node,
   slip: 1, // all testnets have 1
   messagePrefix: '\u0018Zelcash Signed Message:\n',
   pubKeyHash: '1d25',
