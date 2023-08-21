@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, message, Divider, Button, Input, Space } from 'antd';
+import { Form, message, Divider, Button, Input, Space, Popconfirm } from 'antd';
 import { Link } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
@@ -15,6 +15,7 @@ import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 
 interface sendForm {
   receiver: string;
@@ -26,6 +27,7 @@ interface sendForm {
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
 
 function Send() {
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const {
@@ -191,6 +193,7 @@ function Send() {
       <Divider />
       <Form
         name="sendForm"
+        form={form}
         initialValues={{ tos: false }}
         onFinish={(values) => void onFinish(values as sendForm)}
         autoComplete="off"
@@ -238,9 +241,27 @@ function Send() {
 
         <Form.Item>
           <Space direction="vertical" size="large">
-            <Button type="primary" size="large" htmlType="submit">
-              Send
-            </Button>
+            <Popconfirm
+              title="Confirm Transaction?"
+              description={
+                <>
+                  Transaction will be sent for approval to your SSP Key.
+                  <br />
+                  Double check the transaction details before confirming.
+                </>
+              }
+              overlayStyle={{ maxWidth: 360, margin: 10 }}
+              okText="Send"
+              cancelText="Cancel"
+              onConfirm={() => {
+                form.submit();
+              }}
+              icon={<QuestionCircleOutlined style={{ color: 'green' }} />}
+            >
+              <Button type="primary" size="large">
+                Send
+              </Button>
+            </Popconfirm>
             <Button type="link" block size="small">
               <Link to={'/home'}>Cancel</Link>
             </Button>
