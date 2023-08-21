@@ -1,6 +1,6 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { transaction } from './types';
-import backends from '@storage/backends';
+import { backends } from '@storage/backends';
 
 interface FluxState {
   xpubWallet: string;
