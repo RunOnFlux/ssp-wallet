@@ -89,7 +89,9 @@ export async function fetchAddressTransactions(
   to: number,
 ): Promise<transaction[]> {
   try {
-    const backendConfig = backends[chain];
+    const bcks = backends();
+    console.log(bcks);
+    const backendConfig = bcks[chain];
     const url = `https://${backendConfig.node}/api/addrs/${address}/txs?from=${from}&to=${to}`;
     const response = await axios.get<transacitonsInsight>(url);
     const txs = [];

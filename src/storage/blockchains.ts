@@ -5,7 +5,7 @@ const flux = {
   name: 'Flux',
   symbol: 'FLUX',
   decimals: 8,
-  node: backends.flux.node,
+  node: backends().flux.node,
   slip: 19167,
   messagePrefix: '\u0018Zelcash Signed Message:\n',
   pubKeyHash: '1cb8',
@@ -19,7 +19,7 @@ const fluxTestnet = {
   name: 'TESTNET Flux',
   symbol: 'TESTNET FLUX',
   decimals: 8,
-  node: backends.fluxTestnet.node,
+  node: backends().fluxTestnet.node,
   slip: 1, // all testnets have 1
   messagePrefix: '\u0018Zelcash Signed Message:\n',
   pubKeyHash: '1d25',

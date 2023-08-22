@@ -9,7 +9,7 @@ function TxSent(props: {
   chain?: string;
 }) {
   const { open, openAction, chain = 'flux' } = props;
-  const backendConfig = backends[chain];
+  const backendConfig = backends()[chain];
 
   const handleOk = () => {
     openAction(false);

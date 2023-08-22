@@ -1,3 +1,7 @@
 declare module '@storage/ssp' {
-  let relay: string;
+  interface ssp {
+    relay: string;
+  }
+  let sspConfig: () => ssp;
+  let sspConfigOriginal: () => ssp;
 }

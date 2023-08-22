@@ -5,7 +5,7 @@ import { backends } from '@storage/backends';
 
 export async function getBlockheight(chain = 'flux'): Promise<number> {
   try {
-    const backendConfig = backends[chain];
+    const backendConfig = backends()[chain];
     const url = `https://${backendConfig.node}/api/status?getinfo`;
     const response = await axios.get<getInfoInsight>(url);
 

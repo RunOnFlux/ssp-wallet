@@ -16,7 +16,7 @@ import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { QuestionCircleOutlined } from '@ant-design/icons';
-import sspConfig from '@storage/ssp';
+import { sspConfig } from '@storage/ssp';
 
 interface sendForm {
   receiver: string;
@@ -88,7 +88,7 @@ function Send() {
       wkIdentity,
     };
     axios
-      .post(`https://${sspConfig.relay}/v1/action`, data)
+      .post(`https://${sspConfig().relay}/v1/action`, data)
       .then((res) => {
         console.log(res);
       })

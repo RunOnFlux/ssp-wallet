@@ -3,5 +3,6 @@ declare module '@storage/backends' {
     node: string;
   }
   type backends = Record<string, Backend>;
-  let backends: backends;
+  let backends: () => backends;
+  let backendsOriginal: () => backends;
 }

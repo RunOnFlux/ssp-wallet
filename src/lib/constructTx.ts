@@ -11,7 +11,7 @@ export async function fetchUtxos(
   chain: string,
 ): Promise<utxo[]> {
   try {
-    const backendConfig = backends[chain];
+    const backendConfig = backends()[chain];
     const url = `https://${backendConfig.node}/api/addr/${address}/utxo`;
     const { data } = await axios.get<utxo[]>(url);
     const fetchedUtxos = data;
@@ -319,7 +319,7 @@ export async function broadcastTx(
   chain = 'flux',
 ): Promise<string> {
   try {
-    const backendConfig = backends[chain];
+    const backendConfig = backends()[chain];
     const url = `https://${backendConfig.node}/api/tx/send`;
     const response = await axios.post<broadcastTxResult>(url, { rawtx: txHex });
     return response.data.txid;

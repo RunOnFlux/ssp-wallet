@@ -9,7 +9,9 @@ export async function fetchAddressBalance(
   chain: string,
 ): Promise<balance> {
   try {
-    const backendConfig = backends[chain];
+    const bcks = backends();
+    console.log(bcks);
+    const backendConfig = bcks[chain];
     const url = `https://${backendConfig.node}/api/addr/${address}?noTxList=1`;
     const response = await axios.get<balanceInsight>(url);
     const bal: balance = {
@@ -18,6 +20,7 @@ export async function fetchAddressBalance(
       address: response.data.addrStr,
       totalTransactions: response.data.txApperances,
     };
+    console.log(bal);
     return bal;
   } catch (error) {
     console.log(error);
