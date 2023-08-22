@@ -4,4 +4,5 @@ declare module '@storage/ssp' {
   }
   let sspConfig: () => ssp;
   let sspConfigOriginal: () => ssp;
+  let loadSSPConfig: () => void;
 }

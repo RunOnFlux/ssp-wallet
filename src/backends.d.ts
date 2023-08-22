@@ -5,4 +5,5 @@ declare module '@storage/backends' {
   type backends = Record<string, Backend>;
   let backends: () => backends;
   let backendsOriginal: () => backends;
+  let loadBackendsConfig: () => void;
 }

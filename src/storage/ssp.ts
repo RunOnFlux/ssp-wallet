@@ -6,7 +6,7 @@ interface config {
 
 let storedLocalForgeSSPConfig: config = {};
 
-export function loadConfig() {
+export function loadSSPConfig() {
   (async () => {
     const localForgeSSPConfig: config =
       (await localForage.getItem('sspConfig')) ?? {};
@@ -18,7 +18,7 @@ export function loadConfig() {
   });
 }
 
-loadConfig();
+loadSSPConfig();
 
 const ssp = {
   relay: 'relay.ssp.runonflux.io',

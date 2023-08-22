@@ -7,7 +7,7 @@ type backends = Record<string, Backend>;
 
 let localForgeBackends: backends = {};
 
-export function loadConfig() {
+export function loadBackendsConfig() {
   (async () => {
     const localForgeBackendsStorage: backends =
       (await localForage.getItem('backends')) ?? {};
@@ -20,7 +20,7 @@ export function loadConfig() {
   });
 }
 
-loadConfig();
+loadBackendsConfig();
 
 const flux = {
   node: localForgeBackends?.flux?.node || 'explorer.runonflux.io',
