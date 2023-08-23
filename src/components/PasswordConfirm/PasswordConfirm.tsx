@@ -99,10 +99,6 @@ function PasswordConfirm(props: {
             <Form.Item
               label="Confirm with Password"
               name="password"
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-              }}
               rules={[
                 {
                   required: true,
