@@ -1,4 +1,5 @@
 import { Table, Empty } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import {
@@ -10,6 +11,7 @@ import {
 import { transaction } from '../../types';
 import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
+import { fetchRate } from '../../lib/currency.ts';
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -17,7 +19,26 @@ function TransactionsTable(props: {
   chain?: string;
 }) {
   const { chain = 'flux' } = props;
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
+  const [fiatRate, setFiatRate] = useState(0);
   const blockchainConfig = blockchains[chain];
+
+  useEffect(() => {
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
+    obtainRate();
+  });
+
+  const obtainRate = () => {
+    fetchRate('flux')
+      .then((rate) => {
+        console.log(rate);
+        setFiatRate(rate.usd);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
   return (
     <>
       <Table
@@ -90,7 +111,18 @@ function TransactionsTable(props: {
           className="table-amount"
           dataIndex="amount"
           render={(amnt: string) => (
-            <>{new BigNumber(amnt).dividedBy(1e8).toFixed()} FLUX</>
+            <>
+              {new BigNumber(amnt).dividedBy(1e8).toFixed()} FLUX
+              <br />
+              <div style={{ color: 'grey', fontSize: 12 }}>
+                {+amnt < 0 ? '-' : ''}$
+                {new BigNumber(Math.abs(+amnt))
+                  .dividedBy(1e8)
+                  .multipliedBy(new BigNumber(fiatRate))
+                  .toFixed(2)}{' '}
+                USD
+              </div>
+            </>
           )}
         />
         <Column
