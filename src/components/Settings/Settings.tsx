@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button, Modal, Input, Space, message } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
@@ -108,6 +109,14 @@ function PasswordConfirm(props: {
         style={{ textAlign: 'center', top: 60, width: 200 }}
         footer={[]}
       >
+        <h3>Change password</h3>
+        <Space direction="vertical" size="large">
+          <Button type="default" block size="middle" onClick={handleNotOk}>
+            <Link to={'/restore'}>Change password? Restore!</Link>
+          </Button>
+        </Space>
+        <br />
+        <br />
         <h3>SSP Relay Server</h3>
         <Space.Compact style={{ width: '100%' }}>
           <Input

@@ -32,6 +32,7 @@ import { NoticeType } from 'antd/es/message/interface';
 
 import localForage from 'localforage';
 import { getFingerprint } from '../../lib/fingerprint';
+import { useAppSelector } from '../../hooks';
 
 interface passwordForm {
   mnemonic: string;
@@ -43,6 +44,7 @@ interface passwordForm {
 const { TextArea } = Input;
 
 function Restore() {
+  const { address } = useAppSelector((state) => state.flux);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // use secure local storage for storing mnemonic 'walletSeed', 'xpriv-48-slip-0-0', 'xpub-48-slip-0-0' and '2-xpub-48-slip-0-0' (2- as for second key) of together with encryption of browser-passworder
@@ -125,6 +127,14 @@ function Restore() {
     setMnemonic(seedPhrase);
   };
 
+  const handleNavigation = () => {
+    if (address) {
+      navigate('/home');
+    } else {
+      navigate('/welcome');
+    }
+  };
+
   const storeMnemonic = (mnemonicPhrase: string) => {
     if (!mnemonicPhrase) {
       displayMessage('error', 'Your wallet seed phrase is invalid.');
@@ -176,7 +186,7 @@ function Restore() {
         block
         size="small"
         style={{ textAlign: 'left', padding: '0' }}
-        onClick={() => navigate('/welcome')}
+        onClick={() => handleNavigation()}
       >
         <LeftOutlined style={{ fontSize: '12px' }} /> Back
       </Button>
