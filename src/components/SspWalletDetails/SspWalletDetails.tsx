@@ -129,7 +129,7 @@ function SSPWalletDetails(props: {
               onClick={() => setExtendedPublicKeyVisible(true)}
             />
           )}{' '}
-          SSP Wallet Extended Public Key:
+          Flux Extended Public Key:
         </h3>
         <Paragraph copyable={{ text: xpub }} className="copyableAddress">
           <Text>
@@ -145,7 +145,7 @@ function SSPWalletDetails(props: {
               onClick={() => setExtendedPrivateKeyVisible(true)}
             />
           )}{' '}
-          SSP Wallet Extended Private Key:
+          Flux Extended Private Key:
         </h3>
         <Paragraph copyable={{ text: xpriv }} className="copyableAddress">
           <Text>

@@ -46,7 +46,6 @@ function Home() {
         0,
         'flux',
       );
-      console.log(addrInfo.address, addrInfo.redeemScript);
       dispatch(setAddress(addrInfo.address));
       dispatch(setRedeemScript(addrInfo.redeemScript));
       // generate ssp wallet identity

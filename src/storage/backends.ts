@@ -12,7 +12,6 @@ export function loadBackendsConfig() {
     const localForgeBackendsStorage: backends =
       (await localForage.getItem('backends')) ?? {};
     if (localForgeBackendsStorage) {
-      console.log(localForgeBackendsStorage);
       localForgeBackends = localForgeBackendsStorage;
     }
   })().catch((error) => {

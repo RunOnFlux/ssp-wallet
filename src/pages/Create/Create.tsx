@@ -145,7 +145,6 @@ function Create() {
         const xprivBlob = await passworderEncrypt(password, xpriv);
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();
-        console.log(fingerprint);
         const pwBlob = await passworderEncrypt(fingerprint, password);
         secureLocalStorage.setItem('xpriv-48-19167-0-0', xprivBlob);
         secureLocalStorage.setItem('xpub-48-19167-0-0', xpubBlob);

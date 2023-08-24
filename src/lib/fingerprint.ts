@@ -50,8 +50,6 @@ export function getFingerprint(): string {
     return canvas.toDataURL();
   }
   const canvas = getCanvasPrint();
-  console.log(canvas);
-  console.log(crypto);
 
   const fingerprint = JSON.stringify({
     canvas,
