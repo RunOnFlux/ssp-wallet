@@ -446,10 +446,10 @@
     "@swc/core-win32-ia32-msvc" "1.3.76"
     "@swc/core-win32-x64-msvc" "1.3.76"
 
-"@types/chrome@^0.0.241":
-  version "0.0.241"
-  resolved "https://registry.yarnpkg.com/@types/chrome/-/chrome-0.0.241.tgz#c6274ef2377ace4e67713591aacc13d8e6c1dca6"
-  integrity sha512-3WxC2D8zhyDnCU1GxyznoyUulLH6ReLWUWQm5LSM7S1rvV9w+k8TUNbWrFavk6zz2E1ws05lNawnSa7rK5kY8Q==
+"@types/chrome@^0.0.244":
+  version "0.0.244"
+  resolved "https://registry.yarnpkg.com/@types/chrome/-/chrome-0.0.244.tgz#e3573e8f610719edacf76ad6a0adf6aa771bac06"
+  integrity sha512-pC8kBWuUqGhG6S5d3E44a2f1TA2XHX/sXfCIrrDpA4K65Ozzw3mYQjuvMOTdSUCx4HjJhp4zuZh6fKOH3UdA1g==
   dependencies:
     "@types/filesystem" "*"
     "@types/har-format" "*"
