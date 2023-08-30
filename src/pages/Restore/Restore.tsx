@@ -280,13 +280,13 @@ function Restore() {
         style={{ textAlign: 'center', top: 60 }}
       >
         <p>
-          Wallet weed is used to generate all addresses. Anyone with the access
+          Wallet seed is used to generate all addresses. Anyone with the access
           to the wallet seed has partial control over the wallet.
         </p>
         <p>Keep your wallet seed backup safe and secure.</p>
         <p>
           <b>
-            Loosing the wallet seed will result in the loss of access to your
+            Losing the wallet seed will result in the loss of access to your
             wallet.
           </b>
         </p>

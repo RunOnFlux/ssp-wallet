@@ -273,7 +273,7 @@ function Create() {
         <p>Keep your wallet seed backup safe and secure.</p>
         <p>
           <b>
-            Loosing the wallet seed will result in the loss of access to your
+            Losing the wallet seed will result in the loss of access to your
             wallet.
           </b>
         </p>
