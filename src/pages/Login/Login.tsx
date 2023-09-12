@@ -11,6 +11,7 @@ import {
   LockOutlined,
 } from '@ant-design/icons';
 import secureLocalStorage from 'react-secure-storage';
+import { useTranslation } from 'react-i18next';
 
 import { useAppDispatch } from '../../hooks';
 
@@ -50,6 +51,7 @@ const balancesObject = {
 type pwdDecrypt = Record<string, string>;
 
 function Login() {
+  const { t } = useTranslation(['login']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -100,7 +102,7 @@ function Login() {
 
   const onFinish = (values: loginForm) => {
     if (values.password.length < 8) {
-      displayMessage('error', 'Not a valid password. Please try again.');
+      displayMessage('error', t('login:err_invalid_pw'));
       return;
     }
     setPassword(values.password);
@@ -117,10 +119,7 @@ function Login() {
     const xpubEncrypted = secureLocalStorage.getItem('xpub-48-19167-0-0');
     const xpub2Encrypted = secureLocalStorage.getItem('2-xpub-48-19167-0-0'); // key xpub
     if (!xpubEncrypted) {
-      displayMessage(
-        'error',
-        'Code L3: Wallet data missing. Please restore your wallet.',
-      );
+      displayMessage('error', t('login:err_l3'));
       setIsLoading(false);
       return;
     }
@@ -171,23 +170,17 @@ function Login() {
             }
             navigate('/home');
           } else {
-            displayMessage(
-              'error',
-              'Code L2: Wallet data missing. Please restore your wallet.',
-            );
+            displayMessage('error', t('login:err_l2'));
             setIsLoading(false);
           }
         })
         .catch((error) => {
           setIsLoading(false);
-          displayMessage('error', 'Invalid password. Please try again.');
+          displayMessage('error', t('login:err_invalid_pw_2'));
           console.log(error);
         });
     } else {
-      displayMessage(
-        'error',
-        'Code L1:  Wallet data missing. Please restore your wallet.',
-      );
+      displayMessage('error', t('login:err_l1'));
       setIsLoading(false);
     }
   };
@@ -204,8 +197,8 @@ function Login() {
             src="/ssp-logo.svg"
             style={{ paddingTop: 70 }}
           />
-          <h2>Welcome back!</h2>
-          <h3>To your decentralized Cloud</h3>
+          <h2>{t('login:welcome_back')}</h2>
+          <h3>{t('login:to_dec_cloud')}</h3>
           <br />
           <br />
           <Form
@@ -215,10 +208,10 @@ function Login() {
             autoComplete="off"
             layout="vertical"
           >
-            <Form.Item label="Unlock with Password" name="password">
+            <Form.Item label={t('login:unlock_with_pw')} name="password">
               <Input.Password
                 size="large"
-                placeholder="Enter Password"
+                placeholder={t('login:enter_pw')}
                 prefix={<LockOutlined />}
                 iconRender={(visible) =>
                   visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
@@ -229,7 +222,7 @@ function Login() {
 
             <Form.Item>
               <Button type="primary" size="large" htmlType="submit">
-                Unlock Wallet
+                {t('login:unlock_wallet')}
               </Button>
             </Form.Item>
           </Form>
@@ -241,7 +234,7 @@ function Login() {
             size="small"
             onClick={() => navigate('/restore')}
           >
-            Forgot Password? <i> Restore</i>
+            {t('login:forgot_pw')} <i> {t('login:restore')}</i>
           </Button>
           <PoweredByFlux />
         </>

@@ -22,8 +22,10 @@ import {
   generateMultisigAddress,
   generateIdentityAddress,
 } from '../../lib/wallet.ts';
+import { useTranslation } from 'react-i18next';
 
 function Home() {
+  const { t } = useTranslation(['home']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -64,7 +66,7 @@ function Home() {
       dispatch(setSspWalletKeyIdentity(generatedSspWalletKeyIdentity.address));
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before
-      displayMessage('error', 'PANIC: Invalid SSP Key.');
+      displayMessage('error', t('home:err_panic'));
       console.log(error);
     }
   };

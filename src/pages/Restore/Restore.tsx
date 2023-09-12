@@ -11,6 +11,7 @@ import {
   Modal,
 } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+import { useTranslation } from 'react-i18next';
 
 import {
   EyeInvisibleOutlined,
@@ -44,6 +45,7 @@ interface passwordForm {
 const { TextArea } = Input;
 
 function Restore() {
+  const { t } = useTranslation(['cr', 'common']);
   const { address } = useAppSelector((state) => state.flux);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -66,10 +68,7 @@ function Restore() {
       setIsModalOpen(false);
       storeMnemonic(mnemonic.trim());
     } else {
-      displayMessage(
-        'info',
-        'You must backup your wallet seed phrase before you can create a wallet.',
-      );
+      displayMessage('info', t('cr:info_backup_needed'));
     }
   };
 
@@ -99,28 +98,25 @@ function Restore() {
   const onFinish = (values: passwordForm) => {
     const seedPhrase = values.mnemonic.trim();
     if (!seedPhrase) {
-      displayMessage('error', 'Please enter your seed phrase');
+      displayMessage('error', t('cr:err_enter_seed'));
       return;
     }
     const splittedSeed = seedPhrase.split(' ');
     if (splittedSeed.length < 12) {
-      displayMessage(
-        'error',
-        'Wallet Seed Phrase is invalid. Seed Phrase consists of at least 12 words.',
-      );
+      displayMessage('error', t('cr:err_seed_invalid'));
       return;
     }
 
     if (values.password.length < 8) {
-      displayMessage('error', 'Password must have at least 8 characters.');
+      displayMessage('error', t('cr:err_pw_min_char'));
       return;
     }
     if (values.password !== values.confirm_password) {
-      displayMessage('error', 'Passwords do not match');
+      displayMessage('error', t('cr:err_pw_not_match'));
       return;
     }
     if (!values.tos) {
-      displayMessage('error', 'Please agree with Terms of Service');
+      displayMessage('error', t('cr:err_tos'));
       return;
     }
     setPassword(values.password);
@@ -137,7 +133,7 @@ function Restore() {
 
   const storeMnemonic = (mnemonicPhrase: string) => {
     if (!mnemonicPhrase) {
-      displayMessage('error', 'Your wallet seed phrase is invalid.');
+      displayMessage('error', t('cr:err_wallet_phrase_invalid'));
       return;
     }
     // first clean all data from localForge and secureLocalStorage
@@ -166,10 +162,7 @@ function Restore() {
         navigate('/login');
       })
       .catch((error) => {
-        displayMessage(
-          'error',
-          'Code R1: Something went wrong while creating wallet.',
-        );
+        displayMessage('error', t('cr:err_r1'));
         console.log(error);
       });
   };
@@ -188,11 +181,11 @@ function Restore() {
         style={{ textAlign: 'left', padding: '0' }}
         onClick={() => handleNavigation()}
       >
-        <LeftOutlined style={{ fontSize: '12px' }} /> Back
+        <LeftOutlined style={{ fontSize: '12px' }} /> {t('common:back')}
       </Button>
       <Divider />
       <Image width={80} preview={false} src="/ssp-logo.svg" />
-      <h2>Import Wallet Seed Phrase</h2>
+      <h2>{t('cr:import_seed')}</h2>
       <Form
         name="seedForm"
         onFinish={(values) => void onFinish(values as passwordForm)}
@@ -200,31 +193,31 @@ function Restore() {
         layout="vertical"
       >
         <Form.Item
-          label="Wallet Seed"
+          label={t('cr:wallet_seed')}
           name="mnemonic"
           rules={[
             {
               required: true,
-              message: 'Please input your mnemonic wallet seed',
+              message: t('cr:input_wallet_seed'),
             },
           ]}
         >
-          <TextArea rows={4} placeholder="Input Seed Phrase" />
+          <TextArea rows={4} placeholder={t('cr:input_seed_phrase')} />
         </Form.Item>
         <br />
         <Form.Item
-          label="Set Password"
+          label={t('cr:set_password')}
           name="password"
           rules={[
             {
               required: true,
-              message: 'Please input your password of at least 8 characters!',
+              message: t('cr:input_password'),
             },
           ]}
         >
           <Input.Password
             size="large"
-            placeholder="Set Password"
+            placeholder={t('cr:set_password')}
             prefix={<LockOutlined />}
             iconRender={(visible) =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
@@ -234,13 +227,13 @@ function Restore() {
         </Form.Item>
 
         <Form.Item
-          label="Confirm Password"
+          label={t('cr:confirm_password')}
           name="confirm_password"
-          rules={[{ required: true, message: 'Please confirm your password!' }]}
+          rules={[{ required: true, message: t('cr:pls_conf_pwd') }]}
         >
           <Input.Password
             size="large"
-            placeholder="Confirm Password"
+            placeholder={t('cr:confirm_password')}
             prefix={<LockOutlined />}
             iconRender={(visible) =>
               visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
@@ -251,13 +244,13 @@ function Restore() {
 
         <Form.Item name="tos" valuePropName="checked">
           <Checkbox>
-            I agree with{' '}
+            {t('cr:i_agree')}{' '}
             <a
               href="https://www.youtube.com/watch?v=GJVk_LfASxk&ab_channel=FluxLabs"
               target="_blank"
               rel="noreferrer"
             >
-              not being evil
+              {t('cr:not_evil')}
             </a>
             .
           </Checkbox>
@@ -265,30 +258,24 @@ function Restore() {
 
         <Form.Item>
           <Button type="primary" size="large" htmlType="submit">
-            Import Wallet
+            {t('cr:import_wallet')}
           </Button>
         </Form.Item>
       </Form>
       <br />
       <br />
       <Modal
-        title="Backup Wallet Seed"
+        title={t('cr:backup_wallet_seed')}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-        okText="Create Wallet"
+        okText={t('cr:restore_wallet')}
         style={{ textAlign: 'center', top: 60 }}
       >
+        <p>{t('cr:wallet_seed_info')}</p>
+        <p>{t('cr:keep_seed_safe')}</p>
         <p>
-          Wallet weed is used to generate all addresses. Anyone with the access
-          to the wallet seed has partial control over the wallet.
-        </p>
-        <p>Keep your wallet seed backup safe and secure.</p>
-        <p>
-          <b>
-            Loosing the wallet seed will result in the loss of access to your
-            wallet.
-          </b>
+          <b>{t('cr:seed_loose_info')}</b>
         </p>
         <br />
         <Divider />
@@ -305,12 +292,13 @@ function Restore() {
             setMnemonicShow(!mnemonicShow), setWSPwasShown(true);
           }}
         >
-          {mnemonicShow ? 'Hide Mnemonic' : 'Show Mnemonic'} Wallet Seed Phrase
+          {mnemonicShow ? t('cr:hide_mnemonic') : t('cr:show_mnemonic')}{' '}
+          {t('cr:wallet_seed_phrase')}
         </Button>
         <Divider />
         <br />
         <Checkbox onChange={onChangeWSP}>
-          I have backed up my wallet seed phrase in a secure location.
+          {t('cr:phrase_backed_up')}
         </Checkbox>
         <br />
         <br />

@@ -22,7 +22,7 @@ export function loadBackendsConfig() {
 loadBackendsConfig();
 
 const flux = {
-  node: localForgeBackends?.flux?.node || 'explorer.runonflux.io',
+  node: 'explorer.runonflux.io',
 };
 const fluxTestnet = {
   node: 'testnet.runonflux.io',

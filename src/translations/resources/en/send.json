@@ -1,0 +1,22 @@
+{
+  "err_invalid_receiver": "Invalid receiver address.",
+  "err_invalid_amount": "Invalid amount.",
+  "err_pwd_not_valid": "Password is not valid.",
+  "err_invalid_xpriv": "Invalid wallet xpriv.",
+  "err_invalid_xpriv_decrypt": "Invalid wallet xpriv, unable to decrypt",
+  "err_s1": "Code S1: Something went wrong while decrypting password.",
+  "send": "Send",
+  "receiver_address": "Receiver Address",
+  "input_receiver_address": "Please input receivers address",
+  "amount_to_send": "Amount to Send",
+  "input_amount": "Input Amount to send",
+  "fee": "Fee",
+  "input_fee": "Input Fee to send",
+  "tx_fee": "Transaction Fee",
+  "message": "Message",
+  "include_message": "Include message to transaction",
+  "payment_note": "Payment Note",
+  "confirm_tx": "Confirm Transaction?",
+  "tx_to_sspkey": "Transaction will be sent for approval to your SSP Key.",
+  "double_check_tx": "Double check the transaction details before confirming."
+}

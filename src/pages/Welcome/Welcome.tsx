@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import secureLocalStorage from 'react-secure-storage';
 import { Button, Image, Space, Spin } from 'antd';
+import { useTranslation } from 'react-i18next';
 import './Welcome.css';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux';
 
 function Welcome() {
+  const { t } = useTranslation(['welcome', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -32,19 +34,19 @@ function Welcome() {
             src="/ssp-logo.svg"
             style={{ paddingTop: 70 }}
           />
-          <h1>Welcome to SSP Wallet</h1>
+          <h1>{t('welcome:welcome_to')}</h1>
           <p className="welcome-text">
-            Dual signature wallet for the decentralized world.
+            {t('welcome:description')}
             <br />
             <br />
-            Secure. Simple. Powerful.
+            {t('common:appName.moto')}
           </p>
           <Space direction="vertical" size="large">
             <Button type="primary" size="large">
-              <Link to={'/create'}>Get Started!</Link>
+              <Link to={'/create'}>{t('welcome:get_started')}</Link>
             </Button>
             <Button type="link" block size="small">
-              <Link to={'/restore'}>Restore with Seed</Link>
+              <Link to={'/restore'}>{t('welcome:restore_with_seed')}</Link>
             </Button>
           </Space>
         </>

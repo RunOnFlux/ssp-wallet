@@ -5,6 +5,7 @@ import router from './router';
 import { store } from './store';
 import { Provider } from 'react-redux';
 import localForage from 'localforage';
+import './translations';
 import './index.css';
 
 localForage.config({
