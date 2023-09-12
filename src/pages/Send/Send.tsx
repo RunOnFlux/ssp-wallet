@@ -17,6 +17,7 @@ import TxSent from '../../components/TxSent/TxSent';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
+import { useTranslation } from 'react-i18next';
 
 interface sendForm {
   receiver: string;
@@ -28,6 +29,7 @@ interface sendForm {
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
 
 function Send() {
+  const { t } = useTranslation(['send', 'common']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -100,11 +102,11 @@ function Send() {
   const onFinish = (values: sendForm) => {
     console.log(values);
     if (values.receiver.length < 8) {
-      displayMessage('error', 'Invalid receiver address.');
+      displayMessage('error', t('send:err_invalid_receiver'));
       return;
     }
     if (!values.amount) {
-      displayMessage('error', 'Invalid amount');
+      displayMessage('error', t('send:err_invalid_amount'));
       return;
     }
     // get our password to decrypt xpriv from secure storage
@@ -112,15 +114,15 @@ function Send() {
     passworderDecrypt(fingerprint, passwordBlob)
       .then(async (password) => {
         if (typeof password !== 'string') {
-          throw new Error('Password is not valid.');
+          throw new Error(t('send:err_pwd_not_valid'));
         }
         const xprivFluxBlob = secureLocalStorage.getItem('xpriv-48-19167-0-0');
         if (typeof xprivFluxBlob !== 'string') {
-          throw new Error('Invalid wallet xpriv');
+          throw new Error(t('send:err_invalid_xpriv'));
         }
         const xprivFlux = await passworderDecrypt(password, xprivFluxBlob);
         if (typeof xprivFlux !== 'string') {
-          throw new Error('Invalid wallet xpriv, unable to decrypt');
+          throw new Error(t('send:err_invalid_xpriv_decrypt'));
         }
         const keyPair = generateAddressKeypair(xprivFlux, 0, 0, 'flux');
         const amount = new BigNumber(values.amount).multipliedBy(1e8).toFixed();
@@ -156,10 +158,7 @@ function Send() {
       })
       .catch((error) => {
         console.log(error);
-        displayMessage(
-          'error',
-          'Code S1: Something went wrong while decrypting password.',
-        );
+        displayMessage('error', t('send:err_s1'));
       });
 
     const fetchTransactions = () => {
@@ -201,70 +200,72 @@ function Send() {
         layout="vertical"
       >
         <Form.Item
-          label="Receiver Address"
+          label={t('send:receiver_address')}
           name="receiver"
           rules={[
             {
               required: true,
-              message: 'Please input receivers address',
+              message: t('send:input_receiver_address'),
             },
           ]}
         >
-          <Input size="large" placeholder="Receiver Address" />
+          <Input size="large" placeholder={t('send:receiver_address')} />
         </Form.Item>
 
         <Form.Item
-          label="Amount to Send"
+          label={t('send:amount_to_send')}
           name="amount"
-          rules={[{ required: true, message: 'Input Amount to send' }]}
+          rules={[{ required: true, message: t('send:input_amount') }]}
         >
-          <Input size="large" placeholder="Amount to Send" suffix="FLUX" />
+          <Input
+            size="large"
+            placeholder={t('send:input_amount')}
+            suffix="FLUX"
+          />
         </Form.Item>
 
         <Form.Item
-          label="Fee"
+          label={t('send:fee')}
           name="fee"
           initialValue={'0.0001'}
-          rules={[{ required: true, message: 'Input Fee to send' }]}
+          rules={[{ required: true, message: t('send:input_fee') }]}
         >
-          <Input size="large" placeholder="Transaction Fee" suffix="FLUX" />
+          <Input size="large" placeholder={t('send:tx_fee')} suffix="FLUX" />
         </Form.Item>
 
         <Form.Item
-          label="Message"
+          label={t('send:message')}
           name="message"
-          rules={[
-            { required: false, message: 'Include message to transaction' },
-          ]}
+          rules={[{ required: false, message: t('send:include_message') }]}
         >
-          <Input size="large" placeholder="Payment Note" />
+          <Input size="large" placeholder={t('send:payment_note')} />
         </Form.Item>
 
         <Form.Item>
           <Space direction="vertical" size="large">
             <Popconfirm
-              title="Confirm Transaction?"
+              title={t('send:confirm_tx')}
               description={
                 <>
-                  Transaction will be sent for approval to your SSP Key.
+                  {t('send:tx_to_sspkey')}
                   <br />
-                  Double check the transaction details before confirming.
+                  {t('send:double_check_tx')}
                 </>
               }
               overlayStyle={{ maxWidth: 360, margin: 10 }}
-              okText="Send"
-              cancelText="Cancel"
+              okText={t('send:send')}
+              cancelText={t('common:cancel')}
               onConfirm={() => {
                 form.submit();
               }}
               icon={<QuestionCircleOutlined style={{ color: 'green' }} />}
             >
               <Button type="primary" size="large">
-                Send
+                {t('send:send')}
               </Button>
             </Popconfirm>
             <Button type="link" block size="small">
-              <Link to={'/home'}>Cancel</Link>
+              <Link to={'/home'}>{t('common:cancel')}</Link>
             </Button>
           </Space>
         </Form.Item>

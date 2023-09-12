@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import './PoweredByFlux.css';
 
 function PoweredByFlux() {
+  const { t } = useTranslation(['common']);
   return (
     <div
       style={{
@@ -13,14 +15,14 @@ function PoweredByFlux() {
         textAlign: 'center',
       }}
     >
-      Powered by{' '}
+      {t('common:powered_by')}{' '}
       <a
         className="aLink"
         href={'https://runonflux.io'}
         target="_blank"
         rel="noreferrer"
       >
-        Flux
+        {t('common:flux')}
       </a>
     </div>
   );

@@ -1,0 +1,19 @@
+{
+  "appName": {
+    "full": "SSP Wallet",
+    "initials": "SSPWallet",
+    "moto": "Secure. Simple. Powerful."
+  },
+  "back": "Back",
+  "cancel": "Cancel",
+  "refresh": "Refresh",
+  "settings": "Settings",
+  "restore": "Restore",
+  "flux": "Flux",
+  "powered_by": "Powered by",
+  "ok": "OK",
+  "help": "Help",
+  "save": "Save",
+  "confirm": "Confirm",
+  "ask_me_later": "Ask me later"
+}
