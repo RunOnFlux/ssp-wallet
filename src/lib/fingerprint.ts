@@ -11,8 +11,6 @@ export function getFingerprint(): string {
   } = window.navigator;
 
   const { width, height, colorDepth, pixelDepth } = window.screen;
-  const timezoneOffset = new Date().getTimezoneOffset();
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const touchSupport = 'ontouchstart' in window;
 
   function getCanvasPrint() {
@@ -61,8 +59,6 @@ export function getFingerprint(): string {
     maxTouchPoints,
     pixelDepth,
     platform,
-    timezone,
-    timezoneOffset,
     touchSupport,
     vendor,
     width,
