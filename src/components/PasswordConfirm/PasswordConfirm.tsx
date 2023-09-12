@@ -87,7 +87,7 @@ function PasswordConfirm(props: {
           <p>
             You are about to access sensitive information.
             <br />
-            Grant access with psasword.
+            Grant access with password.
           </p>
           <Form
             form={form}

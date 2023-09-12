@@ -122,7 +122,7 @@ function Key(props: {
     if (!keyInput && !keyAutomaticInput) {
       displayMessage(
         'warning',
-        'Awaiting SSP Key synhronisation or manual input',
+        'Awaiting SSP Key synchronisation or manual input.',
       );
       return;
     }
