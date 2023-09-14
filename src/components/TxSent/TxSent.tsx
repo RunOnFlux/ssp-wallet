@@ -1,6 +1,7 @@
 import { QRCode, Typography, Button, Space, Modal } from 'antd';
 import { backends } from '@storage/backends';
 const { Paragraph, Text } = Typography;
+import { useTranslation } from 'react-i18next';
 
 function TxSent(props: {
   open: boolean;
@@ -8,6 +9,7 @@ function TxSent(props: {
   txid: string;
   chain?: string;
 }) {
+  const { t } = useTranslation(['home', 'common']);
   const { open, openAction, chain = 'flux' } = props;
   const backendConfig = backends()[chain];
 
@@ -21,14 +23,14 @@ function TxSent(props: {
   return (
     <>
       <Modal
-        title="Transaction Sent!"
+        title={t('home:txSent.tx_sent')}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleOk}
         footer={[
           <Button key="ok" type="primary" onClick={handleOk}>
-            OK
+            {t('common:ok')}
           </Button>,
         ]}
       >
@@ -47,7 +49,7 @@ function TxSent(props: {
             <Text>{props.txid}</Text>
           </Paragraph>
           <Button type="primary" size="middle" onClick={openInExplorer}>
-            Show in Explorer
+          {t('home:txSent.show_in_explorer')}
           </Button>
         </Space>
       </Modal>

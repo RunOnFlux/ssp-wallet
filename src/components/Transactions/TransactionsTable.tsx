@@ -12,12 +12,14 @@ import { transaction } from '../../types';
 import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
 import { fetchRate } from '../../lib/currency.ts';
+import { useTranslation } from 'react-i18next';
 
 function TransactionsTable(props: {
   transactions: transaction[];
   blockheight: number;
   chain?: string;
 }) {
+  const { t } = useTranslation(['home', 'common']);
   const { chain = 'flux' } = props;
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [fiatRate, setFiatRate] = useState(0);
@@ -47,7 +49,7 @@ function TransactionsTable(props: {
           emptyText: (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="No Transaction History Found"
+              description={t('home:transactionsTable.no_tx_history')}
             />
           ),
         }}
@@ -62,18 +64,25 @@ function TransactionsTable(props: {
           expandedRowRender: (record) => (
             <div>
               <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                TXID: {record.txid}
+                {t('home:transactionsTable.txid_link', { txid: record.txid })}
               </p>
               <p style={{ margin: 0 }}>
-                Fee: {new BigNumber(record.fee).dividedBy(1e8).toFixed()} FLUX
+                {t('home:transactionsTable.fee_with_symbol', {
+                  fee: new BigNumber(record.fee).dividedBy(1e8).toFixed(),
+                  symbol: 'FLUX',
+                })}
               </p>
-              <p style={{ margin: 0 }}>Note: {record.message || '-'}</p>
+              <p style={{ margin: 0 }}>
+                {t('home:transactionsTable.note_with_note', {
+                  note: record.message || '-',
+                })}
+              </p>
               <a
                 href={`https://${blockchainConfig.node}/tx/${record.txid}`}
                 target="_blank"
                 rel="noreferrer"
               >
-                Show in Explorer
+                {t('home:txSent.show_in_explorer')}
               </a>
             </div>
           ),
@@ -81,7 +90,7 @@ function TransactionsTable(props: {
         }}
       >
         <Column
-          title="Direction"
+          title={t('home:transactionsTable.direction')}
           dataIndex="amount"
           className="table-icon"
           render={(amnt: string) => (
@@ -95,7 +104,7 @@ function TransactionsTable(props: {
           )}
         />
         <Column
-          title="Date"
+          title={t('home:transactionsTable.date')}
           className="table-time"
           dataIndex="timestamp"
           render={(time: string) => (
@@ -107,7 +116,7 @@ function TransactionsTable(props: {
           )}
         />
         <Column
-          title="Amount"
+          title={t('home:transactionsTable.amount')}
           className="table-amount"
           dataIndex="amount"
           render={(amnt: string) => (
@@ -126,7 +135,7 @@ function TransactionsTable(props: {
           )}
         />
         <Column
-          title="Confirmations"
+          title={t('home:transactionsTable.confirmations')}
           className="table-icon"
           dataIndex="blockheight"
           render={(height: number) => (

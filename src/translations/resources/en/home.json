@@ -1,3 +1,17 @@
 {
-  "err_panic": "PANIC: Invalid SSP Key."
+  "err_panic": "PANIC: Invalid SSP Key.",
+  "txSent": {
+    "show_in_explorer": "Show in Explorer",
+    "tx_sent": "Transaction Sent!"
+  },
+  "transactionsTable": {
+    "no_tx_history": "No Transaction History Found",
+    "txid_link": "TXID: {{txid}}",
+    "fee_with_symbol": "Fee: {{fee}} {{symbol}}",
+    "note_with_note": "Note: {{note}}",
+    "direction": "Direction",
+    "date": "Date",
+    "amount": "Amount",
+    "confirmations": "Confirmations"
+  }
 }
