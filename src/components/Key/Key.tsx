@@ -19,6 +19,7 @@ import { generateMultisigAddress } from '../../lib/wallet.ts';
 import axios from 'axios';
 import { syncSSPRelay } from '../../types';
 import { sspConfig } from '@storage/ssp';
+import { useTranslation } from 'react-i18next';
 
 const xpubRegex = /^(xpub[1-9A-HJ-NP-Za-km-z]{79,108})$/; // /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/; later
 
@@ -29,6 +30,7 @@ function Key(props: {
   derivationPath?: string;
   synchronised: (status: boolean) => void;
 }) {
+  const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { derivationPath = 'xpub-48-19167-0-0', synchronised } = props;
   const dispatch = useAppDispatch();
@@ -83,10 +85,7 @@ function Key(props: {
           );
           const generatedWkIdentity = generatedSspWalletKeyIdentity.address;
           if (generatedWkIdentity !== wkIdentity) {
-            displayMessage(
-              'error',
-              'Synchronisation failed. Please try again manually.',
-            );
+            displayMessage('error', t('home:key.err_sync_fail'));
             syncRunning = false;
             if (pollingSyncInterval) {
               clearInterval(pollingSyncInterval);
@@ -120,19 +119,13 @@ function Key(props: {
     // display dialog awaiting synchronisation. This is automatic stuff
     console.log(keyAutomaticInput);
     if (!keyInput && !keyAutomaticInput) {
-      displayMessage(
-        'warning',
-        'Awaiting SSP Key synchronisation or manual input.',
-      );
+      displayMessage('warning', t('home:key.warn_await_sync'));
       return;
     }
     const xpubKeyInput = keyInput || keyAutomaticInput;
     // validate xpub key is correct
     if (xpubKeyInput.trim() === xpubWallet.trim()) {
-      displayMessage(
-        'error',
-        'Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.',
-      );
+      displayMessage('error', t('home:key.err_sync_1'));
       return;
     }
     if (xpubRegex.test(xpubKeyInput)) {
@@ -143,7 +136,7 @@ function Key(props: {
         generateMultisigAddress(xpubWallet, xpubKeyInput, 0, 0, 'flux');
       } catch (error) {
         keyValid = false;
-        displayMessage('error', 'Invalid SSP Key.');
+        displayMessage('error', t('home:key.err_invalid_key'));
       }
       if (!keyValid) return;
       const xpub2 = xpubKeyInput;
@@ -168,21 +161,15 @@ function Key(props: {
             }
             // tell parent that all is synced
           } else {
-            displayMessage(
-              'error',
-              'Code H2: Something went wrong while decrypting password.',
-            );
+            displayMessage('error', t('home:key.err_k2'));
           }
         })
         .catch((e) => {
           console.log(e);
-          displayMessage(
-            'error',
-            'Code H1: Something went wrong while decrypting password.',
-          );
+          displayMessage('error', t('home:key.err_k1'));
         });
     } else {
-      displayMessage('error', 'Invalid SSP Key.');
+      displayMessage('error', t('home:key.err_invalid_key'));
     }
   };
 
@@ -208,12 +195,11 @@ function Key(props: {
 
   const showConfirmCancelModalKey = () => {
     confirm({
-      title: 'Cancel SSP Key Sync?',
+      title: t('home:key.cancel_sync_q'),
       icon: <ExclamationCircleFilled />,
-      okText: 'Cancel SSP Sync',
-      cancelText: 'Back to SSP Key Sync',
-      content:
-        'SSP Wallet cannot be used without SSP Key. This will log you out of SSP Wallet.',
+      okText: t('home:key.cancel_sync'),
+      cancelText: t('home:key.back_to_sync'),
+      content: t('home:key.sync_info_content'),
       onOk() {
         logout();
       },
@@ -227,20 +213,15 @@ function Key(props: {
     <>
       {contextHolder}
       <Modal
-        title="Dual Factor SSP Key"
+        title={t('home:key.dual_factor_key')}
         open={isModalKeyOpen}
         onOk={handleOkModalKey}
         onCancel={handleCancelModalKey}
         okText="Sync Key"
         style={{ textAlign: 'center', top: 60 }}
       >
-        <p>
-          SSP Wallet is a Dual Signature Wallet. You will need to download SSP
-          Key on your mobile device to access your wallet.
-        </p>
-        <b>
-          Scan the following QR code to sync your SSP Wallet with your SSP Key.
-        </b>
+        <p>{t('home:key.sync_info_1')}</p>
+        <b>{t('home:key.sync_info_2')}</b>
         <br />
         <br />
         <Space direction="vertical" size="small" style={{ marginBottom: 25 }}>
@@ -265,7 +246,7 @@ function Key(props: {
             size="small"
             onClick={() => setKeyInputVisible(true)}
           >
-            Issues syncing? Manual Input
+            {t('home:key.issues_syncing')}
           </Button>
         )}
         {keyInputVisible && (
@@ -273,7 +254,7 @@ function Key(props: {
             <TextArea
               value={keyInput}
               onChange={(e) => setKeyInput(e.target.value)}
-              placeholder={`Input Extended Public Key ${derivationPath} of SSP Key here`}
+              placeholder={t('home:key.input_xpub', { path: derivationPath })}
               autoSize
             />
           </>

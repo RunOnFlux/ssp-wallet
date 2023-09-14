@@ -7,11 +7,13 @@ import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 function SSPWalletDetails(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
+  const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [xpriv, setXpriv] = useState('');
   const [xpub, setXpub] = useState('');
@@ -51,43 +53,42 @@ function SSPWalletDetails(props: {
     passworderDecrypt(fingerprint, passwordBlob)
       .then(async (password) => {
         if (typeof password !== 'string') {
-          throw new Error('Password is not valid.');
+          throw new Error(t('home:sspWalletDetails.err_pw_not_valid'));
         }
         const xprivFluxBlob = secureLocalStorage.getItem('xpriv-48-19167-0-0');
         if (typeof xprivFluxBlob !== 'string') {
-          throw new Error('Invalid wallet xpriv');
+          throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpriv'));
         }
         const xprivFlux = await passworderDecrypt(password, xprivFluxBlob);
         if (typeof xprivFlux !== 'string') {
-          throw new Error('Invalid wallet xpriv, unable to decrypt');
+          throw new Error(
+            t('home:sspWalletDetails.err_invalid_wallet_xpriv_2'),
+          );
         }
         setXpriv(xprivFlux);
 
         const xpubFluxBlob = secureLocalStorage.getItem('xpub-48-19167-0-0');
         if (typeof xpubFluxBlob !== 'string') {
-          throw new Error('Invalid wallet xpub');
+          throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpub'));
         }
         const xpubFlux = await passworderDecrypt(password, xpubFluxBlob);
         if (typeof xpubFlux !== 'string') {
-          throw new Error('Invalid wallet xpub, unable to decrypt');
+          throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpub_2'));
         }
         setXpub(xpubFlux);
         const walletSeedBlob = secureLocalStorage.getItem('walletSeed');
         if (typeof walletSeedBlob !== 'string') {
-          throw new Error('Invalid wallet seed');
+          throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed'));
         }
         const walletSeed = await passworderDecrypt(password, walletSeedBlob);
         if (typeof walletSeed !== 'string') {
-          throw new Error('Invalid wallet xpub, unable to decrypt');
+          throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed_2'));
         }
         setSeedPhrase(walletSeed);
       })
       .catch((error) => {
         console.log(error);
-        displayMessage(
-          'error',
-          'Code S1: Something went wrong while decrypting password.',
-        );
+        displayMessage('error', t('home:sspWalletDetails.err_s1'));
       });
   };
 
@@ -95,14 +96,14 @@ function SSPWalletDetails(props: {
     <>
       {contextHolder}
       <Modal
-        title="FLUX SSP Wallet Details (BIP-48)"
+        title={t('home:sspWalletDetails.ssp_bip', { chain: 'FLUX' })}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleOk}
         footer={[
           <Button key="ok" type="primary" onClick={handleOk}>
-            OK
+            {t('common:ok')}
           </Button>,
         ]}
       >
@@ -113,7 +114,7 @@ function SSPWalletDetails(props: {
           {!seedPhraseVisible && (
             <EyeInvisibleOutlined onClick={() => setSeedPhraseVisible(true)} />
           )}{' '}
-          SSP Wallet Mnemonic Seed Phrase:
+          {t('home:sspWalletDetails.ssp_mnemonic')}:
         </h3>
         <Paragraph copyable={{ text: seedPhrase }} className="copyableAddress">
           <Text>
@@ -129,7 +130,7 @@ function SSPWalletDetails(props: {
               onClick={() => setExtendedPublicKeyVisible(true)}
             />
           )}{' '}
-          Flux Extended Public Key:
+          {t('home:sspWalletDetails.chain_extended_pub', { chain: 'Flux' })}:
         </h3>
         <Paragraph copyable={{ text: xpub }} className="copyableAddress">
           <Text>
@@ -145,7 +146,7 @@ function SSPWalletDetails(props: {
               onClick={() => setExtendedPrivateKeyVisible(true)}
             />
           )}{' '}
-          Flux Extended Private Key:
+          {t('home:sspWalletDetails.chain_extended_priv', { chain: 'Flux' })}:
         </h3>
         <Paragraph copyable={{ text: xpriv }} className="copyableAddress">
           <Text>

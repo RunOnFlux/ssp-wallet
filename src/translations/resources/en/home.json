@@ -13,5 +13,75 @@
     "date": "Date",
     "amount": "Amount",
     "confirmations": "Confirmations"
+  },
+  "sspWalletDetails": {
+    "err_pw_not_valid": "Password is not valid.",
+    "err_invalid_wallet_xpriv": "Invalid wallet xpriv.",
+    "err_invalid_wallet_xpriv_2": "Invalid wallet xpriv, unable to decrypt.",
+    "err_invalid_wallet_xpub": "Invalid wallet xpub",
+    "err_invalid_wallet_xpub_2": "Invalid wallet xpub, unable to decrypt.",
+    "err_invalid_wallet_seed": "Invalid wallet seed",
+    "err_invalid_wallet_seed_2": "Invalid wallet seed, unable to decrypt",
+    "err_s1": "Code S1: Something went wrong while decrypting password.",
+    "ssp_bip": "{{chain}} SSP Wallet Details (BIP-48)",
+    "ssp_mnemonic": "SSP Wallet Mnemonic Seed Phrase",
+    "chain_extended_pub": "{{chain}} Extended Public Key",
+    "chain_extended_priv": "{{chain}} Extended Private Key"
+  },
+  "addressDetails": {
+    "chain_bip": "{{chain}} Address Details (BIP-48)",
+    "wallet_redeem_script": "Wallet Redeem Script",
+    "wallet_priv_key": "Wallet Private Key"
+  },
+  "settings": {
+    "err_saving_conf": "Error while saving configuration. Please try again.",
+    "settings": "Settings",
+    "change_pw": "Change password",
+    "change_pw_restore": "Change password? Restore!",
+    "ssp_relay": "SSP Relay Server",
+    "chain_node_service": "{{chain}} Node Service"
+  },
+  "receive": {
+    "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
+    "wallet_address": "Wallet Address"
+  },
+  "navigation": {
+    "send": "Send",
+    "receive": "Receive"
+  },
+  "confirmTxKey": {
+    "confirm_tx_key": "Confirm Transaction on SSP Key",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on our mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
+    "info_2": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or use a manual input."
+  },
+  "navbar": {
+    "chain_wallet": "{{chain}} {{wallet}}",
+    "ssp_details": "SSP Wallet Details",
+    "addr_details": "Address Details"
+  },
+  "passwordConfirm": {
+    "err_pw_not_valid_try": "Password is not valid. Please try again.",
+    "err_pc1": "Code PC1: Wallet data missing. Please restore your wallet.",
+    "grant_access_info_1": "You are about to access sensitive information.",
+    "grant_access_info_2": "Grant access with password.",
+    "confirm_with_pw": "Confirm with Password",
+    "grant_access": "Grant Access"
+  },
+  "key": {
+    "err_sync_fail": "Synchronisation failed. Please try again manually.",
+    "warn_await_sync": "Awaiting SSP Key synchronisation or manual input.",
+    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.",
+    "err_invalid_key": "Invalid SSP Key.",
+    "err_k2": "Code K2: Something went wrong while decrypting password.",
+    "err_k1": "Code K1: Something went wrong while decrypting password.",
+    "cancel_sync_q": "Cancel SSP Key Sync?",
+    "cancel_sync": "Cancel SSP Sync",
+    "back_to_sync": "Back to SSP Key Sync",
+    "sync_info_content": "SSP Wallet cannot be used without SSP Key. This will log you out of SSP Wallet.",
+    "dual_factor_key": "Dual Factor SSP Key",
+    "sync_info_1": "SSP Wallet is a Dual Signature Wallet. You will need to download SSP Key on your mobile device to access your wallet.",
+    "sync_info_2": "Scan the following QR code to sync your SSP Wallet with your SSP Key.",
+    "issues_syncing": "Issues syncing? Manual Input",
+    "input_xpub": "Input Extended Public Key {{path}} of SSP Key here"
   }
 }

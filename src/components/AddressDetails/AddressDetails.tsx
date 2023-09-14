@@ -8,11 +8,13 @@ import { generateAddressKeypair } from '../../lib/wallet';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
 function AddressDetails(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
+  const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [privKey, setPrivKey] = useState('');
   const [redeemScriptVisible, setRedeemScriptVisible] = useState(false);
@@ -47,25 +49,24 @@ function AddressDetails(props: {
     passworderDecrypt(fingerprint, passwordBlob)
       .then(async (password) => {
         if (typeof password !== 'string') {
-          throw new Error('Password is not valid.');
+          throw new Error(t('home:sspWalletDetails.err_pw_not_valid'));
         }
         const xprivFluxBlob = secureLocalStorage.getItem('xpriv-48-19167-0-0');
         if (typeof xprivFluxBlob !== 'string') {
-          throw new Error('Invalid wallet xpriv');
+          throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpriv'));
         }
         const xprivFlux = await passworderDecrypt(password, xprivFluxBlob);
         if (typeof xprivFlux !== 'string') {
-          throw new Error('Invalid wallet xpriv, unable to decrypt');
+          throw new Error(
+            t('home:sspWalletDetails.err_invalid_wallet_xpriv_2'),
+          );
         }
         const keyPair = generateAddressKeypair(xprivFlux, 0, 0, 'flux');
         setPrivKey(keyPair.privKey);
       })
       .catch((error) => {
         console.log(error);
-        displayMessage(
-          'error',
-          'Code S1: Something went wrong while decrypting password.',
-        );
+        displayMessage('error', t('home:sspWalletDetails.err_s1'));
       });
   };
 
@@ -73,18 +74,18 @@ function AddressDetails(props: {
     <>
       {contextHolder}
       <Modal
-        title="FLUX Address Details (BIP-48)"
+        title={t('home:addressDetails.chain_bip', { chain: 'FLUX' })}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleOk}
         footer={[
           <Button key="ok" type="primary" onClick={handleOk}>
-            OK
+            {t('common:ok')}
           </Button>,
         ]}
       >
-        <h3>Wallet Address:</h3>
+        <h3>{t('home:receive.wallet_address')}:</h3>
         <Paragraph copyable={{ text: address }} className="copyableAddress">
           <Text>{address}</Text>
         </Paragraph>
@@ -97,7 +98,7 @@ function AddressDetails(props: {
               onClick={() => setRedeemScriptVisible(true)}
             />
           )}{' '}
-          Wallet Redeem Script:
+          {t('home:addressDetails.wallet_redeem_script')}:
         </h3>
         <Paragraph
           copyable={{ text: redeemScript }}
@@ -114,7 +115,7 @@ function AddressDetails(props: {
           {!privateKeyVisible && (
             <EyeInvisibleOutlined onClick={() => setPrivateKeyVisible(true)} />
           )}{' '}
-          Wallet Private Key:
+          {t('home:addressDetails.wallet_priv_key')}:
         </h3>
         <Paragraph copyable={{ text: privKey }} className="copyableAddress">
           <Text>{privateKeyVisible ? privKey : '*** *** *** *** *** ***'}</Text>

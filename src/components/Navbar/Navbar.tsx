@@ -10,52 +10,10 @@ import SspWalletDetails from '../SspWalletDetails/SspWalletDetails';
 import AddressDetails from '../AddressDetails/AddressDetails';
 import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
 import Settings from '../Settings/Settings';
-
-const menuItems: MenuProps['items'] = [
-  {
-    key: 'Menu',
-    icon: <SettingOutlined style={{ fontSize: '14px' }} />,
-    style: {
-      border: 'none',
-      width: '30px',
-      height: '30px',
-      lineHeight: '30px',
-      display: 'flex',
-      padding: '4px 0px 4px 9px',
-      margin: 0,
-      marginTop: '-2px',
-    },
-    children: [
-      {
-        label: 'Address Details',
-        key: 'address',
-      },
-      {
-        label: 'SSP Wallet Details',
-        key: 'sspwallet',
-      },
-      {
-        label: 'Settings',
-        key: 'settings',
-      },
-    ],
-  },
-  {
-    key: 'Lock',
-    icon: <LockOutlined />,
-    style: {
-      border: 'none',
-      width: '30px',
-      height: '30px',
-      lineHeight: '30px',
-      display: 'flex',
-      padding: '4px 23px 0px 9px',
-      margin: 0,
-    },
-  },
-];
+import { useTranslation } from 'react-i18next';
 
 function Navbar() {
+  const { t } = useTranslation(['home', 'common']);
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const sspWalletDetailsAction = (status: boolean) => {
@@ -108,6 +66,49 @@ function Navbar() {
       navigate('/login');
     })();
   };
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'Menu',
+      icon: <SettingOutlined style={{ fontSize: '14px' }} />,
+      style: {
+        border: 'none',
+        width: '30px',
+        height: '30px',
+        lineHeight: '30px',
+        display: 'flex',
+        padding: '4px 0px 4px 9px',
+        margin: 0,
+        marginTop: '-2px',
+      },
+      children: [
+        {
+          label: t('home:navbar.addr_details'),
+          key: 'address',
+        },
+        {
+          label: t('home:navbar.ssp_details'),
+          key: 'sspwallet',
+        },
+        {
+          label: t('home:settings.settings'),
+          key: 'settings',
+        },
+      ],
+    },
+    {
+      key: 'Lock',
+      icon: <LockOutlined />,
+      style: {
+        border: 'none',
+        width: '30px',
+        height: '30px',
+        lineHeight: '30px',
+        display: 'flex',
+        padding: '4px 23px 0px 9px',
+        margin: 0,
+      },
+    },
+  ];
   return (
     <>
       <div className="navbar">
@@ -121,7 +122,10 @@ function Navbar() {
             />
           </Col>
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
-            Flux Wallet 1
+            {t('home:navbar.chain_wallet', {
+              chain: 'Flux',
+              wallet: 'Wallet 1',
+            })}
           </Col>
           <Col span={4}>
             <Menu

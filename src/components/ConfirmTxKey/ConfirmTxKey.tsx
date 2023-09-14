@@ -1,4 +1,5 @@
 import { QRCode, Typography, Button, Space, Modal } from 'antd';
+import { useTranslation } from 'react-i18next';
 const { Paragraph, Text } = Typography;
 
 function ConfirmTxKey(props: {
@@ -6,6 +7,7 @@ function ConfirmTxKey(props: {
   txHex: string;
   openAction: (status: boolean) => void;
 }) {
+  const { t } = useTranslation(['home', 'common']);
   const { open, openAction, txHex } = props;
 
   const handleOk = () => {
@@ -15,24 +17,20 @@ function ConfirmTxKey(props: {
   return (
     <>
       <Modal
-        title="Confirm Transaction on SSP Key"
+        title={t('home:confirmTxKey.confirm_tx_key')}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleOk}
         footer={[
           <Button key="ok" type="primary" onClick={handleOk}>
-            OK
+            {t('common:ok')}
           </Button>,
         ]}
       >
         {txHex.length < 3000 && (
           <>
-            <p>
-              To confirm the transaction on your SSP Key, open your SSP Key on
-              your mobile phone and confirm the action. You can tap to refresh
-              or scan the following QR code.
-            </p>
+            <p>{t('home:confirmTxKey.info_1')}</p>
             <Space
               direction="vertical"
               size="large"
@@ -53,11 +51,7 @@ function ConfirmTxKey(props: {
         )}
         {txHex.length >= 3000 && (
           <>
-            <p>
-              To confirm the transaction on your SSP Key, open your SSP Key on
-              your mobile phone and confirm the action. You can tap to refresh
-              or use a manual input.
-            </p>
+            <p>{t('home:confirmTxKey.info_2')}</p>
             <Space
               direction="vertical"
               size="large"

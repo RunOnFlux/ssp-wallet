@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Space } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import Receive from '../Receive/Receive';
+import { useTranslation } from 'react-i18next';
 
 function Navigation() {
+  const { t } = useTranslation(['home']);
   const navigate = useNavigate();
   const [openReceive, setOpenReceive] = useState(false);
   const receiveAction = (status: boolean) => {
@@ -20,7 +22,7 @@ function Navigation() {
           size={'large'}
           onClick={() => navigate('/send')}
         >
-          Send
+          {t('home:navigation.send')}
         </Button>
         <Button
           type="dashed"
@@ -31,7 +33,7 @@ function Navigation() {
             receiveAction(true);
           }}
         >
-          Receive
+          {t('home:navigation.receive')}
         </Button>
       </Space>
       <Receive open={openReceive} openAction={receiveAction} />

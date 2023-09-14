@@ -10,6 +10,7 @@ import {
   loadBackendsConfig,
 } from '@storage/backends';
 import { sspConfig, sspConfigOriginal, loadSSPConfig } from '@storage/ssp';
+import { useTranslation } from 'react-i18next';
 
 const backendsOriginalConfig = backendsOriginal();
 const originalConfig = sspConfigOriginal();
@@ -18,6 +19,7 @@ function PasswordConfirm(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
+  const { t } = useTranslation(['home', 'common']);
   const FNC = backends().flux.node;
   const SSPR = sspConfig().relay;
   console.log(SSPR);
@@ -72,10 +74,7 @@ function PasswordConfirm(props: {
       openAction(false);
     } catch (error) {
       console.log(error);
-      displayMessage(
-        'error',
-        'Error while saving configuration. Please try again.',
-      );
+      displayMessage('error', t('home:settings.err_saving_conf'));
     }
   };
 
@@ -103,21 +102,21 @@ function PasswordConfirm(props: {
     <>
       {contextHolder}
       <Modal
-        title="Settings"
+        title={t('home:settings.settings')}
         open={open}
         onCancel={handleNotOk}
         style={{ textAlign: 'center', top: 60, width: 200 }}
         footer={[]}
       >
-        <h3>Change password</h3>
+        <h3>{t('home:settings.change_pw')}</h3>
         <Space direction="vertical" size="large">
           <Button type="default" block size="middle" onClick={handleNotOk}>
-            <Link to={'/restore'}>Change password? Restore!</Link>
+            <Link to={'/restore'}>{t('home:settings.change_pw_restore')}</Link>
           </Button>
         </Space>
         <br />
         <br />
-        <h3>SSP Relay Server</h3>
+        <h3>{t('home:settings.ssp_relay')}</h3>
         <Space.Compact style={{ width: '100%' }}>
           <Input
             size="large"
@@ -126,10 +125,10 @@ function PasswordConfirm(props: {
             onChange={(e) => setSspConfigRelay(e.target.value)}
           />
           <Button type="default" size="large" onClick={resetSSP}>
-            Reset
+            {t('common:reset')}
           </Button>
         </Space.Compact>
-        <h3>Flux Node Service</h3>
+        <h3>{t('home:settings.chain_node_service', { chain: 'Flux' })}</h3>
         <Space.Compact style={{ width: '100%' }}>
           <Input
             size="large"
@@ -138,7 +137,7 @@ function PasswordConfirm(props: {
             onChange={(e) => setFluxNodeConfig(e.target.value)}
           />
           <Button type="default" size="large" onClick={resetFlux}>
-            Reset
+            {t('common:reset')}
           </Button>
         </Space.Compact>
         <br />
@@ -147,10 +146,10 @@ function PasswordConfirm(props: {
         <br />
         <Space direction="vertical" size="large">
           <Button type="primary" size="large" onClick={handleOk}>
-            Save
+            {t('common:save')}
           </Button>
           <Button type="link" block size="small" onClick={handleNotOk}>
-            Cancel
+            {t('common:cancel')}
           </Button>
         </Space>
       </Modal>

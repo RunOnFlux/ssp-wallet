@@ -10,6 +10,7 @@ import {
 import secureLocalStorage from 'react-secure-storage';
 
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
+import { useTranslation } from 'react-i18next';
 
 interface passwordForm {
   password: string;
@@ -20,6 +21,7 @@ function PasswordConfirm(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
+  const { t } = useTranslation(['home', 'common', 'login', 'cr']);
   const [form] = Form.useForm();
   const { open, openAction } = props;
   const [messageApi, contextHolder] = message.useMessage();
@@ -42,7 +44,7 @@ function PasswordConfirm(props: {
 
   const onFinish = (values: passwordForm) => {
     if (values.password.length < 8) {
-      displayMessage('error', 'Invalid password. Please try again.');
+      displayMessage('error', t('login:err_invalid_pw_2'));
       return;
     }
     // try to decrypt
@@ -54,21 +56,18 @@ function PasswordConfirm(props: {
             // went well
             handleOk();
           } else {
-            displayMessage(
-              'error',
-              'Code L2: Wallet data missing. Please restore your wallet.',
-            );
+            displayMessage('error', t('login:err_l2'));
           }
         })
         .catch((error) => {
-          displayMessage('error', 'Password is not valid. Please try again.');
+          displayMessage(
+            'error',
+            t('home:passwordConfirm.err_pw_not_valid_try'),
+          );
           console.log(error);
         });
     } else {
-      displayMessage(
-        'error',
-        'Code PC1:  Wallet data missing. Please restore your wallet.',
-      );
+      displayMessage('error', t('home:passwordConfirm.err_pc1'));
     }
   };
 
@@ -76,7 +75,7 @@ function PasswordConfirm(props: {
     <>
       {contextHolder}
       <Modal
-        title="Confirm Password"
+        title={t('cr:confirm_password')}
         open={open}
         onCancel={handleNotOk}
         style={{ textAlign: 'center', top: 60, width: 200 }}
@@ -85,9 +84,9 @@ function PasswordConfirm(props: {
         <Space direction="vertical" size="large">
           <Image width={50} preview={false} src="/ssp-logo.svg" />
           <p>
-            You are about to access sensitive information.
+            {t('home:passwordConfirm.grant_access_info_1')}
             <br />
-            Grant access with password.
+            {t('home:passwordConfirm.grant_access_info_2')}
           </p>
           <Form
             form={form}
@@ -97,18 +96,18 @@ function PasswordConfirm(props: {
             layout="vertical"
           >
             <Form.Item
-              label="Confirm with Password"
+              label={t('home:passwordConfirm.confirm_with_pw')}
               name="password"
               rules={[
                 {
                   required: true,
-                  message: 'Please input your password',
+                  message: t('cr:input_password'),
                 },
               ]}
             >
               <Input.Password
                 size="large"
-                placeholder="Confirm with Password"
+                placeholder={t('home:passwordConfirm.confirm_with_pw')}
                 prefix={<LockOutlined />}
                 iconRender={(visible) =>
                   visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
@@ -119,11 +118,11 @@ function PasswordConfirm(props: {
 
             <Form.Item>
               <Button type="primary" size="large" htmlType="submit">
-                Grant Access
+                {t('home:passwordConfirm.grant_access')}
               </Button>
             </Form.Item>
             <Button type="link" block size="small" onClick={handleNotOk}>
-              Cancel
+              {t('common:cancel')}
             </Button>
           </Form>
         </Space>
