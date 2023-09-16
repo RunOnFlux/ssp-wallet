@@ -35,7 +35,7 @@ function TransactionsTable(props: {
     fetchRate('flux')
       .then((rate) => {
         console.log(rate);
-        setFiatRate(rate.usd);
+        setFiatRate(rate.USD);
       })
       .catch((error) => {
         console.log(error);
