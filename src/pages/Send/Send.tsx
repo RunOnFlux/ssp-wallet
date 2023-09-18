@@ -35,6 +35,7 @@ function Send() {
     clearTxid,
     txRejected,
     clearTxRejected,
+    addPendingTx,
   } = useSocket();
   const { t } = useTranslation(['send', 'common']);
   const [form] = Form.useForm();
@@ -116,15 +117,16 @@ function Send() {
       chain,
       wkIdentity,
     };
-    axios
+    return axios
       .post(`https://${sspConfig().relay}/v1/action`, data)
       .then((res) => {
-        console.log(res);
+        return res.data.data;
       })
       .catch((error) => {
         console.log(error);
       });
   };
+
 
   const onFinish = (values: sendForm) => {
     console.log(values);
@@ -168,7 +170,10 @@ function Send() {
           .then((tx) => {
             console.log(tx);
             // post to ssp relay
-            postAction('tx', tx, 'flux', sspWalletKeyIdentity);
+            postAction('tx', tx, 'flux', sspWalletKeyIdentity).then(res => {
+              console.log(res)
+              addPendingTx?.({...values, expireAt: res.expireAt, createdAt: res.createdAt });
+            });
             setTxHex(tx);
             setOpenConfirmTx(true);
             if (txSentInterval) {

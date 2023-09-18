@@ -2,11 +2,15 @@ import React, { createContext, useState, useEffect } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { useAppSelector } from '../hooks';
 import { sspConfig } from '@storage/ssp';
+import { getOrSavePendingTx, removePendingTx } from '../lib/transactions';
 
 interface SocketContextType {
   socket: Socket | null;
   txid: string;
   txRejected: string;
+  pendingTxs: Record<string, any>[],
+  addPendingTx?: (data: Record<string, any>) => void;
+  refreshPendingTx?: (exp?: string) => void;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
 }
@@ -16,12 +20,14 @@ interface serverResponse {
   action: string;
   wkIdentity: string;
   chain: string;
+  expireAt: string;
 }
 
 const defaultValue: SocketContextType = {
   socket: null,
   txid: '',
   txRejected: '',
+  pendingTxs: [],
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultValue);
@@ -34,6 +40,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [txRejected, setTxRejected] = useState('');
   const [txid, setTxid] = useState('');
   const [socketIdentiy, setSocketIdentity] = useState('');
+  const [pendingTxs, setPendingTxs] = useState<Record<string, any>[]>([]);
 
   useEffect(() => {
     console.log('socket init');
@@ -65,19 +72,32 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('incoming txid');
       console.log(txid);
       setTxid(txid.payload);
+      setPendingTxs(p => {
+        removePendingTx?.(p[0].expireAt);
+        return [...p.splice(1)];
+      });
     });
 
     newSocket.on('txrejected', (tx: serverResponse) => {
       console.log('tx rejected');
       console.log(tx);
       setTxRejected(tx.payload)
+      setPendingTxs(p => {
+        removePendingTx?.(p[0].expireAt);
+        return [...p.splice(1)];
+      });
     });
 
     setSocket(newSocket);
+    
     return () => {
       newSocket.close();
     };
   }, [wkIdentity]);
+
+  useEffect(() => {
+      getOrSavePendingTx().then(setPendingTxs);
+  }, []);
 
   const clearTxid = () => {
     setTxid('');
@@ -87,8 +107,20 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     setTxRejected('');
   };
 
+  const addPendingTx = (data:Record<string, any>) => {
+    getOrSavePendingTx(data).then(r => setPendingTxs([...r]));
+  }
+
+  const refreshPendingTx = (expireAt?: string) => {
+    if(expireAt) {
+      removePendingTx?.(expireAt);
+    }
+    setPendingTxs(p => [...p.filter(p => p.expireAt !== expireAt)])
+    console.log("refreshPendingTx");
+  }
+
   return (
-    <SocketContext.Provider value={{ socket, txRejected: txRejected, txid: txid, clearTxid, clearTxRejected }}>
+    <SocketContext.Provider value={{ socket, txRejected: txRejected, txid: txid, pendingTxs, clearTxid, clearTxRejected, addPendingTx, refreshPendingTx }}>
       {children}
     </SocketContext.Provider>
   );

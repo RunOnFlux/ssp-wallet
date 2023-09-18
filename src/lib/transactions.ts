@@ -4,6 +4,7 @@ import utxolib from 'utxo-lib';
 import { transacitonsInsight, transactionInsight, transaction } from '../types';
 
 import { backends } from '@storage/backends';
+import localforage from 'localforage';
 
 function decodeMessage(asm: string) {
   const parts = asm.split('OP_RETURN ', 2);
@@ -142,4 +143,35 @@ export function decodeTransactionForApproval(
     amount,
   };
   return txInfo;
+}
+
+
+export function hasDateExpired(dateString: string) {
+  // Create a Date object from the date string
+  var givenDate = new Date(dateString);
+  // Get the current date
+  var currentDate = new Date();
+  return givenDate < currentDate;
+}
+
+export async function getOrSavePendingTx(data?: Record<string, any>) {
+  let oldTxs = (await localforage.getItem<Record<string, any>[]>("pendingTx")) || [];
+
+  // Filter out expired transactions
+  oldTxs = oldTxs.filter((item: Record<string, any>) => !hasDateExpired(item.expireAt));
+
+  // If data is provided, add it to the beginning of the array
+  if (data) {
+      oldTxs.unshift(data);
+  }
+
+  // Save the updated array back to local storage
+  await localforage.setItem("pendingTx", oldTxs);
+
+  return oldTxs;
+}
+
+export async function removePendingTx(expireAt: string) {
+  let oldTxs = (await localforage.getItem<Record<string, any>[]>("pendingTx")) || [];
+  await localforage.setItem("pendingTx", oldTxs.filter(ptx => ptx.expireAt !== expireAt));
 }

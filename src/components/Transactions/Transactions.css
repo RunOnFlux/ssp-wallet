@@ -11,3 +11,11 @@
   word-break: none;
   white-space: nowrap;
 }
+.pl-0 {
+  padding-left: 0 !important;
+}
+
+.make-center {
+  padding-left: 9px !important;
+  padding-right: 9px !important;
+}
