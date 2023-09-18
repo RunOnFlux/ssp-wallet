@@ -18,6 +18,7 @@ import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
+import { useSocket } from '../../hooks/useSocket';
 
 interface sendForm {
   receiver: string;
@@ -29,6 +30,12 @@ interface sendForm {
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
 
 function Send() {
+  const {
+    txid: socketTxid,
+    clearTxid,
+    txRejected,
+    clearTxRejected,
+  } = useSocket();
   const { t } = useTranslation(['send', 'common']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -68,6 +75,26 @@ function Send() {
       });
     }
   }, [txid]);
+
+  useEffect(() => {
+    console.log('HERE');
+    console.log(socketTxid);
+    if (socketTxid) {
+      setTxid(socketTxid);
+      clearTxid?.();
+      // stop interval
+      if (txSentInterval) {
+        clearInterval(txSentInterval);
+      }
+    }
+  }, [socketTxid]);
+
+  useEffect(() => {
+    if (txRejected) {
+      // TODO here show that tx got rejected by ssp key
+      clearTxRejected?.();
+    }
+  }, [txRejected]);
 
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const displayMessage = (type: NoticeType, content: string) => {
@@ -149,7 +176,7 @@ function Send() {
             }
             txSentInterval = setInterval(() => {
               fetchTransactions();
-            }, 5000);
+            }, 111115000);
           })
           .catch((error: TypeError) => {
             displayMessage('error', error.message);

@@ -5,6 +5,7 @@ import router from './router';
 import { store } from './store';
 import { Provider } from 'react-redux';
 import localForage from 'localforage';
+import { SocketProvider } from './contexts/SocketContext';
 import './translations';
 import './index.css';
 
@@ -20,7 +21,9 @@ localForage.config({
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
-      <RouterProvider router={router} />
+      <SocketProvider>
+        <RouterProvider router={router} />
+      </SocketProvider>
     </Provider>
   </React.StrictMode>,
 );
