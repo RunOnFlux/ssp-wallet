@@ -1,6 +1,7 @@
 {
   "err_invalid_receiver": "Invalid receiver address.",
   "err_invalid_amount": "Invalid amount.",
+  "err_invalid_fee": "Invalid fee.",
   "err_pwd_not_valid": "Password is not valid.",
   "err_invalid_xpriv": "Invalid wallet xpriv.",
   "err_invalid_xpriv_decrypt": "Invalid wallet xpriv, unable to decrypt",

@@ -143,8 +143,12 @@ function Send() {
       displayMessage('error', t('send:err_invalid_receiver'));
       return;
     }
-    if (!values.amount) {
+    if (!values.amount || +values.amount <= 0 || isNaN(+values.amount)) {
       displayMessage('error', t('send:err_invalid_amount'));
+      return;
+    }
+    if (!values.fee || +values.fee < 0 || isNaN(+values.fee)) {
+      displayMessage('error', t('send:err_invalid_fee'));
       return;
     }
     // get our password to decrypt xpriv from secure storage
