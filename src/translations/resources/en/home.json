@@ -4,6 +4,11 @@
     "show_in_explorer": "Show in Explorer",
     "tx_sent": "Transaction Sent!"
   },
+  "txRejected": {
+    "tx_rejected": "Trasaciton Rejected!",
+    "tx_rejected_info": "Transaction rejected by SSP Key.",
+    "tx_rejected_info_2": "Your transaction will not be included in the blockchain. Your funds are fully available and possible to be sent."
+  },
   "transactionsTable": {
     "no_tx_history": "No Transaction History Found",
     "txid_link": "TXID: {{txid}}",
@@ -68,6 +73,7 @@
     "grant_access": "Grant Access"
   },
   "key": {
+    "sync_key": "Sync Key",
     "err_sync_fail": "Synchronisation failed. Please try again manually.",
     "warn_await_sync": "Awaiting SSP Key synchronisation or manual input.",
     "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.",

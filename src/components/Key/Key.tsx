@@ -217,7 +217,7 @@ function Key(props: {
         open={isModalKeyOpen}
         onOk={handleOkModalKey}
         onCancel={handleCancelModalKey}
-        okText="Sync Key"
+        okText={t('home:key.sync_key')}
         style={{ textAlign: 'center', top: 60 }}
       >
         <p>{t('home:key.sync_info_1')}</p>

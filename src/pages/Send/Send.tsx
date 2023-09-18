@@ -14,6 +14,7 @@ import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
+import TxRejected from '../../components/TxRejected/TxRejected';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
@@ -48,6 +49,7 @@ function Send() {
   } = useAppSelector((state) => state.flux);
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
+  const [openTxRejected, setOpenTxRejected] = useState(false);
   const [txHex, setTxHex] = useState('');
   const [txid, setTxid] = useState('');
   const confirmTxAction = (status: boolean) => {
@@ -67,6 +69,10 @@ function Send() {
     }
   };
 
+  const txRejectedAction = (status: boolean) => {
+    setOpenTxRejected(status);
+  };
+
   useEffect(() => {
     if (txid) {
       setOpenConfirmTx(false);
@@ -77,7 +83,6 @@ function Send() {
   }, [txid]);
 
   useEffect(() => {
-    console.log('HERE');
     console.log(socketTxid);
     if (socketTxid) {
       setTxid(socketTxid);
@@ -91,7 +96,13 @@ function Send() {
 
   useEffect(() => {
     if (txRejected) {
-      // TODO here show that tx got rejected by ssp key
+      setOpenConfirmTx(false);
+      setTimeout(() => {
+        setOpenTxRejected(true);
+      });
+      if (txSentInterval) {
+        clearInterval(txSentInterval);
+      }
       clearTxRejected?.();
     }
   }, [txRejected]);
@@ -176,7 +187,7 @@ function Send() {
             }
             txSentInterval = setInterval(() => {
               fetchTransactions();
-            }, 111115000);
+            }, 5000);
           })
           .catch((error: TypeError) => {
             displayMessage('error', error.message);
@@ -303,6 +314,7 @@ function Send() {
         txHex={txHex}
       />
       <TxSent open={openTxSent} openAction={txSentAction} txid={txid} />
+      <TxRejected open={openTxRejected} openAction={txRejectedAction}/>
     </>
   );
 }
