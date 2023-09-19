@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import {
-  ClockCircleOutlined,
   CheckCircleOutlined,
+  ClockCircleOutlined,
   VerticalAlignTopOutlined,
   VerticalAlignBottomOutlined,
 } from '@ant-design/icons';
@@ -41,6 +41,7 @@ function TransactionsTable(props: {
         console.log(error);
       });
   };
+
   return (
     <>
       <Table

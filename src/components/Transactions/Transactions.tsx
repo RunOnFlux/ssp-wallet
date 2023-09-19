@@ -5,6 +5,7 @@ import { setTransactions, setBlockheight } from '../../store';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { getBlockheight } from '../../lib/blockheight.ts';
 import TransactionsTable from './TransactionsTable.tsx';
+import PendingTransactionsTable from './PendingTransactionsTable.tsx';
 
 function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
@@ -40,8 +41,12 @@ function Transactions() {
         console.log(error);
       });
   };
+
   return (
     <>
+      <PendingTransactionsTable
+      />
+
       <TransactionsTable
         transactions={transactions}
         blockheight={blockheight}
