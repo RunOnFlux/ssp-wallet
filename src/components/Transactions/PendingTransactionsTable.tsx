@@ -89,10 +89,10 @@ function PendingTransactionsTable(props: {
             dataIndex="amount"
             render={(amnt: string) => (
               <>
-                {amnt} FLUX
+                -{amnt} FLUX
                 <br />
                 <div style={{ color: 'grey', fontSize: 12 }}>
-                  {+amnt < 0 ? '-' : ''}$
+                  -$
                   {new BigNumber(Math.abs(+amnt))
                     .multipliedBy(new BigNumber(fiatRate))
                     .toFixed(2)}{' '}
