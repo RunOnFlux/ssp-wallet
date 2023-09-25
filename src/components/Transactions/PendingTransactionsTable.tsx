@@ -10,11 +10,10 @@ import CountdownTimer from './CountDownTimer.tsx';
 import axios from 'axios';
 import { sspConfig } from '@storage/ssp';
 import { useAppSelector } from '../../hooks.ts';
-import {
-  VerticalAlignTopOutlined,
-} from '@ant-design/icons';
+import { VerticalAlignTopOutlined } from '@ant-design/icons';
 import ConfirmTxKey from '../ConfirmTxKey/ConfirmTxKey.tsx';
 import { decodeTransactionForApproval } from '../../lib/transactions.ts';
+import { actionSSPRelay } from '../../types';
 
 function PendingTransactionsTable() {
   const alreadyMounted = useRef(false);
@@ -45,9 +44,11 @@ function PendingTransactionsTable() {
       });
   };
 
-  const getPendingTx = async () => {
+  const getPendingTx = () => {
     axios
-      .get(`https://${sspConfig().relay}/v1/action/${sspWalletKeyIdentity}`)
+      .get<actionSSPRelay>(
+        `https://${sspConfig().relay}/v1/action/${sspWalletKeyIdentity}`,
+      )
       .then((res) => {
         if (res.data.action === 'tx') {
           const decoded = decodeTransactionForApproval(
@@ -66,6 +67,13 @@ function PendingTransactionsTable() {
 
   const confirmTxAction = (status: boolean) => {
     setOpenConfirmTx(status);
+  };
+
+  const onFinishCountDown = () => {
+    setPendingTxs([]);
+    setTimeout(() => {
+      getPendingTx();
+    }, 500);
   };
 
   return (
@@ -103,7 +111,7 @@ function PendingTransactionsTable() {
           <Column
             title={t('home:transactionsTable.date')}
             className="table-time"
-            dataIndex="expireAt"
+            dataIndex="createdAt"
             render={(time: string) => (
               <>
                 {new Date(time).toLocaleTimeString()}
@@ -133,15 +141,15 @@ function PendingTransactionsTable() {
           />
           <Column
             title={t('home:transactionsTable.confirmations')}
-            className={"table-icon"}
+            className={'table-icon'}
             dataIndex="expireAt"
-          
-            render={(expireAt) => (
+            render={(expireAt: string, row: actionSSPRelay) => (
               <>
                 {expireAt ? (
                   <CountdownTimer
-                    onFinish={() => setPendingTxs([])}
-                    targetDateTime={expireAt}
+                    onFinish={() => onFinishCountDown()}
+                    expireAtDateTime={expireAt}
+                    createdAtDateTime={row.createdAt}
                   />
                 ) : (
                   <ClockCircleOutlined style={{ fontSize: '18px' }} />

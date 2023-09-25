@@ -120,6 +120,13 @@ export interface syncSSPRelay {
   wkIdentity: string;
 }
 
+export interface actionSSPRelay {
+  payload: string;
+  action: string;
+  createdAt: string;
+  expireAt: string;
+}
+
 export interface currency {
   EUR: number;
   AUD: number;
