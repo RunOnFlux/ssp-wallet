@@ -1,5 +1,5 @@
 import { Table, Empty } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import {
@@ -11,36 +11,23 @@ import {
 import { transaction } from '../../types';
 import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
-import { fetchRate } from '../../lib/currency.ts';
 import { useTranslation } from 'react-i18next';
 
 function TransactionsTable(props: {
   transactions: transaction[];
   blockheight: number;
+  fiatRate: number;
   chain?: string;
+  refresh: () => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { chain = 'flux' } = props;
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [fiatRate, setFiatRate] = useState(0);
   const blockchainConfig = blockchains[chain];
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
-    obtainRate();
+    setFiatRate(props.fiatRate);
   });
-
-  const obtainRate = () => {
-    fetchRate('flux')
-      .then((rate) => {
-        console.log(rate);
-        setFiatRate(rate.USD);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
   return (
     <>

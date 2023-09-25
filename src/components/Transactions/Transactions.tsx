@@ -1,25 +1,38 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import localForage from 'localforage';
+import axios from 'axios';
+import { sspConfig } from '@storage/ssp';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setTransactions, setBlockheight } from '../../store';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { getBlockheight } from '../../lib/blockheight.ts';
 import TransactionsTable from './TransactionsTable.tsx';
 import PendingTransactionsTable from './PendingTransactionsTable.tsx';
+import { decodeTransactionForApproval } from '../../lib/transactions.ts';
+import { actionSSPRelay, pendingTransaction } from '../../types';
+import { fetchRate } from '../../lib/currency.ts';
 
 function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const dispatch = useAppDispatch();
-  const { transactions, address, blockheight } = useAppSelector(
+  const { transactions, address, blockheight, sspWalletKeyIdentity  } = useAppSelector(
     (state) => state.flux,
   );
+  const [pendingTxs, setPendingTxs] = useState<pendingTransaction[]>([]);
+  const [fiatRate, setFiatRate] = useState(0);
 
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
+    getPendingTx();
+    getTransactions();
+    obtainRate();
+  });
+
+  const getTransactions = () => {
     fetchTransactions();
     fetchBlockheight();
-  });
+  }
 
   const fetchTransactions = () => {
     fetchAddressTransactions(address, 'flux', 0, 10)
@@ -42,14 +55,48 @@ function Transactions() {
       });
   };
 
+  const getPendingTx = () => {
+    axios
+      .get<actionSSPRelay>(
+        `https://${sspConfig().relay}/v1/action/${sspWalletKeyIdentity}`,
+      )
+      .then((res) => {
+        if (res.data.action === 'tx') {
+          const decoded = decodeTransactionForApproval(
+            res.data.payload,
+            address,
+          );
+          setPendingTxs([{ ...decoded, ...res.data }]);
+        } else {
+          setPendingTxs([]);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+
+  const obtainRate = () => {
+    fetchRate('flux')
+      .then((rate) => {
+        console.log(rate);
+        setFiatRate(rate.USD);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   return (
     <>
-      <PendingTransactionsTable
-      />
+      <PendingTransactionsTable transactions={pendingTxs} fiatRate={fiatRate} refresh={getPendingTx}/>
 
       <TransactionsTable
         transactions={transactions}
         blockheight={blockheight}
+        fiatRate={fiatRate}
+        refresh={getTransactions}
       />
     </>
   );

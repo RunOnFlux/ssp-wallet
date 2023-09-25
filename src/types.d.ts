@@ -105,6 +105,13 @@ export interface transaction {
   message: string;
 }
 
+export interface pendingTransaction {
+  amount: string; // satoshis
+  createdAt: string;
+  expireAt: string;
+  payload: string;
+}
+
 export interface getInfoInsight {
   info: {
     version: number;

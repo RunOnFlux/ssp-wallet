@@ -1,69 +1,32 @@
 import { Table } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import './Transactions.css';
 import { useTranslation } from 'react-i18next';
-import { fetchRate } from '../../lib/currency.ts';
 import CountdownTimer from './CountDownTimer.tsx';
-import axios from 'axios';
-import { sspConfig } from '@storage/ssp';
-import { useAppSelector } from '../../hooks.ts';
 import { VerticalAlignTopOutlined } from '@ant-design/icons';
 import ConfirmTxKey from '../ConfirmTxKey/ConfirmTxKey.tsx';
-import { decodeTransactionForApproval } from '../../lib/transactions.ts';
 import { actionSSPRelay } from '../../types';
+import { pendingTransaction } from '../../types';
 
-function PendingTransactionsTable() {
-  const alreadyMounted = useRef(false);
+function PendingTransactionsTable(props: {
+  transactions: pendingTransaction[];
+  fiatRate: number;
+  refresh: () => void;
+}) {
   const { t } = useTranslation(['home', 'common']);
-  const { address: sender, sspWalletKeyIdentity } = useAppSelector(
-    (state) => state.flux,
-  );
   const [fiatRate, setFiatRate] = useState(0);
-  const [pendingTxs, setPendingTxs] = useState<Record<string, string>[]>([]);
+  const [pendingTxs, setPendingTxs] = useState<pendingTransaction[]>([]);
   const [txHex, setTxHex] = useState('');
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
-    obtainRate();
-    getPendingTx();
+    setPendingTxs(props.transactions);
+    setFiatRate(props.fiatRate);
+    console.log(props.fiatRate);
   });
-
-  const obtainRate = () => {
-    fetchRate('flux')
-      .then((rate) => {
-        console.log(rate);
-        setFiatRate(rate.USD);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const getPendingTx = () => {
-    axios
-      .get<actionSSPRelay>(
-        `https://${sspConfig().relay}/v1/action/${sspWalletKeyIdentity}`,
-      )
-      .then((res) => {
-        if (res.data.action === 'tx') {
-          const decoded = decodeTransactionForApproval(
-            res.data.payload,
-            sender,
-          );
-          setPendingTxs([{ ...decoded, ...res.data }]);
-        } else {
-          setPendingTxs([]);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
   const confirmTxAction = (status: boolean) => {
     setOpenConfirmTx(status);
@@ -72,7 +35,7 @@ function PendingTransactionsTable() {
   const onFinishCountDown = () => {
     setPendingTxs([]);
     setTimeout(() => {
-      getPendingTx();
+      props.refresh(); // refresh on parent
     }, 500);
   };
 
@@ -131,7 +94,6 @@ function PendingTransactionsTable() {
                 <div style={{ color: 'grey', fontSize: 12 }}>
                   {+amnt < 0 ? '-' : ''}$
                   {new BigNumber(Math.abs(+amnt))
-                    .dividedBy(1e8)
                     .multipliedBy(new BigNumber(fiatRate))
                     .toFixed(2)}{' '}
                   USD
