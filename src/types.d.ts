@@ -105,6 +105,13 @@ export interface transaction {
   message: string;
 }
 
+export interface pendingTransaction {
+  amount: string; // satoshis
+  createdAt: string;
+  expireAt: string;
+  payload: string;
+}
+
 export interface getInfoInsight {
   info: {
     version: number;
@@ -118,6 +125,13 @@ export interface syncSSPRelay {
   walletIdentity: string;
   keyXpub: string;
   wkIdentity: string;
+}
+
+export interface actionSSPRelay {
+  payload: string;
+  action: string;
+  createdAt: string;
+  expireAt: string;
 }
 
 export interface currency {
