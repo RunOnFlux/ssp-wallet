@@ -35,7 +35,7 @@ function Transactions() {
     refreshInterval = setInterval(() => {
       getTransactions();
       obtainRate();
-    }, 2000);
+    }, 20000);
   });
 
   const getTransactions = () => {
