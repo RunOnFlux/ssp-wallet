@@ -8,6 +8,7 @@ import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { getBlockheight } from '../../lib/blockheight.ts';
 import TransactionsTable from './TransactionsTable.tsx';
 import PendingTransactionsTable from './PendingTransactionsTable.tsx';
+import SocketListener from '../SocketListener/SocketListener.tsx';
 import { decodeTransactionForApproval } from '../../lib/transactions.ts';
 import { actionSSPRelay, pendingTransaction } from '../../types';
 import { fetchRate } from '../../lib/currency.ts';
@@ -15,9 +16,8 @@ import { fetchRate } from '../../lib/currency.ts';
 function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const dispatch = useAppDispatch();
-  const { transactions, address, blockheight, sspWalletKeyIdentity  } = useAppSelector(
-    (state) => state.flux,
-  );
+  const { transactions, address, blockheight, sspWalletKeyIdentity } =
+    useAppSelector((state) => state.flux);
   const [pendingTxs, setPendingTxs] = useState<pendingTransaction[]>([]);
   const [fiatRate, setFiatRate] = useState(0);
 
@@ -32,7 +32,7 @@ function Transactions() {
   const getTransactions = () => {
     fetchTransactions();
     fetchBlockheight();
-  }
+  };
 
   const fetchTransactions = () => {
     fetchAddressTransactions(address, 'flux', 0, 10)
@@ -76,7 +76,6 @@ function Transactions() {
       });
   };
 
-
   const obtainRate = () => {
     fetchRate('flux')
       .then((rate) => {
@@ -88,9 +87,24 @@ function Transactions() {
       });
   };
 
+  const onTxRejected = () => {
+    getPendingTx();
+  };
+
+  const onTxSent = () => {
+    getPendingTx();
+    setTimeout(() => {
+      getTransactions();
+    }, 2500);
+  };
+
   return (
     <>
-      <PendingTransactionsTable transactions={pendingTxs} fiatRate={fiatRate} refresh={getPendingTx}/>
+      <PendingTransactionsTable
+        transactions={pendingTxs}
+        fiatRate={fiatRate}
+        refresh={getPendingTx}
+      />
 
       <TransactionsTable
         transactions={transactions}
@@ -98,6 +112,8 @@ function Transactions() {
         fiatRate={fiatRate}
         refresh={getTransactions}
       />
+
+      <SocketListener txRejected={onTxRejected} txSent={onTxSent} />
     </>
   );
 }
