@@ -13,6 +13,8 @@ import { decodeTransactionForApproval } from '../../lib/transactions.ts';
 import { actionSSPRelay, pendingTransaction } from '../../types';
 import { fetchRate } from '../../lib/currency.ts';
 
+let refreshInterval: string | number | NodeJS.Timeout | undefined;
+
 function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const dispatch = useAppDispatch();
@@ -27,6 +29,13 @@ function Transactions() {
     getPendingTx();
     getTransactions();
     obtainRate();
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+    }
+    refreshInterval = setInterval(() => {
+      getTransactions();
+      obtainRate();
+    }, 2000);
   });
 
   const getTransactions = () => {
