@@ -11,7 +11,6 @@ import PendingTransactionsTable from './PendingTransactionsTable.tsx';
 import SocketListener from '../SocketListener/SocketListener.tsx';
 import { decodeTransactionForApproval } from '../../lib/transactions.ts';
 import { actionSSPRelay, pendingTransaction } from '../../types';
-import { fetchRate } from '../../lib/currency.ts';
 
 let refreshInterval: string | number | NodeJS.Timeout | undefined;
 
@@ -20,6 +19,10 @@ function Transactions() {
   const dispatch = useAppDispatch();
   const { transactions, address, blockheight, sspWalletKeyIdentity } =
     useAppSelector((state) => state.flux);
+  const { cryptoRates, fiatRates } = useAppSelector(
+    (state) => state.fiatCryptoRates,
+  );
+
   const [pendingTxs, setPendingTxs] = useState<pendingTransaction[]>([]);
   const [fiatRate, setFiatRate] = useState(0);
 
@@ -28,13 +31,13 @@ function Transactions() {
     alreadyMounted.current = true;
     getPendingTx();
     getTransactions();
-    obtainRate();
+    getCryptoRate('flux', 'USD');
     if (refreshInterval) {
       clearInterval(refreshInterval);
     }
     refreshInterval = setInterval(() => {
       getTransactions();
-      obtainRate();
+      getCryptoRate('flux', 'USD');
     }, 20000);
   });
 
@@ -85,15 +88,13 @@ function Transactions() {
       });
   };
 
-  const obtainRate = () => {
-    fetchRate('flux')
-      .then((rate) => {
-        console.log(rate);
-        setFiatRate(rate.USD);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const getCryptoRate = (
+    crypto: keyof typeof cryptoRates,
+    fiat: keyof typeof fiatRates,
+  ) => {
+    const cr = cryptoRates[crypto];
+    const fi = fiatRates[fiat];
+    setFiatRate(cr * fi);
   };
 
   const onTxRejected = () => {

@@ -70,3 +70,18 @@ export async function fetchRate(chain: string): Promise<currency> {
     throw error;
   }
 }
+
+export async function fetchAllRates(): Promise<currencySSPRelay> {
+  try {
+    const url = `https://${sspConfig().relay}/v1/rates`;
+    const response = await axios.get<currencySSPRelay>(url);
+    if (response.data.crypto && response.data.fiat) {
+      return response.data;
+    } else {
+      throw new Error('Invalid response from SSP for rates');
+    }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}

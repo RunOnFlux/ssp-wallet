@@ -4,7 +4,6 @@ import localForage from 'localforage';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setBalance, setUnconfirmedBalance } from '../../store';
 import { fetchAddressBalance } from '../../lib/balances.ts';
-import { fetchRate } from '../../lib/currency.ts';
 import SocketListener from '../SocketListener/SocketListener.tsx';
 
 let refreshInterval: string | number | NodeJS.Timeout | undefined;
@@ -15,6 +14,9 @@ function Balances() {
   const dispatch = useAppDispatch();
   const { balance, unconfirmedBalance, address } = useAppSelector(
     (state) => state.flux,
+  );
+  const { cryptoRates, fiatRates } = useAppSelector(
+    (state) => state.fiatCryptoRates,
   );
 
   useEffect(() => {
@@ -51,20 +53,20 @@ function Balances() {
     balanceUSD = totalBalance.multipliedBy(new BigNumber(fiatRate));
   }, [fiatRate]);
 
-  const obtainRate = () => {
-    fetchRate('flux')
-      .then((rate) => {
-        console.log(rate);
-        setFiatRate(rate.USD);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const getCryptoRate = (
+    crypto: keyof typeof cryptoRates,
+    fiat: keyof typeof fiatRates,
+  ) => {
+    console.log(cryptoRates);
+    const cr = cryptoRates[crypto];
+    const fi = fiatRates[fiat];
+    setFiatRate(cr * fi);
   };
 
   const refresh = () => {
+    console.log('kappa');
     fetchBalance();
-    obtainRate();
+    getCryptoRate('flux', 'USD');
   };
 
   const onTxRejected = () => {

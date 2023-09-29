@@ -32,6 +32,7 @@ import { getFingerprint } from '../../lib/fingerprint';
 
 import { generateIdentityAddress } from '../../lib/wallet.ts';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
+import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
 import { transaction } from '../../types';
 
 interface loginForm {
@@ -237,6 +238,7 @@ function Login() {
             {t('login:forgot_pw')} <i> {t('login:restore')}</i>
           </Button>
           <PoweredByFlux />
+          <FiatCurrencyController />
         </>
       )}
     </>
