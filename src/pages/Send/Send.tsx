@@ -74,6 +74,14 @@ function Send() {
   };
 
   useEffect(() => {
+    return () => {
+      if (txSentInterval) {
+        clearInterval(txSentInterval);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (txid) {
       setOpenConfirmTx(false);
       setTimeout(() => {
@@ -318,7 +326,7 @@ function Send() {
         txHex={txHex}
       />
       <TxSent open={openTxSent} openAction={txSentAction} txid={txid} />
-      <TxRejected open={openTxRejected} openAction={txRejectedAction}/>
+      <TxRejected open={openTxRejected} openAction={txRejectedAction} />
     </>
   );
 }

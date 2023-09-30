@@ -39,6 +39,11 @@ function Transactions() {
       getTransactions();
       getCryptoRate('flux', 'USD');
     }, 20000);
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    };
   });
 
   const getTransactions = () => {

@@ -18,9 +18,17 @@ function FiatCurrency() {
     if (refreshInterval) {
       clearInterval(refreshInterval);
     }
-    refreshInterval = setInterval(() => {
-      obtainRates();
-    }, 10 * 60 * 1000);
+    refreshInterval = setInterval(
+      () => {
+        obtainRates();
+      },
+      10 * 60 * 1000,
+    );
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    };
   });
 
   const obtainRates = () => {
