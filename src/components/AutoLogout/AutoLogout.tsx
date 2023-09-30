@@ -51,7 +51,6 @@ function AutoLogout() {
   });
 
   const refresh = () => {
-    console.log('refreshing');
     void (async function () {
       const curTime = new Date().getTime();
       if (chrome?.storage?.session) {
