@@ -10,6 +10,7 @@ import SspWalletDetails from '../SspWalletDetails/SspWalletDetails';
 import AddressDetails from '../AddressDetails/AddressDetails';
 import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
 import Settings from '../Settings/Settings';
+import AutoLogout from '../AutoLogout/AutoLogout';
 import { useTranslation } from 'react-i18next';
 
 function Navbar() {
@@ -164,6 +165,7 @@ function Navbar() {
         open={openSettingsDialogVisilbe}
         openAction={settingsDialogAction}
       />
+      <AutoLogout />
     </>
   );
 }
