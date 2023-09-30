@@ -62,11 +62,6 @@ function Key(props: {
         checkSynced();
       }, 1000);
     }
-    return () => {
-      if (pollingSyncInterval) {
-        clearInterval(pollingSyncInterval);
-      }
-    };
   });
 
   const checkSynced = () => {

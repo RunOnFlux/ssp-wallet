@@ -74,14 +74,6 @@ function Send() {
   };
 
   useEffect(() => {
-    return () => {
-      if (txSentInterval) {
-        clearInterval(txSentInterval);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     if (txid) {
       setOpenConfirmTx(false);
       setTimeout(() => {

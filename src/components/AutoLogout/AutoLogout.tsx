@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -16,9 +16,10 @@ const tenMins = 10 * 60 * 1000;
 function AutoLogout() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   useEffect(() => {
-    // if (alreadyMounted.current) return;
-    // alreadyMounted.current = true;
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
     document.removeEventListener('click', refresh);
     document.addEventListener('click', refresh);
     // check if have some recent activity
@@ -30,7 +31,7 @@ function AutoLogout() {
           const resp: lastActivity = await chrome.storage.session.get(
             'lastActivity',
           );
-          if (resp.lastActivity) {
+          if (typeof resp.lastActivity === 'number') {
             if (resp.lastActivity + tenMins < curTime) {
               logout();
               return;
@@ -47,14 +48,6 @@ function AutoLogout() {
         refresh();
       }
     })();
-    return () => {
-      // on unomunt
-      console.log('unmounting auto logout');
-      document.removeEventListener('click', refresh);
-      if (logoutTimeout) {
-        clearTimeout(logoutTimeout);
-      }
-    };
   });
 
   const refresh = () => {
@@ -81,17 +74,24 @@ function AutoLogout() {
       if (chrome?.storage?.session) {
         try {
           await chrome.storage.session.clear();
+          continueLogout()
         } catch (error) {
           console.log(error);
+          continueLogout()
         }
+      } else {
+        continueLogout()
       }
-      document.removeEventListener('click', refresh);
-      clearTimeout(logoutTimeout);
-      dispatch(setFluxInitialState());
-      dispatch(setPasswordBlobInitialState());
-      navigate('/login');
     })();
   };
+
+  const continueLogout = () => {
+    document.removeEventListener('click', refresh);
+    clearTimeout(logoutTimeout);
+    dispatch(setFluxInitialState());
+    dispatch(setPasswordBlobInitialState());
+    navigate('/login');
+  }
 
   return <></>;
 }

@@ -29,11 +29,6 @@ function Balances() {
     refreshInterval = setInterval(() => {
       refresh();
     }, 20000);
-    return () => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
-    };
   });
 
   const fetchBalance = () => {
