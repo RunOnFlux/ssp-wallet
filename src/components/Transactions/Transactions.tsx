@@ -17,8 +17,9 @@ let refreshInterval: string | number | NodeJS.Timeout | undefined;
 function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const dispatch = useAppDispatch();
-  const { transactions, address, blockheight, sspWalletKeyIdentity } =
-    useAppSelector((state) => state.flux);
+  const { wallets, blockheight, sspWalletKeyIdentity } = useAppSelector(
+    (state) => state.flux,
+  );
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -47,10 +48,10 @@ function Transactions() {
   };
 
   const fetchTransactions = () => {
-    fetchAddressTransactions(address, 'flux', 0, 10)
+    fetchAddressTransactions(wallets['0-0'].address, 'flux', 0, 10)
       .then(async (txs) => {
-        dispatch(setTransactions(txs));
-        await localForage.setItem('transactions-flux', txs);
+        dispatch(setTransactions({ wallet: '0-0', data: txs }));
+        await localForage.setItem('transactions-flux-0-0', txs);
       })
       .catch((error) => {
         console.log(error);
@@ -76,7 +77,7 @@ function Transactions() {
         if (res.data.action === 'tx') {
           const decoded = decodeTransactionForApproval(
             res.data.payload,
-            address,
+            wallets['0-0'].address,
           );
           setPendingTxs([{ ...decoded, ...res.data }]);
         } else {
@@ -117,7 +118,7 @@ function Transactions() {
       />
 
       <TransactionsTable
-        transactions={transactions}
+        transactions={wallets['0-0'].transactions}
         blockheight={blockheight}
         fiatRate={fiatRate}
         refresh={getTransactions}

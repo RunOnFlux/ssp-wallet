@@ -12,9 +12,7 @@ function Balances() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [fiatRate, setFiatRate] = useState(0);
   const dispatch = useAppDispatch();
-  const { balance, unconfirmedBalance, address } = useAppSelector(
-    (state) => state.flux,
-  );
+  const { wallets } = useAppSelector((state) => state.flux);
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -32,11 +30,13 @@ function Balances() {
   });
 
   const fetchBalance = () => {
-    fetchAddressBalance(address, 'flux')
+    fetchAddressBalance(wallets['0-0'].address, 'flux')
       .then(async (balance) => {
-        dispatch(setBalance(balance.confirmed));
-        dispatch(setUnconfirmedBalance(balance.unconfirmed));
-        await localForage.setItem('balances-flux', balance);
+        dispatch(setBalance({ wallet: '0-0', data: balance.confirmed }));
+        dispatch(
+          setUnconfirmedBalance({ wallet: '0-0', data: balance.unconfirmed }),
+        );
+        await localForage.setItem('balances-flux-0-0', balance);
         console.log(balance);
       })
       .catch((error) => {
@@ -44,8 +44,8 @@ function Balances() {
       });
   };
 
-  const totalBalance = new BigNumber(balance)
-    .plus(new BigNumber(unconfirmedBalance))
+  const totalBalance = new BigNumber(wallets['0-0'].balance)
+    .plus(new BigNumber(wallets['0-0'].unconfirmedBalance))
     .dividedBy(1e8);
   let balanceUSD = totalBalance.multipliedBy(new BigNumber(fiatRate));
 

@@ -42,11 +42,12 @@ function Send() {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const {
-    address: sender,
-    redeemScript,
     sspWalletKeyIdentity,
-    transactions,
+    wallets,
   } = useAppSelector((state) => state.flux);
+  const transactions = wallets['0-0'].transactions;
+  const redeemScript = wallets['0-0'].redeemScript;
+  const sender = wallets['0-0'].address;
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);

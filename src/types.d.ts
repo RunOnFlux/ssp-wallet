@@ -95,6 +95,16 @@ export interface transacitonsInsight {
   items: transactionInsight[];
 }
 
+export interface wallet {
+  address: string;
+  redeemScript: string;
+  balance: string;
+  unconfirmedBalance: string;
+  transactions: transaction[];
+}
+
+
+export type wallets = Record<string, wallet>;
 export interface transaction {
   txid: string;
   fee: string;

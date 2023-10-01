@@ -154,17 +154,26 @@ function Login() {
             // disaptch decryption of xpub of key 2-xpub-48-19167-0-0 if exists, if not, navigate to Key
             // load txs, balances, settings etc.
             const txsFlux: transaction[] =
-              (await localForage.getItem('transactions-flux')) ?? [];
+              (await localForage.getItem('transactions-flux-0-0')) ?? [];
             const blockheightFlux: number =
               (await localForage.getItem('blockheight-flux')) ?? 0;
             const balancesFlux: balancesObj =
-              (await localForage.getItem('balances-flux')) ?? balancesObject;
+              (await localForage.getItem('balances-flux-0-0')) ??
+              balancesObject;
             if (txsFlux) {
-              dispatch(setTransactions(txsFlux)) ?? balancesObject;
+              dispatch(setTransactions({ wallet: '0-0', data: txsFlux })) ??
+                balancesObject;
             }
             if (balancesFlux) {
-              dispatch(setBalance(balancesFlux.confirmed));
-              dispatch(setUnconfirmedBalance(balancesFlux.unconfirmed));
+              dispatch(
+                setBalance({ wallet: '0-0', data: balancesFlux.confirmed }),
+              );
+              dispatch(
+                setUnconfirmedBalance({
+                  wallet: '0-0',
+                  data: balancesFlux.unconfirmed,
+                }),
+              );
             }
             if (blockheightFlux) {
               dispatch(setBlockheight(blockheightFlux));
