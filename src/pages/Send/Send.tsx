@@ -120,12 +120,14 @@ function Send() {
     action: string,
     payload: string,
     chain: string,
+    path: string,
     wkIdentity: string,
   ) => {
     const data = {
       action,
       payload,
       chain,
+      path,
       wkIdentity,
     };
     axios
@@ -184,7 +186,7 @@ function Send() {
           .then((tx) => {
             console.log(tx);
             // post to ssp relay
-            postAction('tx', tx, 'flux', sspWalletKeyIdentity);
+            postAction('tx', tx, 'flux', '0-0', sspWalletKeyIdentity);
             setTxHex(tx);
             setOpenConfirmTx(true);
             if (txSentInterval) {

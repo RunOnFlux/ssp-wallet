@@ -16,6 +16,7 @@ interface serverResponse {
   action: string;
   wkIdentity: string;
   chain: string;
+  path: string;
 }
 
 const defaultValue: SocketContextType = {
