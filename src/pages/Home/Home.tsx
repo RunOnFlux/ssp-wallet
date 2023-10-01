@@ -48,8 +48,8 @@ function Home() {
         0,
         'flux',
       );
-      dispatch(setAddress(addrInfo.address));
-      dispatch(setRedeemScript(addrInfo.redeemScript));
+      dispatch(setAddress({ wallet: '0-0', data: addrInfo.address }));
+      dispatch(setRedeemScript({ wallet: '0-0', data: addrInfo.redeemScript }));
       // generate ssp wallet identity
       const generatedSspWalletIdentity = generateIdentityAddress(
         xpubWallet,

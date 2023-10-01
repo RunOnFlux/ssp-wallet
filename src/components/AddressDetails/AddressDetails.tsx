@@ -22,7 +22,7 @@ function AddressDetails(props: {
   const [messageApi, contextHolder] = message.useMessage();
   // private key, redeemScript, address
   const { open, openAction } = props;
-  const { address, redeemScript } = useAppSelector((state) => state.flux);
+  const { wallets } = useAppSelector((state) => state.flux);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -86,8 +86,8 @@ function AddressDetails(props: {
         ]}
       >
         <h3>{t('home:receive.wallet_address')}:</h3>
-        <Paragraph copyable={{ text: address }} className="copyableAddress">
-          <Text>{address}</Text>
+        <Paragraph copyable={{ text: wallets['0-0'].address }} className="copyableAddress">
+          <Text>{wallets['0-0'].address}</Text>
         </Paragraph>
         <h3>
           {redeemScriptVisible && (
@@ -101,11 +101,11 @@ function AddressDetails(props: {
           {t('home:addressDetails.wallet_redeem_script')}:
         </h3>
         <Paragraph
-          copyable={{ text: redeemScript }}
+          copyable={{ text: wallets['0-0'].redeemScript }}
           className="copyableAddress"
         >
           <Text>
-            {redeemScriptVisible ? redeemScript : '*** *** *** *** *** ***'}
+            {redeemScriptVisible ? wallets['0-0'].redeemScript : '*** *** *** *** *** ***'}
           </Text>
         </Paragraph>
         <h3>

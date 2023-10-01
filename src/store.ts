@@ -1,30 +1,30 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { cryptos, currency, transaction } from './types';
+import { cryptos, currency, transaction, wallets, wallet } from './types';
 
 interface FluxState {
   xpubWallet: string;
   xpubKey: string;
-  address: string;
-  redeemScript: string;
-  balance: string;
-  unconfirmedBalance: string;
-  transactions: transaction[];
   sspWalletKeyIdentity: string;
   sspWalletIdentity: string;
   blockheight: number;
+  wallets: wallets;
 }
 
 const initialState: FluxState = {
   xpubWallet: '',
   xpubKey: '',
+  wallets: {},
+  sspWalletKeyIdentity: '',
+  sspWalletIdentity: '',
+  blockheight: 0,
+};
+
+const initialWalletState: wallet = {
   address: '',
   redeemScript: '',
   balance: '0.00',
   unconfirmedBalance: '0.00',
   transactions: [],
-  sspWalletKeyIdentity: '',
-  sspWalletIdentity: '',
-  blockheight: 0,
 };
 
 const initialStatePasswordBlob = {
@@ -108,11 +108,23 @@ const fluxSlice = createSlice({
   name: 'flux',
   initialState,
   reducers: {
-    setAddress: (state, action: PayloadAction<string>) => {
-      state.address = action.payload;
+    setAddress: (
+      state,
+      action: PayloadAction<{ wallet: string; data: string }>,
+    ) => {
+      state.wallets[action.payload.wallet] = state.wallets[
+        action.payload.wallet
+      ] || { ...initialWalletState };
+      state.wallets[action.payload.wallet].address = action.payload.data;
     },
-    setRedeemScript: (state, action: PayloadAction<string>) => {
-      state.redeemScript = action.payload;
+    setRedeemScript: (
+      state,
+      action: PayloadAction<{ wallet: string; data: string }>,
+    ) => {
+      state.wallets[action.payload.wallet] = state.wallets[
+        action.payload.wallet
+      ] || { ...initialWalletState };
+      state.wallets[action.payload.wallet].redeemScript = action.payload.data;
     },
     setXpubWallet: (state, action: PayloadAction<string>) => {
       state.xpubWallet = action.payload;
@@ -120,14 +132,33 @@ const fluxSlice = createSlice({
     setXpubKey: (state, action: PayloadAction<string>) => {
       state.xpubKey = action.payload;
     },
-    setBalance: (state, action: PayloadAction<string>) => {
-      state.balance = action.payload;
+    setBalance: (
+      state,
+      action: PayloadAction<{ wallet: string; data: string }>,
+    ) => {
+      state.wallets[action.payload.wallet] = state.wallets[
+        action.payload.wallet
+      ] || { ...initialWalletState };
+      state.wallets[action.payload.wallet].balance = action.payload.data;
     },
-    setUnconfirmedBalance: (state, action: PayloadAction<string>) => {
-      state.unconfirmedBalance = action.payload;
+    setUnconfirmedBalance: (
+      state,
+      action: PayloadAction<{ wallet: string; data: string }>,
+    ) => {
+      state.wallets[action.payload.wallet] = state.wallets[
+        action.payload.wallet
+      ] || { ...initialWalletState };
+      state.wallets[action.payload.wallet].unconfirmedBalance =
+        action.payload.data;
     },
-    setTransactions: (state, action: PayloadAction<transaction[]>) => {
-      state.transactions = action.payload;
+    setTransactions: (
+      state,
+      action: PayloadAction<{ wallet: string; data: transaction[] }>,
+    ) => {
+      state.wallets[action.payload.wallet] = state.wallets[
+        action.payload.wallet
+      ] || { ...initialWalletState };
+      state.wallets[action.payload.wallet].transactions = action.payload.data;
     },
     setSspWalletKeyIdentity: (state, action: PayloadAction<string>) => {
       state.sspWalletKeyIdentity = action.payload;
@@ -143,11 +174,7 @@ const fluxSlice = createSlice({
       state.sspWalletIdentity = '';
       state.xpubWallet = '';
       state.xpubKey = '';
-      state.address = '';
-      state.redeemScript = '';
-      state.balance = '0.00';
-      state.unconfirmedBalance = '0.00';
-      state.transactions = [];
+      state.wallets = {};
       state.blockheight = 0;
     },
   },

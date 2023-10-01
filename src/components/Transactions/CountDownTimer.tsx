@@ -36,7 +36,6 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ createdAtDateTime, expi
         isPlaying
         duration={totalTime}
         initialRemainingTime={remainingTimeInSeconds}
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         colors={color as ColorFormat}
         size={30}
         strokeWidth={3}
