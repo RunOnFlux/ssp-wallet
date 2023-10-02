@@ -9,7 +9,7 @@ function Receive(props: {
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { open, openAction } = props;
-  const { wallets } = useAppSelector((state) => state.flux);
+  const { wallets, walletInUse } = useAppSelector((state) => state.flux);
 
   const handleOk = () => {
     openAction(false);
@@ -36,13 +36,13 @@ function Receive(props: {
         <Space direction="vertical" size="large" style={{ marginBottom: 15 }}>
           <QRCode
             errorLevel="H"
-            value={wallets['0-0'].address}
+            value={wallets[walletInUse].address}
             icon="/ssp-logo.svg"
             size={256}
             style={{ margin: '0 auto' }}
           />
-          <Paragraph copyable={{ text: wallets['0-0'].address }} className="copyableAddress">
-            <Text>{wallets['0-0'].address}</Text>
+          <Paragraph copyable={{ text: wallets[walletInUse].address }} className="copyableAddress">
+            <Text>{wallets[walletInUse].address}</Text>
           </Paragraph>
         </Space>
       </Modal>

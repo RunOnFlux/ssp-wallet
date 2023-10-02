@@ -8,11 +8,22 @@ import SocketListener from '../SocketListener/SocketListener.tsx';
 
 let refreshInterval: string | number | NodeJS.Timeout | undefined;
 
+interface balancesObj {
+  confirmed: string;
+  unconfirmed: string;
+}
+
+const balancesObject = {
+  confirmed: '0.00',
+  unconfirmed: '0.00',
+};
+
 function Balances() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
+  const isInitialMount = useRef(true);
   const [fiatRate, setFiatRate] = useState(0);
   const dispatch = useAppDispatch();
-  const { wallets } = useAppSelector((state) => state.flux);
+  const { wallets, walletInUse } = useAppSelector((state) => state.flux);
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -20,7 +31,6 @@ function Balances() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    refresh();
     if (refreshInterval) {
       clearInterval(refreshInterval);
     }
@@ -29,14 +39,45 @@ function Balances() {
     }, 20000);
   });
 
-  const fetchBalance = () => {
-    fetchAddressBalance(wallets['0-0'].address, 'flux')
-      .then(async (balance) => {
-        dispatch(setBalance({ wallet: '0-0', data: balance.confirmed }));
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    refresh();
+    void (async function () {
+      const wInUse = walletInUse;
+      const balancesFlux: balancesObj =
+        (await localForage.getItem('balances-flux-' + wInUse)) ??
+        balancesObject;
+      if (balancesFlux) {
         dispatch(
-          setUnconfirmedBalance({ wallet: '0-0', data: balance.unconfirmed }),
+          setBalance({
+            wallet: wInUse,
+            data: balancesFlux.confirmed,
+          }),
         );
-        await localForage.setItem('balances-flux-0-0', balance);
+        dispatch(
+          setUnconfirmedBalance({
+            wallet: wInUse,
+            data: balancesFlux.unconfirmed,
+          }),
+        );
+      }
+    })();
+  }, [walletInUse]);
+
+  const fetchBalance = () => {
+    fetchAddressBalance(wallets[walletInUse].address, 'flux')
+      .then(async (balance) => {
+        dispatch(setBalance({ wallet: walletInUse, data: balance.confirmed }));
+        dispatch(
+          setUnconfirmedBalance({
+            wallet: walletInUse,
+            data: balance.unconfirmed,
+          }),
+        );
+        await localForage.setItem('balances-flux-' + walletInUse, balance);
         console.log(balance);
       })
       .catch((error) => {
@@ -44,8 +85,8 @@ function Balances() {
       });
   };
 
-  const totalBalance = new BigNumber(wallets['0-0'].balance)
-    .plus(new BigNumber(wallets['0-0'].unconfirmedBalance))
+  const totalBalance = new BigNumber(wallets[walletInUse].balance)
+    .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
     .dividedBy(1e8);
   let balanceUSD = totalBalance.multipliedBy(new BigNumber(fiatRate));
 
@@ -64,7 +105,6 @@ function Balances() {
   };
 
   const refresh = () => {
-    console.log('kappa');
     fetchBalance();
     getCryptoRate('flux', 'USD');
   };

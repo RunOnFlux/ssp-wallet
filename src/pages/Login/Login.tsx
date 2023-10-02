@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Image, Button, Form, message, Spin } from 'antd';
 import localForage from 'localforage';
-import { setTransactions, setBlockheight } from '../../store';
+import { setTransactions, setBlockheight, setWalletInUse } from '../../store';
 import { setBalance, setUnconfirmedBalance } from '../../store';
 
 import {
@@ -34,7 +34,6 @@ import { generateIdentityAddress } from '../../lib/wallet.ts';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
 import { transaction } from '../../types';
-
 interface loginForm {
   password: string;
 }
@@ -127,6 +126,9 @@ function Login() {
     if (typeof xpubEncrypted === 'string') {
       passworderDecrypt(password, xpubEncrypted)
         .then(async (xpub) => {
+          const walInUse: string =
+            (await localForage.getItem('walletInUse-flux')) ?? '0-0';
+          dispatch(setWalletInUse(walInUse));
           if (typeof xpub === 'string') {
             console.log(xpub);
             dispatch(setXpubWallet(xpub));
@@ -154,23 +156,27 @@ function Login() {
             // disaptch decryption of xpub of key 2-xpub-48-19167-0-0 if exists, if not, navigate to Key
             // load txs, balances, settings etc.
             const txsFlux: transaction[] =
-              (await localForage.getItem('transactions-flux-0-0')) ?? [];
+              (await localForage.getItem('transactions-flux-' + walInUse)) ??
+              [];
             const blockheightFlux: number =
               (await localForage.getItem('blockheight-flux')) ?? 0;
             const balancesFlux: balancesObj =
-              (await localForage.getItem('balances-flux-0-0')) ??
+              (await localForage.getItem('balances-flux-' + walInUse)) ??
               balancesObject;
             if (txsFlux) {
-              dispatch(setTransactions({ wallet: '0-0', data: txsFlux })) ??
-                balancesObject;
+              dispatch(setTransactions({ wallet: walInUse, data: txsFlux })) ??
+                [];
             }
             if (balancesFlux) {
               dispatch(
-                setBalance({ wallet: '0-0', data: balancesFlux.confirmed }),
+                setBalance({
+                  wallet: walInUse,
+                  data: balancesFlux.confirmed,
+                }),
               );
               dispatch(
                 setUnconfirmedBalance({
-                  wallet: '0-0',
+                  wallet: walInUse,
                   data: balancesFlux.unconfirmed,
                 }),
               );

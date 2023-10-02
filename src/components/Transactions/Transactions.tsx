@@ -10,16 +10,16 @@ import TransactionsTable from './TransactionsTable.tsx';
 import PendingTransactionsTable from './PendingTransactionsTable.tsx';
 import SocketListener from '../SocketListener/SocketListener.tsx';
 import { decodeTransactionForApproval } from '../../lib/transactions.ts';
-import { actionSSPRelay, pendingTransaction } from '../../types';
+import { actionSSPRelay, pendingTransaction, transaction } from '../../types';
 
 let refreshInterval: string | number | NodeJS.Timeout | undefined;
 
 function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
+  const isInitialMount = useRef(true);
   const dispatch = useAppDispatch();
-  const { wallets, blockheight, sspWalletKeyIdentity } = useAppSelector(
-    (state) => state.flux,
-  );
+  const { wallets, walletInUse, blockheight, sspWalletKeyIdentity } =
+    useAppSelector((state) => state.flux);
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -30,8 +30,6 @@ function Transactions() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    getPendingTx();
-    getTransactions();
     getCryptoRate('flux', 'USD');
     if (refreshInterval) {
       clearInterval(refreshInterval);
@@ -42,16 +40,35 @@ function Transactions() {
     }, 20000);
   });
 
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    setPendingTxs([]);
+    getPendingTx();
+    void (async function () {
+      const wInUse = walletInUse;
+      const txsFlux: transaction[] =
+        (await localForage.getItem('transactions-flux-' + wInUse)) ?? [];
+      if (txsFlux) {
+        dispatch(setTransactions({ wallet: wInUse, data: txsFlux })) ?? [];
+      }
+      getTransactions();
+    })();
+  }, [walletInUse]);
+
   const getTransactions = () => {
     fetchTransactions();
     fetchBlockheight();
   };
 
   const fetchTransactions = () => {
-    fetchAddressTransactions(wallets['0-0'].address, 'flux', 0, 10)
+    const wInUse = walletInUse;
+    fetchAddressTransactions(wallets[wInUse].address, 'flux', 0, 10)
       .then(async (txs) => {
-        dispatch(setTransactions({ wallet: '0-0', data: txs }));
-        await localForage.setItem('transactions-flux-0-0', txs);
+        dispatch(setTransactions({ wallet: wInUse, data: txs }));
+        await localForage.setItem('transactions-flux-' + wInUse, txs);
       })
       .catch((error) => {
         console.log(error);
@@ -69,6 +86,7 @@ function Transactions() {
   };
 
   const getPendingTx = () => {
+    const wInUse = walletInUse;
     axios
       .get<actionSSPRelay>(
         `https://${sspConfig().relay}/v1/action/${sspWalletKeyIdentity}`,
@@ -77,9 +95,13 @@ function Transactions() {
         if (res.data.action === 'tx') {
           const decoded = decodeTransactionForApproval(
             res.data.payload,
-            wallets['0-0'].address,
+            'flux',
           );
-          setPendingTxs([{ ...decoded, ...res.data }]);
+          if (decoded.sender !== wallets[wInUse].address) {
+            setPendingTxs([]);
+          } else {
+            setPendingTxs([{ ...decoded, ...res.data }]);
+          }
         } else {
           setPendingTxs([]);
         }
@@ -118,7 +140,7 @@ function Transactions() {
       />
 
       <TransactionsTable
-        transactions={wallets['0-0'].transactions}
+        transactions={wallets[walletInUse]?.transactions ?? []}
         blockheight={blockheight}
         fiatRate={fiatRate}
         refresh={getTransactions}

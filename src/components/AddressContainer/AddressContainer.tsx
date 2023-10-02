@@ -3,13 +3,13 @@ import { Typography } from 'antd';
 const { Paragraph, Text } = Typography;
 
 function AddressContainer() {
-  const { wallets } = useAppSelector((state) => state.flux);
+  const { wallets, walletInUse } = useAppSelector((state) => state.flux);
 
   return (
     <>
-      <Paragraph copyable={{ text: wallets['0-0'].address }} className="copyableAddress">
+      <Paragraph copyable={{ text: wallets[walletInUse].address }} className="copyableAddress">
         <Text>
-          {wallets['0-0'].address.substring(0, 7)}...{wallets['0-0'].address.substring(wallets['0-0'].address.length - 6)}
+          {wallets[walletInUse].address.substring(0, 7)}...{wallets[walletInUse].address.substring(wallets[walletInUse].address.length - 6)}
         </Text>
       </Paragraph>
     </>

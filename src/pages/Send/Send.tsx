@@ -41,13 +41,12 @@ function Send() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const {
-    sspWalletKeyIdentity,
-    wallets,
-  } = useAppSelector((state) => state.flux);
-  const transactions = wallets['0-0'].transactions;
-  const redeemScript = wallets['0-0'].redeemScript;
-  const sender = wallets['0-0'].address;
+  const { sspWalletKeyIdentity, wallets, walletInUse } = useAppSelector(
+    (state) => state.flux,
+  );
+  const transactions = wallets[walletInUse].transactions;
+  const redeemScript = wallets[walletInUse].redeemScript;
+  const sender = wallets[walletInUse].address;
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
@@ -84,7 +83,6 @@ function Send() {
   }, [txid]);
 
   useEffect(() => {
-    console.log(socketTxid);
     if (socketTxid) {
       setTxid(socketTxid);
       clearTxid?.();
@@ -172,6 +170,7 @@ function Send() {
         const keyPair = generateAddressKeypair(xprivFlux, 0, 0, 'flux');
         const amount = new BigNumber(values.amount).multipliedBy(1e8).toFixed();
         const fee = new BigNumber(values.fee).multipliedBy(1e8).toFixed();
+        const wInUse = walletInUse;
         constructAndSignTransaction(
           'flux',
           values.receiver,
@@ -186,7 +185,7 @@ function Send() {
           .then((tx) => {
             console.log(tx);
             // post to ssp relay
-            postAction('tx', tx, 'flux', '0-0', sspWalletKeyIdentity);
+            postAction('tx', tx, 'flux', wInUse, sspWalletKeyIdentity);
             setTxHex(tx);
             setOpenConfirmTx(true);
             if (txSentInterval) {
