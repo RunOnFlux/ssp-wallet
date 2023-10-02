@@ -4,10 +4,11 @@ import { cryptos, currency, transaction, wallets, wallet } from './types';
 interface FluxState {
   xpubWallet: string;
   xpubKey: string;
+  wallets: wallets;
   sspWalletKeyIdentity: string;
   sspWalletIdentity: string;
   blockheight: number;
-  wallets: wallets;
+  walletInUse: string;
 }
 
 const initialState: FluxState = {
@@ -17,6 +18,7 @@ const initialState: FluxState = {
   sspWalletKeyIdentity: '',
   sspWalletIdentity: '',
   blockheight: 0,
+  walletInUse: '0-0',
 };
 
 const initialWalletState: wallet = {
@@ -169,6 +171,12 @@ const fluxSlice = createSlice({
     setBlockheight: (state, action: PayloadAction<number>) => {
       state.blockheight = action.payload;
     },
+    setWalletInUse: (state, action: PayloadAction<string>) => {
+      state.wallets[action.payload] = state.wallets[action.payload] || {
+        ...initialWalletState,
+      };
+      state.walletInUse = action.payload;
+    },
     setFluxInitialState: (state) => {
       state.sspWalletKeyIdentity = '';
       state.sspWalletIdentity = '';
@@ -176,6 +184,7 @@ const fluxSlice = createSlice({
       state.xpubKey = '';
       state.wallets = {};
       state.blockheight = 0;
+      state.walletInUse = '0-0';
     },
   },
 });
@@ -205,6 +214,7 @@ export const {
   setSspWalletKeyIdentity,
   setSspWalletIdentity,
   setBlockheight,
+  setWalletInUse,
 } = fluxSlice.actions;
 
 export const { setPasswordBlob, setPasswordBlobInitialState } =

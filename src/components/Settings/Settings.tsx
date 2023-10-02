@@ -22,7 +22,6 @@ function PasswordConfirm(props: {
   const { t } = useTranslation(['home', 'common']);
   const FNC = backends().flux.node;
   const SSPR = sspConfig().relay;
-  console.log(SSPR);
   const [sspConfigRelay, setSspConfigRelay] = useState(SSPR);
   const [fluxNodeConfig, setFluxNodeConfig] = useState(FNC);
   const { open, openAction } = props;

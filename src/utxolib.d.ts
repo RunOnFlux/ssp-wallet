@@ -9,6 +9,13 @@ declare module 'utxo-lib' {
     hash: Buffer;
     index: number;
   }
+  interface input {
+    hash: Buffer;
+    index: number;
+    redeemScript: Buffer;
+    witnessScript: Buffer;
+    value: number;
+  }
   interface output {
     script: Buffer;
     value: number;

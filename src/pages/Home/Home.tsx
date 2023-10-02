@@ -30,7 +30,9 @@ function Home() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
-  const { xpubKey, xpubWallet } = useAppSelector((state) => state.flux);
+  const { xpubKey, xpubWallet, walletInUse } = useAppSelector(
+    (state) => state.flux,
+  );
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -41,15 +43,29 @@ function Home() {
 
   const generateAddress = () => {
     try {
+      const splittedDerPath = walletInUse.split('-');
+      const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+      const addressIndex = Number(splittedDerPath[1]);
       const addrInfo = generateMultisigAddress(
         xpubWallet,
         xpubKey,
-        0,
-        0,
+        typeIndex,
+        addressIndex,
         'flux',
       );
-      dispatch(setAddress({ wallet: '0-0', data: addrInfo.address }));
-      dispatch(setRedeemScript({ wallet: '0-0', data: addrInfo.redeemScript }));
+      dispatch(setAddress({ wallet: walletInUse, data: addrInfo.address }));
+      dispatch(
+        setRedeemScript({ wallet: walletInUse, data: addrInfo.redeemScript }),
+      );
+    } catch (error) {
+      // if error, key is invalid! we should never end up here as it is validated before
+      displayMessage('error', t('home:err_panic'));
+      console.log(error);
+    }
+  };
+
+  const generateSSPIdentities = () => {
+    try {
       // generate ssp wallet identity
       const generatedSspWalletIdentity = generateIdentityAddress(
         xpubWallet,
@@ -88,8 +104,14 @@ function Home() {
 
   useEffect(() => {
     if (!xpubKey) return;
+    generateAddress();
+  }, [walletInUse]);
+
+  useEffect(() => {
+    if (!xpubKey) return;
     console.log('Key synchronised.');
     generateAddress();
+    generateSSPIdentities();
     setIsLoading(false);
   }, [xpubKey]);
 
