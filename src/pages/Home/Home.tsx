@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
+import localForage from 'localforage';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import {
   setFluxInitialState,
@@ -23,6 +24,7 @@ import {
   generateIdentityAddress,
 } from '../../lib/wallet.ts';
 import { useTranslation } from 'react-i18next';
+import { generatedWallets } from '../../types';
 
 function Home() {
   const { t } = useTranslation(['home']);
@@ -57,6 +59,13 @@ function Home() {
       dispatch(
         setRedeemScript({ wallet: walletInUse, data: addrInfo.redeemScript }),
       );
+      // get stored wallets
+      void (async function () {
+        const generatedWallets: generatedWallets =
+          (await localForage.getItem('wallets-flux')) ?? {};
+        generatedWallets[walletInUse] = addrInfo.address;
+        await localForage.setItem('wallets-flux', generatedWallets);
+      })();
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before
       displayMessage('error', t('home:err_panic'));

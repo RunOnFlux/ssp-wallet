@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Input, Image, Button, Form, message, Spin } from 'antd';
 import localForage from 'localforage';
 import { setTransactions, setBlockheight, setWalletInUse } from '../../store';
-import { setBalance, setUnconfirmedBalance } from '../../store';
+import { setBalance, setUnconfirmedBalance, setAddress } from '../../store';
 
 import {
   EyeInvisibleOutlined,
@@ -33,7 +33,7 @@ import { getFingerprint } from '../../lib/fingerprint';
 import { generateIdentityAddress } from '../../lib/wallet.ts';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
-import { transaction } from '../../types';
+import { transaction, generatedWallets } from '../../types';
 interface loginForm {
   password: string;
 }
@@ -126,6 +126,18 @@ function Login() {
     if (typeof xpubEncrypted === 'string') {
       passworderDecrypt(password, xpubEncrypted)
         .then(async (xpub) => {
+          // restore stored wallets
+          const generatedWallets: generatedWallets =
+            (await localForage.getItem('wallets-flux')) ?? {};
+          const walletDerivations = Object.keys(generatedWallets);
+          walletDerivations.forEach((derivation: string) => {
+            dispatch(
+              setAddress({
+                wallet: derivation,
+                data: generatedWallets[derivation],
+              }),
+            );
+          });
           const walInUse: string =
             (await localForage.getItem('walletInUse-flux')) ?? '0-0';
           dispatch(setWalletInUse(walInUse));

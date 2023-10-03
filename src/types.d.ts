@@ -105,6 +105,7 @@ export interface wallet {
 
 
 export type wallets = Record<string, wallet>;
+export type generatedWallets = Record<string, string>;
 export interface transaction {
   txid: string;
   fee: string;
