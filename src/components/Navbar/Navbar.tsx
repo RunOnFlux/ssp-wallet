@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../hooks';
 import { setFluxInitialState, setPasswordBlobInitialState } from '../../store';
-import { Row, Col, Image, Menu } from 'antd';
+import { Row, Col, Image, Menu, Select } from 'antd';
 import { LockOutlined, SettingOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import './Navbar.css';
@@ -12,11 +12,53 @@ import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
 import Settings from '../Settings/Settings';
 import AutoLogout from '../AutoLogout/AutoLogout';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '../../hooks';
+
+interface walletOption {
+  value: string;
+  label: string;
+}
 
 function Navbar() {
   const { t } = useTranslation(['home', 'common']);
+  const { wallets, walletInUse } = useAppSelector((state) => state.flux);
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
+  const [defaultWallet, setDefaultWallet] = useState<walletOption>({
+    value: '0-0',
+    label: t('home:navbar.chain_wallet', {
+      chain: 'Flux',
+      wallet: 'Wallet 1',
+    }),
+  });
+  const [walletItems, setWalletItems] = useState<walletOption[]>([]);
+
+  useEffect(() => {
+    const wItems: walletOption[] = []
+    Object.keys(wallets).forEach((wallet) => {
+      const typeNumber = Number(wallet.split('-')[0]);
+      const walletNumber = Number(wallet.split('-')[1]) + 1;
+      let walletName = 'Wallet ' + walletNumber;
+      if (typeNumber === 1) {
+        walletName = 'Change ' + walletNumber;
+      }
+      const wal = {
+        value: wallet,
+        label: t('home:navbar.chain_wallet', {
+          chain: 'Flux',
+          wallet: walletName,
+        }),
+      };
+      wItems.push(wal);
+      if (walletInUse === wallet) setDefaultWallet(wal);
+    });
+    setWalletItems(wItems);
+  }, [wallets, walletInUse]);
+
+  const handleChange = (value: { value: string; label: React.ReactNode }) => {
+    console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
+  };
+
   const sspWalletDetailsAction = (status: boolean) => {
     setOpenSspWalletDetails(status);
   };
@@ -110,6 +152,7 @@ function Navbar() {
       },
     },
   ];
+
   return (
     <>
       <div className="navbar">
@@ -123,10 +166,13 @@ function Navbar() {
             />
           </Col>
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
-            {t('home:navbar.chain_wallet', {
-              chain: 'Flux',
-              wallet: 'Wallet 1',
-            })}
+            <Select
+              labelInValue
+              defaultValue={defaultWallet}
+              style={{ width: 200 }}
+              onChange={handleChange}
+              options={walletItems}
+            />
           </Col>
           <Col span={4}>
             <Menu
