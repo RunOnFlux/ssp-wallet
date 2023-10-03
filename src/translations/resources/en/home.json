@@ -62,7 +62,8 @@
   "navbar": {
     "chain_wallet": "{{chain}} {{wallet}}",
     "ssp_details": "SSP Wallet Details",
-    "addr_details": "Address Details"
+    "addr_details": "Address Details",
+    "generate_new_wallet": "Generate New Wallet"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Password is not valid. Please try again.",

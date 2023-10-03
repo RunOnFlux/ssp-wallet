@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Typography, Button, Modal, message } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
@@ -15,7 +15,6 @@ function AddressDetails(props: {
   openAction: (status: boolean) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [privKey, setPrivKey] = useState('');
   const [redeemScriptVisible, setRedeemScriptVisible] = useState(false);
   const [privateKeyVisible, setPrivateKeyVisible] = useState(false);
@@ -32,10 +31,8 @@ function AddressDetails(props: {
   };
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     generateAddressInformation();
-  });
+  }, [walletInUse]);
 
   const handleOk = () => {
     setRedeemScriptVisible(false);
@@ -61,7 +58,15 @@ function AddressDetails(props: {
             t('home:sspWalletDetails.err_invalid_wallet_xpriv_2'),
           );
         }
-        const keyPair = generateAddressKeypair(xprivFlux, 0, 0, 'flux');
+        const splittedDerPath = walletInUse.split('-');
+        const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+        const addressIndex = Number(splittedDerPath[1]);
+        const keyPair = generateAddressKeypair(
+          xprivFlux,
+          typeIndex,
+          addressIndex,
+          'flux',
+        );
         setPrivKey(keyPair.privKey);
       })
       .catch((error) => {
@@ -86,7 +91,10 @@ function AddressDetails(props: {
         ]}
       >
         <h3>{t('home:receive.wallet_address')}:</h3>
-        <Paragraph copyable={{ text: wallets[walletInUse].address }} className="copyableAddress">
+        <Paragraph
+          copyable={{ text: wallets[walletInUse].address }}
+          className="copyableAddress"
+        >
           <Text>{wallets[walletInUse].address}</Text>
         </Paragraph>
         <h3>
@@ -105,7 +113,9 @@ function AddressDetails(props: {
           className="copyableAddress"
         >
           <Text>
-            {redeemScriptVisible ? wallets[walletInUse].redeemScript : '*** *** *** *** *** ***'}
+            {redeemScriptVisible
+              ? wallets[walletInUse].redeemScript
+              : '*** *** *** *** *** ***'}
           </Text>
         </Paragraph>
         <h3>

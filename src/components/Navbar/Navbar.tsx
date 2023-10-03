@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { NoticeType } from 'antd/es/message/interface';
+import localForage from 'localforage';
 import { useAppDispatch } from '../../hooks';
-import { setFluxInitialState, setPasswordBlobInitialState } from '../../store';
-import { Row, Col, Image, Menu, Select } from 'antd';
-import { LockOutlined, SettingOutlined } from '@ant-design/icons';
+import {
+  setFluxInitialState,
+  setPasswordBlobInitialState,
+  setAddress,
+  setRedeemScript,
+  setWalletInUse,
+} from '../../store';
+import { Row, Col, Image, Menu, Select, Divider, Button, message } from 'antd';
+import { LockOutlined, SettingOutlined, PlusOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import './Navbar.css';
 import SspWalletDetails from '../SspWalletDetails/SspWalletDetails';
@@ -13,6 +21,8 @@ import Settings from '../Settings/Settings';
 import AutoLogout from '../AutoLogout/AutoLogout';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
+import { generateMultisigAddress } from '../../lib/wallet.ts';
+import { generatedWallets } from '../../types';
 
 interface walletOption {
   value: string;
@@ -21,20 +31,31 @@ interface walletOption {
 
 function Navbar() {
   const { t } = useTranslation(['home', 'common']);
-  const { wallets, walletInUse } = useAppSelector((state) => state.flux);
+  const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
+    (state) => state.flux,
+  );
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [defaultWallet, setDefaultWallet] = useState<walletOption>({
-    value: '0-0',
+    value: walletInUse,
     label: t('home:navbar.chain_wallet', {
       chain: 'Flux',
-      wallet: 'Wallet 1',
+      wallet:
+        (+walletInUse.split('-')[0] === 1 ? 'Change ' : 'Wallet ') +
+        (+walletInUse.split('-')[1] + 1),
     }),
   });
   const [walletItems, setWalletItems] = useState<walletOption[]>([]);
+  const [messageApi, contextHolder] = message.useMessage();
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
 
   useEffect(() => {
-    const wItems: walletOption[] = []
+    const wItems: walletOption[] = [];
     Object.keys(wallets).forEach((wallet) => {
       const typeNumber = Number(wallet.split('-')[0]);
       const walletNumber = Number(wallet.split('-')[1]) + 1;
@@ -50,13 +71,60 @@ function Navbar() {
         }),
       };
       wItems.push(wal);
-      if (walletInUse === wallet) setDefaultWallet(wal);
+      if (walletInUse === wallet) {
+        console.log('ran');
+        setDefaultWallet(wal);
+      }
     });
     setWalletItems(wItems);
   }, [wallets, walletInUse]);
 
   const handleChange = (value: { value: string; label: React.ReactNode }) => {
     console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
+    dispatch(setWalletInUse(value.value));
+    void (async function () {
+      await localForage.setItem('walletInUse-flux', value.value);
+    })();
+  };
+
+  const addWallet = () => {
+    generateAddress();
+  };
+
+  const generateAddress = () => {
+    try {
+      // what wallet to generate?
+      let path = '0-0';
+      const existingWallets = Object.keys(wallets);
+      let i = 0;
+      while (existingWallets.includes(path)) {
+        i++;
+        path = '0-' + i;
+      }
+      const typeIndex = 0;
+      const addressIndex = i;
+      console.log(addressIndex);
+      const addrInfo = generateMultisigAddress(
+        xpubWallet,
+        xpubKey,
+        typeIndex,
+        addressIndex,
+        'flux',
+      );
+      dispatch(setAddress({ wallet: path, data: addrInfo.address }));
+      dispatch(setRedeemScript({ wallet: path, data: addrInfo.redeemScript }));
+      // get stored wallets
+      void (async function () {
+        const generatedWallets: generatedWallets =
+          (await localForage.getItem('wallets-flux')) ?? {};
+        generatedWallets[path] = addrInfo.address;
+        await localForage.setItem('wallets-flux', generatedWallets);
+      })();
+    } catch (error) {
+      // if error, key is invalid! we should never end up here as it is validated before
+      displayMessage('error', t('home:err_panic'));
+      console.log(error);
+    }
   };
 
   const sspWalletDetailsAction = (status: boolean) => {
@@ -155,6 +223,7 @@ function Navbar() {
 
   return (
     <>
+      {contextHolder}
       <div className="navbar">
         <Row justify="space-evenly">
           <Col span={4}>
@@ -172,6 +241,21 @@ function Navbar() {
               style={{ width: 200 }}
               onChange={handleChange}
               options={walletItems}
+              bordered={false}
+              size="large"
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider style={{ margin: '8px 0' }} />
+                  <Button
+                    type="text"
+                    icon={<PlusOutlined />}
+                    onClick={addWallet}
+                  >
+                    {t('home:navbar.generate_new_wallet')}
+                  </Button>
+                </>
+              )}
             />
           </Col>
           <Col span={4}>
