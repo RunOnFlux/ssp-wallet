@@ -167,10 +167,13 @@ function Send() {
         if (typeof xprivFlux !== 'string') {
           throw new Error(t('send:err_invalid_xpriv_decrypt'));
         }
-        const keyPair = generateAddressKeypair(xprivFlux, 0, 0, 'flux');
+        const wInUse = walletInUse;
+        const splittedDerPath = wInUse.split('-');
+        const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+        const addressIndex = Number(splittedDerPath[1]);
+        const keyPair = generateAddressKeypair(xprivFlux, typeIndex, addressIndex, 'flux');
         const amount = new BigNumber(values.amount).multipliedBy(1e8).toFixed();
         const fee = new BigNumber(values.fee).multipliedBy(1e8).toFixed();
-        const wInUse = walletInUse;
         constructAndSignTransaction(
           'flux',
           values.receiver,
