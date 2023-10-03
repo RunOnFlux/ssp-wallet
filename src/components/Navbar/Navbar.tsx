@@ -36,7 +36,7 @@ function Navbar() {
   );
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
-  const [defaultWallet, setDefaultWallet] = useState<walletOption>({
+  const [defaultWallet] = useState<walletOption>({
     value: walletInUse,
     label: t('home:navbar.chain_wallet', {
       chain: 'Flux',
@@ -71,13 +71,9 @@ function Navbar() {
         }),
       };
       wItems.push(wal);
-      if (walletInUse === wallet) {
-        console.log('ran');
-        setDefaultWallet(wal);
-      }
     });
     setWalletItems(wItems);
-  }, [wallets, walletInUse]);
+  }, [wallets]);
 
   const handleChange = (value: { value: string; label: React.ReactNode }) => {
     console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
