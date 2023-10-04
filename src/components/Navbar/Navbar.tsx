@@ -72,6 +72,16 @@ function Navbar() {
       };
       wItems.push(wal);
     });
+    wItems.sort((a, b) => {
+      if (+a.value.split('-')[1] < +b.value.split('-')[1]) return -1;
+      if (+a.value.split('-')[1] > +b.value.split('-')[1]) return 1;
+      return 0;
+    });
+    wItems.sort((a, b) => {
+      if (+a.value.split('-')[0] < +b.value.split('-')[0]) return -1;
+      if (+a.value.split('-')[0] > +b.value.split('-')[0]) return 1;
+      return 0;
+    });
     setWalletItems(wItems);
   }, [wallets]);
 
