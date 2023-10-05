@@ -23,6 +23,7 @@ function AddressDetails(props: {
   const { open, openAction } = props;
   const { wallets, walletInUse } = useAppSelector((state) => state.flux);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
@@ -65,7 +66,7 @@ function AddressDetails(props: {
           xprivFlux,
           typeIndex,
           addressIndex,
-          'flux',
+          activeChain,
         );
         setPrivKey(keyPair.privKey);
       })

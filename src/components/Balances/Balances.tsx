@@ -24,6 +24,7 @@ function Balances() {
   const [fiatRate, setFiatRate] = useState(0);
   const dispatch = useAppDispatch();
   const { wallets, walletInUse } = useAppSelector((state) => state.flux);
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -68,7 +69,7 @@ function Balances() {
   }, [walletInUse]);
 
   const fetchBalance = () => {
-    fetchAddressBalance(wallets[walletInUse].address, 'flux')
+    fetchAddressBalance(wallets[walletInUse].address, activeChain)
       .then(async (balance) => {
         dispatch(setBalance({ wallet: walletInUse, data: balance.confirmed }));
         dispatch(
@@ -106,7 +107,7 @@ function Balances() {
 
   const refresh = () => {
     fetchBalance();
-    getCryptoRate('flux', 'USD');
+    getCryptoRate(activeChain, 'USD');
   };
 
   const onTxRejected = () => {

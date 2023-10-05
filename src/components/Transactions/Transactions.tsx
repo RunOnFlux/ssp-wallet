@@ -20,6 +20,7 @@ function Transactions() {
   const dispatch = useAppDispatch();
   const { wallets, walletInUse, blockheight, sspWalletKeyIdentity } =
     useAppSelector((state) => state.flux);
+    const { activeChain } = useAppSelector((state) => state.sspState);
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -30,13 +31,13 @@ function Transactions() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    getCryptoRate('flux', 'USD');
+    getCryptoRate(activeChain, 'USD');
     if (refreshInterval) {
       clearInterval(refreshInterval);
     }
     refreshInterval = setInterval(() => {
       getTransactions();
-      getCryptoRate('flux', 'USD');
+      getCryptoRate(activeChain, 'USD');
     }, 20000);
   });
 
@@ -65,7 +66,7 @@ function Transactions() {
 
   const fetchTransactions = () => {
     const wInUse = walletInUse;
-    fetchAddressTransactions(wallets[wInUse].address, 'flux', 0, 10)
+    fetchAddressTransactions(wallets[wInUse].address, activeChain, 0, 10)
       .then(async (txs) => {
         dispatch(setTransactions({ wallet: wInUse, data: txs }));
         await localForage.setItem('transactions-flux-' + wInUse, txs);
@@ -75,7 +76,7 @@ function Transactions() {
       });
   };
   const fetchBlockheight = () => {
-    getBlockheight('flux')
+    getBlockheight(activeChain)
       .then(async (height) => {
         dispatch(setBlockheight(height));
         await localForage.setItem('blockheight-flux', height);
@@ -95,7 +96,7 @@ function Transactions() {
         if (res.data.action === 'tx') {
           const decoded = decodeTransactionForApproval(
             res.data.payload,
-            'flux',
+            activeChain,
           );
           if (decoded.sender !== wallets[wInUse].address) {
             setPendingTxs([]);

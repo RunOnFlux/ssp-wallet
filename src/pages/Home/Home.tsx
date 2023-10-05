@@ -35,6 +35,7 @@ function Home() {
   const { xpubKey, xpubWallet, walletInUse } = useAppSelector(
     (state) => state.flux,
   );
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -53,7 +54,7 @@ function Home() {
         xpubKey,
         typeIndex,
         addressIndex,
-        'flux',
+        activeChain,
       );
       dispatch(setAddress({ wallet: walletInUse, data: addrInfo.address }));
       dispatch(
@@ -78,7 +79,7 @@ function Home() {
       // generate ssp wallet identity
       const generatedSspWalletIdentity = generateIdentityAddress(
         xpubWallet,
-        'flux',
+        activeChain,
       );
       dispatch(setSspWalletIdentity(generatedSspWalletIdentity));
       const generatedSspWalletKeyIdentity = generateMultisigAddress(
@@ -86,7 +87,7 @@ function Home() {
         xpubKey,
         10,
         0,
-        'flux',
+        activeChain,
       );
       dispatch(setSspWalletKeyIdentity(generatedSspWalletKeyIdentity.address));
     } catch (error) {

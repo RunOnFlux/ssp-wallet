@@ -44,6 +44,7 @@ function Send() {
   const { sspWalletKeyIdentity, wallets, walletInUse } = useAppSelector(
     (state) => state.flux,
   );
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const transactions = wallets[walletInUse].transactions;
   const redeemScript = wallets[walletInUse].redeemScript;
   const sender = wallets[walletInUse].address;
@@ -171,11 +172,11 @@ function Send() {
         const splittedDerPath = wInUse.split('-');
         const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
         const addressIndex = Number(splittedDerPath[1]);
-        const keyPair = generateAddressKeypair(xprivFlux, typeIndex, addressIndex, 'flux');
+        const keyPair = generateAddressKeypair(xprivFlux, typeIndex, addressIndex, activeChain);
         const amount = new BigNumber(values.amount).multipliedBy(1e8).toFixed();
         const fee = new BigNumber(values.fee).multipliedBy(1e8).toFixed();
         constructAndSignTransaction(
-          'flux',
+          activeChain,
           values.receiver,
           amount,
           fee,
@@ -188,7 +189,7 @@ function Send() {
           .then((tx) => {
             console.log(tx);
             // post to ssp relay
-            postAction('tx', tx, 'flux', wInUse, sspWalletKeyIdentity);
+            postAction('tx', tx, activeChain, wInUse, sspWalletKeyIdentity);
             setTxHex(tx);
             setOpenConfirmTx(true);
             if (txSentInterval) {
@@ -209,7 +210,7 @@ function Send() {
       });
 
     const fetchTransactions = () => {
-      fetchAddressTransactions(sender, 'flux', 0, 3)
+      fetchAddressTransactions(sender, activeChain, 0, 3)
         .then((txs) => {
           const amount = new BigNumber(0)
             .minus(new BigNumber(values.amount).multipliedBy(1e8))

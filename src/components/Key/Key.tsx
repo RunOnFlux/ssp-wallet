@@ -41,6 +41,7 @@ function Key(props: {
   const { xpubKey, xpubWallet, sspWalletIdentity } = useAppSelector(
     (state) => state.flux,
   );
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
@@ -81,7 +82,7 @@ function Key(props: {
             xpubKey,
             10,
             0,
-            'flux',
+            activeChain,
           );
           const generatedWkIdentity = generatedSspWalletKeyIdentity.address;
           if (generatedWkIdentity !== wkIdentity) {
@@ -133,7 +134,7 @@ function Key(props: {
       let keyValid = true;
       // try generating an address from it
       try {
-        generateMultisigAddress(xpubWallet, xpubKeyInput, 0, 0, 'flux');
+        generateMultisigAddress(xpubWallet, xpubKeyInput, 0, 0, activeChain);
       } catch (error) {
         keyValid = false;
         displayMessage('error', t('home:key.err_invalid_key'));

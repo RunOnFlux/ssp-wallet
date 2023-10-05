@@ -1,4 +1,9 @@
-import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  configureStore,
+  createSlice,
+  PayloadAction,
+  combineReducers,
+} from '@reduxjs/toolkit';
 import { cryptos, currency, transaction, wallets, wallet } from './types';
 
 interface FluxState {
@@ -11,7 +16,7 @@ interface FluxState {
   walletInUse: string;
 }
 
-const initialState: FluxState = {
+const initialStateFlux: FluxState = {
   xpubWallet: '',
   xpubKey: '',
   wallets: {},
@@ -31,6 +36,16 @@ const initialWalletState: wallet = {
 
 const initialStatePasswordBlob = {
   passwordBlob: '',
+};
+
+interface sspState {
+  activeChain: keyof cryptos;
+  kappa: string;
+}
+
+const initialSspState: sspState = {
+  activeChain: 'flux',
+  kappa: 'asdasdasd',
 };
 
 interface RatesState {
@@ -108,7 +123,7 @@ const passwordBlobSlice = createSlice({
 
 const fluxSlice = createSlice({
   name: 'flux',
-  initialState,
+  initialState: initialStateFlux,
   reducers: {
     setAddress: (
       state,
@@ -202,6 +217,16 @@ const fiatCryptoRatesSlice = createSlice({
   },
 });
 
+const sspStateSlice = createSlice({
+  name: 'sspState',
+  initialState: initialSspState,
+  reducers: {
+    setActiveChain: (state, action: PayloadAction<keyof cryptos>) => {
+      state.activeChain = action.payload;
+    },
+  },
+});
+
 export const {
   setAddress,
   setRedeemScript,
@@ -222,12 +247,17 @@ export const { setPasswordBlob, setPasswordBlobInitialState } =
 
 export const { setCryptoRates, setFiatRates } = fiatCryptoRatesSlice.actions;
 
+export const { setActiveChain } = sspStateSlice.actions;
+
+const reducers = combineReducers({
+  flux: fluxSlice.reducer,
+  passwordBlob: passwordBlobSlice.reducer,
+  fiatCryptoRates: fiatCryptoRatesSlice.reducer,
+  sspState: sspStateSlice.reducer,
+});
+
 export const store = configureStore({
-  reducer: {
-    flux: fluxSlice.reducer,
-    passwordBlob: passwordBlobSlice.reducer,
-    fiatCryptoRates: fiatCryptoRatesSlice.reducer,
-  },
+  reducer: reducers,
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

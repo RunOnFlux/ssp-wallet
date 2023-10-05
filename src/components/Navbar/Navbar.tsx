@@ -34,6 +34,7 @@ function Navbar() {
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
     (state) => state.flux,
   );
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [defaultWallet] = useState<walletOption>({
@@ -115,7 +116,7 @@ function Navbar() {
         xpubKey,
         typeIndex,
         addressIndex,
-        'flux',
+        activeChain,
       );
       dispatch(setAddress({ wallet: path, data: addrInfo.address }));
       dispatch(setRedeemScript({ wallet: path, data: addrInfo.redeemScript }));
