@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { getInfoInsight } from '../types';
+import { getInfoInsight, cryptos } from '../types';
 
 import { backends } from '@storage/backends';
 
-export async function getBlockheight(chain = 'flux'): Promise<number> {
+export async function getBlockheight(chain: keyof cryptos): Promise<number> {
   try {
     const backendConfig = backends()[chain];
     const url = `https://${backendConfig.node}/api/status?getinfo`;

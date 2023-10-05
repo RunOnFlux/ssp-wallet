@@ -7,10 +7,10 @@ function TxSent(props: {
   open: boolean;
   openAction: (status: boolean) => void;
   txid: string;
-  chain?: string;
+  chain: string;
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const { open, openAction, chain = 'flux' } = props;
+  const { open, openAction, chain } = props;
   const backendConfig = backends()[chain];
 
   const handleOk = () => {
@@ -56,9 +56,5 @@ function TxSent(props: {
     </>
   );
 }
-
-TxSent.defaultProps = {
-  chain: 'flux',
-};
 
 export default TxSent;

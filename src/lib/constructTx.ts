@@ -2,7 +2,7 @@ import utxolib from 'utxo-lib';
 import { Buffer } from 'buffer';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
-import { utxo, broadcastTxResult } from '../types';
+import { utxo, broadcastTxResult, cryptos } from '../types';
 
 import { backends } from '@storage/backends';
 
@@ -28,7 +28,7 @@ export async function fetchUtxos(
   }
 }
 
-export function finaliseTransaction(rawTx: string, chain = 'flux'): string {
+export function finaliseTransaction(rawTx: string, chain: keyof cryptos): string {
   try {
     const network = utxolib.networks[chain];
     const txhex = rawTx;
@@ -52,7 +52,7 @@ function getValueHexBuffer(hex: string) {
 
 export function signTransaction(
   rawTx: string,
-  chain = 'flux',
+  chain: keyof cryptos,
   privateKey: string,
   redeemScript: string,
   utxos: utxo[], // same or bi gger set than was used to construct the tx
@@ -93,7 +93,7 @@ export function signTransaction(
 
 // entire utxo set will be used to construct the tx, amount, fee is in satoshi represented as string
 export function buildUnsignedRawTx(
-  chain = 'flux',
+  chain: keyof cryptos,
   utxos: utxo[],
   receiver: string,
   amount: string,
@@ -270,7 +270,7 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
 }
 
 export async function constructAndSignTransaction(
-  chain = 'flux',
+  chain: keyof cryptos,
   receiver: string,
   amount: string,
   fee: string,
@@ -316,7 +316,7 @@ export async function constructAndSignTransaction(
 
 export async function broadcastTx(
   txHex: string,
-  chain = 'flux',
+  chain: keyof cryptos,
 ): Promise<string> {
   try {
     const backendConfig = backends()[chain];

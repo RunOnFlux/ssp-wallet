@@ -35,6 +35,7 @@ function Send() {
     txid: socketTxid,
     clearTxid,
     txRejected,
+    chain: txChain,
     clearTxRejected,
   } = useSocket();
   const { t } = useTranslation(['send', 'common']);
@@ -323,7 +324,7 @@ function Send() {
         openAction={confirmTxAction}
         txHex={txHex}
       />
-      <TxSent open={openTxSent} openAction={txSentAction} txid={txid} />
+      <TxSent open={openTxSent} openAction={txSentAction} txid={txid} chain={txChain}/>
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
     </>
   );

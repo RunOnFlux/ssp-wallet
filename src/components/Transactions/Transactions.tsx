@@ -145,6 +145,7 @@ function Transactions() {
         blockheight={blockheight}
         fiatRate={fiatRate}
         refresh={getTransactions}
+        chain={activeChain}
       />
 
       <SocketListener txRejected={onTxRejected} txSent={onTxSent} />

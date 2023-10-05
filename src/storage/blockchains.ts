@@ -16,8 +16,8 @@ const flux = {
 
 const fluxTestnet = {
   id: 'fluxTestnet',
-  name: 'TESTNET Flux',
-  symbol: 'TESTNET FLUX',
+  name: 'Testnet Flux',
+  symbol: 'TEST-FLUX',
   decimals: 8,
   node: backends().fluxTestnet.node,
   slip: 1, // all testnets have 1

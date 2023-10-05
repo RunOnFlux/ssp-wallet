@@ -63,9 +63,9 @@ function Home() {
       // get stored wallets
       void (async function () {
         const generatedWallets: generatedWallets =
-          (await localForage.getItem('wallets-flux')) ?? {};
+          (await localForage.getItem('wallets-' + activeChain)) ?? {};
         generatedWallets[walletInUse] = addrInfo.address;
-        await localForage.setItem('wallets-flux', generatedWallets);
+        await localForage.setItem('wallets-' + activeChain, generatedWallets);
       })();
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before

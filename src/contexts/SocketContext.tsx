@@ -7,6 +7,7 @@ interface SocketContextType {
   socket: Socket | null;
   txid: string;
   txRejected: string;
+  chain: string;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
 }
@@ -23,6 +24,7 @@ const defaultValue: SocketContextType = {
   socket: null,
   txid: '',
   txRejected: '',
+  chain: '',
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultValue);
@@ -34,6 +36,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [txRejected, setTxRejected] = useState('');
   const [txid, setTxid] = useState('');
+  const [chain, setChain] = useState('');
   const [socketIdentiy, setSocketIdentity] = useState('');
 
   useEffect(() => {
@@ -62,16 +65,18 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       wkIdentity,
     });
 
-    newSocket.on('txid', (txid: serverResponse) => {
+    newSocket.on('txid', (tx: serverResponse) => {
       console.log('incoming txid');
-      console.log(txid);
-      setTxid(txid.payload);
+      console.log(tx);
+      setTxid(tx.payload);
+      setChain(tx.chain);
     });
 
     newSocket.on('txrejected', (tx: serverResponse) => {
       console.log('tx rejected');
       console.log(tx);
       setTxRejected(tx.payload)
+      setChain(tx.chain);
     });
 
     setSocket(newSocket);
@@ -89,7 +94,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <SocketContext.Provider value={{ socket, txRejected: txRejected, txid: txid, clearTxid, clearTxRejected }}>
+    <SocketContext.Provider value={{ socket, txRejected: txRejected, txid: txid, chain: chain, clearTxid, clearTxRejected }}>
       {children}
     </SocketContext.Provider>
   );

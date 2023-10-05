@@ -8,6 +8,7 @@ function SocketListener(props: { txSent: () => void; txRejected: () => void }) {
     txid: socketTxid,
     clearTxid,
     txRejected,
+    chain,
     clearTxRejected,
   } = useSocket();
   const [openTxSent, setOpenTxSent] = useState(false);
@@ -46,7 +47,12 @@ function SocketListener(props: { txSent: () => void; txRejected: () => void }) {
   };
   return (
     <>
-      <TxSent open={openTxSent} openAction={txSentAction} txid={txid} />
+      <TxSent
+        open={openTxSent}
+        openAction={txSentAction}
+        txid={txid}
+        chain={chain}
+      />
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
     </>
   );

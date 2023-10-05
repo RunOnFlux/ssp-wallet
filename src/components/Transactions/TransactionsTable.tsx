@@ -17,11 +17,11 @@ function TransactionsTable(props: {
   transactions: transaction[];
   blockheight: number;
   fiatRate: number;
-  chain?: string;
+  chain: string;
   refresh: () => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const { chain = 'flux' } = props;
+  const { chain } = props;
   const [fiatRate, setFiatRate] = useState(0);
   const blockchainConfig = blockchains[chain];
 
@@ -140,9 +140,5 @@ function TransactionsTable(props: {
     </>
   );
 }
-
-TransactionsTable.defaultProps = {
-  chain: 'flux',
-};
 
 export default TransactionsTable;

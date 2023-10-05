@@ -3,7 +3,7 @@ import { Buffer } from 'buffer';
 import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
-import { keyPair, minHDKey, multisig, xPrivXpub } from '../types';
+import { keyPair, minHDKey, multisig, xPrivXpub, cryptos } from '../types';
 
 function generatexPubxPriv(
   mnemonic: string,
@@ -74,7 +74,7 @@ export function generateMultisigAddress(
   xpub2: string,
   typeIndex: 0 | 1 | 10,
   addressIndex: number,
-  chain = 'flux',
+  chain: keyof cryptos,
 ): multisig {
   const externalChain1 = HDKey.fromExtendedKey(xpub1);
   const externalChain2 = HDKey.fromExtendedKey(xpub2);
@@ -123,7 +123,7 @@ export function generateAddressKeypair(
   xpriv: string,
   typeIndex: 0 | 1,
   addressIndex: number,
-  chain = 'flux',
+  chain: keyof cryptos,
 ): keyPair {
   const externalChain = HDKey.fromExtendedKey(xpriv);
 
@@ -146,7 +146,7 @@ export function generateAddressKeypair(
 }
 
 // given xpub of our party, generate address of identity of xpub.
-export function generateIdentityAddress(xpub: string, chain = 'flux'): string {
+export function generateIdentityAddress(xpub: string, chain: keyof cryptos): string {
   const typeIndex = 10; // identity index
   const addressIndex = 0; // identity index
 
