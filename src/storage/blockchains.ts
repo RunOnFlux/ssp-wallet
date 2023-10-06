@@ -7,6 +7,7 @@ const flux = {
   decimals: 8,
   node: backends().flux.node,
   slip: 19167,
+  scriptType: 'p2sh',
   messagePrefix: '\u0018Zelcash Signed Message:\n',
   pubKeyHash: '1cb8',
   scriptHash: '1cbd',
@@ -21,6 +22,7 @@ const fluxTestnet = {
   decimals: 8,
   node: backends().fluxTestnet.node,
   slip: 1, // all testnets have 1
+  scriptType: 'p2sh',
   messagePrefix: '\u0018Zelcash Signed Message:\n',
   pubKeyHash: '1d25',
   scriptHash: '1cba',

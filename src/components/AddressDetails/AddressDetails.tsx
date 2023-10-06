@@ -4,11 +4,12 @@ import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
-import { generateAddressKeypair } from '../../lib/wallet';
+import { generateAddressKeypair, getScriptType } from '../../lib/wallet';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { blockchains } from '@storage/blockchains';
 
 function AddressDetails(props: {
   open: boolean;
@@ -24,6 +25,7 @@ function AddressDetails(props: {
   const { wallets, walletInUse } = useAppSelector((state) => state.flux);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const blockchainConfig = blockchains[activeChain];
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
@@ -49,7 +51,11 @@ function AddressDetails(props: {
         if (typeof password !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_pw_not_valid'));
         }
-        const xprivFluxBlob = secureLocalStorage.getItem('xpriv-48-19167-0-0');
+        const xprivFluxBlob = secureLocalStorage.getItem(
+          `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}`,
+        );
         if (typeof xprivFluxBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpriv'));
         }

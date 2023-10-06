@@ -9,7 +9,7 @@ import { useAppSelector } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
-import { generateAddressKeypair } from '../../lib/wallet';
+import { generateAddressKeypair, getScriptType } from '../../lib/wallet';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
@@ -20,6 +20,7 @@ import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
+import { blockchains } from '@storage/blockchains';
 
 interface sendForm {
   receiver: string;
@@ -54,6 +55,7 @@ function Send() {
   const [openTxRejected, setOpenTxRejected] = useState(false);
   const [txHex, setTxHex] = useState('');
   const [txid, setTxid] = useState('');
+  const blockchainConfig = blockchains[activeChain];
   const confirmTxAction = (status: boolean) => {
     setOpenConfirmTx(status);
     if (status === false) {
@@ -161,7 +163,11 @@ function Send() {
         if (typeof password !== 'string') {
           throw new Error(t('send:err_pwd_not_valid'));
         }
-        const xprivFluxBlob = secureLocalStorage.getItem('xpriv-48-19167-0-0');
+        const xprivFluxBlob = secureLocalStorage.getItem(
+          `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}`,
+        );
         if (typeof xprivFluxBlob !== 'string') {
           throw new Error(t('send:err_invalid_xpriv'));
         }
@@ -173,7 +179,12 @@ function Send() {
         const splittedDerPath = wInUse.split('-');
         const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
         const addressIndex = Number(splittedDerPath[1]);
-        const keyPair = generateAddressKeypair(xprivFlux, typeIndex, addressIndex, activeChain);
+        const keyPair = generateAddressKeypair(
+          xprivFlux,
+          typeIndex,
+          addressIndex,
+          activeChain,
+        );
         const amount = new BigNumber(values.amount).multipliedBy(1e8).toFixed();
         const fee = new BigNumber(values.fee).multipliedBy(1e8).toFixed();
         constructAndSignTransaction(
@@ -324,7 +335,12 @@ function Send() {
         openAction={confirmTxAction}
         txHex={txHex}
       />
-      <TxSent open={openTxSent} openAction={txSentAction} txid={txid} chain={txChain}/>
+      <TxSent
+        open={openTxSent}
+        openAction={txSentAction}
+        txid={txid}
+        chain={txChain}
+      />
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
     </>
   );

@@ -8,11 +8,15 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { blockchains } from '@storage/blockchains';
+import { getScriptType } from '../../lib/wallet';
 
 function SSPWalletDetails(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
+  const { activeChain } = useAppSelector((state) => state.sspState);
+  const blockchainConfig = blockchains[activeChain];
   const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [xpriv, setXpriv] = useState('');
@@ -55,7 +59,11 @@ function SSPWalletDetails(props: {
         if (typeof password !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_pw_not_valid'));
         }
-        const xprivFluxBlob = secureLocalStorage.getItem('xpriv-48-19167-0-0');
+        const xprivFluxBlob = secureLocalStorage.getItem(
+          `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}`,
+        );
         if (typeof xprivFluxBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpriv'));
         }
@@ -67,7 +75,11 @@ function SSPWalletDetails(props: {
         }
         setXpriv(xprivFlux);
 
-        const xpubFluxBlob = secureLocalStorage.getItem('xpub-48-19167-0-0');
+        const xpubFluxBlob = secureLocalStorage.getItem(
+          `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}`,
+        );
         if (typeof xpubFluxBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpub'));
         }

@@ -31,17 +31,22 @@ import {
   generateMnemonic,
   getMasterXpriv,
   getMasterXpub,
+  getScriptType,
 } from '../../lib/wallet';
 import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
 import { getFingerprint } from '../../lib/fingerprint';
+import { blockchains } from '@storage/blockchains';
+
 interface passwordForm {
   password: string;
   confirm_password: string;
   tos: boolean;
 }
 
+// we always use flux
 function Create() {
+  const blockchainConfig = blockchains.flux;
   const { t } = useTranslation(['cr', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
@@ -139,14 +144,24 @@ function Create() {
       .then(async (blob) => {
         secureLocalStorage.setItem('walletSeed', blob);
         // generate master xpriv for flux
-        const xpriv = getMasterXpriv(mnemonicPhrase, 48, 19167, 0, 'p2sh');
-        const xpub = getMasterXpub(mnemonicPhrase, 48, 19167, 0, 'p2sh');
+        const xpriv = getMasterXpriv(mnemonicPhrase, 48, blockchainConfig.slip, 0, blockchainConfig.scriptType);
+        const xpub = getMasterXpub(mnemonicPhrase, 48, blockchainConfig.slip, 0, blockchainConfig.scriptType);
         const xprivBlob = await passworderEncrypt(password, xpriv);
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();
         const pwBlob = await passworderEncrypt(fingerprint, password);
-        secureLocalStorage.setItem('xpriv-48-19167-0-0', xprivBlob);
-        secureLocalStorage.setItem('xpub-48-19167-0-0', xpubBlob);
+        secureLocalStorage.setItem(
+          `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}`,
+          xprivBlob,
+        );
+        secureLocalStorage.setItem(
+          `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}`,
+          xpubBlob,
+        );
         dispatch(setXpubWallet(xpub));
         if (chrome?.storage?.session) {
           await chrome.storage.session.clear();

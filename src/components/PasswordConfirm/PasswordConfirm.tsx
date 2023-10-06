@@ -12,15 +12,19 @@ import secureLocalStorage from 'react-secure-storage';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { useTranslation } from 'react-i18next';
 
+import { getScriptType } from '../../lib/wallet';
+import { blockchains } from '@storage/blockchains';
+
 interface passwordForm {
   password: string;
 }
 
-// check if password is correct
+// check if password is correct, we use flux stored pub key to test
 function PasswordConfirm(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
+  const blockchainConfig = blockchains.flux;
   const { t } = useTranslation(['home', 'common', 'login', 'cr']);
   const [form] = Form.useForm();
   const { open, openAction } = props;
@@ -48,7 +52,11 @@ function PasswordConfirm(props: {
       return;
     }
     // try to decrypt
-    const xpubEncrypted = secureLocalStorage.getItem('xpub-48-19167-0-0');
+    const xpubEncrypted = secureLocalStorage.getItem(
+      `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+        blockchainConfig.scriptType,
+      )}`,
+    );
     if (typeof xpubEncrypted === 'string') {
       passworderDecrypt(values.password, xpubEncrypted)
         .then((xpub) => {

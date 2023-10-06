@@ -6,6 +6,7 @@ declare module '@storage/blockchains' {
     decimals: number;
     node: string;
     slip: number;
+    scriptType: string;
     messagePrefix: string;
     pubKeyHash: string;
     scriptHash: string;

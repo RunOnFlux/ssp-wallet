@@ -23,17 +23,22 @@ import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch } from '../../hooks';
 
-import { setXpubWallet, setPasswordBlob } from '../../store';
+import {
+  setXpubWallet,
+  setPasswordBlob,
+  setFluxInitialState,
+} from '../../store';
 
 import './Restore.css';
 
-import { getMasterXpriv, getMasterXpub } from '../../lib/wallet';
+import { getMasterXpriv, getMasterXpub, getScriptType } from '../../lib/wallet';
 import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
 
 import localForage from 'localforage';
 import { getFingerprint } from '../../lib/fingerprint';
 import { useAppSelector } from '../../hooks';
+import { blockchains } from '@storage/blockchains';
 
 interface passwordForm {
   mnemonic: string;
@@ -44,8 +49,10 @@ interface passwordForm {
 
 const { TextArea } = Input;
 
+// we always use flux as default
 function Restore() {
   const { t } = useTranslation(['cr', 'common']);
+  const blockchainConfig = blockchains.flux;
   const { wallets } = useAppSelector((state) => state.flux);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -143,14 +150,37 @@ function Restore() {
       .then(async () => {
         const mnemonicBlob = await passworderEncrypt(password, mnemonicPhrase);
         secureLocalStorage.setItem('walletSeed', mnemonicBlob);
-        const xpriv = getMasterXpriv(mnemonicPhrase, 48, 19167, 0, 'p2sh');
-        const xpub = getMasterXpub(mnemonicPhrase, 48, 19167, 0, 'p2sh');
+        const xpriv = getMasterXpriv(
+          mnemonicPhrase,
+          48,
+          blockchainConfig.slip,
+          0,
+          blockchainConfig.scriptType,
+        );
+        const xpub = getMasterXpub(
+          mnemonicPhrase,
+          48,
+          blockchainConfig.slip,
+          0,
+          blockchainConfig.scriptType,
+        );
         const xprivBlob = await passworderEncrypt(password, xpriv);
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();
         const pwBlob = await passworderEncrypt(fingerprint, password);
-        secureLocalStorage.setItem('xpriv-48-19167-0-0', xprivBlob);
-        secureLocalStorage.setItem('xpub-48-19167-0-0', xpubBlob);
+        secureLocalStorage.setItem(
+          `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}`,
+          xprivBlob,
+        );
+        secureLocalStorage.setItem(
+          `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}`,
+          xpubBlob,
+        );
+        dispatch(setFluxInitialState());
         dispatch(setXpubWallet(xpub));
         if (chrome?.storage?.session) {
           await chrome.storage.session.clear();
@@ -297,9 +327,7 @@ function Restore() {
         </Button>
         <Divider />
         <br />
-        <Checkbox onChange={onChangeWSP}>
-          {t('cr:phrase_backed_up')}
-        </Checkbox>
+        <Checkbox onChange={onChangeWSP}>{t('cr:phrase_backed_up')}</Checkbox>
         <br />
         <br />
       </Modal>
