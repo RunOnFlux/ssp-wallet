@@ -11,6 +11,8 @@ import {
 } from '@storage/backends';
 import { sspConfig, sspConfigOriginal, loadSSPConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
+import { blockchains } from '@storage/blockchains';
+import { useAppSelector } from '../../hooks';
 
 const backendsOriginalConfig = backendsOriginal();
 const originalConfig = sspConfigOriginal();
@@ -19,6 +21,7 @@ function PasswordConfirm(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const { t } = useTranslation(['home', 'common']);
   const FNC = backends().flux.node;
   const SSPR = sspConfig().relay;
@@ -26,6 +29,7 @@ function PasswordConfirm(props: {
   const [fluxNodeConfig, setFluxNodeConfig] = useState(FNC);
   const { open, openAction } = props;
   const [messageApi, contextHolder] = message.useMessage();
+  const blockchainConfig = blockchains[activeChain];
 
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -119,7 +123,7 @@ function PasswordConfirm(props: {
         <Space.Compact style={{ width: '100%' }}>
           <Input
             size="large"
-            placeholder="relay.ssp.runonflux.io"
+            placeholder={originalConfig.relay}
             value={sspConfigRelay}
             onChange={(e) => setSspConfigRelay(e.target.value)}
           />
@@ -127,11 +131,11 @@ function PasswordConfirm(props: {
             {t('common:reset')}
           </Button>
         </Space.Compact>
-        <h3>{t('home:settings.chain_node_service', { chain: 'Flux' })}</h3>
+        <h3>{t('home:settings.chain_node_service', { chain: blockchainConfig.name })}</h3>
         <Space.Compact style={{ width: '100%' }}>
           <Input
             size="large"
-            placeholder="explorer.runonflux.io"
+            placeholder={backendsOriginalConfig[activeChain].node}
             value={fluxNodeConfig}
             onChange={(e) => setFluxNodeConfig(e.target.value)}
           />

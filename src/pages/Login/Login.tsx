@@ -13,7 +13,7 @@ import {
 import secureLocalStorage from 'react-secure-storage';
 import { useTranslation } from 'react-i18next';
 
-import { useAppDispatch } from '../../hooks';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 
 import {
   setXpubWallet,
@@ -34,6 +34,7 @@ import { generateIdentityAddress } from '../../lib/wallet.ts';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
 import { transaction, generatedWallets } from '../../types';
+
 interface loginForm {
   password: string;
 }
@@ -57,6 +58,7 @@ function Login() {
   const dispatch = useAppDispatch();
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const { activeChain } = useAppSelector((state) => state.sspState);
 
   useEffect(() => {
     if (alreadyMounted.current) return;
@@ -128,7 +130,7 @@ function Login() {
         .then(async (xpub) => {
           // restore stored wallets
           const generatedWallets: generatedWallets =
-            (await localForage.getItem('wallets-flux')) ?? {};
+            (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
           const walletDerivations = Object.keys(generatedWallets);
           walletDerivations.forEach((derivation: string) => {
             dispatch(
@@ -139,7 +141,7 @@ function Login() {
             );
           });
           const walInUse: string =
-            (await localForage.getItem('walletInUse-flux')) ?? '0-0';
+            (await localForage.getItem(`walletInUse-${activeChain}`)) ?? '0-0';
           dispatch(setWalletInUse(walInUse));
           if (typeof xpub === 'string') {
             console.log(xpub);
@@ -147,7 +149,7 @@ function Login() {
             // generate ssp wallet identity
             const generatedSspWalletIdentity = generateIdentityAddress(
               xpub,
-              'flux',
+              activeChain,
             );
             dispatch(setSspWalletIdentity(generatedSspWalletIdentity));
             if (typeof xpub2Encrypted === 'string') {
@@ -167,34 +169,34 @@ function Login() {
             dispatch(setPasswordBlob(pwBlob));
             // disaptch decryption of xpub of key 2-xpub-48-19167-0-0 if exists, if not, navigate to Key
             // load txs, balances, settings etc.
-            const txsFlux: transaction[] =
-              (await localForage.getItem('transactions-flux-' + walInUse)) ??
+            const txsWallet: transaction[] =
+              (await localForage.getItem(`transactions-${activeChain}-${walInUse}`)) ??
               [];
-            const blockheightFlux: number =
-              (await localForage.getItem('blockheight-flux')) ?? 0;
-            const balancesFlux: balancesObj =
-              (await localForage.getItem('balances-flux-' + walInUse)) ??
+            const blockheightChain: number =
+              (await localForage.getItem(`blockheight-${activeChain}`)) ?? 0;
+            const balancesWallet: balancesObj =
+              (await localForage.getItem(`balances-${activeChain}-${walInUse}`)) ??
               balancesObject;
-            if (txsFlux) {
-              dispatch(setTransactions({ wallet: walInUse, data: txsFlux })) ??
+            if (txsWallet) {
+              dispatch(setTransactions({ wallet: walInUse, data: txsWallet })) ??
                 [];
             }
-            if (balancesFlux) {
+            if (balancesWallet) {
               dispatch(
                 setBalance({
                   wallet: walInUse,
-                  data: balancesFlux.confirmed,
+                  data: balancesWallet.confirmed,
                 }),
               );
               dispatch(
                 setUnconfirmedBalance({
                   wallet: walInUse,
-                  data: balancesFlux.unconfirmed,
+                  data: balancesWallet.unconfirmed,
                 }),
               );
             }
-            if (blockheightFlux) {
-              dispatch(setBlockheight(blockheightFlux));
+            if (blockheightChain) {
+              dispatch(setBlockheight(blockheightChain));
             }
             navigate('/home');
           } else {

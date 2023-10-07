@@ -51,16 +51,16 @@ function AddressDetails(props: {
         if (typeof password !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_pw_not_valid'));
         }
-        const xprivFluxBlob = secureLocalStorage.getItem(
+        const xprivBlob = secureLocalStorage.getItem(
           `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
             blockchainConfig.scriptType,
           )}`,
         );
-        if (typeof xprivFluxBlob !== 'string') {
+        if (typeof xprivBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpriv'));
         }
-        const xprivFlux = await passworderDecrypt(password, xprivFluxBlob);
-        if (typeof xprivFlux !== 'string') {
+        const xprivChain = await passworderDecrypt(password, xprivBlob);
+        if (typeof xprivChain !== 'string') {
           throw new Error(
             t('home:sspWalletDetails.err_invalid_wallet_xpriv_2'),
           );
@@ -69,7 +69,7 @@ function AddressDetails(props: {
         const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
         const addressIndex = Number(splittedDerPath[1]);
         const keyPair = generateAddressKeypair(
-          xprivFlux,
+          xprivChain,
           typeIndex,
           addressIndex,
           activeChain,
@@ -86,7 +86,9 @@ function AddressDetails(props: {
     <>
       {contextHolder}
       <Modal
-        title={t('home:addressDetails.chain_bip', { chain: 'FLUX' })}
+        title={t('home:addressDetails.chain_bip', {
+          chain: blockchainConfig.symbol,
+        })}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}

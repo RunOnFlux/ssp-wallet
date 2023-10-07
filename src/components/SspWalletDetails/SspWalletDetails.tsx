@@ -59,35 +59,35 @@ function SSPWalletDetails(props: {
         if (typeof password !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_pw_not_valid'));
         }
-        const xprivFluxBlob = secureLocalStorage.getItem(
+        const xprivBlob = secureLocalStorage.getItem(
           `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
             blockchainConfig.scriptType,
           )}`,
         );
-        if (typeof xprivFluxBlob !== 'string') {
+        if (typeof xprivBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpriv'));
         }
-        const xprivFlux = await passworderDecrypt(password, xprivFluxBlob);
-        if (typeof xprivFlux !== 'string') {
+        const xprivChain = await passworderDecrypt(password, xprivBlob);
+        if (typeof xprivChain !== 'string') {
           throw new Error(
             t('home:sspWalletDetails.err_invalid_wallet_xpriv_2'),
           );
         }
-        setXpriv(xprivFlux);
+        setXpriv(xprivChain);
 
-        const xpubFluxBlob = secureLocalStorage.getItem(
+        const xpubBlob = secureLocalStorage.getItem(
           `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
             blockchainConfig.scriptType,
           )}`,
         );
-        if (typeof xpubFluxBlob !== 'string') {
+        if (typeof xpubBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpub'));
         }
-        const xpubFlux = await passworderDecrypt(password, xpubFluxBlob);
-        if (typeof xpubFlux !== 'string') {
+        const xpubChain = await passworderDecrypt(password, xpubBlob);
+        if (typeof xpubChain !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpub_2'));
         }
-        setXpub(xpubFlux);
+        setXpub(xpubChain);
         const walletSeedBlob = secureLocalStorage.getItem('walletSeed');
         if (typeof walletSeedBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed'));
@@ -108,7 +108,7 @@ function SSPWalletDetails(props: {
     <>
       {contextHolder}
       <Modal
-        title={t('home:sspWalletDetails.ssp_bip', { chain: 'FLUX' })}
+        title={t('home:sspWalletDetails.ssp_bip', { chain: blockchainConfig.symbol })}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
@@ -142,7 +142,7 @@ function SSPWalletDetails(props: {
               onClick={() => setExtendedPublicKeyVisible(true)}
             />
           )}{' '}
-          {t('home:sspWalletDetails.chain_extended_pub', { chain: 'Flux' })}:
+          {t('home:sspWalletDetails.chain_extended_pub', { chain: blockchainConfig.name })}:
         </h3>
         <Paragraph copyable={{ text: xpub }} className="copyableAddress">
           <Text>
@@ -158,7 +158,7 @@ function SSPWalletDetails(props: {
               onClick={() => setExtendedPrivateKeyVisible(true)}
             />
           )}{' '}
-          {t('home:sspWalletDetails.chain_extended_priv', { chain: 'Flux' })}:
+          {t('home:sspWalletDetails.chain_extended_priv', { chain: blockchainConfig.name })}:
         </h3>
         <Paragraph copyable={{ text: xpriv }} className="copyableAddress">
           <Text>

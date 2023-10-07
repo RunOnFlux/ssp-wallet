@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
 import { generatedWallets } from '../../types';
+import { blockchains } from '@storage/blockchains';
 
 interface walletOption {
   value: string;
@@ -35,12 +36,13 @@ function Navbar() {
     (state) => state.flux,
   );
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const blockchainConfig = blockchains[activeChain];
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [defaultWallet] = useState<walletOption>({
     value: walletInUse,
     label: t('home:navbar.chain_wallet', {
-      chain: 'Flux',
+      chain: blockchainConfig.name,
       wallet:
         (+walletInUse.split('-')[0] === 1 ? 'Change ' : 'Wallet ') +
         (+walletInUse.split('-')[1] + 1),
@@ -67,7 +69,7 @@ function Navbar() {
       const wal = {
         value: wallet,
         label: t('home:navbar.chain_wallet', {
-          chain: 'Flux',
+          chain: blockchainConfig.name,
           wallet: walletName,
         }),
       };
@@ -90,7 +92,7 @@ function Navbar() {
     console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
     dispatch(setWalletInUse(value.value));
     void (async function () {
-      await localForage.setItem('walletInUse-flux', value.value);
+      await localForage.setItem(`walletInUse-${activeChain}`, value.value);
     })();
   };
 
@@ -123,9 +125,9 @@ function Navbar() {
       // get stored wallets
       void (async function () {
         const generatedWallets: generatedWallets =
-          (await localForage.getItem('wallets-flux')) ?? {};
+          (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
         generatedWallets[path] = addrInfo.address;
-        await localForage.setItem('wallets-flux', generatedWallets);
+        await localForage.setItem(`wallets-${activeChain}`, generatedWallets);
       })();
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before

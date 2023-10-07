@@ -163,16 +163,16 @@ function Send() {
         if (typeof password !== 'string') {
           throw new Error(t('send:err_pwd_not_valid'));
         }
-        const xprivFluxBlob = secureLocalStorage.getItem(
+        const xprivBlob = secureLocalStorage.getItem(
           `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
             blockchainConfig.scriptType,
           )}`,
         );
-        if (typeof xprivFluxBlob !== 'string') {
+        if (typeof xprivBlob !== 'string') {
           throw new Error(t('send:err_invalid_xpriv'));
         }
-        const xprivFlux = await passworderDecrypt(password, xprivFluxBlob);
-        if (typeof xprivFlux !== 'string') {
+        const xprivChain = await passworderDecrypt(password, xprivBlob);
+        if (typeof xprivChain !== 'string') {
           throw new Error(t('send:err_invalid_xpriv_decrypt'));
         }
         const wInUse = walletInUse;
@@ -180,7 +180,7 @@ function Send() {
         const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
         const addressIndex = Number(splittedDerPath[1]);
         const keyPair = generateAddressKeypair(
-          xprivFlux,
+          xprivChain,
           typeIndex,
           addressIndex,
           activeChain,
@@ -280,7 +280,7 @@ function Send() {
           <Input
             size="large"
             placeholder={t('send:input_amount')}
-            suffix="FLUX"
+            suffix={blockchainConfig.symbol}
           />
         </Form.Item>
 
@@ -290,7 +290,7 @@ function Send() {
           initialValue={'0.0001'}
           rules={[{ required: true, message: t('send:input_fee') }]}
         >
-          <Input size="large" placeholder={t('send:tx_fee')} suffix="FLUX" />
+          <Input size="large" placeholder={t('send:tx_fee')} suffix={blockchainConfig.symbol} />
         </Form.Item>
 
         <Form.Item

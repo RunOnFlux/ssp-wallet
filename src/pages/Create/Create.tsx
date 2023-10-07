@@ -143,7 +143,7 @@ function Create() {
     passworderEncrypt(password, mnemonicPhrase)
       .then(async (blob) => {
         secureLocalStorage.setItem('walletSeed', blob);
-        // generate master xpriv for flux
+        // generate master xpriv for flux - default chain
         const xpriv = getMasterXpriv(mnemonicPhrase, 48, blockchainConfig.slip, 0, blockchainConfig.scriptType);
         const xpub = getMasterXpub(mnemonicPhrase, 48, blockchainConfig.slip, 0, blockchainConfig.scriptType);
         const xprivBlob = await passworderEncrypt(password, xpriv);

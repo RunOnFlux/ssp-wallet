@@ -5,6 +5,7 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import { setBalance, setUnconfirmedBalance } from '../../store';
 import { fetchAddressBalance } from '../../lib/balances.ts';
 import SocketListener from '../SocketListener/SocketListener.tsx';
+import { blockchains } from '@storage/blockchains';
 
 let refreshInterval: string | number | NodeJS.Timeout | undefined;
 
@@ -28,6 +29,7 @@ function Balances() {
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
+  const blockchainConfig = blockchains[activeChain];
 
   useEffect(() => {
     if (alreadyMounted.current) return;
@@ -48,20 +50,20 @@ function Balances() {
     refresh();
     void (async function () {
       const wInUse = walletInUse;
-      const balancesFlux: balancesObj =
-        (await localForage.getItem('balances-flux-' + wInUse)) ??
+      const balancesWallet: balancesObj =
+        (await localForage.getItem(`balances-${activeChain}-${wInUse}`)) ??
         balancesObject;
-      if (balancesFlux) {
+      if (balancesWallet) {
         dispatch(
           setBalance({
             wallet: wInUse,
-            data: balancesFlux.confirmed,
+            data: balancesWallet.confirmed,
           }),
         );
         dispatch(
           setUnconfirmedBalance({
             wallet: wInUse,
-            data: balancesFlux.unconfirmed,
+            data: balancesWallet.unconfirmed,
           }),
         );
       }
@@ -78,7 +80,7 @@ function Balances() {
             data: balance.unconfirmed,
           }),
         );
-        await localForage.setItem('balances-flux-' + walletInUse, balance);
+        await localForage.setItem(`balances-${activeChain}-${walletInUse}`, balance);
         console.log(balance);
       })
       .catch((error) => {
@@ -126,7 +128,7 @@ function Balances() {
   return (
     <>
       <h3 style={{ marginTop: 0, marginBottom: 10 }}>
-        {totalBalance.toFixed(8) || '0.00'} FLUX
+        {totalBalance.toFixed(8) || '0.00'} {blockchainConfig.symbol}
       </h3>
       <h4 style={{ marginTop: 0, marginBottom: 15 }}>
         ${balanceUSD.toFixed(2) || '0.00'} USD

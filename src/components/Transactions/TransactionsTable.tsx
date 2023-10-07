@@ -57,7 +57,7 @@ function TransactionsTable(props: {
               <p style={{ margin: 0 }}>
                 {t('home:transactionsTable.fee_with_symbol', {
                   fee: new BigNumber(record.fee).dividedBy(1e8).toFixed(),
-                  symbol: 'FLUX',
+                  symbol: blockchainConfig.symbol,
                 })}
               </p>
               <p style={{ margin: 0 }}>
@@ -109,7 +109,7 @@ function TransactionsTable(props: {
           dataIndex="amount"
           render={(amnt: string) => (
             <>
-              {new BigNumber(amnt).dividedBy(1e8).toFixed()} FLUX
+              {new BigNumber(amnt).dividedBy(1e8).toFixed()} {blockchainConfig.symbol}
               <br />
               <div style={{ color: 'grey', fontSize: 12 }}>
                 {+amnt < 0 ? '-' : ''}$

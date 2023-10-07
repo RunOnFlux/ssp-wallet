@@ -10,6 +10,8 @@ import { VerticalAlignTopOutlined } from '@ant-design/icons';
 import ConfirmTxKey from '../ConfirmTxKey/ConfirmTxKey.tsx';
 import { actionSSPRelay } from '../../types';
 import { pendingTransaction } from '../../types';
+import { blockchains } from '@storage/blockchains';
+import { useAppSelector } from '../../hooks';
 
 function PendingTransactionsTable(props: {
   transactions: pendingTransaction[];
@@ -21,6 +23,8 @@ function PendingTransactionsTable(props: {
   const [pendingTxs, setPendingTxs] = useState<pendingTransaction[]>([]);
   const [txHex, setTxHex] = useState('');
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
+  const { activeChain } = useAppSelector((state) => state.sspState);
+  const blockchainConfig = blockchains[activeChain];
 
   useEffect(() => {
     setPendingTxs(props.transactions);
@@ -89,7 +93,7 @@ function PendingTransactionsTable(props: {
             dataIndex="amount"
             render={(amnt: string) => (
               <>
-                -{amnt} FLUX
+                -{amnt} {blockchainConfig.symbol}
                 <br />
                 <div style={{ color: 'grey', fontSize: 12 }}>
                   -$

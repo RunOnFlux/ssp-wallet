@@ -50,10 +50,10 @@ function Transactions() {
     getPendingTx();
     void (async function () {
       const wInUse = walletInUse;
-      const txsFlux: transaction[] =
-        (await localForage.getItem('transactions-flux-' + wInUse)) ?? [];
-      if (txsFlux) {
-        dispatch(setTransactions({ wallet: wInUse, data: txsFlux })) ?? [];
+      const txsWallet: transaction[] =
+        (await localForage.getItem(`transactions-${activeChain}-${wInUse}`)) ?? [];
+      if (txsWallet) {
+        dispatch(setTransactions({ wallet: wInUse, data: txsWallet })) ?? [];
       }
       getTransactions();
     })();
@@ -69,7 +69,7 @@ function Transactions() {
     fetchAddressTransactions(wallets[wInUse].address, activeChain, 0, 10)
       .then(async (txs) => {
         dispatch(setTransactions({ wallet: wInUse, data: txs }));
-        await localForage.setItem('transactions-flux-' + wInUse, txs);
+        await localForage.setItem(`transactions-${activeChain}-${wInUse}`, txs);
       })
       .catch((error) => {
         console.log(error);
@@ -79,7 +79,7 @@ function Transactions() {
     getBlockheight(activeChain)
       .then(async (height) => {
         dispatch(setBlockheight(height));
-        await localForage.setItem('blockheight-flux', height);
+        await localForage.setItem(`blockheight-${activeChain}`, height);
       })
       .catch((error) => {
         console.log(error);
