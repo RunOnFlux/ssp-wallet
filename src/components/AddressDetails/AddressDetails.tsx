@@ -22,9 +22,9 @@ function AddressDetails(props: {
   const [messageApi, contextHolder] = message.useMessage();
   // private key, redeemScript, address
   const { open, openAction } = props;
-  const { wallets, walletInUse } = useAppSelector((state) => state.flux);
-  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { wallets, walletInUse } = useAppSelector((state) => state[activeChain]);
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const blockchainConfig = blockchains[activeChain];
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({

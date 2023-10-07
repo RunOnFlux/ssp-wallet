@@ -24,8 +24,8 @@ function Balances() {
   const isInitialMount = useRef(true);
   const [fiatRate, setFiatRate] = useState(0);
   const dispatch = useAppDispatch();
-  const { wallets, walletInUse } = useAppSelector((state) => state.flux);
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { wallets, walletInUse } = useAppSelector((state) => state[activeChain]);
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );

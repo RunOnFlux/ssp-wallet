@@ -18,9 +18,9 @@ function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
   const dispatch = useAppDispatch();
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse, blockheight, sspWalletKeyIdentity } =
-    useAppSelector((state) => state.flux);
-    const { activeChain } = useAppSelector((state) => state.sspState);
+    useAppSelector((state) => state[activeChain]);
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -51,7 +51,8 @@ function Transactions() {
     void (async function () {
       const wInUse = walletInUse;
       const txsWallet: transaction[] =
-        (await localForage.getItem(`transactions-${activeChain}-${wInUse}`)) ?? [];
+        (await localForage.getItem(`transactions-${activeChain}-${wInUse}`)) ??
+        [];
       if (txsWallet) {
         dispatch(setTransactions({ wallet: wInUse, data: txsWallet })) ?? [];
       }

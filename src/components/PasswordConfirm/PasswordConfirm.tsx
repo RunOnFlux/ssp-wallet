@@ -12,6 +12,7 @@ import secureLocalStorage from 'react-secure-storage';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { useTranslation } from 'react-i18next';
 
+import { useAppSelector } from '../../hooks';
 import { getScriptType } from '../../lib/wallet';
 import { blockchains } from '@storage/blockchains';
 
@@ -19,12 +20,13 @@ interface passwordForm {
   password: string;
 }
 
-// check if password is correct, we use flux stored pub key to test
+// check if password is correct
 function PasswordConfirm(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
-  const blockchainConfig = blockchains.flux;
+  const { activeChain } = useAppSelector((state) => state.sspState);
+  const blockchainConfig = blockchains[activeChain];
   const { t } = useTranslation(['home', 'common', 'login', 'cr']);
   const [form] = Form.useForm();
   const { open, openAction } = props;

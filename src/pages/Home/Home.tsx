@@ -32,10 +32,10 @@ function Home() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
-  const { xpubKey, xpubWallet, walletInUse } = useAppSelector(
-    (state) => state.flux,
-  );
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { xpubKey, xpubWallet, walletInUse } = useAppSelector(
+    (state) => state[activeChain],
+  );
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({

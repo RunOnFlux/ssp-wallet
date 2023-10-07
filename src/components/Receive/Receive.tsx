@@ -11,7 +11,7 @@ function Receive(props: {
   const { t } = useTranslation(['home', 'common']);
   const { open, openAction } = props;
   const { activeChain } = useAppSelector((state) => state.sspState);
-  const { wallets, walletInUse } = useAppSelector((state) => state.flux);
+  const { wallets, walletInUse } = useAppSelector((state) => state[activeChain]);
   const blockchainConfig = blockchains[activeChain];
 
   const handleOk = () => {

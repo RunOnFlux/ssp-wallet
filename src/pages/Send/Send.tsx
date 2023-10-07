@@ -43,10 +43,10 @@ function Send() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { sspWalletKeyIdentity, wallets, walletInUse } = useAppSelector(
-    (state) => state.flux,
-  );
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { sspWalletKeyIdentity, wallets, walletInUse } = useAppSelector(
+    (state) => state[activeChain],
+  );
   const transactions = wallets[walletInUse].transactions;
   const redeemScript = wallets[walletInUse].redeemScript;
   const sender = wallets[walletInUse].address;

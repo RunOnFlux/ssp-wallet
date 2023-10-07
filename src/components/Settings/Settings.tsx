@@ -23,10 +23,10 @@ function PasswordConfirm(props: {
 }) {
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { t } = useTranslation(['home', 'common']);
-  const FNC = backends().flux.node;
+  const NC = backends()[activeChain].node;
   const SSPR = sspConfig().relay;
   const [sspConfigRelay, setSspConfigRelay] = useState(SSPR);
-  const [fluxNodeConfig, setFluxNodeConfig] = useState(FNC);
+  const [nodeConfig, setNodeConfig] = useState(NC);
   const { open, openAction } = props;
   const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[activeChain];
@@ -54,22 +54,30 @@ function PasswordConfirm(props: {
           console.log(err);
         });
       }
-      // adjust flux node
-      if (backendsOriginalConfig.flux.node !== fluxNodeConfig) {
-        const backendsConfig = {
-          flux: {
-            node: fluxNodeConfig,
-          },
-        };
+      // adjust node
+      const storedBackends: backends =
+        (await localForage.getItem('backends')) ?? {};
+      if (!storedBackends[activeChain]) {
+        storedBackends[activeChain] = backendsOriginalConfig[activeChain];
+      }
+      if (storedBackends?.[activeChain]?.node !== nodeConfig) {
+        storedBackends[activeChain].node = nodeConfig;
         console.log('adjusted');
-        await localForage.setItem('backends', backendsConfig).catch((err) => {
+        await localForage.setItem('backends', storedBackends).catch((err) => {
           console.log(err);
         });
-      } else {
-        // remove if present on localForge
-        await localForage.removeItem('backends').catch((err) => {
-          console.log(err);
-        });
+      } else if (storedBackends?.[activeChain]?.node) {
+        delete storedBackends?.[activeChain];
+        if (Object.keys(storedBackends).length === 0) {
+          // remove if present on localForge
+          await localForage.removeItem('backends').catch((err) => {
+            console.log(err);
+          });
+        } else {
+          await localForage.setItem('backends', storedBackends).catch((err) => {
+            console.log(err);
+          });
+        }
       }
       // apply configuration
       loadBackendsConfig();
@@ -85,8 +93,8 @@ function PasswordConfirm(props: {
     if (SSPR !== sspConfigRelay) {
       setSspConfigRelay(SSPR);
     }
-    if (FNC !== fluxNodeConfig) {
-      setFluxNodeConfig(FNC);
+    if (NC !== nodeConfig) {
+      setNodeConfig(NC);
     }
     loadBackendsConfig();
     loadSSPConfig();
@@ -97,8 +105,8 @@ function PasswordConfirm(props: {
     setSspConfigRelay(originalConfig.relay);
   };
 
-  const resetFlux = () => {
-    setFluxNodeConfig(backendsOriginalConfig.flux.node);
+  const resetNodeConfig = () => {
+    setNodeConfig(backendsOriginalConfig[activeChain].node);
   };
 
   return (
@@ -131,15 +139,19 @@ function PasswordConfirm(props: {
             {t('common:reset')}
           </Button>
         </Space.Compact>
-        <h3>{t('home:settings.chain_node_service', { chain: blockchainConfig.name })}</h3>
+        <h3>
+          {t('home:settings.chain_node_service', {
+            chain: blockchainConfig.name,
+          })}
+        </h3>
         <Space.Compact style={{ width: '100%' }}>
           <Input
             size="large"
             placeholder={backendsOriginalConfig[activeChain].node}
-            value={fluxNodeConfig}
-            onChange={(e) => setFluxNodeConfig(e.target.value)}
+            value={nodeConfig}
+            onChange={(e) => setNodeConfig(e.target.value)}
           />
-          <Button type="default" size="large" onClick={resetFlux}>
+          <Button type="default" size="large" onClick={resetNodeConfig}>
             {t('common:reset')}
           </Button>
         </Space.Compact>

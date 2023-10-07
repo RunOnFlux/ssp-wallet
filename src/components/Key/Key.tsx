@@ -38,10 +38,10 @@ function Key(props: {
   const [keyInput, setKeyInput] = useState('');
   const [keyAutomaticInput, setKeyAutomaticInput] = useState('');
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const { xpubKey, xpubWallet, sspWalletIdentity } = useAppSelector(
-    (state) => state.flux,
-  );
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { xpubKey, xpubWallet, sspWalletIdentity } = useAppSelector(
+    (state) => state[activeChain],
+  );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {

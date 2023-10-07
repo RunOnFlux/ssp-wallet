@@ -3,7 +3,8 @@ import { Typography } from 'antd';
 const { Paragraph, Text } = Typography;
 
 function AddressContainer() {
-  const { wallets, walletInUse } = useAppSelector((state) => state.flux);
+  const { activeChain } = useAppSelector((state) => state.sspState);
+  const { wallets, walletInUse } = useAppSelector((state) => state[activeChain]);
 
   return (
     <>

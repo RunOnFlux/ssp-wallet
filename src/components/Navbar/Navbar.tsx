@@ -32,10 +32,10 @@ interface walletOption {
 
 function Navbar() {
   const { t } = useTranslation(['home', 'common']);
-  const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
-    (state) => state.flux,
-  );
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
+    (state) => state[activeChain],
+  );
   const blockchainConfig = blockchains[activeChain];
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
