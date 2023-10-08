@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
-import { useAppSelector, useAppDispatch } from '../../hooks';
+import { useAppSelector } from '../../hooks';
 import { setBalance, setUnconfirmedBalance } from '../../store';
 import { fetchAddressBalance } from '../../lib/balances.ts';
 import SocketListener from '../SocketListener/SocketListener.tsx';
@@ -23,9 +23,10 @@ function Balances() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
   const [fiatRate, setFiatRate] = useState(0);
-  const dispatch = useAppDispatch();
   const { activeChain } = useAppSelector((state) => state.sspState);
-  const { wallets, walletInUse } = useAppSelector((state) => state[activeChain]);
+  const { wallets, walletInUse } = useAppSelector(
+    (state) => state[activeChain],
+  );
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -54,18 +55,8 @@ function Balances() {
         (await localForage.getItem(`balances-${activeChain}-${wInUse}`)) ??
         balancesObject;
       if (balancesWallet) {
-        dispatch(
-          setBalance({
-            wallet: wInUse,
-            data: balancesWallet.confirmed,
-          }),
-        );
-        dispatch(
-          setUnconfirmedBalance({
-            wallet: wInUse,
-            data: balancesWallet.unconfirmed,
-          }),
-        );
+        setBalance(activeChain, wInUse, balancesWallet.confirmed);
+        setUnconfirmedBalance(activeChain, wInUse, balancesWallet.unconfirmed);
       }
     })();
   }, [walletInUse]);
@@ -73,14 +64,12 @@ function Balances() {
   const fetchBalance = () => {
     fetchAddressBalance(wallets[walletInUse].address, activeChain)
       .then(async (balance) => {
-        dispatch(setBalance({ wallet: walletInUse, data: balance.confirmed }));
-        dispatch(
-          setUnconfirmedBalance({
-            wallet: walletInUse,
-            data: balance.unconfirmed,
-          }),
+        setBalance(activeChain, walletInUse, balance.confirmed);
+        setUnconfirmedBalance(activeChain, walletInUse, balance.unconfirmed);
+        await localForage.setItem(
+          `balances-${activeChain}-${walletInUse}`,
+          balance,
         );
-        await localForage.setItem(`balances-${activeChain}-${walletInUse}`, balance);
         console.log(balance);
       })
       .catch((error) => {

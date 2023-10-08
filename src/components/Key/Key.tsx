@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAppSelector } from '../../hooks';
 import { ExclamationCircleFilled } from '@ant-design/icons';
-import { useAppDispatch } from '../../hooks';
 import { setXpubKey } from '../../store';
 import { Modal, QRCode, Button, Input, message, Space, Typography } from 'antd';
 const { Paragraph, Text } = Typography;
@@ -33,7 +32,6 @@ function Key(props: {
   const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { derivationPath = 'xpub-48-19167-0-0', synchronised } = props;
-  const dispatch = useAppDispatch();
   const [isModalKeyOpen, setIsModalKeyOpen] = useState(false);
   const [keyInput, setKeyInput] = useState('');
   const [keyAutomaticInput, setKeyAutomaticInput] = useState('');
@@ -141,7 +139,7 @@ function Key(props: {
       }
       if (!keyValid) return;
       const xpub2 = xpubKeyInput;
-      dispatch(setXpubKey(xpub2));
+      setXpubKey(activeChain, xpub2);
       const fingerprint: string = getFingerprint();
 
       passworderDecrypt(fingerprint, passwordBlob)

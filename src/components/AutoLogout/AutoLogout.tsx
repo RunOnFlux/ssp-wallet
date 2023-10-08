@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { setSSPInitialState, setFluxInitialState, setPasswordBlobInitialState } from '../../store';
+import { setSSPInitialState, setInitialStateForAllChains, setPasswordBlobInitialState } from '../../store';
 
 import { useAppDispatch } from '../../hooks';
 
@@ -88,7 +88,7 @@ function AutoLogout() {
     document.removeEventListener('click', refresh);
     clearTimeout(logoutTimeout);
     dispatch(setSSPInitialState());
-    dispatch(setFluxInitialState());
+    setInitialStateForAllChains();
     dispatch(setPasswordBlobInitialState());
     navigate('/login');
   }

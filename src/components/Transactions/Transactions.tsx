@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import localForage from 'localforage';
 import axios from 'axios';
 import { sspConfig } from '@storage/ssp';
-import { useAppSelector, useAppDispatch } from '../../hooks';
+import { useAppSelector } from '../../hooks';
 import { setTransactions, setBlockheight } from '../../store';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { getBlockheight } from '../../lib/blockheight.ts';
@@ -17,7 +17,6 @@ let refreshInterval: string | number | NodeJS.Timeout | undefined;
 function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
-  const dispatch = useAppDispatch();
   const { sspWalletKeyIdentity, activeChain } = useAppSelector(
     (state) => state.sspState,
   );
@@ -57,7 +56,7 @@ function Transactions() {
         (await localForage.getItem(`transactions-${activeChain}-${wInUse}`)) ??
         [];
       if (txsWallet) {
-        dispatch(setTransactions({ wallet: wInUse, data: txsWallet })) ?? [];
+        setTransactions(activeChain, wInUse, txsWallet);
       }
       getTransactions();
     })();
@@ -72,7 +71,7 @@ function Transactions() {
     const wInUse = walletInUse;
     fetchAddressTransactions(wallets[wInUse].address, activeChain, 0, 10)
       .then(async (txs) => {
-        dispatch(setTransactions({ wallet: wInUse, data: txs }));
+        setTransactions(activeChain, wInUse, txs || []);
         await localForage.setItem(`transactions-${activeChain}-${wInUse}`, txs);
       })
       .catch((error) => {
@@ -82,7 +81,7 @@ function Transactions() {
   const fetchBlockheight = () => {
     getBlockheight(activeChain)
       .then(async (height) => {
-        dispatch(setBlockheight(height));
+        setBlockheight(activeChain, height ?? 0);
         await localForage.setItem(`blockheight-${activeChain}`, height);
       })
       .catch((error) => {

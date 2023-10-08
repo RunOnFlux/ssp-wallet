@@ -27,7 +27,7 @@ import {
   setSSPInitialState,
   setXpubWallet,
   setPasswordBlob,
-  setFluxInitialState,
+  setChainInitialState,
 } from '../../store';
 
 import './Restore.css';
@@ -53,8 +53,11 @@ const { TextArea } = Input;
 // we always use flux as default
 function Restore() {
   const { t } = useTranslation(['cr', 'common']);
-  const blockchainConfig = blockchains.flux;
-  const { wallets } = useAppSelector((state) => state.flux);
+  const { identityChain } = useAppSelector(
+    (state) => state.sspState,
+  );
+  const blockchainConfig = blockchains[identityChain];
+  const { wallets } = useAppSelector((state) => state[identityChain]);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // use secure local storage for storing mnemonic 'walletSeed', 'xpriv-48-slip-0-0', 'xpub-48-slip-0-0' and '2-xpub-48-slip-0-0' (2- as for second key) of together with encryption of browser-passworder
@@ -182,8 +185,8 @@ function Restore() {
           xpubBlob,
         );
         dispatch(setSSPInitialState());
-        dispatch(setFluxInitialState());
-        dispatch(setXpubWallet(xpub));
+        setChainInitialState(identityChain);
+        setXpubWallet(identityChain, xpub);
         if (chrome?.storage?.session) {
           await chrome.storage.session.clear();
           await chrome.storage.session.set({

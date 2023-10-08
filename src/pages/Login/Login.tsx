@@ -3,45 +3,47 @@ import { useNavigate } from 'react-router-dom';
 import { Input, Image, Button, Form, message, Spin } from 'antd';
 import localForage from 'localforage';
 import {
-  setTransactions,
-  setBlockheight,
-  setWalletInUse,
-  setActiveChain,
-} from '../../store';
-import { setBalance, setUnconfirmedBalance, setAddress } from '../../store';
-
-import {
   EyeInvisibleOutlined,
   EyeTwoTone,
   LockOutlined,
 } from '@ant-design/icons';
 import secureLocalStorage from 'react-secure-storage';
 import { useTranslation } from 'react-i18next';
-
-import { useAppDispatch, useAppSelector } from '../../hooks';
-
-import {
-  setXpubWallet,
-  setXpubKey,
-  setXpubKeyIdentity,
-  setXpubWalletIdentity,
-  setPasswordBlob,
-  setSspWalletIdentity,
-} from '../../store';
-
-import './Login.css';
 import {
   decrypt as passworderDecrypt,
   encrypt as passworderEncrypt,
 } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
-import { getFingerprint } from '../../lib/fingerprint';
 
+import { useAppDispatch, useAppSelector } from '../../hooks';
+
+import {
+  setActiveChain,
+  setPasswordBlob,
+  setSspWalletIdentity,
+  setTransactions,
+  setBlockheight,
+  setWalletInUse,
+  setBalance,
+  setUnconfirmedBalance,
+  setAddress,
+  setXpubWallet,
+  setXpubKey,
+  setXpubKeyIdentity,
+  setXpubWalletIdentity,
+} from '../../store';
+
+import { getFingerprint } from '../../lib/fingerprint';
 import { generateIdentityAddress, getScriptType } from '../../lib/wallet.ts';
+
+import { blockchains } from '@storage/blockchains';
+
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
+
 import { transaction, generatedWallets, cryptos } from '../../types';
-import { blockchains } from '@storage/blockchains';
+
+import './Login.css';
 
 interface loginForm {
   password: string;
@@ -168,23 +170,29 @@ function Login() {
     ) {
       passworderDecrypt(password, xpubEncrypted)
         .then(async (xpub) => {
-          const xpubIdentity = await passworderDecrypt(password, xpubEncryptedIdentity);
+          const xpubIdentity = await passworderDecrypt(
+            password,
+            xpubEncryptedIdentity,
+          );
           // set xpubs of chains
           if (typeof xpub === 'string' && typeof xpubIdentity === 'string') {
             console.log(xpub);
-            dispatch(setXpubWallet(xpub));
+            setXpubWallet(activeChain, xpub);
             console.log(xpubIdentity);
-            dispatch(setXpubWalletIdentity(xpub));
+            setXpubWalletIdentity(xpub);
             if (typeof xpub2Encrypted === 'string') {
               const xpub2 = await passworderDecrypt(password, xpub2Encrypted);
               if (typeof xpub2 === 'string') {
-                dispatch(setXpubKey(xpub2));
+                setXpubKey(activeChain, xpub2);
               }
             }
             if (typeof xpub2EncryptedIdentity === 'string') {
-              const xpub2Identity = await passworderDecrypt(password, xpub2EncryptedIdentity);
+              const xpub2Identity = await passworderDecrypt(
+                password,
+                xpub2EncryptedIdentity,
+              );
               if (typeof xpub2Identity === 'string') {
-                dispatch(setXpubKeyIdentity(xpub2Identity));
+                setXpubKeyIdentity(xpub2Identity);
               }
             }
             const fingerprint: string = getFingerprint();
@@ -207,17 +215,12 @@ function Login() {
               (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
             const walletDerivations = Object.keys(generatedWallets);
             walletDerivations.forEach((derivation: string) => {
-              dispatch(
-                setAddress({
-                  wallet: derivation,
-                  data: generatedWallets[derivation],
-                }),
-              );
+              setAddress(activeChain, derivation, generatedWallets[derivation]);
             });
             const walInUse: string =
               (await localForage.getItem(`walletInUse-${activeChain}`)) ??
               '0-0';
-            dispatch(setWalletInUse(walInUse));
+            setWalletInUse(activeChain, walInUse);
             // load txs, balances, settings etc.
             const txsWallet: transaction[] =
               (await localForage.getItem(
@@ -230,26 +233,19 @@ function Login() {
                 `balances-${activeChain}-${walInUse}`,
               )) ?? balancesObject;
             if (txsWallet) {
-              dispatch(
-                setTransactions({ wallet: walInUse, data: txsWallet }),
-              ) ?? [];
+              setTransactions(activeChain, walInUse, txsWallet || []);
             }
             if (balancesWallet) {
-              dispatch(
-                setBalance({
-                  wallet: walInUse,
-                  data: balancesWallet.confirmed,
-                }),
-              );
-              dispatch(
-                setUnconfirmedBalance({
-                  wallet: walInUse,
-                  data: balancesWallet.unconfirmed,
-                }),
+              setBalance(activeChain, walInUse, balancesWallet.confirmed);
+
+              setUnconfirmedBalance(
+                activeChain,
+                walInUse,
+                balancesWallet.unconfirmed,
               );
             }
             if (blockheightChain) {
-              dispatch(setBlockheight(blockheightChain));
+              setBlockheight(activeChain, blockheightChain);
             }
             navigate('/home');
           } else {

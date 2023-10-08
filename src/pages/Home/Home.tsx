@@ -5,7 +5,7 @@ import localForage from 'localforage';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import {
   setSSPInitialState,
-  setFluxInitialState,
+  setInitialStateForAllChains,
   setPasswordBlobInitialState,
   setAddress,
   setRedeemScript,
@@ -33,10 +33,11 @@ function Home() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
-  const { activeChain, identityChain } = useAppSelector((state) => state.sspState);
-  const { xpubKey: xpubKeyIdentity, xpubWallet: xpubWalletIdentity } = useAppSelector(
-    (state) => state[identityChain],
+  const { activeChain, identityChain } = useAppSelector(
+    (state) => state.sspState,
   );
+  const { xpubKey: xpubKeyIdentity, xpubWallet: xpubWalletIdentity } =
+    useAppSelector((state) => state[identityChain]);
   const { xpubKey, xpubWallet, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
@@ -60,10 +61,8 @@ function Home() {
         addressIndex,
         activeChain,
       );
-      dispatch(setAddress({ wallet: walletInUse, data: addrInfo.address }));
-      dispatch(
-        setRedeemScript({ wallet: walletInUse, data: addrInfo.redeemScript }),
-      );
+      setAddress(activeChain, walletInUse, addrInfo.address);
+      setRedeemScript(activeChain, walletInUse, addrInfo.redeemScript);
       // get stored wallets
       void (async function () {
         const generatedWallets: generatedWallets =
@@ -141,7 +140,7 @@ function Home() {
           }
         }
         dispatch(setSSPInitialState());
-        dispatch(setFluxInitialState());
+        setInitialStateForAllChains();
         dispatch(setPasswordBlobInitialState());
         navigate('/login');
       })();

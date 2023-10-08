@@ -5,7 +5,7 @@ import localForage from 'localforage';
 import { useAppDispatch } from '../../hooks';
 import {
   setSSPInitialState,
-  setFluxInitialState,
+  setInitialStateForAllChains,
   setPasswordBlobInitialState,
   setAddress,
   setRedeemScript,
@@ -91,7 +91,7 @@ function Navbar() {
 
   const handleChange = (value: { value: string; label: React.ReactNode }) => {
     console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
-    dispatch(setWalletInUse(value.value));
+    setWalletInUse(activeChain, value.value);
     void (async function () {
       await localForage.setItem(`walletInUse-${activeChain}`, value.value);
     })();
@@ -121,8 +121,8 @@ function Navbar() {
         addressIndex,
         activeChain,
       );
-      dispatch(setAddress({ wallet: path, data: addrInfo.address }));
-      dispatch(setRedeemScript({ wallet: path, data: addrInfo.redeemScript }));
+      setAddress(activeChain, path, addrInfo.address);
+      setRedeemScript(activeChain, path, addrInfo.redeemScript);
       // get stored wallets
       void (async function () {
         const generatedWallets: generatedWallets =
@@ -183,7 +183,7 @@ function Navbar() {
         }
       }
       dispatch(setSSPInitialState());
-      dispatch(setFluxInitialState());
+      setInitialStateForAllChains();
       dispatch(setPasswordBlobInitialState());
       navigate('/login');
     })();
