@@ -43,8 +43,8 @@ function Send() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { activeChain } = useAppSelector((state) => state.sspState);
-  const { sspWalletKeyIdentity, wallets, walletInUse } = useAppSelector(
+  const { activeChain, sspWalletKeyIdentity } = useAppSelector((state) => state.sspState);
+  const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
   const transactions = wallets[walletInUse].transactions;

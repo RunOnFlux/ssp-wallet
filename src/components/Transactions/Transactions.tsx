@@ -18,9 +18,12 @@ function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
   const dispatch = useAppDispatch();
-  const { activeChain } = useAppSelector((state) => state.sspState);
-  const { wallets, walletInUse, blockheight, sspWalletKeyIdentity } =
-    useAppSelector((state) => state[activeChain]);
+  const { sspWalletKeyIdentity, activeChain } = useAppSelector(
+    (state) => state.sspState,
+  );
+  const { wallets, walletInUse, blockheight } = useAppSelector(
+    (state) => state[activeChain],
+  );
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );

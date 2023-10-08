@@ -2,7 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input, Image, Button, Form, message, Spin } from 'antd';
 import localForage from 'localforage';
-import { setTransactions, setBlockheight, setWalletInUse } from '../../store';
+import {
+  setTransactions,
+  setBlockheight,
+  setWalletInUse,
+  setActiveChain,
+} from '../../store';
 import { setBalance, setUnconfirmedBalance, setAddress } from '../../store';
 
 import {
@@ -18,6 +23,8 @@ import { useAppDispatch, useAppSelector } from '../../hooks';
 import {
   setXpubWallet,
   setXpubKey,
+  setXpubKeyIdentity,
+  setXpubWalletIdentity,
   setPasswordBlob,
   setSspWalletIdentity,
 } from '../../store';
@@ -30,10 +37,11 @@ import {
 import { NoticeType } from 'antd/es/message/interface';
 import { getFingerprint } from '../../lib/fingerprint';
 
-import { generateIdentityAddress } from '../../lib/wallet.ts';
+import { generateIdentityAddress, getScriptType } from '../../lib/wallet.ts';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
-import { transaction, generatedWallets } from '../../types';
+import { transaction, generatedWallets, cryptos } from '../../types';
+import { blockchains } from '@storage/blockchains';
 
 interface loginForm {
   password: string;
@@ -58,11 +66,21 @@ function Login() {
   const dispatch = useAppDispatch();
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const { activeChain } = useAppSelector((state) => state.sspState);
+  const { activeChain, identityChain } = useAppSelector(
+    (state) => state.sspState,
+  );
+  const blockchainConfig = blockchains[activeChain];
+  const blockchainConfigIdentity = blockchains[identityChain];
 
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
+    // get activatedChain
+    const activatedChain = secureLocalStorage.getItem('activeChain');
+    if (typeof activatedChain === 'string' && blockchains[activatedChain]) {
+      const aC: keyof cryptos = activatedChain as keyof cryptos;
+      dispatch(setActiveChain(aC));
+    }
     // check if existing user
     const accPresent = secureLocalStorage.getItem('walletSeed');
     // no wallet seed present
@@ -117,45 +135,56 @@ function Login() {
   }, [password]);
 
   const decryptWallet = () => {
-    // we only need xpub for now
-    const xpubEncrypted = secureLocalStorage.getItem('xpub-48-19167-0-0');
-    const xpub2Encrypted = secureLocalStorage.getItem('2-xpub-48-19167-0-0'); // key xpub
-    if (!xpubEncrypted) {
+    // get SSP identity keys
+    const xpubEncryptedIdentity = secureLocalStorage.getItem(
+      `xpub-48-${blockchainConfigIdentity.slip}-0-${getScriptType(
+        blockchainConfigIdentity.scriptType,
+      )}`,
+    );
+    const xpub2EncryptedIdentity = secureLocalStorage.getItem(
+      `2-xpub-48-${blockchainConfigIdentity.slip}-0-${getScriptType(
+        blockchainConfigIdentity.scriptType,
+      )}`,
+    ); // key xpub
+    // we only need xpub for now for chain
+    const xpubEncrypted = secureLocalStorage.getItem(
+      `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+        blockchainConfig.scriptType,
+      )}`,
+    );
+    const xpub2Encrypted = secureLocalStorage.getItem(
+      `2-xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+        blockchainConfig.scriptType,
+      )}`,
+    ); // key xpub
+    if (!xpubEncrypted || !xpubEncryptedIdentity) {
       displayMessage('error', t('login:err_l3'));
       setIsLoading(false);
       return;
     }
-    if (typeof xpubEncrypted === 'string') {
+    if (
+      typeof xpubEncrypted === 'string' &&
+      typeof xpubEncryptedIdentity === 'string'
+    ) {
       passworderDecrypt(password, xpubEncrypted)
         .then(async (xpub) => {
-          // restore stored wallets
-          const generatedWallets: generatedWallets =
-            (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
-          const walletDerivations = Object.keys(generatedWallets);
-          walletDerivations.forEach((derivation: string) => {
-            dispatch(
-              setAddress({
-                wallet: derivation,
-                data: generatedWallets[derivation],
-              }),
-            );
-          });
-          const walInUse: string =
-            (await localForage.getItem(`walletInUse-${activeChain}`)) ?? '0-0';
-          dispatch(setWalletInUse(walInUse));
-          if (typeof xpub === 'string') {
+          const xpubIdentity = await passworderDecrypt(password, xpubEncryptedIdentity);
+          // set xpubs of chains
+          if (typeof xpub === 'string' && typeof xpubIdentity === 'string') {
             console.log(xpub);
             dispatch(setXpubWallet(xpub));
-            // generate ssp wallet identity
-            const generatedSspWalletIdentity = generateIdentityAddress(
-              xpub,
-              activeChain,
-            );
-            dispatch(setSspWalletIdentity(generatedSspWalletIdentity));
+            console.log(xpubIdentity);
+            dispatch(setXpubWalletIdentity(xpub));
             if (typeof xpub2Encrypted === 'string') {
               const xpub2 = await passworderDecrypt(password, xpub2Encrypted);
               if (typeof xpub2 === 'string') {
                 dispatch(setXpubKey(xpub2));
+              }
+            }
+            if (typeof xpub2EncryptedIdentity === 'string') {
+              const xpub2Identity = await passworderDecrypt(password, xpub2EncryptedIdentity);
+              if (typeof xpub2Identity === 'string') {
+                dispatch(setXpubKeyIdentity(xpub2Identity));
               }
             }
             const fingerprint: string = getFingerprint();
@@ -167,19 +196,43 @@ function Login() {
               });
             }
             dispatch(setPasswordBlob(pwBlob));
-            // disaptch decryption of xpub of key 2-xpub-48-19167-0-0 if exists, if not, navigate to Key
+            // generate ssp wallet identity
+            const generatedSspWalletIdentity = generateIdentityAddress(
+              xpubIdentity,
+              identityChain,
+            );
+            dispatch(setSspWalletIdentity(generatedSspWalletIdentity));
+            // restore stored wallets
+            const generatedWallets: generatedWallets =
+              (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
+            const walletDerivations = Object.keys(generatedWallets);
+            walletDerivations.forEach((derivation: string) => {
+              dispatch(
+                setAddress({
+                  wallet: derivation,
+                  data: generatedWallets[derivation],
+                }),
+              );
+            });
+            const walInUse: string =
+              (await localForage.getItem(`walletInUse-${activeChain}`)) ??
+              '0-0';
+            dispatch(setWalletInUse(walInUse));
             // load txs, balances, settings etc.
             const txsWallet: transaction[] =
-              (await localForage.getItem(`transactions-${activeChain}-${walInUse}`)) ??
-              [];
+              (await localForage.getItem(
+                `transactions-${activeChain}-${walInUse}`,
+              )) ?? [];
             const blockheightChain: number =
               (await localForage.getItem(`blockheight-${activeChain}`)) ?? 0;
             const balancesWallet: balancesObj =
-              (await localForage.getItem(`balances-${activeChain}-${walInUse}`)) ??
-              balancesObject;
+              (await localForage.getItem(
+                `balances-${activeChain}-${walInUse}`,
+              )) ?? balancesObject;
             if (txsWallet) {
-              dispatch(setTransactions({ wallet: walInUse, data: txsWallet })) ??
-                [];
+              dispatch(
+                setTransactions({ wallet: walInUse, data: txsWallet }),
+              ) ?? [];
             }
             if (balancesWallet) {
               dispatch(

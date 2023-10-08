@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { setFluxInitialState, setPasswordBlobInitialState } from '../../store';
+import { setSSPInitialState, setFluxInitialState, setPasswordBlobInitialState } from '../../store';
 
 import { useAppDispatch } from '../../hooks';
 
@@ -87,6 +87,7 @@ function AutoLogout() {
   const continueLogout = () => {
     document.removeEventListener('click', refresh);
     clearTimeout(logoutTimeout);
+    dispatch(setSSPInitialState());
     dispatch(setFluxInitialState());
     dispatch(setPasswordBlobInitialState());
     navigate('/login');

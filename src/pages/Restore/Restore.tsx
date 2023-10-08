@@ -24,6 +24,7 @@ import secureLocalStorage from 'react-secure-storage';
 import { useAppDispatch } from '../../hooks';
 
 import {
+  setSSPInitialState,
   setXpubWallet,
   setPasswordBlob,
   setFluxInitialState,
@@ -180,6 +181,7 @@ function Restore() {
           )}`,
           xpubBlob,
         );
+        dispatch(setSSPInitialState());
         dispatch(setFluxInitialState());
         dispatch(setXpubWallet(xpub));
         if (chrome?.storage?.session) {

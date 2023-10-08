@@ -10,8 +10,6 @@ interface FluxState {
   xpubWallet: string;
   xpubKey: string;
   wallets: wallets;
-  sspWalletKeyIdentity: string;
-  sspWalletIdentity: string;
   blockheight: number;
   walletInUse: string;
 }
@@ -20,8 +18,6 @@ const initialStateFlux: FluxState = {
   xpubWallet: '',
   xpubKey: '',
   wallets: {},
-  sspWalletKeyIdentity: '',
-  sspWalletIdentity: '',
   blockheight: 0,
   walletInUse: '0-0',
 };
@@ -39,13 +35,17 @@ const initialStatePasswordBlob = {
 };
 
 interface sspState {
+  sspWalletKeyIdentity: string;
+  sspWalletIdentity: string;
+  identityChain: 'flux';
   activeChain: keyof cryptos;
-  kappa: string;
 }
 
 const initialSspState: sspState = {
+  sspWalletKeyIdentity: '',
+  sspWalletIdentity: '',
+  identityChain: 'flux',
   activeChain: 'flux',
-  kappa: 'asdasdasd',
 };
 
 interface RatesState {
@@ -149,6 +149,12 @@ const fluxSlice = createSlice({
     setXpubKey: (state, action: PayloadAction<string>) => {
       state.xpubKey = action.payload;
     },
+    setXpubWalletIdentity: (state, action: PayloadAction<string>) => {
+      state.xpubWallet = action.payload;
+    },
+    setXpubKeyIdentity: (state, action: PayloadAction<string>) => {
+      state.xpubKey = action.payload;
+    },
     setBalance: (
       state,
       action: PayloadAction<{ wallet: string; data: string }>,
@@ -177,12 +183,6 @@ const fluxSlice = createSlice({
       ] || { ...initialWalletState };
       state.wallets[action.payload.wallet].transactions = action.payload.data;
     },
-    setSspWalletKeyIdentity: (state, action: PayloadAction<string>) => {
-      state.sspWalletKeyIdentity = action.payload;
-    },
-    setSspWalletIdentity: (state, action: PayloadAction<string>) => {
-      state.sspWalletIdentity = action.payload;
-    },
     setBlockheight: (state, action: PayloadAction<number>) => {
       state.blockheight = action.payload;
     },
@@ -193,8 +193,6 @@ const fluxSlice = createSlice({
       state.walletInUse = action.payload;
     },
     setFluxInitialState: (state) => {
-      state.sspWalletKeyIdentity = '';
-      state.sspWalletIdentity = '';
       state.xpubWallet = '';
       state.xpubKey = '';
       state.wallets = {};
@@ -221,8 +219,19 @@ const sspStateSlice = createSlice({
   name: 'sspState',
   initialState: initialSspState,
   reducers: {
+    setSspWalletKeyIdentity: (state, action: PayloadAction<string>) => {
+      state.sspWalletKeyIdentity = action.payload;
+    },
+    setSspWalletIdentity: (state, action: PayloadAction<string>) => {
+      state.sspWalletIdentity = action.payload;
+    },
     setActiveChain: (state, action: PayloadAction<keyof cryptos>) => {
       state.activeChain = action.payload;
+    },
+    setSSPInitialState: (state) => {
+      state.sspWalletKeyIdentity = '';
+      state.sspWalletIdentity = '';
+      state.activeChain = 'flux';
     },
   },
 });
@@ -232,12 +241,12 @@ export const {
   setRedeemScript,
   setXpubWallet,
   setXpubKey,
+  setXpubWalletIdentity,
+  setXpubKeyIdentity,
   setFluxInitialState,
   setBalance,
   setUnconfirmedBalance,
   setTransactions,
-  setSspWalletKeyIdentity,
-  setSspWalletIdentity,
   setBlockheight,
   setWalletInUse,
 } = fluxSlice.actions;
@@ -247,7 +256,12 @@ export const { setPasswordBlob, setPasswordBlobInitialState } =
 
 export const { setCryptoRates, setFiatRates } = fiatCryptoRatesSlice.actions;
 
-export const { setActiveChain } = sspStateSlice.actions;
+export const {
+  setSSPInitialState,
+  setSspWalletKeyIdentity,
+  setSspWalletIdentity,
+  setActiveChain,
+} = sspStateSlice.actions;
 
 const reducers = combineReducers({
   flux: fluxSlice.reducer,

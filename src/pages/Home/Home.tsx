@@ -4,6 +4,7 @@ import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import {
+  setSSPInitialState,
   setFluxInitialState,
   setPasswordBlobInitialState,
   setAddress,
@@ -32,7 +33,10 @@ function Home() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(true);
-  const { activeChain } = useAppSelector((state) => state.sspState);
+  const { activeChain, identityChain } = useAppSelector((state) => state.sspState);
+  const { xpubKey: xpubKeyIdentity, xpubWallet: xpubWalletIdentity } = useAppSelector(
+    (state) => state[identityChain],
+  );
   const { xpubKey, xpubWallet, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
@@ -74,20 +78,20 @@ function Home() {
     }
   };
 
-  const generateSSPIdentities = () => {
+  const generateSSPIdentity = () => {
     try {
       // generate ssp wallet identity
       const generatedSspWalletIdentity = generateIdentityAddress(
-        xpubWallet,
-        activeChain,
+        xpubWalletIdentity,
+        identityChain,
       );
       dispatch(setSspWalletIdentity(generatedSspWalletIdentity));
       const generatedSspWalletKeyIdentity = generateMultisigAddress(
-        xpubWallet,
-        xpubKey,
+        xpubWalletIdentity,
+        xpubKeyIdentity,
         10,
         0,
-        activeChain,
+        identityChain,
       );
       dispatch(setSspWalletKeyIdentity(generatedSspWalletKeyIdentity.address));
     } catch (error) {
@@ -121,7 +125,7 @@ function Home() {
     if (!xpubKey) return;
     console.log('Key synchronised.');
     generateAddress();
-    generateSSPIdentities();
+    generateSSPIdentity();
     setIsLoading(false);
   }, [xpubKey]);
 
@@ -136,6 +140,7 @@ function Home() {
             console.log(error);
           }
         }
+        dispatch(setSSPInitialState());
         dispatch(setFluxInitialState());
         dispatch(setPasswordBlobInitialState());
         navigate('/login');

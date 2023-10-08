@@ -4,6 +4,7 @@ import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import { useAppDispatch } from '../../hooks';
 import {
+  setSSPInitialState,
   setFluxInitialState,
   setPasswordBlobInitialState,
   setAddress,
@@ -181,6 +182,7 @@ function Navbar() {
           console.log(error);
         }
       }
+      dispatch(setSSPInitialState());
       dispatch(setFluxInitialState());
       dispatch(setPasswordBlobInitialState());
       navigate('/login');
