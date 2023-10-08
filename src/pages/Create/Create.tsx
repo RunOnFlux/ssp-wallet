@@ -21,7 +21,7 @@ import {
 } from '@ant-design/icons';
 import secureLocalStorage from 'react-secure-storage';
 
-import { useAppDispatch } from '../../hooks';
+import { useAppDispatch, useAppSelector } from '../../hooks';
 
 import { setXpubWallet, setPasswordBlob } from '../../store';
 
@@ -48,6 +48,9 @@ interface passwordForm {
 function Create() {
   const blockchainConfig = blockchains.flux;
   const { t } = useTranslation(['cr', 'common']);
+  const { activeChain } = useAppSelector(
+    (state) => state.sspState,
+  );
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -144,8 +147,20 @@ function Create() {
       .then(async (blob) => {
         secureLocalStorage.setItem('walletSeed', blob);
         // generate master xpriv for flux - default chain
-        const xpriv = getMasterXpriv(mnemonicPhrase, 48, blockchainConfig.slip, 0, blockchainConfig.scriptType);
-        const xpub = getMasterXpub(mnemonicPhrase, 48, blockchainConfig.slip, 0, blockchainConfig.scriptType);
+        const xpriv = getMasterXpriv(
+          mnemonicPhrase,
+          48,
+          blockchainConfig.slip,
+          0,
+          blockchainConfig.scriptType,
+        );
+        const xpub = getMasterXpub(
+          mnemonicPhrase,
+          48,
+          blockchainConfig.slip,
+          0,
+          blockchainConfig.scriptType,
+        );
         const xprivBlob = await passworderEncrypt(password, xpriv);
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();
@@ -162,7 +177,7 @@ function Create() {
           )}`,
           xpubBlob,
         );
-        dispatch(setXpubWallet(xpub));
+        setXpubWallet(activeChain, xpub);
         if (chrome?.storage?.session) {
           await chrome.storage.session.clear();
           await chrome.storage.session.set({
