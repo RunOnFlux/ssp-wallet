@@ -21,6 +21,7 @@ export function loadBackendsConfig() {
 
 loadBackendsConfig();
 
+// *** BACKENDS ***
 const flux = {
   node: 'explorer.runonflux.io',
 };

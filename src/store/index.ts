@@ -6,13 +6,15 @@ import {
 } from '@reduxjs/toolkit';
 import { cryptos, currency, transaction } from '../types';
 
+// ********** Import chains **********
 import flux from './flux';
-import fluxTestnet from './flux';
+import fluxTestnet from './fluxTestnet';
 
 const chains = {
   flux,
   fluxTestnet,
 };
+// ********** Import chains **********
 
 const initialStatePasswordBlob = {
   passwordBlob: '',
