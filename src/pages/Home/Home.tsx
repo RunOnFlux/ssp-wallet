@@ -122,13 +122,13 @@ function Home() {
 
   useEffect(() => {
     if (!xpubKeyIdentity) return;
-    console.log('Key synchronised.');
+    console.log('Key of Identity synchronised.');
     generateSSPIdentity();
   }, [xpubKeyIdentity]);
 
   useEffect(() => {
     if (!xpubKey) return;
-    console.log('Key synchronised.');
+    console.log('Key of Chain synchronised.');
     generateAddress();
     setIsLoading(false);
   }, [xpubKey]);

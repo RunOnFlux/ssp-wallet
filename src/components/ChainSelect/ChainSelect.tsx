@@ -284,6 +284,7 @@ function ChainSelect(props: {
         // lastly we set new active chain
         dispatch(setActiveChain(chainToSwitch));
         await localForage.setItem('activeChain', chainToSwitch);
+        setChainToSwitch('');
       } catch (error) {
         console.log(error);
         displayMessage('error', t('home:chainSelect.unable_switch_chain'));

@@ -1,44 +1,47 @@
-import { useState, useEffect, useRef } from 'react';
-import { useAppSelector } from '../../hooks';
+import { useState, useEffect } from 'react';
 import { ExclamationCircleFilled } from '@ant-design/icons';
-import { setXpubKey } from '../../store';
+import { useTranslation } from 'react-i18next';
+import { blockchains } from '@storage/blockchains';
+import localForage from 'localforage';
 import { Modal, QRCode, Button, Input, message, Space, Typography } from 'antd';
 const { Paragraph, Text } = Typography;
 import { NoticeType } from 'antd/es/message/interface';
+import secureLocalStorage from 'react-secure-storage';
+import axios from 'axios';
+
+import './Key.css';
+
 import {
   decrypt as passworderDecrypt,
   encrypt as passworderEncrypt,
 } from '@metamask/browser-passworder';
 import { getFingerprint } from '../../lib/fingerprint';
+import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
+import { useAppSelector, useAppDispatch } from '../../hooks';
+import { syncSSPRelay } from '../../types';
+import { setXpubKey, setActiveChain } from '../../store';
+
+import { sspConfig } from '@storage/ssp';
+
 const { TextArea } = Input;
 const { confirm } = Modal;
-import './Key.css';
-import secureLocalStorage from 'react-secure-storage';
-import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
-import axios from 'axios';
-import { syncSSPRelay } from '../../types';
-import { sspConfig } from '@storage/ssp';
-import { useTranslation } from 'react-i18next';
-import { blockchains } from '@storage/blockchains';
 
 const xpubRegex = /^(xpub[1-9A-HJ-NP-Za-km-z]{79,108})$/; // /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/; later
 
 let pollingSyncInterval: string | number | NodeJS.Timer | undefined;
 let syncRunning = false;
 
-function Key(props: {
-  synchronised: (status: boolean) => void;
-}) {
+function Key(props: { synchronised: (status: boolean) => void }) {
   const { t } = useTranslation(['home', 'common']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { synchronised } = props;
   const [isModalKeyOpen, setIsModalKeyOpen] = useState(false);
   const [keyInput, setKeyInput] = useState('');
   const [keyAutomaticInput, setKeyAutomaticInput] = useState('');
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const { sspWalletIdentity, activeChain } = useAppSelector(
+  const { sspWalletIdentity, activeChain, identityChain } = useAppSelector(
     (state) => state.sspState,
   );
+  const dispatch = useAppDispatch();
   const { xpubKey, xpubWallet } = useAppSelector((state) => state[activeChain]);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [messageApi, contextHolder] = message.useMessage();
@@ -46,6 +49,7 @@ function Key(props: {
   const derivationPath = `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
     blockchainConfig.scriptType,
   )}`;
+  const isIdentityChain = activeChain === identityChain;
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
@@ -54,22 +58,22 @@ function Key(props: {
   };
   useEffect(() => {
     console.log('Hello');
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
-    // check if we have 2-xpub-48-19167-0-0
+    // check if we have 2-xpub-48-slip-0-ScriptType
     if (!xpubKey) {
       // no xpubKey, show modal of Key
       setIsModalKeyOpen(true);
       // start polling
       checkSynced();
+      if (pollingSyncInterval) {
+        clearInterval(pollingSyncInterval);
+      }
       pollingSyncInterval = setInterval(() => {
         checkSynced();
       }, 1000);
     }
-  });
+  }, [xpubWallet]);
 
   const checkSynced = () => {
-    // check if we have 2-xpub-48-19167-0-0
     if (!syncRunning && sspWalletIdentity) {
       axios
         .get<syncSSPRelay>(
@@ -123,13 +127,23 @@ function Key(props: {
     // display dialog awaiting synchronisation. This is automatic stuff
     console.log(keyAutomaticInput);
     if (!keyInput && !keyAutomaticInput) {
-      displayMessage('warning', t('home:key.warn_await_sync'));
+      displayMessage(
+        'warning',
+        identityChain
+          ? t('home:key.warn_await_sync')
+          : t('home:key.warn_await_sync_chain', { chain: blockchainConfig.name }),
+      );
       return;
     }
     const xpubKeyInput = keyInput || keyAutomaticInput;
     // validate xpub key is correct
     if (xpubKeyInput.trim() === xpubWallet.trim()) {
-      displayMessage('error', t('home:key.err_sync_1'));
+      displayMessage(
+        'error',
+        identityChain
+          ? t('home:key.err_sync_1')
+          : t('home:key.err_sync_1_chain', { chain: blockchainConfig.name }),
+      );
       return;
     }
     if (xpubRegex.test(xpubKeyInput)) {
@@ -182,13 +196,22 @@ function Key(props: {
     showConfirmCancelModalKey();
   };
 
-  const logout = () => {
+  const logoutOrSwitchChain = () => {
     try {
       setKeyInputVisible(false);
       setKeyInput('');
       setKeyAutomaticInput('');
-      // tell parent of failiure to logout
-      synchronised(false);
+      if (activeChain !== identityChain) {
+        dispatch(setActiveChain(identityChain));
+        void (async function () {
+          await localForage.setItem('activeChain', identityChain);
+        })();
+        setIsModalKeyOpen(false);
+        synchronised(true);
+      } else {
+        // tell parent of failiure to logout
+        synchronised(false);
+      }
       if (pollingSyncInterval) {
         clearInterval(pollingSyncInterval);
       }
@@ -199,13 +222,17 @@ function Key(props: {
 
   const showConfirmCancelModalKey = () => {
     confirm({
-      title: t('home:key.cancel_sync_q'),
+      title: isIdentityChain
+        ? t('home:key.cancel_sync_q')
+        : t('home:key.cancel_sync_q_chain', { chain: blockchainConfig.name }),
       icon: <ExclamationCircleFilled />,
       okText: t('home:key.cancel_sync'),
       cancelText: t('home:key.back_to_sync'),
-      content: t('home:key.sync_info_content'),
+      content: isIdentityChain
+        ? t('home:key.sync_info_content') 
+        : t('home:key.sync_info_content_chain', { chain: blockchainConfig.name }),
       onOk() {
-        logout();
+        logoutOrSwitchChain();
       },
       onCancel() {
         console.log('Cancel, just hide confirmation dialog');
@@ -217,30 +244,38 @@ function Key(props: {
     <>
       {contextHolder}
       <Modal
-        title={t('home:key.dual_factor_key')}
+        title={isIdentityChain ? t('home:key.dual_factor_key') : t('home:key.dual_factor_key_chain', { chain: blockchainConfig.name })}
         open={isModalKeyOpen}
         onOk={handleOkModalKey}
         onCancel={handleCancelModalKey}
-        okText={t('home:key.sync_key')}
+        okText={
+          isIdentityChain
+            ? t('home:key.sync_key')
+            : t('home:key.sync_key_chain', { chain: blockchainConfig.name })
+        }
         style={{ textAlign: 'center', top: 60 }}
       >
         <p>{t('home:key.sync_info_1')}</p>
-        <b>{t('home:key.sync_info_2')}</b>
+        <b>
+          {isIdentityChain
+            ? t('home:key.sync_info_2')
+            : t('home:key.sync_info_2_chain', { chain: blockchainConfig.name })}
+        </b>
         <br />
         <br />
         <Space direction="vertical" size="small" style={{ marginBottom: 25 }}>
           <QRCode
             errorLevel="H"
-            value={xpubWallet}
+            value={isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}`}
             icon="/ssp-logo.svg"
             size={256}
             style={{ margin: '0 auto' }}
           />
           <Paragraph
-            copyable={{ text: xpubWallet }}
+            copyable={{ text: isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}` }}
             className="copyableAddress"
           >
-            <Text>{xpubWallet}</Text>
+            <Text>{isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}`}</Text>
           </Paragraph>
         </Space>
         {!keyInputVisible && (
