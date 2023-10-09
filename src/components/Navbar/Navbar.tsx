@@ -47,7 +47,7 @@ function Navbar() {
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [selectChainOpen, setSelectChainOpen] = useState(false);
-  const [defaultWallet] = useState<walletOption>({
+  const [defaultWallet, setDefaultValue] = useState<walletOption>({
     value: walletInUse,
     label: t('home:navbar.chain_wallet', {
       chain: blockchainConfig.name,
@@ -64,6 +64,19 @@ function Navbar() {
       content,
     });
   };
+
+  useEffect(() => {
+    const defValue = {
+      value: walletInUse,
+      label: t('home:navbar.chain_wallet', {
+        chain: blockchainConfig.name,
+        wallet:
+          (+walletInUse.split('-')[0] === 1 ? 'Change ' : 'Wallet ') +
+          (+walletInUse.split('-')[1] + 1),
+      }),
+    };
+    setDefaultValue(defValue);
+  }, [activeChain]);
 
   useEffect(() => {
     const wItems: walletOption[] = [];
@@ -94,7 +107,7 @@ function Navbar() {
       return 0;
     });
     setWalletItems(wItems);
-  }, [wallets]);
+  }, [wallets, activeChain]);
 
   const handleChange = (value: { value: string; label: React.ReactNode }) => {
     console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
@@ -267,7 +280,7 @@ function Navbar() {
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
             <Select
               labelInValue
-              defaultValue={defaultWallet}
+              value={defaultWallet}
               style={{ width: 200 }}
               onChange={handleChange}
               options={walletItems}
@@ -325,10 +338,7 @@ function Navbar() {
         open={openSettingsDialogVisilbe}
         openAction={settingsDialogAction}
       />
-      <ChainSelect
-        open={selectChainOpen}
-        openAction={selectChainAction}
-      />
+      <ChainSelect open={selectChainOpen} openAction={selectChainAction} />
       <AutoLogout />
     </>
   );
