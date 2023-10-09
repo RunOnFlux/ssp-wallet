@@ -334,6 +334,8 @@ function Send() {
         open={openConfirmTx}
         openAction={confirmTxAction}
         txHex={txHex}
+        chain={activeChain}
+        wallet={walletInUse}
       />
       <TxSent
         open={openTxSent}

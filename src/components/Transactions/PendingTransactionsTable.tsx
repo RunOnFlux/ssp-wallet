@@ -24,6 +24,7 @@ function PendingTransactionsTable(props: {
   const [txHex, setTxHex] = useState('');
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { walletInUse } = useAppSelector((state) => state[activeChain]);
   const blockchainConfig = blockchains[activeChain];
 
   useEffect(() => {
@@ -130,6 +131,8 @@ function PendingTransactionsTable(props: {
         open={openConfirmTx}
         openAction={confirmTxAction}
         txHex={txHex}
+        chain={activeChain}
+        wallet={walletInUse}
       />
     </>
   );

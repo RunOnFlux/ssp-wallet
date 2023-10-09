@@ -5,10 +5,12 @@ const { Paragraph, Text } = Typography;
 function ConfirmTxKey(props: {
   open: boolean;
   txHex: string;
+  chain: string;
+  wallet: string;
   openAction: (status: boolean) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const { open, openAction, txHex } = props;
+  const { open, openAction, txHex, chain, wallet } = props;
 
   const handleOk = () => {
     openAction(false);
@@ -38,13 +40,16 @@ function ConfirmTxKey(props: {
             >
               <QRCode
                 errorLevel="H"
-                value={txHex}
+                value={`${chain}:${wallet}:${txHex}`}
                 icon="/ssp-logo.svg"
                 size={256}
                 style={{ margin: '0 auto' }}
               />
-              <Paragraph copyable={{ text: txHex }} className="copyableAddress">
-                <Text>{txHex}</Text>
+              <Paragraph
+                copyable={{ text: `${chain}:${wallet}:${txHex}` }}
+                className="copyableAddress"
+              >
+                <Text>{`${chain}:${wallet}:${txHex}`}</Text>
               </Paragraph>
             </Space>
           </>
@@ -57,8 +62,11 @@ function ConfirmTxKey(props: {
               size="large"
               style={{ marginBottom: 15 }}
             >
-              <Paragraph copyable={{ text: txHex }} className="copyableAddress">
-                <Text>{txHex}</Text>
+              <Paragraph
+                copyable={{ text: `${chain}:${wallet}:${txHex}` }}
+                className="copyableAddress"
+              >
+                <Text>{`${chain}:${wallet}:${txHex}`}</Text>
               </Paragraph>
             </Space>
           </>
