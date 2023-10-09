@@ -12,12 +12,18 @@ import {
   setWalletInUse,
 } from '../../store';
 import { Row, Col, Image, Menu, Select, Divider, Button, message } from 'antd';
-import { LockOutlined, SettingOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  LockOutlined,
+  SettingOutlined,
+  PlusOutlined,
+  MoreOutlined,
+} from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import './Navbar.css';
 import SspWalletDetails from '../SspWalletDetails/SspWalletDetails';
 import AddressDetails from '../AddressDetails/AddressDetails';
 import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
+import ChainSelect from '../ChainSelect/ChainSelect';
 import Settings from '../Settings/Settings';
 import AutoLogout from '../AutoLogout/AutoLogout';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +46,7 @@ function Navbar() {
   const blockchainConfig = blockchains[activeChain];
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
+  const [selectChainOpen, setSelectChainOpen] = useState(false);
   const [defaultWallet] = useState<walletOption>({
     value: walletInUse,
     label: t('home:navbar.chain_wallet', {
@@ -149,6 +156,9 @@ function Navbar() {
   const settingsDialogAction = (status: boolean) => {
     setOpenSettingsDialogVisible(status);
   };
+  const selectChainAction = (status: boolean) => {
+    setSelectChainOpen(status);
+  };
   const [passwordConfirmDialogVisilbe, setPasswordConfirmDialogVisible] =
     useState(false);
   const passwordConfirmDialogAction = (status: boolean) => {
@@ -187,6 +197,10 @@ function Navbar() {
       dispatch(setPasswordBlobInitialState());
       navigate('/login');
     })();
+  };
+
+  const selectChain = () => {
+    setSelectChainOpen(true);
   };
   const menuItems: MenuProps['items'] = [
     {
@@ -241,8 +255,13 @@ function Navbar() {
             <Image
               height={30}
               preview={false}
-              src="/ssp-logo.svg"
-              onClick={() => navigate('/home')}
+              src={blockchainConfig.logo}
+              onClick={() => selectChain()}
+              style={{ cursor: 'pointer' }}
+            />
+            <MoreOutlined
+              style={{ position: 'absolute', top: '10px', fontSize: '14px' }}
+              onClick={() => selectChain()}
             />
           </Col>
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
@@ -305,6 +324,10 @@ function Navbar() {
       <Settings
         open={openSettingsDialogVisilbe}
         openAction={settingsDialogAction}
+      />
+      <ChainSelect
+        open={selectChainOpen}
+        openAction={selectChainAction}
       />
       <AutoLogout />
     </>

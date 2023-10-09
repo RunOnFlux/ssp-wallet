@@ -77,21 +77,21 @@ function Login() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    // get activatedChain
-    const activatedChain = secureLocalStorage.getItem('activeChain');
-    if (typeof activatedChain === 'string' && blockchains[activatedChain]) {
-      const aC: keyof cryptos = activatedChain as keyof cryptos;
-      dispatch(setActiveChain(aC));
-    }
-    // check if existing user
-    const accPresent = secureLocalStorage.getItem('walletSeed');
-    // no wallet seed present
-    if (!accPresent) {
-      navigate('/welcome');
-      return;
-    }
-    // check if we have password
     void (async function () {
+      // get activatedChain
+      const activatedChain = await localForage.getItem('activeChain');
+      if (activatedChain && typeof activatedChain === 'string' && blockchains[activatedChain]) {
+        const aC: keyof cryptos = activatedChain as keyof cryptos;
+        dispatch(setActiveChain(aC));
+      }
+      // check if existing user
+      const accPresent = secureLocalStorage.getItem('walletSeed');
+      // no wallet seed present
+      if (!accPresent) {
+        navigate('/welcome');
+        return;
+      }
+      // check if we have password
       if (chrome?.storage?.session) {
         try {
           // if different browser we will need to be inputting password every time

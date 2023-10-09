@@ -16,5 +16,6 @@
   "save": "Save",
   "confirm": "Confirm",
   "ask_me_later": "Ask me later",
-  "reset": "Reset"
+  "reset": "Reset",
+  "close": "Close"
 }

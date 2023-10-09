@@ -14,11 +14,12 @@ const { TextArea } = Input;
 const { confirm } = Modal;
 import './Key.css';
 import secureLocalStorage from 'react-secure-storage';
-import { generateMultisigAddress } from '../../lib/wallet.ts';
+import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
 import axios from 'axios';
 import { syncSSPRelay } from '../../types';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
+import { blockchains } from '@storage/blockchains';
 
 const xpubRegex = /^(xpub[1-9A-HJ-NP-Za-km-z]{79,108})$/; // /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/; later
 
@@ -26,22 +27,25 @@ let pollingSyncInterval: string | number | NodeJS.Timer | undefined;
 let syncRunning = false;
 
 function Key(props: {
-  derivationPath?: string;
   synchronised: (status: boolean) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
-  const { derivationPath = 'xpub-48-19167-0-0', synchronised } = props;
+  const { synchronised } = props;
   const [isModalKeyOpen, setIsModalKeyOpen] = useState(false);
   const [keyInput, setKeyInput] = useState('');
   const [keyAutomaticInput, setKeyAutomaticInput] = useState('');
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const { sspWalletIdentity, activeChain } = useAppSelector((state) => state.sspState);
-  const { xpubKey, xpubWallet } = useAppSelector(
-    (state) => state[activeChain],
+  const { sspWalletIdentity, activeChain } = useAppSelector(
+    (state) => state.sspState,
   );
+  const { xpubKey, xpubWallet } = useAppSelector((state) => state[activeChain]);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [messageApi, contextHolder] = message.useMessage();
+  const blockchainConfig = blockchains[activeChain];
+  const derivationPath = `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+    blockchainConfig.scriptType,
+  )}`;
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
@@ -49,6 +53,7 @@ function Key(props: {
     });
   };
   useEffect(() => {
+    console.log('Hello');
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     // check if we have 2-xpub-48-19167-0-0
@@ -264,9 +269,5 @@ function Key(props: {
     </>
   );
 }
-
-Key.defaultProps = {
-  derivationPath: 'xpub-48-19167-0-0',
-};
 
 export default Key;

@@ -121,10 +121,15 @@ function Home() {
   }, [walletInUse]);
 
   useEffect(() => {
+    if (!xpubKeyIdentity) return;
+    console.log('Key synchronised.');
+    generateSSPIdentity();
+  }, [xpubKeyIdentity]);
+
+  useEffect(() => {
     if (!xpubKey) return;
     console.log('Key synchronised.');
     generateAddress();
-    generateSSPIdentity();
     setIsLoading(false);
   }, [xpubKey]);
 
@@ -162,7 +167,7 @@ function Home() {
           </Space>
         </>
       )}
-      <Key derivationPath="xpub-48-19167-0-0" synchronised={keySynchronised} />
+      <Key synchronised={keySynchronised} />
     </>
   );
 }

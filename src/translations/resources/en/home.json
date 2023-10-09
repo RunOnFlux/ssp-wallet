@@ -63,7 +63,8 @@
     "chain_wallet": "{{chain}} {{wallet}}",
     "ssp_details": "SSP Wallet Details",
     "addr_details": "Address Details",
-    "generate_new_wallet": "Generate New Wallet"
+    "generate_new_wallet": "Generate New Wallet",
+    "switch_chain": "Switch Chain"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Password is not valid. Please try again.",
@@ -90,5 +91,9 @@
     "sync_info_2": "Scan the following QR code to sync your SSP Wallet with your SSP Key.",
     "issues_syncing": "Issues syncing? Manual Input",
     "input_xpub": "Input Extended Public Key {{path}} of SSP Key here"
+  },
+  "chainSelect": {
+    "select_chain": "Select Chain",
+    "unable_switch_chain": "Unable to switch chain."
   }
 }
