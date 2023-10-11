@@ -9,10 +9,12 @@ import { cryptos, currency, transaction } from '../types';
 // ********** Import chains **********
 import flux from './flux';
 import fluxTestnet from './fluxTestnet';
+import rvn from './rvn';
 
 const chains = {
   flux,
   fluxTestnet,
+  rvn,
 };
 // ********** Import chains **********
 
@@ -43,6 +45,7 @@ const initialRatesState: RatesState = {
   cryptoRates: {
     flux: 0,
     fluxTestnet: 0,
+    rvn: 0,
   },
   fiatRates: {
     EUR: 0,
@@ -160,6 +163,7 @@ const reducers = combineReducers({
   sspState: sspStateSlice.reducer,
   flux: flux.reducer,
   fluxTestnet: fluxTestnet.reducer,
+  rvn: rvn.reducer,
 });
 
 export const store = configureStore({

@@ -198,6 +198,7 @@ export interface currency {
 export interface cryptos {
   flux: number;
   fluxTestnet: number;
+  rvn: number;
 }
 
 export interface currencySSPRelay {

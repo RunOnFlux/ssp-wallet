@@ -28,11 +28,15 @@ const flux = {
 const fluxTestnet = {
   node: 'testnet.runonflux.io',
 };
+const rvn = {
+  node: 'api.ravencoin.org',
+};
 
 export function backends() {
   return {
     flux: localForgeBackends?.flux || flux,
     fluxTestnet: localForgeBackends?.fluxTestnet || fluxTestnet,
+    rvn: localForgeBackends?.rvn || rvn,
   };
 }
 
@@ -40,5 +44,6 @@ export function backendsOriginal() {
   return {
     flux,
     fluxTestnet,
+    rvn,
   };
 }
