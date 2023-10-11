@@ -46,11 +46,11 @@ interface passwordForm {
 
 // we always use flux
 function Create() {
-  const blockchainConfig = blockchains.flux;
   const { t } = useTranslation(['cr', 'common']);
-  const { activeChain } = useAppSelector(
+  const { identityChain } = useAppSelector(
     (state) => state.sspState,
   );
+  const blockchainConfig = blockchains[identityChain];
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -153,6 +153,7 @@ function Create() {
           blockchainConfig.slip,
           0,
           blockchainConfig.scriptType,
+          identityChain,
         );
         const xpub = getMasterXpub(
           mnemonicPhrase,
@@ -160,6 +161,7 @@ function Create() {
           blockchainConfig.slip,
           0,
           blockchainConfig.scriptType,
+          identityChain,
         );
         const xprivBlob = await passworderEncrypt(password, xpriv);
         const xpubBlob = await passworderEncrypt(password, xpub);
@@ -177,7 +179,7 @@ function Create() {
           )}`,
           xpubBlob,
         );
-        setXpubWallet(activeChain, xpub);
+        setXpubWallet(identityChain, xpub);
         if (chrome?.storage?.session) {
           await chrome.storage.session.clear();
           await chrome.storage.session.set({

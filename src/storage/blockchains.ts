@@ -14,6 +14,10 @@ const flux = {
   scriptHash: '1cbd',
   wif: '80',
   logo: '/src/assets/flux.svg',
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
 };
 
 const fluxTestnet = {
@@ -30,6 +34,10 @@ const fluxTestnet = {
   scriptHash: '1cba',
   wif: 'ef',
   logo: '/src/assets/flux.svg',
+  bip32: {
+    public: 0x043587cf,
+    private: 0x04358394,
+  },
 };
 
 const rvn = {
@@ -46,6 +54,10 @@ const rvn = {
   scriptHash: '7a',
   wif: '80',
   logo: '/src/assets/rvn.svg',
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
 };
 
 export const blockchains = {

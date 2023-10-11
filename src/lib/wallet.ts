@@ -29,11 +29,13 @@ function generatexPubxPriv(
   coin: number,
   account = 0,
   type = 'p2sh',
+  chain: keyof cryptos,
 ): xPrivXpub {
   const scriptType = getScriptType(type);
 
   const seed = bip39.mnemonicToSeedSync(mnemonic);
-  const masterKey = HDKey.fromMasterSeed(seed);
+  const bipParams = blockchains[chain].bip32;
+  const masterKey = HDKey.fromMasterSeed(seed, bipParams);
   const externalChain = masterKey.derive(
     `m/${bip}'/${coin}'/${account}'/${scriptType}'`,
   );
@@ -52,8 +54,9 @@ export function getMasterXpub(
   coin: number,
   account = 0,
   type = 'p2sh',
+  chain: keyof cryptos,
 ): string {
-  const xPubxPriv = generatexPubxPriv(mnemonic, bip, coin, account, type);
+  const xPubxPriv = generatexPubxPriv(mnemonic, bip, coin, account, type, chain);
   return xPubxPriv.xpub;
 }
 
@@ -64,8 +67,9 @@ export function getMasterXpriv(
   coin: number,
   account = 0,
   type = 'p2sh',
+  chain: keyof cryptos,
 ): string {
-  const xPubxPriv = generatexPubxPriv(mnemonic, bip, coin, account, type);
+  const xPubxPriv = generatexPubxPriv(mnemonic, bip, coin, account, type, chain);
   return xPubxPriv.xpriv;
 }
 
@@ -77,8 +81,9 @@ export function generateMultisigAddress(
   addressIndex: number,
   chain: keyof cryptos,
 ): multisig {
-  const externalChain1 = HDKey.fromExtendedKey(xpub1);
-  const externalChain2 = HDKey.fromExtendedKey(xpub2);
+  const bipParams = blockchains[chain].bip32;
+  const externalChain1 = HDKey.fromExtendedKey(xpub1, bipParams);
+  const externalChain2 = HDKey.fromExtendedKey(xpub2, bipParams);
 
   const externalAddress1 = externalChain1
     .deriveChild(typeIndex)
@@ -128,7 +133,8 @@ export function generateAddressKeypair(
   chain: keyof cryptos,
 ): keyPair {
   const libID = getLibId(chain);
-  const externalChain = HDKey.fromExtendedKey(xpriv);
+  const bipParams = blockchains[chain].bip32;
+  const externalChain = HDKey.fromExtendedKey(xpriv, bipParams);
 
   const externalAddress = externalChain
     .deriveChild(typeIndex)
@@ -154,7 +160,8 @@ export function generateIdentityAddress(xpub: string, chain: keyof cryptos): str
   const addressIndex = 0; // identity index
 
   const libID = getLibId(chain);
-  const externalChain = HDKey.fromExtendedKey(xpub);
+  const bipParams = blockchains[chain].bip32;
+  const externalChain = HDKey.fromExtendedKey(xpub, bipParams);
 
   const externalAddress = externalChain
     .deriveChild(typeIndex)

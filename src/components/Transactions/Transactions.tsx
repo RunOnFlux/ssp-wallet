@@ -119,8 +119,8 @@ function Transactions() {
     crypto: keyof typeof cryptoRates,
     fiat: keyof typeof fiatRates,
   ) => {
-    const cr = cryptoRates[crypto];
-    const fi = fiatRates[fiat];
+    const cr = cryptoRates[crypto]?? 0;
+    const fi = fiatRates[fiat] ?? 0;
     setFiatRate(cr * fi);
   };
 

@@ -91,8 +91,8 @@ function Balances() {
     fiat: keyof typeof fiatRates,
   ) => {
     console.log(cryptoRates);
-    const cr = cryptoRates[crypto];
-    const fi = fiatRates[fiat];
+    const cr = cryptoRates[crypto] ?? 0;
+    const fi = fiatRates[fiat] ?? 0;
     setFiatRate(cr * fi);
   };
 

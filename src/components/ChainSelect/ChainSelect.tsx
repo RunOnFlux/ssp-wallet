@@ -54,7 +54,7 @@ function ChainSelect(props: {
   const dispatch = useAppDispatch();
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [chainToSwitch, setChainToSwitch] = useState<keyof cryptos | ''>('');
-  const { xpubWallet, xpubKey, walletInUse } = useAppSelector(
+  const { xpubWallet, xpubKey } = useAppSelector(
     (state) => state[(chainToSwitch as keyof cryptos) || 'flux'],
   );
   const displayMessage = (type: NoticeType, content: string) => {
@@ -65,6 +65,7 @@ function ChainSelect(props: {
   };
 
   useEffect(() => {
+    console.log('chain switch effect');
     if (!chainToSwitch) return;
     void (async function () {
       try {
@@ -107,7 +108,7 @@ function ChainSelect(props: {
           if (blockheightChain) {
             setBlockheight(chainToSwitch, blockheightChain);
           }
-          generateAddress();
+          generateAddress(xpubWallet, xpubKey, chainToSwitch, walInUse);
         } else {
           setChainInitialState(chainToSwitch);
           const blockchainConfig = blockchains[chainToSwitch];
@@ -138,6 +139,8 @@ function ChainSelect(props: {
                   password,
                   xpub2Encrypted,
                 );
+                console.log(xpubChainWallet);
+                console.log(xpubChainKey);
                 if (xpubChainKey && typeof xpubChainKey === 'string') {
                   // we have xpubwallet and xpubkey, generate, store and do everything
                   // set xpubwallet and xpubkey
@@ -191,7 +194,12 @@ function ChainSelect(props: {
                   if (blockheightChain) {
                     setBlockheight(chainToSwitch, blockheightChain);
                   }
-                  generateAddress();
+                  generateAddress(
+                    xpubChainWallet,
+                    xpubChainKey,
+                    chainToSwitch,
+                    walInUse,
+                  );
                   return;
                 }
               }
@@ -220,6 +228,7 @@ function ChainSelect(props: {
             blockchainConfig.slip,
             0,
             blockchainConfig.scriptType,
+            chainToSwitch,
           );
           const xpubWallet = getMasterXpub(
             walletSeed,
@@ -227,6 +236,7 @@ function ChainSelect(props: {
             blockchainConfig.slip,
             0,
             blockchainConfig.scriptType,
+            chainToSwitch,
           );
           const xprivBlob = await passworderEncrypt(password, xprivWallet);
           const xpubBlob = await passworderEncrypt(password, xpubWallet);
@@ -292,27 +302,38 @@ function ChainSelect(props: {
     })();
   }, [chainToSwitch]);
 
-  const generateAddress = () => {
+  const generateAddress = (
+    xpubW: string,
+    xpubK: string,
+    chainToUse: keyof cryptos,
+    walletToUse: string,
+  ) => {
     try {
-      if (!chainToSwitch) return; // this case should never happen
-      const splittedDerPath = walletInUse.split('-');
+      if (!chainToUse || !xpubK || !xpubW) {
+        console.log('missing data');
+        console.log(chainToSwitch);
+        console.log(xpubK);
+        console.log(xpubW);
+        return; // this case should never happen
+      }
+      const splittedDerPath = walletToUse.split('-');
       const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
       const addressIndex = Number(splittedDerPath[1]);
       const addrInfo = generateMultisigAddress(
-        xpubWallet,
-        xpubKey,
+        xpubW,
+        xpubK,
         typeIndex,
         addressIndex,
-        chainToSwitch,
+        chainToUse,
       );
-      setAddress(chainToSwitch, walletInUse, addrInfo.address);
-      setRedeemScript(chainToSwitch, walletInUse, addrInfo.redeemScript);
+      setAddress(chainToUse, walletToUse, addrInfo.address);
+      setRedeemScript(chainToUse, walletToUse, addrInfo.redeemScript);
       // get stored wallets
       void (async function () {
         const generatedWallets: generatedWallets =
-          (await localForage.getItem('wallets-' + chainToSwitch)) ?? {};
-        generatedWallets[walletInUse] = addrInfo.address;
-        await localForage.setItem('wallets-' + chainToSwitch, generatedWallets);
+          (await localForage.getItem('wallets-' + chainToUse)) ?? {};
+        generatedWallets[walletToUse] = addrInfo.address;
+        await localForage.setItem('wallets-' + chainToUse, generatedWallets);
       })();
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before
@@ -329,7 +350,7 @@ function ChainSelect(props: {
     setChainToSwitch(chainName);
     setTimeout(() => {
       openAction(false);
-    }, 50)
+    }, 50);
   };
 
   return (

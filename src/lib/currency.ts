@@ -61,7 +61,7 @@ export async function fetchRate(chain: string): Promise<currency> {
     for (const fiat of Object.keys(fiats)) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      fiats[fiat] = cryptos[chain] * fiats[fiat];
+      fiats[fiat] = (cryptos[chain] || 0) * fiats[fiat];
     }
     const currencyObj: currency = fiats;
     return currencyObj;

@@ -47,7 +47,7 @@ function Navbar() {
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [selectChainOpen, setSelectChainOpen] = useState(false);
-  const [defaultWallet, setDefaultValue] = useState<walletOption>({
+  const [defaultWallet, setWalletValue] = useState<walletOption>({
     value: walletInUse,
     label: t('home:navbar.chain_wallet', {
       chain: blockchainConfig.name,
@@ -66,6 +66,7 @@ function Navbar() {
   };
 
   useEffect(() => {
+    console.log('chain change');
     const defValue = {
       value: walletInUse,
       label: t('home:navbar.chain_wallet', {
@@ -75,7 +76,7 @@ function Navbar() {
           (+walletInUse.split('-')[1] + 1),
       }),
     };
-    setDefaultValue(defValue);
+    setWalletValue(defValue);
   }, [activeChain]);
 
   useEffect(() => {
@@ -111,6 +112,7 @@ function Navbar() {
 
   const handleChange = (value: { value: string; label: React.ReactNode }) => {
     console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
+    setWalletValue(value as walletOption);
     setWalletInUse(activeChain, value.value);
     void (async function () {
       await localForage.setItem(`walletInUse-${activeChain}`, value.value);

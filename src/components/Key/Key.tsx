@@ -26,7 +26,7 @@ import { sspConfig } from '@storage/ssp';
 const { TextArea } = Input;
 const { confirm } = Modal;
 
-const xpubRegex = /^(xpub[1-9A-HJ-NP-Za-km-z]{79,108})$/; // /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/; later
+const xpubRegex = /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/;
 
 let pollingSyncInterval: string | number | NodeJS.Timer | undefined;
 let syncRunning = false;

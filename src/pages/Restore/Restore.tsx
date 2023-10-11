@@ -160,6 +160,7 @@ function Restore() {
           blockchainConfig.slip,
           0,
           blockchainConfig.scriptType,
+          identityChain,
         );
         const xpub = getMasterXpub(
           mnemonicPhrase,
@@ -167,6 +168,7 @@ function Restore() {
           blockchainConfig.slip,
           0,
           blockchainConfig.scriptType,
+          identityChain,
         );
         const xprivBlob = await passworderEncrypt(password, xpriv);
         const xpubBlob = await passworderEncrypt(password, xpub);

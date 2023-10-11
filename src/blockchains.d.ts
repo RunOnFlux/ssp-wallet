@@ -13,6 +13,10 @@ declare module '@storage/blockchains' {
     scriptHash: string;
     wif: string;
     logo: string;
+    bip32: {
+      public: number;
+      private: number;
+    };
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;
