@@ -80,6 +80,8 @@ function Home() {
   const generateSSPIdentity = () => {
     try {
       // generate ssp wallet identity
+      console.log(xpubWalletIdentity);
+      console.log(xpubKeyIdentity);
       const generatedSspWalletIdentity = generateIdentityAddress(
         xpubWalletIdentity,
         identityChain,

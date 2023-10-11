@@ -200,6 +200,11 @@ function ChainSelect(props: {
                     chainToSwitch,
                     walInUse,
                   );
+                  const newChain = chainToSwitch;
+                  // lastly we set new active chain
+                  dispatch(setActiveChain(newChain));
+                  await localForage.setItem('activeChain', newChain);
+                  setChainToSwitch('');
                   return;
                 }
               }
@@ -291,9 +296,10 @@ function ChainSelect(props: {
           }
           // todo here we should ask for Key synchronisation
         }
+        const newChain = chainToSwitch;
         // lastly we set new active chain
-        dispatch(setActiveChain(chainToSwitch));
-        await localForage.setItem('activeChain', chainToSwitch);
+        dispatch(setActiveChain(newChain));
+        await localForage.setItem('activeChain', newChain);
         setChainToSwitch('');
       } catch (error) {
         console.log(error);

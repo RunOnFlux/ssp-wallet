@@ -177,9 +177,10 @@ function Login() {
           // set xpubs of chains
           if (typeof xpub === 'string' && typeof xpubIdentity === 'string') {
             console.log(xpub);
+            console.log(activeChain);
             setXpubWallet(activeChain, xpub);
             console.log(xpubIdentity);
-            setXpubWalletIdentity(xpub);
+            setXpubWalletIdentity(xpubIdentity);
             if (typeof xpub2Encrypted === 'string') {
               const xpub2 = await passworderDecrypt(password, xpub2Encrypted);
               if (typeof xpub2 === 'string') {
