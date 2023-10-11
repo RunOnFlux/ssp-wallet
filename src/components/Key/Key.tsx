@@ -80,25 +80,39 @@ function Key(props: { synchronised: (status: boolean) => void }) {
           `https://${sspConfig().relay}/v1/sync/${sspWalletIdentity}`,
         )
         .then((res) => {
+          if (res.data.chain !== activeChain) {
+            return;
+          }
           console.log(res);
           const xpubKey = res.data.keyXpub;
           const wkIdentity = res.data.wkIdentity;
           // check that wkIdentity is correct
-          const generatedSspWalletKeyIdentity = generateMultisigAddress(
-            xpubWallet,
-            xpubKey,
-            10,
-            0,
-            activeChain,
-          );
-          const generatedWkIdentity = generatedSspWalletKeyIdentity.address;
-          if (generatedWkIdentity !== wkIdentity) {
-            displayMessage('error', t('home:key.err_sync_fail'));
-            syncRunning = false;
-            if (pollingSyncInterval) {
-              clearInterval(pollingSyncInterval);
+          if (activeChain === identityChain) {
+            const generatedSspWalletKeyIdentity = generateMultisigAddress(
+              xpubWallet,
+              xpubKey,
+              10,
+              0,
+              activeChain,
+            );
+            const generatedWkIdentity = generatedSspWalletKeyIdentity.address;
+            if (generatedWkIdentity !== wkIdentity) {
+              displayMessage('error', t('home:key.err_sync_fail'));
+              syncRunning = false;
+              if (pollingSyncInterval) {
+                clearInterval(pollingSyncInterval);
+              }
+              return;
             }
-            return;
+          } else {
+            generateMultisigAddress(
+              // test generation
+              xpubWallet,
+              xpubKey,
+              0,
+              0,
+              activeChain,
+            );
           }
           // synced ok
           syncRunning = false;
@@ -131,7 +145,9 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         'warning',
         identityChain
           ? t('home:key.warn_await_sync')
-          : t('home:key.warn_await_sync_chain', { chain: blockchainConfig.name }),
+          : t('home:key.warn_await_sync_chain', {
+              chain: blockchainConfig.name,
+            }),
       );
       return;
     }
@@ -229,8 +245,10 @@ function Key(props: { synchronised: (status: boolean) => void }) {
       okText: t('home:key.cancel_sync'),
       cancelText: t('home:key.back_to_sync'),
       content: isIdentityChain
-        ? t('home:key.sync_info_content') 
-        : t('home:key.sync_info_content_chain', { chain: blockchainConfig.name }),
+        ? t('home:key.sync_info_content')
+        : t('home:key.sync_info_content_chain', {
+            chain: blockchainConfig.name,
+          }),
       onOk() {
         logoutOrSwitchChain();
       },
@@ -244,7 +262,13 @@ function Key(props: { synchronised: (status: boolean) => void }) {
     <>
       {contextHolder}
       <Modal
-        title={isIdentityChain ? t('home:key.dual_factor_key') : t('home:key.dual_factor_key_chain', { chain: blockchainConfig.name })}
+        title={
+          isIdentityChain
+            ? t('home:key.dual_factor_key')
+            : t('home:key.dual_factor_key_chain', {
+                chain: blockchainConfig.name,
+              })
+        }
         open={isModalKeyOpen}
         onOk={handleOkModalKey}
         onCancel={handleCancelModalKey}
@@ -266,16 +290,24 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         <Space direction="vertical" size="small" style={{ marginBottom: 25 }}>
           <QRCode
             errorLevel="H"
-            value={isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}`}
+            value={
+              isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}`
+            }
             icon="/ssp-logo.svg"
             size={256}
             style={{ margin: '0 auto' }}
           />
           <Paragraph
-            copyable={{ text: isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}` }}
+            copyable={{
+              text: isIdentityChain
+                ? xpubWallet
+                : `${activeChain}:${xpubWallet}`,
+            }}
             className="copyableAddress"
           >
-            <Text>{isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}`}</Text>
+            <Text>
+              {isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}`}
+            </Text>
           </Paragraph>
         </Space>
         {!keyInputVisible && (
