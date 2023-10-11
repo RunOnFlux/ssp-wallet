@@ -4,6 +4,11 @@ import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { keyPair, minHDKey, multisig, xPrivXpub, cryptos } from '../types';
+import { blockchains } from '@storage/blockchains';
+
+export function getLibId(chain: keyof cryptos): string {
+  return blockchains[chain].libid;
+}
 
 export function getScriptType(type: string): number {
   switch (type) {
@@ -101,7 +106,8 @@ export function generateMultisigAddress(
     utxolib.crypto.hash160(redeemScript),
   );
 
-  const network = utxolib.networks[chain];
+  const libID = getLibId(chain);
+  const network = utxolib.networks[libID];
   const address: string = utxolib.address.fromOutputScript(
     scriptPubKey,
     network,
@@ -121,6 +127,7 @@ export function generateAddressKeypair(
   addressIndex: number,
   chain: keyof cryptos,
 ): keyPair {
+  const libID = getLibId(chain);
   const externalChain = HDKey.fromExtendedKey(xpriv);
 
   const externalAddress = externalChain
@@ -129,7 +136,7 @@ export function generateAddressKeypair(
 
   const derivedExternalAddress: minHDKey = utxolib.HDNode.fromBase58(
     externalAddress.toJSON().xpriv,
-    utxolib.networks[chain],
+    utxolib.networks[libID],
   );
 
   const privateKeyWIF: string = derivedExternalAddress.keyPair.toWIF();
@@ -146,6 +153,7 @@ export function generateIdentityAddress(xpub: string, chain: keyof cryptos): str
   const typeIndex = 10; // identity index
   const addressIndex = 0; // identity index
 
+  const libID = getLibId(chain);
   const externalChain = HDKey.fromExtendedKey(xpub);
 
   const externalAddress = externalChain
@@ -155,7 +163,7 @@ export function generateIdentityAddress(xpub: string, chain: keyof cryptos): str
   const publicKey = externalAddress.publicKey;
   const pubKeyBuffer = Buffer.from(publicKey!);
 
-  const network = utxolib.networks[chain];
+  const network = utxolib.networks[libID];
 
   const genKeypair = utxolib.ECPair.fromPublicKeyBuffer(pubKeyBuffer, network);
   const address = genKeypair.getAddress();

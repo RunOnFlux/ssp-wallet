@@ -4,6 +4,11 @@ import utxolib from 'utxo-lib';
 import { transacitonsInsight, transactionInsight, transaction, cryptos } from '../types';
 
 import { backends } from '@storage/backends';
+import { blockchains } from '@storage/blockchains';
+
+export function getLibId(chain: keyof cryptos): string {
+  return blockchains[chain].libid;
+}
 
 function decodeMessage(asm: string) {
   const parts = asm.split('OP_RETURN ', 2);
@@ -115,7 +120,8 @@ export function decodeTransactionForApproval(
   rawTx: string,
   chain: keyof cryptos,
 ) {
-  const network = utxolib.networks[chain];
+  const libID = getLibId(chain);
+  const network = utxolib.networks[libID];
   const txhex = rawTx;
   const txb = utxolib.TransactionBuilder.fromTransaction(
     utxolib.Transaction.fromHex(txhex, network),

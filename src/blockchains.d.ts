@@ -1,6 +1,7 @@
 declare module '@storage/blockchains' {
   interface Blockchain {
     id: string;
+    libid: string;
     name: string;
     symbol: string;
     decimals: number;
