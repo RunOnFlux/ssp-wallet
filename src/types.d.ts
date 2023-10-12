@@ -276,3 +276,10 @@ export interface currencySSPRelay {
   fiat: currency;
   crypto: cryptos;
 }
+
+declare global {
+  // eslint-disable-next-line no-var
+  var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;
+  // eslint-disable-next-line no-var
+  var refreshIntervalBalances: string | number | NodeJS.Timeout | undefined;
+}

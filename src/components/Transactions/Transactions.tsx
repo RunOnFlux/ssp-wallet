@@ -12,8 +12,6 @@ import SocketListener from '../SocketListener/SocketListener.tsx';
 import { decodeTransactionForApproval } from '../../lib/transactions.ts';
 import { actionSSPRelay, pendingTransaction, transaction } from '../../types';
 
-let refreshInterval: string | number | NodeJS.Timeout | undefined;
-
 function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
@@ -34,10 +32,10 @@ function Transactions() {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     getCryptoRate(activeChain, 'USD');
-    if (refreshInterval) {
-      clearInterval(refreshInterval);
+    if (global.refreshIntervalTransactions) {
+      clearInterval(global.refreshIntervalTransactions);
     }
-    refreshInterval = setInterval(() => {
+    global.refreshIntervalTransactions = setInterval(() => {
       getTransactions();
       getCryptoRate(activeChain, 'USD');
     }, 20000);
@@ -60,7 +58,14 @@ function Transactions() {
       }
       getTransactions();
     })();
-  }, [walletInUse]);
+    if (global.refreshIntervalTransactions) {
+      clearInterval(global.refreshIntervalTransactions);
+    }
+    global.refreshIntervalTransactions = setInterval(() => {
+      getTransactions();
+      getCryptoRate(activeChain, 'USD');
+    }, 20000);
+  }, [walletInUse, activeChain]);
 
   const getTransactions = () => {
     fetchTransactions();
@@ -119,7 +124,7 @@ function Transactions() {
     crypto: keyof typeof cryptoRates,
     fiat: keyof typeof fiatRates,
   ) => {
-    const cr = cryptoRates[crypto]?? 0;
+    const cr = cryptoRates[crypto] ?? 0;
     const fi = fiatRates[fiat] ?? 0;
     setFiatRate(cr * fi);
   };

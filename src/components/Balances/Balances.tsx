@@ -7,8 +7,6 @@ import { fetchAddressBalance } from '../../lib/balances.ts';
 import SocketListener from '../SocketListener/SocketListener.tsx';
 import { blockchains } from '@storage/blockchains';
 
-let refreshInterval: string | number | NodeJS.Timeout | undefined;
-
 interface balancesObj {
   confirmed: string;
   unconfirmed: string;
@@ -35,10 +33,10 @@ function Balances() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    if (refreshInterval) {
-      clearInterval(refreshInterval);
+    if (global.refreshIntervalBalances) {
+      clearInterval(global.refreshIntervalBalances);
     }
-    refreshInterval = setInterval(() => {
+    global.refreshIntervalBalances = setInterval(() => {
       refresh();
     }, 20000);
   });
@@ -59,7 +57,13 @@ function Balances() {
         setUnconfirmedBalance(activeChain, wInUse, balancesWallet.unconfirmed);
       }
     })();
-  }, [walletInUse]);
+    if (global.refreshIntervalBalances) {
+      clearInterval(global.refreshIntervalBalances);
+    }
+    global.refreshIntervalBalances = setInterval(() => {
+      refresh();
+    }, 20000);
+  }, [walletInUse, activeChain]);
 
   const fetchBalance = () => {
     fetchAddressBalance(wallets[walletInUse].address, activeChain)
