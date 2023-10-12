@@ -23,6 +23,7 @@ const flux = {
   },
   txVersion: 4,
   txGroupID: 0x892f2085,
+  backend: 'blockbook',
 };
 
 const fluxTestnet = {
@@ -45,6 +46,7 @@ const fluxTestnet = {
   },
   txVersion: 4,
   txGroupID: 0x892f2085,
+  backend: 'insight',
 };
 
 const rvn = {
@@ -65,6 +67,7 @@ const rvn = {
     public: 0x0488b21e,
     private: 0x0488ade4,
   },
+  backend: 'blockbook',
 };
 
 export const blockchains = {

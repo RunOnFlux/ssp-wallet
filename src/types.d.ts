@@ -29,8 +29,18 @@ export interface utxo {
   satoshis: string;
 }
 
+export interface blockbookUtxo {
+  txid: string;
+  vout: number;
+  value: string;
+}
+
 export interface broadcastTxResult {
   txid: string;
+}
+
+export interface blockbookBroadcastTxResult {
+  result: string;
 }
 
 export interface balance {
@@ -47,6 +57,13 @@ export interface balanceInsight {
   txApperances: number;
 }
 
+export interface balanceBlockbook {
+  address: string;
+  balance: string;
+  unconfirmedBalance: string;
+  txs: number;
+}
+
 export interface vin {
   txid: string;
   vout: number;
@@ -61,6 +78,17 @@ export interface vin {
   value: number;
 }
 
+export interface vinBlockbook {
+  txid: string;
+  sequence: number;
+  n: number;
+  addresses: string[];
+  isAddress: boolean;
+  isOwn: boolean;
+  value: string;
+  hex: string;
+}
+
 export interface vout {
   value: string;
   n: number;
@@ -70,6 +98,15 @@ export interface vout {
     addresses: string[];
     type: string;
   };
+}
+
+export interface voutBlockbook {
+  value: string;
+  n: number;
+  hex: string;
+  addresses: string[];
+  isAddress: boolean;
+  isOwn: boolean;
 }
 export interface transactionInsight {
   txid: string;
@@ -93,6 +130,34 @@ export interface transacitonsInsight {
   from: number;
   to: number;
   items: transactionInsight[];
+}
+
+export interface transactionBlockbook {
+  txid: string;
+  version: number;
+  locktime: number;
+  blockhash: string;
+  blockHeight: number;
+  confirmations: number;
+  blockTime: number;
+  size: number;
+  blockTime: number;
+  value: string;
+  valueIn: string;
+  fees: string;
+  hex: string;
+  vin: vinBlockbook[];
+  vout: voutBlockbook[];
+}
+
+export interface transacitonsBlockbook {
+  page: number;
+  totalPages: number;
+  itemsOnPage: number;
+  address: string;
+  balance: string;
+  unconfirmedBalance: string;
+  transactions: transactionBlockbook[];
 }
 
 export interface wallet {
@@ -128,6 +193,12 @@ export interface getInfoInsight {
     version: number;
     blocks: number;
     testnet: boolean;
+  };
+}
+
+export interface getInfoBlockbook {
+  blockbook: {
+    bestHeight: number;
   };
 }
 

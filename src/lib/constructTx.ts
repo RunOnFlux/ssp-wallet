@@ -2,7 +2,13 @@ import utxolib from 'utxo-lib';
 import { Buffer } from 'buffer';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
-import { utxo, broadcastTxResult, cryptos } from '../types';
+import {
+  blockbookUtxo,
+  utxo,
+  blockbookBroadcastTxResult,
+  broadcastTxResult,
+  cryptos,
+} from '../types';
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
@@ -17,16 +23,29 @@ export async function fetchUtxos(
 ): Promise<utxo[]> {
   try {
     const backendConfig = backends()[chain];
-    const url = `https://${backendConfig.node}/api/addr/${address}/utxo`;
-    const { data } = await axios.get<utxo[]>(url);
-    const fetchedUtxos = data;
-    const utxos = fetchedUtxos.map((x) => ({
-      txid: x.txid,
-      vout: x.vout,
-      scriptPubKey: x.scriptPubKey,
-      satoshis: x.satoshis.toString(),
-    }));
-    return utxos;
+    if (blockchains[chain].backend === 'blockbook') {
+      const url = `https://${backendConfig.node}/api/v2/utxo/${address}`;
+      const { data } = await axios.get<blockbookUtxo[]>(url);
+      const fetchedUtxos = data;
+      const utxos = fetchedUtxos.map((x) => ({
+        txid: x.txid,
+        vout: x.vout,
+        scriptPubKey: '', // that is fine, not needed
+        satoshis: x.value,
+      }));
+      return utxos;
+    } else {
+      const url = `https://${backendConfig.node}/api/addr/${address}/utxo`;
+      const { data } = await axios.get<utxo[]>(url);
+      const fetchedUtxos = data;
+      const utxos = fetchedUtxos.map((x) => ({
+        txid: x.txid,
+        vout: x.vout,
+        scriptPubKey: x.scriptPubKey,
+        satoshis: x.satoshis.toString(),
+      }));
+      return utxos;
+    }
   } catch (e) {
     console.log(e);
     return [];
@@ -335,9 +354,17 @@ export async function broadcastTx(
 ): Promise<string> {
   try {
     const backendConfig = backends()[chain];
-    const url = `https://${backendConfig.node}/api/tx/send`;
-    const response = await axios.post<broadcastTxResult>(url, { rawtx: txHex });
-    return response.data.txid;
+    if (blockchains[chain].backend === 'blockbook') {
+      const url = `https://${backendConfig.node}/api/v2/sendtx`;
+      const response = await axios.post<blockbookBroadcastTxResult>(url, txHex);
+      return response.data.result;
+    } else {
+      const url = `https://${backendConfig.node}/api/tx/send`;
+      const response = await axios.post<broadcastTxResult>(url, {
+        rawtx: txHex,
+      });
+      return response.data.txid;
+    }
   } catch (error) {
     console.log(error);
     throw error;

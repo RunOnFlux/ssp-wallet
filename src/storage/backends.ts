@@ -23,13 +23,13 @@ loadBackendsConfig();
 
 // *** BACKENDS ***
 const flux = {
-  node: 'explorer.runonflux.io',
+  node: 'blockbookflux.app.runonflux.io',
 };
 const fluxTestnet = {
   node: 'testnet.runonflux.io',
 };
 const rvn = {
-  node: 'api.ravencoin.org',
+  node: 'blockbookravencoin.app.runonflux.io',
 };
 
 export function backends() {

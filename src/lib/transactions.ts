@@ -1,7 +1,14 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import utxolib from 'utxo-lib';
-import { transacitonsInsight, transactionInsight, transaction, cryptos } from '../types';
+import {
+  transacitonsInsight,
+  transactionInsight,
+  transacitonsBlockbook,
+  transactionBlockbook,
+  transaction,
+  cryptos,
+} from '../types';
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
@@ -87,6 +94,67 @@ function processTransaction(
   return tx;
 }
 
+function processTransactionBlockbook(
+  blockbookTx: transactionBlockbook,
+  address: string,
+): transaction {
+  const vins = blockbookTx.vin;
+  const vouts = blockbookTx.vout;
+
+  let numberofvins = vins.length;
+  let numberofvouts = vouts.length;
+
+  let message = '';
+
+  let amountSentInItx = new BigNumber(0);
+  let amountReceivedInItx = new BigNumber(0);
+  while (numberofvins > 0) {
+    numberofvins -= 1;
+    const jsonvin = vins[numberofvins];
+    if (jsonvin.isAddress && jsonvin.addresses[0] === address) {
+      // my address is sending
+      const satsSent = new BigNumber(jsonvin.value);
+      amountSentInItx = amountSentInItx.plus(satsSent);
+    }
+  }
+
+  while (numberofvouts > 0) {
+    numberofvouts -= 1;
+    const jsonvout = vouts[numberofvouts];
+    if (jsonvout.isAddress && jsonvout.addresses[0] === address) {
+      // my address is receiving
+      const amountReceived = new BigNumber(jsonvout.value);
+      amountReceivedInItx = amountReceivedInItx.plus(amountReceived);
+    }
+    // check message
+    if (!jsonvout.isAddress) {
+      const mess = jsonvout.addresses[0];
+      const messSplit = mess.split('OP_RETURN (');
+      if (messSplit[1]) {
+        message = messSplit[1].slice(0, -1);
+      }
+    }
+  }
+
+  const fee = new BigNumber(blockbookTx.fees);
+  let amount = amountReceivedInItx.minus(amountSentInItx);
+  if (amount.isNegative()) {
+    amount = amount.plus(fee); // we were the ones sending fee
+  }
+
+  const time = blockbookTx.blockTime || new Date().getTime() / 1000;
+
+  const tx: transaction = {
+    txid: blockbookTx.txid,
+    fee: fee.toFixed(),
+    blockheight: blockbookTx.blockHeight,
+    timestamp: time * 1000,
+    amount: amount.toFixed(),
+    message,
+  };
+  return tx;
+}
+
 export async function fetchAddressTransactions(
   address: string,
   chain: keyof cryptos,
@@ -94,17 +162,28 @@ export async function fetchAddressTransactions(
   to: number,
 ): Promise<transaction[]> {
   try {
-    const bcks = backends();
-    console.log(bcks);
-    const backendConfig = bcks[chain];
-    const url = `https://${backendConfig.node}/api/addrs/${address}/txs?from=${from}&to=${to}`;
-    const response = await axios.get<transacitonsInsight>(url);
-    const txs = [];
-    for (const tx of response.data.items) {
-      const processedTransaction = processTransaction(tx, address);
-      txs.push(processedTransaction);
+    const backendConfig = backends()[chain];
+    if (blockchains[chain].backend === 'blockbook') {
+      const pageSize = to - from;
+      const page = Math.round(from / pageSize);
+      const url = `https://${backendConfig.node}/api/v2/address/${address}?pageSize=${pageSize}&details=txs&page=${page}`;
+      const response = await axios.get<transacitonsBlockbook>(url);
+      const txs = [];
+      for (const tx of response.data.transactions) {
+        const processedTransaction = processTransactionBlockbook(tx, address);
+        txs.push(processedTransaction);
+      }
+      return txs;
+    } else {
+      const url = `https://${backendConfig.node}/api/addrs/${address}/txs?from=${from}&to=${to}`;
+      const response = await axios.get<transacitonsInsight>(url);
+      const txs = [];
+      for (const tx of response.data.items) {
+        const processedTransaction = processTransaction(tx, address);
+        txs.push(processedTransaction);
+      }
+      return txs;
     }
-    return txs;
   } catch (error) {
     console.log(error);
     throw error;

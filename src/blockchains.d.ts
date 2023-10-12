@@ -19,6 +19,7 @@ declare module '@storage/blockchains' {
     };
     txVersion: number;
     txGroupID: number;
+    backend: string;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;
