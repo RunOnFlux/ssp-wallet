@@ -1,5 +1,8 @@
 import { backends } from './backends';
 
+import fluxLogo from '/src/assets/flux.svg';
+import rvnLogo from '/src/assets/rvn.svg';
+
 const flux = {
   id: 'flux',
   libid: 'flux',
@@ -13,7 +16,7 @@ const flux = {
   pubKeyHash: '1cb8',
   scriptHash: '1cbd',
   wif: '80',
-  logo: '/src/assets/flux.svg',
+  logo: fluxLogo,
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -33,7 +36,7 @@ const fluxTestnet = {
   pubKeyHash: '1d25',
   scriptHash: '1cba',
   wif: 'ef',
-  logo: '/src/assets/flux.svg',
+  logo: fluxLogo,
   bip32: {
     public: 0x043587cf,
     private: 0x04358394,
@@ -53,7 +56,7 @@ const rvn = {
   pubKeyHash: '3c',
   scriptHash: '7a',
   wif: '80',
-  logo: '/src/assets/rvn.svg',
+  logo: rvnLogo,
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
