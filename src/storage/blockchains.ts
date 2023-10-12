@@ -21,6 +21,8 @@ const flux = {
     public: 0x0488b21e,
     private: 0x0488ade4,
   },
+  txVersion: 4,
+  txGroupID: 0x892f2085,
 };
 
 const fluxTestnet = {
@@ -41,6 +43,8 @@ const fluxTestnet = {
     public: 0x043587cf,
     private: 0x04358394,
   },
+  txVersion: 4,
+  txGroupID: 0x892f2085,
 };
 
 const rvn = {

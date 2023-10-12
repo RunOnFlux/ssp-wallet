@@ -115,8 +115,12 @@ export function buildUnsignedRawTx(
     const libID = getLibId(chain);
     const network = utxolib.networks[libID];
     const txb = new utxolib.TransactionBuilder(network, fee);
-    txb.setVersion(4);
-    txb.setVersionGroupId(0x892f2085);
+    if (blockchains[chain].txVersion) {
+      txb.setVersion(blockchains[chain].txVersion);
+    }
+    if (blockchains[chain].txGroupID) {
+      txb.setVersionGroupId(blockchains[chain].txGroupID);
+    }
     utxos.forEach((x) => txb.addInput(x.txid, x.vout));
     const recipients = [
       {

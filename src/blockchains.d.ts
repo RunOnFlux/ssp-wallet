@@ -17,6 +17,8 @@ declare module '@storage/blockchains' {
       public: number;
       private: number;
     };
+    txVersion: number;
+    txGroupID: number;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;
