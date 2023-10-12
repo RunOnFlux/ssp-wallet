@@ -27,7 +27,7 @@ import {
   setSSPInitialState,
   setXpubWallet,
   setPasswordBlob,
-  setChainInitialState,
+  setInitialStateForAllChains,
 } from '../../store';
 
 import './Restore.css';
@@ -187,14 +187,14 @@ function Restore() {
           xpubBlob,
         );
         dispatch(setSSPInitialState());
-        setChainInitialState(identityChain);
-        setXpubWallet(identityChain, xpub);
+        setInitialStateForAllChains();
         if (chrome?.storage?.session) {
           await chrome.storage.session.clear();
           await chrome.storage.session.set({
             pwBlob: pwBlob,
           });
         }
+        setXpubWallet(identityChain, xpub);
         dispatch(setPasswordBlob(pwBlob));
         navigate('/login');
       })
