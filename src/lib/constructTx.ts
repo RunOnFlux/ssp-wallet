@@ -367,7 +367,7 @@ export async function broadcastTx(
   try {
     const backendConfig = backends()[chain];
     if (blockchains[chain].backend === 'blockbook') {
-      const url = `https://${backendConfig.node}/api/v2/sendtx`;
+      const url = `https://${backendConfig.node}/api/v2/sendtx/`; // NB: the '/' symbol at the end is mandatory.
       const response = await axios.post<blockbookBroadcastTxResult>(url, txHex);
       return response.data.result;
     } else {
