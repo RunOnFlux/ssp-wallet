@@ -128,7 +128,7 @@ function TransactionsTable(props: {
           dataIndex="blockheight"
           render={(height: number) => (
             <>
-              {props.blockheight - height <= 0 ? (
+              {(props.blockheight - height == 0 || height <= 0 || !height) ? (
                 <ClockCircleOutlined style={{ fontSize: '18px' }} />
               ) : (
                 <CheckCircleOutlined style={{ fontSize: '18px' }} />
