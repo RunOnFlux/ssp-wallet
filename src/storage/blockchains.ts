@@ -2,6 +2,7 @@ import { backends } from './backends';
 
 import fluxLogo from '/src/assets/flux.svg';
 import rvnLogo from '/src/assets/rvn.svg';
+import ltcLogo from '/src/assets/ltc.svg';
 
 const flux = {
   id: 'flux',
@@ -23,7 +24,7 @@ const flux = {
   },
   txVersion: 4,
   txGroupID: 0x892f2085,
-  backend: 'insight',
+  backend: 'blockbook',
 };
 
 const fluxTestnet = {
@@ -70,8 +71,31 @@ const rvn = {
   backend: 'blockbook',
 };
 
+const ltc = {
+  id: 'ltc',
+  libid: 'litecoin',
+  name: 'Litecoin',
+  symbol: 'LTC',
+  decimals: 8,
+  node: backends().ltc.node,
+  slip: 2, // all testnets have 1
+  scriptType: 'p2wsh',
+  messagePrefix: '\u0019Litecoin Signed Message:\n',
+  pubKeyHash: '30',
+  scriptHash: '32',
+  wif: 'b0',
+  logo: ltcLogo,
+  bip32: {
+    public: 0x019da462,
+    private: 0x019d9cfe,
+  },
+  backend: 'blockbook',
+  bech32: 'ltc',
+};
+
 export const blockchains = {
   flux,
   fluxTestnet,
   rvn,
+  ltc,
 };

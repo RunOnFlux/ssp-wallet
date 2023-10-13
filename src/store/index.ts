@@ -10,11 +10,13 @@ import { cryptos, currency, transaction } from '../types';
 import flux from './flux';
 import fluxTestnet from './fluxTestnet';
 import rvn from './rvn';
+import ltc from './ltc';
 
 const chains = {
   flux,
   fluxTestnet,
   rvn,
+  ltc,
 };
 // ********** Import chains **********
 
@@ -46,6 +48,7 @@ const initialRatesState: RatesState = {
     flux: 0,
     fluxTestnet: 0,
     rvn: 0,
+    ltc: 0,
   },
   fiatRates: {
     EUR: 0,
@@ -164,6 +167,7 @@ const reducers = combineReducers({
   flux: flux.reducer,
   fluxTestnet: fluxTestnet.reducer,
   rvn: rvn.reducer,
+  ltc: ltc.reducer,
 });
 
 export const store = configureStore({

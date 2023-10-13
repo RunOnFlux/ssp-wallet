@@ -168,7 +168,6 @@ export interface wallet {
   transactions: transaction[];
 }
 
-
 export type wallets = Record<string, wallet>;
 export type generatedWallets = Record<string, string>;
 export interface transaction {
@@ -270,6 +269,7 @@ export interface cryptos {
   flux: number;
   fluxTestnet: number;
   rvn: number;
+  ltc: number;
 }
 
 export interface currencySSPRelay {
