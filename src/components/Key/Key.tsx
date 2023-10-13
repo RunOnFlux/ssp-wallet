@@ -28,7 +28,7 @@ const { confirm } = Modal;
 
 const xpubRegex = /^([xyYzZtuUvV]pub[1-9A-HJ-NP-Za-km-z]{79,108})$/;
 
-let pollingSyncInterval: string | number | NodeJS.Timer | undefined;
+let pollingSyncInterval: string | number | NodeJS.Timeout | undefined;
 let syncRunning = false;
 
 function Key(props: { synchronised: (status: boolean) => void }) {
