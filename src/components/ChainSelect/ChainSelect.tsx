@@ -22,6 +22,7 @@ import {
 import {
   setAddress,
   setRedeemScript,
+  setWitnessScript,
   setTransactions,
   setBalance,
   setUnconfirmedBalance,
@@ -333,7 +334,8 @@ function ChainSelect(props: {
         chainToUse,
       );
       setAddress(chainToUse, walletToUse, addrInfo.address);
-      setRedeemScript(chainToUse, walletToUse, addrInfo.redeemScript);
+      setRedeemScript(chainToUse, walletToUse, addrInfo.redeemScript ?? '');
+      setWitnessScript(chainToUse, walletToUse, addrInfo.witnessScript ?? '');
       // get stored wallets
       void (async function () {
         const generatedWallets: generatedWallets =

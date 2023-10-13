@@ -4,6 +4,7 @@ import { transaction, wallets, wallet } from '../../types';
 const initialWalletState: wallet = {
   address: '',
   redeemScript: '',
+  witnessScript: '',
   balance: '0.00',
   unconfirmedBalance: '0.00',
   transactions: [],
@@ -46,6 +47,15 @@ const chainSlice = createSlice({
         action.payload.wallet
       ] || { ...initialWalletState };
       state.wallets[action.payload.wallet].redeemScript = action.payload.data;
+    },
+    setWitnessScript: (
+      state,
+      action: PayloadAction<{ wallet: string; data: string }>,
+    ) => {
+      state.wallets[action.payload.wallet] = state.wallets[
+        action.payload.wallet
+      ] || { ...initialWalletState };
+      state.wallets[action.payload.wallet].witnessScript = action.payload.data;
     },
     setXpubWallet: (state, action: PayloadAction<string>) => {
       state.xpubWallet = action.payload;

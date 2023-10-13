@@ -9,6 +9,7 @@ import {
   setPasswordBlobInitialState,
   setAddress,
   setRedeemScript,
+  setWitnessScript,
   setSspWalletIdentity,
   setSspWalletKeyIdentity,
 } from '../../store';
@@ -62,7 +63,8 @@ function Home() {
         activeChain,
       );
       setAddress(activeChain, walletInUse, addrInfo.address);
-      setRedeemScript(activeChain, walletInUse, addrInfo.redeemScript);
+      setRedeemScript(activeChain, walletInUse, addrInfo.redeemScript ?? '');
+      setWitnessScript(activeChain, walletInUse, addrInfo.witnessScript ?? '');
       // get stored wallets
       void (async function () {
         const generatedWallets: generatedWallets =

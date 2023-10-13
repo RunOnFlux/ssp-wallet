@@ -9,6 +9,7 @@ import {
   setPasswordBlobInitialState,
   setAddress,
   setRedeemScript,
+  setWitnessScript,
   setWalletInUse,
 } from '../../store';
 import { Row, Col, Image, Menu, Select, Divider, Button, message } from 'antd';
@@ -145,7 +146,8 @@ function Navbar() {
         activeChain,
       );
       setAddress(activeChain, path, addrInfo.address);
-      setRedeemScript(activeChain, path, addrInfo.redeemScript);
+      setRedeemScript(activeChain, path, addrInfo.redeemScript ?? '');
+      setWitnessScript(activeChain, path, addrInfo.witnessScript ?? '');
       // get stored wallets
       void (async function () {
         const generatedWallets: generatedWallets =

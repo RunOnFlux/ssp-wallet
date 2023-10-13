@@ -18,7 +18,8 @@ export interface keyPair {
 
 export interface multisig {
   address: string;
-  redeemScript: string;
+  redeemScript?: string;
+  witnessScript?: string;
 }
 
 // transactions.ts
@@ -163,6 +164,7 @@ export interface transacitonsBlockbook {
 export interface wallet {
   address: string;
   redeemScript: string;
+  witnessScript: string;
   balance: string;
   unconfirmedBalance: string;
   transactions: transaction[];

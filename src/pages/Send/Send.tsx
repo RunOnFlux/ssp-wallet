@@ -22,6 +22,8 @@ import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
 
+import { transaction } from '../../types';
+
 interface sendForm {
   receiver: string;
   amount: string;
@@ -230,7 +232,7 @@ function Send() {
           // amount must be the same and not present in our transactions table
           txs.forEach((tx) => {
             if (tx.amount === amount) {
-              const txExists = transactions.find((ttx) => ttx.txid === tx.txid);
+              const txExists = transactions.find((ttx: transaction) => ttx.txid === tx.txid);
               if (!txExists) {
                 setTxid(tx.txid);
                 // stop interval

@@ -49,6 +49,11 @@ declare module 'utxo-lib' {
         encode: (m: number, publicKeysBuffer: Buffer[]) => Uint8Array;
       };
     };
+    witnessScriptHash: {
+      output: {
+        encode: (hash: Buffer) => Uint8Array;
+      };
+    };
     scriptHash: {
       output: {
         encode: (hash160: Buffer) => Uint8Array;
@@ -63,6 +68,7 @@ declare module 'utxo-lib' {
   let networks: networks;
   let crypto: {
     hash160: (redeemScript: Uint8Array) => Buffer;
+    sha256: (witnessScript: Uint8Array) => Buffer;
   };
   let HDNode: {
     fromBase58: (xpubxpriv: string, network: object) => minHDKey;

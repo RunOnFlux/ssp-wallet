@@ -190,6 +190,13 @@ export function setRedeemScript(
 ) {
   store.dispatch(chains[chain].actions.setRedeemScript({ wallet, data }));
 }
+export function setWitnessScript(
+  chain: keyof cryptos,
+  wallet: string,
+  data: string,
+) {
+  store.dispatch(chains[chain].actions.setWitnessScript({ wallet, data }));
+}
 export function setXpubWallet(chain: keyof cryptos, data: string) {
   store.dispatch(chains[chain].actions.setXpubWallet(data));
 }
