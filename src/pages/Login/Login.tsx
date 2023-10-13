@@ -75,11 +75,11 @@ function Login() {
   const blockchainConfigIdentity = blockchains[identityChain];
 
   useEffect(() => {
-    if (global.refreshIntervalBalances) {
-      clearInterval(global.refreshIntervalBalances);
+    if (globalThis.refreshIntervalBalances) {
+      clearInterval(globalThis.refreshIntervalBalances);
     }
-    if (global.refreshIntervalTransactions) {
-      clearInterval(global.refreshIntervalTransactions);
+    if (globalThis.refreshIntervalTransactions) {
+      clearInterval(globalThis.refreshIntervalTransactions);
     }
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;

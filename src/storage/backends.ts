@@ -23,7 +23,7 @@ loadBackendsConfig();
 
 // *** BACKENDS ***
 const flux = {
-  node: 'blockbookflux.app.runonflux.io',
+  node: 'explorer.runonflux.io',
 };
 const fluxTestnet = {
   node: 'testnet.runonflux.io',

@@ -33,4 +33,12 @@ export default defineConfig({
       SECURE_LOCAL_STORAGE_DISABLED_KEYS: 'UserAgent|Plugins',
     },
   },
+  optimizeDeps: {
+    esbuildOptions: {
+      // Node.js global to browser globalThis
+      define: {
+        global: 'globalThis',
+      },
+    },
+  },
 });

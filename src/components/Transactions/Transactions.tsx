@@ -32,10 +32,10 @@ function Transactions() {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     getCryptoRate(activeChain, 'USD');
-    if (global.refreshIntervalTransactions) {
-      clearInterval(global.refreshIntervalTransactions);
+    if (globalThis.refreshIntervalTransactions) {
+      clearInterval(globalThis.refreshIntervalTransactions);
     }
-    global.refreshIntervalTransactions = setInterval(() => {
+    globalThis.refreshIntervalTransactions = setInterval(() => {
       getTransactions();
       getCryptoRate(activeChain, 'USD');
     }, 20000);
@@ -58,10 +58,10 @@ function Transactions() {
       }
       getTransactions();
     })();
-    if (global.refreshIntervalTransactions) {
-      clearInterval(global.refreshIntervalTransactions);
+    if (globalThis.refreshIntervalTransactions) {
+      clearInterval(globalThis.refreshIntervalTransactions);
     }
-    global.refreshIntervalTransactions = setInterval(() => {
+    globalThis.refreshIntervalTransactions = setInterval(() => {
       getTransactions();
       getCryptoRate(activeChain, 'USD');
     }, 20000);

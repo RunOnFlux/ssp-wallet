@@ -23,7 +23,7 @@ const flux = {
   },
   txVersion: 4,
   txGroupID: 0x892f2085,
-  backend: 'blockbook',
+  backend: 'insight',
 };
 
 const fluxTestnet = {

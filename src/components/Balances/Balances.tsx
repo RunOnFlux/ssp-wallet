@@ -33,10 +33,10 @@ function Balances() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    if (global.refreshIntervalBalances) {
-      clearInterval(global.refreshIntervalBalances);
+    if (globalThis.refreshIntervalBalances) {
+      clearInterval(globalThis.refreshIntervalBalances);
     }
-    global.refreshIntervalBalances = setInterval(() => {
+    globalThis.refreshIntervalBalances = setInterval(() => {
       refresh();
     }, 20000);
   });
@@ -57,10 +57,10 @@ function Balances() {
         setUnconfirmedBalance(activeChain, wInUse, balancesWallet.unconfirmed);
       }
     })();
-    if (global.refreshIntervalBalances) {
-      clearInterval(global.refreshIntervalBalances);
+    if (globalThis.refreshIntervalBalances) {
+      clearInterval(globalThis.refreshIntervalBalances);
     }
-    global.refreshIntervalBalances = setInterval(() => {
+    globalThis.refreshIntervalBalances = setInterval(() => {
       refresh();
     }, 20000);
   }, [walletInUse, activeChain]);
