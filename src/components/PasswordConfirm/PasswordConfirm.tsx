@@ -92,7 +92,7 @@ function PasswordConfirm(props: {
         footer={[]}
       >
         <Space direction="vertical" size="large">
-          <Image width={50} preview={false} src="/ssp-logo.svg" />
+          <Image width={50} preview={false} src="/ssp-logo-black.svg" />
           <p>
             {t('home:passwordConfirm.grant_access_info_1')}
             <br />

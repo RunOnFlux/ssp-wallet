@@ -280,7 +280,7 @@ function Login() {
           <Image
             width={80}
             preview={false}
-            src="/ssp-logo.svg"
+            src="/ssp-logo-black.svg"
             style={{ paddingTop: 70 }}
           />
           <h2>{t('login:welcome_back')}</h2>

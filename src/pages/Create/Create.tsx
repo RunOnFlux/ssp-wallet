@@ -212,7 +212,7 @@ function Create() {
         <LeftOutlined style={{ fontSize: '12px' }} /> {t('common:back')}
       </Button>
       <Divider />
-      <Image width={80} preview={false} src="/ssp-logo.svg" />
+      <Image width={80} preview={false} src="/ssp-logo-black.svg" />
       <h2>{t('cr:create_pw')}</h2>
       <Form
         name="pwdForm"

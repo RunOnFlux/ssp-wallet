@@ -38,7 +38,7 @@ function TxSent(props: {
           <QRCode
             errorLevel="H"
             value={props.txid}
-            icon="/ssp-logo.svg"
+            icon="/ssp-logo-black.svg"
             size={256}
             style={{ margin: '0 auto' }}
           />

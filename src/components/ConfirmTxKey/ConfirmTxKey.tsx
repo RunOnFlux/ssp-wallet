@@ -41,7 +41,7 @@ function ConfirmTxKey(props: {
               <QRCode
                 errorLevel="H"
                 value={`${chain}:${wallet}:${txHex}`}
-                icon="/ssp-logo.svg"
+                icon="/ssp-logo-black.svg"
                 size={256}
                 style={{ margin: '0 auto' }}
               />

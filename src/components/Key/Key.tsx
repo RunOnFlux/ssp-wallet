@@ -293,7 +293,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
             value={
               isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}`
             }
-            icon="/ssp-logo.svg"
+            icon="/ssp-logo-black.svg"
             size={256}
             style={{ margin: '0 auto' }}
           />

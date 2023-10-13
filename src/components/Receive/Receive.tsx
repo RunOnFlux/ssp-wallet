@@ -42,7 +42,7 @@ function Receive(props: {
           <QRCode
             errorLevel="H"
             value={wallets[walletInUse].address}
-            icon="/ssp-logo.svg"
+            icon="/ssp-logo-black.svg"
             size={256}
             style={{ margin: '0 auto' }}
           />

@@ -273,7 +273,7 @@ function Navbar() {
             <Image
               height={30}
               preview={false}
-              src="/ssp-logo.svg"
+              src="/ssp-logo-black.svg"
               onClick={() => navigate('/home')}
               style={{ cursor: 'pointer' }}
             />

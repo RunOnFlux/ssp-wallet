@@ -31,7 +31,7 @@ function Welcome() {
           <Image
             width={120}
             preview={false}
-            src="/ssp-logo.svg"
+            src="/ssp-logo-black.svg"
             style={{ paddingTop: 70 }}
           />
           <h1>{t('welcome:welcome_to')}</h1>
