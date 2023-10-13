@@ -28,9 +28,10 @@ declare module 'utxo-lib' {
     sign: (
       index: number,
       keyPair: object,
-      redeemScript: Buffer,
+      redeemScript: Buffer | undefined,
       hashType: number,
       value: number,
+      witnessScript: Buffer | undefined,
     ) => void;
     buildIncomplete(): builtTx;
     inputs: input[];

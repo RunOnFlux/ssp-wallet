@@ -51,6 +51,7 @@ function Send() {
   );
   const transactions = wallets[walletInUse].transactions;
   const redeemScript = wallets[walletInUse].redeemScript;
+  const witnessScript = wallets[walletInUse].witnessScript;
   const sender = wallets[walletInUse].address;
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
@@ -199,6 +200,7 @@ function Send() {
           values.message,
           keyPair.privKey,
           redeemScript,
+          witnessScript,
         )
           .then((tx) => {
             console.log(tx);

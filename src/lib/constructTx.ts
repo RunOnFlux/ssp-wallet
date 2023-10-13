@@ -83,6 +83,7 @@ export function signTransaction(
   chain: keyof cryptos,
   privateKey: string,
   redeemScript: string,
+  witnessScript: string,
   utxos: utxo[], // same or bi gger set than was used to construct the tx
 ): string {
   try {
@@ -103,12 +104,21 @@ export function signTransaction(
       if (!utxoFound) {
         throw new Error(`Could not find value for input ${hash}:${index}`);
       }
+      let redeemScriptForSign;
+      let witnessScriptForSign;
+      if (redeemScript) {
+        redeemScriptForSign = Buffer.from(redeemScript, 'hex');
+      }
+      if (witnessScript) {
+        witnessScriptForSign = Buffer.from(witnessScript, 'hex');
+      }
       txb.sign(
         i,
         keyPair,
-        Buffer.from(redeemScript, 'hex'),
+        redeemScriptForSign,
         hashType,
         new BigNumber(utxoFound.satoshis).toNumber(),
+        witnessScriptForSign,
       );
     }
     const tx = txb.buildIncomplete();
@@ -313,6 +323,7 @@ export async function constructAndSignTransaction(
   message: string,
   privateKey: string,
   redeemScript: string,
+  witnessScript: string,
 ): Promise<string> {
   try {
     const utxos = await fetchUtxos(sender, chain);
@@ -335,6 +346,7 @@ export async function constructAndSignTransaction(
       chain,
       privateKey,
       redeemScript,
+      witnessScript,
       utxos,
     );
     if (!signedTx) {
