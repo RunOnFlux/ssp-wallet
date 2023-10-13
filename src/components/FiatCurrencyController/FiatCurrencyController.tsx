@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import { fetchAllRates } from '../../lib/currency.ts';
 
@@ -6,27 +6,22 @@ import { setFiatRates, setCryptoRates } from '../../store';
 
 import { useAppDispatch } from '../../hooks';
 
-let refreshInterval: string | number | NodeJS.Timeout | undefined;
-
 function FiatCurrency() {
   const dispatch = useAppDispatch();
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     obtainRates();
-    if (refreshInterval) {
-      clearInterval(refreshInterval);
+    if (globalThis.refreshIntervalRates) {
+      clearInterval(globalThis.refreshIntervalRates);
     }
-    refreshInterval = setInterval(
+    globalThis.refreshIntervalRates = setInterval(
       () => {
         obtainRates();
       },
       10 * 60 * 1000,
     );
     return () => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
+      if (globalThis.refreshIntervalRates) {
+        clearInterval(globalThis.refreshIntervalRates);
       }
     };
   });

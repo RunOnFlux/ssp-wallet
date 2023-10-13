@@ -26,6 +26,7 @@ import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
 import ChainSelect from '../ChainSelect/ChainSelect';
 import Settings from '../Settings/Settings';
 import AutoLogout from '../AutoLogout/AutoLogout';
+import FiatCurrencyController from '../FiatCurrencyController/FiatCurrencyController';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
@@ -373,6 +374,7 @@ function Navbar() {
       />
       <ChainSelect open={selectChainOpen} openAction={selectChainAction} />
       <AutoLogout />
+      <FiatCurrencyController />
     </>
   );
 }

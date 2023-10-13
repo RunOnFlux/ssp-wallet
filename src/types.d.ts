@@ -282,4 +282,6 @@ declare global {
   var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;
   // eslint-disable-next-line no-var
   var refreshIntervalBalances: string | number | NodeJS.Timeout | undefined;
+  // eslint-disable-next-line no-var
+  var refreshIntervalRates: string | number | NodeJS.Timeout | undefined;
 }

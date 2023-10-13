@@ -42,6 +42,10 @@ function Transactions() {
   });
 
   useEffect(() => {
+    getCryptoRate(activeChain, 'USD');
+  }, [cryptoRates, fiatRates]);
+
+  useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;

@@ -28,6 +28,14 @@ function Balances() {
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
+  const [totalBalance, setTotalBalance] = useState(
+    new BigNumber(wallets[walletInUse].balance)
+      .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
+      .dividedBy(1e8),
+  );
+  const [balanceUSD, setBalanceUSD] = useState(
+    totalBalance.multipliedBy(new BigNumber(fiatRate)),
+  );
   const blockchainConfig = blockchains[activeChain];
 
   useEffect(() => {
@@ -49,12 +57,13 @@ function Balances() {
     refresh();
     void (async function () {
       const wInUse = walletInUse;
+      const chInUse = activeChain;
       const balancesWallet: balancesObj =
-        (await localForage.getItem(`balances-${activeChain}-${wInUse}`)) ??
+        (await localForage.getItem(`balances-${chInUse}-${wInUse}`)) ??
         balancesObject;
       if (balancesWallet) {
-        setBalance(activeChain, wInUse, balancesWallet.confirmed);
-        setUnconfirmedBalance(activeChain, wInUse, balancesWallet.unconfirmed);
+        setBalance(chInUse, wInUse, balancesWallet.confirmed);
+        setUnconfirmedBalance(chInUse, wInUse, balancesWallet.unconfirmed);
       }
     })();
     if (globalThis.refreshIntervalBalances) {
@@ -65,13 +74,19 @@ function Balances() {
     }, 20000);
   }, [walletInUse, activeChain]);
 
+  useEffect(() => {
+    getCryptoRate(activeChain, 'USD');
+  }, [cryptoRates, fiatRates]);
+
   const fetchBalance = () => {
-    fetchAddressBalance(wallets[walletInUse].address, activeChain)
+    const chainFetched = activeChain;
+    const walletFetched = walletInUse;
+    fetchAddressBalance(wallets[walletFetched].address, chainFetched)
       .then(async (balance) => {
-        setBalance(activeChain, walletInUse, balance.confirmed);
-        setUnconfirmedBalance(activeChain, walletInUse, balance.unconfirmed);
+        setBalance(chainFetched, walletFetched, balance.confirmed);
+        setUnconfirmedBalance(chainFetched, walletFetched, balance.unconfirmed);
         await localForage.setItem(
-          `balances-${activeChain}-${walletInUse}`,
+          `balances-${chainFetched}-${walletFetched}`,
           balance,
         );
         console.log(balance);
@@ -81,14 +96,14 @@ function Balances() {
       });
   };
 
-  const totalBalance = new BigNumber(wallets[walletInUse].balance)
-    .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
-    .dividedBy(1e8);
-  let balanceUSD = totalBalance.multipliedBy(new BigNumber(fiatRate));
-
   useEffect(() => {
-    balanceUSD = totalBalance.multipliedBy(new BigNumber(fiatRate));
-  }, [fiatRate]);
+    const ttlBal = new BigNumber(wallets[walletInUse].balance)
+      .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
+      .dividedBy(1e8);
+    setTotalBalance(ttlBal);
+    const balUSD = ttlBal.multipliedBy(new BigNumber(fiatRate));
+    setBalanceUSD(balUSD);
+  }, [fiatRate, wallets, walletInUse, activeChain]);
 
   const getCryptoRate = (
     crypto: keyof typeof cryptoRates,
