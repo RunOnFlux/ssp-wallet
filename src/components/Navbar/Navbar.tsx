@@ -16,7 +16,7 @@ import {
   LockOutlined,
   SettingOutlined,
   PlusOutlined,
-  MoreOutlined,
+  NodeIndexOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import './Navbar.css';
@@ -270,13 +270,9 @@ function Navbar() {
             <Image
               height={30}
               preview={false}
-              src={blockchainConfig.logo}
-              onClick={() => selectChain()}
+              src="/ssp-logo.svg"
+              onClick={() => navigate('/home')}
               style={{ cursor: 'pointer' }}
-            />
-            <MoreOutlined
-              style={{ position: 'absolute', top: '10px', fontSize: '14px' }}
-              onClick={() => selectChain()}
             />
           </Col>
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
@@ -288,16 +284,51 @@ function Navbar() {
               options={walletItems}
               bordered={false}
               size="large"
+              dropdownStyle={{ zIndex: 9 }}
               dropdownRender={(menu) => (
                 <>
+                  <div
+                    style={{
+                      lineHeight: '25px',
+                      marginBottom: '10px',
+                      marginLeft: '10px',
+                    }}
+                  >
+                    <Image
+                      height={22}
+                      preview={false}
+                      src={blockchainConfig.logo}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '5px',
+                        marginLeft: '8px',
+                        fontSize: '16px',
+                      }}
+                    >
+                      {blockchainConfig.name} {t('common:chain')}
+                    </span>
+                  </div>
                   {menu}
                   <Divider style={{ margin: '8px 0' }} />
                   <Button
                     type="text"
                     icon={<PlusOutlined />}
                     onClick={addWallet}
+                    style={{ width: '100%', textAlign: 'left' }}
                   >
                     {t('home:navbar.generate_new_wallet')}
+                  </Button>
+                  <Divider style={{ margin: '8px 0' }} />
+                  <Button
+                    type="text"
+                    style={{ width: '100%', textAlign: 'left' }}
+                    icon={<NodeIndexOutlined />}
+                    onClick={() => selectChain()}
+                  >
+                    {t('home:navbar.switch_chain')}
                   </Button>
                 </>
               )}
