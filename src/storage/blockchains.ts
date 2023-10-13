@@ -78,7 +78,7 @@ const ltc = {
   symbol: 'LTC',
   decimals: 8,
   node: backends().ltc.node,
-  slip: 2, // all testnets have 1
+  slip: 2,
   scriptType: 'p2wsh',
   messagePrefix: '\u0019Litecoin Signed Message:\n',
   pubKeyHash: '30',
