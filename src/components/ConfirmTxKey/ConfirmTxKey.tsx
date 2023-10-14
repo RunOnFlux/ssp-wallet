@@ -54,7 +54,7 @@ function ConfirmTxKey(props: {
             </Space>
           </>
         )}
-        {txHex.length >= 3000 && (
+        {txHex.length >= 2950 && (
           <>
             <p>{t('home:confirmTxKey.info_2')}</p>
             <Space
