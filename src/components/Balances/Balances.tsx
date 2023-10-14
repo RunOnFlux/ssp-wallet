@@ -41,6 +41,18 @@ function Balances() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
+    void (async function () {
+      const wInUse = walletInUse;
+      const chInUse = activeChain;
+      const balancesWallet: balancesObj =
+        (await localForage.getItem(`balances-${chInUse}-${wInUse}`)) ??
+        balancesObject;
+      if (balancesWallet) {
+        setBalance(chInUse, wInUse, balancesWallet.confirmed);
+        setUnconfirmedBalance(chInUse, wInUse, balancesWallet.unconfirmed);
+      }
+      refresh();
+    })();
     if (globalThis.refreshIntervalBalances) {
       clearInterval(globalThis.refreshIntervalBalances);
     }

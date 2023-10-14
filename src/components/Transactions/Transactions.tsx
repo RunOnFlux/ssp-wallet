@@ -31,6 +31,18 @@ function Transactions() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
+    setPendingTxs([]);
+    getPendingTx();
+    void (async function () {
+      const wInUse = walletInUse;
+      const txsWallet: transaction[] =
+        (await localForage.getItem(`transactions-${activeChain}-${wInUse}`)) ??
+        [];
+      if (txsWallet) {
+        setTransactions(activeChain, wInUse, txsWallet);
+      }
+      getTransactions();
+    })();
     getCryptoRate(activeChain, 'USD');
     if (globalThis.refreshIntervalTransactions) {
       clearInterval(globalThis.refreshIntervalTransactions);
