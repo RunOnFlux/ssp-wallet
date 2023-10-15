@@ -30,12 +30,14 @@
     "err_s1": "Code S1: Something went wrong while decrypting password.",
     "ssp_bip": "{{chain}} SSP Wallet Details (BIP-48)",
     "ssp_mnemonic": "SSP Wallet Mnemonic Seed Phrase",
+    "chain_sync_ssp_key": "{{chain}} Sync with SSP Key",
     "chain_extended_pub": "{{chain}} Extended Public Key",
     "chain_extended_priv": "{{chain}} Extended Private Key"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Address Details (BIP-48)",
     "wallet_redeem_script": "Wallet Redeem Script",
+    "wallet_witness_script": "Wallet Witness Script",
     "wallet_priv_key": "Wallet Private Key"
   },
   "settings": {

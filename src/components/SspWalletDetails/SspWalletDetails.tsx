@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Typography, Button, Modal, message } from 'antd';
+import { Typography, Button, Modal, message, Space, QRCode } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
@@ -24,6 +24,7 @@ function SSPWalletDetails(props: {
   const [seedPhrase, setSeedPhrase] = useState('');
   const [extendedPublicKeyVisible, setExtendedPublicKeyVisible] =
     useState(false);
+  const [chainSyncKeyVisible, setChainSyncKeyVisible] = useState(false);
   const [extendedPrivateKeyVisible, setExtendedPrivateKeyVisible] =
     useState(false);
   const [seedPhraseVisible, setSeedPhraseVisible] = useState(false);
@@ -47,6 +48,7 @@ function SSPWalletDetails(props: {
   const handleOk = () => {
     setExtendedPrivateKeyVisible(false);
     setExtendedPublicKeyVisible(false);
+    setChainSyncKeyVisible(false);
     setSeedPhraseVisible(false);
     openAction(false);
   };
@@ -108,7 +110,9 @@ function SSPWalletDetails(props: {
     <>
       {contextHolder}
       <Modal
-        title={t('home:sspWalletDetails.ssp_bip', { chain: blockchainConfig.symbol })}
+        title={t('home:sspWalletDetails.ssp_bip', {
+          chain: blockchainConfig.symbol,
+        })}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
@@ -120,19 +124,40 @@ function SSPWalletDetails(props: {
         ]}
       >
         <h3>
-          {seedPhraseVisible && (
-            <EyeTwoTone onClick={() => setSeedPhraseVisible(false)} />
+          {chainSyncKeyVisible && (
+            <EyeTwoTone onClick={() => setChainSyncKeyVisible(false)} />
           )}
-          {!seedPhraseVisible && (
-            <EyeInvisibleOutlined onClick={() => setSeedPhraseVisible(true)} />
+          {!chainSyncKeyVisible && (
+            <EyeInvisibleOutlined
+              onClick={() => setChainSyncKeyVisible(true)}
+            />
           )}{' '}
-          {t('home:sspWalletDetails.ssp_mnemonic')}:
+          {t('home:sspWalletDetails.chain_sync_ssp_key', {
+            chain: blockchainConfig.name,
+          })}
+          :
         </h3>
-        <Paragraph copyable={{ text: seedPhrase }} className="copyableAddress">
-          <Text>
-            {seedPhraseVisible ? seedPhrase : '*** *** *** *** *** ***'}
-          </Text>
-        </Paragraph>
+        <Space direction="vertical" size="small">
+          {chainSyncKeyVisible && (
+            <QRCode
+              errorLevel="H"
+              value={activeChain + ':' + xpub}
+              icon="/ssp-logo-black.svg"
+              size={256}
+              style={{ margin: '0 auto' }}
+            />
+          )}
+          <Paragraph
+            copyable={{ text: activeChain + ':' + xpub }}
+            className="copyableAddress"
+          >
+            <Text>
+              {chainSyncKeyVisible
+                ? activeChain + ':' + xpub
+                : '*** *** *** *** *** ***'}
+            </Text>
+          </Paragraph>
+        </Space>
         <h3>
           {extendedPublicKeyVisible && (
             <EyeTwoTone onClick={() => setExtendedPublicKeyVisible(false)} />
@@ -142,7 +167,10 @@ function SSPWalletDetails(props: {
               onClick={() => setExtendedPublicKeyVisible(true)}
             />
           )}{' '}
-          {t('home:sspWalletDetails.chain_extended_pub', { chain: blockchainConfig.name })}:
+          {t('home:sspWalletDetails.chain_extended_pub', {
+            chain: blockchainConfig.name,
+          })}
+          :
         </h3>
         <Paragraph copyable={{ text: xpub }} className="copyableAddress">
           <Text>
@@ -158,11 +186,28 @@ function SSPWalletDetails(props: {
               onClick={() => setExtendedPrivateKeyVisible(true)}
             />
           )}{' '}
-          {t('home:sspWalletDetails.chain_extended_priv', { chain: blockchainConfig.name })}:
+          {t('home:sspWalletDetails.chain_extended_priv', {
+            chain: blockchainConfig.name,
+          })}
+          :
         </h3>
         <Paragraph copyable={{ text: xpriv }} className="copyableAddress">
           <Text>
             {extendedPrivateKeyVisible ? xpriv : '*** *** *** *** *** ***'}
+          </Text>
+        </Paragraph>
+        <h3>
+          {seedPhraseVisible && (
+            <EyeTwoTone onClick={() => setSeedPhraseVisible(false)} />
+          )}
+          {!seedPhraseVisible && (
+            <EyeInvisibleOutlined onClick={() => setSeedPhraseVisible(true)} />
+          )}{' '}
+          {t('home:sspWalletDetails.ssp_mnemonic')}:
+        </h3>
+        <Paragraph copyable={{ text: seedPhrase }} className="copyableAddress">
+          <Text>
+            {seedPhraseVisible ? seedPhrase : '*** *** *** *** *** ***'}
           </Text>
         </Paragraph>
       </Modal>

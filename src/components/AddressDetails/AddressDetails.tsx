@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Typography, Button, Modal, message } from 'antd';
+import { Typography, Button, Modal, message, QRCode, Space } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
@@ -18,12 +18,15 @@ function AddressDetails(props: {
   const { t } = useTranslation(['home', 'common']);
   const [privKey, setPrivKey] = useState('');
   const [redeemScriptVisible, setRedeemScriptVisible] = useState(false);
+  const [witnessScriptVisible, setWitnessScriptVisible] = useState(false);
   const [privateKeyVisible, setPrivateKeyVisible] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   // private key, redeemScript, address
   const { open, openAction } = props;
   const { activeChain } = useAppSelector((state) => state.sspState);
-  const { wallets, walletInUse } = useAppSelector((state) => state[activeChain]);
+  const { wallets, walletInUse } = useAppSelector(
+    (state) => state[activeChain],
+  );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const blockchainConfig = blockchains[activeChain];
   const displayMessage = (type: NoticeType, content: string) => {
@@ -39,6 +42,7 @@ function AddressDetails(props: {
 
   const handleOk = () => {
     setRedeemScriptVisible(false);
+    setWitnessScriptVisible(false);
     setPrivateKeyVisible(false);
     openAction(false);
   };
@@ -100,33 +104,71 @@ function AddressDetails(props: {
         ]}
       >
         <h3>{t('home:receive.wallet_address')}:</h3>
-        <Paragraph
-          copyable={{ text: wallets[walletInUse].address }}
-          className="copyableAddress"
-        >
-          <Text>{wallets[walletInUse].address}</Text>
-        </Paragraph>
-        <h3>
-          {redeemScriptVisible && (
-            <EyeTwoTone onClick={() => setRedeemScriptVisible(false)} />
-          )}
-          {!redeemScriptVisible && (
-            <EyeInvisibleOutlined
-              onClick={() => setRedeemScriptVisible(true)}
-            />
-          )}{' '}
-          {t('home:addressDetails.wallet_redeem_script')}:
-        </h3>
-        <Paragraph
-          copyable={{ text: wallets[walletInUse].redeemScript }}
-          className="copyableAddress"
-        >
-          <Text>
-            {redeemScriptVisible
-              ? wallets[walletInUse].redeemScript
-              : '*** *** *** *** *** ***'}
-          </Text>
-        </Paragraph>
+        <Space direction="vertical" size="small">
+          <QRCode
+            errorLevel="H"
+            value={wallets[walletInUse].address}
+            icon="/ssp-logo-black.svg"
+            size={256}
+            style={{ margin: '0 auto' }}
+          />
+          <Paragraph
+            copyable={{ text: wallets[walletInUse].address }}
+            className="copyableAddress"
+          >
+            <Text>{wallets[walletInUse].address}</Text>
+          </Paragraph>
+        </Space>
+        {wallets[walletInUse].redeemScript && (
+          <>
+            <h3>
+              {redeemScriptVisible && (
+                <EyeTwoTone onClick={() => setRedeemScriptVisible(false)} />
+              )}
+              {!redeemScriptVisible && (
+                <EyeInvisibleOutlined
+                  onClick={() => setRedeemScriptVisible(true)}
+                />
+              )}{' '}
+              {t('home:addressDetails.wallet_redeem_script')}:
+            </h3>
+            <Paragraph
+              copyable={{ text: wallets[walletInUse].redeemScript }}
+              className="copyableAddress"
+            >
+              <Text>
+                {redeemScriptVisible
+                  ? wallets[walletInUse].redeemScript
+                  : '*** *** *** *** *** ***'}
+              </Text>
+            </Paragraph>
+          </>
+        )}
+        {wallets[walletInUse].witnessScript && (
+          <>
+            <h3>
+              {witnessScriptVisible && (
+                <EyeTwoTone onClick={() => setWitnessScriptVisible(false)} />
+              )}
+              {!witnessScriptVisible && (
+                <EyeInvisibleOutlined
+                  onClick={() => setWitnessScriptVisible(true)}
+                />
+              )}{' '}
+              {t('home:addressDetails.wallet_witness_script')}:
+            </h3>
+            <Paragraph
+              copyable={{ text: wallets[walletInUse].witnessScript }}
+              className="copyableAddress"
+            >
+              <Text>
+                {witnessScriptVisible
+                  ? wallets[walletInUse].witnessScript
+                  : '*** *** *** *** *** ***'}
+              </Text>
+            </Paragraph>
+          </>
+        )}
         <h3>
           {privateKeyVisible && (
             <EyeTwoTone onClick={() => setPrivateKeyVisible(false)} />
