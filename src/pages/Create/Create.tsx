@@ -47,9 +47,7 @@ interface passwordForm {
 // we always use flux
 function Create() {
   const { t } = useTranslation(['cr', 'common']);
-  const { identityChain } = useAppSelector(
-    (state) => state.sspState,
-  );
+  const { identityChain } = useAppSelector((state) => state.sspState);
   const blockchainConfig = blockchains[identityChain];
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
@@ -202,90 +200,94 @@ function Create() {
   return (
     <>
       {contextHolder}
-      <Button
-        type="link"
-        block
-        size="small"
-        style={{ textAlign: 'left', padding: '0' }}
-        onClick={() => navigate('/welcome')}
-      >
-        <LeftOutlined style={{ fontSize: '12px' }} /> {t('common:back')}
-      </Button>
-      <Divider />
-      <Image width={80} preview={false} src="/ssp-logo-black.svg" />
-      <h2>{t('cr:create_pw')}</h2>
-      <Form
-        name="pwdForm"
-        initialValues={{ tos: false }}
-        onFinish={(values) => void onFinish(values as passwordForm)}
-        autoComplete="off"
-        layout="vertical"
-      >
-        <Form.Item
-          label={t('cr:set_password')}
-          name="password"
-          rules={[
-            {
-              required: true,
-              message: t('cr:input_password'),
-            },
-          ]}
+      <div style={{ paddingBottom: '43px' }}>
+        <Button
+          type="link"
+          block
+          size="small"
+          style={{ textAlign: 'left', padding: '0' }}
+          onClick={() => navigate('/welcome')}
         >
-          <Input.Password
-            size="large"
-            placeholder={t('cr:set_password')}
-            prefix={<LockOutlined />}
-            iconRender={(visible) =>
-              visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-            }
-            className="password-input"
-          />
-        </Form.Item>
-
-        <Form.Item
-          label={t('cr:confirm_password')}
-          name="confirm_password"
-          rules={[{ required: true, message: t('cr:pls_conf_pwd') }]}
+          <LeftOutlined style={{ fontSize: '12px' }} /> {t('common:back')}
+        </Button>
+        <Divider />
+        <Image width={80} preview={false} src="/ssp-logo-black.svg" />
+        <h2>{t('cr:create_pw')}</h2>
+        <Form
+          name="pwdForm"
+          initialValues={{ tos: false }}
+          onFinish={(values) => void onFinish(values as passwordForm)}
+          autoComplete="off"
+          layout="vertical"
         >
-          <Input.Password
-            size="large"
-            placeholder={t('cr:confirm_password')}
-            prefix={<LockOutlined />}
-            iconRender={(visible) =>
-              visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-            }
-            className="password-input"
-          />
-        </Form.Item>
+          <Form.Item
+            label={t('cr:set_password')}
+            name="password"
+            rules={[
+              {
+                required: true,
+                message: t('cr:input_password'),
+              },
+            ]}
+          >
+            <Input.Password
+              size="large"
+              placeholder={t('cr:set_password')}
+              prefix={<LockOutlined />}
+              iconRender={(visible) =>
+                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+              }
+              className="password-input"
+            />
+          </Form.Item>
 
-        <Form.Item name="tos" valuePropName="checked">
-          <Checkbox>
-            {t('cr:i_agree')}{' '}
-            <a
-              href="https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t('cr:ssp_wallet_disclaimer')}
-            </a>
-            .
-          </Checkbox>
-        </Form.Item>
+          <Form.Item
+            label={t('cr:confirm_password')}
+            name="confirm_password"
+            rules={[{ required: true, message: t('cr:pls_conf_pwd') }]}
+          >
+            <Input.Password
+              size="large"
+              placeholder={t('cr:confirm_password')}
+              prefix={<LockOutlined />}
+              iconRender={(visible) =>
+                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+              }
+              className="password-input"
+            />
+          </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" size="large" htmlType="submit">
-            {t('cr:create_wallet')}
-          </Button>
-        </Form.Item>
-      </Form>
-      <Button
-        type="link"
-        block
-        size="small"
-        onClick={() => navigate('/restore')}
-      >
-        {t('cr:restore_with_seed')}
-      </Button>
+          <Form.Item name="tos" valuePropName="checked">
+            <Checkbox>
+              {t('cr:i_agree')}{' '}
+              <a
+                href="https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('cr:ssp_wallet_disclaimer')}
+              </a>
+              .
+            </Checkbox>
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" size="large" htmlType="submit">
+              {t('cr:create_wallet')}
+            </Button>
+          </Form.Item>
+        </Form>
+        <Button
+          type="link"
+          block
+          size="small"
+          onClick={() => navigate('/restore')}
+        >
+          {t('cr:restore_with_seed')}
+        </Button>
+        <br />
+        <br />
+      </div>
       <Modal
         title={t('cr:backup_wallet_seed')}
         open={isModalOpen}

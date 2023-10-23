@@ -38,7 +38,6 @@ import { generateIdentityAddress, getScriptType } from '../../lib/wallet.ts';
 
 import { blockchains } from '@storage/blockchains';
 
-import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
 
 import { transaction, generatedWallets, cryptos } from '../../types';
@@ -86,7 +85,11 @@ function Login() {
     void (async function () {
       // get activatedChain
       const activatedChain = await localForage.getItem('activeChain');
-      if (activatedChain && typeof activatedChain === 'string' && blockchains[activatedChain]) {
+      if (
+        activatedChain &&
+        typeof activatedChain === 'string' &&
+        blockchains[activatedChain]
+      ) {
         const aC: keyof cryptos = activatedChain as keyof cryptos;
         dispatch(setActiveChain(aC));
       }
@@ -276,7 +279,7 @@ function Login() {
       {contextHolder}
       {isLoading && <Spin size="large" />}
       {!isLoading && (
-        <>
+        <div style={{ paddingBottom: '43px' }}>
           <Image
             width={80}
             preview={false}
@@ -313,7 +316,6 @@ function Login() {
             </Form.Item>
           </Form>
           <br />
-          <br />
           <Button
             type="link"
             block
@@ -322,9 +324,8 @@ function Login() {
           >
             {t('login:forgot_pw')} <i> {t('login:restore')}</i>
           </Button>
-          <PoweredByFlux />
           <FiatCurrencyController />
-        </>
+        </div>
       )}
     </>
   );

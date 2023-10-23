@@ -4,7 +4,6 @@ import secureLocalStorage from 'react-secure-storage';
 import { Button, Image, Space, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import './Welcome.css';
-import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux';
 
 function Welcome() {
   const { t } = useTranslation(['welcome', 'common']);
@@ -27,7 +26,7 @@ function Welcome() {
     <>
       {isLoading && <Spin size="large" />}
       {!isLoading && (
-        <>
+        <div style={{ paddingBottom: '43px' }}>
           <Image
             width={120}
             preview={false}
@@ -49,9 +48,8 @@ function Welcome() {
               <Link to={'/restore'}>{t('welcome:restore_with_seed')}</Link>
             </Button>
           </Space>
-        </>
+        </div>
       )}
-      <PoweredByFlux />
     </>
   );
 }

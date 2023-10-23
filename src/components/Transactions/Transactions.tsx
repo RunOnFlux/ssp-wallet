@@ -157,7 +157,7 @@ function Transactions() {
   };
 
   return (
-    <>
+    <div>
       <PendingTransactionsTable
         transactions={pendingTxs}
         fiatRate={fiatRate}
@@ -173,7 +173,7 @@ function Transactions() {
       />
 
       <SocketListener txRejected={onTxRejected} txSent={onTxSent} />
-    </>
+    </div>
   );
 }
 

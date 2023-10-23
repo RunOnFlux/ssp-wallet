@@ -6,6 +6,7 @@ import { store } from './store';
 import { Provider } from 'react-redux';
 import localForage from 'localforage';
 import { SocketProvider } from './contexts/SocketContext';
+import PoweredByFlux from './components/PoweredByFlux/PoweredByFlux.tsx';
 import './translations';
 import './index.css';
 
@@ -23,6 +24,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
       <SocketProvider>
         <RouterProvider router={router} />
+        <PoweredByFlux />
       </SocketProvider>
     </Provider>
   </React.StrictMode>,

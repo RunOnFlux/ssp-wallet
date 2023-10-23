@@ -160,7 +160,7 @@ function Home() {
       {contextHolder}
       {isLoading && <Spin size="large" />}
       {!isLoading && (
-        <>
+        <div style={{ paddingBottom: '43px' }}>
           <Navbar />
           <Divider />
           <Space direction="vertical">
@@ -169,7 +169,7 @@ function Home() {
             <Navigation />
             <Transactions />
           </Space>
-        </>
+        </div>
       )}
       <Key synchronised={keySynchronised} />
     </>
