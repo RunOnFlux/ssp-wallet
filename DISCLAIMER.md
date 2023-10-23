@@ -35,3 +35,4 @@ This disclaimer is subject to updates or changes. It is your responsibility to r
 
 * General RunOnFlux.io Terms of Service: <https://runonflux.io/termsandconditions>
 
+* [Not Being Evil](https://www.youtube.com/watch?v=GJVk_LfASxk&ab_channel=FluxLabs)

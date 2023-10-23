@@ -16,6 +16,7 @@
   "confirm_password": "Confirm Password",
   "pls_conf_pwd": "Please confirm your password!",
   "i_agree": "I agree with",
+  "ssp_wallet_disclaimer": "SSP Wallet Disclaimer",
   "not_evil": "not being evil",
   "import_wallet": "Import Wallet",
   "wallet_seed_info": "Wallet seed is used to generate all addresses. Anyone with the access to the wallet seed has partial control over the wallet.",

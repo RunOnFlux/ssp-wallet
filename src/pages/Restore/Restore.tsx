@@ -287,7 +287,7 @@ function Restore() {
               target="_blank"
               rel="noreferrer"
             >
-              {t('cr:not_evil')}
+              {t('cr:ssp_wallet_disclaimer')}
             </a>
             .
           </Checkbox>

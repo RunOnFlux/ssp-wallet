@@ -262,11 +262,11 @@ function Create() {
           <Checkbox>
             {t('cr:i_agree')}{' '}
             <a
-              href="https://www.youtube.com/watch?v=GJVk_LfASxk&ab_channel=FluxLabs"
+              href="https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md"
               target="_blank"
               rel="noreferrer"
             >
-              {t('cr:not_evil')}
+              {t('cr:ssp_wallet_disclaimer')}
             </a>
             .
           </Checkbox>
