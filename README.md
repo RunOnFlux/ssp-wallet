@@ -49,3 +49,5 @@ For non sensitive data such as transactions associated with an address, balance,
 Everything SSP is open source. SSP Wallet, SSP Key, SSP Relay as well as any package, dependency, piece of code. Anyone can verify everything. We strive to provide a simple, secure, powerful wallet to the entire crypto community and work together to be the go to standard for blockchain self custody.
 
 SSP Wallet is built using React 18, Typescript and requires Node 16+. Dev me out with yarn dev now!
+
+By using SSP you agree with SSP Diclaimer <https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md>
