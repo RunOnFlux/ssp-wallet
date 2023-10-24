@@ -1,0 +1,9 @@
+.creation-steps > div {
+  width: 80px;
+}
+
+.creation-steps {
+  margin-bottom: 35px;
+  margin-top: 25px;
+  margin-left: -20px;
+}

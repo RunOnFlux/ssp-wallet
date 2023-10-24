@@ -41,6 +41,7 @@ import { getFingerprint } from '../../lib/fingerprint';
 import { useAppSelector } from '../../hooks';
 import { blockchains } from '@storage/blockchains';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
+import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 
 interface passwordForm {
   mnemonic: string;
@@ -221,8 +222,9 @@ function Restore() {
           <LeftOutlined style={{ fontSize: '12px' }} /> {t('common:back')}
         </Button>
         <Divider />
+        <CreationSteps step={1} import={true} />
         <Image width={80} preview={false} src="/ssp-logo-black.svg" />
-        <h2>{t('cr:import_seed')}</h2>
+        <h2 style={{ marginBottom: 40 }}>{t('cr:import_seed')}</h2>
         <Form
           name="seedForm"
           onFinish={(values) => void onFinish(values as passwordForm)}
@@ -308,6 +310,7 @@ function Restore() {
         okText={t('cr:restore_wallet')}
         style={{ textAlign: 'center', top: 60 }}
       >
+        <CreationSteps step={2} import={true} />
         <p>{t('cr:wallet_seed_info')}</p>
         <p>{t('cr:keep_seed_safe')}</p>
         <p>

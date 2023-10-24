@@ -38,6 +38,7 @@ import { NoticeType } from 'antd/es/message/interface';
 import { getFingerprint } from '../../lib/fingerprint';
 import { blockchains } from '@storage/blockchains';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
+import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 
 interface passwordForm {
   password: string;
@@ -212,8 +213,9 @@ function Create() {
           <LeftOutlined style={{ fontSize: '12px' }} /> {t('common:back')}
         </Button>
         <Divider />
+        <CreationSteps step={1} import={false} />
         <Image width={80} preview={false} src="/ssp-logo-black.svg" />
-        <h2>{t('cr:create_pw')}</h2>
+        <h2 style={{ marginBottom: 40 }}>{t('cr:create_pw')}</h2>
         <Form
           name="pwdForm"
           initialValues={{ tos: false }}
@@ -297,6 +299,7 @@ function Create() {
         okText={t('cr:create_wallet')}
         style={{ textAlign: 'center', top: 60 }}
       >
+        <CreationSteps step={2} import={false} />
         <p>{t('cr:wallet_seed_info')}</p>
         <p>{t('cr:keep_seed_safe')}</p>
         <p>

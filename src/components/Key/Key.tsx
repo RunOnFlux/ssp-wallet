@@ -20,6 +20,7 @@ import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { syncSSPRelay } from '../../types';
 import { setXpubKey, setActiveChain } from '../../store';
+import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 
 import { sspConfig } from '@storage/ssp';
 
@@ -279,6 +280,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         }
         style={{ textAlign: 'center', top: 60 }}
       >
+        {isIdentityChain && <CreationSteps step={3} import={false} />}
         <p>{t('home:key.sync_info_1')}</p>
         <b>
           {isIdentityChain
