@@ -39,6 +39,7 @@ import { generateIdentityAddress, getScriptType } from '../../lib/wallet.ts';
 import { blockchains } from '@storage/blockchains';
 
 import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
+import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 
 import { transaction, generatedWallets, cryptos } from '../../types';
 
@@ -327,6 +328,7 @@ function Login() {
           <FiatCurrencyController />
         </div>
       )}
+      <PoweredByFlux />
     </>
   );
 }

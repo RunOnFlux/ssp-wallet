@@ -4,6 +4,7 @@ import secureLocalStorage from 'react-secure-storage';
 import { Button, Image, Space, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import './Welcome.css';
+import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 
 function Welcome() {
   const { t } = useTranslation(['welcome', 'common']);
@@ -50,6 +51,7 @@ function Welcome() {
           </Space>
         </div>
       )}
+      <PoweredByFlux />
     </>
   );
 }

@@ -37,6 +37,7 @@ import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
 import { getFingerprint } from '../../lib/fingerprint';
 import { blockchains } from '@storage/blockchains';
+import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 
 interface passwordForm {
   password: string;
@@ -325,6 +326,7 @@ function Create() {
         <br />
         <br />
       </Modal>
+      <PoweredByFlux />
     </>
   );
 }

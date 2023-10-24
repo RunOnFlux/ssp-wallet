@@ -21,6 +21,7 @@ import Transactions from '../../components/Transactions/Transactions';
 import Balances from '../../components/Balances/Balances';
 import Navbar from '../../components/Navbar/Navbar';
 import AddressContainer from '../../components/AddressContainer/AddressContainer.tsx';
+import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import {
   generateMultisigAddress,
   generateIdentityAddress,
@@ -172,6 +173,7 @@ function Home() {
         </div>
       )}
       <Key synchronised={keySynchronised} />
+      <PoweredByFlux />
     </>
   );
 }

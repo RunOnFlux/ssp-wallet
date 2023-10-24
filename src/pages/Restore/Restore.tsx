@@ -40,6 +40,7 @@ import localForage from 'localforage';
 import { getFingerprint } from '../../lib/fingerprint';
 import { useAppSelector } from '../../hooks';
 import { blockchains } from '@storage/blockchains';
+import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 
 interface passwordForm {
   mnemonic: string;
@@ -336,6 +337,7 @@ function Restore() {
         <br />
         <br />
       </Modal>
+      <PoweredByFlux />
     </>
   );
 }
