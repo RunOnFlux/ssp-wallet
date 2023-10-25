@@ -18,5 +18,14 @@
   "ask_me_later": "Ask me later",
   "reset": "Reset",
   "close": "Close",
-  "chain": "Chain"
+  "chain": "Chain",
+  "get": "Get",
+  "started": "Started!",
+  "import": "Import",
+  "create": "Create",
+  "wallet": "Wallet",
+  "password": "Password",
+  "backup": "Backup",
+  "sync": "Sync",
+  "ssp_key": "SSP Key"
 }

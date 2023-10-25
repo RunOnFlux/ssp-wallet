@@ -1,41 +1,43 @@
 import { Steps } from 'antd';
+import { useTranslation } from 'react-i18next';
 import './CreationSteps.css';
 
 function CreationSteps(props: { step: number; import: boolean }) {
+  const { t } = useTranslation(['common']);
   const items = [
     {
       title: (
         <div style={{ lineHeight: '18px' }}>
-          {'Get'}
+          {t('common:get')}
           <br />
-          {'Started!'}
+          {t('common:started')}
         </div>
       ),
     },
     {
       title: (
         <div style={{ lineHeight: '18px' }}>
-          {props.import ? 'Import' : 'Create'}
+          {props.import ? t('common:import') : t('common:create')}
           <br />
-          {props.import ? 'Wallet' : 'Password'}
+          {props.import ? t('common:wallet') : t('common:password')}
         </div>
       ),
     },
     {
       title: (
         <div style={{ lineHeight: '18px' }}>
-          {'Backup'}
+          {t('common:backup')}
           <br />
-          {'Wallet'}
+          {t('common:wallet')}
         </div>
       ),
     },
     {
       title: (
         <div style={{ lineHeight: '18px' }}>
-          {'Sync'}
+          {t('common:sync')}
           <br />
-          {'SSP Key'}
+          {t('common:ssp_key')}
         </div>
       ),
     },
