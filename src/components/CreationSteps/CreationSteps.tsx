@@ -1,7 +1,7 @@
-import { Steps, ConfigProvider } from 'antd';
+import { Steps } from 'antd';
 import './CreationSteps.css';
 
-function CreationSteps(props: { step: number, import: boolean }) {
+function CreationSteps(props: { step: number; import: boolean }) {
   const items = [
     {
       title: (
@@ -15,7 +15,7 @@ function CreationSteps(props: { step: number, import: boolean }) {
     {
       title: (
         <div style={{ lineHeight: '18px' }}>
-          {props.import ? 'Import' : 'Create'}  
+          {props.import ? 'Import' : 'Create'}
           <br />
           {props.import ? 'Wallet' : 'Password'}
         </div>
@@ -42,31 +42,17 @@ function CreationSteps(props: { step: number, import: boolean }) {
   ];
   return (
     <>
-      <ConfigProvider
-        theme={{
-          components: {
-            Steps: {
-              customIconFontSize: 10,
-              customIconSize: 10,
-              descriptionMaxWidth: 10,
-              titleLineHeight: 10,
-            },
-          },
-        }}
-      >
-        <Steps
-          current={props.step}
-          labelPlacement="vertical"
-          items={items}
-          size="small"
-          direction="horizontal"
-          responsive={false}
-          className='creation-steps'
-        />
-      </ConfigProvider>
+      <Steps
+        current={props.step}
+        labelPlacement="vertical"
+        items={items}
+        size="small"
+        direction="horizontal"
+        responsive={false}
+        className="creation-steps"
+      />
     </>
   );
 }
 
 export default CreationSteps;
-
