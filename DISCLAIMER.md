@@ -1,5 +1,7 @@
 ### SSP Cryptocurrency Wallet Disclaimer
 
+**SSP is using strong encryption based on your device fingerprint. Altering your device OS, time, language and more variables can result in a need to restore SSP**
+
 Thank you for choosing SSP Wallet ("the Wallet") for managing your cryptocurrencies. Please carefully read and understand this disclaimer before using the Wallet.
 
 1. Community Project: The Wallet is an open-source community project. It is available for use by the community for experimentation and testing purposes.

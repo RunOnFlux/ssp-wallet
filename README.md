@@ -1,6 +1,8 @@
 SSP Wallet
 Secure. Simple. Powerful.
 
+**SSP is using strong encryption based on your device fingerprint. Altering your device OS, time, language and more variables can result in a need to restore SSP**
+
 Why another wallet?
 This one is drastically different. Designed with security and self-custody first.
 SSP is true two factor authentication wallet. It is 2-of-2 multisignature address.
