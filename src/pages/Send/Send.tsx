@@ -23,6 +23,7 @@ import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
 
 import { transaction } from '../../types';
+import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 
 interface sendForm {
   receiver: string;
@@ -348,6 +349,7 @@ function Send() {
         chain={txChain}
       />
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
+      <PoweredByFlux />
     </>
   );
 }

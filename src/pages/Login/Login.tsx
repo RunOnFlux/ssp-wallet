@@ -328,7 +328,7 @@ function Login() {
           <FiatCurrencyController />
         </div>
       )}
-      <PoweredByFlux />
+      <PoweredByFlux isClickeable={true} />
     </>
   );
 }

@@ -51,7 +51,7 @@ function Welcome() {
           </Space>
         </div>
       )}
-      <PoweredByFlux />
+      <PoweredByFlux isClickeable={true} />
     </>
   );
 }

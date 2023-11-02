@@ -1,6 +1,9 @@
 import { Image } from 'antd';
 
-function PoweredByFlux() {
+interface Props {
+  isClickeable?: boolean;
+}
+function PoweredByFlux({ isClickeable = false }: Props) {
   const theme = 'dark';
   const bgColor: string = theme === 'dark' ? '#fff' : '#000';
 
@@ -26,15 +29,28 @@ function PoweredByFlux() {
         backgroundColor: bgColor,
       }}
     >
-      <Image
-        height={18}
-        preview={false}
-        src={image}
-        onClick={() => open('https://runonflux.io')}
-        style={{ cursor: 'pointer' }}
-      />
+      {isClickeable && (
+        <Image
+          height={18}
+          preview={false}
+          src={image}
+          onClick={() => open('https://runonflux.io')}
+          style={{ cursor: 'pointer' }}
+        />
+      )}
+      {!isClickeable && (
+        <Image
+          height={18}
+          preview={false}
+          src={image}
+        />
+      )}
     </div>
   );
 }
+
+PoweredByFlux.defaultProps = {
+  isClickeable: false,
+};
 
 export default PoweredByFlux;
