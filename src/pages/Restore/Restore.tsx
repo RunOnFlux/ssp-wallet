@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Input,
-  Image,
   Button,
   Checkbox,
   Form,
@@ -17,7 +16,6 @@ import {
   EyeInvisibleOutlined,
   EyeTwoTone,
   LockOutlined,
-  LeftOutlined,
 } from '@ant-design/icons';
 import secureLocalStorage from 'react-secure-storage';
 
@@ -42,6 +40,7 @@ import { useAppSelector } from '../../hooks';
 import { blockchains } from '@storage/blockchains';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
+import Headerbar from '../../components/Headerbar/Headerbar.tsx';
 
 interface passwordForm {
   mnemonic: string;
@@ -211,20 +210,14 @@ function Restore() {
   return (
     <>
       {contextHolder}
-      <div style={{ paddingBottom: '43px' }}>
-        <Button
-          type="link"
-          block
-          size="small"
-          style={{ textAlign: 'left', padding: '0' }}
-          onClick={() => handleNavigation()}
-        >
-          <LeftOutlined style={{ fontSize: '12px' }} /> {t('common:back')}
-        </Button>
+      <div style={{ paddingBottom: '63px' }}>
+        <Headerbar
+          headerTitle={t('cr:import_seed')}
+          navigateTo={!Object.keys(wallets).length ? '/home' : '/welcome'}
+        />
         <Divider />
         <CreationSteps step={1} import={true} />
-        <Image width={80} preview={false} src="/ssp-logo-black.svg" />
-        <h2 style={{ marginBottom: 40 }}>{t('cr:import_seed')}</h2>
+        <br />
         <Form
           name="seedForm"
           onFinish={(values) => void onFinish(values as passwordForm)}
@@ -301,6 +294,15 @@ function Restore() {
             </Button>
           </Form.Item>
         </Form>
+        <Button
+          type="link"
+          block
+          size="small"
+          style={{ padding: '0' }}
+          onClick={() => handleNavigation()}
+        >
+          {t('common:cancel')}
+        </Button>
       </div>
       <Modal
         title={t('cr:backup_wallet_seed')}

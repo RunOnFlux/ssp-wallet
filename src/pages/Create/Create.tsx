@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Input,
-  Image,
   Button,
   Checkbox,
   Form,
@@ -17,7 +16,6 @@ import {
   EyeInvisibleOutlined,
   EyeTwoTone,
   LockOutlined,
-  LeftOutlined,
 } from '@ant-design/icons';
 import secureLocalStorage from 'react-secure-storage';
 
@@ -39,6 +37,7 @@ import { getFingerprint } from '../../lib/fingerprint';
 import { blockchains } from '@storage/blockchains';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
+import Headerbar from '../../components/Headerbar/Headerbar.tsx';
 
 interface passwordForm {
   password: string;
@@ -203,19 +202,13 @@ function Create() {
     <>
       {contextHolder}
       <div style={{ paddingBottom: '43px' }}>
-        <Button
-          type="link"
-          block
-          size="small"
-          style={{ textAlign: 'left', padding: '0' }}
-          onClick={() => navigate('/welcome')}
-        >
-          <LeftOutlined style={{ fontSize: '12px' }} /> {t('common:back')}
-        </Button>
+        <Headerbar
+          headerTitle={t('cr:create_pw')}
+          navigateTo="/welcome"
+        />
         <Divider />
         <CreationSteps step={1} import={false} />
-        <Image width={80} preview={false} src="/ssp-logo-black.svg" />
-        <h2 style={{ marginBottom: 40 }}>{t('cr:create_pw')}</h2>
+        <br />
         <Form
           name="pwdForm"
           initialValues={{ tos: false }}
