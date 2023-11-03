@@ -46,7 +46,9 @@ function Send() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { activeChain, sspWalletKeyIdentity } = useAppSelector((state) => state.sspState);
+  const { activeChain, sspWalletKeyIdentity } = useAppSelector(
+    (state) => state.sspState,
+  );
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
@@ -54,6 +56,7 @@ function Send() {
   const redeemScript = wallets[walletInUse].redeemScript;
   const witnessScript = wallets[walletInUse].witnessScript;
   const sender = wallets[walletInUse].address;
+  const confirmedBalance = wallets[walletInUse].balance;
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
@@ -189,8 +192,12 @@ function Send() {
           addressIndex,
           activeChain,
         );
-        const amount = new BigNumber(values.amount).multipliedBy(1e8).toFixed();
-        const fee = new BigNumber(values.fee).multipliedBy(1e8).toFixed();
+        const amount = new BigNumber(values.amount)
+          .multipliedBy(10 ** blockchainConfig.decimals)
+          .toFixed();
+        const fee = new BigNumber(values.fee)
+          .multipliedBy(10 ** blockchainConfig.decimals)
+          .toFixed();
         constructAndSignTransaction(
           activeChain,
           values.receiver,
@@ -230,12 +237,18 @@ function Send() {
       fetchAddressTransactions(sender, activeChain, 0, 3)
         .then((txs) => {
           const amount = new BigNumber(0)
-            .minus(new BigNumber(values.amount).multipliedBy(1e8))
+            .minus(
+              new BigNumber(values.amount).multipliedBy(
+                10 ** blockchainConfig.decimals,
+              ),
+            )
             .toFixed();
           // amount must be the same and not present in our transactions table
           txs.forEach((tx) => {
             if (tx.amount === amount) {
-              const txExists = transactions.find((ttx: transaction) => ttx.txid === tx.txid);
+              const txExists = transactions.find(
+                (ttx: transaction) => ttx.txid === tx.txid,
+              );
               if (!txExists) {
                 setTxid(tx.txid);
                 // stop interval
@@ -288,6 +301,12 @@ function Send() {
             suffix={blockchainConfig.symbol}
           />
         </Form.Item>
+        <div style={{ marginTop: '-25px', float: 'right', marginRight: 10, fontSize: 12, color: 'grey' }}>
+        {t('send:max')}:{' '}
+          {new BigNumber(confirmedBalance)
+            .dividedBy(10 ** blockchainConfig.decimals)
+            .toFixed()}
+        </div>
 
         <Form.Item
           label={t('send:fee')}
@@ -295,7 +314,11 @@ function Send() {
           initialValue={'0.0001'}
           rules={[{ required: true, message: t('send:input_fee') }]}
         >
-          <Input size="large" placeholder={t('send:tx_fee')} suffix={blockchainConfig.symbol} />
+          <Input
+            size="large"
+            placeholder={t('send:tx_fee')}
+            suffix={blockchainConfig.symbol}
+          />
         </Form.Item>
 
         <Form.Item

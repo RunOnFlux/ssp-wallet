@@ -28,15 +28,15 @@ function Balances() {
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
+  const blockchainConfig = blockchains[activeChain];
   const [totalBalance, setTotalBalance] = useState(
     new BigNumber(wallets[walletInUse].balance)
       .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
-      .dividedBy(1e8),
+      .dividedBy(10 ** blockchainConfig.decimals),
   );
   const [balanceUSD, setBalanceUSD] = useState(
     totalBalance.multipliedBy(new BigNumber(fiatRate)),
   );
-  const blockchainConfig = blockchains[activeChain];
 
   useEffect(() => {
     if (alreadyMounted.current) return;
@@ -111,7 +111,7 @@ function Balances() {
   useEffect(() => {
     const ttlBal = new BigNumber(wallets[walletInUse].balance)
       .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
-      .dividedBy(1e8);
+      .dividedBy(10 ** blockchainConfig.decimals);
     setTotalBalance(ttlBal);
     const balUSD = ttlBal.multipliedBy(new BigNumber(fiatRate));
     setBalanceUSD(balUSD);

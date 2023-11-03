@@ -33,6 +33,7 @@ function decodeMessage(asm: string) {
 function processTransaction(
   insightTx: transactionInsight,
   address: string,
+  decimals: number,
 ): transaction {
   const vins = insightTx.vin;
   const vouts = insightTx.vout;
@@ -50,7 +51,7 @@ function processTransaction(
     if (jsonvin.addr && jsonvin.addr === address) {
       // my address is sending
       const satsSent = new BigNumber(jsonvin.value).multipliedBy(
-        new BigNumber(1e8),
+        new BigNumber(10 ** decimals),
       );
       amountSentInItx = amountSentInItx.plus(satsSent);
     }
@@ -63,7 +64,7 @@ function processTransaction(
       if (jsonvout.scriptPubKey.addresses[0] === address) {
         // my address is receiving
         const amountReceived = new BigNumber(jsonvout.value).multipliedBy(
-          new BigNumber(1e8),
+          new BigNumber(10 ** decimals),
         );
         amountReceivedInItx = amountReceivedInItx.plus(amountReceived);
       }
@@ -77,7 +78,7 @@ function processTransaction(
     }
   }
 
-  const fee = new BigNumber(insightTx.fees).multipliedBy(new BigNumber(1e8));
+  const fee = new BigNumber(insightTx.fees).multipliedBy(new BigNumber(10 ** decimals));
   let amount = amountReceivedInItx.minus(amountSentInItx);
   if (amount.isNegative()) {
     amount = amount.plus(fee); // we were the ones sending fee
@@ -179,7 +180,7 @@ export async function fetchAddressTransactions(
       const response = await axios.get<transacitonsInsight>(url);
       const txs = [];
       for (const tx of response.data.items) {
-        const processedTransaction = processTransaction(tx, address);
+        const processedTransaction = processTransaction(tx, address, blockchains[chain].decimals);
         txs.push(processedTransaction);
       }
       return txs;
@@ -201,6 +202,7 @@ export function decodeTransactionForApproval(
 ) {
   try {
     const libID = getLibId(chain);
+    const decimals = blockchains[chain].decimals;
     const network = utxolib.networks[libID];
     const txhex = rawTx;
     const txb = utxolib.TransactionBuilder.fromTransaction(
@@ -239,7 +241,7 @@ export function decodeTransactionForApproval(
         if (address !== senderAddress) {
           txReceiver = address;
           amount = new BigNumber(out.value)
-            .dividedBy(new BigNumber(1e8))
+            .dividedBy(new BigNumber(10 ** decimals))
             .toFixed();
         }
       }
@@ -255,7 +257,7 @@ export function decodeTransactionForApproval(
         console.log(address);
         txReceiver = address;
         amount = new BigNumber(outOne.value)
-          .dividedBy(new BigNumber(1e8))
+          .dividedBy(new BigNumber(10 ** decimals))
           .toFixed();
       }
     }

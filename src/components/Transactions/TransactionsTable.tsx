@@ -56,7 +56,7 @@ function TransactionsTable(props: {
               </p>
               <p style={{ margin: 0 }}>
                 {t('home:transactionsTable.fee_with_symbol', {
-                  fee: new BigNumber(record.fee).dividedBy(1e8).toFixed(),
+                  fee: new BigNumber(record.fee).dividedBy(10 ** blockchainConfig.decimals).toFixed(),
                   symbol: blockchainConfig.symbol,
                 })}
               </p>
@@ -109,12 +109,12 @@ function TransactionsTable(props: {
           dataIndex="amount"
           render={(amnt: string) => (
             <>
-              {new BigNumber(amnt).dividedBy(1e8).toFixed()} {blockchainConfig.symbol}
+              {new BigNumber(amnt).dividedBy(10 ** blockchainConfig.decimals).toFixed()} {blockchainConfig.symbol}
               <br />
               <div style={{ color: 'grey', fontSize: 12 }}>
                 {+amnt < 0 ? '-' : ''}$
                 {new BigNumber(Math.abs(+amnt))
-                  .dividedBy(1e8)
+                  .dividedBy(10 ** blockchainConfig.decimals)
                   .multipliedBy(new BigNumber(fiatRate))
                   .toFixed(2)}{' '}
                 USD
