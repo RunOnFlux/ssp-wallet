@@ -294,6 +294,55 @@ export interface currencySSPRelay {
   crypto: cryptos;
 }
 
+export interface confirmedNodeInsight {
+  collateral: string;
+  txhash: string;
+  outidx: string;
+  ip: string;
+  network: string;
+  added_height: number;
+  confirmed_height: number;
+  last_confirmed_height: number;
+  last_paid_height: number;
+  tier: string;
+  payment_address: string;
+  pubkey: string;
+  activesince: string;
+  lastpaid: string;
+  amount: string;
+  rank: number;
+}
+
+export interface confirmedNodesInsight {
+  result: confirmedNodeInsight[];
+}
+
+export interface dosNodeFlux {
+  collateral: string;
+  added_height: number;
+  payment_address: string;
+  eligible_in: number;
+  amount: string;
+}
+
+export interface dosFlux {
+  status: string;
+  data: dosNodeFlux[]
+}
+
+export interface startNodeFlux {
+  collateral: string;
+  added_height: number;
+  payment_address: string;
+  expires_in: number;
+  amount: string;
+}
+
+export interface startFlux {
+  status: string;
+  data: startNodeFlux[]
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;

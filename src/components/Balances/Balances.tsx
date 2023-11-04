@@ -162,7 +162,7 @@ function Balances() {
   return (
     <>
       <h3 style={{ marginTop: 0, marginBottom: 0 }}>
-        {totalBalance.toFixed(8) || '0.00'} {blockchainConfig.symbol}
+        {totalBalance.toFixed() || '0.00'} {blockchainConfig.symbol}
       </h3>
       {+lockedBalance > 0 && (
         <div
@@ -171,7 +171,7 @@ function Balances() {
             color: 'grey',
           }}
         >
-          Locked: {lockedBalance.toFixed(2) || '0.00'} {blockchainConfig.symbol}
+          Locked: {lockedBalance.toFixed() || '0.00'} {blockchainConfig.symbol}
         </div>
       )}
       <h4 style={{ marginTop: 10, marginBottom: 15 }}>

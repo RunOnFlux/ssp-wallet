@@ -57,7 +57,7 @@ function TransactionsTable(props: {
               >
                 {t('home:txSent.show_in_explorer')}
               </a>
-              start fluxos edit delete
+              <div>Setup Start FluxOS Edit Delete</div>
             </div>
           ),
           expandRowByClick: true,
@@ -93,7 +93,15 @@ function TransactionsTable(props: {
           title={t('home:nodesTable.status')}
           className="node-status"
           dataIndex="status"
-          render={(status: string, row: node) => <>{status || row.name ? 'Offline' : 'Offline'}</>}
+          render={(status: string, row: node) => (
+            <>
+              {status.startsWith('1')
+                ? 'Starting'
+                : status || row.name
+                ? 'Offline'
+                : 'Unassigned'}
+            </>
+          )}
         />
       </Table>
     </>
