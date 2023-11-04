@@ -38,7 +38,7 @@ function Balances() {
   const [lockedBalance, setLockedBalance] = useState(
     myNodes.reduce((acc, node) => {
       return acc.plus(
-        new BigNumber(node.amount).dividedBy(10 ** blockchainConfig.decimals),
+        new BigNumber(node.name ? node.amount : 0).dividedBy(10 ** blockchainConfig.decimals),
       );
     }, new BigNumber(0)),
   );
@@ -125,7 +125,7 @@ function Balances() {
     setBalanceUSD(balUSD);
     const lockedAmnt = myNodes.reduce((acc, node) => {
       return acc.plus(
-        new BigNumber(node.amount).dividedBy(10 ** blockchainConfig.decimals),
+        new BigNumber(node.name ? node.amount : 0).dividedBy(10 ** blockchainConfig.decimals),
       );
     }, new BigNumber(0));
     setLockedBalance(lockedAmnt);
@@ -164,7 +164,7 @@ function Balances() {
       <h3 style={{ marginTop: 0, marginBottom: 0 }}>
         {totalBalance.toFixed(8) || '0.00'} {blockchainConfig.symbol}
       </h3>
-      {myNodes.length > 0 && (
+      {+lockedBalance > 0 && (
         <div
           style={{
             fontSize: 12,

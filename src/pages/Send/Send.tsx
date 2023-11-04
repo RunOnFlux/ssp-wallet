@@ -60,9 +60,11 @@ function Send() {
   const myNodes = wallets[walletInUse].nodes ?? [];
   let spendableBalance = confirmedBalance;
   myNodes.forEach((node) => {
-    spendableBalance = new BigNumber(spendableBalance)
-      .minus(node.amount)
-      .toFixed();
+    if (!node.name) {
+      spendableBalance = new BigNumber(spendableBalance)
+        .minus(node.amount)
+        .toFixed();
+    }
   });
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
@@ -205,6 +207,7 @@ function Send() {
         const fee = new BigNumber(values.fee)
           .multipliedBy(10 ** blockchainConfig.decimals)
           .toFixed();
+        const lockedUtxos = myNodes.filter((node) => node.name);
         constructAndSignTransaction(
           activeChain,
           values.receiver,
@@ -216,7 +219,7 @@ function Send() {
           keyPair.privKey,
           redeemScript,
           witnessScript,
-          myNodes,
+          lockedUtxos,
         )
           .then((tx) => {
             console.log(tx);
@@ -272,10 +275,14 @@ function Send() {
         });
     };
   };
+
+  const refresh = () => {
+    console.log('refresh');
+  }
   return (
     <>
       {contextHolder}
-      <Navbar />
+      <Navbar refresh={refresh} hasRefresh={false} />
       <Divider />
       <Form
         name="sendForm"
@@ -309,8 +316,16 @@ function Send() {
             suffix={blockchainConfig.symbol}
           />
         </Form.Item>
-        <div style={{ marginTop: '-25px', float: 'right', marginRight: 10, fontSize: 12, color: 'grey' }}>
-        {t('send:max')}:{' '}
+        <div
+          style={{
+            marginTop: '-25px',
+            float: 'right',
+            marginRight: 10,
+            fontSize: 12,
+            color: 'grey',
+          }}
+        >
+          {t('send:max')}:{' '}
           {new BigNumber(spendableBalance)
             .dividedBy(10 ** blockchainConfig.decimals)
             .toFixed()}

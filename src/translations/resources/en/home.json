@@ -19,6 +19,14 @@
     "amount": "Amount",
     "confirmations": "Confirmations"
   },
+  "nodesTable": {
+    "no_nodes": "Address has no nodes",
+    "name": "Name",
+    "ip": "IP Address",
+    "tier": "Tier",
+    "amount": "Amount",
+    "status": "Status"
+  },
   "sspWalletDetails": {
     "err_pw_not_valid": "Password is not valid.",
     "err_invalid_wallet_xpriv": "Invalid wallet xpriv.",
@@ -62,6 +70,7 @@
     "info_2": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or use a manual input."
   },
   "navbar": {
+    "refresh": "Refresh",
     "chain_wallet": "{{chain}} {{wallet}}",
     "ssp_details": "SSP Wallet Details",
     "addr_details": "Address Details",

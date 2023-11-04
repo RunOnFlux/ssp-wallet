@@ -1,0 +1,15 @@
+.node-name {
+  width: 100px;
+}
+
+.node-ip {
+  width: 100px;
+}
+
+.node-tier {
+  width: 80px;
+}
+
+.node-status {
+  width: 80px;
+}

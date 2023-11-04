@@ -24,6 +24,7 @@
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
     "events": "^3.3.0",
+    "flux-sdk": "https://github.com/RunOnFlux/flux-sdk",
     "i18next": "^23.5.1",
     "localforage": "^1.10.0",
     "patch-package": "^8.0.0",

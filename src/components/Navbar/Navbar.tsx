@@ -39,7 +39,7 @@ interface walletOption {
   label: string;
 }
 
-function Navbar() {
+function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
@@ -188,6 +188,7 @@ function Navbar() {
   };
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
+    if (e.key === 'refresh') props.refresh();
     if (e.key === 'Lock') logout();
     if (e.key === 'address') {
       setPasswordConfirmDialogVisible(true);
@@ -234,20 +235,39 @@ function Navbar() {
         margin: 0,
         marginTop: '-2px',
       },
-      children: [
-        {
-          label: t('home:navbar.addr_details'),
-          key: 'address',
-        },
-        {
-          label: t('home:navbar.ssp_details'),
-          key: 'sspwallet',
-        },
-        {
-          label: t('home:settings.settings'),
-          key: 'settings',
-        },
-      ],
+      children: props.hasRefresh
+        ? [
+            {
+              label: t('home:navbar.addr_details'),
+              key: 'address',
+            },
+            {
+              label: t('home:navbar.ssp_details'),
+              key: 'sspwallet',
+            },
+            {
+              label: t('home:settings.settings'),
+              key: 'settings',
+            },
+            {
+              label: t('home:navbar.refresh'),
+              key: 'refresh',
+            },
+          ]
+        : [
+            {
+              label: t('home:navbar.addr_details'),
+              key: 'address',
+            },
+            {
+              label: t('home:navbar.ssp_details'),
+              key: 'sspwallet',
+            },
+            {
+              label: t('home:settings.settings'),
+              key: 'settings',
+            },
+          ],
     },
     {
       key: 'Lock',

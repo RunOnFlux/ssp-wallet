@@ -13,11 +13,12 @@ import {
   setSspWalletIdentity,
   setSspWalletKeyIdentity,
 } from '../../store';
-import { Spin, Divider, message, Space } from 'antd';
+import { Spin, Divider, message, Space, Tabs } from 'antd';
 import './Home.css';
 import Key from '../../components/Key/Key';
 import Navigation from '../../components/Navigation/Navigation';
 import Transactions from '../../components/Transactions/Transactions';
+import Nodes from '../../components/Nodes/Nodes';
 import Balances from '../../components/Balances/Balances';
 import Navbar from '../../components/Navbar/Navbar';
 import AddressContainer from '../../components/AddressContainer/AddressContainer.tsx';
@@ -40,7 +41,7 @@ function Home() {
   );
   const { xpubKey: xpubKeyIdentity, xpubWallet: xpubWalletIdentity } =
     useAppSelector((state) => state[identityChain]);
-  const { xpubKey, xpubWallet, walletInUse } = useAppSelector(
+  const { xpubKey, xpubWallet, walletInUse, wallets } = useAppSelector(
     (state) => state[activeChain],
   );
   const [messageApi, contextHolder] = message.useMessage();
@@ -48,6 +49,14 @@ function Home() {
     void messageApi.open({
       type,
       content,
+    });
+  };
+
+  const refresh = () => {
+    console.log('kapp');
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
     });
   };
 
@@ -162,14 +171,34 @@ function Home() {
       {isLoading && <Spin size="large" />}
       {!isLoading && (
         <div style={{ paddingBottom: '43px' }}>
-          <Navbar />
+          <Navbar refresh={refresh} hasRefresh={true} />
           <Divider />
           <Space direction="vertical">
             <AddressContainer />
             <Balances />
             <Navigation />
-            <Transactions />
           </Space>
+          {wallets[walletInUse].nodes && (
+            <Tabs
+              defaultActiveKey="activity"
+              size="small"
+              centered
+              tabBarStyle={{ marginBottom: 0 }}
+              items={[
+                {
+                  label: 'Activity',
+                  key: 'activity',
+                  children: <Transactions />,
+                },
+                {
+                  label: 'Nodes',
+                  key: 'nodes',
+                  children: <Nodes />,
+                },
+              ]}
+            />
+          )}
+          {!wallets[walletInUse].nodes && <Transactions />}
         </div>
       )}
       <Key synchronised={keySynchronised} />
