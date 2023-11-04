@@ -8,6 +8,7 @@ import {
   blockbookBroadcastTxResult,
   broadcastTxResult,
   cryptos,
+  txIdentifier,
 } from '../types';
 
 import { backends } from '@storage/backends';
@@ -324,9 +325,21 @@ export async function constructAndSignTransaction(
   privateKey: string,
   redeemScript: string,
   witnessScript: string,
+  forbiddenUtxos?: txIdentifier[],
 ): Promise<string> {
   try {
     const utxos = await fetchUtxos(sender, chain);
+    const utxosFiltered = [];
+    if (forbiddenUtxos?.length) {
+      utxos.forEach((utxo) => {
+        const found = forbiddenUtxos.find(
+          (x) => x.txid === utxo.txid && x.vout === utxo.vout,
+        );
+        if (!found) {
+          utxosFiltered.push(utxo);
+        }
+      });
+    }
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
     const pickedUtxos = pickUtxos(utxos, amountToSend);
     const rawTx = buildUnsignedRawTx(

@@ -4,7 +4,7 @@ import {
   PayloadAction,
   combineReducers,
 } from '@reduxjs/toolkit';
-import { cryptos, currency, transaction } from '../types';
+import { cryptos, currency, transaction, node } from '../types';
 
 // ********** Import chains **********
 import flux from './flux';
@@ -226,6 +226,11 @@ export function setTransactions(
 ) {
   store.dispatch(chains[chain].actions.setTransactions({ wallet, data }));
 }
+export function setNodes(chain: keyof cryptos, wallet: string, data: node[]) {
+  if (chain === 'fluxTestnet' || chain === 'flux') {
+    store.dispatch(chains[chain].actions.setNodes({ wallet, data }));
+  }
+}
 export function setBlockheight(chain: keyof cryptos, data: number) {
   store.dispatch(chains[chain].actions.setBlockheight(data));
 }
@@ -237,6 +242,8 @@ export function setChainInitialState(chain: keyof cryptos) {
 }
 export function setInitialStateForAllChains() {
   Object.keys(chains).forEach((chain: string) => {
-    store.dispatch(chains[chain as keyof cryptos].actions.setChainInitialState());
+    store.dispatch(
+      chains[chain as keyof cryptos].actions.setChainInitialState(),
+    );
   });
 }

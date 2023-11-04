@@ -25,6 +25,7 @@ function Balances() {
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
+  const myNodes = wallets[walletInUse].nodes ?? [];
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -33,6 +34,13 @@ function Balances() {
     new BigNumber(wallets[walletInUse].balance)
       .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
       .dividedBy(10 ** blockchainConfig.decimals),
+  );
+  const [lockedBalance, setLockedBalance] = useState(
+    myNodes.reduce((acc, node) => {
+      return acc.plus(
+        new BigNumber(node.amount).dividedBy(10 ** blockchainConfig.decimals),
+      );
+    }, new BigNumber(0)),
   );
   const [balanceUSD, setBalanceUSD] = useState(
     totalBalance.multipliedBy(new BigNumber(fiatRate)),
@@ -115,6 +123,12 @@ function Balances() {
     setTotalBalance(ttlBal);
     const balUSD = ttlBal.multipliedBy(new BigNumber(fiatRate));
     setBalanceUSD(balUSD);
+    const lockedAmnt = myNodes.reduce((acc, node) => {
+      return acc.plus(
+        new BigNumber(node.amount).dividedBy(10 ** blockchainConfig.decimals),
+      );
+    }, new BigNumber(0));
+    setLockedBalance(lockedAmnt);
   }, [fiatRate, wallets, walletInUse, activeChain]);
 
   const getCryptoRate = (
@@ -147,13 +161,22 @@ function Balances() {
 
   return (
     <>
-      <h3 style={{ marginTop: 0, marginBottom: 10 }}>
+      <h3 style={{ marginTop: 0, marginBottom: 0 }}>
         {totalBalance.toFixed(8) || '0.00'} {blockchainConfig.symbol}
       </h3>
-      <h4 style={{ marginTop: 0, marginBottom: 15 }}>
+      {myNodes.length > 0 && (
+        <div
+          style={{
+            fontSize: 12,
+            color: 'grey',
+          }}
+        >
+          Locked: {lockedBalance.toFixed(2) || '0.00'} {blockchainConfig.symbol}
+        </div>
+      )}
+      <h4 style={{ marginTop: 10, marginBottom: 15 }}>
         ${balanceUSD.toFixed(2) || '0.00'} USD
       </h4>
-
       <SocketListener txRejected={onTxRejected} txSent={onTxSent} />
     </>
   );

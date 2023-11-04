@@ -57,6 +57,13 @@ function Send() {
   const witnessScript = wallets[walletInUse].witnessScript;
   const sender = wallets[walletInUse].address;
   const confirmedBalance = wallets[walletInUse].balance;
+  const myNodes = wallets[walletInUse].nodes ?? [];
+  let spendableBalance = confirmedBalance;
+  myNodes.forEach((node) => {
+    spendableBalance = new BigNumber(spendableBalance)
+      .minus(node.amount)
+      .toFixed();
+  });
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
@@ -209,6 +216,7 @@ function Send() {
           keyPair.privKey,
           redeemScript,
           witnessScript,
+          myNodes,
         )
           .then((tx) => {
             console.log(tx);
@@ -303,7 +311,7 @@ function Send() {
         </Form.Item>
         <div style={{ marginTop: '-25px', float: 'right', marginRight: 10, fontSize: 12, color: 'grey' }}>
         {t('send:max')}:{' '}
-          {new BigNumber(confirmedBalance)
+          {new BigNumber(spendableBalance)
             .dividedBy(10 ** blockchainConfig.decimals)
             .toFixed()}
         </div>

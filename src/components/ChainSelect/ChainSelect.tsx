@@ -12,7 +12,7 @@ import secureLocalStorage from 'react-secure-storage';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { getScriptType } from '../../lib/wallet';
-import { transaction, generatedWallets, cryptos } from '../../types';
+import { transaction, generatedWallets, cryptos, node } from '../../types';
 import {
   generateMultisigAddress,
   getMasterXpriv,
@@ -24,6 +24,7 @@ import {
   setRedeemScript,
   setWitnessScript,
   setTransactions,
+  setNodes,
   setBalance,
   setUnconfirmedBalance,
   setBlockheight,
@@ -176,6 +177,13 @@ function ChainSelect(props: {
                     (await localForage.getItem(
                       `balances-${chainToSwitch}-${walInUse}`,
                     )) ?? balancesObject;
+                  const nodesWallet: node[] =
+                    (await localForage.getItem(
+                      `nodes-${chainToSwitch}-${walInUse}`,
+                    )) ?? [];
+                  if (nodesWallet) {
+                    setNodes(chainToSwitch, walInUse, nodesWallet || []);
+                  }
                   if (txsWallet) {
                     setTransactions(chainToSwitch, walInUse, txsWallet || []);
                   }
@@ -280,6 +288,12 @@ function ChainSelect(props: {
             (await localForage.getItem(
               `balances-${chainToSwitch}-${walInUse}`,
             )) ?? balancesObject;
+          const nodesWallet: node[] =
+            (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
+            [];
+          if (nodesWallet) {
+            setNodes(chainToSwitch, walInUse, nodesWallet || []);
+          }
           if (txsWallet) {
             setTransactions(chainToSwitch, walInUse, txsWallet || []);
           }

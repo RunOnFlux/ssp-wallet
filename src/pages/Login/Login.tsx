@@ -22,6 +22,7 @@ import {
   setPasswordBlob,
   setSspWalletIdentity,
   setTransactions,
+  setNodes,
   setBlockheight,
   setWalletInUse,
   setBalance,
@@ -41,7 +42,7 @@ import { blockchains } from '@storage/blockchains';
 import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 
-import { transaction, generatedWallets, cryptos } from '../../types';
+import { transaction, generatedWallets, cryptos, node } from '../../types';
 
 import './Login.css';
 
@@ -243,6 +244,12 @@ function Login() {
               (await localForage.getItem(
                 `balances-${activeChain}-${walInUse}`,
               )) ?? balancesObject;
+            const nodesWallet: node[] =
+              (await localForage.getItem(`nodes-${activeChain}-${walInUse}`)) ??
+              [];
+            if (nodesWallet) {
+              setNodes(activeChain, walInUse, nodesWallet || []);
+            }
             if (txsWallet) {
               setTransactions(activeChain, walInUse, txsWallet || []);
             }

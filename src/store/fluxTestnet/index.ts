@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { transaction, wallets, wallet } from '../../types';
+import { transaction, wallets, wallet, node } from '../../types';
 
 const initialWalletState: wallet = {
   address: '',
@@ -8,6 +8,7 @@ const initialWalletState: wallet = {
   balance: '0.00',
   unconfirmedBalance: '0.00',
   transactions: [],
+  nodes: [],
 };
 
 interface ChainState {
@@ -99,6 +100,15 @@ const chainSlice = createSlice({
         ...initialWalletState,
       };
       state.walletInUse = action.payload;
+    },
+    setNodes: (
+      state,
+      action: PayloadAction<{ wallet: string; data: node[] }>,
+    ) => {
+      state.wallets[action.payload.wallet] = state.wallets[
+        action.payload.wallet
+      ] || { ...initialWalletState };
+      state.wallets[action.payload.wallet].nodes = action.payload.data;
     },
     setChainInitialState: (state) => {
       state.xpubWallet = '';

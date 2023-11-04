@@ -168,6 +168,21 @@ export interface wallet {
   balance: string;
   unconfirmedBalance: string;
   transactions: transaction[];
+  nodes?: node[];
+}
+
+export interface node {
+  txid: string;
+  vout: number;
+  amount: string;
+  name: string;
+  ip: string;
+  status: string;
+}
+
+export interface txIdentifier {
+  txid: string;
+  vout: number;
 }
 
 export type wallets = Record<string, wallet>;
