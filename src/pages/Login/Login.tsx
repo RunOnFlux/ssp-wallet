@@ -20,7 +20,8 @@ import { useAppDispatch, useAppSelector } from '../../hooks';
 import {
   setActiveChain,
   setPasswordBlob,
-  setSspWalletIdentity,
+  setSspWalletInternalIdentity,
+  setSspWalletExternalIdentity,
   setTransactions,
   setNodes,
   setBlockheight,
@@ -35,7 +36,11 @@ import {
 } from '../../store';
 
 import { getFingerprint } from '../../lib/fingerprint';
-import { generateIdentityAddress, getScriptType } from '../../lib/wallet.ts';
+import {
+  generateInternalIdentityAddress,
+  generateExternalIdentityAddress,
+  getScriptType,
+} from '../../lib/wallet.ts';
 
 import { blockchains } from '@storage/blockchains';
 
@@ -216,12 +221,18 @@ function Login() {
               });
             }
             dispatch(setPasswordBlob(pwBlob));
-            // generate ssp wallet identity
-            const generatedSspWalletIdentity = generateIdentityAddress(
-              xpubIdentity,
-              identityChain,
+            // generate ssp wallet internal identity
+            const generatedSspWalletInternalIdentity =
+              generateInternalIdentityAddress(xpubIdentity, identityChain);
+            dispatch(
+              setSspWalletInternalIdentity(generatedSspWalletInternalIdentity),
             );
-            dispatch(setSspWalletIdentity(generatedSspWalletIdentity));
+            // generate ssp wallet external identity
+            const generatedSspWalletExternalIdentity =
+              generateExternalIdentityAddress(xpubIdentity, identityChain);
+            dispatch(
+              setSspWalletExternalIdentity(generatedSspWalletExternalIdentity),
+            );
             // restore stored wallets
             const generatedWallets: generatedWallets =
               (await localForage.getItem(`wallets-${activeChain}`)) ?? {};

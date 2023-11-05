@@ -24,16 +24,22 @@ const initialStatePasswordBlob = {
   passwordBlob: '',
 };
 
+// internal is used for ssp communication only
+// external is used for logging into services, public. Such as nodes, exchanges, etc. Can be just wallet identity or full wk id
 interface sspState {
-  sspWalletKeyIdentity: string;
-  sspWalletIdentity: string;
+  sspWalletKeyInternalIdentity: string;
+  sspWalletInternalIdentity: string;
+  sspWalletKeyExternalIdentity: string;
+  sspWalletExternalIdentity: string;
   identityChain: 'flux';
   activeChain: keyof cryptos;
 }
 
 const initialSspState: sspState = {
-  sspWalletKeyIdentity: '',
-  sspWalletIdentity: '',
+  sspWalletKeyInternalIdentity: '',
+  sspWalletInternalIdentity: '',
+  sspWalletKeyExternalIdentity: '',
+  sspWalletExternalIdentity: '',
   identityChain: 'flux',
   activeChain: 'flux',
 };
@@ -131,18 +137,28 @@ const sspStateSlice = createSlice({
   name: 'sspState',
   initialState: initialSspState,
   reducers: {
-    setSspWalletKeyIdentity: (state, action: PayloadAction<string>) => {
-      state.sspWalletKeyIdentity = action.payload;
+    // internal for ssp communication
+    setSspWalletKeyInternalIdentity: (state, action: PayloadAction<string>) => {
+      state.sspWalletKeyInternalIdentity = action.payload;
     },
-    setSspWalletIdentity: (state, action: PayloadAction<string>) => {
-      state.sspWalletIdentity = action.payload;
+    setSspWalletInternalIdentity: (state, action: PayloadAction<string>) => {
+      state.sspWalletInternalIdentity = action.payload;
+    },
+    // external for logging into services
+    setSspWalletKeyExternalIdentity: (state, action: PayloadAction<string>) => {
+      state.sspWalletKeyExternalIdentity = action.payload;
+    },
+    setSspWalletExternalIdentity: (state, action: PayloadAction<string>) => {
+      state.sspWalletExternalIdentity = action.payload;
     },
     setActiveChain: (state, action: PayloadAction<keyof cryptos>) => {
       state.activeChain = action.payload;
     },
     setSSPInitialState: (state) => {
-      state.sspWalletKeyIdentity = '';
-      state.sspWalletIdentity = '';
+      state.sspWalletKeyInternalIdentity = '';
+      state.sspWalletInternalIdentity = '';
+      state.sspWalletKeyExternalIdentity = '';
+      state.sspWalletExternalIdentity = '';
       state.activeChain = 'flux';
     },
   },
@@ -155,8 +171,10 @@ export const { setCryptoRates, setFiatRates } = fiatCryptoRatesSlice.actions;
 
 export const {
   setSSPInitialState,
-  setSspWalletKeyIdentity,
-  setSspWalletIdentity,
+  setSspWalletKeyInternalIdentity,
+  setSspWalletInternalIdentity,
+  setSspWalletKeyExternalIdentity,
+  setSspWalletExternalIdentity,
   setActiveChain,
 } = sspStateSlice.actions;
 

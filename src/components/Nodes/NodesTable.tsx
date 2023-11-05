@@ -1,4 +1,4 @@
-import { Table, Empty } from 'antd';
+import { Table, Empty, Button, Flex } from 'antd';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import { node } from '../../types';
@@ -7,7 +7,7 @@ import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 
 // name, ip, tier, status
-function TransactionsTable(props: {
+function NodesTable(props: {
   nodes: node[];
   chain: string;
   refresh: () => void;
@@ -50,14 +50,17 @@ function TransactionsTable(props: {
                   txid: record.txid + ':' + record.vout,
                 })}
               </p>
-              <a
-                href={`https://${blockchainConfig.node}/tx/${record.txid}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t('home:txSent.show_in_explorer')}
-              </a>
-              <div>Setup Start FluxOS Edit Delete</div>
+              <div style={{ marginTop: 10 }}>
+                {record.name && <Button size="middle">Setup Flux Node</Button>}
+                {!record.name && (
+                  <Flex gap="small">
+                    <Button size="middle">Start</Button>
+                    <Button size="middle">FluxOS</Button>
+                    <Button size="middle">Edit</Button>
+                    <Button size="middle">Delete</Button>
+                  </Flex>
+                )}
+              </div>
             </div>
           ),
           expandRowByClick: true,
@@ -108,4 +111,4 @@ function TransactionsTable(props: {
   );
 }
 
-export default TransactionsTable;
+export default NodesTable;

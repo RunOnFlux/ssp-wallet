@@ -39,7 +39,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
   const [keyInput, setKeyInput] = useState('');
   const [keyAutomaticInput, setKeyAutomaticInput] = useState('');
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const { sspWalletIdentity, activeChain, identityChain } = useAppSelector(
+  const { sspWalletInternalIdentity, activeChain, identityChain } = useAppSelector(
     (state) => state.sspState,
   );
   const dispatch = useAppDispatch();
@@ -75,10 +75,10 @@ function Key(props: { synchronised: (status: boolean) => void }) {
   }, [xpubWallet]);
 
   const checkSynced = () => {
-    if (!syncRunning && sspWalletIdentity) {
+    if (!syncRunning && sspWalletInternalIdentity) {
       axios
         .get<syncSSPRelay>(
-          `https://${sspConfig().relay}/v1/sync/${sspWalletIdentity}`,
+          `https://${sspConfig().relay}/v1/sync/${sspWalletInternalIdentity}`,
         )
         .then((res) => {
           if (res.data.chain !== activeChain) {

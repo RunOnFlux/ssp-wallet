@@ -15,7 +15,7 @@ import { actionSSPRelay, pendingTransaction, transaction } from '../../types';
 function Transactions() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
-  const { sspWalletKeyIdentity, activeChain } = useAppSelector(
+  const { sspWalletKeyInternalIdentity, activeChain } = useAppSelector(
     (state) => state.sspState,
   );
   const { wallets, walletInUse, blockheight } = useAppSelector(
@@ -114,7 +114,7 @@ function Transactions() {
     const wInUse = walletInUse;
     axios
       .get<actionSSPRelay>(
-        `https://${sspConfig().relay}/v1/action/${sspWalletKeyIdentity}`,
+        `https://${sspConfig().relay}/v1/action/${sspWalletKeyInternalIdentity}`,
       )
       .then((res) => {
         if (res.data.action === 'tx') {

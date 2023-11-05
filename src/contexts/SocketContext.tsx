@@ -30,7 +30,7 @@ const defaultValue: SocketContextType = {
 export const SocketContext = createContext<SocketContextType>(defaultValue);
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-  const { sspWalletKeyIdentity: wkIdentity } = useAppSelector(
+  const { sspWalletKeyInternalIdentity: wkIdentity } = useAppSelector(
     (state) => state.sspState,
   );
   const [socket, setSocket] = useState<Socket | null>(null);

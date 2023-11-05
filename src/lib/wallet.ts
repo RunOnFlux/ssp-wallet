@@ -91,7 +91,7 @@ export function getMasterXpriv(
 export function generateMultisigAddress(
   xpub1: string,
   xpub2: string,
-  typeIndex: 0 | 1 | 10,
+  typeIndex: 0 | 1 | 10 | 11, // normal, change, internal identity, external identity
   addressIndex: number,
   chain: keyof cryptos,
 ): multisig {
@@ -205,8 +205,8 @@ export function generateAddressKeypair(
   return { privKey: privateKeyWIF, pubKey: publicKey };
 }
 
-// given xpub of our party, generate address of identity of xpub.
-export function generateIdentityAddress(
+// given xpub of our party, generate address of identity of xpub. INTERNAL SSP
+export function generateInternalIdentityAddress(
   xpub: string,
   chain: keyof cryptos,
 ): string {
@@ -231,3 +231,58 @@ export function generateIdentityAddress(
 
   return address;
 }
+
+// given xpub of our party, generate address of identity of xpub. EXTERNAL PUBLIC SSP. Wallet id or full wk id 
+export function generateExternalIdentityAddress(
+  xpub: string,
+  chain: keyof cryptos,
+): string {
+  const typeIndex = 11; // identity index
+  const addressIndex = 0; // identity index
+
+  const libID = getLibId(chain);
+  const bipParams = blockchains[chain].bip32;
+  const externalChain = HDKey.fromExtendedKey(xpub, bipParams);
+
+  const externalAddress = externalChain
+    .deriveChild(typeIndex)
+    .deriveChild(addressIndex);
+
+  const publicKey = externalAddress.publicKey;
+  const pubKeyBuffer = Buffer.from(publicKey!);
+
+  const network = utxolib.networks[libID];
+
+  const genKeypair = utxolib.ECPair.fromPublicKeyBuffer(pubKeyBuffer, network);
+  const address = genKeypair.getAddress();
+
+  return address;
+}
+
+// given xpub of our party, generate node identity address. Different identity per wallet
+export function generateNodeIdentityAddress(
+  xpub: string,
+  chain: keyof cryptos,
+  addressIndex: number,
+): string {
+  const typeIndex = 12; // node index (for masternodes)
+
+  const libID = getLibId(chain);
+  const bipParams = blockchains[chain].bip32;
+  const externalChain = HDKey.fromExtendedKey(xpub, bipParams);
+
+  const externalAddress = externalChain
+    .deriveChild(typeIndex)
+    .deriveChild(addressIndex);
+
+  const publicKey = externalAddress.publicKey;
+  const pubKeyBuffer = Buffer.from(publicKey!);
+
+  const network = utxolib.networks[libID];
+
+  const genKeypair = utxolib.ECPair.fromPublicKeyBuffer(pubKeyBuffer, network);
+  const address = genKeypair.getAddress();
+
+  return address;
+}
+

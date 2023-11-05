@@ -46,7 +46,7 @@ function Send() {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { activeChain, sspWalletKeyIdentity } = useAppSelector(
+  const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
   const { wallets, walletInUse } = useAppSelector(
@@ -224,7 +224,7 @@ function Send() {
           .then((tx) => {
             console.log(tx);
             // post to ssp relay
-            postAction('tx', tx, activeChain, wInUse, sspWalletKeyIdentity);
+            postAction('tx', tx, activeChain, wInUse, sspWalletKeyInternalIdentity);
             setTxHex(tx);
             setOpenConfirmTx(true);
             if (txSentInterval) {

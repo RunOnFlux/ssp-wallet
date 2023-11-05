@@ -10,8 +10,10 @@ import {
   setAddress,
   setRedeemScript,
   setWitnessScript,
-  setSspWalletIdentity,
-  setSspWalletKeyIdentity,
+  setSspWalletInternalIdentity,
+  setSspWalletKeyInternalIdentity,
+  setSspWalletExternalIdentity,
+  setSspWalletKeyExternalIdentity,
 } from '../../store';
 import { Spin, Divider, message, Space, Tabs } from 'antd';
 import './Home.css';
@@ -25,7 +27,8 @@ import AddressContainer from '../../components/AddressContainer/AddressContainer
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import {
   generateMultisigAddress,
-  generateIdentityAddress,
+  generateInternalIdentityAddress,
+  generateExternalIdentityAddress,
 } from '../../lib/wallet.ts';
 import { useTranslation } from 'react-i18next';
 import { generatedWallets } from '../../types';
@@ -94,19 +97,32 @@ function Home() {
       // generate ssp wallet identity
       console.log(xpubWalletIdentity);
       console.log(xpubKeyIdentity);
-      const generatedSspWalletIdentity = generateIdentityAddress(
+      const generatedSspWalletInternalIdentity = generateInternalIdentityAddress(
         xpubWalletIdentity,
         identityChain,
       );
-      dispatch(setSspWalletIdentity(generatedSspWalletIdentity));
-      const generatedSspWalletKeyIdentity = generateMultisigAddress(
+      dispatch(setSspWalletInternalIdentity(generatedSspWalletInternalIdentity));
+      const generatedSspWalletKeyInternalIdentity = generateMultisigAddress(
         xpubWalletIdentity,
         xpubKeyIdentity,
         10,
         0,
         identityChain,
       );
-      dispatch(setSspWalletKeyIdentity(generatedSspWalletKeyIdentity.address));
+      dispatch(setSspWalletKeyInternalIdentity(generatedSspWalletKeyInternalIdentity.address));
+      const generatedSspWalletExternaldentity = generateExternalIdentityAddress(
+        xpubWalletIdentity,
+        identityChain,
+      );
+      dispatch(setSspWalletExternalIdentity(generatedSspWalletExternaldentity));
+      const generatedSspWalletKeyExternalIdentity = generateMultisigAddress(
+        xpubWalletIdentity,
+        xpubKeyIdentity,
+        11,
+        0,
+        identityChain,
+      );
+      dispatch(setSspWalletKeyExternalIdentity(generatedSspWalletKeyExternalIdentity.address));
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before
       displayMessage('error', t('home:err_panic'));
