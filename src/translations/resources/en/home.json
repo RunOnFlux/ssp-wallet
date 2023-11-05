@@ -25,7 +25,8 @@
     "ip": "IP Address",
     "tier": "Tier",
     "amount": "Amount",
-    "status": "Status"
+    "status": "Status",
+    "identitypk": "Node Identity Private Key"
   },
   "sspWalletDetails": {
     "err_pw_not_valid": "Password is not valid.",

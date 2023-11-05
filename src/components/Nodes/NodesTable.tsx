@@ -11,6 +11,7 @@ function NodesTable(props: {
   nodes: node[];
   chain: string;
   refresh: () => void;
+  identityPK: string;
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { chain } = props;
@@ -49,6 +50,9 @@ function NodesTable(props: {
                 {t('home:transactionsTable.txid_link', {
                   txid: record.txid + ':' + record.vout,
                 })}
+              </p>
+              <p style={{ marginTop: 10 }}>
+                {t('home:nodesTable.identitypk')}: {props.identityPK}
               </p>
               <div style={{ marginTop: 10 }}>
                 {record.name && <Button size="middle">Setup Flux Node</Button>}

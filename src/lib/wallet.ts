@@ -259,30 +259,32 @@ export function generateExternalIdentityAddress(
   return address;
 }
 
-// given xpub of our party, generate node identity address. Different identity per wallet
-export function generateNodeIdentityAddress(
-  xpub: string,
-  chain: keyof cryptos,
+// given xpriv of our party, generate keypair consisting of privateKey in WIF format and public key belonging to it for Node Identity.. Comprossed
+export function generateNodeIdentityKeypair(
+  xpriv: string,
+  typeIndex: 12,
   addressIndex: number,
-): string {
-  const typeIndex = 12; // node index (for masternodes)
-
+  chain: keyof cryptos,
+): keyPair {
   const libID = getLibId(chain);
   const bipParams = blockchains[chain].bip32;
-  const externalChain = HDKey.fromExtendedKey(xpub, bipParams);
+  const externalChain = HDKey.fromExtendedKey(xpriv, bipParams);
 
   const externalAddress = externalChain
     .deriveChild(typeIndex)
     .deriveChild(addressIndex);
 
-  const publicKey = externalAddress.publicKey;
-  const pubKeyBuffer = Buffer.from(publicKey!);
+  const derivedExternalAddress: minHDKey = utxolib.HDNode.fromBase58(
+    externalAddress.toJSON().xpriv,
+    utxolib.networks[libID],
+  );
 
-  const network = utxolib.networks[libID];
+  const privateKeyWIF: string = derivedExternalAddress.keyPair.toWIF();
 
-  const genKeypair = utxolib.ECPair.fromPublicKeyBuffer(pubKeyBuffer, network);
-  const address = genKeypair.getAddress();
+  const publicKey = derivedExternalAddress.keyPair
+    .getPublicKeyBuffer()
+    .toString('hex');
 
-  return address;
+  return { privKey: privateKeyWIF, pubKey: publicKey };
 }
 

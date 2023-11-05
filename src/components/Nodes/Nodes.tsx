@@ -1,28 +1,40 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import secureLocalStorage from 'react-secure-storage';
+import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
 import { useAppSelector } from '../../hooks';
 import { setNodes } from '../../store';
 import NodesTable from './NodesTable.tsx';
 import { node } from '../../types';
+import { getFingerprint } from '../../lib/fingerprint';
 import {
   fetchNodesUtxos,
   getNodesOnNetwork,
   fetchDOSFlux,
   fetchStartFlux,
 } from '../../lib/nodes.ts';
+import {
+  generateNodeIdentityKeypair,
+  getScriptType,
+} from '../../lib/wallet.ts';
+import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 
-function Transactions() {
+function Nodes() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
+  const blockchainConfig = blockchains[activeChain];
   const myNodes = wallets[walletInUse].nodes ?? [];
+  const [nodeIdentityPK, setNodeIdentityPK] = useState(''); // we show node identity private key!
 
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
+    void generateIdentity();
   });
 
   useEffect(() => {
@@ -30,6 +42,7 @@ function Transactions() {
       isInitialMount.current = false;
       return;
     }
+    void generateIdentity();
     refreshNodes();
   }, [walletInUse, activeChain]);
 
@@ -43,6 +56,37 @@ function Transactions() {
       }
       fetchUtxosForNodes();
     })();
+  };
+
+  const generateIdentity = async () => {
+    try {
+      const xprivEncrypted = secureLocalStorage.getItem(
+        `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+          blockchainConfig.scriptType,
+        )}`,
+      );
+      const fingerprint: string = getFingerprint();
+      const password = await passworderDecrypt(fingerprint, passwordBlob);
+      if (typeof password !== 'string') {
+        throw new Error('Unable to decrypt password');
+      }
+      if (xprivEncrypted && typeof xprivEncrypted === 'string') {
+        const xpriv = await passworderDecrypt(password, xprivEncrypted);
+        if (xpriv && typeof xpriv === 'string') {
+          const generatedNodeKeypair = generateNodeIdentityKeypair(
+            xpriv,
+            12,
+            +walletInUse.split('-')[1],
+            activeChain,
+          );
+          setNodeIdentityPK(generatedNodeKeypair.privKey); // is comprossed. Zelcore is using uncompressed.
+        } else {
+          throw new Error('Unable to decrypt xpriv');
+        }
+      }
+    } catch (error) {
+      console.log('Unable to generate node identity');
+    }
   };
 
   const fetchUtxosForNodes = () => {
@@ -126,9 +170,9 @@ function Transactions() {
   };
   return (
     <div>
-      <NodesTable nodes={myNodes} chain={activeChain} refresh={refreshNodes} />
+      <NodesTable nodes={myNodes} chain={activeChain} refresh={refreshNodes} identityPK={nodeIdentityPK} />
     </div>
   );
 }
 
-export default Transactions;
+export default Nodes;
