@@ -1,4 +1,4 @@
-import { Table, Empty, Button, Flex } from 'antd';
+import { Table, Empty, Button, Flex, Popconfirm } from 'antd';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import { node } from '../../types';
@@ -6,6 +6,7 @@ import './Nodes.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { fluxnode } from '@runonflux/flux-sdk';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 
 // name, ip, tier, status
 function NodesTable(props: {
@@ -35,6 +36,16 @@ function NodesTable(props: {
       props.redeemScript,
     );
     console.log(tx);
+    // todo subbmit tx
+    // todo update nodes with Starting status
+  };
+
+  const deleteNode = (txid: string, vout: number) => {
+    console.log(txid, vout);
+  };
+
+  const openFluxOS = (txid: string, vout: number) => {
+    console.log(txid, vout);
   };
 
   return (
@@ -71,22 +82,93 @@ function NodesTable(props: {
                   txid: record.txid + ':' + record.vout,
                 })}
               </p>
-              <p style={{ marginTop: 10 }}>
+              <p style={{ marginTop: 10, wordBreak: 'break-all' }}>
                 {t('home:nodesTable.identitypk')}: {props.identityPK}
               </p>
               <div style={{ marginTop: 10 }}>
-                {record.name && <Button size="middle">Setup Flux Node</Button>}
+                {record.name && (
+                  <Button size="middle">
+                    {t('home:nodesTable.setup_node', {
+                      chainName: blockchainConfig.name,
+                    })}
+                  </Button>
+                )}
                 {!record.name && (
                   <Flex gap="small">
-                    <Button
-                      size="middle"
-                      onClick={() => startNode(record.txid, record.vout)}
+                    <Popconfirm
+                      title={t('home:nodesTable.start_node', {
+                        chainName: blockchainConfig.name,
+                      })}
+                      description={
+                        <>
+                          {t('home:nodesTable.start_node_info', {
+                            chainName: blockchainConfig.name,
+                          })}
+                          <br />
+                          {t('home:nodesTable.start_node_info_2', {
+                            chainName: blockchainConfig.name,
+                          })}
+                        </>
+                      }
+                      overlayStyle={{ maxWidth: 360, margin: 10 }}
+                      okText={t('common:start')}
+                      cancelText={t('common:cancel')}
+                      onConfirm={() => {
+                        startNode(record.txid, record.vout);
+                      }}
+                      icon={
+                        <QuestionCircleOutlined style={{ color: 'green' }} />
+                      }
                     >
-                      Start
-                    </Button>
-                    <Button size="middle">FluxOS</Button>
-                    <Button size="middle">Edit</Button>
-                    <Button size="middle">Delete</Button>
+                      <Button size="middle">
+                        {t('common:start')}
+                      </Button>
+                    </Popconfirm>
+                    <Popconfirm
+                      title={t('home:nodesTable.open_fluxos')}
+                      description={<>{t('home:nodesTable.open_fluxos_info')}</>}
+                      overlayStyle={{ maxWidth: 360, margin: 10 }}
+                      okText={t('home:nodesTable.open_fluxos')}
+                      cancelText={t('common:cancel')}
+                      onConfirm={() => {
+                        openFluxOS(record.txid, record.vout);
+                      }}
+                      icon={
+                        <QuestionCircleOutlined style={{ color: 'blue' }} />
+                      }
+                    >
+                      <Button size="middle">
+                        {t('common:fluxos')}
+                      </Button>
+                    </Popconfirm>
+                    <Button size="middle">{t('common:edit')}</Button>
+                    <Popconfirm
+                      title={t('home:nodesTable.delete_node', {
+                        chainName: blockchainConfig.name,
+                      })}
+                      description={
+                        <>
+                          {t('home:nodesTable.delete_node_info', {
+                            chainName: blockchainConfig.name,
+                          })}
+                          <br />
+                          {t('home:nodesTable.delete_node_info_2', {
+                            chainName: blockchainConfig.name,
+                          })}
+                        </>
+                      }
+                      overlayStyle={{ maxWidth: 360, margin: 10 }}
+                      okText={t('common:delete')}
+                      cancelText={t('common:cancel')}
+                      onConfirm={() => {
+                        deleteNode(record.txid, record.vout);
+                      }}
+                      icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                    >
+                      <Button size="middle">
+                        {t('common:delete')}
+                      </Button>
+                    </Popconfirm>
                   </Flex>
                 )}
               </div>

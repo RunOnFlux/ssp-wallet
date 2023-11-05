@@ -26,7 +26,16 @@
     "tier": "Tier",
     "amount": "Amount",
     "status": "Status",
-    "identitypk": "Node Identity Private Key"
+    "identitypk": "Node Identity Private Key",
+    "start_node": "Start {{chainName}} Node",
+    "start_node_info": "This action will broadcast Start Transaction to the blockchain trying to start your {{chainName}} Node.",
+    "start_node_info_2": "Make sure your {{chainName}} Node is running and passing benchmark before starting your node to avoid DoS status.",
+    "delete_node": "Delete {{chainName}} Node",
+    "delete_node_info": "This action will make your {{chainName}} Node locked collateral available for spending.",
+    "delete_node_info_2": "Your {{chainName}} Node will continue to run and can be set up again if your node collateral is not spent.",
+    "open_fluxos": "Open FluxOS",
+    "open_fluxos_info": "This action will open FluxOS in your browser, minimizing SSP Wallet.",
+    "setup_node": "Setup {{chainName}} Node"
   },
   "sspWalletDetails": {
     "err_pw_not_valid": "Password is not valid.",
