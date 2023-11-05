@@ -1738,7 +1738,7 @@ flatted@^3.2.9:
 
 "flux-sdk@https://github.com/RunOnFlux/flux-sdk":
   version "1.0.0"
-  resolved "https://github.com/RunOnFlux/flux-sdk#a1cd1eda8f0919737a394b16f575b9e0f143db35"
+  resolved "https://github.com/RunOnFlux/flux-sdk#65678c5817daae9dae4255f7827b7f45d287fd7a"
   dependencies:
     bitcoinjs-message "https://github.com/runonflux/bitcoinjs-message"
     bs58check "^3.0.1"

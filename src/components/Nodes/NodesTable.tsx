@@ -5,6 +5,7 @@ import { node } from '../../types';
 import './Nodes.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
+import { fluxnode } from 'flux-sdk';
 
 // name, ip, tier, status
 function NodesTable(props: {
@@ -12,10 +13,29 @@ function NodesTable(props: {
   chain: string;
   refresh: () => void;
   identityPK: string;
+  redeemScript: string;
+  collateralPK: string;
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { chain } = props;
   const blockchainConfig = blockchains[chain];
+
+  const startNode = (txid: string, vout: number) => {
+    console.log(fluxnode);
+    const timestamp = Math.round(new Date().getTime() / 1000).toString();
+    // collateralPK, redeemScript
+    const tx = fluxnode.startFluxNodev6(
+      txid,
+      vout,
+      props.collateralPK,
+      props.identityPK,
+      timestamp,
+      true,
+      true,
+      props.redeemScript,
+    );
+    console.log(tx);
+  };
 
   return (
     <>
@@ -58,7 +78,12 @@ function NodesTable(props: {
                 {record.name && <Button size="middle">Setup Flux Node</Button>}
                 {!record.name && (
                   <Flex gap="small">
-                    <Button size="middle">Start</Button>
+                    <Button
+                      size="middle"
+                      onClick={() => startNode(record.txid, record.vout)}
+                    >
+                      Start
+                    </Button>
                     <Button size="middle">FluxOS</Button>
                     <Button size="middle">Edit</Button>
                     <Button size="middle">Delete</Button>

@@ -15,6 +15,7 @@ import {
 } from '../../lib/nodes.ts';
 import {
   generateNodeIdentityKeypair,
+  generateAddressKeypair,
   getScriptType,
 } from '../../lib/wallet.ts';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
@@ -27,9 +28,11 @@ function Nodes() {
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
+  const redeemScript = wallets[walletInUse].redeemScript;
   const blockchainConfig = blockchains[activeChain];
   const myNodes = wallets[walletInUse].nodes ?? [];
   const [nodeIdentityPK, setNodeIdentityPK] = useState(''); // we show node identity private key!
+  const [collateralPrivKey, setCollateralPrivKey] = useState(''); // we show node identity private key!
 
   useEffect(() => {
     if (alreadyMounted.current) return;
@@ -73,13 +76,23 @@ function Nodes() {
       if (xprivEncrypted && typeof xprivEncrypted === 'string') {
         const xpriv = await passworderDecrypt(password, xprivEncrypted);
         if (xpriv && typeof xpriv === 'string') {
+          const splittedDerPath = walletInUse.split('-');
+          const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+          const addressIndex = Number(splittedDerPath[1]);
           const generatedNodeKeypair = generateNodeIdentityKeypair(
             xpriv,
             12,
-            +walletInUse.split('-')[1],
+            addressIndex,
             activeChain,
           );
           setNodeIdentityPK(generatedNodeKeypair.privKey); // is comprossed. Zelcore is using uncompressed.
+          const keyPair = generateAddressKeypair(
+            xpriv,
+            typeIndex,
+            addressIndex,
+            activeChain,
+          );
+          setCollateralPrivKey(keyPair.privKey);
         } else {
           throw new Error('Unable to decrypt xpriv');
         }
@@ -170,7 +183,14 @@ function Nodes() {
   };
   return (
     <div>
-      <NodesTable nodes={myNodes} chain={activeChain} refresh={refreshNodes} identityPK={nodeIdentityPK} />
+      <NodesTable
+        nodes={myNodes}
+        chain={activeChain}
+        refresh={refreshNodes}
+        identityPK={nodeIdentityPK}
+        redeemScript={redeemScript}
+        collateralPK={collateralPrivKey}
+      />
     </div>
   );
 }
