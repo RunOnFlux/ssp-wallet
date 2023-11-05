@@ -1,4 +1,4 @@
-declare module 'utxo-lib' {
+declare module '@runonflux/utxo-lib' {
   interface minHDKey {
     keyPair: {
       toWIF: () => string;

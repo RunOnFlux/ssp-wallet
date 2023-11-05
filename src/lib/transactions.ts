@@ -1,6 +1,6 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
-import utxolib from 'utxo-lib';
+import utxolib from '@runonflux/utxo-lib';
 import {
   transacitonsInsight,
   transactionInsight,

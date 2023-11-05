@@ -1,4 +1,4 @@
-import utxolib from 'utxo-lib';
+import utxolib from '@runonflux/utxo-lib';
 import { Buffer } from 'buffer';
 import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';

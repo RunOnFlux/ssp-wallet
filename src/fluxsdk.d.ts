@@ -1,4 +1,4 @@
-declare module 'flux-sdk' {
+declare module '@runonflux/flux-sdk' {
   let fluxnode: {
     startFluxNodev6: (
       collateralOutHash: string,

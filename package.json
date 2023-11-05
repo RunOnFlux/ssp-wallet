@@ -15,6 +15,8 @@
     "@metamask/browser-passworder": "^4.1.0",
     "@noble/hashes": "^1.3.1",
     "@reduxjs/toolkit": "^1.9.5",
+    "@runonflux/flux-sdk": "^1.0.0",
+    "@runonflux/utxo-lib": "^1.0.0",
     "@scure/bip32": "^1.3.1",
     "@scure/bip39": "^1.2.1",
     "antd": "^5.7.0",
@@ -24,7 +26,6 @@
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
     "events": "^3.3.0",
-    "flux-sdk": "https://github.com/RunOnFlux/flux-sdk",
     "i18next": "^23.5.1",
     "localforage": "^1.10.0",
     "patch-package": "^8.0.0",
@@ -39,8 +40,7 @@
     "react-secure-storage": "^1.2.2",
     "socket.io-client": "^4.7.2",
     "stream-browserify": "^3.0.0",
-    "util": "^0.12.5",
-    "utxo-lib": "https://github.com/RunOnFlux/utxo-lib"
+    "util": "^0.12.5"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.241",

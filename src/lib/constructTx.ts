@@ -1,4 +1,4 @@
-import utxolib from 'utxo-lib';
+import utxolib from '@runonflux/utxo-lib';
 import { Buffer } from 'buffer';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';

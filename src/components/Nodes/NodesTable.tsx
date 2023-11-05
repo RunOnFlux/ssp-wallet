@@ -5,7 +5,7 @@ import { node } from '../../types';
 import './Nodes.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
-import { fluxnode } from 'flux-sdk';
+import { fluxnode } from '@runonflux/flux-sdk';
 
 // name, ip, tier, status
 function NodesTable(props: {
