@@ -1,5 +1,6 @@
 import { Table, Empty, Button, Flex, Popconfirm, message } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
+import { useState } from 'react';
 import localForage from 'localforage';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
@@ -11,6 +12,7 @@ import { fluxnode } from '@runonflux/flux-sdk';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { broadcastTx } from '../../lib/constructTx';
 import { setNodes } from '../../store';
+import SetupNode from './SetupNode.tsx';
 
 // name, ip, tier, status
 function NodesTable(props: {
@@ -26,6 +28,9 @@ function NodesTable(props: {
   const { chain } = props;
   const blockchainConfig = blockchains[chain];
   const [messageApi, contextHolder] = message.useMessage();
+  const [editedTxid, setEditedTxid] = useState('');
+  const [editedVout, setEditedVout] = useState(0);
+  const [editNodeOpen, setEditNodeOpen] = useState(false);
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
@@ -124,6 +129,16 @@ function NodesTable(props: {
     window.open(url, '_blank');
   };
 
+  const editNode = (txid: string, vout: number) => {
+    setEditedTxid(txid);
+    setEditedVout(vout);
+    setEditNodeOpen(true);
+  };
+
+  const setupNodeAction = (open: boolean) => {
+    setEditNodeOpen(open);
+  };
+
   return (
     <>
       {contextHolder}
@@ -163,14 +178,17 @@ function NodesTable(props: {
                 {t('home:nodesTable.identitypk')}: {props.identityPK}
               </p>
               <div style={{ marginTop: 10 }}>
-                {record.name && (
-                  <Button size="middle">
+                {!record.name && (
+                  <Button
+                    size="middle"
+                    onClick={() => editNode(record.txid, record.vout)}
+                  >
                     {t('home:nodesTable.setup_node', {
                       chainName: blockchainConfig.name,
                     })}
                   </Button>
                 )}
-                {!record.name && (
+                {record.name && (
                   <Flex gap="small">
                     <Popconfirm
                       title={t('home:nodesTable.start_node', {
@@ -223,7 +241,12 @@ function NodesTable(props: {
                         {t('common:fluxos')}
                       </Button>
                     </Popconfirm>
-                    <Button size="middle">{t('common:edit')}</Button>
+                    <Button
+                      size="middle"
+                      onClick={() => editNode(record.txid, record.vout)}
+                    >
+                      {t('common:edit')}
+                    </Button>
                     <Popconfirm
                       title={t('home:nodesTable.delete_node', {
                         chainName: blockchainConfig.name,
@@ -298,6 +321,17 @@ function NodesTable(props: {
           )}
         />
       </Table>
+      {editNodeOpen && (
+        <SetupNode
+          chain={props.chain}
+          walletInUse={props.walletInUse}
+          txid={editedTxid}
+          vout={editedVout}
+          nodes={props.nodes}
+          open={editNodeOpen}
+          openAction={setupNodeAction}
+        />
+      )}
     </>
   );
 }

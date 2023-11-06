@@ -48,6 +48,14 @@
     "err_delete": "Error while deleting {{chainName}} Node. Please try again.",
     "node_deleted": "{{chainName}} Node Deleted!"
   },
+  "setupNode": {
+    "setup_node": "Setup {{chainName}} Node",
+    "node_name": "Node Name",
+    "node_ip": "IP Address",
+    "err_saving_node": "Error while saving node. Please try again.",
+    "node_saved": "{{chainName}} Node Saved!",
+    "err_no_name": "Please name your node first"
+  },
   "sspWalletDetails": {
     "err_pw_not_valid": "Password is not valid.",
     "err_invalid_wallet_xpriv": "Invalid wallet xpriv.",

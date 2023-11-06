@@ -17,7 +17,7 @@ import { useAppSelector } from '../../hooks';
 const backendsOriginalConfig = backendsOriginal();
 const originalConfig = sspConfigOriginal();
 
-function PasswordConfirm(props: {
+function Settings(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
@@ -172,4 +172,4 @@ function PasswordConfirm(props: {
   );
 }
 
-export default PasswordConfirm;
+export default Settings;
