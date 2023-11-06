@@ -43,7 +43,7 @@
     "util": "^0.12.5"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.241",
+    "@types/chrome": "^0.0.249",
     "@types/node": "^20.4.2",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
