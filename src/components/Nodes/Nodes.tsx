@@ -175,7 +175,7 @@ function Nodes() {
         }
         nodes.forEach((node) => {
           if (!node.status) {
-            node.status === t('home:nodesTable.offline'); // no status means offline
+            node.status = t('home:nodesTable.offline'); // no status means offline
           }
           if (node.status.startsWith('1')) {
             // timestamp this means it got recently started. Status is Starting
