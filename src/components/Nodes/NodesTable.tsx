@@ -1,43 +1,83 @@
-import { Table, Empty, Button, Flex, Popconfirm } from 'antd';
+import { Table, Empty, Button, Flex, Popconfirm, message } from 'antd';
+import { NoticeType } from 'antd/es/message/interface';
+import localForage from 'localforage';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
-import { node } from '../../types';
+import { node, cryptos } from '../../types';
 import './Nodes.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { fluxnode } from '@runonflux/flux-sdk';
 import { QuestionCircleOutlined } from '@ant-design/icons';
+import { broadcastTx } from '../../lib/constructTx';
+import { setNodes } from '../../store';
 
 // name, ip, tier, status
 function NodesTable(props: {
   nodes: node[];
-  chain: string;
+  chain: keyof cryptos;
   refresh: () => void;
   identityPK: string;
   redeemScript: string;
   collateralPK: string;
+  walletInUse: string;
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { chain } = props;
   const blockchainConfig = blockchains[chain];
+  const [messageApi, contextHolder] = message.useMessage();
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
 
-  const startNode = (txid: string, vout: number) => {
-    console.log(fluxnode);
-    const timestamp = Math.round(new Date().getTime() / 1000).toString();
-    // collateralPK, redeemScript
-    const tx = fluxnode.startFluxNodev6(
-      txid,
-      vout,
-      props.collateralPK,
-      props.identityPK,
-      timestamp,
-      true,
-      true,
-      props.redeemScript,
-    );
-    console.log(tx);
-    // todo subbmit tx
-    // todo update nodes with Starting status
+  const startNode = async (txhash: string, vout: number) => {
+    try {
+      console.log(fluxnode);
+      const timestamp = Math.round(new Date().getTime() / 1000).toString();
+      // collateralPK, redeemScript
+      const tx = fluxnode.startFluxNodev6(
+        txhash,
+        vout,
+        props.collateralPK,
+        props.identityPK,
+        timestamp,
+        true,
+        true,
+        props.redeemScript,
+      );
+      console.log(tx);
+      const txid = await broadcastTx(tx, chain);
+      console.log(txid);
+      displayMessage(
+        'success',
+        t('home:nodesTable.node_started', {
+          chainName: blockchainConfig.name,
+        }),
+      );
+      // todo update nodes with Starting status
+      const nodes = props.nodes;
+      const adjNodes: node[] = [];
+      nodes.forEach((node) => {
+        if (node.txid === txhash && node.vout === vout) {
+          node.status = timestamp;
+        }
+        adjNodes.push(node);
+      });
+      // setNodes
+      setNodes(chain, props.walletInUse, adjNodes);
+      await localForage.setItem(`nodes-${chain}-${props.walletInUse}`, adjNodes);
+    } catch (error) {
+      console.log(error);
+      displayMessage(
+        'error',
+        t('home:nodesTable.err_start', {
+          chainName: blockchainConfig.name,
+        }),
+      );
+    }
   };
 
   const deleteNode = (txid: string, vout: number) => {
@@ -50,6 +90,7 @@ function NodesTable(props: {
 
   return (
     <>
+      {contextHolder}
       <Table
         className="adjustedWidth"
         locale={{
@@ -114,13 +155,18 @@ function NodesTable(props: {
                       okText={t('common:start')}
                       cancelText={t('common:cancel')}
                       onConfirm={() => {
-                        startNode(record.txid, record.vout);
+                        void startNode(record.txid, record.vout);
                       }}
                       icon={
                         <QuestionCircleOutlined style={{ color: 'green' }} />
                       }
                     >
-                      <Button size="middle">
+                      <Button
+                        size="middle"
+                        disabled={
+                          record.status !== t('home:nodesTable.offline')
+                        }
+                      >
                         {t('common:start')}
                       </Button>
                     </Popconfirm>
@@ -137,9 +183,7 @@ function NodesTable(props: {
                         <QuestionCircleOutlined style={{ color: 'blue' }} />
                       }
                     >
-                      <Button size="middle">
-                        {t('common:fluxos')}
-                      </Button>
+                      <Button size="middle">{t('common:fluxos')}</Button>
                     </Popconfirm>
                     <Button size="middle">{t('common:edit')}</Button>
                     <Popconfirm
@@ -165,9 +209,7 @@ function NodesTable(props: {
                       }}
                       icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                     >
-                      <Button size="middle">
-                        {t('common:delete')}
-                      </Button>
+                      <Button size="middle">{t('common:delete')}</Button>
                     </Popconfirm>
                   </Flex>
                 )}
@@ -210,10 +252,10 @@ function NodesTable(props: {
           render={(status: string, row: node) => (
             <>
               {status.startsWith('1')
-                ? 'Starting'
+                ? t('home:nodesTable.starting')
                 : status || row.name
-                ? 'Offline'
-                : 'Unassigned'}
+                ? t('home:nodesTable.offline')
+                : t('home:nodesTable.unassigned')}
             </>
           )}
         />

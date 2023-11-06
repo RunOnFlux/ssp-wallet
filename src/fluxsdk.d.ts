@@ -9,6 +9,6 @@ declare module '@runonflux/flux-sdk' {
       comprossedCollateralPrivateKey: boolean,
       compressedFluxnodePrivateKey: boolean,
       redeemScript: string,
-    ) => void;
+    ) => string;
   }
 }

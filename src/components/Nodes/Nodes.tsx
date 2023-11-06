@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import secureLocalStorage from 'react-secure-storage';
 import { blockchains } from '@storage/blockchains';
+import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
 import { useAppSelector } from '../../hooks';
 import { setNodes } from '../../store';
@@ -21,6 +22,7 @@ import {
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 
 function Nodes() {
+  const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
   const { activeChain } = useAppSelector((state) => state.sspState);
@@ -52,10 +54,10 @@ function Nodes() {
   const refreshNodes = () => {
     void (async function () {
       const wInUse = walletInUse;
-      const txsWallet: node[] =
+      const nodesWallet: node[] =
         (await localForage.getItem(`nodes-${activeChain}-${wInUse}`)) ?? [];
-      if (txsWallet) {
-        setNodes(activeChain, wInUse, txsWallet);
+      if (nodesWallet) {
+        setNodes(activeChain, wInUse, nodesWallet);
       }
       fetchUtxosForNodes();
     })();
@@ -135,7 +137,7 @@ function Nodes() {
           );
           if (confirmedNode) {
             node.ip = confirmedNode.ip;
-            node.status = 'Confirmed';
+            node.status = t('home:nodesTable.confirmed');
           }
           if (!confirmedNode) {
             fetchDOSandStart = true;
@@ -149,19 +151,19 @@ function Nodes() {
               (n) => n.collateral === `COutPoint(${node.txid}, ${node.vout})`,
             );
             if (dosNode) {
-              node.status = 'DoS';
+              node.status = t('home:nodesTable.dos');
             }
             const startedNode = startedNodes.find(
               (n) => n.collateral === `COutPoint(${node.txid}, ${node.vout})`,
             );
             if (startedNode) {
-              node.status = 'Started';
+              node.status = t('home:nodesTable.started');
             }
           });
         }
         nodes.forEach((node) => {
           if (!node.status) {
-            node.status === 'Offline'; // no status means offline
+            node.status === t('home:nodesTable.offline'); // no status means offline
           }
           if (node.status.startsWith('1')) {
             // timestamp this means it got recently started. Status is Starting
@@ -170,7 +172,7 @@ function Nodes() {
             const now = new Date().getTime();
             const startedAt = new Date(node.status).getTime();
             if (now - startedAt > 20 * 60 * 1000) {
-              node.status = 'Offline'; // timestamp
+              node.status = t('home:nodesTable.offline'); // timestamp
             }
           }
         });
@@ -190,6 +192,7 @@ function Nodes() {
         identityPK={nodeIdentityPK}
         redeemScript={redeemScript}
         collateralPK={collateralPrivKey}
+        walletInUse={walletInUse}
       />
     </div>
   );

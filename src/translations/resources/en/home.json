@@ -35,7 +35,15 @@
     "delete_node_info_2": "Your {{chainName}} Node will continue to run and can be set up again if your node collateral is not spent.",
     "open_fluxos": "Open FluxOS",
     "open_fluxos_info": "This action will open FluxOS in your browser, minimizing SSP Wallet.",
-    "setup_node": "Setup {{chainName}} Node"
+    "setup_node": "Setup {{chainName}} Node",
+    "err_start": "Error while starting {{chainName}} Node. Please try again.",
+    "offline": "Offline",
+    "confirmed": "Confirmed",
+    "started": "Started",
+    "starting": "Starting",
+    "unassigned": "Unassigned",
+    "dos": "DoS",
+    "node_started": "{{chainName}} Node Started!"
   },
   "sspWalletDetails": {
     "err_pw_not_valid": "Password is not valid.",
