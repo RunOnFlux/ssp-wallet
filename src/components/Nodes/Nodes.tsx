@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { message } from 'antd';
+import { NoticeType } from 'antd/es/message/interface';
 import secureLocalStorage from 'react-secure-storage';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +37,13 @@ function Nodes() {
   const myNodes = wallets[walletInUse].nodes ?? [];
   const [nodeIdentityPK, setNodeIdentityPK] = useState(''); // we show node identity private key!
   const [collateralPrivKey, setCollateralPrivKey] = useState(''); // we show node identity private key!
+  const [messageApi, contextHolder] = message.useMessage();
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
 
   useEffect(() => {
     if (alreadyMounted.current) return;
@@ -100,7 +109,10 @@ function Nodes() {
         }
       }
     } catch (error) {
-      console.log('Unable to generate node identity');
+      displayMessage(
+        'error',
+        t('home:nodesTable.err_unable_identity'),
+      );
     }
   };
 
@@ -185,6 +197,7 @@ function Nodes() {
   };
   return (
     <div>
+      {contextHolder}
       <NodesTable
         nodes={myNodes}
         chain={activeChain}

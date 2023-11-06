@@ -43,7 +43,10 @@
     "starting": "Starting",
     "unassigned": "Unassigned",
     "dos": "DoS",
-    "node_started": "{{chainName}} Node Started!"
+    "node_started": "{{chainName}} Node Started!",
+    "err_unable_identity": "Unable to generate node identity. Try again later.",
+    "err_delete": "Error while deleting {{chainName}} Node. Please try again.",
+    "node_deleted": "{{chainName}} Node Deleted!"
   },
   "sspWalletDetails": {
     "err_pw_not_valid": "Password is not valid.",

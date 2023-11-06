@@ -51,24 +51,26 @@ function NodesTable(props: {
       console.log(tx);
       const txid = await broadcastTx(tx, chain);
       console.log(txid);
+      const adjNodes: node[] = [];
+      props.nodes.forEach((node) => {
+        const n = { ...node };
+        if (node.txid === txhash && node.vout === vout) {
+          n.status = timestamp;
+        }
+        adjNodes.push(n);
+      });
+      // setNodes
+      setNodes(chain, props.walletInUse, adjNodes);
+      await localForage.setItem(
+        `nodes-${chain}-${props.walletInUse}`,
+        adjNodes,
+      );
       displayMessage(
         'success',
         t('home:nodesTable.node_started', {
           chainName: blockchainConfig.name,
         }),
       );
-      // todo update nodes with Starting status
-      const nodes = props.nodes;
-      const adjNodes: node[] = [];
-      nodes.forEach((node) => {
-        if (node.txid === txhash && node.vout === vout) {
-          node.status = timestamp;
-        }
-        adjNodes.push(node);
-      });
-      // setNodes
-      setNodes(chain, props.walletInUse, adjNodes);
-      await localForage.setItem(`nodes-${chain}-${props.walletInUse}`, adjNodes);
     } catch (error) {
       console.log(error);
       displayMessage(
@@ -80,12 +82,46 @@ function NodesTable(props: {
     }
   };
 
-  const deleteNode = (txid: string, vout: number) => {
-    console.log(txid, vout);
+  const deleteNode = async (txhash: string, vout: number) => {
+    try {
+      console.log(txhash, vout);
+      const adjNodes: node[] = [];
+      props.nodes.forEach((node) => {
+        const n = { ...node };
+        if (node.txid === txhash && node.vout === vout) {
+          n.name = '';
+        }
+        adjNodes.push(n);
+      });
+      // setNodes
+      setNodes(chain, props.walletInUse, adjNodes);
+      await localForage.setItem(
+        `nodes-${chain}-${props.walletInUse}`,
+        adjNodes,
+      );
+      displayMessage(
+        'success',
+        t('home:nodesTable.node_deleted', {
+          chainName: blockchainConfig.name,
+        }),
+      );
+    } catch (error) {
+      console.log(error);
+      displayMessage(
+        'error',
+        t('home:nodesTable.err_delete', {
+          chainName: blockchainConfig.name,
+        }),
+      );
+    }
   };
 
-  const openFluxOS = (txid: string, vout: number) => {
-    console.log(txid, vout);
+  const openFluxOS = (ip: string) => {
+    const tIP = ip.split(':')[0];
+    const port = +(ip.split(':')[1] || 16127);
+    const tPort = port - 1;
+    const url = `http://${tIP}:${tPort}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -177,13 +213,15 @@ function NodesTable(props: {
                       okText={t('home:nodesTable.open_fluxos')}
                       cancelText={t('common:cancel')}
                       onConfirm={() => {
-                        openFluxOS(record.txid, record.vout);
+                        openFluxOS(record.ip);
                       }}
                       icon={
                         <QuestionCircleOutlined style={{ color: 'blue' }} />
                       }
                     >
-                      <Button size="middle">{t('common:fluxos')}</Button>
+                      <Button size="middle" disabled={!record.ip}>
+                        {t('common:fluxos')}
+                      </Button>
                     </Popconfirm>
                     <Button size="middle">{t('common:edit')}</Button>
                     <Popconfirm
@@ -205,7 +243,7 @@ function NodesTable(props: {
                       okText={t('common:delete')}
                       cancelText={t('common:cancel')}
                       onConfirm={() => {
-                        deleteNode(record.txid, record.vout);
+                        void deleteNode(record.txid, record.vout);
                       }}
                       icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                     >
