@@ -1,15 +1,21 @@
 .node-name {
-  width: 100px;
+  width: 105px;
+  word-break: break-all;
+  padding: 16px 10px !important;
 }
 
 .node-ip {
-  width: 100px;
+  width: 135px;
+  word-break: break-all;
+  padding: 16px 10px !important;
 }
 
 .node-tier {
-  width: 80px;
+  width: 60px;
+  padding: 16px 10px !important;
 }
 
 .node-status {
-  width: 80px;
+  width: 60px;
+  padding: 16px 10px !important;
 }
