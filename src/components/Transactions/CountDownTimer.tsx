@@ -29,7 +29,6 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ createdAtDateTime, expi
     }
   };
 
-  console.log(remainingTimeInSeconds);
   return (
     <div style={{ marginRight: -6 }}>
       <CountdownCircleTimer

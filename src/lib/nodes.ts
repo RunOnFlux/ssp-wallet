@@ -4,9 +4,11 @@ import {
   confirmedNodeInsight,
   confirmedNodesInsight,
   dosFlux,
+  dosFluxInsight,
   dosNodeFlux,
   startFlux,
-  startNodeFlux
+  startFluxInsight,
+  startNodeFlux,
 } from '../types';
 
 import { backends } from '@storage/backends';
@@ -40,7 +42,7 @@ export async function getNodesOnNetwork(
   try {
     const backendConfig = backends()[chain];
     const filter = address;
-    const url = `https://${backendConfig.node}/api/fluxnode/listfluxnodes/`;
+    const url = `https://${backendConfig.node}/api/fluxnode/listfluxnodes`;
     const { data } = await axios.post<confirmedNodesInsight>(url, { filter });
     const fluxNodesConfirmed = data.result;
     return fluxNodesConfirmed;
@@ -50,11 +52,18 @@ export async function getNodesOnNetwork(
   }
 }
 
-export async function fetchDOSFlux(): Promise<dosNodeFlux[]> {
+export async function fetchDOSFlux(chain: string): Promise<dosNodeFlux[]> {
   try {
-    const url = 'https://api.runonflux.io/daemon/getdoslist';
-    const { data } = await axios.get<dosFlux>(url);
-    const fluxNodesDos = data.data;
+    if (chain === 'flux') {
+      const url = 'https://api.runonflux.io/daemon/getdoslist';
+      const { data } = await axios.get<dosFlux>(url);
+      const fluxNodesDos = data.data;
+      return fluxNodesDos;
+    } // use insight
+    const backendConfig = backends()[chain];
+    const url = `https://${backendConfig.node}/api/fluxnode/doslist`;
+    const { data } = await axios.get<dosFluxInsight>(url);
+    const fluxNodesDos = data.result;
     return fluxNodesDos;
   } catch (e) {
     console.log(e);
@@ -62,15 +71,21 @@ export async function fetchDOSFlux(): Promise<dosNodeFlux[]> {
   }
 }
 
-export async function fetchStartFlux(): Promise<startNodeFlux[]> {
+export async function fetchStartFlux(chain: string): Promise<startNodeFlux[]> {
   try {
-    const url = 'https://api.runonflux.io/daemon/getstartlist';
-    const { data } = await axios.get<startFlux>(url);
-    const fluxNodesStart = data.data;
+    if (chain === 'flux') {
+      const url = 'https://api.runonflux.io/daemon/getstartlist';
+      const { data } = await axios.get<startFlux>(url);
+      const fluxNodesStart = data.data;
+      return fluxNodesStart;
+    } // use insight
+    const backendConfig = backends()[chain];
+    const url = `https://${backendConfig.node}/api/fluxnode/startlist`;
+    const { data } = await axios.get<startFluxInsight>(url);
+    const fluxNodesStart = data.result;
     return fluxNodesStart;
   } catch (e) {
     console.log(e);
     return [];
   }
 }
-

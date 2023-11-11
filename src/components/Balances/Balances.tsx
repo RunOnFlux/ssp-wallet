@@ -109,7 +109,6 @@ function Balances() {
           `balances-${chainFetched}-${walletFetched}`,
           balance,
         );
-        console.log(balance);
       })
       .catch((error) => {
         console.log(error);
@@ -135,7 +134,6 @@ function Balances() {
     crypto: keyof typeof cryptoRates,
     fiat: keyof typeof fiatRates,
   ) => {
-    console.log(cryptoRates);
     const cr = cryptoRates[crypto] ?? 0;
     const fi = fiatRates[fiat] ?? 0;
     setFiatRate(cr * fi);

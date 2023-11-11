@@ -312,10 +312,10 @@ function NodesTable(props: {
           dataIndex="status"
           render={(status: string, row: node) => (
             <>
-              {status.startsWith('1')
-                ? t('home:nodesTable.starting')
-                : status || row.name
-                ? t('home:nodesTable.offline')
+              {row.name
+                ? status.startsWith('1')
+                  ? t('home:nodesTable.starting')
+                  : status
                 : t('home:nodesTable.unassigned')}
             </>
           )}

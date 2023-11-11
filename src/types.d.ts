@@ -330,6 +330,12 @@ export interface dosFlux {
   data: dosNodeFlux[]
 }
 
+export interface dosFluxInsight {
+  error: string;
+  id: number;
+  result: dosNodeFlux[]
+}
+
 export interface startNodeFlux {
   collateral: string;
   added_height: number;
@@ -341,6 +347,12 @@ export interface startNodeFlux {
 export interface startFlux {
   status: string;
   data: startNodeFlux[]
+}
+
+export interface startFluxInsight {
+  error: string;
+  id: number;
+  result: startNodeFlux[]
 }
 
 declare global {

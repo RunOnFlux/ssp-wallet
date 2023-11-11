@@ -29,7 +29,6 @@ function FiatCurrency() {
   const obtainRates = () => {
     fetchAllRates()
       .then((rates) => {
-        console.log(rates);
         dispatch(setFiatRates(rates.fiat));
         dispatch(setCryptoRates(rates.crypto));
       })

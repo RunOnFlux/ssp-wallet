@@ -30,7 +30,6 @@ function PendingTransactionsTable(props: {
   useEffect(() => {
     setPendingTxs(props.transactions);
     setFiatRate(props.fiatRate);
-    console.log(props.fiatRate);
   });
 
   const confirmTxAction = (status: boolean) => {
@@ -55,9 +54,7 @@ function PendingTransactionsTable(props: {
           bordered={false}
           loading={false}
           dataSource={pendingTxs}
-          onRow={(record, rowIndex) => {
-            console.log(record);
-            console.log(rowIndex);
+          onRow={(record) => {
             return {
               onClick: () => {
                 setTxHex(record.payload);

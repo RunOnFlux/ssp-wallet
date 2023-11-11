@@ -125,7 +125,7 @@ function Nodes() {
           wallets[wInUse].address,
           activeChain,
         );
-        const nodes: node[] = [...myNodes];
+        const nodes: node[] = JSON.parse(JSON.stringify(myNodes)) as node[];
         utxos.forEach((utxo) => {
           const nodeExists = myNodes.find(
             (n) => n.txid === utxo.txid && n.vout === utxo.vout,
@@ -156,8 +156,8 @@ function Nodes() {
           }
         });
         if (fetchDOSandStart) {
-          const dosNodes = await fetchDOSFlux();
-          const startedNodes = await fetchStartFlux();
+          const dosNodes = await fetchDOSFlux(activeChain);
+          const startedNodes = await fetchStartFlux(activeChain);
           nodes.forEach((node) => {
             const dosNode = dosNodes.find(
               (n) => n.collateral === `COutPoint(${node.txid}, ${node.vout})`,
@@ -173,6 +173,7 @@ function Nodes() {
             }
           });
         }
+        console.log(nodes);
         nodes.forEach((node) => {
           if (!node.status) {
             node.status = t('home:nodesTable.offline'); // no status means offline
@@ -188,6 +189,7 @@ function Nodes() {
             }
           }
         });
+        console.log(nodes);
         setNodes(activeChain, wInUse, nodes || []);
         await localForage.setItem(`nodes-${activeChain}-${wInUse}`, nodes);
       })
