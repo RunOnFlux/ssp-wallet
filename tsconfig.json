@@ -28,6 +28,7 @@
   },
   "include": [
     "src",
+    "public/scripts",
   ],
   "references": [
     {

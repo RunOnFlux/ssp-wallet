@@ -10,13 +10,31 @@
     "default_popup": "index.html",
     "default_title": "SSP Wallet"
   },
+  "author": "https://sspwwallet.io",
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
   "icons": { "256": "ssp-logo-black-256x256.png" },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["scripts/contentscript.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
   "permissions": [
     "storage",
     "unlimitedStorage",
     "clipboardWrite",
     "activeTab",
     "webRequest",
-    "notifications"
-  ]
+    "notifications",
+    "scripting",
+    "tabs"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; frame-ancestors 'none';"
+  },
+  "host_permissions": ["file://*/*", "http://*/*", "https://*/*"]
 }
