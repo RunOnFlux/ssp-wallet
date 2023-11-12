@@ -31,3 +31,21 @@ const registerInPageContentScript = async () => {
 };
 
 void registerInPageContentScript();
+
+
+// chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+//   console.log(request);
+//   chrome.tabs.create({
+//     active: true,
+//     url: 'index.html'
+//   }, null);
+// });
+
+chrome.runtime.onMessage.addListener(
+  function (request, sender, sendResponse) {
+    // console.log("background.js got a message")
+    // console.log(request);
+    // console.log(sender);
+    sendResponse('bar');
+  }
+);
