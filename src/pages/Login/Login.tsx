@@ -89,6 +89,12 @@ function Login() {
     }
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
+    if (chrome?.runtime?.sendMessage) {
+      void chrome.runtime.sendMessage({
+        origin: 'ssp',
+        data: 'hello from ssp',
+      });
+    }
     void (async function () {
       // get activatedChain
       const activatedChain = await localForage.getItem('activeChain');
