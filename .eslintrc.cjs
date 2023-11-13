@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  env: { browser: true, es2020: true },
+  env: { browser: true, es2020: true, webextensions: true },
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
@@ -31,4 +31,17 @@ module.exports = {
     'react/default-props-match-prop-types': ['error'],
     'react/sort-prop-types': ['error'],
   },
+  "overrides": [
+    {
+      "files": ["*.js", "*.jsx"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-misused-promises": "off",
+      }
+    }
+  ]
 }

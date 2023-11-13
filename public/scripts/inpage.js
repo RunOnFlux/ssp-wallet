@@ -6,13 +6,7 @@ window.myInjectedVariable = myInjectedVariable;
 
 console.log('Variable injected into the window object:', myInjectedVariable);
 
-let requestRunning = false;
-
 async function request(method, parameters) {
-  if (requestRunning) {
-    throw new Error('Another request is running');
-  }
-  requestRunning = true;
   const message = {
     method,
     parameters,
@@ -22,14 +16,13 @@ async function request(method, parameters) {
   const response = await new Promise((resolve, reject) => {
     window.addEventListener(
       'fromContentScript',
-      async function (eventB) {
+      function (eventB) {
         console.log(eventB);
         resolve(eventB.detail);
       },
       false,
     );
   });
-  requestRunning = false;
   return response;
 }
 

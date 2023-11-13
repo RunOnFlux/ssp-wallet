@@ -1,6 +1,3 @@
-/* eslint-disable no-undef */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-misused-promises */
 // https://github.com/MetaMask/metamask-extension/blob/develop/app/scripts/app-init.js
 
 /*
@@ -8,6 +5,9 @@
  * MAIN world injection does not work properly via manifest
  * https://bugs.chromium.org/p/chromium/issues/detail?id=634381
  */
+
+let awaitingSendResponse;
+let popupId;
 
 const registerInPageContentScript = async () => {
   try {
@@ -43,12 +43,24 @@ async function getAllWindows() {
   return windows;
 }
 
+function getPopupIn(windows) {
+  return windows
+    ? windows.find((win) => {
+      // Returns notification popup
+      return win && win.type === 'popup' && win.id === popupId;
+    })
+    : null;
+}
+
+async function getPopup() {
+  const windows = await getAllWindows();
+  return getPopupIn(windows);
+}
+
 async function focusWindow(windowId, options = { focused: true }) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   await chrome.windows.update(windowId, options);
 }
-
-let awaitingSendResponse;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log(request);
@@ -82,9 +94,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         10,
       );
     }
-    await chrome.windows
-      .create({
-        url: chrome.runtime.getURL(
+    const popup = await getPopup(popupId);
+    if (popup) {
+      const options = {
+        focused: true,
+      };
+      // bring focus to existing chrome popup
+      await focusWindow(popup.id, options);
+    } else {
+      const options = {
+        url: chrome.runtime.getURL( // here just index? and send runtime message?
           'index.html?request=' +
           JSON.stringify(request) +
           '&sender=' +
@@ -95,7 +114,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         left,
         width: 420,
         height: 620,
-      })
+      };
+      const newPopup = await chrome.windows
+        .create(options)
+      popupId = newPopup.id;
+    }
   })();
   // Important! Return true to indicate you want to send a response asynchronously
   return true;
