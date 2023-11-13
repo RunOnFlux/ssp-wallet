@@ -75,7 +75,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.origin === 'ssp') {
+  if (request.origin === 'ssp' || request.origin === 'ssp-background') {
     return;
   }
   void (async () => {
@@ -119,6 +119,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         .create(options)
       popupId = newPopup.id;
     }
+    void chrome.runtime.sendMessage({ // send new message to poup. We do not await a response. Instead we listen for a new message from popup
+      origin: 'ssp-background',
+      data: 'hello from ssp background',
+    });
   })();
   // Important! Return true to indicate you want to send a response asynchronously
   return true;
