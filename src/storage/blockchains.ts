@@ -1,8 +1,12 @@
 import { backends } from './backends';
 
 import fluxLogo from '/src/assets/flux.svg';
+import fluxTestnetLogo from '/src/assets/fluxTestnet.svg';
 import rvnLogo from '/src/assets/rvn.svg';
 import ltcLogo from '/src/assets/ltc.svg';
+import btcLogo from '/src/assets/btc.svg';
+import btcTestnetLogo from '/src/assets/btcTestnet.svg';
+import btcSignetLogo from '/src/assets/btcSignet.svg';
 
 const flux = {
   id: 'flux',
@@ -40,7 +44,7 @@ const fluxTestnet = {
   pubKeyHash: '1d25',
   scriptHash: '1cba',
   wif: 'ef',
-  logo: fluxLogo,
+  logo: fluxTestnetLogo,
   bip32: {
     public: 0x043587cf,
     private: 0x04358394,
@@ -93,9 +97,78 @@ const ltc = {
   bech32: 'ltc',
 };
 
+const btc = {
+  id: 'btc',
+  libid: 'bitcoin',
+  name: 'Bitcoin',
+  symbol: 'BTC',
+  decimals: 8,
+  node: backends().btc.node,
+  slip: 0,
+  scriptType: 'p2wsh',
+  messagePrefix: '\x18Bitcoin Signed Message:\n',
+  pubKeyHash: '00',
+  scriptHash: '05',
+  wif: '80',
+  logo: btcLogo,
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  backend: 'blockbook',
+  bech32: 'bc1',
+};
+
+const btcTestnet = {
+  id: 'btcTestnet',
+  libid: 'testnet',
+  name: 'Testnet Bitcoin',
+  symbol: 'TEST-BTC',
+  decimals: 8,
+  node: backends().btcTestnet.node,
+  slip: 1,
+  scriptType: 'p2wsh',
+  messagePrefix: '\x18Bitcoin Signed Message:\n',
+  pubKeyHash: '6f',
+  scriptHash: 'c4',
+  wif: 'ef',
+  logo: btcTestnetLogo,
+  bip32: {
+    public: 0x043587cf,
+    private: 0x04358394,
+  },
+  backend: 'blockbook',
+  bech32: 'tb1',
+};
+
+const btcSignet = {
+  id: 'btcSignet',
+  libid: 'testnet',
+  name: 'Signet Bitcoin',
+  symbol: 'TEST-BTC',
+  decimals: 8,
+  node: backends().btcSignet.node,
+  slip: 1,
+  scriptType: 'p2wsh',
+  messagePrefix: '\x18Bitcoin Signed Message:\n',
+  pubKeyHash: '6f',
+  scriptHash: 'c4',
+  wif: 'ef',
+  logo: btcSignetLogo,
+  bip32: {
+    public: 0x043587cf,
+    private: 0x04358394,
+  },
+  backend: 'blockbook',
+  bech32: 'tb1',
+};
+
 export const blockchains = {
   flux,
   fluxTestnet,
   rvn,
   ltc,
+  btc,
+  btcTestnet,
+  btcSignet,
 };

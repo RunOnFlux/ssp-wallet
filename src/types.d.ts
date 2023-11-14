@@ -287,6 +287,9 @@ export interface cryptos {
   fluxTestnet: number;
   rvn: number;
   ltc: number;
+  btc: number;
+  btcTestnet: number;
+  btcSignet: number;
 }
 
 export interface currencySSPRelay {
