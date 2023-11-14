@@ -165,10 +165,10 @@ const btcSignet = {
 
 export const blockchains = {
   flux,
-  fluxTestnet,
-  rvn,
-  ltc,
   btc,
+  ltc,
+  rvn,
   btcTestnet,
   btcSignet,
+  fluxTestnet,
 };
