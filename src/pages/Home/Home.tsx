@@ -25,6 +25,7 @@ import Balances from '../../components/Balances/Balances';
 import Navbar from '../../components/Navbar/Navbar';
 import AddressContainer from '../../components/AddressContainer/AddressContainer.tsx';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
+import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import {
   generateMultisigAddress,
   generateInternalIdentityAddress,
@@ -218,6 +219,7 @@ function Home() {
         </div>
       )}
       <Key synchronised={keySynchronised} />
+      <SspConnect />
       <PoweredByFlux />
     </>
   );

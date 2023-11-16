@@ -95,12 +95,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       );
     }
     const popup = await getPopup(popupId);
+    let timeout = 1000;
     if (popup) {
       const options = {
         focused: true,
       };
       // bring focus to existing chrome popup
       await focusWindow(popup.id, options);
+      timeout = 200;
     } else {
       const options = {
         url: chrome.runtime.getURL( // here just index? and send runtime message?
@@ -119,10 +121,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         .create(options)
       popupId = newPopup.id;
     }
-    void chrome.runtime.sendMessage({ // send new message to poup. We do not await a response. Instead we listen for a new message from popup
-      origin: 'ssp-background',
-      data: 'hello from ssp background',
-    });
+    setTimeout(() => {
+      void chrome.runtime.sendMessage({ // send new message to poup. We do not await a response. Instead we listen for a new message from popup
+        origin: 'ssp-background',
+        dataB: 'hello from ssp background',
+        data: {
+          type: 'sign_message',
+          address: 'abc',
+          message: 'edf',
+          chain: 'lllll',
+        }
+      });
+    }, timeout);
   })();
   // Important! Return true to indicate you want to send a response asynchronously
   return true;

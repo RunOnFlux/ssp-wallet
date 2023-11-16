@@ -6,6 +6,7 @@ import { store } from './store';
 import { Provider } from 'react-redux';
 import localForage from 'localforage';
 import { SocketProvider } from './contexts/SocketContext';
+import { SspConnectProvider } from './contexts/sspConnectContext';
 import './translations';
 import './index.css';
 
@@ -22,7 +23,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
       <SocketProvider>
-        <RouterProvider router={router} />
+        <SspConnectProvider>
+          <RouterProvider router={router} />
+        </SspConnectProvider>
       </SocketProvider>
     </Provider>
   </React.StrictMode>,

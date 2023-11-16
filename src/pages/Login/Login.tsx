@@ -60,11 +60,6 @@ interface balancesObj {
   unconfirmed: string;
 }
 
-interface bgRequest {
-  origin: string;
-  data: string;
-}
-
 const balancesObject = {
   confirmed: '0.00',
   unconfirmed: '0.00',
@@ -94,18 +89,6 @@ function Login() {
     }
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    if (chrome?.runtime?.onMessage) { // this will move to separate lib file
-      chrome.runtime.onMessage.addListener((request: bgRequest) => {
-        console.log(request);
-        if (request.origin === 'ssp-background') {
-          console.log(request);
-          void chrome.runtime.sendMessage({ // we do not use sendResponse, instead we are sending new message
-            origin: 'ssp',
-            data: 'hello from ssp',
-          });
-        }
-      });
-    }
     void (async function () {
       // get activatedChain
       const activatedChain = await localForage.getItem('activeChain');
