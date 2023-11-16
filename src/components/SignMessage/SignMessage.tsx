@@ -4,7 +4,8 @@ const { Text } = Typography;
 import { useTranslation } from 'react-i18next';
 
 interface signMessageData {
-  data: string;
+  status: string;
+  result: string;
 }
 
 function SignMessage(props: {
@@ -20,7 +21,8 @@ function SignMessage(props: {
 
   const handleOk = () => {
     openAction({
-      data: 'hello from ssp sign message',
+      status: 'SUCCESS',
+      result: 'hello from ssp sign message',
     });
   };
 

@@ -1,9 +1,8 @@
-async function request(method, parameters) {
-  // console.log('request', method, parameters);
+async function request(details) {
   try {
     // eslint-disable-next-line no-undef
-    const response = await chrome.runtime.sendMessage({ method, parameters });
-    console.log(response);
+    const response = await chrome.runtime.sendMessage(details);
+    // console.log(response);
     return response;
   } catch (err) {
     console.error(err);
@@ -14,7 +13,7 @@ async function request(method, parameters) {
 window.addEventListener('fromPageEvent', async function (event) {
   // console.log(event)
   const result = await request(event.detail);
-  console.log(result);
+  // console.log(result);
   const eventB = new CustomEvent('fromContentScript', { detail: result });
   window.dispatchEvent(eventB);
 }, false);

@@ -3,7 +3,8 @@ import { useSspConnect } from '../../hooks/useSspConnect';
 import SignMessage from '../../components/SignMessage/SignMessage';
 
 interface signMessageData {
-  data: string;
+  status: string;
+  result: string;
 }
 
 function SspConnect() {
@@ -33,11 +34,13 @@ function SspConnect() {
     if (chrome?.runtime?.sendMessage) {
       // we do not use sendResponse, instead we are sending new message
       if (!data) {
-        setOpenSignMessage(false);
         // reject message
         void chrome.runtime.sendMessage({
           origin: 'ssp',
-          data: 'REQUEST REJECTED',
+          data: {
+            status: 'ERROR',
+            result: 'REQUEST REJECTED',
+          },
         });
       } else {
         void chrome.runtime.sendMessage({
@@ -46,7 +49,9 @@ function SspConnect() {
         });
       }
     } else {
-      console.log('no chrome.runtime.sendMessage');  }
+      console.log('no chrome.runtime.sendMessage');
+    }
+    setOpenSignMessage(false);
   };
   return (
     <>

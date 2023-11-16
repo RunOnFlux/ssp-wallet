@@ -1,24 +1,16 @@
-// Define the variable you want to inject into the window object
-const myInjectedVariable = 'Hello from the extension';
-
-// Inject the variable into the window object
-window.myInjectedVariable = myInjectedVariable;
-
-console.log('Variable injected into the window object:', myInjectedVariable);
-
-async function request(method, parameters) {
+async function request(method, params) {
   const message = {
     method,
-    parameters,
+    params,
   };
   const event = new CustomEvent('fromPageEvent', { detail: message });
   window.dispatchEvent(event);
   const response = await new Promise((resolve, reject) => {
     window.addEventListener(
       'fromContentScript',
-      function (eventB) {
-        console.log(eventB);
-        resolve(eventB.detail);
+      function (event) {
+        // console.log(event);
+        resolve(event.detail);
       },
       false,
     );

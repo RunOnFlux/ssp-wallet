@@ -81,9 +81,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   void (async () => {
     awaitingSendResponse = sendResponse;
     // we wait for user action on the popup
-    console.log('background.js got a message');
-    console.log(request);
-    console.log(sender);
+    // console.log('background.js got a message');
+    // console.log(request);
+    // console.log(sender);
     let top = 80;
     let left = 10;
     const lastFocused = await chrome.windows.getLastFocused();
@@ -105,12 +105,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       timeout = 200;
     } else {
       const options = {
-        url: chrome.runtime.getURL( // here just index? and send runtime message?
-          'index.html?request=' +
-          JSON.stringify(request) +
-          '&sender=' +
-          JSON.stringify(sender),
-        ),
+        url: chrome.runtime.getURL('index.html'),
         type: 'popup',
         top,
         left,
@@ -124,13 +119,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     setTimeout(() => {
       void chrome.runtime.sendMessage({ // send new message to poup. We do not await a response. Instead we listen for a new message from popup
         origin: 'ssp-background',
-        dataB: 'hello from ssp background',
-        data: {
-          type: 'sign_message',
-          address: 'abc',
-          message: 'edf',
-          chain: 'lllll',
-        }
+        data: request,
+        // data: {
+        //   method: 'sign_message',
+        //   params: {
+        //     address: 'abc',
+        //     message: 'edf',
+        //     chain: 'lllll',
+        //   }
+        // }
+        // data: {
+        //   method: 'sspwid_sign_message',
+        //   params: {
+        //     message: 'edf',
+        //   }
+        // }
       });
     }, timeout);
   })();

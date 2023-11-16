@@ -10,17 +10,21 @@ interface SspConnectContextType {
 }
 
 const defaultValue: SspConnectContextType = {
-  type: '', // only sign_message
+  type: '', // only sign_message and sspwid_sign_message
   address: '', // address to sign with
   message: '', // message to sign
   chain: '', // chain to sign with
 };
 
-interface dataBgRequest {
-  type: string;
+interface dataBgParams {
   address: string;
   message: string;
   chain: string;
+}
+
+interface dataBgRequest {
+  method: string;
+  params: dataBgParams;
 }
 
 interface bgRequest {
@@ -28,9 +32,14 @@ interface bgRequest {
   data: dataBgRequest;
 }
 
-export const SspConnectContext = createContext<SspConnectContextType>(defaultValue);
+export const SspConnectContext =
+  createContext<SspConnectContextType>(defaultValue);
 
-export const SspConnectProvider = ({ children }: { children: React.ReactNode }) => {
+export const SspConnectProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const { sspWalletExternalIdentity: wExternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
@@ -40,16 +49,25 @@ export const SspConnectProvider = ({ children }: { children: React.ReactNode }) 
   const [chain, setChain] = useState('');
 
   useEffect(() => {
-    if (chrome?.runtime?.onMessage) { // this will move to separate lib file
+    if (chrome?.runtime?.onMessage) {
+      // this will move to separate lib file
       chrome.runtime.onMessage.addListener((request: bgRequest) => {
         console.log(request);
         if (request.origin === 'ssp-background') {
-          if (request.data.type === 'sign_message') {
-            setType(request.data.type);
-            setAddress(request.data.address);
-            setMessage(request.data.message);
-            setChain(request.data.chain);
+          if (
+            request.data.method === 'sign_message' ||
+            request.data.method === 'sspwid_sign_message'
+          ) {
+            // sign_message TODO
+            setType(request.data.method);
+            setAddress(request.data.params.address ?? '');
+            setMessage(request.data.params.message ?? ''); // only this present in sspwidsign
+            setChain(request.data.params.chain ?? '');
+          } else {
+            console.log('Invalid method' + request.data.method);
           }
+        } else {
+          console.log('Invalid origin' + request.origin);
         }
       });
     }
@@ -63,7 +81,9 @@ export const SspConnectProvider = ({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <SspConnectContext.Provider value={{ type, address, chain, message, clearRequest }}>
+    <SspConnectContext.Provider
+      value={{ type, address, chain, message, clearRequest }}
+    >
       {children}
     </SspConnectContext.Provider>
   );
