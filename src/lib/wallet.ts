@@ -98,7 +98,7 @@ export function getMasterXpriv(
 export function generateMultisigAddress(
   xpub1: string,
   xpub2: string,
-  typeIndex: 0 | 1 | 10 | 11, // normal, change, internal identity, external identity
+  typeIndex: 0 | 1 | 10, // normal, change, internal identity
   addressIndex: number,
   chain: keyof cryptos,
 ): multisig {
