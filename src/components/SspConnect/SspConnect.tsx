@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSspConnect } from '../../hooks/useSspConnect';
 import SignMessage from '../../components/SignMessage/SignMessage';
+import { useTranslation } from 'react-i18next';
+import { cryptos } from '../../types';
 
 interface signMessageData {
   status: string;
@@ -14,6 +16,7 @@ function SspConnect() {
     chain: sspConnectChain,
     clearRequest,
   } = useSspConnect();
+  const { t } = useTranslation(['common']);
   const [openSignMessage, setOpenSignMessage] = useState(false);
   const [address, setAddress] = useState('');
   const [message, setMessage] = useState('');
@@ -38,7 +41,7 @@ function SspConnect() {
         void chrome.runtime.sendMessage({
           origin: 'ssp',
           data: {
-            status: 'ERROR',
+            status: t('common:error'),
             result: 'REQUEST REJECTED',
           },
         });
@@ -60,7 +63,7 @@ function SspConnect() {
         openAction={signMessageAction}
         address={address}
         message={message}
-        chain={chain}
+        chain={chain as keyof cryptos}
       />
     </>
   );

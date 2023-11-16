@@ -321,3 +321,12 @@ export function generateExternalIdentityKeypair( // in memory we store just addr
   };
   return externalIdentity;
 }
+
+// from private key in wif format, get private key in hex format
+export function wifToPrivateKey(privateKey: string, chain: keyof cryptos): string {
+  const libID = getLibId(chain);
+  const network = utxolib.networks[libID];
+  const keyPair = utxolib.ECPair.fromWIF(privateKey, network);
+  const pk = keyPair.getPrivateKeyBuffer().toString('hex');
+  return pk;
+}

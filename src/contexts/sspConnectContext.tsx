@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useAppSelector } from '../hooks';
+import { blockchains } from '@storage/blockchains';
+import { useTranslation } from 'react-i18next';
 
 interface SspConnectContextType {
   type: string;
@@ -47,6 +49,7 @@ export const SspConnectProvider = ({
   const [address, setAddress] = useState('');
   const [message, setMessage] = useState('');
   const [chain, setChain] = useState('');
+  const { t } = useTranslation(['home', 'common']);
 
   useEffect(() => {
     if (chrome?.runtime?.onMessage) {
@@ -58,16 +61,37 @@ export const SspConnectProvider = ({
             request.data.method === 'sign_message' ||
             request.data.method === 'sspwid_sign_message'
           ) {
-            // sign_message TODO
-            setType(request.data.method);
-            setAddress(request.data.params.address ?? '');
-            setMessage(request.data.params.message ?? ''); // only this present in sspwidsign
-            setChain(request.data.params.chain ?? '');
+            if (
+              blockchains[request.data.params.chain] ||
+              !request.data.params.chain
+            ) {
+              setChain(request.data.params.chain || 'btc');
+              // default to sspwid
+              setType(request.data.method);
+              setAddress(request.data.params.address || wExternalIdentity); // this can be undefined if its a request before we have identity
+              setMessage(request.data.params.message || '');
+            } else {
+              console.log('Invalid chain' + request.data.params.chain);
+              void chrome.runtime.sendMessage({
+                origin: 'ssp',
+                data: {
+                  status: t('common:error'),
+                  result: 'REQUEST REJECTED: Invalid chain',
+                },
+              });
+            }
           } else {
             console.log('Invalid method' + request.data.method);
+            void chrome.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: t('common:error'),
+                result: 'REQUEST REJECTED: Invalid method',
+              },
+            });
           }
         } else {
-          console.log('Invalid origin' + request.origin);
+          console.log('Ignore Invalid Origin' + request.origin);
         }
       });
     }

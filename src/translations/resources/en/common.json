@@ -31,5 +31,7 @@
   "start": "Start",
   "delete": "Delete",
   "edit": "Edit",
-  "fluxos": "FluxOS"
+  "fluxos": "FluxOS",
+  "success": "SUCCESS",
+  "error": "ERROR"
 }

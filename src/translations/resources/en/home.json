@@ -143,5 +143,13 @@
   "chainSelect": {
     "select_chain": "Select Chain",
     "unable_switch_chain": "Unable to switch chain."
+  },
+  "signMessage": {
+    "sign_message": "Sign Message",
+    "sign_message_sspwid": "Sign message with your SSP Wallet Identity:",
+    "sign_message_info": "Sign message with your {{chainName}} address:",
+    "sign": "Sign",
+    "message": "Message",
+    "signature": "Signature"
   }
 }

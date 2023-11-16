@@ -100,6 +100,7 @@ declare module '@runonflux/utxo-lib' {
       network: object,
     ) => {
       sign: (hash: Buffer) => Buffer;
+      getPrivateKeyBuffer: () => Buffer;
     };
     fromPublicKeyBuffer: (
       publicKeyBuffer: Buffer,
