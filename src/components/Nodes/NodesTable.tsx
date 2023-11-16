@@ -23,6 +23,7 @@ function NodesTable(props: {
   redeemScript: string;
   collateralPK: string;
   walletInUse: string;
+  sspwid: string;
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { chain } = props;
@@ -176,6 +177,9 @@ function NodesTable(props: {
               </p>
               <p style={{ marginTop: 10, wordBreak: 'break-all' }}>
                 {t('home:nodesTable.identitypk')}: {props.identityPK}
+              </p>
+              <p style={{ marginTop: 10, wordBreak: 'break-all' }}>
+                {t('home:nodesTable.sspid')}: {props.sspwid}
               </p>
               <div style={{ marginTop: 10 }}>
                 {!record.name && (

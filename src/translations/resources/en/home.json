@@ -27,6 +27,7 @@
     "amount": "Amount",
     "status": "Status",
     "identitypk": "Node Identity Private Key",
+    "sspid": "SSP Wallet ID (ZelID)",
     "start_node": "Start {{chainName}} Node",
     "start_node_info": "This action will broadcast Start Transaction to the blockchain trying to start your {{chainName}} Node.",
     "start_node_info_2": "Make sure your {{chainName}} Node is running and passing benchmark before starting your node to avoid DoS status.",
