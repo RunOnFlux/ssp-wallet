@@ -31,7 +31,7 @@ interface bgRequest {
 export const SspConnectContext = createContext<SspConnectContextType>(defaultValue);
 
 export const SspConnectProvider = ({ children }: { children: React.ReactNode }) => {
-  const { sspWalletKeyExternalIdentity: wkExternalIdentity } = useAppSelector(
+  const { sspWalletExternalIdentity: wExternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
   const [type, setType] = useState('');
@@ -53,7 +53,7 @@ export const SspConnectProvider = ({ children }: { children: React.ReactNode }) 
         }
       });
     }
-  }, [wkExternalIdentity]);
+  }, [wExternalIdentity]);
 
   const clearRequest = () => {
     setType('');

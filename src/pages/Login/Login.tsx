@@ -229,7 +229,7 @@ function Login() {
             );
             // generate ssp wallet external identity
             const generatedSspWalletExternalIdentity =
-              generateExternalIdentityAddress(xpubIdentity, identityChain);
+              generateExternalIdentityAddress(xpubIdentity);
             dispatch(
               setSspWalletExternalIdentity(generatedSspWalletExternalIdentity),
             );

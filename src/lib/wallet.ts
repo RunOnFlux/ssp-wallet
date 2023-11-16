@@ -3,7 +3,14 @@ import { Buffer } from 'buffer';
 import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
-import { keyPair, minHDKey, multisig, xPrivXpub, cryptos } from '../types';
+import {
+  keyPair,
+  minHDKey,
+  multisig,
+  xPrivXpub,
+  cryptos,
+  externalIdentity,
+} from '../types';
 import { blockchains } from '@storage/blockchains';
 
 export function getLibId(chain: keyof cryptos): string {
@@ -232,11 +239,9 @@ export function generateInternalIdentityAddress(
   return address;
 }
 
-// given xpub of our party, generate address of identity of xpub. EXTERNAL PUBLIC SSP. Wallet id or full wk id 
-export function generateExternalIdentityAddress(
-  xpub: string,
-  chain: keyof cryptos,
-): string {
+// given xpub of our party, generate address of identity of xpub. EXTERNAL PUBLIC SSP WALLET ID. Uses 16197 for xpub derivation path
+export function generateExternalIdentityAddress(xpub: string): string {
+  const chain = 'btc' as keyof cryptos;
   const typeIndex = 11; // identity index
   const addressIndex = 0; // identity index
 
@@ -262,7 +267,7 @@ export function generateExternalIdentityAddress(
 // given xpriv of our party, generate keypair consisting of privateKey in WIF format and public key belonging to it for Node Identity.. Comprossed
 export function generateNodeIdentityKeypair(
   xpriv: string,
-  typeIndex: 12,
+  typeIndex: 11 | 12,
   addressIndex: number,
   chain: keyof cryptos,
 ): keyPair {
@@ -288,3 +293,31 @@ export function generateNodeIdentityKeypair(
   return { privKey: privateKeyWIF, pubKey: publicKey };
 }
 
+// given xpub of our party, generate keypair for our SSP Wallet Identity - this is a p2phk bitcoin address used by thrid parties. SspId (same as zelid)
+export function generateExternalIdentityKeypair( // in memory we store just address
+  xpriv: string,
+): externalIdentity {
+  const chain = 'btc' as keyof cryptos;
+  const typeIndex = 11; // identity index
+  const addressIndex = 0; // identity index
+  const identityKeypair = generateNodeIdentityKeypair(
+    xpriv,
+    typeIndex,
+    addressIndex,
+    chain,
+  );
+
+  const pubKeyBuffer = Buffer.from(identityKeypair.pubKey, 'hex');
+  const libID = getLibId(chain);
+  const network = utxolib.networks[libID];
+
+  const genKeypair = utxolib.ECPair.fromPublicKeyBuffer(pubKeyBuffer, network);
+  const address = genKeypair.getAddress();
+
+  const externalIdentity = {
+    privKey: identityKeypair.privKey,
+    pubKey: identityKeypair.pubKey,
+    address,
+  };
+  return externalIdentity;
+}

@@ -292,6 +292,12 @@ export interface cryptos {
   btcSignet: number;
 }
 
+export interface externalIdentity {
+  privKey: string;
+  pubKey: string;
+  address: string;
+}
+
 export interface currencySSPRelay {
   fiat: currency;
   crypto: cryptos;

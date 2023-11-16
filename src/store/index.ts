@@ -32,11 +32,10 @@ const initialStatePasswordBlob = {
 };
 
 // internal is used for ssp communication only
-// external is used for logging into services, public. Such as nodes, exchanges, etc. Can be just wallet identity or full wk id
+// external is used for logging into services, public. Such as nodes, exchanges, etc. Just wallet identity (similar to zelid)
 interface sspState {
   sspWalletKeyInternalIdentity: string;
   sspWalletInternalIdentity: string;
-  sspWalletKeyExternalIdentity: string;
   sspWalletExternalIdentity: string;
   identityChain: 'flux';
   activeChain: keyof cryptos;
@@ -45,7 +44,6 @@ interface sspState {
 const initialSspState: sspState = {
   sspWalletKeyInternalIdentity: '',
   sspWalletInternalIdentity: '',
-  sspWalletKeyExternalIdentity: '',
   sspWalletExternalIdentity: '',
   identityChain: 'flux',
   activeChain: 'flux',
@@ -154,10 +152,7 @@ const sspStateSlice = createSlice({
     setSspWalletInternalIdentity: (state, action: PayloadAction<string>) => {
       state.sspWalletInternalIdentity = action.payload;
     },
-    // external for logging into services
-    setSspWalletKeyExternalIdentity: (state, action: PayloadAction<string>) => {
-      state.sspWalletKeyExternalIdentity = action.payload;
-    },
+    // external for logging into services, sspId (similar to zelid)
     setSspWalletExternalIdentity: (state, action: PayloadAction<string>) => {
       state.sspWalletExternalIdentity = action.payload;
     },
@@ -167,7 +162,6 @@ const sspStateSlice = createSlice({
     setSSPInitialState: (state) => {
       state.sspWalletKeyInternalIdentity = '';
       state.sspWalletInternalIdentity = '';
-      state.sspWalletKeyExternalIdentity = '';
       state.sspWalletExternalIdentity = '';
       state.activeChain = 'flux';
     },
@@ -183,7 +177,6 @@ export const {
   setSSPInitialState,
   setSspWalletKeyInternalIdentity,
   setSspWalletInternalIdentity,
-  setSspWalletKeyExternalIdentity,
   setSspWalletExternalIdentity,
   setActiveChain,
 } = sspStateSlice.actions;

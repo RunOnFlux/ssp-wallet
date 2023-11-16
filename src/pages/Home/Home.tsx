@@ -13,7 +13,6 @@ import {
   setSspWalletInternalIdentity,
   setSspWalletKeyInternalIdentity,
   setSspWalletExternalIdentity,
-  setSspWalletKeyExternalIdentity,
 } from '../../store';
 import { Spin, Divider, message, Space, Tabs } from 'antd';
 import './Home.css';
@@ -98,11 +97,11 @@ function Home() {
       // generate ssp wallet identity
       console.log(xpubWalletIdentity);
       console.log(xpubKeyIdentity);
-      const generatedSspWalletInternalIdentity = generateInternalIdentityAddress(
-        xpubWalletIdentity,
-        identityChain,
+      const generatedSspWalletInternalIdentity =
+        generateInternalIdentityAddress(xpubWalletIdentity, identityChain);
+      dispatch(
+        setSspWalletInternalIdentity(generatedSspWalletInternalIdentity),
       );
-      dispatch(setSspWalletInternalIdentity(generatedSspWalletInternalIdentity));
       const generatedSspWalletKeyInternalIdentity = generateMultisigAddress(
         xpubWalletIdentity,
         xpubKeyIdentity,
@@ -110,20 +109,14 @@ function Home() {
         0,
         identityChain,
       );
-      dispatch(setSspWalletKeyInternalIdentity(generatedSspWalletKeyInternalIdentity.address));
-      const generatedSspWalletExternaldentity = generateExternalIdentityAddress(
-        xpubWalletIdentity,
-        identityChain,
+      dispatch(
+        setSspWalletKeyInternalIdentity(
+          generatedSspWalletKeyInternalIdentity.address,
+        ),
       );
+      const generatedSspWalletExternaldentity =
+        generateExternalIdentityAddress(xpubWalletIdentity);
       dispatch(setSspWalletExternalIdentity(generatedSspWalletExternaldentity));
-      const generatedSspWalletKeyExternalIdentity = generateMultisigAddress(
-        xpubWalletIdentity,
-        xpubKeyIdentity,
-        11,
-        0,
-        identityChain,
-      );
-      dispatch(setSspWalletKeyExternalIdentity(generatedSspWalletKeyExternalIdentity.address));
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before
       displayMessage('error', t('home:err_panic'));
