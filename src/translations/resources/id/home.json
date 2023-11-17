@@ -1,0 +1,154 @@
+{
+  "err_panic": "PANIC: Kunci SSP Tidak Valid.",
+  "txSend": {
+    "show_in_explorer": "Tampilkan di Penjelajah",
+    "tx_sent": "Transaksi Terkirim!"
+  },
+  "txRejected": {
+    "tx_rejected": "Trasaciton Ditolak!",
+    "tx_rejected_info": "Transaksi ditolak oleh Kunci SSP.",
+    "tx_rejected_info_2": "Transaksi Anda tidak akan disertakan dalam blockchain. Dana Anda sepenuhnya tersedia dan dapat dikirim."
+  },
+  "transactionsTable": {
+    "no_tx_history": "Tidak Ditemukan Riwayat Transaksi",
+    "txid_link": "TXID: {{txid}}",
+    "fee_with_symbol": "Biaya: {{fee}} {{symbol}}",
+    "note_with_note": "Catatan: {{note}}",
+    "direction": "Arah",
+    "date": "Tanggal",
+    "amount": "Jumlah",
+    "confirmations": "Konfirmasi"
+  },
+  "nodesTable": {
+    "no_nodes": "Alamat tidak memiliki node",
+    "name": "Nama",
+    "ip": "Alamat IP",
+    "tier": "Tingkat",
+    "amount": "Jumlah",
+    "status": "Status",
+    "identitypk": "Kunci Pribadi Identitas Node",
+    "sspid": "ID Dompet SSP (ZelID)",
+    "start_node": "Awal {{chainName}} node",
+    "start_node_info": "Tindakan ini akan menyiarkan Mulai Transaksi ke blockchain yang mencoba memulai Transaksi Anda {{chainName}} node.",
+    "start_node_info_2": "Pastikan Anda {{chainName}} Node sedang berjalan dan melewati benchmark sebelum memulai node Anda untuk menghindari status DoS.",
+    "delete_node": "Menghapus {{chainName}} node",
+    "delete_node_info": "Tindakan ini akan membuat Anda {{chainName}} Agunan terkunci node tersedia untuk dibelanjakan.",
+    "delete_node_info_2": "Milikmu {{chainName}} Node akan terus berjalan dan dapat diatur kembali jika jaminan node Anda tidak habis.",
+    "open_fluxos": "Buka FluxOS",
+    "open_fluxos_info": "Tindakan ini akan membuka FluxOS di browser Anda, dapat meminimalkan SSP Wallet.",
+    "setup_node": "Pengaturan {{chainName}} Node",
+    "err_start": "Kesalahan saat memulai {{chainName}} Node. Silakan coba lagi.",
+    "offline": "Offline",
+    "confirmed": "Terkonfirmasi",
+    "started": "Mulai",
+    "starting": "Mulai",
+    "unassigned": "Belum ditugaskan",
+    "dos": "DoS",
+    "node_started": "{{chainName}} Node dimulai!",
+    "err_unable_identity": "Tidak dapat menghasilkan identitas node. Coba lagi nanti.",
+    "err_delete": "Kesalahan saat menghapus {{chainName}} Node. Silakan coba lagi.",
+    "node_delete": "{{chainName}} Node Dihapus!"
+  },
+  "setupNode": {
+    "setup_node": "Setup {{chainName}} Node",
+    "node_name": "Nama Node",
+    "node_ip": "Alamat IP",
+    "err_saving_node": "Kesalahan saat menyimpan node. Silakan coba lagi.",
+    "node_saved": "{{nama_chain}} node Tersimpan!",
+    "err_no_name": "Harap beri nama node Anda terlebih dahulu"
+  },
+  "sspWalletDetails": {
+    "err_pw_not_valid": "Kata sandi tidak valid.",
+    "err_invalid_wallet_xpriv": "Dompet xpriv tidak valid.",
+    "err_invalid_wallet_xpriv_2": "Dompet xpriv tidak valid, tidak dapat didekripsi.",
+    "err_invalid_wallet_xpub": "Dompet xpub tidak valid",
+    "err_invalid_wallet_xpub_2": "Dompet xpub yang tidak valid, tidak dapat didekripsi.",
+    "err_invalid_wallet_seed": "Seed wallet tidak valid",
+    "err_invalid_wallet_seed_2": "Seed wallet tidak valid, tidak dapat didekripsi",
+    "err_s1": "Kode S1: Terjadi kesalahan saat mendekripsi kata sandi.",
+    "ssp_bip": "{{chain}} Detail Dompet SSP (BIP-48)",
+    "ssp_mnemonic": "Frasa Biji Mnemonik Dompet SSP",
+    "chain_sync_ssp_key": "{{chain}} Sinkronisasi dengan Kunci SSP",
+    "chain_extended_pub": "{{chain}} Kunci Publik yang Diperpanjang",
+    "chain_extended_priv": "{{chain}} Kunci Pribadi yang Diperpanjang"
+  },
+  "addressDetails": {
+    "chain_bip": "{{chain}} Detail Alamat (BIP-48)",
+    "wallet_redeem_script": "Skrip Penukaran Dompet",
+    "wallet_witness_script": "Skrip Kesaksian Dompet",
+    "wallet_priv_key": "Kunci Pribadi Dompet"
+  },
+  "settings": {
+    "err_saving_conf": "Kesalahan saat menyimpan konfigurasi. Silakan coba lagi.",
+    "settings": "Pengaturan",
+    "change_pw": "Ubah kata sandi",
+    "change_pw_restore": "Ubah kata sandi? Kembalikan!",
+    "ssp_relay": "Server Relay SSP",
+    "chain_node_service": "{{chain}} Layanan Node"
+  },
+  "receive": {
+    "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
+    "wallet_address": "Alamat Dompet"
+  },
+  "navigation": {
+    "send": "Kirim",
+    "receive": "Menerima"
+  },
+  "confirmTxKey": {
+    "confirm_tx_key": "Konfirmasi Transaksi pada Kunci SSP",
+    "info_1": "Untuk mengonfirmasi transaksi pada SSP Key Anda, buka SSP Key Anda di ponsel kami dan konfirmasikan tindakan tersebut. Anda dapat mengetuk untuk menyegarkan atau memindai kode QR berikut ini.",
+    "info_2": "Untuk mengonfirmasi transaksi pada SSP Key Anda, buka SSP Key di ponsel Anda dan konfirmasikan tindakan tersebut. Anda dapat mengetuk untuk menyegarkan atau menggunakan input manual."
+  },
+  "navbar": {
+    "refresh": "Segarkan",
+    "chain_wallet": "{{chain}} {{wallet}}",
+    "ssp_details": "Detail Dompet SSP",
+    "addr_details": "Detail Alamat",
+    "generate_new_wallet": "Hasilkan Dompet Baru",
+    "switch_chain": "Ganti Rantai"
+  },
+  "passwordConfirm": {
+    "err_pw_not_valid_try": "Kata sandi tidak valid. Silakan coba lagi.",
+    "err_pc1": "Kode PC1: Data dompet hilang. Mohon kembalikan dompet Anda.",
+    "grant_access_info_1": "Anda akan mengakses informasi sensitif.",
+    "grant_access_info_2": "Berikan akses dengan kata sandi.",
+    "confirm_with_pw": "Konfirmasi dengan Kata Sandi",
+    "grant_access": "Berikan Akses"
+  },
+  "key": {
+    "sync_key": "Kunci Sinkronisasi",
+    "err_sync_fail": "Sinkronisasi gagal. Silakan coba lagi secara manual.",
+    "warn_await_sync": "Menunggu sinkronisasi Kunci SSP atau input manual.",
+    "err_sync_1": "Silakan masukkan SSP Key XPUB. SSP Key XPUB berbeda dengan SSP Wallet XPUB.",
+    "err_invalid_key": "Kunci SSP tidak valid.",
+    "err_k2": "Kode K2: Terjadi kesalahan saat mendekripsi kata sandi.",
+    "err_k1": "Kode K1: Terjadi kesalahan saat mendekripsi kata sandi.",
+    "cancel_sync_q": "Batalkan Sinkronisasi Kunci SSP?",
+    "cancel_sync": "Batalkan Sinkronisasi SSP",
+    "back_to_sync": "Kembali ke Sinkronisasi Kunci SSP",
+    "sync_info_content": "Dompet SSP tidak dapat digunakan tanpa Kunci SSP. Ini akan mengeluarkan Anda dari SSP Wallet.",
+    "dual_factor_key": "Kunci SSP Faktor Ganda",
+    "sync_info_1": "Dompet SSP adalah Dompet Tanda Tangan Ganda. Anda perlu mengunduh Kunci SSP di perangkat seluler Anda untuk mengakses dompet Anda.",
+    "sync_info_2": "Pindai kode QR berikut untuk menyinkronkan Dompet SSP Anda dengan Kunci SSP Anda.",
+    "masalah_sinkronisasi": "Masalah sinkronisasi? Masukan Manual",
+    "dual_factor_key_chain": "Kunci SSP Faktor Ganda untuk {{chain}}",
+    "input_xpub": "Masukkan Kunci Publik yang Diperluas {{path}} dari Kunci SSP di sini",
+    "sync_key_chain": "Kunci Sinkronisasi untuk {{chain}}",
+    "warn_await_sync_chain": "Menunggu sinkronisasi Kunci SSP atau input manual.",
+    "cancel_sync_q_chain": "Batalkan Sinkronisasi Kunci SSP untuk {{chain}}?",
+    "sync_info_content_chain": "Dompet SSP untuk rantai {{chain}} tidak dapat digunakan tanpa Kunci SSP. Ini akan beralih kembali ke Rantai Fluks",
+    "sync_info_2_chain": "Pindai kode QR berikut ini untuk menyinkronkan Dompet SSP Anda untuk chain {{chain}} dengan Kunci SSP Anda."
+  },
+  "chainSelect": {
+    "select_chain": "Pilih Rantai",
+    "unable_switch_chain": "Tidak dapat berpindah rantai."
+  },
+  "signMessage": {
+    "sign_message": "Tandatangani Pesan",
+    "sign_message_sspwid": "Tanda tangani pesan dengan Identitas Dompet SSP Anda:",
+    "sign_message_info": "Tanda tangani pesan dengan Anda {{chainName}} alamat:",
+    "sign": "Tanda",
+    "message": "Pesan",
+    "signature": "Tanda tangan"
+  }
+}
