@@ -7,6 +7,7 @@ import ltcLogo from '/src/assets/ltc.svg';
 import btcLogo from '/src/assets/btc.svg';
 import btcTestnetLogo from '/src/assets/btcTestnet.svg';
 import btcSignetLogo from '/src/assets/btcSignet.svg';
+import dogeLogo from '/src/assets/doge.svg';
 
 const flux = {
   id: 'flux',
@@ -106,7 +107,7 @@ const btc = {
   node: backends().btc.node,
   slip: 0,
   scriptType: 'p2wsh',
-  messagePrefix: '\x18Bitcoin Signed Message:\n',
+  messagePrefix: '\u0018Bitcoin Signed Message:\n',
   pubKeyHash: '00',
   scriptHash: '05',
   wif: '80',
@@ -119,6 +120,27 @@ const btc = {
   bech32: 'bc1',
 };
 
+const doge = {
+  id: 'doge',
+  libid: 'dogecoin',
+  name: 'Dogecoin',
+  symbol: 'DOGE',
+  decimals: 8,
+  node: backends().doge.node,
+  slip: 3,
+  scriptType: 'p2sh',
+  messagePrefix: '\u0019Dogecoin Signed Message:\n',
+  pubKeyHash: '1e',
+  scriptHash: '16',
+  wif: '9e',
+  logo: dogeLogo,
+  bip32: {
+    public: 0x02facafd,
+    private: 0x02fac398,
+  },
+  backend: 'blockbook',
+};
+
 const btcTestnet = {
   id: 'btcTestnet',
   libid: 'testnet',
@@ -128,7 +150,7 @@ const btcTestnet = {
   node: backends().btcTestnet.node,
   slip: 1,
   scriptType: 'p2wsh',
-  messagePrefix: '\x18Bitcoin Signed Message:\n',
+  messagePrefix: '\u0018Bitcoin Signed Message:\n',
   pubKeyHash: '6f',
   scriptHash: 'c4',
   wif: 'ef',
@@ -150,7 +172,7 @@ const btcSignet = {
   node: backends().btcSignet.node,
   slip: 1,
   scriptType: 'p2wsh',
-  messagePrefix: '\x18Bitcoin Signed Message:\n',
+  messagePrefix: '\u0018Bitcoin Signed Message:\n',
   pubKeyHash: '6f',
   scriptHash: 'c4',
   wif: 'ef',
@@ -166,6 +188,7 @@ const btcSignet = {
 export const blockchains = {
   flux,
   btc,
+  doge,
   ltc,
   rvn,
   btcTestnet,

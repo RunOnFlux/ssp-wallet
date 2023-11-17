@@ -288,6 +288,7 @@ export interface cryptos {
   rvn: number;
   ltc: number;
   btc: number;
+  doge: number;
   btcTestnet: number;
   btcSignet: number;
 }
