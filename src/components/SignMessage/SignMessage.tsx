@@ -18,7 +18,10 @@ import { cryptos } from '../../types';
 
 interface signMessageData {
   status: string;
-  result: string;
+  signature?: string;
+  address?: string;
+  message?: string;
+  data?: string;
 }
 
 function SignMessage(props: {
@@ -66,7 +69,9 @@ function SignMessage(props: {
             }
             openAction({
               status: t('common:success'),
-              result: signature,
+              signature: signature,
+              address: wExternalIdentity,
+              message: message,
             });
           } else {
             throw new Error('Unknown error: address mismatch');
@@ -78,7 +83,7 @@ function SignMessage(props: {
     } catch (error) {
       openAction({
         status: t('common:error'),
-        result: 'Error signing message.',
+        data: 'Error signing message.',
       });
     }
   };
