@@ -17,6 +17,8 @@ function SspConnect() {
     address: sspConnectAddress,
     message: sspConnectMessage,
     chain: sspConnectChain,
+    amount: sspConnectAmount,
+    type: sspConnectType,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common']);
@@ -24,14 +26,22 @@ function SspConnect() {
   const [address, setAddress] = useState('');
   const [message, setMessage] = useState('');
   const [chain, setChain] = useState('');
+  const [amount, setAmount] = useState('');
 
   useEffect(() => {
     console.log(sspConnectMessage);
-    if (sspConnectMessage) {
+    if (sspConnectType) {
       setAddress(sspConnectAddress);
       setMessage(sspConnectMessage);
       setChain(sspConnectChain);
-      setOpenSignMessage(true);
+      setAmount(sspConnectAmount);
+      if (sspConnectType === 'sign_message' || sspConnectType === 'sspwid_sign_message') {
+        setOpenSignMessage(true);
+      } else if (sspConnectType === 'pay') {
+        // show poup with information that we are going to pay after user approval
+        // here we should navigate to send page, change chain and input proper address, message, amount.
+        console.log(amount);
+      }
       clearRequest?.();
     }
   }, [sspConnectMessage]);
