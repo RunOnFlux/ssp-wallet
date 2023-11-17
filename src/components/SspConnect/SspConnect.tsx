@@ -6,7 +6,10 @@ import { cryptos } from '../../types';
 
 interface signMessageData {
   status: string;
-  result: string;
+  address?: string;
+  signature?: string;
+  message?: string;
+  data?: string;
 }
 
 function SspConnect() {
