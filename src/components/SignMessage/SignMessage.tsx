@@ -12,7 +12,7 @@ import {
   wifToPrivateKey,
 } from '../../lib/wallet.ts';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
-import { sign as bitcoinjsSign } from 'bitcoinjs-message';
+import { fluxnode } from '@runonflux/flux-sdk';
 import { randomBytes } from 'crypto';
 import { cryptos } from '../../types';
 
@@ -104,13 +104,17 @@ function SignMessage(props: {
 
       const privateKey = wifToPrivateKey(pk, chain);
 
-      signature = bitcoinjsSign(
+      const messagePrefix = blockchainConfig.messagePrefix;
+
+      // this is base64 encoded
+      signature = fluxnode.signMessage(
         message,
-        Buffer.from(privateKey, 'hex'),
+        privateKey,
         isCompressed,
+        messagePrefix,
         { extraEntropy: randomBytes(32) },
       );
-      signature = signature.toString('base64');
+
       // => different (but valid) signature each time
     } catch (e) {
       console.log(e);
