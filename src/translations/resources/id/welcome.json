@@ -1,0 +1,8 @@
+{
+  "title": "$t(common:appName.full)",
+  "subtitle": "$t(common:appName.moto)",
+  "welcome_to": "Selamat Datang di SSP Wallet",
+  "description": "Dompet tanda tangan ganda untuk dunia terdesentralisasi.",
+  "get_started": "Memulai!",
+  "restore_with_seed": "Pulihkan dengan Seed"
+}
