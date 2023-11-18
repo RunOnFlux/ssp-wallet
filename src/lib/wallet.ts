@@ -293,7 +293,7 @@ export function generateNodeIdentityKeypair(
   return { privKey: privateKeyWIF, pubKey: publicKey };
 }
 
-// given xpub of our party, generate keypair for our SSP Wallet Identity - this is a p2phk bitcoin address used by thrid parties. SspId (same as zelid)
+// given xpub of our party, generate keypair for our SSP Wallet Identity - this is a p2phk bitcoin address used by thrid parties. SspId (same as FluxID)
 export function generateExternalIdentityKeypair( // in memory we store just address
   xpriv: string,
 ): externalIdentity {
