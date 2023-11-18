@@ -46,6 +46,7 @@ import { blockchains } from '@storage/blockchains';
 
 import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
+import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 
 import { transaction, generatedWallets, cryptos, node } from '../../types';
 
@@ -68,7 +69,7 @@ const balancesObject = {
 type pwdDecrypt = Record<string, string>;
 
 function Login() {
-  const { t } = useTranslation(['login']);
+  const { t, i18n } = useTranslation(['login']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -99,6 +100,11 @@ function Login() {
       ) {
         const aC: keyof cryptos = activatedChain as keyof cryptos;
         dispatch(setActiveChain(aC));
+      }
+      // set language
+      const language = await localForage.getItem('language');
+      if (language && typeof language === 'string') {
+        await i18n.changeLanguage(language);
       }
       // check if existing user
       const accPresent = secureLocalStorage.getItem('walletSeed');
@@ -347,6 +353,9 @@ function Login() {
         </div>
       )}
       <PoweredByFlux isClickeable={true} />
+      <div style={{ position: 'absolute', top: 5, right: 5 }}>
+        <LanguageSelector label={false} />
+      </div>
     </>
   );
 }

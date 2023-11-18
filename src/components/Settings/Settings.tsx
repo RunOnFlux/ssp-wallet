@@ -13,6 +13,7 @@ import { sspConfig, sspConfigOriginal, loadSSPConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector } from '../../hooks';
+import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 
 const backendsOriginalConfig = backendsOriginal();
 const originalConfig = sspConfigOriginal();
@@ -119,6 +120,10 @@ function Settings(props: {
         style={{ textAlign: 'center', top: 60, width: 200 }}
         footer={[]}
       >
+        <h3>{t('home:settings.language')}</h3>
+        <Space direction="vertical" size="large">
+          <LanguageSelector label={true} />
+        </Space>
         <h3>{t('home:settings.change_pw')}</h3>
         <Space direction="vertical" size="large">
           <Button type="default" block size="middle" onClick={handleNotOk}>

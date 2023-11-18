@@ -5,6 +5,7 @@ import { Button, Image, Space, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import './Welcome.css';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
+import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 
 function Welcome() {
   const { t } = useTranslation(['welcome', 'common']);
@@ -52,6 +53,9 @@ function Welcome() {
         </div>
       )}
       <PoweredByFlux isClickeable={true} />
+      <div style={{ position: 'absolute', top: 5, right: 5 }}>
+        <LanguageSelector label={false} />
+      </div>
     </>
   );
 }
