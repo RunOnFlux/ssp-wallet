@@ -149,7 +149,21 @@ function NodesTable(props: {
           emptyText: (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={t('home:nodesTable.no_nodes')}
+              description={
+                <span>
+                  {t('home:nodesTable.no_nodes')}
+                  <br />
+                  <a
+                    href="https://runonflux.io/nodes"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {t('home:nodesTable.what_is_node', {
+                      chainName: blockchainConfig.name,
+                    })}
+                  </a>
+                </span>
+              }
             />
           ),
         }}
