@@ -14,15 +14,41 @@ import {
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
 
+import { LRUCache } from 'lru-cache';
+
+const utxoCache = new LRUCache({
+  max: 1000,
+  ttl: 1 * 60 * 60 * 1000, // 1 hour, just as precaution here, not really needed
+});
+
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
 }
 
+type utxoCache = Record<string, utxo[]>;
+
+let fetchUtxosRunning = false;
+
+export function clearUtxoCache() {
+  utxoCache.clear();
+}
+
+// on enter send section fetch this
 export async function fetchUtxos(
   address: string,
   chain: string,
 ): Promise<utxo[]> {
   try {
+    while (fetchUtxosRunning) {
+      // wait if previous request is running
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    const cachedUtxos = utxoCache.get(`${chain}_${address}`); // "value"
+    if (cachedUtxos) {
+      // should always be cached when doing fee estimation, tx construction
+      return cachedUtxos as utxo[];
+    }
+    fetchUtxosRunning = true;
     const backendConfig = backends()[chain];
     if (blockchains[chain].backend === 'blockbook') {
       const url = `https://${backendConfig.node}/api/v2/utxo/${address}`;
@@ -34,6 +60,7 @@ export async function fetchUtxos(
         scriptPubKey: '', // that is fine, not needed
         satoshis: x.value,
       }));
+      utxoCache.set(`${chain}_${address}`, utxos);
       return utxos;
     } else {
       const url = `https://${backendConfig.node}/api/addr/${address}/utxo`;
@@ -45,11 +72,14 @@ export async function fetchUtxos(
         scriptPubKey: x.scriptPubKey,
         satoshis: x.satoshis.toString(),
       }));
+      utxoCache.set(`${chain}_${address}`, utxos);
       return utxos;
     }
   } catch (e) {
     console.log(e);
     return [];
+  } finally {
+    fetchUtxosRunning = false;
   }
 }
 
@@ -312,6 +342,67 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
     }
   }
   return selectedUtxos;
+}
+
+export async function getTransactionSize(
+  chain: keyof cryptos,
+  receiver: string,
+  amount: string,
+  fee: string,
+  sender: string,
+  change: string,
+  message: string,
+  privateKey: string,
+  redeemScript: string,
+  witnessScript: string,
+  forbiddenUtxos?: txIdentifier[],
+): Promise<number> {
+  try {
+    const utxos = await fetchUtxos(sender, chain);
+    const utxosFiltered = [];
+    if (forbiddenUtxos?.length) {
+      utxos.forEach((utxo) => {
+        const found = forbiddenUtxos.find(
+          (x) => x.txid === utxo.txid && x.vout === utxo.vout,
+        );
+        if (!found) {
+          utxosFiltered.push(utxo);
+        }
+      });
+    }
+    const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
+    const pickedUtxos = pickUtxos(utxos, amountToSend);
+    const rawTx = buildUnsignedRawTx(
+      chain,
+      pickedUtxos,
+      receiver,
+      amount,
+      fee,
+      change,
+      message,
+    );
+    if (!rawTx) {
+      throw new Error('Could not construct raw tx');
+    }
+    const rawTxSize = rawTx.length;
+    console.log(rawTxSize);
+    const signedTx = signTransaction(
+      rawTx,
+      chain,
+      privateKey,
+      redeemScript,
+      witnessScript,
+      utxos,
+    );
+    const signedRawTxSize = signedTx.length;
+    console.log(signedRawTxSize);
+    const signatureSize = signedRawTxSize - rawTxSize;
+    const txSize = (signedRawTxSize + signatureSize) / 2; // as ssp-key is adding second signature
+    return txSize; // in bytes
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }
 
 export async function constructAndSignTransaction(

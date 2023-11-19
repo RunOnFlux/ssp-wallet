@@ -1,10 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, message, Divider, Button, Input, Space, Popconfirm } from 'antd';
 import { Link } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
-import { constructAndSignTransaction } from '../../lib/constructTx';
+import {
+  constructAndSignTransaction,
+  clearUtxoCache,
+  fetchUtxos,
+  getTransactionSize,
+} from '../../lib/constructTx';
 import { useAppSelector } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
@@ -24,7 +29,6 @@ import { blockchains } from '@storage/blockchains';
 
 import { transaction } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
-
 interface sendForm {
   receiver: string;
   amount: string;
@@ -42,6 +46,7 @@ function Send() {
     chain: txChain,
     clearTxRejected,
   } = useSocket();
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { t } = useTranslation(['send', 'common']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -60,7 +65,7 @@ function Send() {
   const myNodes = wallets[walletInUse].nodes ?? [];
   let spendableBalance = confirmedBalance;
   myNodes.forEach((node) => {
-    if (!node.name) {
+    if (node.name) {
       spendableBalance = new BigNumber(spendableBalance)
         .minus(node.amount)
         .toFixed();
@@ -71,6 +76,10 @@ function Send() {
   const [openTxRejected, setOpenTxRejected] = useState(false);
   const [txHex, setTxHex] = useState('');
   const [txid, setTxid] = useState('');
+  const [sendingAmount, setSendingAmount] = useState('0');
+  const [txReceiver, setTxReceiver] = useState('');
+  const [txMessage, setTxMessage] = useState('');
+  const [txFee, setTxFee] = useState('0');
   const blockchainConfig = blockchains[activeChain];
   const confirmTxAction = (status: boolean) => {
     setOpenConfirmTx(status);
@@ -92,6 +101,90 @@ function Send() {
   const txRejectedAction = (status: boolean) => {
     setOpenTxRejected(status);
   };
+
+  useEffect(() => {
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
+    try {
+      clearUtxoCache();
+      void fetchUtxos(sender, activeChain);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  // on every chain, address adjustment, fetch utxos
+  // used to get a precise estimate of the tx size
+  useEffect(() => {
+    fetchUtxos(sender, activeChain) // this should always be cached
+      .then(async () => {
+        // if sending balance > 0, calculate fee
+        const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
+        const maxSpendable = new BigNumber(spendableBalance).dividedBy(10 ** blockchainConfig.decimals);
+        if (sendingAmount && +sendingAmount > 0 && totalAmount.isLessThanOrEqualTo(maxSpendable)) {
+          // this method should be more light and not require private key. 
+          // get size estimate
+          console.log('tx size estimation');
+          // get our password to decrypt xpriv from secure storage
+          const fingerprint: string = getFingerprint();
+          const password = await passworderDecrypt(fingerprint, passwordBlob);
+          if (typeof password !== 'string') {
+            throw new Error(t('send:err_pwd_not_valid'));
+          }
+          const xprivBlob = secureLocalStorage.getItem(
+            `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+              blockchainConfig.scriptType,
+            )}`,
+          );
+          if (typeof xprivBlob !== 'string') {
+            throw new Error(t('send:err_invalid_xpriv'));
+          }
+          const xprivChain = await passworderDecrypt(password, xprivBlob);
+          if (typeof xprivChain !== 'string') {
+            throw new Error(t('send:err_invalid_xpriv_decrypt'));
+          }
+          const wInUse = walletInUse;
+          const splittedDerPath = wInUse.split('-');
+          const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+          const addressIndex = Number(splittedDerPath[1]);
+          const keyPair = generateAddressKeypair(
+            xprivChain,
+            typeIndex,
+            addressIndex,
+            activeChain,
+          );
+          const amount = new BigNumber(sendingAmount || '0')
+            .multipliedBy(10 ** blockchainConfig.decimals)
+            .toFixed();
+          const fee = new BigNumber(txFee || '0')
+            .multipliedBy(10 ** blockchainConfig.decimals)
+            .toFixed();
+          const lockedUtxos = myNodes.filter((node) => node.name);
+          const txSize = await getTransactionSize(
+            activeChain,
+            txReceiver || sender, // estimate as if we are sending to ourselves
+            amount,
+            fee,
+            sender,
+            sender,
+            txMessage || '',
+            keyPair.privKey,
+            redeemScript,
+            witnessScript,
+            lockedUtxos,
+          );
+          console.log(txSize);
+          // TODO
+        } else {
+          // reset fee to default?
+          console.log(totalAmount.isLessThanOrEqualTo(maxSpendable));
+          // TODO
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [walletInUse, activeChain, sendingAmount, txReceiver, txMessage, txFee]);
 
   useEffect(() => {
     if (txid) {
@@ -224,7 +317,13 @@ function Send() {
           .then((tx) => {
             console.log(tx);
             // post to ssp relay
-            postAction('tx', tx, activeChain, wInUse, sspWalletKeyInternalIdentity);
+            postAction(
+              'tx',
+              tx,
+              activeChain,
+              wInUse,
+              sspWalletKeyInternalIdentity,
+            );
             setTxHex(tx);
             setOpenConfirmTx(true);
             if (txSentInterval) {
@@ -278,7 +377,7 @@ function Send() {
 
   const refresh = () => {
     console.log('refresh');
-  }
+  };
   return (
     <>
       {contextHolder}
@@ -302,7 +401,11 @@ function Send() {
             },
           ]}
         >
-          <Input size="large" placeholder={t('send:receiver_address')} />
+          <Input
+            size="large"
+            placeholder={t('send:receiver_address')}
+            onChange={(e) => setTxReceiver(e.target.value)}
+          />
         </Form.Item>
 
         <Form.Item
@@ -312,6 +415,7 @@ function Send() {
         >
           <Input
             size="large"
+            onChange={(e) => setSendingAmount(e.target.value)}
             placeholder={t('send:input_amount')}
             suffix={blockchainConfig.symbol}
           />
@@ -341,6 +445,7 @@ function Send() {
             size="large"
             placeholder={t('send:tx_fee')}
             suffix={blockchainConfig.symbol}
+            onChange={(e) => setTxFee(e.target.value)}
           />
         </Form.Item>
 
@@ -349,7 +454,11 @@ function Send() {
           name="message"
           rules={[{ required: false, message: t('send:include_message') }]}
         >
-          <Input size="large" placeholder={t('send:payment_note')} />
+          <Input
+            size="large"
+            placeholder={t('send:payment_note')}
+            onChange={(e) => setTxMessage(e.target.value)}
+          />
         </Form.Item>
 
         <Form.Item>
