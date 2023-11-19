@@ -30,7 +30,7 @@ function LanguageSelector(props: { label: boolean }) {
         dropdownStyle={{ minWidth: '130px' }}
         options={[
           { value: 'en', label: 'en', desc: 'English' },
-          { value: 'id', label: 'id', desc: 'Indonesia' },
+          { value: 'id', label: 'id', desc: 'Bahasa Indonesia' },
         ]}
         optionRender={(option) => <>{option.data.desc}</>}
       />
