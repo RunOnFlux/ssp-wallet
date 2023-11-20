@@ -199,22 +199,43 @@ export function buildUnsignedRawTx(
     const totalAmountOutgoing = amountToSend.plus(feeToSend);
     if (totalUtxoValue.isGreaterThan(totalAmountOutgoing)) {
       // we do have a change, add it to the recipients
-      recipients.push({
-        address: change,
-        satoshis: totalUtxoValue.minus(totalAmountOutgoing).toFixed(),
-      });
+      // must be bigger than blockchains[chain].dustLimit satoshis, otherwise it will be rejected by the network
+      if (
+        totalUtxoValue
+          .minus(totalAmountOutgoing)
+          .isGreaterThanOrEqualTo(new BigNumber(blockchains[chain].dustLimit)) // if not it is additional fee
+      ) {
+        recipients.push({
+          address: change,
+          satoshis: totalUtxoValue.minus(totalAmountOutgoing).toFixed(),
+        });
+      }
     }
 
     // library accepts it as integer. BN is capped with max safe integer, throws otherwise
-    recipients.forEach((x) =>
-      txb.addOutput(x.address, new BigNumber(x.satoshis).toNumber()),
-    );
+    const recipientsAmount = new BigNumber(0);
+    recipients.forEach((x) => {
+      txb.addOutput(x.address, new BigNumber(x.satoshis).toNumber());
+      recipientsAmount.plus(new BigNumber(x.satoshis));
+    });
 
     if (message) {
       const data = Buffer.from(message, 'utf8');
       const dataScript = utxolib.script.nullData.output.encode(data);
       txb.addOutput(dataScript, 0);
     }
+
+    const actualTxFee = totalUtxoValue.minus(recipientsAmount);
+    if (
+      actualTxFee.isEqualTo(feeToSend) ||
+      actualTxFee.isLessThanOrEqualTo(feeToSend.plus(new BigNumber(blockchains[chain].dustLimit)))
+    ) {
+      console.log(actualTxFee, feeToSend);
+    } else {
+      throw new Error(`Invalid fee ${actualTxFee.toFixed()}`);
+    }
+
+    // todo here another check for absurd fees
 
     const tx = txb.buildIncomplete();
     const txhex = tx.toHex();

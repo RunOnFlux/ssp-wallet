@@ -21,6 +21,9 @@ declare module '@storage/blockchains' {
     txGroupID: number;
     backend: string;
     bech32: string;
+    dustLimit: number;
+    feePerByte: number;
+    maxMessage: number;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

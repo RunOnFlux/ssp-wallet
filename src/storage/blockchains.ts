@@ -9,6 +9,8 @@ import btcTestnetLogo from '/src/assets/btcTestnet.svg';
 import btcSignetLogo from '/src/assets/btcSignet.svg';
 import dogeLogo from '/src/assets/doge.svg';
 
+// https://github.com/dogecoin/dogecoin/blob/master/doc/fee-recommendation.md
+
 const flux = {
   id: 'flux',
   libid: 'flux',
@@ -30,6 +32,9 @@ const flux = {
   txVersion: 4,
   txGroupID: 0x892f2085,
   backend: 'insight',
+  dustLimit: 546, // min utxo amount
+  feePerByte: 1, // min fee per byte
+  maxMessage: 80, // 80 bytes in size
 };
 
 const fluxTestnet = {
@@ -53,6 +58,9 @@ const fluxTestnet = {
   txVersion: 4,
   txGroupID: 0x892f2085,
   backend: 'insight',
+  dustLimit: 546, // min utxo amount
+  feePerByte: 1, // min fee per byte
+  maxMessage: 80, // 80 bytes in size
 };
 
 const rvn = {
@@ -74,6 +82,9 @@ const rvn = {
     private: 0x0488ade4,
   },
   backend: 'blockbook',
+  dustLimit: 546, // min utxo amount
+  feePerByte: 4, // min fee per byte
+  maxMessage: 80, // 80 bytes in size
 };
 
 const ltc = {
@@ -96,6 +107,9 @@ const ltc = {
   },
   backend: 'blockbook',
   bech32: 'ltc',
+  dustLimit: 546, // min utxo amount
+  feePerByte: 1, // min fee per byte
+  maxMessage: 80, // 80 bytes in size
 };
 
 const btc = {
@@ -118,6 +132,9 @@ const btc = {
   },
   backend: 'blockbook',
   bech32: 'bc1',
+  dustLimit: 546, // min utxo amount
+  feePerByte: 1, // min fee per byte
+  maxMessage: 80, // 80 bytes in size
 };
 
 const doge = {
@@ -139,6 +156,9 @@ const doge = {
     private: 0x02fac398,
   },
   backend: 'blockbook',
+  dustLimit: 1000000, // min utxo amount
+  feePerByte: 1000, // min fee per byte
+  maxMessage: 80, // 80 bytes in size
 };
 
 const btcTestnet = {
@@ -161,6 +181,9 @@ const btcTestnet = {
   },
   backend: 'blockbook',
   bech32: 'tb1',
+  dustLimit: 546, // min utxo amount
+  feePerByte: 1, // min fee per byte
+  maxMessage: 80, // 80 bytes in size
 };
 
 const btcSignet = {
@@ -183,6 +206,9 @@ const btcSignet = {
   },
   backend: 'blockbook',
   bech32: 'tb1',
+  dustLimit: 546, // min utxo amount
+  feePerByte: 1, // min fee per byte
+  maxMessage: 80, // 80 bytes in size
 };
 
 export const blockchains = {

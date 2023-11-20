@@ -80,6 +80,7 @@ function Send() {
   const [txReceiver, setTxReceiver] = useState('');
   const [txMessage, setTxMessage] = useState('');
   const [txFee, setTxFee] = useState('0');
+  const [txSizeBytes, setTxSizeBytes] = useState(0);
   const blockchainConfig = blockchains[activeChain];
   const confirmTxAction = (status: boolean) => {
     setOpenConfirmTx(status);
@@ -120,9 +121,15 @@ function Send() {
       .then(async () => {
         // if sending balance > 0, calculate fee
         const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
-        const maxSpendable = new BigNumber(spendableBalance).dividedBy(10 ** blockchainConfig.decimals);
-        if (sendingAmount && +sendingAmount > 0 && totalAmount.isLessThanOrEqualTo(maxSpendable)) {
-          // this method should be more light and not require private key. 
+        const maxSpendable = new BigNumber(spendableBalance).dividedBy(
+          10 ** blockchainConfig.decimals,
+        );
+        if (
+          sendingAmount &&
+          +sendingAmount > 0 &&
+          totalAmount.isLessThanOrEqualTo(maxSpendable)
+        ) {
+          // this method should be more light and not require private key.
           // get size estimate
           console.log('tx size estimation');
           // get our password to decrypt xpriv from secure storage
@@ -174,11 +181,13 @@ function Send() {
             lockedUtxos,
           );
           console.log(txSize);
-          // TODO
+          setTxSizeBytes(txSize);
+          console.log(txSizeBytes);
+          
         } else {
           // reset fee to default?
           console.log(totalAmount.isLessThanOrEqualTo(maxSpendable));
-          // TODO
+          setTxSizeBytes(0);
         }
       })
       .catch((error) => {
@@ -415,6 +424,7 @@ function Send() {
         >
           <Input
             size="large"
+            value={sendingAmount}
             onChange={(e) => setSendingAmount(e.target.value)}
             placeholder={t('send:input_amount')}
             suffix={blockchainConfig.symbol}
@@ -443,6 +453,7 @@ function Send() {
         >
           <Input
             size="large"
+            value={txFee}
             placeholder={t('send:tx_fee')}
             suffix={blockchainConfig.symbol}
             onChange={(e) => setTxFee(e.target.value)}
@@ -456,6 +467,7 @@ function Send() {
         >
           <Input
             size="large"
+            value={txMessage}
             placeholder={t('send:payment_note')}
             onChange={(e) => setTxMessage(e.target.value)}
           />
