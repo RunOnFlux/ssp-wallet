@@ -47,6 +47,7 @@ function Send() {
     clearTxRejected,
   } = useSocket();
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
+  const txFeeRef = useRef(null);
   const { t } = useTranslation(['send', 'common']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ function Send() {
   const [txReceiver, setTxReceiver] = useState('');
   const [txMessage, setTxMessage] = useState('');
   const [txFee, setTxFee] = useState('0');
-  const [txSizeBytes, setTxSizeBytes] = useState(0);
+  const [feePerByte, setFeePerByte] = useState('0');
   const blockchainConfig = blockchains[activeChain];
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
@@ -110,6 +111,7 @@ function Send() {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     try {
+      setFeePerByte(blockchainConfig.feePerByte.toFixed());
       clearUtxoCache();
       void fetchUtxos(sender, activeChain);
     } catch (error) {
@@ -122,92 +124,130 @@ function Send() {
   useEffect(() => {
     fetchUtxos(sender, activeChain) // this should always be cached
       .then(async () => {
-        // if sending balance > 0, calculate fee
-        const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
-        const maxSpendable = new BigNumber(spendableBalance).dividedBy(
-          10 ** blockchainConfig.decimals,
-        );
-        if (
-          sendingAmount &&
-          +sendingAmount > 0 &&
-          totalAmount.isLessThanOrEqualTo(maxSpendable)
-        ) {
-          // this method should be more light and not require private key.
-          // get size estimate
-          console.log('tx size estimation');
-          // get our password to decrypt xpriv from secure storage
-          const fingerprint: string = getFingerprint();
-          const password = await passworderDecrypt(fingerprint, passwordBlob);
-          if (typeof password !== 'string') {
-            throw new Error(t('send:err_pwd_not_valid'));
-          }
-          const xprivBlob = secureLocalStorage.getItem(
-            `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
-              blockchainConfig.scriptType,
-            )}`,
-          );
-          if (typeof xprivBlob !== 'string') {
-            throw new Error(t('send:err_invalid_xpriv'));
-          }
-          const xprivChain = await passworderDecrypt(password, xprivBlob);
-          if (typeof xprivChain !== 'string') {
-            throw new Error(t('send:err_invalid_xpriv_decrypt'));
-          }
-          const wInUse = walletInUse;
-          const splittedDerPath = wInUse.split('-');
-          const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
-          const addressIndex = Number(splittedDerPath[1]);
-          const keyPair = generateAddressKeypair(
-            xprivChain,
-            typeIndex,
-            addressIndex,
-            activeChain,
-          );
-          const amount = new BigNumber(sendingAmount || '0')
-            .multipliedBy(10 ** blockchainConfig.decimals)
-            .toFixed();
-          const fee = new BigNumber(txFee || '0')
-            .multipliedBy(10 ** blockchainConfig.decimals)
-            .toFixed();
-          const lockedUtxos = myNodes.filter((node) => node.name);
-          // maxFee is max 100USD worth in fee
-          const cr = cryptoRates[activeChain] ?? 0;
-          const fi = fiatRates.USD ?? 0;
-          const fiatPrice = cr * fi;
-          const maxFeeUSD = 100;
-          const maxFeeUNIT = new BigNumber(maxFeeUSD)
-            .dividedBy(fiatPrice)
-            .toFixed();
-          const maxFeeSat = new BigNumber(maxFeeUNIT)
-            .multipliedBy(10 ** blockchainConfig.decimals)
-            .toFixed();
-          const txSize = await getTransactionSize(
-            activeChain,
-            txReceiver || sender, // estimate as if we are sending to ourselves
-            amount,
-            fee,
-            sender,
-            sender,
-            txMessage || '',
-            keyPair.privKey,
-            redeemScript,
-            witnessScript,
-            maxFeeSat,
-            lockedUtxos,
-          );
-          console.log(txSize);
-          setTxSizeBytes(txSize);
-          console.log(txSizeBytes);
-        } else {
-          // reset fee to default?
-          console.log(totalAmount.isLessThanOrEqualTo(maxSpendable));
-          setTxSizeBytes(0);
-        }
+        await calculateTxFeeSize();
       })
       .catch((error) => {
         console.log(error);
       });
   }, [walletInUse, activeChain, sendingAmount, txReceiver, txMessage, txFee]);
+
+  const calculateTxFeeSize = async () => {
+    // if sending balance > 0, calculate fee
+    const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
+    const maxSpendable = new BigNumber(spendableBalance).dividedBy(
+      10 ** blockchainConfig.decimals,
+    );
+    if (
+      sendingAmount &&
+      +sendingAmount > 0 &&
+      totalAmount.isLessThanOrEqualTo(maxSpendable)
+    ) {
+      // this method should be more light and not require private key.
+      // get size estimate
+      console.log('tx size estimation');
+      // get our password to decrypt xpriv from secure storage
+      const fingerprint: string = getFingerprint();
+      const password = await passworderDecrypt(fingerprint, passwordBlob);
+      if (typeof password !== 'string') {
+        throw new Error(t('send:err_pwd_not_valid'));
+      }
+      const xprivBlob = secureLocalStorage.getItem(
+        `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+          blockchainConfig.scriptType,
+        )}`,
+      );
+      if (typeof xprivBlob !== 'string') {
+        throw new Error(t('send:err_invalid_xpriv'));
+      }
+      const xprivChain = await passworderDecrypt(password, xprivBlob);
+      if (typeof xprivChain !== 'string') {
+        throw new Error(t('send:err_invalid_xpriv_decrypt'));
+      }
+      const wInUse = walletInUse;
+      const splittedDerPath = wInUse.split('-');
+      const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+      const addressIndex = Number(splittedDerPath[1]);
+      const keyPair = generateAddressKeypair(
+        xprivChain,
+        typeIndex,
+        addressIndex,
+        activeChain,
+      );
+      const amount = new BigNumber(sendingAmount || '0')
+        .multipliedBy(10 ** blockchainConfig.decimals)
+        .toFixed();
+      const fee = new BigNumber(txFee || '0')
+        .multipliedBy(10 ** blockchainConfig.decimals)
+        .toFixed();
+      const lockedUtxos = myNodes.filter((node) => node.name);
+      // maxFee is max 100USD worth in fee
+      const cr = cryptoRates[activeChain] ?? 0;
+      const fi = fiatRates.USD ?? 0;
+      const fiatPrice = cr * fi;
+      const maxFeeUSD = 100;
+      const maxFeeUNIT = new BigNumber(maxFeeUSD)
+        .dividedBy(fiatPrice)
+        .toFixed();
+      const maxFeeSat = new BigNumber(maxFeeUNIT)
+        .multipliedBy(10 ** blockchainConfig.decimals)
+        .toFixed();
+      const txSize = await getTransactionSize(
+        activeChain,
+        txReceiver || sender, // estimate as if we are sending to ourselves
+        amount,
+        fee,
+        sender,
+        sender,
+        txMessage || '',
+        keyPair.privKey,
+        redeemScript,
+        witnessScript,
+        maxFeeSat,
+        lockedUtxos,
+      );
+      // target recommended fee of blockchain config
+      const feeSats = new BigNumber(txSize).multipliedBy(feePerByte).toFixed(); // satoshis
+      console.log(feeSats);
+      console.log(feePerByte);
+      const feeUnit = new BigNumber(feeSats)
+        .dividedBy(10 ** blockchainConfig.decimals)
+        .toFixed(); // unit
+      console.log(feeUnit);
+      // if the difference is less than 20 satoshis, ignore.
+      console.log(
+        new BigNumber(feeSats)
+          .minus(
+            new BigNumber(txFee || '0').multipliedBy(
+              10 ** blockchainConfig.decimals,
+            ),
+          )
+          .abs()
+          .toFixed(),
+      );
+      if (
+        feeUnit !== txFee &&
+        new BigNumber(feeSats)
+          .minus(
+            new BigNumber(txFee || '0').multipliedBy(
+              10 ** blockchainConfig.decimals,
+            ),
+          )
+          .abs()
+          .gt(20)
+      ) {
+        console.log(feeUnit);
+        if (txFeeRef) {
+          console.log('here');
+          txFeeRef.current.input.value = feeUnit; // not working mmmmmm
+          setTxFee(feeUnit);
+        }
+      }
+    } else {
+      // reset fee
+      setTxFee('0');
+      txFeeRef.current.input.value = '0';
+    }
+  };
 
   useEffect(() => {
     if (txid) {
@@ -286,6 +326,15 @@ function Send() {
     }
     if (!values.fee || +values.fee < 0 || isNaN(+values.fee)) {
       displayMessage('error', t('send:err_invalid_fee'));
+      return;
+    }
+    if (values.message && values.message.length > blockchainConfig.maxMessage) {
+      displayMessage(
+        'error',
+        t('send:err_invalid_message', {
+          characters: blockchainConfig.maxMessage,
+        }),
+      );
       return;
     }
     // get our password to decrypt xpriv from secure storage
@@ -480,11 +529,24 @@ function Send() {
           <Input
             size="large"
             value={txFee}
+            ref={txFeeRef}
             placeholder={t('send:tx_fee')}
             suffix={blockchainConfig.symbol}
             onChange={(e) => setTxFee(e.target.value)}
           />
         </Form.Item>
+
+        <div
+          style={{
+            marginTop: '-25px',
+            float: 'right',
+            marginRight: 10,
+            fontSize: 12,
+            color: 'grey',
+          }}
+        >
+          {feePerByte} sat/B
+        </div>
 
         <Form.Item
           label={t('send:message')}

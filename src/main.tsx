@@ -7,6 +7,7 @@ import { Provider } from 'react-redux';
 import localForage from 'localforage';
 import { SocketProvider } from './contexts/SocketContext';
 import { SspConnectProvider } from './contexts/sspConnectContext';
+import FiatCurrencyController from './components/FiatCurrencyController/FiatCurrencyController.tsx';
 import './translations';
 import './index.css';
 
@@ -25,6 +26,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <SocketProvider>
         <SspConnectProvider>
           <RouterProvider router={router} />
+          <FiatCurrencyController />
         </SspConnectProvider>
       </SocketProvider>
     </Provider>

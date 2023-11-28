@@ -44,7 +44,6 @@ import {
 
 import { blockchains } from '@storage/blockchains';
 
-import FiatCurrencyController from '../../components/FiatCurrencyController/FiatCurrencyController.tsx';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 
@@ -349,7 +348,6 @@ function Login() {
           >
             {t('login:forgot_pw')} <i> {t('login:restore')}</i>
           </Button>
-          <FiatCurrencyController />
         </div>
       )}
       <PoweredByFlux isClickeable={true} />

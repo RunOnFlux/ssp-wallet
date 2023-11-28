@@ -22,6 +22,7 @@ declare module '@storage/blockchains' {
     backend: string;
     bech32: string;
     dustLimit: number;
+    minFeePerByte: number;
     feePerByte: number;
     maxMessage: number;
   }

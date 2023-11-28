@@ -214,11 +214,11 @@ export function buildUnsignedRawTx(
     }
 
     // library accepts it as integer. BN is capped with max safe integer, throws otherwise
-    const recipientsAmount = new BigNumber(0);
-    recipients.forEach((x) => {
+    let recipientsAmount = new BigNumber(0);
+    for (const x of recipients) {
       txb.addOutput(x.address, new BigNumber(x.satoshis).toNumber());
-      recipientsAmount.plus(new BigNumber(x.satoshis));
-    });
+      recipientsAmount = recipientsAmount.plus(new BigNumber(x.satoshis));
+    }
 
     if (message) {
       const data = Buffer.from(message, 'utf8');
@@ -229,7 +229,9 @@ export function buildUnsignedRawTx(
     const actualTxFee = totalUtxoValue.minus(recipientsAmount);
     if (
       actualTxFee.isEqualTo(feeToSend) ||
-      actualTxFee.isLessThanOrEqualTo(feeToSend.plus(new BigNumber(blockchains[chain].dustLimit)))
+      actualTxFee.isLessThanOrEqualTo(
+        feeToSend.plus(new BigNumber(blockchains[chain].dustLimit)),
+      )
     ) {
       console.log(actualTxFee, feeToSend);
     } else {

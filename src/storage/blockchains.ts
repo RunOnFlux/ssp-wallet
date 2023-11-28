@@ -33,7 +33,8 @@ const flux = {
   txGroupID: 0x892f2085,
   backend: 'insight',
   dustLimit: 546, // min utxo amount
-  feePerByte: 1, // min fee per byte
+  minFeePerByte: 1, // min fee per byte
+  feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
 };
 
@@ -59,7 +60,8 @@ const fluxTestnet = {
   txGroupID: 0x892f2085,
   backend: 'insight',
   dustLimit: 546, // min utxo amount
-  feePerByte: 1, // min fee per byte
+  minFeePerByte: 1, // min fee per byte
+  feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
 };
 
@@ -83,7 +85,8 @@ const rvn = {
   },
   backend: 'blockbook',
   dustLimit: 546, // min utxo amount
-  feePerByte: 4, // min fee per byte
+  minFeePerByte: 4, // min fee per byte
+  feePerByte: 4, // fee per byte
   maxMessage: 80, // 80 bytes in size
 };
 
@@ -108,7 +111,8 @@ const ltc = {
   backend: 'blockbook',
   bech32: 'ltc',
   dustLimit: 546, // min utxo amount
-  feePerByte: 1, // min fee per byte
+  minFeePerByte: 1, // min fee per byte
+  feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
 };
 
@@ -133,7 +137,8 @@ const btc = {
   backend: 'blockbook',
   bech32: 'bc1',
   dustLimit: 546, // min utxo amount
-  feePerByte: 1, // min fee per byte
+  minFeePerByte: 1, // min fee per byte
+  feePerByte: 20, // fee per byte
   maxMessage: 80, // 80 bytes in size
 };
 
@@ -157,7 +162,8 @@ const doge = {
   },
   backend: 'blockbook',
   dustLimit: 1000000, // min utxo amount
-  feePerByte: 1000, // min fee per byte
+  minFeePerByte: 1000, // min fee per byte
+  feePerByte: 20, // fee per byte
   maxMessage: 80, // 80 bytes in size
 };
 
@@ -182,7 +188,8 @@ const btcTestnet = {
   backend: 'blockbook',
   bech32: 'tb1',
   dustLimit: 546, // min utxo amount
-  feePerByte: 1, // min fee per byte
+  minFeePerByte: 1, // min fee per byte
+  feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
 };
 
@@ -207,7 +214,8 @@ const btcSignet = {
   backend: 'blockbook',
   bech32: 'tb1',
   dustLimit: 546, // min utxo amount
-  feePerByte: 1, // min fee per byte
+  minFeePerByte: 1, // min fee per byte
+  feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
 };
 
