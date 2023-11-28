@@ -170,6 +170,7 @@ export function buildUnsignedRawTx(
   fee: string,
   change: string,
   message: string,
+  maxFee: string,
 ): string {
   try {
     const libID = getLibId(chain);
@@ -235,7 +236,10 @@ export function buildUnsignedRawTx(
       throw new Error(`Invalid fee ${actualTxFee.toFixed()}`);
     }
 
-    // todo here another check for absurd fees
+    // absurd fee check, we define absurd fee as 100 usd in send.tsx
+    if (actualTxFee.isGreaterThan(new BigNumber(maxFee))) {
+      throw new Error(`Fee is absurdely too high ${actualTxFee.toFixed()}`);
+    }
 
     const tx = txb.buildIncomplete();
     const txhex = tx.toHex();
@@ -376,6 +380,7 @@ export async function getTransactionSize(
   privateKey: string,
   redeemScript: string,
   witnessScript: string,
+  maxFee: string,
   forbiddenUtxos?: txIdentifier[],
 ): Promise<number> {
   try {
@@ -401,6 +406,7 @@ export async function getTransactionSize(
       fee,
       change,
       message,
+      maxFee,
     );
     if (!rawTx) {
       throw new Error('Could not construct raw tx');
@@ -437,6 +443,7 @@ export async function constructAndSignTransaction(
   privateKey: string,
   redeemScript: string,
   witnessScript: string,
+  maxFee: string,
   forbiddenUtxos?: txIdentifier[],
 ): Promise<string> {
   try {
@@ -462,6 +469,7 @@ export async function constructAndSignTransaction(
       fee,
       change,
       message,
+      maxFee,
     );
     if (!rawTx) {
       throw new Error('Could not construct raw tx');

@@ -82,6 +82,9 @@ function Send() {
   const [txFee, setTxFee] = useState('0');
   const [txSizeBytes, setTxSizeBytes] = useState(0);
   const blockchainConfig = blockchains[activeChain];
+  const { cryptoRates, fiatRates } = useAppSelector(
+    (state) => state.fiatCryptoRates,
+  );
   const confirmTxAction = (status: boolean) => {
     setOpenConfirmTx(status);
     if (status === false) {
@@ -167,6 +170,17 @@ function Send() {
             .multipliedBy(10 ** blockchainConfig.decimals)
             .toFixed();
           const lockedUtxos = myNodes.filter((node) => node.name);
+          // maxFee is max 100USD worth in fee
+          const cr = cryptoRates[activeChain] ?? 0;
+          const fi = fiatRates.USD ?? 0;
+          const fiatPrice = cr * fi;
+          const maxFeeUSD = 100;
+          const maxFeeUNIT = new BigNumber(maxFeeUSD)
+            .dividedBy(fiatPrice)
+            .toFixed();
+          const maxFeeSat = new BigNumber(maxFeeUNIT)
+            .multipliedBy(10 ** blockchainConfig.decimals)
+            .toFixed();
           const txSize = await getTransactionSize(
             activeChain,
             txReceiver || sender, // estimate as if we are sending to ourselves
@@ -178,12 +192,12 @@ function Send() {
             keyPair.privKey,
             redeemScript,
             witnessScript,
+            maxFeeSat,
             lockedUtxos,
           );
           console.log(txSize);
           setTxSizeBytes(txSize);
           console.log(txSizeBytes);
-          
         } else {
           // reset fee to default?
           console.log(totalAmount.isLessThanOrEqualTo(maxSpendable));
@@ -310,6 +324,17 @@ function Send() {
           .multipliedBy(10 ** blockchainConfig.decimals)
           .toFixed();
         const lockedUtxos = myNodes.filter((node) => node.name);
+        // maxFee is max 100USD worth in fee
+        const cr = cryptoRates[activeChain] ?? 0;
+        const fi = fiatRates.USD ?? 0;
+        const fiatPrice = cr * fi;
+        const maxFeeUSD = 100;
+        const maxFeeUNIT = new BigNumber(maxFeeUSD)
+          .dividedBy(fiatPrice)
+          .toFixed();
+        const maxFeeSat = new BigNumber(maxFeeUNIT)
+          .multipliedBy(10 ** blockchainConfig.decimals)
+          .toFixed();
         constructAndSignTransaction(
           activeChain,
           values.receiver,
@@ -321,6 +346,7 @@ function Send() {
           keyPair.privKey,
           redeemScript,
           witnessScript,
+          maxFeeSat,
           lockedUtxos,
         )
           .then((tx) => {
