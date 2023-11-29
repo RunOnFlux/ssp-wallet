@@ -152,8 +152,35 @@ function Send() {
     walletInUse,
     activeChain,
     sendingAmount,
-    txReceiver,
     manualFee,
+  ]);
+
+  useEffect(() => {
+    if (useMaximum && !manualFee) {
+      return;
+    }
+    if (alreadyRunning) return;
+    alreadyRunning = true;
+    fetchUtxos(sender, activeChain) // this should always be cached
+      .then(async () => {
+        await calculateTxFeeSize();
+        alreadyRunning = false;
+      })
+      .catch((error) => {
+        alreadyRunning = false;
+        console.log(error);
+        if (!manualFee) {
+          // reset fee
+          setFeePerByte(blockchainConfig.feePerByte.toFixed());
+          setTxFee('0');
+          form.setFieldsValue({ fee: '' });
+        } else {
+          // set fee per byte to 0
+          setFeePerByte('---');
+        }
+      });
+  }, [
+    txFee
   ]);
 
   useEffect(() => {
