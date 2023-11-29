@@ -37,6 +37,7 @@ interface sendForm {
 }
 
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
+let alreadyRunning = false;
 
 function Send() {
   const {
@@ -81,7 +82,12 @@ function Send() {
   const [txMessage, setTxMessage] = useState('');
   const [txFee, setTxFee] = useState('0');
   const [feePerByte, setFeePerByte] = useState('0');
+  const [validateStatusAmount, setValidateStatusAmount] = useState<
+    '' | 'success' | 'error' | 'warning' | 'validating' | undefined
+  >('success');
+  const [useMaximum, setUseMaximum] = useState(false);
   const [manualFee, setManualFee] = useState(false);
+
   const blockchainConfig = blockchains[activeChain];
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
@@ -122,14 +128,19 @@ function Send() {
   // on every chain, address adjustment, fetch utxos
   // used to get a precise estimate of the tx size
   useEffect(() => {
+    if (alreadyRunning) return;
+    alreadyRunning = true;
     fetchUtxos(sender, activeChain) // this should always be cached
       .then(async () => {
         await calculateTxFeeSize();
+        alreadyRunning = false;
       })
       .catch((error) => {
+        alreadyRunning = false;
         console.log(error);
         if (!manualFee) {
           // reset fee
+          setFeePerByte(blockchainConfig.feePerByte.toFixed());
           setTxFee('0');
           form.setFieldsValue({ fee: '' });
         } else {
@@ -137,134 +148,139 @@ function Send() {
           setFeePerByte('---');
         }
       });
-  }, [walletInUse, activeChain, sendingAmount, txReceiver, txMessage, txFee, manualFee]);
+  }, [
+    walletInUse,
+    activeChain,
+    sendingAmount,
+    txReceiver,
+    manualFee,
+  ]);
 
-  const calculateTxFeeSize = async () => {
-    // if sending balance > 0, calculate fee
+  useEffect(() => {
     const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
     const maxSpendable = new BigNumber(spendableBalance).dividedBy(
       10 ** blockchainConfig.decimals,
     );
-    if (
-      sendingAmount &&
-      +sendingAmount > 0 &&
-      totalAmount.isLessThanOrEqualTo(maxSpendable)
-    ) {
-      // this method should be more light and not require private key.
-      // get size estimate
-      console.log('tx size estimation');
-      // get our password to decrypt xpriv from secure storage
-      const fingerprint: string = getFingerprint();
-      const password = await passworderDecrypt(fingerprint, passwordBlob);
-      if (typeof password !== 'string') {
-        throw new Error(t('send:err_pwd_not_valid'));
-      }
-      const xprivBlob = secureLocalStorage.getItem(
-        `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
-          blockchainConfig.scriptType,
-        )}`,
-      );
-      if (typeof xprivBlob !== 'string') {
-        throw new Error(t('send:err_invalid_xpriv'));
-      }
-      const xprivChain = await passworderDecrypt(password, xprivBlob);
-      if (typeof xprivChain !== 'string') {
-        throw new Error(t('send:err_invalid_xpriv_decrypt'));
-      }
-      const wInUse = walletInUse;
-      const splittedDerPath = wInUse.split('-');
-      const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
-      const addressIndex = Number(splittedDerPath[1]);
-      const keyPair = generateAddressKeypair(
-        xprivChain,
-        typeIndex,
-        addressIndex,
-        activeChain,
-      );
-      const amount = new BigNumber(sendingAmount || '0')
-        .multipliedBy(10 ** blockchainConfig.decimals)
-        .toFixed();
-      const fee = new BigNumber(txFee || '0')
-        .multipliedBy(10 ** blockchainConfig.decimals)
-        .toFixed();
-      const lockedUtxos = myNodes.filter((node) => node.name);
-      // maxFee is max 100USD worth in fee
-      const cr = cryptoRates[activeChain] ?? 0;
-      const fi = fiatRates.USD ?? 0;
-      const fiatPrice = cr * fi;
-      const maxFeeUSD = 100;
-      const maxFeeUNIT = new BigNumber(maxFeeUSD)
-        .dividedBy(fiatPrice)
-        .toFixed();
-      const maxFeeSat = new BigNumber(maxFeeUNIT)
-        .multipliedBy(10 ** blockchainConfig.decimals)
-        .toFixed();
-      const txSize = await getTransactionSize(
-        activeChain,
-        txReceiver || sender, // estimate as if we are sending to ourselves
-        amount,
-        fee,
-        sender,
-        sender,
-        txMessage || '',
-        keyPair.privKey,
-        redeemScript,
-        witnessScript,
-        maxFeeSat,
-        lockedUtxos,
-      );
-      // target recommended fee of blockchain config
-      const feeSats = new BigNumber(txSize).multipliedBy(feePerByte).toFixed(); // satoshis
-      console.log(feeSats);
-      console.log(feePerByte);
-      const feeUnit = new BigNumber(feeSats)
-        .dividedBy(10 ** blockchainConfig.decimals)
-        .toFixed(); // unit
-      console.log(feeUnit);
-      // if the difference is less than 20 satoshis, ignore.
-      console.log(
-        new BigNumber(feeSats)
-          .minus(
-            new BigNumber(txFee || '0').multipliedBy(
-              10 ** blockchainConfig.decimals,
-            ),
-          )
-          .abs()
-          .toFixed(),
-      );
-      if (
-        feeUnit !== txFee &&
-        new BigNumber(feeSats)
-          .minus(
-            new BigNumber(txFee || '0').multipliedBy(
-              10 ** blockchainConfig.decimals,
-            ),
-          )
-          .abs()
-          .gt(20)
-      ) {
-        if (!manualFee) {
-          setFeePerByte(blockchainConfig.feePerByte.toFixed());
-          form.setFieldsValue({ fee: feeUnit });
-          setTxFee(feeUnit);
-        } else {
-          // set fee per byte
-          // whats the fee per byte?
-          const fpb = new BigNumber(fee).dividedBy(txSize).toFixed(2);
-          setFeePerByte(fpb);
-        }
-      }
+    if (totalAmount.isGreaterThan(maxSpendable)) {
+      // mark amount in red box as bad inpout
+      setValidateStatusAmount('error');
     } else {
+      setValidateStatusAmount('success');
+    }
+  }, [walletInUse, activeChain, sendingAmount, txFee]);
+
+  const calculateTxFeeSize = async () => {
+    if (!manualFee) {
+      setFeePerByte(blockchainConfig.feePerByte.toFixed());
+    }
+    // this method should be more light and not require private key.
+    // get size estimate
+    console.log('tx size estimation');
+    // get our password to decrypt xpriv from secure storage
+    const fingerprint: string = getFingerprint();
+    const password = await passworderDecrypt(fingerprint, passwordBlob);
+    if (typeof password !== 'string') {
+      throw new Error(t('send:err_pwd_not_valid'));
+    }
+    const xprivBlob = secureLocalStorage.getItem(
+      `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+        blockchainConfig.scriptType,
+      )}`,
+    );
+    if (typeof xprivBlob !== 'string') {
+      throw new Error(t('send:err_invalid_xpriv'));
+    }
+    const xprivChain = await passworderDecrypt(password, xprivBlob);
+    if (typeof xprivChain !== 'string') {
+      throw new Error(t('send:err_invalid_xpriv_decrypt'));
+    }
+    const wInUse = walletInUse;
+    const splittedDerPath = wInUse.split('-');
+    const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+    const addressIndex = Number(splittedDerPath[1]);
+    const keyPair = generateAddressKeypair(
+      xprivChain,
+      typeIndex,
+      addressIndex,
+      activeChain,
+    );
+    const amount = new BigNumber(sendingAmount || '0')
+      .multipliedBy(10 ** blockchainConfig.decimals)
+      .toFixed();
+    const fee = new BigNumber(txFee || '0')
+      .multipliedBy(10 ** blockchainConfig.decimals)
+      .toFixed();
+    const lockedUtxos = myNodes.filter((node) => node.name);
+    // maxFee is max 100USD worth in fee
+    const cr = cryptoRates[activeChain] ?? 0;
+    const fi = fiatRates.USD ?? 0;
+    const fiatPrice = cr * fi;
+    const maxFeeUSD = 100;
+    const maxFeeUNIT = new BigNumber(maxFeeUSD).dividedBy(fiatPrice).toFixed();
+    const maxFeeSat = new BigNumber(maxFeeUNIT)
+      .multipliedBy(10 ** blockchainConfig.decimals)
+      .toFixed();
+    const txSize = await getTransactionSize(
+      activeChain,
+      txReceiver || sender, // estimate as if we are sending to ourselves
+      amount,
+      fee,
+      sender,
+      sender,
+      txMessage || '',
+      keyPair.privKey,
+      redeemScript,
+      witnessScript,
+      maxFeeSat,
+      lockedUtxos,
+    );
+    // target recommended fee of blockchain config
+    const feeSats = new BigNumber(txSize)
+      .multipliedBy(
+        manualFee ? feePerByte : blockchainConfig.feePerByte.toFixed(),
+      )
+      .toFixed(); // satoshis
+    console.log(feeSats);
+    console.log(feePerByte);
+    const feeUnit = new BigNumber(feeSats)
+      .dividedBy(10 ** blockchainConfig.decimals)
+      .toFixed(); // unit
+    console.log(feeUnit);
+    // if the difference is less than 20 satoshis, ignore.
+    if (
+      feeUnit !== txFee &&
+      new BigNumber(feeSats)
+        .minus(
+          new BigNumber(txFee || '0').multipliedBy(
+            10 ** blockchainConfig.decimals,
+          ),
+        )
+        .abs()
+        .gt(20)
+    ) {
       if (!manualFee) {
-        // reset fee
-        setTxFee('0');
-        form.setFieldsValue({ fee: '' });
+        setFeePerByte(blockchainConfig.feePerByte.toFixed());
+        form.setFieldsValue({ fee: feeUnit });
+        setTxFee(feeUnit);
       } else {
-        // set fee per byte to 0
-        setFeePerByte('---');
+        // set fee per byte
+        // whats the fee per byte?
+        const fpb = new BigNumber(fee).dividedBy(txSize).toFixed(2);
+        setFeePerByte(fpb);
       }
     }
   };
+
+  useEffect(() => {
+    if (useMaximum) {
+      const maxSpendable = new BigNumber(spendableBalance).dividedBy(
+        10 ** blockchainConfig.decimals,
+      );
+      const fee = new BigNumber(txFee || '0');
+      setSendingAmount(maxSpendable.minus(fee).toFixed());
+      form.setFieldValue('amount', maxSpendable.minus(fee).toFixed());
+    }
+  }, [useMaximum, txFee, spendableBalance]);
 
   useEffect(() => {
     if (txid) {
@@ -514,11 +530,15 @@ function Send() {
           label={t('send:amount_to_send')}
           name="amount"
           rules={[{ required: true, message: t('send:input_amount') }]}
+          validateStatus={validateStatusAmount}
         >
           <Input
             size="large"
             value={sendingAmount}
-            onChange={(e) => setSendingAmount(e.target.value)}
+            onChange={(e) => {
+              setSendingAmount(e.target.value);
+              setUseMaximum(false);
+            }}
             placeholder={t('send:input_amount')}
             suffix={blockchainConfig.symbol}
           />
@@ -530,13 +550,28 @@ function Send() {
             marginRight: 10,
             fontSize: 12,
             color: 'grey',
+            cursor: 'pointer',
           }}
+          onClick={() => setUseMaximum(true)}
         >
           {t('send:max')}:{' '}
           {new BigNumber(spendableBalance)
             .dividedBy(10 ** blockchainConfig.decimals)
             .toFixed()}
         </div>
+
+        <Form.Item
+          label={t('send:message')}
+          name="message"
+          rules={[{ required: false, message: t('send:include_message') }]}
+        >
+          <Input
+            size="large"
+            value={txMessage}
+            placeholder={t('send:payment_note')}
+            onChange={(e) => setTxMessage(e.target.value)}
+          />
+        </Form.Item>
 
         <Form.Item
           label={t('send:fee')}
@@ -582,21 +617,7 @@ function Send() {
           {feePerByte} sat/B
         </div>
 
-        <Form.Item
-          label={t('send:message')}
-          name="message"
-          rules={[{ required: false, message: t('send:include_message') }]}
-          style={{ marginTop: 35 }}
-        >
-          <Input
-            size="large"
-            value={txMessage}
-            placeholder={t('send:payment_note')}
-            onChange={(e) => setTxMessage(e.target.value)}
-          />
-        </Form.Item>
-
-        <Form.Item>
+        <Form.Item style={{ marginTop: 60 }}>
           <Space direction="vertical" size="large">
             <Popconfirm
               title={t('send:confirm_tx')}
