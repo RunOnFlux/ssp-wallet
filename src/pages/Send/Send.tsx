@@ -47,7 +47,6 @@ function Send() {
     clearTxRejected,
   } = useSocket();
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
-  const txFeeRef = useRef(null);
   const { t } = useTranslation(['send', 'common']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -82,6 +81,7 @@ function Send() {
   const [txMessage, setTxMessage] = useState('');
   const [txFee, setTxFee] = useState('0');
   const [feePerByte, setFeePerByte] = useState('0');
+  const [manualFee, setManualFee] = useState(false);
   const blockchainConfig = blockchains[activeChain];
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
@@ -128,8 +128,16 @@ function Send() {
       })
       .catch((error) => {
         console.log(error);
+        if (!manualFee) {
+          // reset fee
+          setTxFee('0');
+          form.setFieldsValue({ fee: '' });
+        } else {
+          // set fee per byte to 0
+          setFeePerByte('---');
+        }
       });
-  }, [walletInUse, activeChain, sendingAmount, txReceiver, txMessage, txFee]);
+  }, [walletInUse, activeChain, sendingAmount, txReceiver, txMessage, txFee, manualFee]);
 
   const calculateTxFeeSize = async () => {
     // if sending balance > 0, calculate fee
@@ -235,17 +243,26 @@ function Send() {
           .abs()
           .gt(20)
       ) {
-        console.log(feeUnit);
-        if (txFeeRef) {
-          console.log('here');
-          txFeeRef.current.input.value = feeUnit; // not working mmmmmm
+        if (!manualFee) {
+          setFeePerByte(blockchainConfig.feePerByte.toFixed());
+          form.setFieldsValue({ fee: feeUnit });
           setTxFee(feeUnit);
+        } else {
+          // set fee per byte
+          // whats the fee per byte?
+          const fpb = new BigNumber(fee).dividedBy(txSize).toFixed(2);
+          setFeePerByte(fpb);
         }
       }
     } else {
-      // reset fee
-      setTxFee('0');
-      txFeeRef.current.input.value = '0';
+      if (!manualFee) {
+        // reset fee
+        setTxFee('0');
+        form.setFieldsValue({ fee: '' });
+      } else {
+        // set fee per byte to 0
+        setFeePerByte('---');
+      }
     }
   };
 
@@ -474,6 +491,7 @@ function Send() {
         onFinish={(values) => void onFinish(values as sendForm)}
         autoComplete="off"
         layout="vertical"
+        itemRef="txFeeRef"
       >
         <Form.Item
           label={t('send:receiver_address')}
@@ -523,19 +541,35 @@ function Send() {
         <Form.Item
           label={t('send:fee')}
           name="fee"
-          initialValue={'0.0001'}
           rules={[{ required: true, message: t('send:input_fee') }]}
         >
           <Input
             size="large"
             value={txFee}
-            ref={txFeeRef}
             placeholder={t('send:tx_fee')}
             suffix={blockchainConfig.symbol}
             onChange={(e) => setTxFee(e.target.value)}
+            disabled={!manualFee}
           />
         </Form.Item>
-
+        <div
+          style={{
+            marginTop: '-25px',
+            float: 'left',
+            marginLeft: 10,
+            fontSize: 12,
+            color: 'grey',
+            cursor: 'pointer',
+            zIndex: 100,
+          }}
+          onClick={() => {
+            setManualFee(!manualFee);
+          }}
+        >
+          {manualFee
+            ? t('send:using_manual_fee')
+            : t('send:using_automatic_fee')}
+        </div>
         <div
           style={{
             marginTop: '-25px',
@@ -552,6 +586,7 @@ function Send() {
           label={t('send:message')}
           name="message"
           rules={[{ required: false, message: t('send:include_message') }]}
+          style={{ marginTop: 35 }}
         >
           <Input
             size="large"

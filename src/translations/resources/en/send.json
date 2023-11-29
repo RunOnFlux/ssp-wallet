@@ -21,5 +21,7 @@
   "confirm_tx": "Confirm Transaction?",
   "tx_to_sspkey": "Transaction will be sent for approval to your SSP Key.",
   "double_check_tx": "Double check the transaction details before confirming.",
-  "max": "Max"
+  "max": "Max",
+  "using_automatic_fee": "Using automatic network fee",
+  "using_manual_fee": "Using manual network fee"
 }
