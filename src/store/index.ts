@@ -4,7 +4,9 @@ import {
   PayloadAction,
   combineReducers,
 } from '@reduxjs/toolkit';
-import { cryptos, currency, transaction, node } from '../types';
+import { cryptos, currency, transaction, node, networkFee } from '../types';
+
+import { blockchains } from '@storage/blockchains';
 
 // ********** Import chains **********
 import flux from './flux';
@@ -15,7 +17,6 @@ import btc from './btc';
 import doge from './doge';
 import btcTestnet from './btcTestnet';
 import btcSignet from './btcSignet';
-
 
 const chains = {
   flux,
@@ -49,6 +50,19 @@ const initialSspState: sspState = {
   sspWalletExternalIdentity: '',
   identityChain: 'flux',
   activeChain: 'flux',
+};
+
+const initialNetworkFeeState = {
+  networkFees: {
+    flux: blockchains.flux.feePerByte,
+    fluxTestnet: blockchains.fluxTestnet.feePerByte,
+    rvn: blockchains.rvn.feePerByte,
+    ltc: blockchains.ltc.feePerByte,
+    btc: blockchains.btc.feePerByte,
+    doge: blockchains.doge.feePerByte,
+    btcTestnet: blockchains.btcTestnet.feePerByte,
+    btcSignet: blockchains.btcSignet.feePerByte,
+  },
 };
 
 interface RatesState {
@@ -144,6 +158,18 @@ const fiatCryptoRatesSlice = createSlice({
   },
 });
 
+const networkFeesSlice = createSlice({
+  name: 'networkFees',
+  initialState: initialNetworkFeeState,
+  reducers: {
+    setNetworkFees: (state, action: PayloadAction<networkFee[]>) => {
+      action.payload.forEach((element) => {
+        state.networkFees[element.coin as keyof cryptos] = element.recommended;
+      });
+    }
+  },
+});
+
 const sspStateSlice = createSlice({
   name: 'sspState',
   initialState: initialSspState,
@@ -176,6 +202,8 @@ export const { setPasswordBlob, setPasswordBlobInitialState } =
 
 export const { setCryptoRates, setFiatRates } = fiatCryptoRatesSlice.actions;
 
+export const { setNetworkFees } = networkFeesSlice.actions;
+
 export const {
   setSSPInitialState,
   setSspWalletKeyInternalIdentity,
@@ -187,6 +215,7 @@ export const {
 const reducers = combineReducers({
   passwordBlob: passwordBlobSlice.reducer,
   fiatCryptoRates: fiatCryptoRatesSlice.reducer,
+  networkFees: networkFeesSlice.reducer,
   sspState: sspStateSlice.reducer,
   flux: flux.reducer,
   fluxTestnet: fluxTestnet.reducer,

@@ -304,6 +304,16 @@ export interface currencySSPRelay {
   crypto: cryptos;
 }
 
+export interface networkFee {
+  coin: string;
+  economy: number;
+  normal: number;
+  fast: number;
+  recommended: number;
+}
+
+export type networkFeesSSPRelay = networkFee[];
+
 export interface confirmedNodeInsight {
   collateral: string;
   txhash: string;
@@ -372,4 +382,6 @@ declare global {
   var refreshIntervalBalances: string | number | NodeJS.Timeout | undefined;
   // eslint-disable-next-line no-var
   var refreshIntervalRates: string | number | NodeJS.Timeout | undefined;
+    // eslint-disable-next-line no-var
+    var refreshIntervalNetworkFee: string | number | NodeJS.Timeout | undefined;
 }

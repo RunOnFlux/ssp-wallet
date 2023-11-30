@@ -87,6 +87,9 @@ function Send() {
   >('success');
   const [useMaximum, setUseMaximum] = useState(false);
   const [manualFee, setManualFee] = useState(false);
+  const { networkFees } = useAppSelector(
+    (state) => state.networkFees,
+  );
 
   const blockchainConfig = blockchains[activeChain];
   const { cryptoRates, fiatRates } = useAppSelector(
@@ -117,7 +120,7 @@ function Send() {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     try {
-      setFeePerByte(blockchainConfig.feePerByte.toFixed());
+      setFeePerByte(networkFees[activeChain].toFixed());
       clearUtxoCache();
       void fetchUtxos(sender, activeChain);
     } catch (error) {
@@ -140,7 +143,7 @@ function Send() {
         console.log(error);
         if (!manualFee) {
           // reset fee
-          setFeePerByte(blockchainConfig.feePerByte.toFixed());
+          setFeePerByte(networkFees[activeChain].toFixed());
           setTxFee('0');
           form.setFieldsValue({ fee: '' });
         } else {
@@ -171,7 +174,7 @@ function Send() {
         console.log(error);
         if (!manualFee) {
           // reset fee
-          setFeePerByte(blockchainConfig.feePerByte.toFixed());
+          setFeePerByte(networkFees[activeChain].toFixed());
           setTxFee('0');
           form.setFieldsValue({ fee: '' });
         } else {
@@ -198,7 +201,7 @@ function Send() {
 
   const calculateTxFeeSize = async () => {
     if (!manualFee) {
-      setFeePerByte(blockchainConfig.feePerByte.toFixed());
+      setFeePerByte(networkFees[activeChain].toFixed());
     }
     // this method should be more light and not require private key.
     // get size estimate
@@ -264,7 +267,7 @@ function Send() {
     // target recommended fee of blockchain config
     const feeSats = new BigNumber(txSize)
       .multipliedBy(
-        manualFee ? feePerByte : blockchainConfig.feePerByte.toFixed(),
+        manualFee ? feePerByte : networkFees[activeChain].toFixed(),
       )
       .toFixed(); // satoshis
     console.log(feeSats);
@@ -286,7 +289,7 @@ function Send() {
         .gt(20)
     ) {
       if (!manualFee) {
-        setFeePerByte(blockchainConfig.feePerByte.toFixed());
+        setFeePerByte(networkFees[activeChain].toFixed());
         form.setFieldsValue({ fee: feeUnit });
         setTxFee(feeUnit);
       } else {
