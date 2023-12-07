@@ -107,7 +107,6 @@ function Key(props: { synchronised: (status: boolean) => void }) {
             }
           } else {
             generateMultisigAddress(
-              // test generation
               xpubWallet,
               xpubKey,
               0,
@@ -327,7 +326,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
             <TextArea
               value={keyInput}
               onChange={(e) => setKeyInput(e.target.value)}
-              placeholder={t('home:key.input_xpub', { path: derivationPath })}
+              placeholder={t('home:key.input_xpub', { path: derivationPath, chain: blockchainConfig.name })}
               autoSize
             />
           </>

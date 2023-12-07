@@ -13,20 +13,19 @@ Your SSP Wallet private key resides in your SSP Wallet, and your SSP Key private
 The keys, its extended private parts, seeds. None of that is ever shared between devices making it a true 2-of-2 wallet.
 Any interaction thus requires 2 devices to operate making the security of the wallet uncompromisable.
 
-SSP follows BIP48 derivation scheme <https://github.com/bitcoin/bips/blob/master/bip-0048.mediawiki> extended for P2SH addresses having hardened 
-derivation path of m/48'/0'/0'/0'
-For Flux main chain the address derivation path is thus  m/48'/19167'/0'/0'/0/0. In current scheme we only construct external and 1st address and reserving
-the scheme to transition to multi address, multi account nature with change addresses in later development as well as following SLIP44 derivation paths for 
-multi asset support.
+SSP follows BIP48 derivation scheme <https://github.com/bitcoin/bips/blob/master/bip-0048.mediawiki> extended for P2SH, P2SH-P2WSH and P2WSH addresses having hardened 
+derivation path of m/48'/0-X'/0'/0-2'
+For Bitcoin main chain the address derivation path is thus m/48'/0'/0'/2'/0/0. Flux main chain it is m/48'/19167'/0'/0'/0/0 and so on. 
+In current scheme we only construct external addresses on 1st account. SSP can constructed as many external addresses on any chain.
 
 Synchronisation from SSP Wallet to SSP Key is done via SSP Relay server for ease and convenience of use.
 Initial synchronisation is done via SSP Key scanning Hardened Extended Public Key part of each asset in SSP Wallet. 
-SSP Wallet starts listening on a derived public key on path m/48'/19167'/0'/0'/10/0 (For all chains). This path is out of any derivation scheme and is reserved by SSP for SSP Wallet Identity.
+SSP Wallet starts listening on a derived public key on path m/48'/0'/2'/0'/10/0 (For all chains). This path is out of any derivation scheme and is reserved by SSP for SSP Wallet Identity.
 Upon SSP Key scanning QR code of SSP Wallet XPUB, SSP Key can now construct addresses as per BIP48 as both public keys needed are now on SSP Key.
-SSP Key then sends request to SSP Relay server on path of previously derived public key of SSP Wallet m/48'/19167'/0'/0'/10/0.
+SSP Key then sends request to SSP Relay server on path of previously derived public key of SSP Wallet m/48'/0'/2'/0'/10/0.
 The data that SSP Key sends to SSP Relay server consists of:
-1\. Extended public key of the hardened derivation path of SSP Key eg. m/48'/19167'/0'/0'
-2\. A complete 2-of-2 SSP W-K address constructed on identity path m/48'/19167'/0'/0'/10/0 following BIP48.
+1\. Extended public key of the hardened derivation path of SSP Key eg. m/48'/0'/0'/2'
+2\. A complete 2-of-2 SSP W-K address constructed on identity path m/48'/0'/0'/2'/10/0 following BIP48.
 SSP Wallet receives the data from SSP Relay server. SSP Relay server now possesses both SSP Wallet XPUB and SSP Key XPUB. SSP Wallet verifies that SSP W-K address constructed on idenity path above
 matches the one provided by SSP Key in the request from SSP Relay server. In case of a match, the request is valid and now both SSP Wallet and SSP Key have successfully synchronised their extended public keys. In case of a difference, the synchronisation is invalid. This effectively rules out any attacks on SSP Relay servers as an attacker never knows XPUB of SSP Wallet and thus can't construct addresses and forfeight SSP Key data send.
 Additionally user is asked to confirm derived address match on both SSP Wallet and SSP Key.

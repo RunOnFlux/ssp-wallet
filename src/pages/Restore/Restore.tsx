@@ -169,6 +169,7 @@ function Restore() {
           blockchainConfig.scriptType,
           identityChain,
         );
+        console.log(xpub);
         const xprivBlob = await passworderEncrypt(password, xpriv);
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();

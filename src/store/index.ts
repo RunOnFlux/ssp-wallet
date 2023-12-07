@@ -40,7 +40,7 @@ interface sspState {
   sspWalletKeyInternalIdentity: string;
   sspWalletInternalIdentity: string;
   sspWalletExternalIdentity: string;
-  identityChain: 'flux';
+  identityChain: 'btc';
   activeChain: keyof cryptos;
 }
 
@@ -48,8 +48,8 @@ const initialSspState: sspState = {
   sspWalletKeyInternalIdentity: '',
   sspWalletInternalIdentity: '',
   sspWalletExternalIdentity: '',
-  identityChain: 'flux',
-  activeChain: 'flux',
+  identityChain: 'btc',
+  activeChain: 'btc',
 };
 
 const initialNetworkFeeState = {

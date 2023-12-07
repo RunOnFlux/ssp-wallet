@@ -134,7 +134,7 @@
     "sync_info_2": "Scan the following QR code to sync your SSP Wallet with your SSP Key.",
     "issues_syncing": "Issues syncing? Manual Input",
     "dual_factor_key_chain": "Dual Factor SSP Key for {{chain}}",
-    "input_xpub": "Input Extended Public Key {{path}} of SSP Key here",
+    "input_xpub": "Input SSP Key {{chain}} Extended Public Key {{path}} here",
     "sync_key_chain": "Sync Key for {{chain}}",
     "warn_await_sync_chain": "Awaiting SSP Key synchronisation or manual input.",
     "err_sync_1_chain": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.",

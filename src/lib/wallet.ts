@@ -239,7 +239,7 @@ export function generateInternalIdentityAddress(
   return address;
 }
 
-// given xpub of our party, generate address of identity of xpub. EXTERNAL PUBLIC SSP WALLET ID. Uses 16197 for xpub derivation path
+// given xpub of our party, generate address of identity of xpub. EXTERNAL PUBLIC SSP WALLET ID. Uses identity slip for xpub derivation path
 export function generateExternalIdentityAddress(xpub: string): string {
   const chain = 'btc' as keyof cryptos;
   const typeIndex = 11; // identity index
@@ -293,7 +293,7 @@ export function generateNodeIdentityKeypair(
   return { privKey: privateKeyWIF, pubKey: publicKey };
 }
 
-// given xpub of our party, generate keypair for our SSP Wallet Identity - this is a p2phk bitcoin address used by thrid parties. SspId (same as FluxID)
+// given xpub of our party, generate keypair for our SSP Wallet Identity - this is a p2pkh bitcoin address used by thrid parties. SspId (same as FluxID)
 export function generateExternalIdentityKeypair( // in memory we store just address
   xpriv: string,
 ): externalIdentity {
