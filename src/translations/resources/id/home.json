@@ -86,7 +86,7 @@
     "change_pw_restore": "Ubah kata sandi? Kembalikan!",
     "ssp_relay": "Server Relay SSP",
     "chain_node_service": "{{chain}} Layanan Node",
-    "language:": "Bahasa"
+    "language": "Bahasa"
   },
   "receive": {
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",

@@ -86,7 +86,7 @@
     "change_pw_restore": "Change password? Restore!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Service",
-    "language": "Bahasa"
+    "language": "Language"
   },
   "receive": {
     "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
