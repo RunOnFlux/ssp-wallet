@@ -170,7 +170,7 @@ export async function fetchAddressTransactions(
       const url = `https://${backendConfig.node}/api/v2/address/${address}?pageSize=${pageSize}&details=txs&page=${page}`;
       const response = await axios.get<transacitonsBlockbook>(url);
       const txs = [];
-      for (const tx of response.data.transactions) {
+      for (const tx of response.data.transactions || []) {
         const processedTransaction = processTransactionBlockbook(tx, address);
         txs.push(processedTransaction);
       }
@@ -179,7 +179,7 @@ export async function fetchAddressTransactions(
       const url = `https://${backendConfig.node}/api/addrs/${address}/txs?from=${from}&to=${to}`;
       const response = await axios.get<transacitonsInsight>(url);
       const txs = [];
-      for (const tx of response.data.items) {
+      for (const tx of response.data.items || []) {
         const processedTransaction = processTransaction(tx, address, blockchains[chain].decimals);
         txs.push(processedTransaction);
       }
