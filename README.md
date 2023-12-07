@@ -20,9 +20,9 @@ In current scheme we only construct external addresses on 1st account. SSP can c
 
 Synchronisation from SSP Wallet to SSP Key is done via SSP Relay server for ease and convenience of use.
 Initial synchronisation is done via SSP Key scanning Hardened Extended Public Key part of each asset in SSP Wallet. 
-SSP Wallet starts listening on a derived public key on path m/48'/0'/2'/0'/10/0 (For all chains). This path is out of any derivation scheme and is reserved by SSP for SSP Wallet Identity.
+SSP Wallet starts listening on a derived public key on path m/48'/0'/0'/2'/10/0 (For all chains). This path is out of any derivation scheme and is reserved by SSP for SSP Wallet Identity.
 Upon SSP Key scanning QR code of SSP Wallet XPUB, SSP Key can now construct addresses as per BIP48 as both public keys needed are now on SSP Key.
-SSP Key then sends request to SSP Relay server on path of previously derived public key of SSP Wallet m/48'/0'/2'/0'/10/0.
+SSP Key then sends request to SSP Relay server on path of previously derived public key of SSP Wallet m/48'/0'/0'/2'/10/0.
 The data that SSP Key sends to SSP Relay server consists of:
 1\. Extended public key of the hardened derivation path of SSP Key eg. m/48'/0'/0'/2'
 2\. A complete 2-of-2 SSP W-K address constructed on identity path m/48'/0'/0'/2'/10/0 following BIP48.
