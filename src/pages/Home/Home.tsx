@@ -168,8 +168,8 @@ function Home() {
             console.log(error);
           }
         }
-        dispatch(setSSPInitialState());
         setInitialStateForAllChains();
+        dispatch(setSSPInitialState());
         dispatch(setPasswordBlobInitialState());
         navigate('/login');
       })();
@@ -188,7 +188,7 @@ function Home() {
             <Balances />
             <Navigation />
           </Space>
-          {wallets[walletInUse].nodes && (
+          {wallets?.[walletInUse]?.nodes && (
             <Tabs
               defaultActiveKey="activity"
               size="small"
@@ -208,7 +208,9 @@ function Home() {
               ]}
             />
           )}
-          {!wallets[walletInUse].nodes && <Transactions />}
+          {wallets?.[walletInUse] && !wallets[walletInUse].nodes && (
+            <Transactions />
+          )}
         </div>
       )}
       <Key synchronised={keySynchronised} />

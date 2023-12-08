@@ -87,8 +87,8 @@ function AutoLogout() {
   const continueLogout = () => {
     document.removeEventListener('click', refresh);
     clearTimeout(logoutTimeout);
-    dispatch(setSSPInitialState());
     setInitialStateForAllChains();
+    dispatch(setSSPInitialState());
     dispatch(setPasswordBlobInitialState());
     navigate('/login');
   }

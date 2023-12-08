@@ -186,8 +186,8 @@ function Restore() {
           )}`,
           xpubBlob,
         );
-        dispatch(setSSPInitialState());
         setInitialStateForAllChains();
+        dispatch(setSSPInitialState());
         if (chrome?.storage?.session) {
           await chrome.storage.session.clear();
           await chrome.storage.session.set({

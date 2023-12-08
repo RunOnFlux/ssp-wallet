@@ -210,8 +210,8 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
           console.log(error);
         }
       }
-      dispatch(setSSPInitialState());
       setInitialStateForAllChains();
+      dispatch(setSSPInitialState());
       dispatch(setPasswordBlobInitialState());
       navigate('/login');
     })();
