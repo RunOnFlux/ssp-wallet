@@ -45,7 +45,7 @@ interface passwordForm {
   tos: boolean;
 }
 
-// we always use flux
+// we always use btc
 function Create() {
   const { t } = useTranslation(['cr', 'common']);
   const { identityChain } = useAppSelector((state) => state.sspState);
@@ -145,7 +145,7 @@ function Create() {
     passworderEncrypt(password, mnemonicPhrase)
       .then(async (blob) => {
         secureLocalStorage.setItem('walletSeed', blob);
-        // generate master xpriv for flux - default chain
+        // generate master xpriv for btc - default chain
         const xpriv = getMasterXpriv(
           mnemonicPhrase,
           48,

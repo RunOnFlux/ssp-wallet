@@ -86,7 +86,7 @@ export const SspConnectProvider = ({
           } else if (request.data.method === 'pay') {
             if (blockchains[request.data.params.chain]) {
               setChain(request.data.params.chain || identityChain);
-              // default to flux
+              // default to btc
               setAmount(request.data.params.amount || '');
               setType(request.data.method);
               setAddress(request.data.params.address || '');

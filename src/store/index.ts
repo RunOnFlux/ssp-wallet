@@ -261,10 +261,10 @@ export function setXpubKey(chain: keyof cryptos, data: string) {
   store.dispatch(chains[chain].actions.setXpubKey(data));
 }
 export function setXpubWalletIdentity(data: string) {
-  store.dispatch(chains.flux.actions.setXpubWallet(data));
+  store.dispatch(chains[initialSspState.identityChain].actions.setXpubWallet(data));
 }
 export function setXpubKeyIdentity(data: string) {
-  store.dispatch(chains.flux.actions.setXpubKey(data));
+  store.dispatch(chains[initialSspState.identityChain].actions.setXpubKey(data));
 }
 export function setBalance(chain: keyof cryptos, wallet: string, data: string) {
   store.dispatch(chains[chain].actions.setBalance({ wallet, data }));

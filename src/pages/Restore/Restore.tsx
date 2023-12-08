@@ -51,7 +51,7 @@ interface passwordForm {
 
 const { TextArea } = Input;
 
-// we always use flux as default
+// we always use btc as default
 function Restore() {
   const { t } = useTranslation(['cr', 'common']);
   const { identityChain } = useAppSelector((state) => state.sspState);
