@@ -538,6 +538,7 @@ function Send() {
         autoComplete="off"
         layout="vertical"
         itemRef="txFeeRef"
+        style={{ paddingBottom: '43px' }}
       >
         <Form.Item
           label={t('send:receiver_address')}
@@ -647,8 +648,8 @@ function Send() {
           {feePerByte} sat/B
         </div>
 
-        <Form.Item style={{ marginTop: 60 }}>
-          <Space direction="vertical" size="large">
+        <Form.Item style={{ marginTop: 50 }}>
+          <Space direction="vertical" size="middle">
             <Popconfirm
               title={t('send:confirm_tx')}
               description={
