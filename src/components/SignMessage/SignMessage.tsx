@@ -39,7 +39,7 @@ function SignMessage(props: {
   const { t } = useTranslation(['home', 'common']);
   const { open, openAction, message, address } = props;
   let { chain } = props;
-  chain = chain || 'btc';
+  chain = chain || identityChain;
   const blockchainConfig = blockchains[chain];
   console.log(blockchainConfig);
   const identityChainConfig = blockchains[identityChain];

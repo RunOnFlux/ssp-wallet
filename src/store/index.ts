@@ -192,7 +192,7 @@ const sspStateSlice = createSlice({
       state.sspWalletKeyInternalIdentity = '';
       state.sspWalletInternalIdentity = '';
       state.sspWalletExternalIdentity = '';
-      state.activeChain = 'flux';
+      state.activeChain = 'btc';
     },
   },
 });

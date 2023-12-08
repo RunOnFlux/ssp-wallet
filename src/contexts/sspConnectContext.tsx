@@ -45,9 +45,8 @@ export const SspConnectProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { sspWalletExternalIdentity: wExternalIdentity } = useAppSelector(
-    (state) => state.sspState,
-  );
+  const { sspWalletExternalIdentity: wExternalIdentity, identityChain } =
+    useAppSelector((state) => state.sspState);
   const [type, setType] = useState('');
   const [address, setAddress] = useState('');
   const [message, setMessage] = useState('');
@@ -69,7 +68,7 @@ export const SspConnectProvider = ({
               blockchains[request.data.params.chain] ||
               !request.data.params.chain
             ) {
-              setChain(request.data.params.chain || 'btc');
+              setChain(request.data.params.chain || identityChain);
               // default to sspwid
               setType(request.data.method);
               setAddress(request.data.params.address || wExternalIdentity); // this can be undefined if its a request before we have identity
@@ -85,10 +84,8 @@ export const SspConnectProvider = ({
               });
             }
           } else if (request.data.method === 'pay') {
-            if (
-              blockchains[request.data.params.chain]
-            ) {
-              setChain(request.data.params.chain || 'flux');
+            if (blockchains[request.data.params.chain]) {
+              setChain(request.data.params.chain || identityChain);
               // default to flux
               setAmount(request.data.params.amount || '');
               setType(request.data.method);

@@ -55,9 +55,10 @@ function ChainSelect(props: {
   const { open, openAction } = props;
   const dispatch = useAppDispatch();
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+  const { identityChain } = useAppSelector((state) => state.sspState);
   const [chainToSwitch, setChainToSwitch] = useState<keyof cryptos | ''>('');
   const { xpubWallet, xpubKey } = useAppSelector(
-    (state) => state[(chainToSwitch as keyof cryptos) || 'flux'],
+    (state) => state[(chainToSwitch as keyof cryptos) || identityChain],
   );
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
