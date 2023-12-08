@@ -38,7 +38,7 @@ function AddressDetails(props: {
 
   useEffect(() => {
     generateAddressInformation();
-  }, [walletInUse]);
+  }, [walletInUse, activeChain]);
 
   const handleOk = () => {
     setRedeemScriptVisible(false);

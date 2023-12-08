@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Typography, Button, Modal, message, Space, QRCode } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
@@ -18,7 +18,6 @@ function SSPWalletDetails(props: {
   const { activeChain } = useAppSelector((state) => state.sspState);
   const blockchainConfig = blockchains[activeChain];
   const { t } = useTranslation(['home', 'common']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [xpriv, setXpriv] = useState('');
   const [xpub, setXpub] = useState('');
   const [seedPhrase, setSeedPhrase] = useState('');
@@ -40,10 +39,8 @@ function SSPWalletDetails(props: {
   };
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     generateAddressInformation();
-  });
+  }, [activeChain]);
 
   const handleOk = () => {
     setExtendedPrivateKeyVisible(false);
