@@ -1,5 +1,5 @@
 {
-  "version": "0.0.2",
+  "version": "0.0.3",
   "manifest_version": 3,
   "name": "SSP Wallet",
   "short_name": "SSP",
@@ -26,7 +26,6 @@
   "permissions": [
     "storage",
     "unlimitedStorage",
-    "activeTab",
     "scripting"
   ],
   "content_security_policy": {
