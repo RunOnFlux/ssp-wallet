@@ -168,10 +168,12 @@ function Home() {
             console.log(error);
           }
         }
-        setInitialStateForAllChains();
-        dispatch(setSSPInitialState());
-        dispatch(setPasswordBlobInitialState());
         navigate('/login');
+        setTimeout(() => {
+          setInitialStateForAllChains();
+          dispatch(setSSPInitialState());
+          dispatch(setPasswordBlobInitialState());
+        }, 100);
       })();
     } // else is handled in useEffect
   };

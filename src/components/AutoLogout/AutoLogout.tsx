@@ -73,24 +73,23 @@ function AutoLogout() {
       if (chrome?.storage?.session) {
         try {
           await chrome.storage.session.clear();
-          continueLogout()
         } catch (error) {
           console.log(error);
-          continueLogout()
         }
-      } else {
-        continueLogout()
       }
+      continueLogout()
     })();
   };
 
   const continueLogout = () => {
     document.removeEventListener('click', refresh);
     clearTimeout(logoutTimeout);
-    setInitialStateForAllChains();
-    dispatch(setSSPInitialState());
-    dispatch(setPasswordBlobInitialState());
     navigate('/login');
+    setTimeout(() => {
+      setInitialStateForAllChains();
+      dispatch(setSSPInitialState());
+      dispatch(setPasswordBlobInitialState());
+    }, 100);
   }
 
   return <></>;

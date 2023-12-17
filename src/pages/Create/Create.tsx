@@ -1,16 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Input,
-  Button,
-  Checkbox,
-  Form,
-  Divider,
-  message,
-  Modal,
-} from 'antd';
+import { Input, Button, Checkbox, Form, Divider, message, Modal } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
+import localForage from 'localforage';
 
 import {
   EyeInvisibleOutlined,
@@ -144,6 +137,11 @@ function Create() {
     }
     passworderEncrypt(password, mnemonicPhrase)
       .then(async (blob) => {
+        secureLocalStorage.clear();
+        await localForage.clear();
+        if (chrome?.storage?.session) {
+          await chrome.storage.session.clear();
+        }
         secureLocalStorage.setItem('walletSeed', blob);
         // generate master xpriv for btc - default chain
         const xpriv = getMasterXpriv(
@@ -180,7 +178,6 @@ function Create() {
         );
         setXpubWallet(identityChain, xpub);
         if (chrome?.storage?.session) {
-          await chrome.storage.session.clear();
           await chrome.storage.session.set({
             pwBlob: pwBlob,
           });
@@ -202,10 +199,7 @@ function Create() {
     <>
       {contextHolder}
       <div style={{ paddingBottom: '43px' }}>
-        <Headerbar
-          headerTitle={t('cr:create_pw')}
-          navigateTo="/welcome"
-        />
+        <Headerbar headerTitle={t('cr:create_pw')} navigateTo="/welcome" />
         <Divider />
         <CreationSteps step={1} import={false} />
         <br />

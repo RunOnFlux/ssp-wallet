@@ -151,6 +151,9 @@ function Restore() {
     localForage
       .clear()
       .then(async () => {
+        if (chrome?.storage?.session) {
+          await chrome.storage.session.clear();
+        }
         const mnemonicBlob = await passworderEncrypt(password, mnemonicPhrase);
         secureLocalStorage.setItem('walletSeed', mnemonicBlob);
         const xpriv = getMasterXpriv(
@@ -189,7 +192,6 @@ function Restore() {
         setInitialStateForAllChains();
         dispatch(setSSPInitialState());
         if (chrome?.storage?.session) {
-          await chrome.storage.session.clear();
           await chrome.storage.session.set({
             pwBlob: pwBlob,
           });

@@ -1,11 +1,9 @@
 {
-  "version": "0.0.3",
+  "version": "0.0.4",
   "manifest_version": 3,
   "name": "SSP Wallet",
   "short_name": "SSP",
   "description": "Secure. Simple. Powerful.",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
   "action": {
     "default_popup": "index.html",
     "default_title": "SSP Wallet"
