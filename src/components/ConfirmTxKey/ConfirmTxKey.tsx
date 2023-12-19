@@ -30,7 +30,7 @@ function ConfirmTxKey(props: {
           </Button>,
         ]}
       >
-        {txHex.length < 3000 && (
+        {txHex.length < 1250 && (
           <>
             <p>{t('home:confirmTxKey.info_1')}</p>
             <Space
@@ -39,10 +39,10 @@ function ConfirmTxKey(props: {
               style={{ marginBottom: 15 }}
             >
               <QRCode
-                errorLevel="H"
+                errorLevel="M"
                 value={`${chain}:${wallet}:${txHex}`}
                 icon="/ssp-logo-black.svg"
-                size={256}
+                size={384}
                 style={{ margin: '0 auto' }}
               />
               <Paragraph
@@ -54,7 +54,7 @@ function ConfirmTxKey(props: {
             </Space>
           </>
         )}
-        {txHex.length >= 2950 && (
+        {txHex.length >= 1250 && (
           <>
             <p>{t('home:confirmTxKey.info_2')}</p>
             <Space
