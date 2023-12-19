@@ -330,7 +330,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
                         fontSize: '16px',
                       }}
                     >
-                      {blockchainConfig.name} {t('common:chain')}
+                      {blockchainConfig.name} {blockchainConfig.name.includes(' ') ? '' : t('common:chain')}
                     </span>
                   </div>
                   {menu}
