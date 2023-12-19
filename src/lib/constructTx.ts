@@ -426,8 +426,9 @@ export async function getTransactionSize(
     const signedRawTxSize = signedTx.length;
     console.log(signedRawTxSize);
     const signatureSize = signedRawTxSize - rawTxSize;
-    const txSize = (signedRawTxSize + signatureSize) / 2; // as ssp-key is adding second signature
-    return txSize; // in bytes
+    const txSize = (signedRawTxSize + signatureSize) / 2; // as ssp-key is adding second signature. 
+    // todo heer we can optimize for segwit https://en.bitcoin.it/wiki/Weight_units as we can overpay a tx by up quite a bit in fees on segwit
+    return txSize; // in bytes. We are using byte instead of vByte estimation. For segwit the fee should be lowe
   } catch (error) {
     console.log(error);
     throw error;

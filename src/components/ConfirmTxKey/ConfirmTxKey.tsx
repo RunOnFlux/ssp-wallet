@@ -42,7 +42,7 @@ function ConfirmTxKey(props: {
                 errorLevel="M"
                 value={`${chain}:${wallet}:${txHex}`}
                 icon="/ssp-logo-black.svg"
-                size={384}
+                size={340}
                 style={{ margin: '0 auto' }}
               />
               <Paragraph
