@@ -74,8 +74,11 @@ declare module '@runonflux/utxo-lib' {
   let HDNode: {
     fromBase58: (xpubxpriv: string, network: object) => minHDKey;
   };
+  interface TX {
+    virtualSize(): number;
+  }
   let Transaction: {
-    fromHex: (txhex: string, network: object) => object;
+    fromHex: (txhex: string, network: object) => TX;
     SIGHASH_ALL: number;
   };
   // Other methods/properties...
@@ -88,11 +91,11 @@ declare module '@runonflux/utxo-lib' {
     setVersionGroupId: (versionGroupId: number) => void;
     addInput: (txid: string, vout: number) => void;
     addOutput: (address: string, satoshis: number) => void;
-    fromTransaction: (tx: object, network: object) => txBuilder;
+    fromTransaction: (tx: TX, network: object) => txBuilder;
     buildIncomplete: () => builtTx;
   };
   let TransactionBuilder: {
-    fromTransaction: (tx: object, network: object) => txBuilder;
+    fromTransaction: (tx: TX, network: object) => txBuilder;
   } & TransactionBuilder;
   let ECPair: {
     fromWIF: (

@@ -645,7 +645,7 @@ function Send() {
             color: 'grey',
           }}
         >
-          {feePerByte} sat/B
+          {feePerByte} sat/vB
         </div>
 
         <Form.Item style={{ marginTop: 50 }}>

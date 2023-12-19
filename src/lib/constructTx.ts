@@ -386,6 +386,8 @@ export async function getTransactionSize(
   forbiddenUtxos?: txIdentifier[],
 ): Promise<number> {
   try {
+    const libID = getLibId(chain);
+    const network = utxolib.networks[libID];
     const utxos = await fetchUtxos(sender, chain);
     const utxosFiltered = [];
     if (forbiddenUtxos?.length) {
@@ -415,6 +417,9 @@ export async function getTransactionSize(
     }
     const rawTxSize = rawTx.length;
     console.log(rawTxSize);
+    const txRaw = utxolib.Transaction.fromHex(rawTx, network);
+    const virtualRawSize = txRaw.virtualSize();
+    console.log(virtualRawSize);
     const signedTx = signTransaction(
       rawTx,
       chain,
@@ -425,10 +430,13 @@ export async function getTransactionSize(
     );
     const signedRawTxSize = signedTx.length;
     console.log(signedRawTxSize);
-    const signatureSize = signedRawTxSize - rawTxSize;
-    const txSize = (signedRawTxSize + signatureSize) / 2; // as ssp-key is adding second signature. 
-    // todo heer we can optimize for segwit https://en.bitcoin.it/wiki/Weight_units as we can overpay a tx by up quite a bit in fees on segwit
-    return txSize; // in bytes. We are using byte instead of vByte estimation. For segwit the fee should be lowe
+    const txRawSigned = utxolib.Transaction.fromHex(signedTx, network);
+    const virtualTxSignedSize = txRawSigned.virtualSize();
+    console.log(virtualTxSignedSize);
+    const virtualSignatureSize = virtualTxSignedSize - virtualRawSize;
+    const totalVirtualSize = virtualTxSignedSize + Math.ceil(virtualSignatureSize / 2); // as ssp-key is adding second signature. Approximately half of the difference is for signature. This is still little bit higher for segwit, for mutlisig native segwit its more like /4
+    console.log(totalVirtualSize);
+    return totalVirtualSize; // in vBytes. https://en.bitcoin.it/wiki/Weight_units
   } catch (error) {
     console.log(error);
     throw error;
