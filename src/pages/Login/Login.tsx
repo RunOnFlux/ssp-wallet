@@ -152,9 +152,21 @@ function Login() {
   };
 
   useEffect(() => {
-    if (password) {
-      decryptWallet();
-    }
+    void async function () {
+      if (password) {
+        // get activatedChain
+        const activatedChain = await localForage.getItem('activeChain');
+        if (
+          activatedChain &&
+          typeof activatedChain === 'string' &&
+          blockchains[activatedChain]
+        ) {
+          const aC: keyof cryptos = activatedChain as keyof cryptos;
+          dispatch(setActiveChain(aC));
+        }
+        decryptWallet();
+      }
+    };
   }, [password]);
 
   const decryptWallet = () => {
