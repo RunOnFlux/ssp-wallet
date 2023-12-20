@@ -50,7 +50,7 @@ function SignMessage(props: {
         const xprivEncrypted = secureLocalStorage.getItem(
           `xpriv-48-${identityChainConfig.slip}-0-${getScriptType(
             identityChainConfig.scriptType,
-          )}`,
+          )}-${blockchainConfig.id}`,
         );
         const fingerprint: string = getFingerprint();
         const password = await passworderDecrypt(fingerprint, passwordBlob);

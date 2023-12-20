@@ -119,12 +119,12 @@ function ChainSelect(props: {
           const xpubEncrypted = secureLocalStorage.getItem(
             `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
               blockchainConfig.scriptType,
-            )}`,
+            )}-${blockchainConfig.id}`,
           );
           const xpub2Encrypted = secureLocalStorage.getItem(
             `2-xpub-48-${blockchainConfig.slip}-0-${getScriptType(
               blockchainConfig.scriptType,
-            )}`,
+            )}-${blockchainConfig.id}`,
           ); // key xpub
           if (xpubEncrypted && typeof xpubEncrypted === 'string') {
             const fingerprint: string = getFingerprint();
@@ -258,13 +258,13 @@ function ChainSelect(props: {
           secureLocalStorage.setItem(
             `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
               blockchainConfig.scriptType,
-            )}`,
+            )}-${blockchainConfig.id}`,
             xprivBlob,
           );
           secureLocalStorage.setItem(
             `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
               blockchainConfig.scriptType,
-            )}`,
+            )}-${blockchainConfig.id}`,
             xpubBlob,
           );
           setXpubWallet(chainToSwitch, xpubWallet);

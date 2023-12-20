@@ -58,7 +58,7 @@ function AddressDetails(props: {
         const xprivBlob = secureLocalStorage.getItem(
           `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
             blockchainConfig.scriptType,
-          )}`,
+          )}-${blockchainConfig.id}`,
         );
         if (typeof xprivBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpriv'));

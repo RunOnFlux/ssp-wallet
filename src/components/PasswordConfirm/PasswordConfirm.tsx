@@ -57,7 +57,7 @@ function PasswordConfirm(props: {
     const xpubEncrypted = secureLocalStorage.getItem(
       `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
         blockchainConfig.scriptType,
-      )}`,
+      )}-${blockchainConfig.id}`,
     );
     if (typeof xpubEncrypted === 'string') {
       passworderDecrypt(values.password, xpubEncrypted)

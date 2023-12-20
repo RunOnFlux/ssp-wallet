@@ -49,7 +49,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
   const blockchainConfig = blockchains[activeChain];
   const derivationPath = `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
     blockchainConfig.scriptType,
-  )}`;
+  )}-${blockchainConfig.id}`;
   const isIdentityChain = activeChain === identityChain;
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({

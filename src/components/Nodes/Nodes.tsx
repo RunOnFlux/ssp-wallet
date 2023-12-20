@@ -80,7 +80,7 @@ function Nodes() {
       const xprivEncrypted = secureLocalStorage.getItem(
         `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
           blockchainConfig.scriptType,
-        )}`,
+        )}-${blockchainConfig.id}`,
       );
       const fingerprint: string = getFingerprint();
       const password = await passworderDecrypt(fingerprint, passwordBlob);

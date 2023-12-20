@@ -46,7 +46,7 @@ function Create() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  // use secure local storage for storing mnemonic 'walletSeed', 'xpriv-48-slip-0-0', 'xpub-48-slip-0-0' and '2-xpub-48-slip-0-0' (2- as for second key) of together with encryption of browser-passworder
+  // use secure local storage for storing mnemonic 'walletSeed', 'xpriv-48-slip-0-0-coin', 'xpub-48-slip-0-0-coin' and '2-xpub-48-slip-0-0-coin' (2- as for second key) of together with encryption of browser-passworder
   // use localforage to store addresses, balances, transactions and other data. This data is not encrypted for performance reasons and they are not sensitive.
   // if user exists, navigate to login
   const [password, setPassword] = useState('');
@@ -167,13 +167,13 @@ function Create() {
         secureLocalStorage.setItem(
           `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
             blockchainConfig.scriptType,
-          )}`,
+          )}-${blockchainConfig.id}`,
           xprivBlob,
         );
         secureLocalStorage.setItem(
           `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
             blockchainConfig.scriptType,
-          )}`,
+          )}-${blockchainConfig.id}`,
           xpubBlob,
         );
         setXpubWallet(identityChain, xpub);

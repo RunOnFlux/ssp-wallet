@@ -215,7 +215,7 @@ function Send() {
     const xprivBlob = secureLocalStorage.getItem(
       `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
         blockchainConfig.scriptType,
-      )}`,
+      )}-${blockchainConfig.id}`,
     );
     if (typeof xprivBlob !== 'string') {
       throw new Error(t('send:err_invalid_xpriv'));
@@ -410,7 +410,7 @@ function Send() {
         const xprivBlob = secureLocalStorage.getItem(
           `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
             blockchainConfig.scriptType,
-          )}`,
+          )}-${blockchainConfig.id}`,
         );
         if (typeof xprivBlob !== 'string') {
           throw new Error(t('send:err_invalid_xpriv'));
