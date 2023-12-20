@@ -92,7 +92,7 @@ function Balances() {
     globalThis.refreshIntervalBalances = setInterval(() => {
       refresh();
     }, 20000);
-  }, [walletInUse, activeChain]);
+  }, [walletInUse, activeChain, wallets[walletInUse].address]);
 
   useEffect(() => {
     getCryptoRate(activeChain, 'USD');

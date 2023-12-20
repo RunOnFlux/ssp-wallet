@@ -83,6 +83,7 @@ function Home() {
           (await localForage.getItem('wallets-' + activeChain)) ?? {};
         generatedWallets[walletInUse] = addrInfo.address;
         await localForage.setItem('wallets-' + activeChain, generatedWallets);
+        // balances, transactions are refreshed automatically
       })();
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before

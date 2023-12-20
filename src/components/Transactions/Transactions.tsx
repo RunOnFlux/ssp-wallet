@@ -81,7 +81,7 @@ function Transactions() {
       getTransactions();
       getCryptoRate(activeChain, 'USD');
     }, 20000);
-  }, [walletInUse, activeChain]);
+  }, [walletInUse, activeChain, wallets[walletInUse].address]);
 
   const getTransactions = () => {
     fetchTransactions();
