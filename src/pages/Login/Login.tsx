@@ -152,7 +152,7 @@ function Login() {
   };
 
   useEffect(() => {
-    void async function () {
+    void (async function () {
       if (password) {
         // get activatedChain
         const activatedChain = await localForage.getItem('activeChain');
@@ -166,7 +166,7 @@ function Login() {
         }
         decryptWallet();
       }
-    };
+    })();
   }, [password]);
 
   const decryptWallet = () => {
