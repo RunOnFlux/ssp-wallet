@@ -310,7 +310,6 @@ function ChainSelect(props: {
           if (blockheightChain) {
             setBlockheight(chainToSwitch, blockheightChain);
           }
-          // todo here we should ask for Key synchronisation
         }
         const newChain = chainToSwitch;
         // lastly we set new active chain

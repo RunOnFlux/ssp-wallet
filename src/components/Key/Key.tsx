@@ -59,7 +59,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
   };
   useEffect(() => {
     console.log('Hello');
-    // check if we have 2-xpub-48-slip-0-ScriptType
+    // check if we have 2-xpub-48-slip-0-ScriptType-coin
     if (!xpubKey) {
       // no xpubKey, show modal of Key
       setIsModalKeyOpen(true);
@@ -72,7 +72,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         checkSynced();
       }, 1000);
     }
-  }, [xpubWallet]);
+  }, [xpubWallet, activeChain]);
 
   const checkSynced = () => {
     if (!syncRunning && sspWalletInternalIdentity) {

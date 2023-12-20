@@ -56,7 +56,6 @@ function Home() {
   };
 
   const refresh = () => {
-    console.log('kapp');
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -155,7 +154,7 @@ function Home() {
     console.log('Key of Chain synchronised.');
     generateAddress();
     setIsLoading(false);
-  }, [xpubKey]);
+  }, [xpubKey, activeChain]);
 
   const keySynchronised = (status: boolean) => {
     if (status === false) {

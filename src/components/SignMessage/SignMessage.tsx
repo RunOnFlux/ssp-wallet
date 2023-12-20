@@ -79,6 +79,7 @@ function SignMessage(props: {
         }
       } else {
         console.log('todo');
+        // todo case for signing with any address
       }
     } catch (error) {
       openAction({
@@ -99,7 +100,6 @@ function SignMessage(props: {
   function signMessage(message: string, pk: string) {
     let signature;
     try {
-      console.log(pk);
       const isCompressed = true; // ssp always has compressed keys
 
       const privateKey = wifToPrivateKey(pk, chain);

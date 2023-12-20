@@ -122,7 +122,6 @@ export function generateMultisigAddress(
   const pubKeyBuffer2 = Buffer.from(publicKey2!).toString('hex');
 
   const sortedPublicKeys: string[] = [pubKeyBuffer1, pubKeyBuffer2].sort();
-  console.log(sortedPublicKeys);
   const publicKeysBuffer: Buffer[] = sortedPublicKeys.map((hex: string) =>
     Buffer.from(hex, 'hex'),
   );

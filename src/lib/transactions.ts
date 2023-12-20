@@ -209,7 +209,6 @@ export function decodeTransactionForApproval(
       utxolib.Transaction.fromHex(txhex, network),
       network,
     );
-    console.log(JSON.stringify(txb));
     let txReceiver = 'decodingError';
     let amount = '0';
     let senderAddress = '';
@@ -237,7 +236,6 @@ export function decodeTransactionForApproval(
     txb.tx.outs.forEach((out: output) => {
       if (out.value) {
         const address = utxolib.address.fromOutputScript(out.script, network);
-        console.log(address);
         if (address !== senderAddress) {
           txReceiver = address;
           amount = new BigNumber(out.value)
@@ -254,7 +252,6 @@ export function decodeTransactionForApproval(
           outOne.script,
           network,
         );
-        console.log(address);
         txReceiver = address;
         amount = new BigNumber(outOne.value)
           .dividedBy(new BigNumber(10 ** decimals))

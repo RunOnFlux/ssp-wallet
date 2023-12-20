@@ -112,7 +112,6 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
   }, [wallets, activeChain]);
 
   const handleChange = (value: { value: string; label: React.ReactNode }) => {
-    console.log(value); // { value: "lucy", key: "lucy", label: "Lucy (101)" }
     setWalletValue(value as walletOption);
     setWalletInUse(activeChain, value.value);
     void (async function () {
