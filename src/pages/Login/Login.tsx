@@ -162,12 +162,12 @@ function Login() {
     const xpubEncryptedIdentity = secureLocalStorage.getItem(
       `xpub-48-${blockchainConfigIdentity.slip}-0-${getScriptType(
         blockchainConfigIdentity.scriptType,
-      )}-${blockchainConfig.id}`,
+      )}-${blockchainConfigIdentity.id}`,
     );
     const xpub2EncryptedIdentity = secureLocalStorage.getItem(
       `2-xpub-48-${blockchainConfigIdentity.slip}-0-${getScriptType(
         blockchainConfigIdentity.scriptType,
-      )}-${blockchainConfig.id}`,
+      )}-${blockchainConfigIdentity.id}`,
     ); // key xpub
     // we only need xpub for now for chain
     const xpubEncrypted = secureLocalStorage.getItem(
