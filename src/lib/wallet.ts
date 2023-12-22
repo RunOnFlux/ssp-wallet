@@ -54,6 +54,10 @@ export function generateMnemonic(strength: 128 | 256 = 256): string {
   return bip39.generateMnemonic(wordlist, strength);
 }
 
+export function validateMnemonic(mnemonic: string): boolean {
+  return bip39.validateMnemonic(mnemonic, wordlist);
+}
+
 // returns xpub of hardened derivation path for a particular coin
 export function getMasterXpub(
   mnemonic: string,

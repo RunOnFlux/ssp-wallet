@@ -1,14 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Input,
-  Button,
-  Checkbox,
-  Form,
-  Divider,
-  message,
-  Modal,
-} from 'antd';
+import { Input, Button, Checkbox, Form, Divider, message, Modal } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
 
@@ -30,7 +22,12 @@ import {
 
 import './Restore.css';
 
-import { getMasterXpriv, getMasterXpub, getScriptType } from '../../lib/wallet';
+import {
+  getMasterXpriv,
+  getMasterXpub,
+  getScriptType,
+  validateMnemonic,
+} from '../../lib/wallet';
 import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
 
@@ -113,6 +110,11 @@ function Restore() {
     }
     const splittedSeed = seedPhrase.split(' ');
     if (splittedSeed.length < 12) {
+      displayMessage('error', t('cr:err_seed_invalid'));
+      return;
+    }
+    const isValid = validateMnemonic(seedPhrase);
+    if (!isValid) {
       displayMessage('error', t('cr:err_seed_invalid'));
       return;
     }
