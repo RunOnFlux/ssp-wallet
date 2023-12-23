@@ -9,24 +9,18 @@ import { cryptos, currency, transaction, node, networkFee } from '../types';
 import { blockchains } from '@storage/blockchains';
 
 // ********** Import chains **********
-import flux from './flux';
-import fluxTestnet from './fluxTestnet';
-import rvn from './rvn';
-import ltc from './ltc';
-import btc from './btc';
-import doge from './doge';
-import btcTestnet from './btcTestnet';
-import btcSignet from './btcSignet';
+import chainSliceBase from './chainSliceBase';
+import chainSliceBaseNodes from './chainSliceBaseNodes';
 
 const chains = {
-  flux,
-  fluxTestnet,
-  rvn,
-  ltc,
-  btc,
-  doge,
-  btcTestnet,
-  btcSignet,
+  flux: chainSliceBaseNodes('flux'),
+  fluxTestnet: chainSliceBaseNodes('fluxTestnet'),
+  rvn: chainSliceBase('rvn'),
+  ltc: chainSliceBase('ltc'),
+  btc: chainSliceBase('btc'),
+  doge: chainSliceBase('doge'),
+  btcTestnet: chainSliceBase('btcTestnet'),
+  btcSignet: chainSliceBase('btcSignet'),
 };
 // ********** Import chains **********
 
@@ -217,14 +211,15 @@ const reducers = combineReducers({
   fiatCryptoRates: fiatCryptoRatesSlice.reducer,
   networkFees: networkFeesSlice.reducer,
   sspState: sspStateSlice.reducer,
-  flux: flux.reducer,
-  fluxTestnet: fluxTestnet.reducer,
-  rvn: rvn.reducer,
-  ltc: ltc.reducer,
-  btc: btc.reducer,
-  doge: doge.reducer,
-  btcTestnet: btcTestnet.reducer,
-  btcSignet: btcSignet.reducer,
+  // === IMPORT CHAINS ===
+  flux: chains.flux.reducer,
+  fluxTestnet: chains.fluxTestnet.reducer,
+  rvn: chains.rvn.reducer,
+  ltc: chains.ltc.reducer,
+  btc: chains.btc.reducer,
+  doge: chains.doge.reducer,
+  btcTestnet: chains.btcTestnet.reducer,
+  btcSignet: chains.btcSignet.reducer,
 });
 
 export const store = configureStore({
