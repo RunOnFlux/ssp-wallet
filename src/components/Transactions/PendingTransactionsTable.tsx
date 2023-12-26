@@ -1,4 +1,4 @@
-import { Table } from 'antd';
+import { Table, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
@@ -110,13 +110,17 @@ function PendingTransactionsTable(props: {
             render={(expireAt: string, row: actionSSPRelay) => (
               <>
                 {expireAt ? (
-                  <CountdownTimer
-                    onFinish={() => onFinishCountDown()}
-                    expireAtDateTime={expireAt}
-                    createdAtDateTime={row.createdAt}
-                  />
+                  <Tooltip title={t('home:transactionsTable.tx_pending')}>
+                    <CountdownTimer
+                      onFinish={() => onFinishCountDown()}
+                      expireAtDateTime={expireAt}
+                      createdAtDateTime={row.createdAt}
+                    />
+                  </Tooltip>
                 ) : (
-                  <ClockCircleOutlined style={{ fontSize: '18px' }} />
+                  <Tooltip title={t('home:transactionsTable.tx_unconfirmed')}>
+                    <ClockCircleOutlined style={{ fontSize: '18px' }} />
+                  </Tooltip>
                 )}
               </>
             )}

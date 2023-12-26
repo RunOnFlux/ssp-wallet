@@ -1,4 +1,4 @@
-import { Table, Empty } from 'antd';
+import { Table, Empty, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
@@ -56,7 +56,9 @@ function TransactionsTable(props: {
               </p>
               <p style={{ margin: 0 }}>
                 {t('home:transactionsTable.fee_with_symbol', {
-                  fee: new BigNumber(record.fee).dividedBy(10 ** blockchainConfig.decimals).toFixed(),
+                  fee: new BigNumber(record.fee)
+                    .dividedBy(10 ** blockchainConfig.decimals)
+                    .toFixed(),
                   symbol: blockchainConfig.symbol,
                 })}
               </p>
@@ -109,7 +111,10 @@ function TransactionsTable(props: {
           dataIndex="amount"
           render={(amnt: string) => (
             <>
-              {new BigNumber(amnt).dividedBy(10 ** blockchainConfig.decimals).toFixed()} {blockchainConfig.symbol}
+              {new BigNumber(amnt)
+                .dividedBy(10 ** blockchainConfig.decimals)
+                .toFixed()}{' '}
+              {blockchainConfig.symbol}
               <br />
               <div style={{ color: 'grey', fontSize: 12 }}>
                 {+amnt < 0 ? '-' : ''}$
@@ -128,10 +133,14 @@ function TransactionsTable(props: {
           dataIndex="blockheight"
           render={(height: number) => (
             <>
-              {(props.blockheight - height == 0 || height <= 0 || !height) ? (
-                <ClockCircleOutlined style={{ fontSize: '18px' }} />
+              {props.blockheight - height == 0 || height <= 0 || !height ? (
+                <Tooltip title={t('home:transactionsTable.tx_unconfirmed')}>
+                  <ClockCircleOutlined style={{ fontSize: '18px' }} />
+                </Tooltip>
               ) : (
-                <CheckCircleOutlined style={{ fontSize: '18px' }} />
+                <Tooltip title={t('home:transactionsTable.tx_confirmed')}>
+                  <CheckCircleOutlined style={{ fontSize: '18px' }} />
+                </Tooltip>
               )}
             </>
           )}

@@ -17,7 +17,10 @@
     "direction": "Direction",
     "date": "Date",
     "amount": "Amount",
-    "confirmations": "Confirmations"
+    "confirmations": "Confirmations",
+    "tx_confirmed": "Confirmed.",
+    "tx_unconfirmed": "Unconfirmed. Transaction not yet mined.",
+    "tx_pending": "Pending. Transaction is awaiting SSP Key authorization."
   },
   "nodesTable": {
     "no_nodes": "Address has no nodes",
