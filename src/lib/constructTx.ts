@@ -387,6 +387,7 @@ export async function getTransactionSize(
 ): Promise<number> {
   try {
     const libID = getLibId(chain);
+    const blockchainConfig = blockchains[chain];
     const network = utxolib.networks[libID];
     const utxos = await fetchUtxos(sender, chain);
     const utxosFiltered = [];
@@ -428,13 +429,20 @@ export async function getTransactionSize(
       witnessScript,
       utxos,
     );
-    const signedRawTxSize = signedTx.length;
-    console.log(signedRawTxSize);
     const txRawSigned = utxolib.Transaction.fromHex(signedTx, network);
     const virtualTxSignedSize = txRawSigned.virtualSize();
-    console.log(virtualTxSignedSize);
-    const virtualSignatureSize = virtualTxSignedSize - virtualRawSize;
-    const totalVirtualSize = virtualTxSignedSize + Math.ceil(virtualSignatureSize / 2); // as ssp-key is adding second signature. Approximately half of the difference is for signature. This is still little bit higher for segwit, for mutlisig native segwit its more like /4
+    console.log(virtualTxSignedSize); // check inputs
+    console.log(txRawSigned);
+    let constant = 1;
+    if (blockchainConfig.scriptType === 'p2wsh') { // p2wsh adds about 18 vBytes per signature. We can use number of inputs * 18
+      constant = 2.5; // 2.75, prefer overpaying than underpaying
+    }
+    const numberOfInputs = txRawSigned.ins.length; // get numberOfInputs
+    const virtualSignatureSize = virtualTxSignedSize - virtualRawSize; // signature size is virtualSignatureSize +
+    const multiplier = numberOfInputs / (numberOfInputs + constant); // additional signed data account roughly for the same size increase as per increase of tx input signature
+    const secondSignaturesSize = virtualSignatureSize * multiplier;
+    const totalVirtualSize =
+      virtualTxSignedSize + Math.ceil(secondSignaturesSize); // as ssp-key is adding second signature.
     console.log(totalVirtualSize);
     return totalVirtualSize; // in vBytes. https://en.bitcoin.it/wiki/Weight_units
   } catch (error) {

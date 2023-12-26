@@ -76,6 +76,7 @@ declare module '@runonflux/utxo-lib' {
   };
   interface TX {
     virtualSize(): number;
+    ins: inInput[];
   }
   let Transaction: {
     fromHex: (txhex: string, network: object) => TX;
