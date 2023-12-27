@@ -645,7 +645,7 @@ function Send() {
             color: 'grey',
           }}
         >
-          {feePerByte} sat/vB
+          {feePerByte} {blockchainConfig.scriptType === 'p2sh' ? 'sat/B' : 'sat/vB'}
         </div>
 
         <Form.Item style={{ marginTop: 50 }}>

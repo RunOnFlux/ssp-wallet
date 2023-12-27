@@ -433,13 +433,26 @@ export async function getTransactionSize(
     const virtualTxSignedSize = txRawSigned.virtualSize();
     console.log(virtualTxSignedSize); // check inputs
     console.log(txRawSigned);
-    let constant = 1;
-    if (blockchainConfig.scriptType === 'p2wsh') { // p2wsh adds about 18 vBytes per signature. We can use number of inputs * 18
-      constant = 2.5; // 2.75, prefer overpaying than underpaying
+    if (blockchainConfig.scriptType === 'p2wsh') {
+      // p2wsh adds about 18 vBytes per signature. We can use number of inputs * 18
+      const numberOfInputs = txRawSigned.ins.length; // get numberOfInputs
+      const secondSignaturesSize = 18 * numberOfInputs;
+      const totalVirtualSize =
+        virtualTxSignedSize + Math.ceil(secondSignaturesSize); // as ssp-key is adding second signature.
+      console.log(totalVirtualSize);
+      return totalVirtualSize; // in vBytes. https://en.bitcoin.it/wiki/Weight_units
+    } else if (blockchainConfig.scriptType === 'p2sh') { // in bytes
+      // p2sh adds 72 bytes for signature
+      const numberOfInputs = txRawSigned.ins.length; // get numberOfInputs
+      const secondSignaturesSize = 72 * numberOfInputs;
+      const totalVirtualSize =
+        virtualTxSignedSize + Math.ceil(secondSignaturesSize); // as ssp-key is adding second signature.
+      console.log(totalVirtualSize);
+      return totalVirtualSize; // in vBytes. https://en.bitcoin.it/wiki/Weight_units
     }
     const numberOfInputs = txRawSigned.ins.length; // get numberOfInputs
     const virtualSignatureSize = virtualTxSignedSize - virtualRawSize; // signature size is virtualSignatureSize +
-    const multiplier = numberOfInputs / (numberOfInputs + constant); // additional signed data account roughly for the same size increase as per increase of tx input signature
+    const multiplier = numberOfInputs / (numberOfInputs + 1); // additional signed data account roughly for the same size increase as per increase of tx input signature
     const secondSignaturesSize = virtualSignatureSize * multiplier;
     const totalVirtualSize =
       virtualTxSignedSize + Math.ceil(secondSignaturesSize); // as ssp-key is adding second signature.
