@@ -371,6 +371,19 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
   return selectedUtxos;
 }
 
+export function getSizeOfRawTransaction(rawTx: string, chain: keyof cryptos): number {
+  try {
+    const libID = getLibId(chain);
+    const network = utxolib.networks[libID];
+    const txRaw = utxolib.Transaction.fromHex(rawTx, network);
+    const virtualRawSize = txRaw.virtualSize();
+    return virtualRawSize;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
 export async function getTransactionSize(
   chain: keyof cryptos,
   receiver: string,

@@ -60,7 +60,9 @@ function TransactionsTable(props: {
                     .dividedBy(10 ** blockchainConfig.decimals)
                     .toFixed(),
                   symbol: blockchainConfig.symbol,
-                })}
+                })}{' '}
+                ({(+record.fee / (record.vsize ?? record.size)).toFixed(2)}{' '}
+                {record.vsize ? '˝sat/vB' : 'sat/B'})
               </p>
               <p style={{ margin: 0 }}>
                 {t('home:transactionsTable.note_with_note', {

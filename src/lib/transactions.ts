@@ -91,6 +91,8 @@ function processTransaction(
     timestamp: insightTx.time * 1000,
     amount: amount.toFixed(),
     message,
+    size: insightTx.size,
+    vsize: insightTx.vsize,
   };
   return tx;
 }
@@ -152,6 +154,8 @@ function processTransactionBlockbook(
     timestamp: time * 1000,
     amount: amount.toFixed(),
     message,
+    size: blockbookTx.size,
+    vsize: blockbookTx.vsize,
   };
   return tx;
 }

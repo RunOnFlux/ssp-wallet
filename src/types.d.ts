@@ -117,6 +117,7 @@ export interface transactionInsight {
   blockheight: number;
   confirmations: number;
   size: number;
+  vsize: number;
   time: number;
   blocktime: number;
   valueOut: number;
@@ -142,6 +143,7 @@ export interface transactionBlockbook {
   confirmations: number;
   blockTime: number;
   size: number;
+  vsize: number;
   blockTime: number;
   value: string;
   valueIn: string;
@@ -195,6 +197,8 @@ export interface transaction {
   fee: string;
   amount: string; // satoshis
   message: string;
+  size: number;
+  vsize?: number;
 }
 
 export interface pendingTransaction {
