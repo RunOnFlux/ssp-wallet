@@ -87,9 +87,7 @@ function Send() {
   >('success');
   const [useMaximum, setUseMaximum] = useState(false);
   const [manualFee, setManualFee] = useState(false);
-  const { networkFees } = useAppSelector(
-    (state) => state.networkFees,
-  );
+  const { networkFees } = useAppSelector((state) => state.networkFees);
 
   const blockchainConfig = blockchains[activeChain];
   const { cryptoRates, fiatRates } = useAppSelector(
@@ -151,12 +149,7 @@ function Send() {
           setFeePerByte('---');
         }
       });
-  }, [
-    walletInUse,
-    activeChain,
-    sendingAmount,
-    manualFee,
-  ]);
+  }, [walletInUse, activeChain, sendingAmount, manualFee]);
 
   useEffect(() => {
     if (useMaximum && !manualFee) {
@@ -182,9 +175,7 @@ function Send() {
           setFeePerByte('---');
         }
       });
-  }, [
-    txFee
-  ]);
+  }, [txFee]);
 
   useEffect(() => {
     const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
@@ -266,9 +257,7 @@ function Send() {
     );
     // target recommended fee of blockchain config
     const feeSats = new BigNumber(txSize)
-      .multipliedBy(
-        manualFee ? feePerByte : networkFees[activeChain].toFixed(),
-      )
+      .multipliedBy(manualFee ? feePerByte : networkFees[activeChain].toFixed())
       .toFixed(); // satoshis
     console.log(feeSats);
     console.log(feePerByte);
@@ -574,14 +563,17 @@ function Send() {
             suffix={blockchainConfig.symbol}
           />
         </Form.Item>
-        <div
+        <Button
+          type="text"
+          size="small"
           style={{
-            marginTop: '-25px',
+            marginTop: '-22px',
             float: 'right',
-            marginRight: 10,
+            marginRight: 3,
             fontSize: 12,
-            color: 'grey',
+            color: '#4096ff',
             cursor: 'pointer',
+            zIndex: 100,
           }}
           onClick={() => setUseMaximum(true)}
         >
@@ -589,9 +581,11 @@ function Send() {
           {new BigNumber(spendableBalance)
             .dividedBy(10 ** blockchainConfig.decimals)
             .toFixed()}
-        </div>
-
+        </Button>
         <Form.Item
+          style={{
+            marginTop: '26px',
+          }}
           label={t('send:message')}
           name="message"
           rules={[{ required: false, message: t('send:include_message') }]}
@@ -618,13 +612,15 @@ function Send() {
             disabled={!manualFee}
           />
         </Form.Item>
-        <div
+        <Button
+          type="text"
+          size="small"
           style={{
-            marginTop: '-25px',
+            marginTop: '-22px',
             float: 'left',
-            marginLeft: 10,
+            marginLeft: 3,
             fontSize: 12,
-            color: 'grey',
+            color: '#4096ff',
             cursor: 'pointer',
             zIndex: 100,
           }}
@@ -635,17 +631,18 @@ function Send() {
           {manualFee
             ? t('send:using_manual_fee')
             : t('send:using_automatic_fee')}
-        </div>
+        </Button>
         <div
           style={{
-            marginTop: '-25px',
+            marginTop: '-22px',
             float: 'right',
             marginRight: 10,
             fontSize: 12,
             color: 'grey',
           }}
         >
-          {feePerByte} {blockchainConfig.scriptType === 'p2sh' ? 'sat/B' : 'sat/vB'}
+          {feePerByte}{' '}
+          {blockchainConfig.scriptType === 'p2sh' ? 'sat/B' : 'sat/vB'}
         </div>
 
         <Form.Item style={{ marginTop: 50 }}>
