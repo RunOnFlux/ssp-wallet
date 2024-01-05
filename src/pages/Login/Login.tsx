@@ -130,6 +130,7 @@ function Login() {
           if (typeof respLastActivity.lastActivity === 'number') {
             if (respLastActivity.lastActivity + tenMins < curTime) {
               await chrome.storage.session.clear();
+              setIsLoading(false);
               return;
             }
           }
