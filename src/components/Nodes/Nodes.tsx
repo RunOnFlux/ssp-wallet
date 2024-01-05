@@ -52,6 +52,14 @@ function Nodes() {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     void generateIdentity();
+    if (globalThis.refreshIntervalNodes) {
+      clearInterval(globalThis.refreshIntervalNodes);
+    }
+    if (wallets?.[walletInUse]?.nodes) {
+      globalThis.refreshIntervalNodes = setInterval(() => {
+        refreshNodes();
+      }, 45000);
+    }
   });
 
   useEffect(() => {
@@ -61,6 +69,14 @@ function Nodes() {
     }
     void generateIdentity();
     refreshNodes();
+    if (globalThis.refreshIntervalNodes) {
+      clearInterval(globalThis.refreshIntervalNodes);
+    }
+    if (wallets?.[walletInUse]?.nodes) {
+      globalThis.refreshIntervalNodes = setInterval(() => {
+        refreshNodes();
+      }, 45000);
+    }
   }, [walletInUse, activeChain]);
 
   const refreshNodes = () => {
@@ -112,10 +128,7 @@ function Nodes() {
         }
       }
     } catch (error) {
-      displayMessage(
-        'error',
-        t('home:nodesTable.err_unable_identity'),
-      );
+      displayMessage('error', t('home:nodesTable.err_unable_identity'));
     }
   };
 

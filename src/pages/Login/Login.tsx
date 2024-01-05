@@ -87,6 +87,9 @@ function Login() {
     if (globalThis.refreshIntervalTransactions) {
       clearInterval(globalThis.refreshIntervalTransactions);
     }
+    if (globalThis.refreshIntervalNodes) {
+      clearInterval(globalThis.refreshIntervalNodes);
+    }
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     void (async function () {

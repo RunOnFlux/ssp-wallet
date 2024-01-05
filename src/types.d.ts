@@ -351,13 +351,13 @@ export interface dosNodeFlux {
 
 export interface dosFlux {
   status: string;
-  data: dosNodeFlux[]
+  data: dosNodeFlux[];
 }
 
 export interface dosFluxInsight {
   error: string;
   id: number;
-  result: dosNodeFlux[]
+  result: dosNodeFlux[];
 }
 
 export interface startNodeFlux {
@@ -370,13 +370,13 @@ export interface startNodeFlux {
 
 export interface startFlux {
   status: string;
-  data: startNodeFlux[]
+  data: startNodeFlux[];
 }
 
 export interface startFluxInsight {
   error: string;
   id: number;
-  result: startNodeFlux[]
+  result: startNodeFlux[];
 }
 
 declare global {
@@ -386,6 +386,8 @@ declare global {
   var refreshIntervalBalances: string | number | NodeJS.Timeout | undefined;
   // eslint-disable-next-line no-var
   var refreshIntervalRates: string | number | NodeJS.Timeout | undefined;
-    // eslint-disable-next-line no-var
-    var refreshIntervalNetworkFee: string | number | NodeJS.Timeout | undefined;
+  // eslint-disable-next-line no-var
+  var refreshIntervalNetworkFee: string | number | NodeJS.Timeout | undefined;
+  // eslint-disable-next-line no-var
+  var refreshIntervalNodes: string | number | NodeJS.Timeout | undefined;
 }
