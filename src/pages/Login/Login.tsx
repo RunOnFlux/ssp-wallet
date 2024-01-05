@@ -67,6 +67,10 @@ const balancesObject = {
 
 type pwdDecrypt = Record<string, string>;
 
+type lastActivity = Record<string, number>;
+
+const tenMins = 10 * 60 * 1000;
+
 function Login() {
   const { t, i18n } = useTranslation(['login']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
@@ -118,6 +122,17 @@ function Login() {
       // check if we have password
       if (chrome?.storage?.session) {
         try {
+          // check if we should stay logged out
+          const curTime = new Date().getTime();
+          const respLastActivity: lastActivity = await chrome.storage.session.get(
+            'lastActivity',
+          );
+          if (typeof respLastActivity.lastActivity === 'number') {
+            if (respLastActivity.lastActivity + tenMins < curTime) {
+              await chrome.storage.session.clear();
+              return;
+            }
+          }
           // if different browser we will need to be inputting password every time
           const resp: pwdDecrypt = await chrome.storage.session.get('pwBlob');
           const fingerprint: string = getFingerprint();
