@@ -87,6 +87,7 @@ function Send() {
   >('success');
   const [useMaximum, setUseMaximum] = useState(false);
   const [manualFee, setManualFee] = useState(false);
+  const [txSizeVBytes, setTxSize] = useState(0);
   const { networkFees } = useAppSelector((state) => state.networkFees);
 
   const blockchainConfig = blockchains[activeChain];
@@ -256,6 +257,7 @@ function Send() {
       lockedUtxos,
     );
     // target recommended fee of blockchain config
+    setTxSize(txSize);
     const feeSats = new BigNumber(txSize)
       .multipliedBy(manualFee ? feePerByte : networkFees[activeChain].toFixed())
       .toFixed(); // satoshis
@@ -378,6 +380,10 @@ function Send() {
     }
     if (!values.fee || +values.fee < 0 || isNaN(+values.fee)) {
       displayMessage('error', t('send:err_invalid_fee'));
+      return;
+    }
+    if (+txSizeVBytes >= blockchainConfig.maxTxSize) {
+      displayMessage('error', t('send:err_tx_size_limit'));
       return;
     }
     if (values.message && values.message.length > blockchainConfig.maxMessage) {
