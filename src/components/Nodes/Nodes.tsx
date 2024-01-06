@@ -166,6 +166,8 @@ function Nodes() {
           if (confirmedNode) {
             node.ip = confirmedNode.ip;
             node.status = t('home:nodesTable.confirmed');
+          } else if (node.status === t('home:nodesTable.confirmed')) {
+            node.status = t('home:nodesTable.offline');
           }
           if (!confirmedNode) {
             fetchDOSandStart = true;
@@ -180,12 +182,16 @@ function Nodes() {
             );
             if (dosNode) {
               node.status = t('home:nodesTable.dos');
+            } else if (node.status === t('home:nodesTable.dos')) {
+              node.status = t('home:nodesTable.offline');
             }
             const startedNode = startedNodes.find(
               (n) => n.collateral === `COutPoint(${node.txid}, ${node.vout})`,
             );
             if (startedNode) {
               node.status = t('home:nodesTable.started');
+            } else if (node.status === t('home:nodesTable.started')) {
+              node.status = t('home:nodesTable.offline');
             }
           });
         }
