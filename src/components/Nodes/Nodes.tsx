@@ -52,6 +52,7 @@ function Nodes() {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     void generateIdentity();
+    refreshNodes();
     if (globalThis.refreshIntervalNodes) {
       clearInterval(globalThis.refreshIntervalNodes);
     }
@@ -87,7 +88,7 @@ function Nodes() {
       if (nodesWallet) {
         setNodes(activeChain, wInUse, nodesWallet);
       }
-      fetchUtxosForNodes();
+      fetchUtxosForNodes(nodesWallet || myNodes);
     })();
   };
 
@@ -132,7 +133,7 @@ function Nodes() {
     }
   };
 
-  const fetchUtxosForNodes = () => {
+  const fetchUtxosForNodes = (suppliedNodes: node[]) => {
     const wInUse = walletInUse;
     fetchNodesUtxos(wallets[wInUse].address, activeChain)
       .then(async (utxos) => {
@@ -141,9 +142,9 @@ function Nodes() {
           wallets[wInUse].address,
           activeChain,
         );
-        const nodes: node[] = JSON.parse(JSON.stringify(myNodes)) as node[];
+        const nodes: node[] = JSON.parse(JSON.stringify(suppliedNodes)) as node[];
         utxos.forEach((utxo) => {
-          const nodeExists = myNodes.find(
+          const nodeExists = nodes.find(
             (n) => n.txid === utxo.txid && n.vout === utxo.vout,
           );
           if (!nodeExists) {

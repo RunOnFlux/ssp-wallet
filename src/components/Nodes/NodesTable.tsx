@@ -27,6 +27,14 @@ function NodesTable(props: {
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { chain } = props;
+  const parsedNodes = JSON.parse(JSON.stringify(props.nodes)) as node[];
+  const sortedNodesByName = parsedNodes.sort(
+    (a, b) => {
+      if (a.name > b.name) return 1;
+      else if (a.name < b.name) return -1;
+      else return 0;
+    },
+  );
   const blockchainConfig = blockchains[chain];
   const [messageApi, contextHolder] = message.useMessage();
   const [editedTxid, setEditedTxid] = useState('');
@@ -172,7 +180,7 @@ function NodesTable(props: {
         rowKey="txid"
         bordered={false}
         loading={false}
-        dataSource={props.nodes}
+        dataSource={sortedNodesByName}
         expandable={{
           showExpandColumn: false,
           expandedRowRender: (record) => (
@@ -319,8 +327,8 @@ function NodesTable(props: {
               {amount === '4000000000000'
                 ? 'Stratus'
                 : amount === '1250000000000'
-                ? 'Nimbus'
-                : 'Cumulus'}
+                  ? 'Nimbus'
+                  : 'Cumulus'}
             </>
           )}
         />
