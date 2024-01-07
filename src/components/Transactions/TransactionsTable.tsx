@@ -12,6 +12,7 @@ import { transaction } from '../../types';
 import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
+import { backends } from '@storage/backends';
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -24,6 +25,7 @@ function TransactionsTable(props: {
   const { chain } = props;
   const [fiatRate, setFiatRate] = useState(0);
   const blockchainConfig = blockchains[chain];
+  const backendConfig = backends()[chain];
 
   useEffect(() => {
     setFiatRate(props.fiatRate);
@@ -70,7 +72,7 @@ function TransactionsTable(props: {
                 })}
               </p>
               <a
-                href={`https://${blockchainConfig.node}/tx/${record.txid}`}
+                href={`https://${backendConfig.node}/tx/${record.txid}`}
                 target="_blank"
                 rel="noreferrer"
               >
