@@ -115,7 +115,7 @@ const ltc = {
   bech32: 'ltc',
   dustLimit: 546, // min utxo amount
   minFeePerByte: 1, // min fee per byte
-  feePerByte: 10, // fee per byte
+  feePerByte: 20, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
 };
@@ -142,7 +142,7 @@ const btc = {
   bech32: 'bc1',
   dustLimit: 546, // min utxo amount
   minFeePerByte: 1, // min fee per byte
-  feePerByte: 20, // fee per byte
+  feePerByte: 100, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
 };
