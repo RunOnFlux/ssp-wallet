@@ -28,6 +28,8 @@ export interface utxo {
   vout: number;
   scriptPubKey: string;
   satoshis: string;
+  confirmations?: number;
+  coinbase?: boolean;
 }
 
 export interface blockbookUtxo {

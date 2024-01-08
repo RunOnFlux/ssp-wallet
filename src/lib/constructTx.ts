@@ -37,6 +37,7 @@ export function clearUtxoCache() {
 export async function fetchUtxos(
   address: string,
   chain: string,
+  confirmedOnly = true,
 ): Promise<utxo[]> {
   try {
     while (fetchUtxosRunning) {
@@ -51,7 +52,7 @@ export async function fetchUtxos(
     fetchUtxosRunning = true;
     const backendConfig = backends()[chain];
     if (blockchains[chain].backend === 'blockbook') {
-      const url = `https://${backendConfig.node}/api/v2/utxo/${address}`;
+      const url = `https://${backendConfig.node}/api/v2/utxo/${address}?confirmed=${confirmedOnly}`;
       const { data } = await axios.get<blockbookUtxo[]>(url);
       const fetchedUtxos = data;
       const utxos = fetchedUtxos.map((x) => ({
@@ -403,9 +404,10 @@ export async function getTransactionSize(
     const blockchainConfig = blockchains[chain];
     const network = utxolib.networks[libID];
     const utxos = await fetchUtxos(sender, chain);
-    const utxosFiltered = [];
+    const utxosNonCoinbase = utxos.filter((x) => x.coinbase !== true || (x.coinbase === true && x.confirmations && x.confirmations > 100));
+    let utxosFiltered: utxo[] = [];
     if (forbiddenUtxos?.length) {
-      utxos.forEach((utxo) => {
+      utxosNonCoinbase.forEach((utxo) => {
         const found = forbiddenUtxos.find(
           (x) => x.txid === utxo.txid && x.vout === utxo.vout,
         );
@@ -413,9 +415,11 @@ export async function getTransactionSize(
           utxosFiltered.push(utxo);
         }
       });
+    } else {
+      utxosFiltered = utxosNonCoinbase;
     }
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
-    const pickedUtxos = pickUtxos(utxos, amountToSend);
+    const pickedUtxos = pickUtxos(utxosFiltered, amountToSend);
     const rawTx = buildUnsignedRawTx(
       chain,
       pickedUtxos,
@@ -493,9 +497,10 @@ export async function constructAndSignTransaction(
 ): Promise<string> {
   try {
     const utxos = await fetchUtxos(sender, chain);
-    const utxosFiltered = [];
+    const utxosNonCoinbase = utxos.filter((x) => x.coinbase !== true || (x.coinbase === true && x.confirmations && x.confirmations > 100));
+    let utxosFiltered: utxo[] = [];
     if (forbiddenUtxos?.length) {
-      utxos.forEach((utxo) => {
+      utxosNonCoinbase.forEach((utxo) => {
         const found = forbiddenUtxos.find(
           (x) => x.txid === utxo.txid && x.vout === utxo.vout,
         );
@@ -503,9 +508,11 @@ export async function constructAndSignTransaction(
           utxosFiltered.push(utxo);
         }
       });
+    } else {
+      utxosFiltered = utxosNonCoinbase;
     }
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
-    const pickedUtxos = pickUtxos(utxos, amountToSend);
+    const pickedUtxos = pickUtxos(utxosFiltered, amountToSend);
     const rawTx = buildUnsignedRawTx(
       chain,
       pickedUtxos,
