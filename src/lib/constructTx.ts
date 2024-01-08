@@ -37,7 +37,8 @@ export function clearUtxoCache() {
 export async function fetchUtxos(
   address: string,
   chain: string,
-  confirmedOnly = true,
+  confirmationMode = 0, // use confirmed utxos if replace by fee is wanted. unconfirmed if standard tx, both for ssp key for fetching all utxps
+  onlyConfirmed = true, // must have > 0 confirmations
 ): Promise<utxo[]> {
   try {
     while (fetchUtxosRunning) {
@@ -52,28 +53,71 @@ export async function fetchUtxos(
     fetchUtxosRunning = true;
     const backendConfig = backends()[chain];
     if (blockchains[chain].backend === 'blockbook') {
-      const url = `https://${backendConfig.node}/api/v2/utxo/${address}?confirmed=${confirmedOnly}`;
-      const { data } = await axios.get<blockbookUtxo[]>(url);
-      const fetchedUtxos = data;
-      const utxos = fetchedUtxos.map((x) => ({
-        txid: x.txid,
-        vout: x.vout,
-        scriptPubKey: '', // that is fine, not needed
-        satoshis: x.value,
-      }));
-      utxoCache.set(`${chain}_${address}`, utxos);
-      return utxos;
+      if (confirmationMode === 1) {
+        const url = `https://${backendConfig.node}/api/v2/utxo/${address}?confirmed=true`;
+        const { data } = await axios.get<blockbookUtxo[]>(url);
+        const fetchedUtxos = data.filter((x) =>
+          onlyConfirmed ? x.confirmations > 0 : true,
+        );
+        const utxos = fetchedUtxos.map((x) => ({
+          txid: x.txid,
+          vout: x.vout,
+          scriptPubKey: '', // that is fine, not needed
+          satoshis: x.value,
+          confirmations: x.confirmations,
+          coinbase: x.coinbase || false,
+        }));
+        return utxos;
+      } else if (confirmationMode === 2) {
+        const url = `https://${backendConfig.node}/api/v2/utxo/${address}?confirmed=true`;
+        const urlB = `https://${backendConfig.node}/api/v2/utxo/${address}`;
+        const { data } = await axios.get<blockbookUtxo[]>(url);
+        const responseB = await axios.get<blockbookUtxo[]>(urlB);
+        const dataB = responseB.data.filter((x) =>
+          onlyConfirmed ? x.confirmations > 0 : true,
+        );
+        const fetchedUtxos = data
+          .filter((x) => (onlyConfirmed ? x.confirmations > 0 : true))
+          .concat(dataB);
+        const utxos = fetchedUtxos.map((x) => ({
+          txid: x.txid,
+          vout: x.vout,
+          scriptPubKey: '', // that is fine, not needed
+          satoshis: x.value,
+          confirmations: x.confirmations,
+          coinbase: x.coinbase || false,
+        }));
+        return utxos;
+      } else {
+        const url = `https://${backendConfig.node}/api/v2/utxo/${address}`;
+        const { data } = await axios.get<blockbookUtxo[]>(url);
+        const fetchedUtxos = data.filter((x) =>
+          onlyConfirmed ? x.confirmations > 0 : true,
+        );
+        const utxos = fetchedUtxos.map((x) => ({
+          txid: x.txid,
+          vout: x.vout,
+          scriptPubKey: '', // that is fine, not needed
+          satoshis: x.value,
+          confirmations: x.confirmations,
+          coinbase: x.coinbase || false,
+        }));
+        return utxos;
+      }
     } else {
       const url = `https://${backendConfig.node}/api/addr/${address}/utxo`;
       const { data } = await axios.get<utxo[]>(url);
-      const fetchedUtxos = data;
+      const fetchedUtxos = data.filter((x) =>
+        onlyConfirmed ? x.confirmations > 0 : true,
+      );
       const utxos = fetchedUtxos.map((x) => ({
         txid: x.txid,
         vout: x.vout,
         scriptPubKey: x.scriptPubKey,
         satoshis: x.satoshis.toString(),
+        confirmations: x.confirmations,
+        coinbase: x.coinbase || false,
       }));
-      utxoCache.set(`${chain}_${address}`, utxos);
       return utxos;
     }
   } catch (e) {
@@ -372,7 +416,10 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
   return selectedUtxos;
 }
 
-export function getSizeOfRawTransaction(rawTx: string, chain: keyof cryptos): number {
+export function getSizeOfRawTransaction(
+  rawTx: string,
+  chain: keyof cryptos,
+): number {
   try {
     const libID = getLibId(chain);
     const network = utxolib.networks[libID];
@@ -404,7 +451,11 @@ export async function getTransactionSize(
     const blockchainConfig = blockchains[chain];
     const network = utxolib.networks[libID];
     const utxos = await fetchUtxos(sender, chain);
-    const utxosNonCoinbase = utxos.filter((x) => x.coinbase !== true || (x.coinbase === true && x.confirmations && x.confirmations > 100));
+    const utxosNonCoinbase = utxos.filter(
+      (x) =>
+        x.coinbase !== true ||
+        (x.coinbase === true && x.confirmations && x.confirmations > 100),
+    );
     let utxosFiltered: utxo[] = [];
     if (forbiddenUtxos?.length) {
       utxosNonCoinbase.forEach((utxo) => {
@@ -458,7 +509,8 @@ export async function getTransactionSize(
         virtualTxSignedSize + Math.ceil(secondSignaturesSize); // as ssp-key is adding second signature.
       console.log(totalVirtualSize);
       return totalVirtualSize; // in vBytes. https://en.bitcoin.it/wiki/Weight_units
-    } else if (blockchainConfig.scriptType === 'p2sh') { // in bytes
+    } else if (blockchainConfig.scriptType === 'p2sh') {
+      // in bytes
       // p2sh adds 72 bytes for signature
       const numberOfInputs = txRawSigned.ins.length; // get numberOfInputs
       const secondSignaturesSize = 72 * numberOfInputs;
@@ -497,7 +549,11 @@ export async function constructAndSignTransaction(
 ): Promise<string> {
   try {
     const utxos = await fetchUtxos(sender, chain);
-    const utxosNonCoinbase = utxos.filter((x) => x.coinbase !== true || (x.coinbase === true && x.confirmations && x.confirmations > 100));
+    const utxosNonCoinbase = utxos.filter(
+      (x) =>
+        x.coinbase !== true ||
+        (x.coinbase === true && x.confirmations && x.confirmations > 100),
+    );
     let utxosFiltered: utxo[] = [];
     if (forbiddenUtxos?.length) {
       utxosNonCoinbase.forEach((utxo) => {
