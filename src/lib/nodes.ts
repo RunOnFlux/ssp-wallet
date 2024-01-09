@@ -27,6 +27,8 @@ export async function fetchNodesUtxos(
       vout: x.vout,
       scriptPubKey: x.scriptPubKey,
       satoshis: x.satoshis.toString(),
+      confirmations: x.confirmations,
+      coinbase: x.coinbase || false,
     }));
     return utxos;
   } catch (e) {
