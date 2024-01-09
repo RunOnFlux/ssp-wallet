@@ -27,7 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
 
-import { transaction } from '../../types';
+import { transaction, utxo } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 interface sendForm {
   receiver: string;
@@ -62,18 +62,8 @@ function Send() {
   const redeemScript = wallets[walletInUse].redeemScript;
   const witnessScript = wallets[walletInUse].witnessScript;
   const sender = wallets[walletInUse].address;
-  const confirmedBalance = wallets[walletInUse].balance;
   const myNodes = wallets[walletInUse].nodes ?? [];
-  let spendableBalance = confirmedBalance;
-  // TODO FIX here spendable balance we will calculate from available utxos!
-  // TODO store utxos in memory
-  myNodes.forEach((node) => {
-    if (node.name) {
-      spendableBalance = new BigNumber(spendableBalance)
-        .minus(node.amount)
-        .toFixed();
-    }
-  });
+  const [spendableBalance, setSpendableBalance] = useState('0');
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
@@ -96,34 +86,14 @@ function Send() {
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
-  const confirmTxAction = (status: boolean) => {
-    setOpenConfirmTx(status);
-    if (status === false) {
-      // stop refreshing
-      if (txSentInterval) {
-        clearInterval(txSentInterval);
-      }
-    }
-  };
-  const txSentAction = (status: boolean) => {
-    setOpenTxSent(status);
-    if (status === false) {
-      // all ok, navigate back to home
-      navigate('/home');
-    }
-  };
-
-  const txRejectedAction = (status: boolean) => {
-    setOpenTxRejected(status);
-  };
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     try {
       setFeePerByte(networkFees[activeChain].toFixed());
-      clearUtxoCache();
-      void fetchUtxos(sender, activeChain);
+      obtainFreshUtxos();
     } catch (error) {
       console.log(error);
     }
@@ -135,7 +105,8 @@ function Send() {
     if (alreadyRunning) return;
     alreadyRunning = true;
     fetchUtxos(sender, activeChain) // this should always be cached
-      .then(async () => {
+      .then(async (utxos) => {
+        getSpendableBalance(utxos);
         await calculateTxFeeSize();
         alreadyRunning = false;
       })
@@ -161,7 +132,8 @@ function Send() {
     if (alreadyRunning) return;
     alreadyRunning = true;
     fetchUtxos(sender, activeChain) // this should always be cached
-      .then(async () => {
+      .then(async (utxos) => {
+        getSpendableBalance(utxos);
         await calculateTxFeeSize();
         alreadyRunning = false;
       })
@@ -192,6 +164,128 @@ function Send() {
       setValidateStatusAmount('success');
     }
   }, [walletInUse, activeChain, sendingAmount, txFee]);
+
+  useEffect(() => {
+    if (useMaximum) {
+      const maxSpendable = new BigNumber(spendableBalance).dividedBy(
+        10 ** blockchainConfig.decimals,
+      );
+      const fee = new BigNumber(txFee || '0');
+      setSendingAmount(
+        maxSpendable.minus(fee).isGreaterThan(0)
+          ? maxSpendable.minus(fee).toFixed()
+          : '0',
+      );
+      form.setFieldValue(
+        'amount',
+        maxSpendable.minus(fee).isGreaterThan(0)
+          ? maxSpendable.minus(fee).toFixed()
+          : '0',
+      );
+    }
+  }, [useMaximum, txFee, spendableBalance]);
+
+  useEffect(() => {
+    if (txid) {
+      setOpenConfirmTx(false);
+      setTimeout(() => {
+        setOpenTxSent(true);
+      });
+    }
+  }, [txid]);
+
+  useEffect(() => {
+    if (socketTxid) {
+      setTxid(socketTxid);
+      clearTxid?.();
+      // stop interval
+      if (txSentInterval) {
+        clearInterval(txSentInterval);
+      }
+      obtainFreshUtxos();
+    }
+  }, [socketTxid]);
+
+  useEffect(() => {
+    if (txRejected) {
+      setOpenConfirmTx(false);
+      setTimeout(() => {
+        setOpenTxRejected(true);
+      });
+      if (txSentInterval) {
+        clearInterval(txSentInterval);
+      }
+      clearTxRejected?.();
+    }
+  }, [txRejected]);
+
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
+
+  const confirmTxAction = (status: boolean) => {
+    setOpenConfirmTx(status);
+    if (status === false) {
+      // stop refreshing
+      if (txSentInterval) {
+        clearInterval(txSentInterval);
+      }
+    }
+  };
+  const txSentAction = (status: boolean) => {
+    setOpenTxSent(status);
+    if (status === false) {
+      // all ok, navigate back to home
+      navigate('/home');
+    }
+  };
+
+  const txRejectedAction = (status: boolean) => {
+    setOpenTxRejected(status);
+  };
+
+  const getSpendableBalance = (utxos: utxo[]) => {
+    // get spendable balance
+    const correctUtxos = utxos.filter(
+      (utxo) =>
+        utxo.coinbase !== true ||
+        (utxo.coinbase === true &&
+          utxo.confirmations &&
+          utxo.confirmations > 100),
+    );
+    let utxoAmountSats = new BigNumber(0);
+    correctUtxos.forEach((utxo) => {
+      utxoAmountSats = utxoAmountSats.plus(utxo.satoshis);
+    });
+    let spAmount = utxoAmountSats.toFixed();
+    myNodes.forEach((node) => {
+      if (node.name) {
+        // if utxo is present in utxo list remove it from spendable balance
+        if (
+          correctUtxos.find(
+            (utxo) => utxo.txid === node.txid && utxo.vout === node.vout,
+          )
+        ) {
+          spAmount = new BigNumber(spAmount).minus(node.amount).toFixed();
+        }
+      }
+    });
+    setSpendableBalance(spAmount);
+  };
+
+  const obtainFreshUtxos = () => {
+    clearUtxoCache();
+    fetchUtxos(sender, activeChain)
+      .then((utxos) => {
+        getSpendableBalance(utxos);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   const calculateTxFeeSize = async () => {
     if (!manualFee) {
@@ -292,58 +386,6 @@ function Send() {
         setFeePerByte(fpb);
       }
     }
-  };
-
-  useEffect(() => {
-    if (useMaximum) {
-      const maxSpendable = new BigNumber(spendableBalance).dividedBy(
-        10 ** blockchainConfig.decimals,
-      );
-      const fee = new BigNumber(txFee || '0');
-      setSendingAmount(maxSpendable.minus(fee).isGreaterThan(0) ? maxSpendable.minus(fee).toFixed() : '0');
-      form.setFieldValue('amount', maxSpendable.minus(fee).isGreaterThan(0) ? maxSpendable.minus(fee).toFixed() : '0');
-    }
-  }, [useMaximum, txFee, spendableBalance]);
-
-  useEffect(() => {
-    if (txid) {
-      setOpenConfirmTx(false);
-      setTimeout(() => {
-        setOpenTxSent(true);
-      });
-    }
-  }, [txid]);
-
-  useEffect(() => {
-    if (socketTxid) {
-      setTxid(socketTxid);
-      clearTxid?.();
-      // stop interval
-      if (txSentInterval) {
-        clearInterval(txSentInterval);
-      }
-    }
-  }, [socketTxid]);
-
-  useEffect(() => {
-    if (txRejected) {
-      setOpenConfirmTx(false);
-      setTimeout(() => {
-        setOpenTxRejected(true);
-      });
-      if (txSentInterval) {
-        clearInterval(txSentInterval);
-      }
-      clearTxRejected?.();
-    }
-  }, [txRejected]);
-
-  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
-  const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
-      type,
-      content,
-    });
   };
 
   const postAction = (
@@ -509,6 +551,7 @@ function Send() {
                 if (txSentInterval) {
                   clearInterval(txSentInterval);
                 }
+                obtainFreshUtxos();
               }
             }
           });
