@@ -142,7 +142,9 @@ function Nodes() {
           wallets[wInUse].address,
           activeChain,
         );
-        const nodes: node[] = JSON.parse(JSON.stringify(suppliedNodes)) as node[];
+        const nodes: node[] = JSON.parse(
+          JSON.stringify(suppliedNodes),
+        ) as node[];
         utxos.forEach((utxo) => {
           const nodeExists = nodes.find(
             (n) => n.txid === utxo.txid && n.vout === utxo.vout,
@@ -157,6 +159,20 @@ function Nodes() {
               status: '',
             };
             nodes.push(node);
+          }
+        });
+        // here loop to remove already spent utxos
+        nodes.forEach((node) => {
+          const utxoExists = utxos.find(
+            (utxo) => utxo.txid === node.txid && utxo.vout === node.vout,
+          );
+          if (!utxoExists) {
+            const index = nodes.findIndex(
+              (n) => n.txid === node.txid && n.vout === node.vout,
+            );
+            if (!node.name) {
+              nodes.splice(index, 1);
+            }
           }
         });
         let fetchDOSandStart = false;

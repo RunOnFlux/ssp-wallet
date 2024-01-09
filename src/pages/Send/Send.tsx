@@ -65,6 +65,8 @@ function Send() {
   const confirmedBalance = wallets[walletInUse].balance;
   const myNodes = wallets[walletInUse].nodes ?? [];
   let spendableBalance = confirmedBalance;
+  // TODO FIX here spendable balance we will calculate from available utxos!
+  // TODO store utxos in memory
   myNodes.forEach((node) => {
     if (node.name) {
       spendableBalance = new BigNumber(spendableBalance)
@@ -298,8 +300,8 @@ function Send() {
         10 ** blockchainConfig.decimals,
       );
       const fee = new BigNumber(txFee || '0');
-      setSendingAmount(maxSpendable.minus(fee).toFixed());
-      form.setFieldValue('amount', maxSpendable.minus(fee).toFixed());
+      setSendingAmount(maxSpendable.minus(fee).isGreaterThan(0) ? maxSpendable.minus(fee).toFixed() : '0');
+      form.setFieldValue('amount', maxSpendable.minus(fee).isGreaterThan(0) ? maxSpendable.minus(fee).toFixed() : '0');
     }
   }, [useMaximum, txFee, spendableBalance]);
 
