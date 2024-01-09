@@ -216,6 +216,7 @@ export function buildUnsignedRawTx(
   change: string,
   message: string,
   maxFee: string,
+  isRBF = true,
 ): string {
   try {
     const libID = getLibId(chain);
@@ -227,7 +228,12 @@ export function buildUnsignedRawTx(
     if (blockchains[chain].txGroupID) {
       txb.setVersionGroupId(blockchains[chain].txGroupID);
     }
-    utxos.forEach((x) => txb.addInput(x.txid, x.vout));
+    if (isRBF) {
+      const RBFsequence = 0xffffffff - 2;
+      utxos.forEach((x) => txb.addInput(x.txid, x.vout, RBFsequence));
+    } else {
+      utxos.forEach((x) => txb.addInput(x.txid, x.vout));
+    }
     const recipients = [
       {
         address: receiver,

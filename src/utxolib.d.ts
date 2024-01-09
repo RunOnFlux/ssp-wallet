@@ -90,7 +90,7 @@ declare module '@runonflux/utxo-lib' {
   ) => {
     setVersion: (version: number) => void;
     setVersionGroupId: (versionGroupId: number) => void;
-    addInput: (txid: string, vout: number) => void;
+    addInput: (txid: string, vout: number, sequence?: number) => void;
     addOutput: (address: string, satoshis: number) => void;
     fromTransaction: (tx: TX, network: object) => txBuilder;
     buildIncomplete: () => builtTx;
