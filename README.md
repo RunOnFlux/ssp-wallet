@@ -1,6 +1,9 @@
 SSP Wallet
 Secure. Simple. Powerful.
 
+<https://sspwallet.io>
+<https://runonflux.io>
+
 **SSP is using strong encryption based on your device fingerprint. Altering your device OS, time, language and more variables can result in a need to restore SSP**
 
 Why another wallet?
