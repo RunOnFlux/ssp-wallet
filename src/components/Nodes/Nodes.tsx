@@ -222,7 +222,7 @@ function Nodes() {
             // we recently started this node and its not in any list yet.
             // check if timestamp is older than 20 minutes (blocktime is 2 minutes)
             const now = new Date().getTime();
-            const startedAt = new Date(node.status).getTime();
+            const startedAt = new Date(+node.status * 1000).getTime();
             if (now - startedAt > 20 * 60 * 1000) {
               node.status = t('home:nodesTable.offline'); // timestamp
             }
