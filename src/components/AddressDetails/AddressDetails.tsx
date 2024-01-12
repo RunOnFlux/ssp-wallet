@@ -103,7 +103,12 @@ function AddressDetails(props: {
           </Button>,
         ]}
       >
-        <h3>{t('home:receive.wallet_address')}:</h3>
+        <h3 className="detailsTitleWithDescription">
+          {t('home:receive.wallet_address')}:
+        </h3>
+        <Paragraph type="secondary" className="detailsDescription">
+          <blockquote>{t('home:receive.wallet_address_desc')}</blockquote>
+        </Paragraph>
         <Space direction="vertical" size="small">
           <QRCode
             errorLevel="H"
@@ -121,7 +126,7 @@ function AddressDetails(props: {
         </Space>
         {wallets[walletInUse].redeemScript && (
           <>
-            <h3>
+            <h3 className="detailsTitleWithDescription">
               {redeemScriptVisible && (
                 <EyeTwoTone onClick={() => setRedeemScriptVisible(false)} />
               )}
@@ -132,21 +137,28 @@ function AddressDetails(props: {
               )}{' '}
               {t('home:addressDetails.wallet_redeem_script')}:
             </h3>
-            <Paragraph
-              copyable={{ text: wallets[walletInUse].redeemScript }}
-              className="copyableAddress"
-            >
-              <Text>
-                {redeemScriptVisible
-                  ? wallets[walletInUse].redeemScript
-                  : '*** *** *** *** *** ***'}
-              </Text>
+            <Paragraph type="secondary" className="detailsDescription">
+              <blockquote>
+                {t('home:addressDetails.wallet_redeem_script_desc')}
+              </blockquote>
             </Paragraph>
+            <Space direction="vertical" size="small">
+              <Paragraph
+                copyable={{ text: wallets[walletInUse].redeemScript }}
+                className="copyableAddress"
+              >
+                <Text>
+                  {redeemScriptVisible
+                    ? wallets[walletInUse].redeemScript
+                    : '*** *** *** *** *** ***'}
+                </Text>
+              </Paragraph>
+            </Space>
           </>
         )}
         {wallets[walletInUse].witnessScript && (
           <>
-            <h3>
+            <h3 className="detailsTitleWithDescription">
               {witnessScriptVisible && (
                 <EyeTwoTone onClick={() => setWitnessScriptVisible(false)} />
               )}
@@ -157,19 +169,26 @@ function AddressDetails(props: {
               )}{' '}
               {t('home:addressDetails.wallet_witness_script')}:
             </h3>
-            <Paragraph
-              copyable={{ text: wallets[walletInUse].witnessScript }}
-              className="copyableAddress"
-            >
-              <Text>
-                {witnessScriptVisible
-                  ? wallets[walletInUse].witnessScript
-                  : '*** *** *** *** *** ***'}
-              </Text>
+            <Paragraph type="secondary" className="detailsDescription">
+              <blockquote>
+                {t('home:addressDetails.wallet_witness_script_desc')}
+              </blockquote>
             </Paragraph>
+            <Space direction="vertical" size="small">
+              <Paragraph
+                copyable={{ text: wallets[walletInUse].witnessScript }}
+                className="copyableAddress"
+              >
+                <Text>
+                  {witnessScriptVisible
+                    ? wallets[walletInUse].witnessScript
+                    : '*** *** *** *** *** ***'}
+                </Text>
+              </Paragraph>
+            </Space>
           </>
         )}
-        <h3>
+        <h3 className="detailsTitleWithDescription">
           {privateKeyVisible && (
             <EyeTwoTone onClick={() => setPrivateKeyVisible(false)} />
           )}
@@ -178,9 +197,18 @@ function AddressDetails(props: {
           )}{' '}
           {t('home:addressDetails.wallet_priv_key')}:
         </h3>
-        <Paragraph copyable={{ text: privKey }} className="copyableAddress">
-          <Text>{privateKeyVisible ? privKey : '*** *** *** *** *** ***'}</Text>
+        <Paragraph type="secondary" className="detailsDescription">
+          <blockquote>
+            {t('home:addressDetails.wallet_priv_key_desc')}
+          </blockquote>
         </Paragraph>
+        <Space direction="vertical" size="small">
+          <Paragraph copyable={{ text: privKey }} className="copyableAddress">
+            <Text>
+              {privateKeyVisible ? privKey : '*** *** *** *** *** ***'}
+            </Text>
+          </Paragraph>
+        </Space>
       </Modal>
     </>
   );

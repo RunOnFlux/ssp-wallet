@@ -15,17 +15,22 @@ function SSPWalletDetails(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
-  const { activeChain } = useAppSelector((state) => state.sspState);
+  const { activeChain, identityChain } = useAppSelector(
+    (state) => state.sspState,
+  );
   const blockchainConfig = blockchains[activeChain];
+  const identityChainConfig = blockchains[identityChain];
   const { t } = useTranslation(['home', 'common']);
   const [xpriv, setXpriv] = useState('');
   const [xpub, setXpub] = useState('');
+  const [xpubIdentity, setXpubIdentity] = useState('');
   const [seedPhrase, setSeedPhrase] = useState('');
   const [extendedPublicKeyVisible, setExtendedPublicKeyVisible] =
     useState(false);
   const [chainSyncKeyVisible, setChainSyncKeyVisible] = useState(false);
   const [extendedPrivateKeyVisible, setExtendedPrivateKeyVisible] =
     useState(false);
+  const [sspSyncKeyVisible, setSspSyncKeyVisible] = useState(false);
   const [seedPhraseVisible, setSeedPhraseVisible] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   // SSP is seedPhrase, xpub, xpriv
@@ -46,6 +51,7 @@ function SSPWalletDetails(props: {
     setExtendedPrivateKeyVisible(false);
     setExtendedPublicKeyVisible(false);
     setChainSyncKeyVisible(false);
+    setSspSyncKeyVisible(false);
     setSeedPhraseVisible(false);
     openAction(false);
   };
@@ -87,6 +93,28 @@ function SSPWalletDetails(props: {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpub_2'));
         }
         setXpub(xpubChain);
+
+        const xpubBlobIdentity = secureLocalStorage.getItem(
+          `xpub-48-${identityChainConfig.slip}-0-${getScriptType(
+            identityChainConfig.scriptType,
+          )}-${identityChainConfig.id}`,
+        );
+        if (typeof xpubBlobIdentity !== 'string') {
+          throw new Error(
+            t('home:sspWalletDetails.err_invalid_wallet_xpub_id'),
+          );
+        }
+        const xpubChainIdentity = await passworderDecrypt(
+          password,
+          xpubBlobIdentity,
+        );
+        if (typeof xpubChainIdentity !== 'string') {
+          throw new Error(
+            t('home:sspWalletDetails.err_invalid_wallet_xpub_2_id'),
+          );
+        }
+        setXpubIdentity(xpubChainIdentity);
+
         const walletSeedBlob = secureLocalStorage.getItem('walletSeed');
         if (typeof walletSeedBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed'));
@@ -120,7 +148,7 @@ function SSPWalletDetails(props: {
           </Button>,
         ]}
       >
-        <h3>
+        <h3 className="detailsTitleWithDescription">
           {chainSyncKeyVisible && (
             <EyeTwoTone onClick={() => setChainSyncKeyVisible(false)} />
           )}
@@ -134,6 +162,13 @@ function SSPWalletDetails(props: {
           })}
           :
         </h3>
+        <Paragraph type="secondary" className="detailsDescription">
+          <blockquote>
+            {t('home:sspWalletDetails.chain_sync_ssp_key_desc', {
+              chain: blockchainConfig.name,
+            })}
+          </blockquote>
+        </Paragraph>
         <Space direction="vertical" size="small">
           {chainSyncKeyVisible && (
             <QRCode
@@ -155,7 +190,7 @@ function SSPWalletDetails(props: {
             </Text>
           </Paragraph>
         </Space>
-        <h3>
+        <h3 className="detailsTitleWithDescription">
           {extendedPublicKeyVisible && (
             <EyeTwoTone onClick={() => setExtendedPublicKeyVisible(false)} />
           )}
@@ -169,12 +204,21 @@ function SSPWalletDetails(props: {
           })}
           :
         </h3>
-        <Paragraph copyable={{ text: xpub }} className="copyableAddress">
-          <Text>
-            {extendedPublicKeyVisible ? xpub : '*** *** *** *** *** ***'}
-          </Text>
+        <Paragraph type="secondary" className="detailsDescription">
+          <blockquote>
+            {t('home:sspWalletDetails.chain_extended_pub_desc', {
+              chain: blockchainConfig.name,
+            })}
+          </blockquote>
         </Paragraph>
-        <h3>
+        <Space direction="vertical" size="small">
+          <Paragraph copyable={{ text: xpub }} className="copyableAddress">
+            <Text>
+              {extendedPublicKeyVisible ? xpub : '*** *** *** *** *** ***'}
+            </Text>
+          </Paragraph>
+        </Space>
+        <h3 className="detailsTitleWithDescription">
           {extendedPrivateKeyVisible && (
             <EyeTwoTone onClick={() => setExtendedPrivateKeyVisible(false)} />
           )}
@@ -188,12 +232,54 @@ function SSPWalletDetails(props: {
           })}
           :
         </h3>
-        <Paragraph copyable={{ text: xpriv }} className="copyableAddress">
-          <Text>
-            {extendedPrivateKeyVisible ? xpriv : '*** *** *** *** *** ***'}
-          </Text>
+        <Paragraph type="secondary" className="detailsDescription">
+          <blockquote>
+            {t('home:sspWalletDetails.chain_extended_priv_desc', {
+              chain: blockchainConfig.name,
+            })}
+          </blockquote>
         </Paragraph>
-        <h3>
+        <Space direction="vertical" size="small">
+          <Paragraph copyable={{ text: xpriv }} className="copyableAddress">
+            <Text>
+              {extendedPrivateKeyVisible ? xpriv : '*** *** *** *** *** ***'}
+            </Text>
+          </Paragraph>
+        </Space>
+        <h3 className="detailsTitleWithDescription">
+          {sspSyncKeyVisible && (
+            <EyeTwoTone onClick={() => setSspSyncKeyVisible(false)} />
+          )}
+          {!sspSyncKeyVisible && (
+            <EyeInvisibleOutlined onClick={() => setSspSyncKeyVisible(true)} />
+          )}{' '}
+          {t('home:sspWalletDetails.ssp_sync_wallet_key')}:
+        </h3>
+        <Paragraph type="secondary" className="detailsDescription">
+          <blockquote>
+            {t('home:sspWalletDetails.ssp_sync_wallet_key_desc')}
+          </blockquote>
+        </Paragraph>
+        <Space direction="vertical" size="small">
+          {sspSyncKeyVisible && (
+            <QRCode
+              errorLevel="H"
+              value={xpubIdentity}
+              icon="/ssp-logo-black.svg"
+              size={256}
+              style={{ margin: '0 auto' }}
+            />
+          )}
+          <Paragraph
+            copyable={{ text: xpubIdentity }}
+            className="copyableAddress"
+          >
+            <Text>
+              {sspSyncKeyVisible ? xpubIdentity : '*** *** *** *** *** ***'}
+            </Text>
+          </Paragraph>
+        </Space>
+        <h3 className="detailsTitleWithDescription">
           {seedPhraseVisible && (
             <EyeTwoTone onClick={() => setSeedPhraseVisible(false)} />
           )}
@@ -202,11 +288,21 @@ function SSPWalletDetails(props: {
           )}{' '}
           {t('home:sspWalletDetails.ssp_mnemonic')}:
         </h3>
-        <Paragraph copyable={{ text: seedPhrase }} className="copyableAddress">
-          <Text>
-            {seedPhraseVisible ? seedPhrase : '*** *** *** *** *** ***'}
-          </Text>
+        <Paragraph type="secondary" className="detailsDescription">
+          <blockquote>
+            {t('home:sspWalletDetails.ssp_mnemonic_desc')}
+          </blockquote>
         </Paragraph>
+        <Space direction="vertical" size="small">
+          <Paragraph
+            copyable={{ text: seedPhrase }}
+            className="copyableAddress"
+          >
+            <Text>
+              {seedPhraseVisible ? seedPhrase : '*** *** *** *** *** ***'}
+            </Text>
+          </Paragraph>
+        </Space>
       </Modal>
     </>
   );
