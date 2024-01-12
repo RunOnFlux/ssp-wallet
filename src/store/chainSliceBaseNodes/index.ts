@@ -112,6 +112,12 @@ function makeChainSlice(chainName: string) {
         ] || { ...initialWalletState };
         state.wallets[action.payload.wallet].nodes = action.payload.data;
       },
+      removeWallet: (
+        state,
+        action: PayloadAction<{ wallet: string }>,
+      ) => {
+        delete state.wallets[action.payload.wallet];
+      },
       setChainInitialState: (state) => {
         state.xpubWallet = '';
         state.xpubKey = '';

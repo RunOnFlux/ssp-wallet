@@ -101,6 +101,12 @@ function makeChainSlice(chainName: string) {
         };
         state.walletInUse = action.payload;
       },
+      removeWallet: (
+        state,
+        action: PayloadAction<{ wallet: string }>,
+      ) => {
+        delete state.wallets[action.payload.wallet];
+      },
       setChainInitialState: (state) => {
         state.xpubWallet = '';
         state.xpubKey = '';

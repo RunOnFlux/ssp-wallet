@@ -11,13 +11,26 @@ import {
   setRedeemScript,
   setWitnessScript,
   setWalletInUse,
+  removeWallet,
 } from '../../store';
-import { Row, Col, Image, Menu, Select, Divider, Button, message } from 'antd';
+import {
+  Row,
+  Col,
+  Image,
+  Menu,
+  Select,
+  Divider,
+  Button,
+  message,
+  Popconfirm,
+} from 'antd';
 import {
   LockOutlined,
   SettingOutlined,
   PlusOutlined,
+  MinusOutlined,
   NodeIndexOutlined,
+  QuestionCircleOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import './Navbar.css';
@@ -121,6 +134,53 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
 
   const addWallet = () => {
     generateAddress();
+  };
+
+  const removeAddress = () => {
+    try {
+      // we always remove the LAST wallet only
+      // if we are in that last wallet, we switch to wallet 0.
+      // what wallet to remove?
+      let path = '0-0';
+      const existingWallets = Object.keys(wallets);
+      let i = 0;
+      while (existingWallets.includes(path)) {
+        i++;
+        path = '0-' + i;
+      }
+      const walletToRemoveIndex = i - 1;
+      const pathToDelete = `0-${walletToRemoveIndex.toString()}`;
+      if (walletToRemoveIndex <= 0) {
+        // can't remove 0-0 wallet
+        return;
+      }
+      const walletToRemove = `0-${walletToRemoveIndex.toString()}`;
+      // check if that is our activeIndex, if yes. Switch wallet.
+      if (walletToRemove === walletInUse) {
+        // switch
+        const walletName = 'Wallet 1';
+        const wal = {
+          value: '0-0',
+          label: t('home:navbar.chain_wallet', {
+            chain: blockchainConfig.name,
+            wallet: walletName,
+          }),
+        };
+        handleChange(wal);
+      }
+      setTimeout(() => {
+        removeWallet(activeChain, walletToRemove);
+        // get stored wallets
+        void (async function () {
+          const generatedWallets: generatedWallets =
+            (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
+          delete generatedWallets[pathToDelete];
+          await localForage.setItem(`wallets-${activeChain}`, generatedWallets);
+        })();
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const generateAddress = () => {
@@ -329,7 +389,10 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
                         fontSize: '16px',
                       }}
                     >
-                      {blockchainConfig.name} {blockchainConfig.name.includes(' ') ? '' : t('common:chain')}
+                      {blockchainConfig.name}{' '}
+                      {blockchainConfig.name.includes(' ')
+                        ? ''
+                        : t('common:chain')}
                     </span>
                   </div>
                   {menu}
@@ -342,6 +405,29 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
                   >
                     {t('home:navbar.generate_new_wallet')}
                   </Button>
+                  {walletItems.length > 1 && (
+                    <Popconfirm
+                      title={t('home:navbar.remove_last_wallet')}
+                      description={<>{t('home:navbar.remove_last_wallet_desc')}</>}
+                      overlayStyle={{ maxWidth: 360, margin: 10 }}
+                      okText={t('home:navbar.remove')}
+                      cancelText={t('common:cancel')}
+                      onConfirm={() => {
+                        removeAddress();
+                      }}
+                      icon={
+                        <QuestionCircleOutlined style={{ color: 'blue' }} />
+                      }
+                    >
+                      <Button
+                        type="text"
+                        icon={<MinusOutlined />}
+                        style={{ width: '100%', textAlign: 'left' }}
+                      >
+                        {t('home:navbar.remove_last_wallet')}
+                      </Button>
+                    </Popconfirm>
+                  )}
                   <Divider style={{ margin: '8px 0' }} />
                   <Button
                     type="text"

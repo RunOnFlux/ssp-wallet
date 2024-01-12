@@ -160,7 +160,7 @@ const networkFeesSlice = createSlice({
       action.payload.forEach((element) => {
         state.networkFees[element.coin as keyof cryptos] = element.recommended;
       });
-    }
+    },
   },
 });
 
@@ -256,10 +256,14 @@ export function setXpubKey(chain: keyof cryptos, data: string) {
   store.dispatch(chains[chain].actions.setXpubKey(data));
 }
 export function setXpubWalletIdentity(data: string) {
-  store.dispatch(chains[initialSspState.identityChain].actions.setXpubWallet(data));
+  store.dispatch(
+    chains[initialSspState.identityChain].actions.setXpubWallet(data),
+  );
 }
 export function setXpubKeyIdentity(data: string) {
-  store.dispatch(chains[initialSspState.identityChain].actions.setXpubKey(data));
+  store.dispatch(
+    chains[initialSspState.identityChain].actions.setXpubKey(data),
+  );
 }
 export function setBalance(chain: keyof cryptos, wallet: string, data: string) {
   store.dispatch(chains[chain].actions.setBalance({ wallet, data }));
@@ -291,6 +295,9 @@ export function setWalletInUse(chain: keyof cryptos, data: string) {
 }
 export function setChainInitialState(chain: keyof cryptos) {
   store.dispatch(chains[chain].actions.setChainInitialState());
+}
+export function removeWallet(chain: keyof cryptos, wallet: string) {
+  store.dispatch(chains[chain].actions.removeWallet({ wallet }));
 }
 export function setInitialStateForAllChains() {
   Object.keys(chains).forEach((chain: string) => {
