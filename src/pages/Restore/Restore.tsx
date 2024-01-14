@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Input, Button, Checkbox, Form, Divider, message, Modal } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
+import { wordlist } from '@scure/bip39/wordlists/english';
 
 import {
   EyeInvisibleOutlined,
@@ -109,13 +110,31 @@ function Restore() {
       return;
     }
     const splittedSeed = seedPhrase.split(' ');
+    console.log(splittedSeed);
     if (splittedSeed.length < 12) {
       displayMessage('error', t('cr:err_seed_invalid'));
       return;
     }
+    if (splittedSeed.includes('')) {
+      displayMessage('error', t('cr:err_seed_invalid_spaces'));
+      return;
+    }
     const isValid = validateMnemonic(seedPhrase);
     if (!isValid) {
-      displayMessage('error', t('cr:err_seed_invalid'));
+      // here show what word is not alright
+      // we check ONLY for english wordlist
+      const invalidWords = splittedSeed.filter(
+        (word) => !wordlist.includes(word),
+      );
+      if (invalidWords.length) {
+        displayMessage(
+          'error',
+          t('cr:err_seed_invalid_words', { words: invalidWords.join(', ') }),
+        );
+      } else {
+        console.log('here');
+        displayMessage('error', t('cr:err_seed_invalid'));
+      }
       return;
     }
 
