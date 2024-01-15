@@ -544,6 +544,11 @@ export async function getTransactionSize(
   }
 }
 
+interface constructedTxInfo {
+  signedTx: string;
+  utxos: utxo[];
+}
+
 export async function constructAndSignTransaction(
   chain: keyof cryptos,
   receiver: string,
@@ -557,7 +562,7 @@ export async function constructAndSignTransaction(
   witnessScript: string,
   maxFee: string,
   forbiddenUtxos?: txIdentifier[],
-): Promise<string> {
+): Promise<constructedTxInfo> {
   try {
     const utxos = await fetchUtxos(sender, chain);
     const utxosNonCoinbase = utxos.filter(
@@ -605,7 +610,11 @@ export async function constructAndSignTransaction(
       throw new Error('Could not sign tx');
     }
     // wallet is NOT finalising the transaction, the KEY is finalising the transaction
-    return signedTx;
+    const txInfo = {
+      signedTx,
+      utxos: pickedUtxos,
+    }
+    return txInfo;
   } catch (error) {
     console.log(error);
     throw error;

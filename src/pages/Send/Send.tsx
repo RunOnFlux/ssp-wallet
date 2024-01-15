@@ -394,6 +394,7 @@ function Send() {
     chain: string,
     path: string,
     wkIdentity: string,
+    utxos: utxo[],
   ) => {
     const data = {
       action,
@@ -401,6 +402,7 @@ function Send() {
       chain,
       path,
       wkIdentity,
+      utxos,
     };
     axios
       .post(`https://${sspConfig().relay}/v1/action`, data)
@@ -500,17 +502,18 @@ function Send() {
           maxFeeSat,
           lockedUtxos,
         )
-          .then((tx) => {
-            console.log(tx);
+          .then((txInfo) => {
+            console.log(txInfo);
             // post to ssp relay
             postAction(
               'tx',
-              tx,
+              txInfo.signedTx,
               activeChain,
               wInUse,
               sspWalletKeyInternalIdentity,
+              txInfo.utxos,
             );
-            setTxHex(tx);
+            setTxHex(txInfo.signedTx);
             setOpenConfirmTx(true);
             if (txSentInterval) {
               clearInterval(txSentInterval);
