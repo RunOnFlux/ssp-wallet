@@ -110,7 +110,6 @@ function Restore() {
       return;
     }
     const splittedSeed = seedPhrase.split(' ');
-    console.log(splittedSeed);
     if (splittedSeed.length < 12) {
       displayMessage('error', t('cr:err_seed_invalid'));
       return;
