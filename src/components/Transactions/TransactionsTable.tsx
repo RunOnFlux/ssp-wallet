@@ -97,7 +97,7 @@ function TransactionsTable(props: {
               {(record.blockheight <= 0 ||
                 !record.blockheight) &&
                 record.utxos?.length &&
-                +record.amount <= 0 && (
+                +record.amount <= 0 && blockchainConfig.rbf && (
                   <div
                     style={{
                       marginTop: 16,

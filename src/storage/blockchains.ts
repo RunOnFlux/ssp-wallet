@@ -37,6 +37,7 @@ const flux = {
   feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 1900000, // 1,800,000 vbytes
+  rbf: false,
 };
 
 const fluxTestnet = {
@@ -65,6 +66,7 @@ const fluxTestnet = {
   feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 1900000, // 1,800,000 vbytes
+  rbf: false,
 };
 
 const rvn = {
@@ -91,6 +93,7 @@ const rvn = {
   feePerByte: 4, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  rbf: true,
 };
 
 const ltc = {
@@ -118,6 +121,7 @@ const ltc = {
   feePerByte: 20, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  rbf: true,
 };
 
 const btc = {
@@ -145,6 +149,7 @@ const btc = {
   feePerByte: 100, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  rbf: true,
 };
 
 const doge = {
@@ -171,6 +176,7 @@ const doge = {
   feePerByte: 20, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  rbf: true,
 };
 
 const btcTestnet = {
@@ -198,6 +204,7 @@ const btcTestnet = {
   feePerByte: 5, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  rbf: true,
 };
 
 const btcSignet = {
@@ -225,6 +232,7 @@ const btcSignet = {
   feePerByte: 4, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  rbf: true,
 };
 
 export const blockchains = {

@@ -26,6 +26,7 @@ declare module '@storage/blockchains' {
     feePerByte: number;
     maxMessage: number;
     maxTxSize: number;
+    rbf: boolean;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;
