@@ -108,7 +108,7 @@ function processTransaction(
     vins.forEach((vin) => {
       const utxo = {
         txid: vin.txid,
-        vout: vin.n,
+        vout: vin.vout ?? vin.n,
       };
       utxos.push(utxo);
     });
@@ -189,7 +189,7 @@ function processTransactionBlockbook(
     vins.forEach((vin) => {
       const utxo = {
         txid: vin.txid,
-        vout: vin.n,
+        vout: vin.vout ?? vin.n,
       };
       utxos.push(utxo);
     });

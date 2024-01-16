@@ -94,8 +94,7 @@ function TransactionsTable(props: {
               >
                 {t('home:txSent.show_in_explorer')}
               </a>
-              {(props.blockheight - record.blockheight == 0 ||
-                record.blockheight <= 0 ||
+              {(record.blockheight <= 0 ||
                 !record.blockheight) &&
                 record.utxos?.length &&
                 +record.amount <= 0 && (
@@ -191,7 +190,7 @@ function TransactionsTable(props: {
           dataIndex="blockheight"
           render={(height: number) => (
             <>
-              {props.blockheight - height == 0 || height <= 0 || !height ? (
+              {height <= 0 || !height ? (
                 <Tooltip title={t('home:transactionsTable.tx_unconfirmed')}>
                   <ClockCircleOutlined style={{ fontSize: '18px' }} />
                 </Tooltip>

@@ -45,7 +45,9 @@ export async function fetchUtxos(
       // wait if previous request is running
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    const cachedUtxos = utxoCache.get(`${chain}_${address}_${confirmationMode}`); // "value"
+    const cachedUtxos = utxoCache.get(
+      `${chain}_${address}_${confirmationMode}`,
+    ); // "value"
     if (cachedUtxos) {
       // should always be cached when doing fee estimation, tx construction
       return cachedUtxos as utxo[];
@@ -108,21 +110,60 @@ export async function fetchUtxos(
         return utxos;
       }
     } else {
-      const url = `https://${backendConfig.node}/api/addr/${address}/utxo`;
-      const { data } = await axios.get<utxo[]>(url);
-      const fetchedUtxos = data.filter((x) =>
-        onlyConfirmed ? x.confirmations > 0 : true,
-      );
-      const utxos = fetchedUtxos.map((x) => ({
-        txid: x.txid,
-        vout: x.vout,
-        scriptPubKey: x.scriptPubKey,
-        satoshis: x.satoshis.toString(),
-        confirmations: x.confirmations,
-        coinbase: x.coinbase || false,
-      }));
-      utxoCache.set(`${chain}_${address}_${confirmationMode}`, utxos);
-      return utxos;
+      if (confirmationMode === 1) {
+        const url = `https://${backendConfig.node}/api/addrs/${address}/unspent`;
+        const { data } = await axios.get<utxo[]>(url);
+        const fetchedUtxos = data.filter((x) =>
+          onlyConfirmed ? x.confirmations > 0 : true,
+        );
+        const utxos = fetchedUtxos.map((x) => ({
+          txid: x.txid,
+          vout: x.vout,
+          scriptPubKey: x.scriptPubKey,
+          satoshis: x.satoshis.toString(),
+          confirmations: x.confirmations,
+          coinbase: x.coinbase || false,
+        }));
+        utxoCache.set(`${chain}_${address}_${confirmationMode}`, utxos);
+        return utxos;
+      } else if (confirmationMode === 2) {
+        const url = `https://${backendConfig.node}/api/addrs/${address}/unspent`;
+        const urlB = `https://${backendConfig.node}/api/addrs/${address}/utxo`;
+        const { data } = await axios.get<utxo[]>(url);
+        const responseB = await axios.get<utxo[]>(urlB);
+        const dataB = responseB.data.filter((x) =>
+          onlyConfirmed ? x.confirmations > 0 : true,
+        );
+        const fetchedUtxos = data
+          .filter((x) => (onlyConfirmed ? x.confirmations > 0 : true))
+          .concat(dataB);
+        const utxos = fetchedUtxos.map((x) => ({
+          txid: x.txid,
+          vout: x.vout,
+          scriptPubKey: x.scriptPubKey,
+          satoshis: x.satoshis.toString(),
+          confirmations: x.confirmations,
+          coinbase: x.coinbase || false,
+        }));
+        utxoCache.set(`${chain}_${address}_${confirmationMode}`, utxos);
+        return utxos;
+      } else {
+        const url = `https://${backendConfig.node}/api/addrs/${address}/utxo`;
+        const { data } = await axios.get<utxo[]>(url);
+        const fetchedUtxos = data.filter((x) =>
+          onlyConfirmed ? x.confirmations > 0 : true,
+        );
+        const utxos = fetchedUtxos.map((x) => ({
+          txid: x.txid,
+          vout: x.vout,
+          scriptPubKey: x.scriptPubKey,
+          satoshis: x.satoshis.toString(),
+          confirmations: x.confirmations,
+          coinbase: x.coinbase || false,
+        }));
+        utxoCache.set(`${chain}_${address}_${confirmationMode}`, utxos);
+        return utxos;
+      }
     }
   } catch (e) {
     console.log(e);
@@ -351,9 +392,7 @@ function pickUtxos(
     });
     if (!fullManadtoryUtxos.length) {
       // RBF not possible
-      throw new Error(
-        'Replacement by Fee not possible.',
-      );
+      throw new Error('Replacement by Fee not possible.');
     }
     let totalAmount = new BigNumber(0);
     for (const utxoX of fullManadtoryUtxos) {

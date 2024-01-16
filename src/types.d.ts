@@ -87,6 +87,7 @@ export interface vinBlockbook {
   txid: string;
   sequence: number;
   n: number;
+  vout: number;
   addresses: string[];
   isAddress: boolean;
   isOwn: boolean;
