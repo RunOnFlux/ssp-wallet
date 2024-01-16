@@ -20,7 +20,11 @@
     "confirmations": "Confirmations",
     "tx_confirmed": "Confirmed.",
     "tx_unconfirmed": "Unconfirmed. Transaction not yet mined.",
-    "tx_pending": "Pending. Transaction is awaiting SSP Key authorization."
+    "tx_pending": "Pending. Transaction is awaiting SSP Key authorization.",
+    "replace_by_fee": "Replace by Fee",
+    "replace_by_fee_info": "Increases fee, replaces or cancels transaction.",
+    "replace_by_fee_desc": "Replace by Fee (RBF) allows you to replace an unconfirmed transaction with another transaction that offers a higher fee. If your transaction remains unconfirmed for an extended period, you might consider utilizing the RBF feature to increase the transaction fee. Additionally, it is possible to modify the receiver, amount, or payment notes. By sending the funds to one of your addresses, you can also cancel the transaction.",
+    "replace_by_fee_desc_b": "RBF requires a higher transaction fee in any case. Replacement is not guaranteed and block producers, miners may still favor previous transaction. Only unconfirmed transactions can be replaced."
   },
   "nodesTable": {
     "no_nodes": "Address has no nodes",

@@ -1,6 +1,15 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Form, message, Divider, Button, Input, Space, Popconfirm } from 'antd';
+import {
+  Form,
+  message,
+  Divider,
+  Button,
+  Input,
+  Space,
+  Popconfirm,
+  Popover,
+} from 'antd';
 import { Link } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
@@ -51,7 +60,7 @@ function Send() {
     clearTxRejected,
   } = useSocket();
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
-  const { t } = useTranslation(['send', 'common']);
+  const { t } = useTranslation(['send', 'common', 'home']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -145,16 +154,12 @@ function Send() {
     if (useMaximum && !manualFee) {
       return;
     }
-    if (alreadyRunning) return;
-    alreadyRunning = true;
     fetchUtxos(sender, activeChain, state.utxos?.length ? 1 : 0) // this should always be cached. Use confirmed mode if RBF flag
       .then(async (utxos) => {
         getSpendableBalance(utxos);
         await calculateTxFeeSize();
-        alreadyRunning = false;
       })
       .catch((error) => {
-        alreadyRunning = false;
         console.log(error);
         if (!manualFee) {
           // reset fee
@@ -371,11 +376,13 @@ function Send() {
     );
     // target recommended fee of blockchain config
     setTxSize(txSize);
+    const fpb =
+      feePerByte === '---' ? networkFees[activeChain].toFixed() : feePerByte;
     const feeSats = new BigNumber(txSize)
-      .multipliedBy(manualFee ? feePerByte : networkFees[activeChain].toFixed())
+      .multipliedBy(manualFee ? fpb : networkFees[activeChain].toFixed())
       .toFixed(); // satoshis
     console.log(feeSats);
-    console.log(feePerByte);
+    console.log(fpb);
     const feeUnit = new BigNumber(feeSats)
       .dividedBy(10 ** blockchainConfig.decimals)
       .toFixed(); // unit
@@ -583,6 +590,14 @@ function Send() {
     };
   };
 
+  const content = (
+    <div>
+      <p>{t('home:transactionsTable.replace_by_fee_desc')}</p>
+      <p>{t('home:transactionsTable.replace_by_fee_desc_b')}</p>
+      <p>{t('send:replace_by_fee_stop')}</p>
+    </div>
+  );
+
   const refresh = () => {
     console.log('refresh');
   };
@@ -719,8 +734,20 @@ function Send() {
         </div>
 
         <Form.Item style={{ marginTop: 50 }}>
-          {/* TODO some text information if this is replacement transaction or not. Cancel to disable Replacement. */}
           <Space direction="vertical" size="middle">
+            {state.utxos?.length && (
+              <div
+                style={{
+                  fontSize: 12,
+                  color: 'grey',
+                }}
+              >
+                <Popover content={content} title={t('send:replace_by_fee_tx')}>
+                  <QuestionCircleOutlined style={{ color: 'blue' }} />{' '}
+                </Popover>{' '}
+                {t('send:replace_by_fee_tx')}
+              </div>
+            )}
             <Popconfirm
               title={t('send:confirm_tx')}
               description={

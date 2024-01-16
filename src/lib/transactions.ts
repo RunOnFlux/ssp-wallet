@@ -8,6 +8,7 @@ import {
   transactionBlockbook,
   transaction,
   cryptos,
+  txIdentifier,
 } from '../types';
 
 import { backends } from '@storage/backends';
@@ -57,6 +58,8 @@ function processTransaction(
     }
   }
 
+  let receiver = address;
+
   while (numberofvouts > 0) {
     numberofvouts -= 1;
     const jsonvout = vouts[numberofvouts];
@@ -67,6 +70,8 @@ function processTransaction(
           new BigNumber(10 ** decimals),
         );
         amountReceivedInItx = amountReceivedInItx.plus(amountReceived);
+      } else if (jsonvout.scriptPubKey.addresses[0]) {
+        receiver = jsonvout.scriptPubKey.addresses[0];
       }
     }
     // check message
@@ -78,7 +83,9 @@ function processTransaction(
     }
   }
 
-  const fee = new BigNumber(insightTx.fees).multipliedBy(new BigNumber(10 ** decimals));
+  const fee = new BigNumber(insightTx.fees).multipliedBy(
+    new BigNumber(10 ** decimals),
+  );
   let amount = amountReceivedInItx.minus(amountSentInItx);
   if (amount.isNegative()) {
     amount = amount.plus(fee); // we were the ones sending fee
@@ -93,7 +100,20 @@ function processTransaction(
     message,
     size: insightTx.size,
     vsize: insightTx.vsize,
+    receiver,
   };
+  if (!insightTx.blockheight || insightTx.blockheight <= 0) {
+    // add utxos
+    const utxos: txIdentifier[] = [];
+    vins.forEach((vin) => {
+      const utxo = {
+        txid: vin.txid,
+        vout: vin.n,
+      };
+      utxos.push(utxo);
+    });
+    tx.utxos = utxos;
+  }
   return tx;
 }
 
@@ -121,6 +141,8 @@ function processTransactionBlockbook(
     }
   }
 
+  let receiver = address;
+
   while (numberofvouts > 0) {
     numberofvouts -= 1;
     const jsonvout = vouts[numberofvouts];
@@ -128,6 +150,8 @@ function processTransactionBlockbook(
       // my address is receiving
       const amountReceived = new BigNumber(jsonvout.value);
       amountReceivedInItx = amountReceivedInItx.plus(amountReceived);
+    } else if (jsonvout.isAddress && jsonvout.addresses[0]) {
+      receiver = jsonvout.addresses[0];
     }
     // check message
     if (!jsonvout.isAddress) {
@@ -156,7 +180,21 @@ function processTransactionBlockbook(
     message,
     size: blockbookTx.size,
     vsize: blockbookTx.vsize,
+    receiver,
   };
+
+  if (!blockbookTx.blockHeight || blockbookTx.blockHeight <= 0) {
+    // add utxos
+    const utxos: txIdentifier[] = [];
+    vins.forEach((vin) => {
+      const utxo = {
+        txid: vin.txid,
+        vout: vin.n,
+      };
+      utxos.push(utxo);
+    });
+    tx.utxos = utxos;
+  }
   return tx;
 }
 
@@ -184,7 +222,11 @@ export async function fetchAddressTransactions(
       const response = await axios.get<transacitonsInsight>(url);
       const txs = [];
       for (const tx of response.data.items || []) {
-        const processedTransaction = processTransaction(tx, address, blockchains[chain].decimals);
+        const processedTransaction = processTransaction(
+          tx,
+          address,
+          blockchains[chain].decimals,
+        );
         txs.push(processedTransaction);
       }
       return txs;

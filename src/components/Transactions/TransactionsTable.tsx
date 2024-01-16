@@ -1,5 +1,7 @@
-import { Table, Empty, Tooltip } from 'antd';
+import { Table, Empty, Tooltip, Popconfirm, Button } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import {
@@ -22,6 +24,7 @@ function TransactionsTable(props: {
   refresh: () => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
+  const navigate = useNavigate();
   const { chain } = props;
   const [fiatRate, setFiatRate] = useState(0);
   const blockchainConfig = blockchains[chain];
@@ -30,6 +33,19 @@ function TransactionsTable(props: {
   useEffect(() => {
     setFiatRate(props.fiatRate);
   });
+
+  const proceedToRBF = (record: transaction) => {
+    const navigationObject = {
+      receiver: record.receiver,
+      amount: new BigNumber(record.amount)
+        .dividedBy(10 ** blockchainConfig.decimals)
+        .multipliedBy(-1)
+        .toFixed(),
+      message: record.message,
+      utxos: record.utxos,
+    };
+    navigate('/send', { state: navigationObject });
+  };
 
   return (
     <>
@@ -78,6 +94,44 @@ function TransactionsTable(props: {
               >
                 {t('home:txSent.show_in_explorer')}
               </a>
+              {(props.blockheight - record.blockheight == 0 ||
+                record.blockheight <= 0 ||
+                !record.blockheight) &&
+                record.utxos?.length &&
+                +record.amount <= 0 && (
+                  <div
+                    style={{
+                      marginTop: 16,
+                      float: 'right',
+                    }}
+                  >
+                    <Popconfirm
+                      title={t('home:transactionsTable.replace_by_fee', {
+                        chainName: blockchainConfig.name,
+                      })}
+                      description={
+                        <>
+                          {t('home:transactionsTable.replace_by_fee_desc')}
+                          <br /> <br />
+                          {t('home:transactionsTable.replace_by_fee_desc_b')}
+                        </>
+                      }
+                      overlayStyle={{ maxWidth: 360, margin: 10 }}
+                      okText={t('home:transactionsTable.replace_by_fee')}
+                      cancelText={t('common:cancel')}
+                      onConfirm={() => {
+                        proceedToRBF(record);
+                      }}
+                      icon={
+                        <QuestionCircleOutlined style={{ color: 'green' }} />
+                      }
+                    >
+                      <Button size="small">
+                        {t('home:transactionsTable.replace_by_fee')}
+                      </Button>
+                    </Popconfirm>
+                  </div>
+                )}
             </div>
           ),
           expandRowByClick: true,

@@ -201,8 +201,10 @@ export interface transaction {
   fee: string;
   amount: string; // satoshis
   message: string;
+  receiver: string;
   size: number;
   vsize?: number;
+  utxos?: txIdentifier[]
 }
 
 export interface pendingTransaction {
