@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Form, message, Divider, Button, Input, Space, Popconfirm } from 'antd';
 import { Link } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
@@ -34,12 +34,15 @@ interface sendForm {
   amount: string;
   fee: string;
   message: string;
+  utxos: utxo[]; // RBF mandatory utxos - use all of them or one?
 }
 
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
 let alreadyRunning = false;
 
 function Send() {
+  const location = useLocation();
+  const state = location.state as sendForm;
   const {
     txid: socketTxid,
     clearTxid,
@@ -92,8 +95,21 @@ function Send() {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     try {
+      console.log(state);
       setFeePerByte(networkFees[activeChain].toFixed());
       obtainFreshUtxos();
+      if (state.amount) {
+        setSendingAmount(state.amount);
+        form.setFieldValue('amount', state.amount);
+      }
+      if (state.receiver) {
+        setTxReceiver(state.receiver);
+        form.setFieldValue('receiver', state.receiver);
+      }
+      if (state.message) {
+        setTxMessage(state.message);
+        form.setFieldValue('message', state.message);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -104,7 +120,7 @@ function Send() {
   useEffect(() => {
     if (alreadyRunning) return;
     alreadyRunning = true;
-    fetchUtxos(sender, activeChain) // this should always be cached
+    fetchUtxos(sender, activeChain, state.utxos?.length ? 1 : 0) // this should always be cached, use confirmed in case of RBF
       .then(async (utxos) => {
         getSpendableBalance(utxos);
         await calculateTxFeeSize();
@@ -131,7 +147,7 @@ function Send() {
     }
     if (alreadyRunning) return;
     alreadyRunning = true;
-    fetchUtxos(sender, activeChain) // this should always be cached
+    fetchUtxos(sender, activeChain, state.utxos?.length ? 1 : 0) // this should always be cached. Use confirmed mode if RBF flag
       .then(async (utxos) => {
         getSpendableBalance(utxos);
         await calculateTxFeeSize();
@@ -278,7 +294,7 @@ function Send() {
 
   const obtainFreshUtxos = () => {
     clearUtxoCache();
-    fetchUtxos(sender, activeChain)
+    fetchUtxos(sender, activeChain, state.utxos?.length ? 1 : 0) // use confirmed only in case of RBF
       .then((utxos) => {
         getSpendableBalance(utxos);
       })
@@ -351,6 +367,7 @@ function Send() {
       witnessScript,
       maxFeeSat,
       lockedUtxos,
+      state.utxos,
     );
     // target recommended fee of blockchain config
     setTxSize(txSize);
@@ -501,6 +518,7 @@ function Send() {
           witnessScript,
           maxFeeSat,
           lockedUtxos,
+          state.utxos,
         )
           .then((txInfo) => {
             console.log(txInfo);
@@ -595,6 +613,7 @@ function Send() {
         >
           <Input
             size="large"
+            value={txReceiver}
             placeholder={t('send:receiver_address')}
             onChange={(e) => setTxReceiver(e.target.value)}
           />
@@ -700,6 +719,7 @@ function Send() {
         </div>
 
         <Form.Item style={{ marginTop: 50 }}>
+          {/* TODO some text information if this is replacement transaction or not. Cancel to disable Replacement. */}
           <Space direction="vertical" size="middle">
             <Popconfirm
               title={t('send:confirm_tx')}

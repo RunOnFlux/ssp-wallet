@@ -303,7 +303,15 @@ export function buildUnsignedRawTx(
   }
 }
 
-function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
+// our new tx must have higher absolute fee and higher fee rate as per BIP125. Transaction pinning edge case disregarded.
+// SSP has one sender, one receiver - usually known to sender. We can ensure higher overall fee by spending all the mandatory utxos in a case where fee rate is higher.
+// in normal scenario automatic fee would solve vast majority of cases.
+// use all utxos that are selected mandatory in pick, add another if not sufficient
+function pickUtxos(
+  utxos: utxo[],
+  amount: BigNumber,
+  mandatoryUtxos?: txIdentifier[],
+): utxo[] {
   let selectedUtxos: utxo[] = [];
   // sorted utxos by satoshis, smallest first
   const sortedUtxos = utxos.sort((a, b) => {
@@ -317,6 +325,54 @@ function pickUtxos(utxos: utxo[], amount: BigNumber): utxo[] {
     }
     return 0;
   });
+
+  if (mandatoryUtxos?.length) {
+    const fullManadtoryUtxos: utxo[] = [];
+    mandatoryUtxos.forEach((ux) => {
+      const utxoExists = utxos.find(
+        (u) => u.txid === ux.txid && u.vout === ux.vout,
+      );
+      if (utxoExists) {
+        fullManadtoryUtxos.push(utxoExists);
+      }
+    });
+    const differentUtxos: utxo[] = [];
+    utxos.forEach((ux) => {
+      const alreadyInUse = fullManadtoryUtxos.find(
+        (u) => u.txid === ux.txid && u.vout === ux.vout,
+      );
+      if (!alreadyInUse) {
+        differentUtxos.push(ux);
+      }
+    });
+    if (!fullManadtoryUtxos.length) {
+      // RBF not possible
+      throw new Error(
+        'Replacement by Fee not possible.',
+      );
+    }
+    let totalAmount = new BigNumber(0);
+    for (const utxoX of fullManadtoryUtxos) {
+      totalAmount = totalAmount.plus(new BigNumber(utxoX.satoshis));
+    }
+    if (totalAmount.isGreaterThanOrEqualTo(amount)) {
+      return fullManadtoryUtxos;
+    }
+    // if we do not have sufficient utxos. Add another non used utxo by simple selection only.
+    for (const utxoX of differentUtxos) {
+      totalAmount = totalAmount.plus(new BigNumber(utxoX.satoshis));
+      fullManadtoryUtxos.push(utxoX);
+      if (totalAmount.isGreaterThanOrEqualTo(amount)) {
+        return fullManadtoryUtxos;
+      }
+    }
+    if (totalAmount.isLessThan(amount)) {
+      // RBF not possible
+      throw new Error(
+        'Transaction can not be constructed. Replacement by Fee not possible. Try lowering the amount.',
+      );
+    }
+  }
 
   // case one. Find if we have a utxo with exact amount
   sortedUtxos.forEach((utxoX) => {
@@ -456,12 +512,17 @@ export async function getTransactionSize(
   witnessScript: string,
   maxFee: string,
   forbiddenUtxos?: txIdentifier[],
+  mandatoryUtxos?: txIdentifier[],
 ): Promise<number> {
   try {
     const libID = getLibId(chain);
     const blockchainConfig = blockchains[chain];
     const network = utxolib.networks[libID];
-    const utxos = await fetchUtxos(sender, chain);
+    const utxos = await fetchUtxos(
+      sender,
+      chain,
+      mandatoryUtxos?.length ? 1 : 0,
+    ); // however we do have it correctly cached already. Indicate RBF
     const utxosNonCoinbase = utxos.filter(
       (x) =>
         x.coinbase !== true ||
@@ -481,7 +542,14 @@ export async function getTransactionSize(
       utxosFiltered = utxosNonCoinbase;
     }
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
-    const pickedUtxos = pickUtxos(utxosFiltered, amountToSend);
+    const pickedUtxos = pickUtxos(utxosFiltered, amountToSend, mandatoryUtxos);
+    if (mandatoryUtxos?.length) {
+      // RBF
+      console.log(
+        'enforce rbf, min 1 utxo must be present here. If its not picked, add another utxo here.',
+      );
+      // our new tx must have higher absolute fee and higher fee rate as per BIP125. Transaction pinning edge case disregarded.
+    }
     const rawTx = buildUnsignedRawTx(
       chain,
       pickedUtxos,
@@ -562,9 +630,14 @@ export async function constructAndSignTransaction(
   witnessScript: string,
   maxFee: string,
   forbiddenUtxos?: txIdentifier[],
+  mandatoryUtxos?: txIdentifier[],
 ): Promise<constructedTxInfo> {
   try {
-    const utxos = await fetchUtxos(sender, chain);
+    const utxos = await fetchUtxos(
+      sender,
+      chain,
+      mandatoryUtxos?.length ? 1 : 0,
+    ); // however we do have it correctly cached already. Indicate RBF
     const utxosNonCoinbase = utxos.filter(
       (x) =>
         x.coinbase !== true ||
@@ -584,7 +657,17 @@ export async function constructAndSignTransaction(
       utxosFiltered = utxosNonCoinbase;
     }
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
-    const pickedUtxos = pickUtxos(utxosFiltered, amountToSend);
+    const pickedUtxos = pickUtxos(utxosFiltered, amountToSend, mandatoryUtxos);
+    if (mandatoryUtxos?.length) {
+      // RBF
+      console.log(
+        'enforce rbf, min 1 utxo must be present here. If its not picked, add another utxo here',
+      );
+      // our new tx must have higher absolute fee and higher fee rate as per BIP125. Transaction pinning edge case disregarded.
+      // SSP has one sender, one receiver - usually known to sender. We can ensure higher overall fee by spending all the mandatory utxos in a case where fee rate is higher.
+      // in normal scenario automatic fee would solve vast majority of cases.
+      // TODO use all utxos that are selected mandatory in pick
+    }
     const rawTx = buildUnsignedRawTx(
       chain,
       pickedUtxos,
@@ -613,7 +696,7 @@ export async function constructAndSignTransaction(
     const txInfo = {
       signedTx,
       utxos: pickedUtxos,
-    }
+    };
     return txInfo;
   } catch (error) {
     console.log(error);

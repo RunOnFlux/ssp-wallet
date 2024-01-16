@@ -20,7 +20,7 @@ function Navigation() {
           shape="round"
           icon={<ArrowUpOutlined />}
           size={'large'}
-          onClick={() => navigate('/send')}
+          onClick={() => navigate('/send', { state: { receiver: '' } })}
         >
           {t('home:navigation.send')}
         </Button>
