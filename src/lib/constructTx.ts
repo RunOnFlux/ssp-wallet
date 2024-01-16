@@ -45,7 +45,7 @@ export async function fetchUtxos(
       // wait if previous request is running
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    const cachedUtxos = utxoCache.get(`${chain}_${address}`); // "value"
+    const cachedUtxos = utxoCache.get(`${chain}_${address}_${confirmationMode}`); // "value"
     if (cachedUtxos) {
       // should always be cached when doing fee estimation, tx construction
       return cachedUtxos as utxo[];
@@ -67,6 +67,7 @@ export async function fetchUtxos(
           confirmations: x.confirmations,
           coinbase: x.coinbase || false,
         }));
+        utxoCache.set(`${chain}_${address}_${confirmationMode}`, utxos);
         return utxos;
       } else if (confirmationMode === 2) {
         const url = `https://${backendConfig.node}/api/v2/utxo/${address}?confirmed=true`;
@@ -87,6 +88,7 @@ export async function fetchUtxos(
           confirmations: x.confirmations,
           coinbase: x.coinbase || false,
         }));
+        utxoCache.set(`${chain}_${address}_${confirmationMode}`, utxos);
         return utxos;
       } else {
         const url = `https://${backendConfig.node}/api/v2/utxo/${address}`;
@@ -102,6 +104,7 @@ export async function fetchUtxos(
           confirmations: x.confirmations,
           coinbase: x.coinbase || false,
         }));
+        utxoCache.set(`${chain}_${address}_${confirmationMode}`, utxos);
         return utxos;
       }
     } else {
@@ -118,6 +121,7 @@ export async function fetchUtxos(
         confirmations: x.confirmations,
         coinbase: x.coinbase || false,
       }));
+      utxoCache.set(`${chain}_${address}_${confirmationMode}`, utxos);
       return utxos;
     }
   } catch (e) {
@@ -544,11 +548,7 @@ export async function getTransactionSize(
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
     const pickedUtxos = pickUtxos(utxosFiltered, amountToSend, mandatoryUtxos);
     if (mandatoryUtxos?.length) {
-      // RBF
-      console.log(
-        'enforce rbf, min 1 utxo must be present here. If its not picked, add another utxo here.',
-      );
-      // our new tx must have higher absolute fee and higher fee rate as per BIP125. Transaction pinning edge case disregarded.
+      console.log('RBF TX');
     }
     const rawTx = buildUnsignedRawTx(
       chain,
@@ -659,14 +659,7 @@ export async function constructAndSignTransaction(
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
     const pickedUtxos = pickUtxos(utxosFiltered, amountToSend, mandatoryUtxos);
     if (mandatoryUtxos?.length) {
-      // RBF
-      console.log(
-        'enforce rbf, min 1 utxo must be present here. If its not picked, add another utxo here',
-      );
-      // our new tx must have higher absolute fee and higher fee rate as per BIP125. Transaction pinning edge case disregarded.
-      // SSP has one sender, one receiver - usually known to sender. We can ensure higher overall fee by spending all the mandatory utxos in a case where fee rate is higher.
-      // in normal scenario automatic fee would solve vast majority of cases.
-      // TODO use all utxos that are selected mandatory in pick
+      console.log('RBF TX');
     }
     const rawTx = buildUnsignedRawTx(
       chain,
