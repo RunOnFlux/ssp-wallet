@@ -39,6 +39,7 @@ import { blockchains } from '@storage/blockchains';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
+import { SeedWords } from '../../components/SeedWords/SeedWords.tsx';
 
 interface passwordForm {
   mnemonic: string;
@@ -66,7 +67,15 @@ function Restore() {
   const [mnemonicShow, setMnemonicShow] = useState(false);
   const [WSPbackedUp, setWSPbackedUp] = useState(false);
   const [wspWasShown, setWSPwasShown] = useState(false);
+  const [seedWords, setSeedWords] = useState<string[]>([]);
+  const [form] = Form.useForm();
 
+  useEffect(() => {
+    form.setFieldsValue({
+      mnemonic: seedWords.join(' ')
+    });
+  },[seedWords])
+  
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -240,8 +249,9 @@ function Restore() {
         />
         <Divider />
         <CreationSteps step={1} import={true} />
-        <br />
+        <SeedWords seedWords={seedWords} setSeedWords={setSeedWords}/>
         <Form
+          form={form}
           name="seedForm"
           onFinish={(values) => void onFinish(values as passwordForm)}
           autoComplete="off"
@@ -257,9 +267,8 @@ function Restore() {
               },
             ]}
           >
-            <TextArea rows={4} placeholder={t('cr:input_seed_phrase')} />
+            <TextArea rows={4} readOnly={seedWords.length > 0 ? true: false} placeholder={t('cr:input_seed_phrase')} />
           </Form.Item>
-          <br />
           <Form.Item
             label={t('cr:set_password')}
             name="password"
