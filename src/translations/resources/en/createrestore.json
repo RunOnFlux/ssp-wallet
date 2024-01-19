@@ -34,5 +34,8 @@
   "create_pw": "Create Password",
   "create_wallet": "Create Wallet",
   "restore_wallet": "Restore Wallet",
-  "restore_with_seed": "Restore with Seed Phrase"
+  "restore_with_seed": "Restore with Seed Phrase",
+  "backup_confirmed": "Backup Confirmed!",
+  "confirm_wallet_seed_word": "Confirm Wallet Seed Word # ",
+  "incorrect_backup_confirmation": "Incorrect Word"
 }

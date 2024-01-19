@@ -32,5 +32,8 @@
   "create_pw": "Buat Kata Sandi",
   "create_wallet": "Buat Dompet",
   "restore_wallet": "Pulihkan Dompet",
-  "restore_with_seed": "Pulihkan dengan Frase Benih"
+  "restore_with_seed": "Pulihkan dengan Frase Benih",
+  "backup_confirmed": "Cadangan Dikonfirmasi!",
+  "confirm_wallet_seed_word": "Konfirmasi Kata Benih Dompet # ",
+  "incorrect_backup_confirmation": "Kata yang Salah"
 }
