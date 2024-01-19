@@ -297,7 +297,7 @@ function Create() {
         onCancel={handleCancel}
         okText={t('common:confirm')}
         cancelText={t('common:cancel')}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center', top: 60, padding: 10 }}
       >
         <CreationSteps step={2} import={false} />
         <p>{t('cr:wallet_seed_info')}</p>
@@ -394,7 +394,7 @@ function Create() {
         onOk={handleOK}
         okButtonProps={{ disabled: !isConfirmed }}
         okText={t('cr:create_wallet')}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center', top: 60, padding: 10 }}
       >
         <CreationSteps step={2} import={false} />
         {isConfirmed && (
