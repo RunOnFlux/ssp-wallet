@@ -343,6 +343,18 @@ function Create() {
       return wordlist[pos];
     };
 
+    // Generate word list that does not include any words in seedphrase or duplicates
+    const generateWordList = () => {
+      const randomWordList: string[] = [];
+      for (let index = 0; index < 10; index++) {
+        const newWord = RandomWord();
+        randomWordList.includes(newWord) || mnemonic.includes(newWord)
+          ? index--
+          : randomWordList.push(newWord);
+      }
+      return randomWordList;
+    };
+
     const incorrectWord = () => {
       displayMessage('warning', t('cr:incorrect_backup_confirmation'));
     };
@@ -354,23 +366,25 @@ function Create() {
     };
 
     const Randomize = (props: { wordIndex: number }) => {
-      const randomWords = [];
+      const randomWords: JSX.Element[] = [];
+      const generatedWords = generateWordList();
       const realPos = Math.floor(Math.random() * 10);
-      for (let index = 0; index < 10; index++) {
+
+      generatedWords.map((word: string, index) => {
         if (index === realPos) {
           randomWords.push(
-            <Button size='large' onClick={correctWord} key={index} style={{ margin: 5 }}>
+            <Button size="large" onClick={correctWord} key={index} style={{ margin: 5 }} >
               {mnemonic.split(' ')[props.wordIndex]}
-            </Button>,
+            </Button>
           );
         } else {
           randomWords.push(
-            <Button size='large' onClick={incorrectWord} key={index} style={{ margin: 5 }}>
-              {RandomWord()}
-            </Button>,
+            <Button size="large" onClick={incorrectWord} key={index} style={{ margin: 5 }} >
+              {word}
+            </Button>
           );
         }
-      }
+      });
       return randomWords;
     };
 
