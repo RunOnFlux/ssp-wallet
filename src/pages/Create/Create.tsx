@@ -365,7 +365,7 @@ function Create() {
         : setWordIndex((prevIndex) => prevIndex + 4);
     };
 
-    const Randomize = (props: { wordIndex: number }) => {
+    const Randomize = (compProps: { wordIndex: number }) => {
       const randomWords: JSX.Element[] = [];
       const generatedWords = generateWordList();
       const realPos = Math.floor(Math.random() * 10);
@@ -373,15 +373,25 @@ function Create() {
       generatedWords.map((word: string, index) => {
         if (index === realPos) {
           randomWords.push(
-            <Button size="large" onClick={correctWord} key={index} style={{ margin: 5 }} >
-              {mnemonic.split(' ')[props.wordIndex]}
-            </Button>
+            <Button
+              size="large"
+              onClick={correctWord}
+              key={index}
+              style={{ margin: 5 }}
+            >
+              {mnemonic.split(' ')[compProps.wordIndex]}
+            </Button>,
           );
         } else {
           randomWords.push(
-            <Button size="large" onClick={incorrectWord} key={index} style={{ margin: 5 }} >
+            <Button
+              size="large"
+              onClick={incorrectWord}
+              key={index}
+              style={{ margin: 5 }}
+            >
               {word}
-            </Button>
+            </Button>,
           );
         }
       });
@@ -412,16 +422,16 @@ function Create() {
       >
         <CreationSteps step={2} import={false} />
         {isConfirmed && (
-          <p style={{ fontSize: 20, fontWeight: 'bold' }}>
-            {t('cr:backup_confirmed')}
-          </p>
+          <div style={{ marginBottom: 80, marginTop: 60 }}>
+            <h2>{t('cr:backup_confirmed')}</h2>
+          </div>
         )}
 
         {!isConfirmed && (
           <div style={{ marginBottom: 60 }}>
             <h2>
               {t('cr:confirm_wallet_seed_word')}
-              {wordIndex + 1}
+              <br /> {t('cr:word_number', { number: wordIndex + 1 })}
             </h2>
             <Randomize wordIndex={wordIndex} />
           </div>

@@ -34,6 +34,7 @@
   "restore_wallet": "Pulihkan Dompet",
   "restore_with_seed": "Pulihkan dengan Frase Benih",
   "backup_confirmed": "Cadangan Dikonfirmasi!",
-  "confirm_wallet_seed_word": "Konfirmasi Kata Benih Dompet # ",
+  "confirm_wallet_seed_word": "Konfirmasi Benih Dompet",
+  "word_number": "Kata #{{number}}",
   "incorrect_backup_confirmation": "Kata yang Salah"
 }
