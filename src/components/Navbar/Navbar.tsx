@@ -363,7 +363,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
               style={{ width: 200 }}
               onChange={handleChange}
               options={walletItems}
-              bordered={false}
+              variant={'borderless'}
               size="large"
               dropdownStyle={{ zIndex: 9 }}
               dropdownRender={(menu) => (

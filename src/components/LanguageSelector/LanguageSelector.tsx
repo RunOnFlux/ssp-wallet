@@ -22,7 +22,7 @@ function LanguageSelector(props: { label: boolean }) {
       <Select
         popupMatchSelectWidth={false}
         suffixIcon={props.label ? undefined : null}
-        bordered={true}
+        variant={'outlined'}
         value={currentLanguage}
         optionLabelProp={props.label ? 'desc' : 'label'}
         onChange={handleChange}
