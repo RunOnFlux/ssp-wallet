@@ -63,39 +63,10 @@ function Restore() {
   // if user exists, navigate to login
   const [password, setPassword] = useState('');
   const [mnemonic, setMnemonic] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [mnemonicShow, setMnemonicShow] = useState(false);
-  const [WSPbackedUp, setWSPbackedUp] = useState(false);
-  const [wspWasShown, setWSPwasShown] = useState(false);
-  const [seedWords, setSeedWords] = useState<string[]>([]);
-  const [form] = Form.useForm();
-
-  useEffect(() => {
-    form.setFieldsValue({
-      mnemonic: seedWords.join(' ')
-    });
-  },[seedWords])
+  const [isModalOpen, setIsModalOpen] = useState(false);  
   
   const showModal = () => {
     setIsModalOpen(true);
-  };
-
-  const handleOk = () => {
-    if (WSPbackedUp && wspWasShown) {
-      setIsModalOpen(false);
-      storeMnemonic(mnemonic.trim());
-    } else {
-      displayMessage('info', t('cr:info_backup_needed'));
-    }
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setMnemonic('');
-    setPassword('');
-    setWSPwasShown(false);
-    setWSPbackedUp(false);
-    setMnemonicShow(false);
   };
 
   const [messageApi, contextHolder] = message.useMessage();
@@ -235,114 +206,153 @@ function Restore() {
       });
   };
 
-  const onChangeWSP = (e: CheckboxChangeEvent) => {
-    setWSPbackedUp(e.target.checked);
-  };
+  const SeedInput = () => {
+    const [seedWords, setSeedWords] = useState<string[]>([]);
+    const [form] = Form.useForm();
 
-  return (
-    <>
-      {contextHolder}
-      <div style={{ paddingBottom: '63px' }}>
-        <Headerbar
-          headerTitle={t('cr:import_seed')}
-          navigateTo={!Object.keys(wallets).length ? '/home' : '/welcome'}
-        />
-        <Divider />
-        <CreationSteps step={1} import={true} />
-        <SeedWords seedWords={seedWords} setSeedWords={setSeedWords}/>
-        <Form
-          form={form}
-          name="seedForm"
-          onFinish={(values) => void onFinish(values as passwordForm)}
-          autoComplete="off"
-          layout="vertical"
-        >
-          <Form.Item
-            label={t('cr:wallet_seed')}
-            name="mnemonic"
-            rules={[
-              {
-                required: true,
-                message: t('cr:input_wallet_seed'),
-              },
-            ]}
-          >
-            <TextArea rows={4} readOnly={seedWords.length > 0 ? true: false} placeholder={t('cr:input_seed_phrase')} />
-          </Form.Item>
-          <Form.Item
-            label={t('cr:set_password')}
-            name="password"
-            rules={[
-              {
-                required: true,
-                message: t('cr:input_password'),
-              },
-            ]}
-          >
-            <Input.Password
-              size="large"
-              placeholder={t('cr:set_password')}
-              prefix={<LockOutlined />}
-              iconRender={(visible) =>
-                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-              }
-              className="password-input"
+    useEffect(() => {
+      form.setFieldsValue({
+        mnemonic: seedWords.join(' ')
+      });
+    },[seedWords])
+
+    return (
+      <>
+        {!isModalOpen && 
+          <div style={{ paddingBottom: '63px' }}>
+            <Headerbar
+              headerTitle={t('cr:import_seed')}
+              navigateTo={!Object.keys(wallets).length ? '/home' : '/welcome'}
             />
-          </Form.Item>
-
-          <Form.Item
-            label={t('cr:confirm_password')}
-            name="confirm_password"
-            rules={[{ required: true, message: t('cr:pls_conf_pwd') }]}
-          >
-            <Input.Password
-              size="large"
-              placeholder={t('cr:confirm_password')}
-              prefix={<LockOutlined />}
-              iconRender={(visible) =>
-                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-              }
-              className="password-input"
-            />
-          </Form.Item>
-
-          <Form.Item name="tos" valuePropName="checked">
-            <Checkbox>
-              {t('cr:i_agree')}{' '}
-              <a
-                href="https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md"
-                target="_blank"
-                rel="noreferrer"
+            <Divider />
+            <CreationSteps step={1} import={true} />
+            <SeedWords seedWords={seedWords} setSeedWords={setSeedWords}/>
+            <Form
+              form={form}
+              name="seedForm"
+              onFinish={(values) => void onFinish(values as passwordForm)}
+              autoComplete="off"
+              layout="vertical"
+            >
+              <Form.Item
+                label={t('cr:wallet_seed')}
+                name="mnemonic"
+                rules={[
+                  {
+                    required: true,
+                    message: t('cr:input_wallet_seed'),
+                  },
+                ]}
               >
-                {t('cr:ssp_wallet_disclaimer')}
-              </a>
-              .
-            </Checkbox>
-          </Form.Item>
+                <TextArea rows={4} readOnly={seedWords.length > 0 ? true: false} placeholder={t('cr:input_seed_phrase')} />
+              </Form.Item>
+              <Form.Item
+                label={t('cr:set_password')}
+                name="password"
+                rules={[
+                  {
+                    required: true,
+                    message: t('cr:input_password'),
+                  },
+                ]}
+              >
+                <Input.Password
+                  size="large"
+                  placeholder={t('cr:set_password')}
+                  prefix={<LockOutlined />}
+                  iconRender={(visible) =>
+                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                  }
+                  className="password-input"
+                />
+              </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" size="large" htmlType="submit">
-              {t('cr:import_wallet')}
+              <Form.Item
+                label={t('cr:confirm_password')}
+                name="confirm_password"
+                rules={[{ required: true, message: t('cr:pls_conf_pwd') }]}
+              >
+                <Input.Password
+                  size="large"
+                  placeholder={t('cr:confirm_password')}
+                  prefix={<LockOutlined />}
+                  iconRender={(visible) =>
+                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                  }
+                  className="password-input"
+                />
+              </Form.Item>
+
+              <Form.Item name="tos" valuePropName="checked">
+                <Checkbox>
+                  {t('cr:i_agree')}{' '}
+                  <a
+                    href="https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {t('cr:ssp_wallet_disclaimer')}
+                  </a>
+                  .
+                </Checkbox>
+              </Form.Item>
+
+              <Form.Item>
+                <Button type="primary" size="large" htmlType="submit">
+                  {t('cr:import_wallet')}
+                </Button>
+              </Form.Item>
+            </Form>
+            <Button
+              type="link"
+              block
+              size="small"
+              style={{ padding: '0' }}
+              onClick={() => handleNavigation()}
+            >
+              {t('common:cancel')}
             </Button>
-          </Form.Item>
-        </Form>
-        <Button
-          type="link"
-          block
-          size="small"
-          style={{ padding: '0' }}
-          onClick={() => handleNavigation()}
-        >
-          {t('common:cancel')}
-        </Button>
-      </div>
+          </div>
+        }
+      </>  
+    )
+  }
+
+  const BackupModal = () => {
+    const [WSPbackedUp, setWSPbackedUp] = useState(false);
+    const [wspWasShown, setWSPwasShown] = useState(false);
+    const [mnemonicShow, setMnemonicShow] = useState(false);
+
+    const handleOk = () => {
+      if (WSPbackedUp && wspWasShown) {
+        setIsModalOpen(false);
+        storeMnemonic(mnemonic.trim());
+      } else {
+        displayMessage('info', t('cr:info_backup_needed'));
+      }
+    };
+
+    const handleCancel = () => {
+      setIsModalOpen(false);
+      setMnemonic('');
+      setPassword('');
+      setWSPwasShown(false);
+      setWSPbackedUp(false);
+      setMnemonicShow(false);
+    };
+
+    const onChangeWSP = (e: CheckboxChangeEvent) => {
+      setWSPbackedUp(e.target.checked);
+    };
+  
+    return (
       <Modal
         title={t('cr:backup_wallet_seed')}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
         okText={t('cr:restore_wallet')}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center', top: 0, padding: '5px' }}
       >
         <CreationSteps step={2} import={true} />
         <p>{t('cr:wallet_seed_info')}</p>
@@ -370,10 +380,18 @@ function Restore() {
         </Button>
         <Divider />
         <br />
-        <Checkbox onChange={onChangeWSP}>{t('cr:phrase_backed_up')}</Checkbox>
+        <Checkbox disabled={!wspWasShown} onChange={onChangeWSP}>{t('cr:phrase_backed_up')}</Checkbox>
         <br />
         <br />
       </Modal>
+    )
+  };
+
+  return (
+    <>
+      {contextHolder}      
+      <SeedInput />
+      <BackupModal />
       <PoweredByFlux />
     </>
   );
