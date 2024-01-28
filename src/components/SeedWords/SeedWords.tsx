@@ -80,7 +80,7 @@ export const SeedWords = (props: {seedWords: (string | undefined)[], setSeedWord
         {bulkInput ? (
         <>
           {contextHolder}
-          <Input size='large' value={inputVal} onChange={handleInputChange} onKeyDown={checkKey} placeholder={`${t('cr:input_seed_word')} ${props.seedWords.length + 1}`}/>      
+          <Input id="seed-input" size='large' value={inputVal} onChange={handleInputChange} onKeyDown={checkKey} placeholder={`${t('cr:input_seed_word')} ${props.seedWords.length + 1}`}/>      
           <Button style={{ margin: 8 }} size='middle' type='primary' onClick={onPress}>{t('cr:submit_seed_word')}</Button>
           <Button style={{ margin: 8 }} size='middle' type='default' onClick={removeWord}>{t('cr:remove_seed_word')}</Button>
           <Button style={{ margin: 8 }} size='middle' type='default' onClick={clearText}>{t('cr:clear_seed')}</Button>

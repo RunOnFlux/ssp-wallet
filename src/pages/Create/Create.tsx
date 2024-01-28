@@ -31,6 +31,7 @@ import { blockchains } from '@storage/blockchains';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
+import { wordlist } from '@scure/bip39/wordlists/english';
 
 interface passwordForm {
   password: string;
@@ -52,30 +53,10 @@ function Create() {
   const [password, setPassword] = useState('');
   const [mnemonic, setMnemonic] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [mnemonicShow, setMnemonicShow] = useState(false);
-  const [WSPbackedUp, setWSPbackedUp] = useState(false);
-  const [wspWasShown, setWSPwasShown] = useState(false);
+  const [isConfrimModalOpen, setIsConfrimModalOpen] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
-  };
-
-  const handleOk = () => {
-    if (WSPbackedUp && wspWasShown) {
-      setIsModalOpen(false);
-      storeMnemonic(mnemonic);
-    } else {
-      displayMessage('info', t('cr:info_backup_needed'));
-    }
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setMnemonic('');
-    setPassword('');
-    setWSPwasShown(false);
-    setWSPbackedUp(false);
-    setMnemonicShow(false);
   };
 
   const [messageApi, contextHolder] = message.useMessage();
@@ -191,13 +172,8 @@ function Create() {
       });
   };
 
-  const onChangeWSP = (e: CheckboxChangeEvent) => {
-    setWSPbackedUp(e.target.checked);
-  };
-
-  return (
-    <>
-      {contextHolder}
+  const PasswordForm = () => {
+    return (
       <div style={{ paddingBottom: '43px' }}>
         <Headerbar headerTitle={t('cr:create_pw')} navigateTo="/welcome" />
         <Divider />
@@ -278,13 +254,50 @@ function Create() {
         <br />
         <br />
       </div>
+    );
+  };
+
+  const BackupConfirmModal = () => {
+    const [mnemonicShow, setMnemonicShow] = useState(false);
+    const [wspWasShown, setWSPwasShown] = useState(false);
+    const [WSPbackedUp, setWSPbackedUp] = useState(false);
+
+    const handleCancel = () => {
+      setIsModalOpen(false);
+      setMnemonic('');
+      setPassword('');
+      setWSPwasShown(false);
+      setWSPbackedUp(false);
+      setMnemonicShow(false);
+    };
+
+    const handleOk = () => {
+      if (WSPbackedUp && wspWasShown) {
+        setIsModalOpen(false);
+        setIsConfrimModalOpen(true);
+        //storeMnemonic(mnemonic);
+      } else {
+        displayMessage('info', t('cr:info_backup_needed'));
+      }
+    };
+
+    const onChangeWSP = (e: CheckboxChangeEvent) => {
+      if (wspWasShown) {
+        setWSPbackedUp(e.target.checked);
+      } else {
+        displayMessage('info', t('cr:info_backup_needed'));
+      }
+    };
+
+    return (
       <Modal
         title={t('cr:backup_wallet_seed')}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-        okText={t('cr:create_wallet')}
-        style={{ textAlign: 'center', top: 60 }}
+        okText={t('common:confirm')}
+        cancelText={t('common:cancel')}
+        style={{ textAlign: 'center', top: 60, padding: 10 }}
       >
         <CreationSteps step={2} import={false} />
         <p>{t('cr:wallet_seed_info')}</p>
@@ -312,10 +325,127 @@ function Create() {
         </Button>
         <Divider />
         <br />
-        <Checkbox onChange={onChangeWSP}>{t('cr:phrase_backed_up')}</Checkbox>
+        <Checkbox disabled={!wspWasShown} onChange={onChangeWSP}>
+          {t('cr:phrase_backed_up')}
+        </Checkbox>
         <br />
         <br />
       </Modal>
+    );
+  };
+
+  const ConfirmWordsModal = () => {
+    const [wordIndex, setWordIndex] = useState(1);
+    const [isConfirmed, setIsConfirmed] = useState(false);
+
+    const RandomWord = () => {
+      const pos = Math.floor(Math.random() * (wordlist.length + 1));
+      return wordlist[pos];
+    };
+
+    // Generate word list that does not include any words in seedphrase or duplicates
+    const generateWordList = () => {
+      const randomWordList: string[] = [];
+      for (let index = 0; index < 10; index++) {
+        const newWord = RandomWord();
+        randomWordList.includes(newWord) || mnemonic.includes(newWord)
+          ? index--
+          : randomWordList.push(newWord);
+      }
+      return randomWordList;
+    };
+
+    const incorrectWord = () => {
+      displayMessage('warning', t('cr:incorrect_backup_confirmation'));
+    };
+
+    const correctWord = () => {
+      wordIndex === 9
+        ? setIsConfirmed(true)
+        : setWordIndex((prevIndex) => prevIndex + 4);
+    };
+
+    const Randomize = (compProps: { wordIndex: number }) => {
+      const randomWords: JSX.Element[] = [];
+      const generatedWords = generateWordList();
+      const realPos = Math.floor(Math.random() * 10);
+
+      generatedWords.map((word: string, index) => {
+        if (index === realPos) {
+          randomWords.push(
+            <Button
+              size="large"
+              onClick={correctWord}
+              key={index}
+              style={{ margin: 5 }}
+            >
+              {mnemonic.split(' ')[compProps.wordIndex]}
+            </Button>,
+          );
+        } else {
+          randomWords.push(
+            <Button
+              size="large"
+              onClick={incorrectWord}
+              key={index}
+              style={{ margin: 5 }}
+            >
+              {word}
+            </Button>,
+          );
+        }
+      });
+      return randomWords;
+    };
+
+    const handleExit = () => {
+      setIsConfrimModalOpen(false);
+      setIsModalOpen(true);
+    };
+
+    const handleOK = () => {
+      setIsConfrimModalOpen(false);
+      setIsConfirmed(false);
+      storeMnemonic(mnemonic);
+    };
+
+    return (
+      <Modal
+        title={t('cr:backup_wallet_seed')}
+        open={isConfrimModalOpen}
+        onCancel={handleExit}
+        cancelText={t('common:cancel')}
+        onOk={handleOK}
+        okButtonProps={{ disabled: !isConfirmed }}
+        okText={t('cr:create_wallet')}
+        style={{ textAlign: 'center', top: 60, padding: 10 }}
+      >
+        <CreationSteps step={2} import={false} />
+        {isConfirmed && (
+          <div style={{ marginBottom: 80, marginTop: 60 }}>
+            <h2>{t('cr:backup_confirmed')}</h2>
+          </div>
+        )}
+
+        {!isConfirmed && (
+          <div style={{ marginBottom: 60 }}>
+            <h2>
+              {t('cr:confirm_wallet_seed_word')}
+              <br /> {t('cr:word_number', { number: wordIndex + 1 })}
+            </h2>
+            <Randomize wordIndex={wordIndex} />
+          </div>
+        )}
+      </Modal>
+    );
+  };
+
+  return (
+    <>
+      {contextHolder}
+      <PasswordForm />
+      <BackupConfirmModal />
+      <ConfirmWordsModal />
       <PoweredByFlux />
     </>
   );

@@ -298,12 +298,13 @@ function Restore() {
               </Form.Item>
 
               <Form.Item>
-                <Button type="primary" size="large" htmlType="submit">
+                <Button name="submit-form" type="primary" size="large" htmlType="submit">
                   {t('cr:import_wallet')}
                 </Button>
               </Form.Item>
             </Form>
             <Button
+              name="cancel-form"
               type="link"
               block
               size="small"
