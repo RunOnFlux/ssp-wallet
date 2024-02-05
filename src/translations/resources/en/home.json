@@ -129,7 +129,8 @@
     "remove_last_wallet": "Remove Last Wallet",
     "remove": "Remove",
     "remove_last_wallet_desc": "This action will remove your most recently generated wallet. You can generate the same new wallet at any time.",
-    "switch_chain": "Switch Chain"
+    "switch_chain": "Switch Chain",
+    "max_wallets": "42. The answer to the ultimate question of life, the universe, and everything. You have reached the maximum number of wallets."
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Password is not valid. Please try again.",

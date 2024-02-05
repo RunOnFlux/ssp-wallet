@@ -193,6 +193,10 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
         i++;
         path = '0-' + i;
       }
+      if (i > 41) { // max 42 wallets
+        displayMessage('error', t('home:navbar.max_wallets'));
+        return;
+      }
       const typeIndex = 0;
       const addressIndex = i;
       console.log(addressIndex);
