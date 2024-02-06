@@ -35,12 +35,12 @@ function Nodes() {
   const { sspWalletExternalIdentity: sspwid } = useAppSelector(
     (state) => state.sspState,
   );
-  const redeemScript = wallets[walletInUse].redeemScript;
-  const address = wallets[walletInUse].address;
+  const redeemScript = 'YOUR_REDEEM_SCRIPT';
+  const address = 'YOUR_ADDRESS'
   const blockchainConfig = blockchains[activeChain];
   const myNodes = wallets[walletInUse].nodes ?? [];
-  const [nodeIdentityPK, setNodeIdentityPK] = useState(''); // we show node identity private key!
-  const [collateralPrivKey, setCollateralPrivKey] = useState(''); // we show node identity private key!
+  const [nodeIdentityPK, setNodeIdentityPK] = useState('YOUR_IDENTITY_KEY'); // we show node identity private key!
+  const [collateralPrivKey, setCollateralPrivKey] = useState('YOUR_COLLATERAL_PRIVATE_KEY'); // we show node identity private key!
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -52,7 +52,7 @@ function Nodes() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    void generateIdentity();
+    // void generateIdentity();
     refreshNodes();
     if (globalThis.refreshIntervalNodes) {
       clearInterval(globalThis.refreshIntervalNodes);
@@ -69,7 +69,7 @@ function Nodes() {
       isInitialMount.current = false;
       return;
     }
-    void generateIdentity();
+    // void generateIdentity();
     refreshNodes();
     if (globalThis.refreshIntervalNodes) {
       clearInterval(globalThis.refreshIntervalNodes);
@@ -93,6 +93,7 @@ function Nodes() {
     })();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const generateIdentity = async () => {
     try {
       const xprivEncrypted = secureLocalStorage.getItem(
