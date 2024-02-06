@@ -36,6 +36,7 @@ function Nodes() {
     (state) => state.sspState,
   );
   const redeemScript = wallets[walletInUse].redeemScript;
+  const address = wallets[walletInUse].address;
   const blockchainConfig = blockchains[activeChain];
   const myNodes = wallets[walletInUse].nodes ?? [];
   const [nodeIdentityPK, setNodeIdentityPK] = useState(''); // we show node identity private key!
@@ -135,11 +136,11 @@ function Nodes() {
 
   const fetchUtxosForNodes = (suppliedNodes: node[]) => {
     const wInUse = walletInUse;
-    fetchNodesUtxos(wallets[wInUse].address, activeChain)
+    fetchNodesUtxos(address, activeChain)
       .then(async (utxos) => {
         // for our utxo list fetch information from explorer. INSIGHT
         const confirmedNodes = await getNodesOnNetwork(
-          wallets[wInUse].address,
+          address,
           activeChain,
         );
         const nodes: node[] = JSON.parse(
