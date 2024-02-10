@@ -33,5 +33,6 @@
   "edit": "Edit",
   "fluxos": "FluxOS",
   "success": "SUCCESS",
-  "error": "ERROR"
+  "error": "ERROR",
+  "request_rejected": "Request Rejected"
 }
