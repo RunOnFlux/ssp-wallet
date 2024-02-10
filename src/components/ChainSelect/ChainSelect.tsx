@@ -96,6 +96,12 @@ function ChainSelect(props: {
             (await localForage.getItem(
               `balances-${chainToSwitch}-${walInUse}`,
             )) ?? balancesObject;
+          const nodesWallet: node[] =
+            (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
+            [];
+          if (nodesWallet) {
+            setNodes(chainToSwitch, walInUse, nodesWallet || []);
+          }
           if (txsWallet) {
             setTransactions(chainToSwitch, walInUse, txsWallet || []);
           }

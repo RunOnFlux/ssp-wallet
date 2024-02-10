@@ -724,7 +724,7 @@ function Send() {
             fontSize: 12,
             color: '#4096ff',
             cursor: 'pointer',
-            zIndex: 100,
+            zIndex: 2,
           }}
           onClick={() => setUseMaximum(true)}
         >
@@ -773,7 +773,7 @@ function Send() {
             fontSize: 12,
             color: '#4096ff',
             cursor: 'pointer',
-            zIndex: 100,
+            zIndex: 2,
           }}
           onClick={() => {
             setManualFee(!manualFee);

@@ -104,6 +104,12 @@ function PaymentRequest(props: {
             (await localForage.getItem(
               `balances-${chainToSwitch}-${walInUse}`,
             )) ?? balancesObject;
+          const nodesWallet: node[] =
+            (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
+            [];
+          if (nodesWallet) {
+            setNodes(chainToSwitch, walInUse, nodesWallet || []);
+          }
           if (txsWallet) {
             setTransactions(chainToSwitch, walInUse, txsWallet || []);
           }
@@ -377,7 +383,7 @@ function PaymentRequest(props: {
           </Space>
           <Space direction="vertical" size="large">
             <Button type="primary" size="large" onClick={handleOk}>
-            {t('home:payment_request.proceed_to_pay')}
+              {t('home:payment_request.proceed_to_pay')}
             </Button>
             <Button type="link" block size="small" onClick={handleCancel}>
               {t('common:cancel')}
