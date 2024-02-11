@@ -97,7 +97,8 @@ export const SspConnectProvider = ({
                 origin: 'ssp',
                 data: {
                   status: t('common:error'),
-                  result: 'REQUEST REJECTED: Invalid chain',
+                  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+                  result: t('common:request_rejected') + ': ' + t('home:sspConnect.invalid_chain'),
                 },
               });
             }
@@ -107,7 +108,8 @@ export const SspConnectProvider = ({
               origin: 'ssp',
               data: {
                 status: t('common:error'),
-                result: 'REQUEST REJECTED: Invalid method',
+                  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+                  result: t('common:request_rejected') + ': ' + t('home:sspConnect.invalid_method'),
               },
             });
           }

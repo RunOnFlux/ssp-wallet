@@ -1,23 +1,19 @@
-import { Fragment, useState, useEffect } from 'react';
-import { Button, Modal, message, Image, Row, Col } from 'antd';
+import { Typography, Button, Space, Modal, message } from 'antd';
+import { useState, useEffect } from 'react';
 import localForage from 'localforage';
+const { Text } = Typography;
 import { NoticeType } from 'antd/es/message/interface';
-import { useAppSelector, useAppDispatch } from '../../hooks';
-import { getFingerprint } from '../../lib/fingerprint';
-import {
-  decrypt as passworderDecrypt,
-  encrypt as passworderEncrypt,
-} from '@metamask/browser-passworder';
-import secureLocalStorage from 'react-secure-storage';
+import BigNumber from 'bignumber.js';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
+import secureLocalStorage from 'react-secure-storage';
+import { getFingerprint } from '../../lib/fingerprint';
+import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { getScriptType } from '../../lib/wallet';
-import { transaction, generatedWallets, cryptos, node } from '../../types';
-import {
-  generateMultisigAddress,
-  getMasterXpriv,
-  getMasterXpub,
-} from '../../lib/wallet.ts';
+import { cryptos, generatedWallets, transaction, node } from '../../types';
+import { useAppSelector, useAppDispatch } from '../../hooks';
+import { generateMultisigAddress } from '../../lib/wallet.ts';
 
 import {
   setAddress,
@@ -35,6 +31,12 @@ import {
   setActiveChain,
 } from '../../store';
 
+interface payRequestData {
+  status: string;
+  txid?: string;
+  data?: string;
+}
+
 interface balancesObj {
   confirmed: string;
   unconfirmed: string;
@@ -45,21 +47,26 @@ const balancesObject = {
   unconfirmed: '0.00',
 };
 
-function ChainSelect(props: {
+function PaymentRequest(props: {
   open: boolean;
-  openAction: (status: boolean) => void;
+  openAction: (data: payRequestData | null | 'continue') => void;
+  amount: string;
+  address: string;
+  message: string;
+  chain: keyof cryptos;
 }) {
-  const blockchainKeys = Object.keys(blockchains);
-  const { t } = useTranslation(['home', 'common']);
-  const [messageApi, contextHolder] = message.useMessage();
-  const { open, openAction } = props;
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+  const { t } = useTranslation(['home', 'common']);
+  const { open, openAction, address, chain, amount } = props;
+  const blockchainConfig = blockchains[chain];
   const { identityChain } = useAppSelector((state) => state.sspState);
   const [chainToSwitch, setChainToSwitch] = useState<keyof cryptos | ''>('');
   const { xpubWallet, xpubKey } = useAppSelector(
     (state) => state[(chainToSwitch as keyof cryptos) || identityChain],
   );
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
@@ -67,6 +74,7 @@ function ChainSelect(props: {
     });
   };
 
+  // chain switching mechanism. todo cleanup This extract and from chainSelect extract too
   useEffect(() => {
     console.log('chain switch effect');
     if (!chainToSwitch) return;
@@ -117,7 +125,13 @@ function ChainSelect(props: {
           if (blockheightChain) {
             setBlockheight(chainToSwitch, blockheightChain);
           }
-          generateAddress(xpubWallet, xpubKey, chainToSwitch, walInUse);
+          await generateAddress(xpubWallet, xpubKey, chainToSwitch, walInUse);
+          const newChain = chainToSwitch;
+          // lastly we set new active chain
+          dispatch(setActiveChain(newChain));
+          await localForage.setItem('activeChain', newChain);
+          setChainToSwitch('');
+          proceedToSend();
         } else {
           setChainInitialState(chainToSwitch);
           const blockchainConfig = blockchains[chainToSwitch];
@@ -210,7 +224,7 @@ function ChainSelect(props: {
                   if (blockheightChain) {
                     setBlockheight(chainToSwitch, blockheightChain);
                   }
-                  generateAddress(
+                  await generateAddress(
                     xpubChainWallet,
                     xpubChainKey,
                     chainToSwitch,
@@ -221,107 +235,21 @@ function ChainSelect(props: {
                   dispatch(setActiveChain(newChain));
                   await localForage.setItem('activeChain', newChain);
                   setChainToSwitch('');
+                  proceedToSend();
                   return;
                 }
               }
             }
           }
-          // if we ended up here treat this as we do not have any xpub and no data for the chain.
-          // generate xpub wallet and open
-          const walSeedBlob = secureLocalStorage.getItem('walletSeed');
-          const fingerprint: string = getFingerprint();
-          const password = await passworderDecrypt(fingerprint, passwordBlob);
-          if (typeof password !== 'string') {
-            throw new Error(t('home:sspWalletDetails.err_pw_not_valid'));
-          }
-          if (!walSeedBlob || typeof walSeedBlob !== 'string') {
-            throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed'));
-          }
-          const walletSeed = await passworderDecrypt(password, walSeedBlob);
-          if (typeof walletSeed !== 'string') {
-            throw new Error(
-              t('home:sspWalletDetails.err_invalid_wallet_seed_2'),
-            );
-          }
-          const xprivWallet = getMasterXpriv(
-            walletSeed,
-            48,
-            blockchainConfig.slip,
-            0,
-            blockchainConfig.scriptType,
-            chainToSwitch,
+          // if we do not have them, we should ask for them
+          displayMessage(
+            'error',
+            t('home:chainSelect.sync_chain_first', {
+              chainName: blockchainConfig.name,
+            }),
           );
-          const xpubWallet = getMasterXpub(
-            walletSeed,
-            48,
-            blockchainConfig.slip,
-            0,
-            blockchainConfig.scriptType,
-            chainToSwitch,
-          );
-          const xprivBlob = await passworderEncrypt(password, xprivWallet);
-          const xpubBlob = await passworderEncrypt(password, xpubWallet);
-          secureLocalStorage.setItem(
-            `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
-              blockchainConfig.scriptType,
-            )}-${blockchainConfig.id}`,
-            xprivBlob,
-          );
-          secureLocalStorage.setItem(
-            `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
-              blockchainConfig.scriptType,
-            )}-${blockchainConfig.id}`,
-            xpubBlob,
-          );
-          setXpubWallet(chainToSwitch, xpubWallet);
-          const generatedWallets: generatedWallets =
-            (await localForage.getItem(`wallets-${chainToSwitch}`)) ?? {};
-          const walletDerivations = Object.keys(generatedWallets);
-          walletDerivations.forEach((derivation: string) => {
-            setAddress(chainToSwitch, derivation, generatedWallets[derivation]);
-          });
-          const walInUse: string =
-            (await localForage.getItem(`walletInUse-${chainToSwitch}`)) ??
-            '0-0';
-          setWalletInUse(chainToSwitch, walInUse);
-          // load txs, balances, settings etc.
-          const txsWallet: transaction[] =
-            (await localForage.getItem(
-              `transactions-${chainToSwitch}-${walInUse}`,
-            )) ?? [];
-          const blockheightChain: number =
-            (await localForage.getItem(`blockheight-${chainToSwitch}`)) ?? 0;
-          const balancesWallet: balancesObj =
-            (await localForage.getItem(
-              `balances-${chainToSwitch}-${walInUse}`,
-            )) ?? balancesObject;
-          const nodesWallet: node[] =
-            (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
-            [];
-          if (nodesWallet) {
-            setNodes(chainToSwitch, walInUse, nodesWallet || []);
-          }
-          if (txsWallet) {
-            setTransactions(chainToSwitch, walInUse, txsWallet || []);
-          }
-          if (balancesWallet) {
-            setBalance(chainToSwitch, walInUse, balancesWallet.confirmed);
-
-            setUnconfirmedBalance(
-              chainToSwitch,
-              walInUse,
-              balancesWallet.unconfirmed,
-            );
-          }
-          if (blockheightChain) {
-            setBlockheight(chainToSwitch, blockheightChain);
-          }
+          setChainToSwitch('');
         }
-        const newChain = chainToSwitch;
-        // lastly we set new active chain
-        dispatch(setActiveChain(newChain));
-        await localForage.setItem('activeChain', newChain);
-        setChainToSwitch('');
       } catch (error) {
         console.log(error);
         displayMessage('error', t('home:chainSelect.unable_switch_chain'));
@@ -329,7 +257,7 @@ function ChainSelect(props: {
     })();
   }, [chainToSwitch]);
 
-  const generateAddress = (
+  const generateAddress = async (
     xpubW: string,
     xpubK: string,
     chainToUse: keyof cryptos,
@@ -357,12 +285,10 @@ function ChainSelect(props: {
       setRedeemScript(chainToUse, walletToUse, addrInfo.redeemScript ?? '');
       setWitnessScript(chainToUse, walletToUse, addrInfo.witnessScript ?? '');
       // get stored wallets
-      void (async function () {
-        const generatedWallets: generatedWallets =
-          (await localForage.getItem('wallets-' + chainToUse)) ?? {};
-        generatedWallets[walletToUse] = addrInfo.address;
-        await localForage.setItem('wallets-' + chainToUse, generatedWallets);
-      })();
+      const generatedWallets: generatedWallets =
+        (await localForage.getItem('wallets-' + chainToUse)) ?? {};
+      generatedWallets[walletToUse] = addrInfo.address;
+      await localForage.setItem('wallets-' + chainToUse, generatedWallets);
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before
       displayMessage('error', t('home:err_panic'));
@@ -370,60 +296,103 @@ function ChainSelect(props: {
     }
   };
 
-  const handleOk = () => {
-    openAction(false);
+  const proceedToSend = () => {
+    const navigationObject = {
+      receiver: address,
+      amount: new BigNumber(amount).toFixed(),
+      message: props.message,
+      paymentAction: true,
+    };
+    // navigate to the particular chain send for mand fill in the data.
+    navigate('/send', { state: navigationObject });
+    // close dialog
+    openAction('continue');
   };
 
-  const switchChain = (chainName: keyof cryptos) => {
-    setChainToSwitch(chainName);
-    setTimeout(() => {
-      openAction(false);
-    }, 50);
+  const handleOk = () => {
+    try {
+      console.log('ok');
+      // here check that chain, address, amount are defined
+      if (!chain || !address || !amount) {
+        throw new Error(t('home:payment_request.invalid_request'));
+      }
+      // check that all values are strings
+      if (
+        typeof chain !== 'string' ||
+        typeof address !== 'string' ||
+        typeof amount !== 'string'
+      ) {
+        throw new Error(t('home:payment_request.invalid_request'));
+      }
+      if (props.message && typeof props.message !== 'string') {
+        throw new Error(t('home:payment_request.invalid_request'));
+      }
+      // check that chain is part of our cryptos
+      if (!blockchains[chain]) {
+        throw new Error(t('home:payment_request.invalid_request'));
+      }
+      // set chain to switch to to trigger effect
+      setChainToSwitch(chain);
+    } catch (error) {
+      openAction({
+        status: t('common:error'),
+        data: t('home:payment_request.tx_rejected'),
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    openAction(null);
   };
 
   return (
     <>
       {contextHolder}
       <Modal
-        title={t('home:chainSelect.select_chain')}
+        title={t('home:payment_request.payment_request')}
         open={open}
-        onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
-        onCancel={handleOk}
-        footer={[
-          <Button key="ok" type="primary" onClick={handleOk}>
-            {t('common:close')}
-          </Button>,
-        ]}
+        onCancel={handleCancel}
+        footer={[]}
       >
-        <Row
-          gutter={[16, 24]}
-          style={{ paddingTop: '40px', paddingBottom: '40px' }}
+        <Space
+          direction="vertical"
+          size={64}
+          style={{ marginBottom: 16, marginTop: 16 }}
         >
-          {blockchainKeys.map((chain) => (
-            <Fragment key={chain}>
-              <Col className="gutter-row" span={12}>
-                <Col
-                  span={24}
-                  onClick={() => switchChain(chain as keyof cryptos)}
-                >
-                  <Image
-                    height={40}
-                    preview={false}
-                    src={blockchains[chain].logo}
-                    style={{ cursor: 'pointer' }}
-                  />
-                </Col>
-                <span style={{ fontSize: '16px', color: 'grey' }}>
-                  {blockchains[chain].name}
-                </span>
-              </Col>
-            </Fragment>
-          ))}
-        </Row>
+          <Space direction="vertical" size={32}>
+            <Space direction="vertical" size="small">
+              <Text>
+                <Text strong>{blockchainConfig?.name}</Text>{' '}
+                {t('home:payment_request.pay_for')}{' '}
+                <Text strong>
+                  {amount} {blockchainConfig?.symbol}
+                </Text>{' '}
+                {t('home:payment_request.to')}
+                <Text strong> {address} </Text>
+                {t('home:payment_request.received')}.
+              </Text>
+              {props.message && (
+                <Text>
+                  {t('home:payment_request.attached_message', {
+                    message: props.message,
+                  })}
+                </Text>
+              )}
+            </Space>
+          </Space>
+          <Space direction="vertical" size="large">
+            <Button type="primary" size="large" onClick={handleOk}>
+              {t('home:payment_request.proceed_to_pay')}
+            </Button>
+            <Button type="link" block size="small" onClick={handleCancel}>
+              {t('common:cancel')}
+            </Button>
+          </Space>
+        </Space>
       </Modal>
     </>
   );
 }
 
-export default ChainSelect;
+export default PaymentRequest;

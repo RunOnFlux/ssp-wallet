@@ -167,7 +167,19 @@
   },
   "chainSelect": {
     "select_chain": "Select Chain",
-    "unable_switch_chain": "Unable to switch chain."
+    "unable_switch_chain": "Unable to switch chain.",
+    "sync_chain_first": "Please sync {{chainName}} chain first."
+  },
+  "payment_request": {
+    "payment_request": "Payment Request",
+    "pay_for": "payment request for",
+    "to": "to",
+    "received": "received",
+    "attached_message": "Attached message: {{message}}",
+    "proceed_to_pay": "Proceed to Pay",
+    "tx_rejected": "Transaction Rejected",
+    "invalid_request": "Invalid Request",
+    "transaction_sent": "Transaction Sent"
   },
   "signMessage": {
     "sign_message": "Sign Message",
@@ -176,5 +188,9 @@
     "sign": "Sign",
     "message": "Message",
     "signature": "Signature"
+  },
+  "sspConnect": {
+    "invalid_chain": "Invalid chain.",
+    "invalid_method": "Invalid method."
   }
 }

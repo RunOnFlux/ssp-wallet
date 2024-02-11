@@ -140,11 +140,6 @@ function Home() {
   });
 
   useEffect(() => {
-    if (!xpubKey) return;
-    generateAddress();
-  }, [walletInUse]);
-
-  useEffect(() => {
     if (!xpubKeyIdentity) return;
     console.log('Key of Identity synchronised.');
     generateSSPIdentity();
