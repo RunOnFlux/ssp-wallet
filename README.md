@@ -4,6 +4,13 @@ Secure. Simple. Powerful.
 <https://sspwallet.io>
 <https://runonflux.io>
 
+SSP Wallet:
+Google Chrome: <https://chromewebstore.google.com/u/3/detail/ssp-wallet/mgfbabcnedcejkfibpafadgkhmkifhbd>
+
+SSP Key:
+iOS: <https://apps.apple.com/us/app/ssp-key/id6463717332>
+Android: <https://play.google.com/store/apps/details?id=io.runonflux.sspkey>
+
 **SSP is using strong encryption based on your device fingerprint. Altering your device OS, time, language and more variables can result in a need to restore SSP**
 
 Why another wallet?
