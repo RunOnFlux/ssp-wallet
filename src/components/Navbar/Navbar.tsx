@@ -49,6 +49,7 @@ import { useAppSelector } from '../../hooks';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
 import { generatedWallets, transaction, node } from '../../types';
 import { blockchains } from '@storage/blockchains';
+import ManualSign from '../ManualSign/ManualSign.tsx';
 
 interface walletOption {
   value: string;
@@ -74,6 +75,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
   const blockchainConfig = blockchains[activeChain];
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
+  const [openManualSign, setOpenManualSign] = useState(false);
   const [selectChainOpen, setSelectChainOpen] = useState(false);
   const [defaultWallet, setWalletValue] = useState<walletOption>({
     value: walletInUse,
@@ -277,6 +279,9 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
     }
   };
 
+  const sspIdentityAction = (status: boolean) =>{
+    setOpenManualSign(status);
+  };
   const sspWalletDetailsAction = (status: boolean) => {
     setOpenSspWalletDetails(status);
   };
@@ -313,6 +318,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
       setPasswordConfirmDialogVisible(true);
       setActionToPerform('sspwallet');
     }
+    if (e.key === 'manualsign') setOpenManualSign(true);
     if (e.key === 'settings') setOpenSettingsDialogVisible(true);
   };
   const navigate = useNavigate();
@@ -361,6 +367,10 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
               key: 'sspwallet',
             },
             {
+              label: t('home:navbar.manual_sign'),
+              key: 'manualsign',
+            },
+            {
               label: t('home:settings.settings'),
               key: 'settings',
             },
@@ -377,6 +387,10 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
             {
               label: t('home:navbar.ssp_details'),
               key: 'sspwallet',
+            },
+            {
+              label: t('home:navbar.manual_sign'),
+              key: 'manualsign',
             },
             {
               label: t('home:settings.settings'),
@@ -528,6 +542,10 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
       <AddressDetails
         open={openAddressDetails}
         openAction={addressDetailsAction}
+      />
+      <ManualSign 
+        open={openManualSign}
+        openAction={sspIdentityAction}
       />
       <PasswordConfirm
         open={passwordConfirmDialogVisilbe}
