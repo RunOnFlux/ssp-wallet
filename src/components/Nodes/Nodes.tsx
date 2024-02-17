@@ -240,7 +240,7 @@ function Nodes() {
   return (
     <div>
       {contextHolder}
-      <PArewards redeemScript={redeemScript} collateralPrivKey={collateralPrivKey} collateralPubKey={collateralPublicKey} />
+      <PArewards redeemScript={redeemScript} collateralPrivKey={collateralPrivKey} collateralPubKey={collateralPublicKey} sspwid={sspwid} />
       <NodesTable
         nodes={myNodes}
         chain={activeChain}

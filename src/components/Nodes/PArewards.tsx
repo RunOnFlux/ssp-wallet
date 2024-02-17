@@ -18,6 +18,7 @@ function PArewards(props: {
   redeemScript: string;
   collateralPrivKey: string;
   collateralPubKey: string;
+  sspwid: string;
 }) {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
@@ -151,6 +152,7 @@ function PArewards(props: {
           signature: signature,
           redeemScript: props.redeemScript,
           publicKey: props.collateralPubKey,
+          fluxid: props.sspwid, 
         };
 
         axios
