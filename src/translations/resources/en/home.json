@@ -192,5 +192,20 @@
   "sspConnect": {
     "invalid_chain": "Invalid chain.",
     "invalid_method": "Invalid method."
+  },
+  "fusion": {
+    "pa_reward": "Parallel Assets Reward",
+    "x_y_available": "{{amount}} {{symbol}} available",
+    "claim_with_fusion": "Claim with Fusion!",
+    "claim_reward": "Claim Reward",
+    "claim_pa_reward": "Claim Parallel Assets Reward",
+    "pa_info": "Parallel Assets (PA) are additional assets of Flux on various blockchains. You can claim your Parallel Assets Reward here using Fusion bridge. Fusion will automatically claim your PA rewards, convert them to Flux and send them to your Flux wallet.",
+    "total_to_claim": "Total PAs to Claim: {{amount}} {{symbol}}",
+    "fees_to_pay": "Fusion Fees to Pay: {{amount}} {{symbol}}",
+    "total_reward": "Total Reward to Receive: {{amount}} {{symbol}}",
+    "fusion_maintenance": "Fusion is undergoing maintenance. Try again later.",
+    "signature_error": "Error signing Fusion request. Try again later.",
+    "claim_successful": "Fusion Claim Successful!",
+    "claim_received": "Claim Received!"
   }
 }
