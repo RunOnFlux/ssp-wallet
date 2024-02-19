@@ -97,7 +97,6 @@ export const SspConnectProvider = ({
                 origin: 'ssp',
                 data: {
                   status: t('common:error'),
-                  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                   result: t('common:request_rejected') + ': ' + t('home:sspConnect.invalid_chain'),
                 },
               });
@@ -108,7 +107,6 @@ export const SspConnectProvider = ({
               origin: 'ssp',
               data: {
                 status: t('common:error'),
-                  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
                   result: t('common:request_rejected') + ': ' + t('home:sspConnect.invalid_method'),
               },
             });

@@ -59,6 +59,7 @@
     "err_no_name": "Harap beri nama node Anda terlebih dahulu"
   },
   "sspWalletDetails": {
+    "sspid": "ID Dompet SSP",
     "err_pw_not_valid": "Kata sandi tidak valid.",
     "err_invalid_wallet_xpriv": "Dompet xpriv tidak valid.",
     "err_invalid_wallet_xpriv_2": "Dompet xpriv tidak valid, tidak dapat didekripsi.",
@@ -107,7 +108,8 @@
     "ssp_details": "Detail Dompet SSP",
     "addr_details": "Detail Alamat",
     "generate_new_wallet": "Hasilkan Dompet Baru",
-    "switch_chain": "Ganti Rantai"
+    "switch_chain": "Ganti Rantai",
+    "manual_sign": "Tanda Tangan"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Kata sandi tidak valid. Silakan coba lagi.",
