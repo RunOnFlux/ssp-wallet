@@ -75,6 +75,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [selectChainOpen, setSelectChainOpen] = useState(false);
+  const [deletionToPerform, setDeletionToPerform] = useState('');
   const [defaultWallet, setWalletValue] = useState<walletOption>({
     value: walletInUse,
     label: t('home:navbar.chain_wallet', {
@@ -138,6 +139,19 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
     setWalletItems(wItems);
   }, [wallets, activeChain]);
 
+  useEffect(() => {
+    if (deletionToPerform && walletInUse && deletionToPerform !== walletInUse) {
+      removeWallet(activeChain, deletionToPerform);
+      // get stored wallets
+      void (async function () {
+        const generatedWallets: generatedWallets =
+          (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
+        delete generatedWallets[deletionToPerform];
+        await localForage.setItem(`wallets-${activeChain}`, generatedWallets);
+      })();
+    }
+  }, [deletionToPerform, walletInUse]);
+
   const handleChange = (value: { value: string; label: React.ReactNode }) => {
     generateAddress(value.value);
     void (async function () {
@@ -195,9 +209,8 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
         // can't remove 0-0 wallet
         return;
       }
-      const walletToRemove = `0-${walletToRemoveIndex.toString()}`;
       // check if that is our activeIndex, if yes. Switch wallet.
-      if (walletToRemove === walletInUse) {
+      if (pathToDelete === walletInUse) {
         // switch
         const walletName = 'Wallet 1';
         const wal = {
@@ -209,16 +222,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
         };
         handleChange(wal);
       }
-      setTimeout(() => {
-        removeWallet(activeChain, walletToRemove);
-        // get stored wallets
-        void (async function () {
-          const generatedWallets: generatedWallets =
-            (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
-          delete generatedWallets[pathToDelete];
-          await localForage.setItem(`wallets-${activeChain}`, generatedWallets);
-        })();
-      });
+      setDeletionToPerform(pathToDelete);
     } catch (error) {
       console.log(error);
     }
