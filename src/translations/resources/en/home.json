@@ -1,5 +1,9 @@
 {
   "err_panic": "PANIC: Invalid SSP Key.",
+  "balances": {
+    "locked": "Locked: {{balance}} {{symbol}}",
+    "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
+  },
   "txSent": {
     "show_in_explorer": "Show in Explorer",
     "tx_sent": "Transaction Sent!"

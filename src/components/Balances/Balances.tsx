@@ -6,6 +6,7 @@ import { setBalance, setUnconfirmedBalance } from '../../store';
 import { fetchAddressBalance } from '../../lib/balances.ts';
 import SocketListener from '../SocketListener/SocketListener.tsx';
 import { blockchains } from '@storage/blockchains';
+import { useTranslation } from 'react-i18next';
 
 interface balancesObj {
   confirmed: string;
@@ -18,6 +19,7 @@ const balancesObject = {
 };
 
 function Balances() {
+  const { t } = useTranslation(['home']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
   const [fiatRate, setFiatRate] = useState(0);
@@ -38,7 +40,9 @@ function Balances() {
   const [lockedBalance, setLockedBalance] = useState(
     myNodes.reduce((acc, node) => {
       return acc.plus(
-        new BigNumber(node.name ? node.amount : 0).dividedBy(10 ** blockchainConfig.decimals),
+        new BigNumber(node.name ? node.amount : 0).dividedBy(
+          10 ** blockchainConfig.decimals,
+        ),
       );
     }, new BigNumber(0)),
   );
@@ -124,7 +128,9 @@ function Balances() {
     setBalanceUSD(balUSD);
     const lockedAmnt = myNodes.reduce((acc, node) => {
       return acc.plus(
-        new BigNumber(node.name ? node.amount : 0).dividedBy(10 ** blockchainConfig.decimals),
+        new BigNumber(node.name ? node.amount : 0).dividedBy(
+          10 ** blockchainConfig.decimals,
+        ),
       );
     }, new BigNumber(0));
     setLockedBalance(lockedAmnt);
@@ -169,11 +175,18 @@ function Balances() {
             color: 'grey',
           }}
         >
-          Locked: {lockedBalance.toFixed() || '0.00'} {blockchainConfig.symbol}
+          {t('home:balances.locked', {
+            balance: lockedBalance.toFixed() || '0.00',
+            symbol: blockchainConfig.symbol,
+          })}
         </div>
       )}
       <h4 style={{ marginTop: 10, marginBottom: 15 }}>
-        ${balanceUSD.toFixed(2) || '0.00'} USD
+        {t('home:balances.fiat_value', {
+          fiatSymbol: '$',
+          fiatValue: balanceUSD.toFixed(2) || '0.00',
+          fiatCurrency: 'USD',
+        })}
       </h4>
       <SocketListener txRejected={onTxRejected} txSent={onTxSent} />
     </>
