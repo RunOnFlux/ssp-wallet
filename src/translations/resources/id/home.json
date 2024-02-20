@@ -32,7 +32,7 @@
   },
   "nodesTable": {
     "no_nodes": "Alamat tidak memiliki node",
-    "what_is_node": "Apa itu a {{chainName}} node?",
+    "what_is_node": "Apa yang di maksud {{chainName}} node?",
     "name": "Nama",
     "ip": "Alamat IP",
     "tier": "Tingkat",
@@ -52,7 +52,7 @@
     "err_start": "Kesalahan saat memulai {{chainName}} node. ",
     "offline": "Luring",
     "confirmed": "Dikonfirmasi",
-    "started": "Dimulai",
+    "started": "Memulai",
     "starting": "Mulai",
     "unassigned": "Belum ditetapkan",
     "dos": "DoS",
@@ -116,8 +116,8 @@
     "wallet_address_desc": "Ini adalah alamat dompet Anda. "
   },
   "navigation": {
-    "send": "Mengirim",
-    "receive": "Menerima"
+    "send": "Kirim",
+    "receive": "Terima"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Konfirmasi Transaksi pada Kunci SSP",
@@ -125,13 +125,13 @@
     "info_2": "Untuk mengonfirmasi transaksi pada SSP Key Anda, buka SSP Key di ponsel Anda dan konfirmasikan tindakan tersebut. Anda dapat mengetuk untuk menyegarkan atau menggunakan input manual."
   },
   "navbar": {
-    "refresh": "Menyegarkan",
+    "refresh": "Segarkan",
     "chain_wallet": "{{chain}} {{wallet}}",
     "ssp_details": "Detail Dompet SSP",
     "addr_details": "Alamat Lengkap",
     "generate_new_wallet": "Hasilkan Dompet Baru",
     "remove_last_wallet": "Hapus Dompet Terakhir",
-    "remove": "Menghapus",
+    "remove": "Hapus",
     "remove_last_wallet_desc": "Tindakan ini akan menghapus dompet Anda yang terakhir dibuat. Anda dapat membuat dompet baru yang sama kapan saja.",
     "switch_chain": "Beralih Rantai",
     "max_wallets": "42. Jawaban atas pertanyaan utama tentang kehidupan, alam semesta, dan segalanya. Anda telah mencapai jumlah maksimum dompet."
@@ -180,7 +180,7 @@
     "to": "ke",
     "received": "diterima",
     "attached_message": "Pesan terlampir: {{message}}",
-    "proceed_to_pay": "Lanjutkan ke Bayar",
+    "proceed_to_pay": "Lanjutkan ke Pembayaran",
     "tx_rejected": "Transaksi Ditolak",
     "invalid_request": "Permintaan Tidak Valid",
     "transaction_sent": "Transaksi Terkirim"
@@ -189,7 +189,7 @@
     "sign_message": "Tandatangani Pesan",
     "sign_message_sspwid": "Tanda tangani pesan dengan Identitas Dompet SSP Anda:",
     "sign_message_info": "Tanda tangani pesan dengan Anda {{chainName}} alamat:",
-    "sign": "Tanda",
+    "sign": "Tanda Tangani",
     "message": "Pesan",
     "signature": "Tanda tangan"
   },
