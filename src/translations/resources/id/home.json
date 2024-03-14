@@ -164,7 +164,7 @@
     "input_xpub": "Masukkan Kunci SSP {{chain}} Kunci Publik yang Diperluas {{path}} Di Sini",
     "sync_key_chain": "Kunci Sinkronisasi untuk {{chain}}",
     "warn_await_sync_chain": "Menunggu sinkronisasi Kunci SSP atau input manual.",
-    "err_sync_1_chain": "Silakan masukkan Kunci SSP XPUB. ",
+    "err_sync_1_chain": "Silakan masukkan Kunci SSP XPUB untuk {{chain}} ranti. SSP Key XPUB berbeda dengan SSP Wallet XPUB.",
     "cancel_sync_q_chain": "Batalkan Sinkronisasi Kunci SSP untuk {{chain}}?",
     "sync_info_content_chain": "Dompet SSP untuk rantai {{chain}} tidak dapat digunakan tanpa Kunci SSP. Ini akan beralih kembali ke Flux Chain",
     "sync_info_2_chain": "Pindai kode QR berikut untuk menyinkronkan Dompet SSP Anda untuk rantai {{chain}} dengan Kunci SSP Anda."
