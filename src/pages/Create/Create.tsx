@@ -275,7 +275,6 @@ function Create() {
       if (WSPbackedUp && wspWasShown) {
         setIsModalOpen(false);
         setIsConfrimModalOpen(true);
-        //storeMnemonic(mnemonic);
       } else {
         displayMessage('info', t('cr:info_backup_needed'));
       }
@@ -399,7 +398,9 @@ function Create() {
     };
 
     const handleExit = () => {
+      setWordIndex(1);
       setIsConfrimModalOpen(false);
+      setIsConfirmed(false);
       setIsModalOpen(true);
     };
 
