@@ -6,6 +6,7 @@ import { setBalance, setUnconfirmedBalance } from '../../store';
 import { fetchAddressBalance } from '../../lib/balances.ts';
 import SocketListener from '../SocketListener/SocketListener.tsx';
 import { blockchains } from '@storage/blockchains';
+import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 
 interface balancesObj {
@@ -99,7 +100,7 @@ function Balances() {
   }, [walletInUse, activeChain, wallets[walletInUse].address]);
 
   useEffect(() => {
-    getCryptoRate(activeChain, 'USD');
+    getCryptoRate(activeChain, sspConfig().fiatCurrency);
   }, [cryptoRates, fiatRates]);
 
   const fetchBalance = () => {
@@ -147,7 +148,7 @@ function Balances() {
 
   const refresh = () => {
     fetchBalance();
-    getCryptoRate(activeChain, 'USD');
+    getCryptoRate(activeChain, sspConfig().fiatCurrency);
   };
 
   const onTxRejected = () => {
@@ -185,7 +186,7 @@ function Balances() {
         {t('home:balances.fiat_value', {
           fiatSymbol: '$',
           fiatValue: balanceFIAT.toFixed(2) || '0.00',
-          fiatCurrency: 'USD',
+          fiatCurrency: sspConfig().fiatCurrency,
         })}
       </h4>
       <SocketListener txRejected={onTxRejected} txSent={onTxSent} />

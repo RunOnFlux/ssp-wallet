@@ -12,6 +12,7 @@ import { actionSSPRelay } from '../../types';
 import { pendingTransaction } from '../../types';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector } from '../../hooks';
+import { sspConfig } from '@storage/ssp';
 
 function PendingTransactionsTable(props: {
   transactions: pendingTransaction[];
@@ -98,7 +99,7 @@ function PendingTransactionsTable(props: {
                   {new BigNumber(Math.abs(+amnt))
                     .multipliedBy(new BigNumber(fiatRate))
                     .toFixed(2)}{' '}
-                  USD
+                  {sspConfig().fiatCurrency}
                 </div>
               </>
             )}

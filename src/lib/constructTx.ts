@@ -336,7 +336,7 @@ export function buildUnsignedRawTx(
 
     // absurd fee check, we define absurd fee as 100 USD sspConfig().maxTxFeeUSD in send.tsx
     if (actualTxFee.isGreaterThan(new BigNumber(maxFee))) {
-      throw new Error(`Fee is absurdely too high ${actualTxFee.toFixed()}`);
+      throw new Error(`Fee is absurdly too high ${actualTxFee.toFixed()}`);
     }
 
     const tx = txb.buildIncomplete();

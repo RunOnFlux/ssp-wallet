@@ -43,18 +43,18 @@ function Transactions() {
       }
       getTransactions();
     })();
-    getCryptoRate(activeChain, 'USD');
+    getCryptoRate(activeChain, sspConfig().fiatCurrency);
     if (globalThis.refreshIntervalTransactions) {
       clearInterval(globalThis.refreshIntervalTransactions);
     }
     globalThis.refreshIntervalTransactions = setInterval(() => {
       getTransactions();
-      getCryptoRate(activeChain, 'USD');
+      getCryptoRate(activeChain, sspConfig().fiatCurrency);
     }, 20000);
   });
 
   useEffect(() => {
-    getCryptoRate(activeChain, 'USD');
+    getCryptoRate(activeChain, sspConfig().fiatCurrency);
   }, [cryptoRates, fiatRates]);
 
   useEffect(() => {
@@ -79,7 +79,7 @@ function Transactions() {
     }
     globalThis.refreshIntervalTransactions = setInterval(() => {
       getTransactions();
-      getCryptoRate(activeChain, 'USD');
+      getCryptoRate(activeChain, sspConfig().fiatCurrency);
     }, 20000);
   }, [walletInUse, activeChain, wallets[walletInUse].address]);
 

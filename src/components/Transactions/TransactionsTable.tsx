@@ -15,6 +15,7 @@ import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { backends } from '@storage/backends';
+import { sspConfig } from '@storage/ssp';
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -179,7 +180,7 @@ function TransactionsTable(props: {
                   .dividedBy(10 ** blockchainConfig.decimals)
                   .multipliedBy(new BigNumber(fiatRate))
                   .toFixed(2)}{' '}
-                USD
+                {sspConfig().fiatCurrency}
               </div>
             </>
           )}
