@@ -334,7 +334,7 @@ export function buildUnsignedRawTx(
       throw new Error(`Invalid fee ${actualTxFee.toFixed()}`);
     }
 
-    // absurd fee check, we define absurd fee as 100 usd in send.tsx
+    // absurd fee check, we define absurd fee as 100 USD sspConfig().maxTxFeeUSD in send.tsx
     if (actualTxFee.isGreaterThan(new BigNumber(maxFee))) {
       throw new Error(`Fee is absurdely too high ${actualTxFee.toFixed()}`);
     }

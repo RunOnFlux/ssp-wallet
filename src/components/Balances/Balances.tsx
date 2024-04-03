@@ -46,7 +46,7 @@ function Balances() {
       );
     }, new BigNumber(0)),
   );
-  const [balanceUSD, setBalanceUSD] = useState(
+  const [balanceFIAT, setBalanceFIAT] = useState(
     totalBalance.multipliedBy(new BigNumber(fiatRate)),
   );
 
@@ -124,8 +124,8 @@ function Balances() {
       .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
       .dividedBy(10 ** blockchainConfig.decimals);
     setTotalBalance(ttlBal);
-    const balUSD = ttlBal.multipliedBy(new BigNumber(fiatRate));
-    setBalanceUSD(balUSD);
+    const balFIAT = ttlBal.multipliedBy(new BigNumber(fiatRate));
+    setBalanceFIAT(balFIAT);
     const lockedAmnt = myNodes.reduce((acc, node) => {
       return acc.plus(
         new BigNumber(node.name ? node.amount : 0).dividedBy(
@@ -184,7 +184,7 @@ function Balances() {
       <h4 style={{ marginTop: 10, marginBottom: 15 }}>
         {t('home:balances.fiat_value', {
           fiatSymbol: '$',
-          fiatValue: balanceUSD.toFixed(2) || '0.00',
+          fiatValue: balanceFIAT.toFixed(2) || '0.00',
           fiatCurrency: 'USD',
         })}
       </h4>
