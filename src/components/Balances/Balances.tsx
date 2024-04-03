@@ -184,7 +184,7 @@ function Balances() {
       )}
       <h4 style={{ marginTop: 10, marginBottom: 15 }}>
         {t('home:balances.fiat_value', {
-          fiatSymbol: '$',
+          fiatSymbol: sspConfig().fiatSymbol,
           fiatValue: balanceFIAT.toFixed(2) || '0.00',
           fiatCurrency: sspConfig().fiatCurrency,
         })}

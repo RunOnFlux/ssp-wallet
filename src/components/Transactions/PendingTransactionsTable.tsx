@@ -95,7 +95,7 @@ function PendingTransactionsTable(props: {
                 -{amnt} {blockchainConfig.symbol}
                 <br />
                 <div style={{ color: 'grey', fontSize: 12 }}>
-                  -$
+                  -{sspConfig().fiatSymbol}
                   {new BigNumber(Math.abs(+amnt))
                     .multipliedBy(new BigNumber(fiatRate))
                     .toFixed(2)}{' '}

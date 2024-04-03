@@ -52,6 +52,7 @@ declare module '@storage/ssp' {
   interface ssp {
     maxTxFeeUSD: number;
     fiatCurrency: keyof currency;
+    fiatSymbol: string;
     relay: string;
   }
 

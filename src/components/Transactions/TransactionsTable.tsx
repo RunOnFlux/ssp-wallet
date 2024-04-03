@@ -175,7 +175,7 @@ function TransactionsTable(props: {
               {blockchainConfig.symbol}
               <br />
               <div style={{ color: 'grey', fontSize: 12 }}>
-                {+amnt < 0 ? '-' : ''}$
+                {+amnt < 0 ? '-' : ''}{sspConfig().fiatSymbol}
                 {new BigNumber(Math.abs(+amnt))
                   .dividedBy(10 ** blockchainConfig.decimals)
                   .multipliedBy(new BigNumber(fiatRate))
