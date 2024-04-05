@@ -123,6 +123,7 @@ const initialRatesState: RatesState = {
     CZK: 0,
     BHD: 0,
     UAH: 0,
+    BTC: 0,
   },
 };
 
