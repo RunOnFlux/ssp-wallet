@@ -8,6 +8,7 @@ import SocketListener from '../SocketListener/SocketListener.tsx';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
+import { formatFiat, formatCrypto } from '../../lib/currency';
 
 interface balancesObj {
   confirmed: string;
@@ -167,7 +168,7 @@ function Balances() {
   return (
     <>
       <h3 style={{ marginTop: 0, marginBottom: 0 }}>
-        {totalBalance.toFixed() || '0.00'} {blockchainConfig.symbol}
+        {formatCrypto(totalBalance)} {blockchainConfig.symbol}
       </h3>
       {+lockedBalance > 0 && (
         <div
@@ -177,7 +178,7 @@ function Balances() {
           }}
         >
           {t('home:balances.locked', {
-            balance: lockedBalance.toFixed() || '0.00',
+            balance: formatCrypto(lockedBalance),
             symbol: blockchainConfig.symbol,
           })}
         </div>
@@ -185,7 +186,7 @@ function Balances() {
       <h4 style={{ marginTop: 10, marginBottom: 15 }}>
         {t('home:balances.fiat_value', {
           fiatSymbol: sspConfig().fiatSymbol,
-          fiatValue: balanceFIAT.toFixed(2) || '0.00',
+          fiatValue: formatFiat(balanceFIAT),
           fiatCurrency: sspConfig().fiatCurrency,
         })}
       </h4>

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { currencySSPRelay, currency } from '../types';
 import { sspConfig } from '@storage/ssp';
+import BigNumber from 'bignumber.js';
 
 export const supportedFiatValues = [
   'AED',
@@ -52,6 +53,24 @@ export const supportedFiatValues = [
   'XDR',
   'ZAR',
 ];
+
+export function decimalPlaces() {
+  if (sspConfig().fiatCurrency === 'BTC') {
+    return 4;
+  }
+  return 2;
+}
+
+export function formatCrypto(amount: BigNumber) {
+  const formated = amount.toNumber().toLocaleString('en-US');
+  return formated;
+}
+
+export function formatFiat(amount: BigNumber) {
+  const digits = decimalPlaces();
+  const formated = amount.toNumber().toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+  return formated;
+}
 
 export async function fetchRate(chain: string): Promise<currency> {
   try {
