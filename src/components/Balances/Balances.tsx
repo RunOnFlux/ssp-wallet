@@ -8,7 +8,7 @@ import SocketListener from '../SocketListener/SocketListener.tsx';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
-import { formatFiat, formatCrypto } from '../../lib/currency';
+import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency';
 
 interface balancesObj {
   confirmed: string;
@@ -184,11 +184,7 @@ function Balances() {
         </div>
       )}
       <h4 style={{ marginTop: 10, marginBottom: 15 }}>
-        {t('home:balances.fiat_value', {
-          fiatSymbol: sspConfig().fiatSymbol,
-          fiatValue: formatFiat(balanceFIAT),
-          fiatCurrency: sspConfig().fiatCurrency,
-        })}
+        {formatFiatWithSymbol(balanceFIAT)}
       </h4>
       <SocketListener txRejected={onTxRejected} txSent={onTxSent} />
     </>

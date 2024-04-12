@@ -19,6 +19,7 @@ export const supportedFiatValues = [
   'CZK',
   'DKK',
   'EUR',
+  'ETH',
   'GBP',
   'HKD',
   'HUF',
@@ -62,14 +63,23 @@ export function decimalPlaces() {
 }
 
 export function formatCrypto(amount: BigNumber) {
-  const formated = amount.toNumber().toLocaleString('en-US');
+  const formated = amount.toNumber().toLocaleString(navigator.language ?? 'en-US'); // or force 'en-US'?
   return formated;
 }
 
 export function formatFiat(amount: BigNumber) {
   const digits = decimalPlaces();
-  const formated = amount.toNumber().toLocaleString('en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+  const formated = amount.toNumber().toLocaleString(navigator.language ?? 'en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
   return formated;
+}
+
+export function formatFiatWithSymbol(amount: BigNumber) {
+  const formated = formatFiat(amount);
+  if (sspConfig().fiatSymbol.length > 1) {
+    // append only
+    return `${formated} ${sspConfig().fiatSymbol}`;
+  }
+  return `${sspConfig().fiatSymbol}${formated} ${sspConfig().fiatCurrency}`;
 }
 
 export async function fetchRate(chain: string): Promise<currency> {

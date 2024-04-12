@@ -15,8 +15,10 @@ import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { backends } from '@storage/backends';
-import { sspConfig } from '@storage/ssp';
-import { formatFiat, formatCrypto } from '../../lib/currency';
+import {
+  formatCrypto,
+  formatFiatWithSymbol,
+} from '../../lib/currency';
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -179,13 +181,11 @@ function TransactionsTable(props: {
               <br />
               <div style={{ color: 'grey', fontSize: 12 }}>
                 {+amnt < 0 ? '-' : ''}
-                {sspConfig().fiatSymbol}
-                {formatFiat(
+                {formatFiatWithSymbol(
                   new BigNumber(Math.abs(+amnt))
                     .dividedBy(10 ** blockchainConfig.decimals)
                     .multipliedBy(new BigNumber(fiatRate)),
-                )}{' '}
-                {sspConfig().fiatCurrency}
+                )}
               </div>
             </>
           )}
