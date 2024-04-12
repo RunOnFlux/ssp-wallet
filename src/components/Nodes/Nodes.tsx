@@ -22,6 +22,7 @@ import {
   getScriptType,
 } from '../../lib/wallet.ts';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
+import PArewards from './PArewards.tsx';
 
 function Nodes() {
   const { t } = useTranslation(['home', 'common']);
@@ -36,10 +37,12 @@ function Nodes() {
     (state) => state.sspState,
   );
   const redeemScript = wallets[walletInUse].redeemScript;
+  const address = wallets[walletInUse].address;
   const blockchainConfig = blockchains[activeChain];
   const myNodes = wallets[walletInUse].nodes ?? [];
-  const [nodeIdentityPK, setNodeIdentityPK] = useState(''); // we show node identity private key!
-  const [collateralPrivKey, setCollateralPrivKey] = useState(''); // we show node identity private key!
+  const [nodeIdentityPK, setNodeIdentityPK] = useState('');
+  const [collateralPrivKey, setCollateralPrivKey] = useState('');
+  const [collateralPublicKey, setCollateralPublicKey] = useState('')
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -123,6 +126,7 @@ function Nodes() {
             addressIndex,
             activeChain,
           );
+          setCollateralPublicKey(keyPair.pubKey);
           setCollateralPrivKey(keyPair.privKey);
         } else {
           throw new Error('Unable to decrypt xpriv');
@@ -135,13 +139,10 @@ function Nodes() {
 
   const fetchUtxosForNodes = (suppliedNodes: node[]) => {
     const wInUse = walletInUse;
-    fetchNodesUtxos(wallets[wInUse].address, activeChain)
+    fetchNodesUtxos(address, activeChain)
       .then(async (utxos) => {
         // for our utxo list fetch information from explorer. INSIGHT
-        const confirmedNodes = await getNodesOnNetwork(
-          wallets[wInUse].address,
-          activeChain,
-        );
+        const confirmedNodes = await getNodesOnNetwork(address, activeChain);
         const nodes: node[] = JSON.parse(
           JSON.stringify(suppliedNodes),
         ) as node[];
@@ -239,6 +240,7 @@ function Nodes() {
   return (
     <div>
       {contextHolder}
+      <PArewards redeemScript={redeemScript} collateralPrivKey={collateralPrivKey} collateralPubKey={collateralPublicKey} sspwid={sspwid} />
       <NodesTable
         nodes={myNodes}
         chain={activeChain}

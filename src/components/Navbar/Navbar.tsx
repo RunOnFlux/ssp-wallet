@@ -12,6 +12,10 @@ import {
   setWitnessScript,
   setWalletInUse,
   removeWallet,
+  setNodes,
+  setTransactions,
+  setBalance,
+  setUnconfirmedBalance,
 } from '../../store';
 import {
   Row,
@@ -43,13 +47,23 @@ import AutoLogout from '../AutoLogout/AutoLogout';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
-import { generatedWallets } from '../../types';
+import { generatedWallets, transaction, node } from '../../types';
 import { blockchains } from '@storage/blockchains';
 
 interface walletOption {
   value: string;
   label: string;
 }
+
+interface balancesObj {
+  confirmed: string;
+  unconfirmed: string;
+}
+
+const balancesObject = {
+  confirmed: '0.00',
+  unconfirmed: '0.00',
+};
 
 function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
   const { t } = useTranslation(['home', 'common']);
@@ -61,6 +75,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
   const [actionToPerform, setActionToPerform] = useState('');
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [selectChainOpen, setSelectChainOpen] = useState(false);
+  const [deletionToPerform, setDeletionToPerform] = useState('');
   const [defaultWallet, setWalletValue] = useState<walletOption>({
     value: walletInUse,
     label: t('home:navbar.chain_wallet', {
@@ -124,16 +139,56 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
     setWalletItems(wItems);
   }, [wallets, activeChain]);
 
+  useEffect(() => {
+    if (deletionToPerform && walletInUse && deletionToPerform !== walletInUse) {
+      removeWallet(activeChain, deletionToPerform);
+      // get stored wallets
+      void (async function () {
+        const generatedWallets: generatedWallets =
+          (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
+        delete generatedWallets[deletionToPerform];
+        await localForage.setItem(`wallets-${activeChain}`, generatedWallets);
+      })();
+    }
+  }, [deletionToPerform, walletInUse]);
+
   const handleChange = (value: { value: string; label: React.ReactNode }) => {
-    setWalletValue(value as walletOption);
-    setWalletInUse(activeChain, value.value);
+    generateAddress(value.value);
     void (async function () {
+      // load txs, balances, settings etc.
+      const txsWallet: transaction[] =
+        (await localForage.getItem(
+          `transactions-${activeChain}-${value.value}`,
+        )) ?? [];
+      const balancesWallet: balancesObj =
+        (await localForage.getItem(`balances-${activeChain}-${value.value}`)) ??
+        balancesObject;
+      const nodesWallet: node[] =
+        (await localForage.getItem(`nodes-${activeChain}-${value.value}`)) ??
+        [];
+      if (nodesWallet) {
+        setNodes(activeChain, value.value, nodesWallet || []);
+      }
+      if (txsWallet) {
+        setTransactions(activeChain, value.value, txsWallet || []);
+      }
+      if (balancesWallet) {
+        setBalance(activeChain, value.value, balancesWallet.confirmed);
+
+        setUnconfirmedBalance(
+          activeChain,
+          value.value,
+          balancesWallet.unconfirmed,
+        );
+      }
       await localForage.setItem(`walletInUse-${activeChain}`, value.value);
+      setWalletValue(value as walletOption);
+      setWalletInUse(activeChain, value.value);
     })();
   };
 
   const addWallet = () => {
-    generateAddress();
+    generateNewAddress();
   };
 
   const removeAddress = () => {
@@ -154,9 +209,8 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
         // can't remove 0-0 wallet
         return;
       }
-      const walletToRemove = `0-${walletToRemoveIndex.toString()}`;
       // check if that is our activeIndex, if yes. Switch wallet.
-      if (walletToRemove === walletInUse) {
+      if (pathToDelete === walletInUse) {
         // switch
         const walletName = 'Wallet 1';
         const wal = {
@@ -168,22 +222,13 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
         };
         handleChange(wal);
       }
-      setTimeout(() => {
-        removeWallet(activeChain, walletToRemove);
-        // get stored wallets
-        void (async function () {
-          const generatedWallets: generatedWallets =
-            (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
-          delete generatedWallets[pathToDelete];
-          await localForage.setItem(`wallets-${activeChain}`, generatedWallets);
-        })();
-      });
+      setDeletionToPerform(pathToDelete);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const generateAddress = () => {
+  const generateNewAddress = () => {
     try {
       // what wallet to generate?
       let path = '0-0';
@@ -193,9 +238,24 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
         i++;
         path = '0-' + i;
       }
-      const typeIndex = 0;
-      const addressIndex = i;
-      console.log(addressIndex);
+      if (i > 41) {
+        // max 42 wallets
+        displayMessage('error', t('home:navbar.max_wallets'));
+        return;
+      }
+      generateAddress(path);
+    } catch (error) {
+      // if error, key is invalid! we should never end up here as it is validated before
+      displayMessage('error', t('home:err_panic'));
+      console.log(error);
+    }
+  };
+
+  const generateAddress = (path: string) => {
+    try {
+      const splittedDerPath = path.split('-');
+      const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+      const addressIndex = Number(splittedDerPath[1]);
       const addrInfo = generateMultisigAddress(
         xpubWallet,
         xpubKey,
@@ -206,12 +266,13 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
       setAddress(activeChain, path, addrInfo.address);
       setRedeemScript(activeChain, path, addrInfo.redeemScript ?? '');
       setWitnessScript(activeChain, path, addrInfo.witnessScript ?? '');
-      // get stored wallets
+      // get stored path
       void (async function () {
         const generatedWallets: generatedWallets =
-          (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
+          (await localForage.getItem('wallets-' + activeChain)) ?? {};
         generatedWallets[path] = addrInfo.address;
-        await localForage.setItem(`wallets-${activeChain}`, generatedWallets);
+        await localForage.setItem('wallets-' + activeChain, generatedWallets);
+        // balances, transactions are refreshed automatically
       })();
     } catch (error) {
       // if error, key is invalid! we should never end up here as it is validated before
@@ -408,7 +469,9 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
                   {walletItems.length > 1 && (
                     <Popconfirm
                       title={t('home:navbar.remove_last_wallet')}
-                      description={<>{t('home:navbar.remove_last_wallet_desc')}</>}
+                      description={
+                        <>{t('home:navbar.remove_last_wallet_desc')}</>
+                      }
                       overlayStyle={{ maxWidth: 360, margin: 10 }}
                       okText={t('home:navbar.remove')}
                       cancelText={t('common:cancel')}

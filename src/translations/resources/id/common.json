@@ -32,6 +32,7 @@
   "delete": "Hapus",
   "edit": "Sunting",
   "fluxos": "Flux OS",
-  "success": "KESUKSESAN",
-  "error": "KESALAHAN"
+  "success": "SUKSES",
+  "error": "KESALAHAN",
+  "request_rejected": "Permintaan Ditolak"
 }

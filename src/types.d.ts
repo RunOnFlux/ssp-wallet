@@ -205,7 +205,7 @@ export interface transaction {
   receiver: string;
   size: number;
   vsize?: number;
-  utxos?: txIdentifier[]
+  utxos?: txIdentifier[];
 }
 
 export interface pendingTransaction {
@@ -291,6 +291,8 @@ export interface currency {
   CZK: number;
   BHD: number;
   UAH: number;
+  BTC: number;
+  ETH: number;
 }
 
 export interface cryptos {
@@ -384,6 +386,32 @@ export interface startFluxInsight {
   error: string;
   id: number;
   result: startNodeFlux[];
+}
+
+export interface fusionPAavailable {
+  status: string;
+  data: {
+    address: string;
+    totalClaim: number;
+    totalMiningFees: number;
+    totalSwapFees: number;
+    totalFee: number;
+    totalReward: number;
+    message: string;
+    code: number;
+    name: string;
+  };
+}
+
+export interface errorResponse {
+  message: string;
+  code: number;
+  name: string;
+}
+
+export interface fusionMessage {
+  status: string;
+  data: errorResponse | string;
 }
 
 declare global {

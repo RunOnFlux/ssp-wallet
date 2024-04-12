@@ -10,7 +10,6 @@ import {
   Popconfirm,
   Popover,
 } from 'antd';
-import { Link } from 'react-router-dom';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
 import {
@@ -38,12 +37,15 @@ import { blockchains } from '@storage/blockchains';
 
 import { transaction, utxo } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
+import SspConnect from '../../components/SspConnect/SspConnect.tsx';
+
 interface sendForm {
   receiver: string;
   amount: string;
   fee: string;
   message: string;
   utxos: utxo[]; // RBF mandatory utxos - use all of them or one?
+  paymentAction?: boolean;
 }
 
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
@@ -101,23 +103,37 @@ function Send() {
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
   useEffect(() => {
+    try {
+      if (state.amount || state.receiver || state.message) {
+        console.log('TRIGGERED A');
+        setFeePerByte(networkFees[activeChain].toFixed());
+        obtainFreshUtxos();
+        if (state.amount) {
+          setSendingAmount(state.amount);
+          form.setFieldValue('amount', state.amount);
+        }
+        if (state.receiver) {
+          setTxReceiver(state.receiver);
+          form.setFieldValue('receiver', state.receiver);
+        }
+        if (state.message) {
+          setTxMessage(state.message);
+          form.setFieldValue('message', state.message);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [state.message, state.receiver, state.amount]);
+
+  useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     try {
-      console.log(state);
-      setFeePerByte(networkFees[activeChain].toFixed());
-      obtainFreshUtxos();
-      if (state.amount) {
-        setSendingAmount(state.amount);
-        form.setFieldValue('amount', state.amount);
-      }
-      if (state.receiver) {
-        setTxReceiver(state.receiver);
-        form.setFieldValue('receiver', state.receiver);
-      }
-      if (state.message) {
-        setTxMessage(state.message);
-        form.setFieldValue('message', state.message);
+      if (!state.amount && !state.receiver && !state.message) {
+        console.log('TRIGGERED B');
+        setFeePerByte(networkFees[activeChain].toFixed());
+        obtainFreshUtxos();
       }
     } catch (error) {
       console.log(error);
@@ -210,6 +226,13 @@ function Send() {
     if (txid) {
       setOpenConfirmTx(false);
       setTimeout(() => {
+        if (state.paymentAction) {
+          payRequestAction({
+            status: t('common:success'),
+            data: t('home:payment_request.transaction_sent'),
+            txid,
+          });
+        }
         setOpenTxSent(true);
       });
     }
@@ -231,6 +254,9 @@ function Send() {
     if (txRejected) {
       setOpenConfirmTx(false);
       setTimeout(() => {
+        if (state.paymentAction) {
+          payRequestAction(null);
+        }
         setOpenTxRejected(true);
       });
       if (txSentInterval) {
@@ -352,10 +378,10 @@ function Send() {
     const lockedUtxos = myNodes.filter((node) => node.name);
     // maxFee is max 100USD worth in fee
     const cr = cryptoRates[activeChain] ?? 0;
-    const fi = fiatRates.USD ?? 0;
-    const fiatPrice = cr * fi;
-    const maxFeeUSD = 100;
-    const maxFeeUNIT = new BigNumber(maxFeeUSD).dividedBy(fiatPrice).toFixed();
+    const fiUSD = fiatRates.USD ?? 0;
+    const fiatPriceUSD = cr * fiUSD;
+    const maxFeeUSD = sspConfig().maxTxFeeUSD // max USD fee per tranasction
+    const maxFeeUNIT = new BigNumber(maxFeeUSD).dividedBy(fiatPriceUSD).toFixed();
     const maxFeeSat = new BigNumber(maxFeeUNIT)
       .multipliedBy(10 ** blockchainConfig.decimals)
       .toFixed();
@@ -503,11 +529,11 @@ function Send() {
         const lockedUtxos = myNodes.filter((node) => node.name);
         // maxFee is max 100USD worth in fee
         const cr = cryptoRates[activeChain] ?? 0;
-        const fi = fiatRates.USD ?? 0;
-        const fiatPrice = cr * fi;
-        const maxFeeUSD = 100;
+        const fiUSD = fiatRates.USD ?? 0;
+        const fiatPriceUSD = cr * fiUSD;
+        const maxFeeUSD = sspConfig().maxTxFeeUSD // max USD fee per tranasction
         const maxFeeUNIT = new BigNumber(maxFeeUSD)
-          .dividedBy(fiatPrice)
+          .dividedBy(fiatPriceUSD)
           .toFixed();
         const maxFeeSat = new BigNumber(maxFeeUNIT)
           .multipliedBy(10 ** blockchainConfig.decimals)
@@ -590,6 +616,43 @@ function Send() {
     };
   };
 
+  interface paymentData {
+    status: string;
+    txid?: string;
+    data?: string;
+  }
+
+  const payRequestAction = (data: paymentData | null) => {
+    console.log(data);
+    if (chrome?.runtime?.sendMessage) {
+      // we do not use sendResponse, instead we are sending new message
+      if (!data) {
+        // reject message
+        void chrome.runtime.sendMessage({
+          origin: 'ssp',
+          data: {
+            status: t('common:error'),
+            result: t('common:request_rejected'),
+          },
+        });
+      } else {
+        void chrome.runtime.sendMessage({
+          origin: 'ssp',
+          data,
+        });
+      }
+    } else {
+      console.log('no chrome.runtime.sendMessage');
+    }
+  };
+
+  const cancelSend = () => {
+    if (state.paymentAction) {
+      payRequestAction(null);
+    }
+    navigate('/home');
+  };
+
   const content = (
     <div>
       <p>{t('home:transactionsTable.replace_by_fee_desc')}</p>
@@ -661,7 +724,7 @@ function Send() {
             fontSize: 12,
             color: '#4096ff',
             cursor: 'pointer',
-            zIndex: 100,
+            zIndex: 2,
           }}
           onClick={() => setUseMaximum(true)}
         >
@@ -710,7 +773,7 @@ function Send() {
             fontSize: 12,
             color: '#4096ff',
             cursor: 'pointer',
-            zIndex: 100,
+            zIndex: 2,
           }}
           onClick={() => {
             setManualFee(!manualFee);
@@ -769,8 +832,8 @@ function Send() {
                 {t('send:send')}
               </Button>
             </Popconfirm>
-            <Button type="link" block size="small">
-              <Link to={'/home'}>{t('common:cancel')}</Link>
+            <Button type="link" block size="small" onClick={cancelSend}>
+              {t('common:cancel')}
             </Button>
           </Space>
         </Form.Item>
@@ -789,6 +852,7 @@ function Send() {
         chain={txChain}
       />
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
+      <SspConnect />
       <PoweredByFlux />
     </>
   );

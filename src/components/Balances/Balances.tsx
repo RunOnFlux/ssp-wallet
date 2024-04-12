@@ -6,6 +6,9 @@ import { setBalance, setUnconfirmedBalance } from '../../store';
 import { fetchAddressBalance } from '../../lib/balances.ts';
 import SocketListener from '../SocketListener/SocketListener.tsx';
 import { blockchains } from '@storage/blockchains';
+import { sspConfig } from '@storage/ssp';
+import { useTranslation } from 'react-i18next';
+import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency';
 
 interface balancesObj {
   confirmed: string;
@@ -18,6 +21,7 @@ const balancesObject = {
 };
 
 function Balances() {
+  const { t } = useTranslation(['home']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const isInitialMount = useRef(true);
   const [fiatRate, setFiatRate] = useState(0);
@@ -38,11 +42,13 @@ function Balances() {
   const [lockedBalance, setLockedBalance] = useState(
     myNodes.reduce((acc, node) => {
       return acc.plus(
-        new BigNumber(node.name ? node.amount : 0).dividedBy(10 ** blockchainConfig.decimals),
+        new BigNumber(node.name ? node.amount : 0).dividedBy(
+          10 ** blockchainConfig.decimals,
+        ),
       );
     }, new BigNumber(0)),
   );
-  const [balanceUSD, setBalanceUSD] = useState(
+  const [balanceFIAT, setBalanceFIAT] = useState(
     totalBalance.multipliedBy(new BigNumber(fiatRate)),
   );
 
@@ -95,7 +101,7 @@ function Balances() {
   }, [walletInUse, activeChain, wallets[walletInUse].address]);
 
   useEffect(() => {
-    getCryptoRate(activeChain, 'USD');
+    getCryptoRate(activeChain, sspConfig().fiatCurrency);
   }, [cryptoRates, fiatRates]);
 
   const fetchBalance = () => {
@@ -120,11 +126,13 @@ function Balances() {
       .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
       .dividedBy(10 ** blockchainConfig.decimals);
     setTotalBalance(ttlBal);
-    const balUSD = ttlBal.multipliedBy(new BigNumber(fiatRate));
-    setBalanceUSD(balUSD);
+    const balFIAT = ttlBal.multipliedBy(new BigNumber(fiatRate));
+    setBalanceFIAT(balFIAT);
     const lockedAmnt = myNodes.reduce((acc, node) => {
       return acc.plus(
-        new BigNumber(node.name ? node.amount : 0).dividedBy(10 ** blockchainConfig.decimals),
+        new BigNumber(node.name ? node.amount : 0).dividedBy(
+          10 ** blockchainConfig.decimals,
+        ),
       );
     }, new BigNumber(0));
     setLockedBalance(lockedAmnt);
@@ -141,7 +149,7 @@ function Balances() {
 
   const refresh = () => {
     fetchBalance();
-    getCryptoRate(activeChain, 'USD');
+    getCryptoRate(activeChain, sspConfig().fiatCurrency);
   };
 
   const onTxRejected = () => {
@@ -160,7 +168,7 @@ function Balances() {
   return (
     <>
       <h3 style={{ marginTop: 0, marginBottom: 0 }}>
-        {totalBalance.toFixed() || '0.00'} {blockchainConfig.symbol}
+        {formatCrypto(totalBalance)} {blockchainConfig.symbol}
       </h3>
       {+lockedBalance > 0 && (
         <div
@@ -169,11 +177,14 @@ function Balances() {
             color: 'grey',
           }}
         >
-          Locked: {lockedBalance.toFixed() || '0.00'} {blockchainConfig.symbol}
+          {t('home:balances.locked', {
+            balance: formatCrypto(lockedBalance),
+            symbol: blockchainConfig.symbol,
+          })}
         </div>
       )}
       <h4 style={{ marginTop: 10, marginBottom: 15 }}>
-        ${balanceUSD.toFixed(2) || '0.00'} USD
+        {formatFiatWithSymbol(balanceFIAT)}
       </h4>
       <SocketListener txRejected={onTxRejected} txSent={onTxSent} />
     </>
