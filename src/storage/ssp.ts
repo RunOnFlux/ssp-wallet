@@ -1,10 +1,10 @@
 import localForage from 'localforage';
-import getSymbolFromCurrency from 'currency-symbol-map';
+import { getFiatSymbol } from '../lib/currency';
 import { currency } from '../types';
 
 interface config {
-  relay?: string;
-  fiatCurrency?: keyof currency;
+  relay?: string; // user adjustable
+  fiatCurrency?: keyof currency; // user adjustable
   maxTxFeeUSD?: number;
   fiatSymbol?: string;
 }
@@ -30,10 +30,6 @@ const ssp: config = {
   fiatCurrency: 'USD',
   maxTxFeeUSD: 100, // in USD
 };
-
-function getFiatSymbol(fiatCurrency: keyof currency): string {
-  return getSymbolFromCurrency(fiatCurrency) ?? '';
-}
 
 export function sspConfig(): config {
   return {

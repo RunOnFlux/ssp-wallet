@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Modal, Input, Space, message } from 'antd';
+import { Button, Modal, Input, Space, message, Select } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import {
@@ -14,9 +14,16 @@ import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector } from '../../hooks';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
+import { currency } from '../../types';
+import { supportedFiatValues, getFiatSymbol } from '../../lib/currency.ts';
 
 const backendsOriginalConfig = backendsOriginal();
 const originalConfig = sspConfigOriginal();
+
+interface sspConfigType {
+  relay?: string;
+  fiatCurrency?: keyof currency;
+}
 
 function Settings(props: {
   open: boolean;
@@ -26,7 +33,9 @@ function Settings(props: {
   const { t } = useTranslation(['home', 'common']);
   const NC = backends()[activeChain].node;
   const SSPR = sspConfig().relay;
-  const [sspConfigRelay, setSspConfigRelay] = useState(SSPR);
+  const [sspConfigRelay, setSspConfigRelay] = useState(sspConfig().relay);
+  const SSPFC = sspConfig().fiatCurrency;
+  const [sspFiatCurrency, setSspFiatCurrency] = useState(SSPFC);
   const [nodeConfig, setNodeConfig] = useState(NC);
   const { open, openAction } = props;
   const [messageApi, contextHolder] = message.useMessage();
@@ -42,10 +51,14 @@ function Settings(props: {
   const handleOk = async () => {
     try {
       // adjust ssp
+      const sspConf: sspConfigType = {};
       if (originalConfig.relay !== sspConfigRelay) {
-        const sspConf = {
-          relay: sspConfigRelay,
-        };
+        sspConf.relay = sspConfigRelay;
+      }
+      if (originalConfig.fiatCurrency !== sspFiatCurrency) {
+        sspConf.fiatCurrency = sspFiatCurrency;
+      }
+      if (Object.keys(sspConf).length > 0) {
         await localForage.setItem('sspConfig', sspConf).catch((err) => {
           console.log(err);
         });
@@ -97,6 +110,9 @@ function Settings(props: {
     if (NC !== nodeConfig) {
       setNodeConfig(NC);
     }
+    if (SSPFC !== sspFiatCurrency) {
+      setSspFiatCurrency(SSPFC);
+    }
     loadBackendsConfig();
     loadSSPConfig();
     openAction(false);
@@ -104,11 +120,24 @@ function Settings(props: {
 
   const resetSSP = () => {
     setSspConfigRelay(originalConfig.relay);
+    setSspFiatCurrency(originalConfig.fiatCurrency);
   };
 
   const resetNodeConfig = () => {
     setNodeConfig(backendsOriginalConfig[activeChain].node);
   };
+
+  const fiatOptions = () => {
+    const fiatOptions = [];
+    for (const fiat of supportedFiatValues) {
+      fiatOptions.push({
+        value: fiat,
+        label: fiat,
+        desc: getFiatSymbol(fiat) ? `${fiat} (${getFiatSymbol(fiat)})` : fiat,
+      });
+    }
+    return fiatOptions;
+  }
 
   return (
     <>
@@ -123,6 +152,21 @@ function Settings(props: {
         <h3>{t('home:settings.language')}</h3>
         <Space direction="vertical" size="large">
           <LanguageSelector label={true} />
+        </Space>
+        <h3>{t('home:settings.fiat_currency')}</h3>
+        <Space direction="vertical" size="large">
+          <Select
+            popupMatchSelectWidth={false}
+            suffixIcon={undefined}
+            variant={'outlined'}
+            value={sspFiatCurrency}
+            optionLabelProp={'desc'}
+            onChange={(value) => setSspFiatCurrency(value)}
+            style={{ width: 'fit-content' }}
+            dropdownStyle={{ minWidth: '130px' }}
+            options={fiatOptions()}
+            optionRender={(option) => <>{option.data.desc}</>}
+          />
         </Space>
         <h3>{t('home:settings.change_pw')}</h3>
         <Space direction="vertical" size="large">

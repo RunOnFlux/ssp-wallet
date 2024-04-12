@@ -108,7 +108,8 @@
     "change_pw_restore": "Change password? Restore!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Service",
-    "language": "Language"
+    "language": "Language",
+    "fiat_currency": "Fiat Currency"
   },
   "receive": {
     "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",

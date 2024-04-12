@@ -2,8 +2,9 @@ import axios from 'axios';
 import { currencySSPRelay, currency } from '../types';
 import { sspConfig } from '@storage/ssp';
 import BigNumber from 'bignumber.js';
+import getSymbolFromCurrency from 'currency-symbol-map';
 
-export const supportedFiatValues = [
+export const supportedFiatValues: (keyof currency)[] = [
   'AED',
   'ARS',
   'AUD',
@@ -55,6 +56,10 @@ export const supportedFiatValues = [
   'ZAR',
 ];
 
+export function getFiatSymbol(fiatCurrency: keyof currency): string {
+  return getSymbolFromCurrency(fiatCurrency) ?? '';
+}
+
 export function decimalPlaces() {
   if (sspConfig().fiatCurrency === 'BTC') {
     return 4;
@@ -63,7 +68,7 @@ export function decimalPlaces() {
 }
 
 export function formatCrypto(amount: BigNumber) {
-  const formated = amount.toNumber().toLocaleString(navigator.language ?? 'en-US'); // or force 'en-US'?
+  const formated = amount.toNumber().toLocaleString(navigator.language ?? 'en-US',{ maximumFractionDigits: 8, minimumFractionDigits: 0 }); // or force 'en-US'?
   return formated;
 }
 
