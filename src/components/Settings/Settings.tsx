@@ -12,10 +12,11 @@ import {
 import { sspConfig, sspConfigOriginal, loadSSPConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
-import { useAppSelector } from '../../hooks';
+import { useAppSelector, useAppDispatch } from '../../hooks';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 import { currency } from '../../types';
 import { supportedFiatValues, getFiatSymbol } from '../../lib/currency.ts';
+import { setFiatRates } from '../../store';
 
 const backendsOriginalConfig = backendsOriginal();
 const originalConfig = sspConfigOriginal();
@@ -29,7 +30,9 @@ function Settings(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
+  const dispatch = useAppDispatch();
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { fiatRates } = useAppSelector((state) => state.fiatCryptoRates);
   const { t } = useTranslation(['home', 'common']);
   const NC = backends()[activeChain].node;
   const SSPR = sspConfig().relay;
@@ -97,6 +100,12 @@ function Settings(props: {
       loadBackendsConfig();
       loadSSPConfig();
       openAction(false);
+      // this is to trigger useEffect reloads on txs, balances by adjusting slightly fiatRates otherwise change of fiat currency won't have an effect for a while
+      setTimeout(() => {
+        dispatch(
+          setFiatRates({ ...fiatRates, IDR: fiatRates.IDR + 0.0000000001 }),
+        );
+      }, 100);
     } catch (error) {
       console.log(error);
       displayMessage('error', t('home:settings.err_saving_conf'));
@@ -137,7 +146,7 @@ function Settings(props: {
       });
     }
     return fiatOptions;
-  }
+  };
 
   return (
     <>
