@@ -124,6 +124,7 @@ const initialRatesState: RatesState = {
     BHD: 0,
     UAH: 0,
     BTC: 0,
+    ETH: 0,
   },
 };
 

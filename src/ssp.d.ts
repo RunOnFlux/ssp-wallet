@@ -48,6 +48,7 @@ declare module '@storage/ssp' {
     BHD: number;
     UAH: number;
     BTC: number;
+    ETH: number;
   }
 
   interface ssp {
