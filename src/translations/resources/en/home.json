@@ -1,5 +1,9 @@
 {
   "err_panic": "PANIC: Invalid SSP Key.",
+  "balances": {
+    "locked": "Locked: {{balance}} {{symbol}}",
+    "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
+  },
   "txSent": {
     "show_in_explorer": "Show in Explorer",
     "tx_sent": "Transaction Sent!"
@@ -105,7 +109,8 @@
     "change_pw_restore": "Change password? Restore!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Service",
-    "language": "Language"
+    "language": "Language",
+    "fiat_currency": "Fiat Currency"
   },
   "receive": {
     "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
@@ -162,7 +167,7 @@
     "input_xpub": "Input SSP Key {{chain}} Extended Public Key {{path}} here",
     "sync_key_chain": "Sync Key for {{chain}}",
     "warn_await_sync_chain": "Awaiting SSP Key synchronisation or manual input.",
-    "err_sync_1_chain": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.",
+    "err_sync_1_chain": "Please input SSP Key XPUB of {{chain}} chain. SSP Key XPUB is different than SSP Wallet XPUB.",
     "cancel_sync_q_chain": "Cancel SSP Key Sync for {{chain}}?",
     "sync_info_content_chain": "SSP Wallet for chain {{chain}} cannot be used without SSP Key. This will switch back to Flux Chain",
     "sync_info_2_chain": "Scan the following QR code to sync your SSP Wallet for chain {{chain}} with your SSP Key."
@@ -194,5 +199,20 @@
   "sspConnect": {
     "invalid_chain": "Invalid chain.",
     "invalid_method": "Invalid method."
+  },
+  "fusion": {
+    "pa_reward": "Parallel Assets Reward",
+    "x_y_available": "{{amount}} {{symbol}} available",
+    "claim_with_fusion": "Claim with Fusion!",
+    "claim_reward": "Claim Reward",
+    "claim_pa_reward": "Claim Parallel Assets Reward",
+    "pa_info": "Parallel Assets (PA) are additional assets of Flux on various blockchains. You can claim your Parallel Assets Reward here using Fusion bridge. Fusion will automatically claim your PA rewards, convert them to Flux and send them to your Flux wallet.",
+    "total_to_claim": "Total PAs to Claim: {{amount}} {{symbol}}",
+    "fees_to_pay": "Fusion Fees to Pay: {{amount}} {{symbol}}",
+    "total_reward": "Total Reward to Receive: {{amount}} {{symbol}}",
+    "fusion_maintenance": "Fusion is undergoing maintenance. Try again later.",
+    "signature_error": "Error signing Fusion request. Try again later.",
+    "claim_successful": "Fusion Claim Successful!",
+    "claim_received": "Claim Received!"
   }
 }

@@ -378,10 +378,10 @@ function Send() {
     const lockedUtxos = myNodes.filter((node) => node.name);
     // maxFee is max 100USD worth in fee
     const cr = cryptoRates[activeChain] ?? 0;
-    const fi = fiatRates.USD ?? 0;
-    const fiatPrice = cr * fi;
-    const maxFeeUSD = 100;
-    const maxFeeUNIT = new BigNumber(maxFeeUSD).dividedBy(fiatPrice).toFixed();
+    const fiUSD = fiatRates.USD ?? 0;
+    const fiatPriceUSD = cr * fiUSD;
+    const maxFeeUSD = sspConfig().maxTxFeeUSD // max USD fee per tranasction
+    const maxFeeUNIT = new BigNumber(maxFeeUSD).dividedBy(fiatPriceUSD).toFixed();
     const maxFeeSat = new BigNumber(maxFeeUNIT)
       .multipliedBy(10 ** blockchainConfig.decimals)
       .toFixed();
@@ -529,11 +529,11 @@ function Send() {
         const lockedUtxos = myNodes.filter((node) => node.name);
         // maxFee is max 100USD worth in fee
         const cr = cryptoRates[activeChain] ?? 0;
-        const fi = fiatRates.USD ?? 0;
-        const fiatPrice = cr * fi;
-        const maxFeeUSD = 100;
+        const fiUSD = fiatRates.USD ?? 0;
+        const fiatPriceUSD = cr * fiUSD;
+        const maxFeeUSD = sspConfig().maxTxFeeUSD // max USD fee per tranasction
         const maxFeeUNIT = new BigNumber(maxFeeUSD)
-          .dividedBy(fiatPrice)
+          .dividedBy(fiatPriceUSD)
           .toFixed();
         const maxFeeSat = new BigNumber(maxFeeUNIT)
           .multipliedBy(10 ** blockchainConfig.decimals)

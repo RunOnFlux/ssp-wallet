@@ -1,7 +1,12 @@
 import localForage from 'localforage';
+import { getFiatSymbol } from '../lib/currency';
+import { currency } from '../types';
 
 interface config {
-  relay?: string;
+  relay?: string; // user adjustable
+  fiatCurrency?: keyof currency; // user adjustable
+  maxTxFeeUSD?: number;
+  fiatSymbol?: string;
 }
 
 let storedLocalForgeSSPConfig: config = {};
@@ -20,16 +25,23 @@ export function loadSSPConfig() {
 
 loadSSPConfig();
 
-const ssp = {
+const ssp: config = {
   relay: 'relay.ssp.runonflux.io',
+  fiatCurrency: 'USD',
+  maxTxFeeUSD: 100, // in USD
 };
 
-export function sspConfig() {
+export function sspConfig(): config {
   return {
     relay: storedLocalForgeSSPConfig?.relay ?? ssp.relay,
+    fiatCurrency: storedLocalForgeSSPConfig?.fiatCurrency ?? ssp.fiatCurrency,
+    maxTxFeeUSD: storedLocalForgeSSPConfig?.maxTxFeeUSD ?? ssp.maxTxFeeUSD,
+    fiatSymbol: getFiatSymbol(
+      storedLocalForgeSSPConfig?.fiatCurrency ?? ssp.fiatCurrency ?? 'USD',
+    ),
   };
 }
 
-export function sspConfigOriginal() {
+export function sspConfigOriginal(): config {
   return ssp;
 }

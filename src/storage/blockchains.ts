@@ -139,8 +139,8 @@ const btc = {
   wif: '80',
   logo: btcLogo,
   bip32: {
-    public: 0x0488b21e,
-    private: 0x0488ade4,
+    public: 0x02aa7ed3,
+    private: 0x02aa7a99,
   },
   backend: 'blockbook',
   bech32: 'bc1',
@@ -194,8 +194,8 @@ const btcTestnet = {
   wif: 'ef',
   logo: btcTestnetLogo,
   bip32: {
-    public: 0x043587cf,
-    private: 0x04358394,
+    public: 0x02575483,
+    private: 0x02575048,
   },
   backend: 'blockbook',
   bech32: 'tb1',
@@ -222,8 +222,8 @@ const btcSignet = {
   wif: 'ef',
   logo: btcSignetLogo,
   bip32: {
-    public: 0x043587cf,
-    private: 0x04358394,
+    public: 0x02575483,
+    private: 0x02575048,
   },
   backend: 'blockbook',
   bech32: 'tb1',

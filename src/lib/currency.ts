@@ -1,56 +1,91 @@
 import axios from 'axios';
 import { currencySSPRelay, currency } from '../types';
 import { sspConfig } from '@storage/ssp';
+import BigNumber from 'bignumber.js';
+import getSymbolFromCurrency from 'currency-symbol-map';
 
-export const supportedFiatValues = [
-  'EUR',
+export const supportedFiatValues: (keyof currency)[] = [
+  'AED',
+  'ARS',
   'AUD',
-  'TRY',
-  'TWD',
-  'RUB',
+  'BDT',
+  'BHD',
+  'BMD',
+  'BRL',
+  'BTC',
+  'CAD',
+  'CHF',
+  'CLP',
+  'CNY',
+  'CZK',
+  'DKK',
+  'EUR',
+  'ETH',
+  'GBP',
+  'HKD',
+  'HUF',
+  'IDR',
+  'ILS',
+  'INR',
+  'JPY',
+  'KRW',
+  'KWD',
+  'LKR',
   'MMK',
   'MXN',
   'MYR',
-  'CNY',
+  'NOK',
+  'NZD',
+  'PHP',
   'PKR',
   'PLN',
-  'THB',
-  'PHP',
-  'ARS',
+  'RUB',
   'SAR',
-  'DKK',
-  'SGD',
-  'AED',
-  'USD',
-  'CLP',
-  'ILS',
-  'NZD',
-  'HKD',
-  'XDR',
-  'KWD',
-  'BDT',
-  'GBP',
   'SEK',
-  'IDR',
-  'CHF',
-  'JPY',
-  'XAU',
-  'BMD',
-  'ZAR',
-  'HUF',
-  'BRL',
-  'KRW',
-  'LKR',
-  'NOK',
-  'INR',
+  'SGD',
+  'THB',
+  'TRY',
+  'TWD',
+  'UAH',
+  'USD',
   'VEF',
-  'CAD',
   'VND',
   'XAG',
-  'CZK',
-  'BHD',
-  'UAH',
+  'XAU',
+  'XDR',
+  'ZAR',
 ];
+
+export function getFiatSymbol(fiatCurrency: keyof currency): string {
+  return getSymbolFromCurrency(fiatCurrency) ?? '';
+}
+
+export function decimalPlaces() {
+  if (sspConfig().fiatCurrency === 'BTC') {
+    return 4;
+  }
+  return 2;
+}
+
+export function formatCrypto(amount: BigNumber) {
+  const formated = amount.toNumber().toLocaleString(navigator.language ?? 'en-US',{ maximumFractionDigits: 8, minimumFractionDigits: 0 }); // or force 'en-US'?
+  return formated;
+}
+
+export function formatFiat(amount: BigNumber) {
+  const digits = decimalPlaces();
+  const formated = amount.toNumber().toLocaleString(navigator.language ?? 'en-US', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+  return formated;
+}
+
+export function formatFiatWithSymbol(amount: BigNumber) {
+  const formated = formatFiat(amount);
+  if (sspConfig().fiatSymbol.length > 1) {
+    // append only
+    return `${formated} ${sspConfig().fiatSymbol}`;
+  }
+  return `${sspConfig().fiatSymbol}${formated} ${sspConfig().fiatCurrency}`;
+}
 
 export async function fetchRate(chain: string): Promise<currency> {
   try {
