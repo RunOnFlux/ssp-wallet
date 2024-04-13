@@ -108,7 +108,8 @@
     "change_pw_restore": "Change password? Restore!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Service",
-    "language": "Language"
+    "language": "Language",
+    "fiat_currency": "Fiat Currency"
   },
   "receive": {
     "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
@@ -134,7 +135,8 @@
     "remove": "Remove",
     "remove_last_wallet_desc": "This action will remove your most recently generated wallet. You can generate the same new wallet at any time.",
     "switch_chain": "Switch Chain",
-    "max_wallets": "42. The answer to the ultimate question of life, the universe, and everything. You have reached the maximum number of wallets."
+    "max_wallets": "42. The answer to the ultimate question of life, the universe, and everything. You have reached the maximum number of wallets.",
+    "ssp_message_sign": "Message Signing"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Password is not valid. Please try again.",
@@ -164,7 +166,7 @@
     "input_xpub": "Input SSP Key {{chain}} Extended Public Key {{path}} here",
     "sync_key_chain": "Sync Key for {{chain}}",
     "warn_await_sync_chain": "Awaiting SSP Key synchronisation or manual input.",
-    "err_sync_1_chain": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.",
+    "err_sync_1_chain": "Please input SSP Key XPUB of {{chain}} chain. SSP Key XPUB is different than SSP Wallet XPUB.",
     "cancel_sync_q_chain": "Cancel SSP Key Sync for {{chain}}?",
     "sync_info_content_chain": "SSP Wallet for chain {{chain}} cannot be used without SSP Key. This will switch back to Flux Chain",
     "sync_info_2_chain": "Scan the following QR code to sync your SSP Wallet for chain {{chain}} with your SSP Key."

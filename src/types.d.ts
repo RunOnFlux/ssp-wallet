@@ -291,6 +291,8 @@ export interface currency {
   CZK: number;
   BHD: number;
   UAH: number;
+  BTC: number;
+  ETH: number;
 }
 
 export interface cryptos {

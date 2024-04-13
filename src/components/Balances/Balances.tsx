@@ -6,7 +6,9 @@ import { setBalance, setUnconfirmedBalance } from '../../store';
 import { fetchAddressBalance } from '../../lib/balances.ts';
 import SocketListener from '../SocketListener/SocketListener.tsx';
 import { blockchains } from '@storage/blockchains';
+import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
+import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency';
 
 interface balancesObj {
   confirmed: string;
@@ -46,7 +48,7 @@ function Balances() {
       );
     }, new BigNumber(0)),
   );
-  const [balanceUSD, setBalanceUSD] = useState(
+  const [balanceFIAT, setBalanceFIAT] = useState(
     totalBalance.multipliedBy(new BigNumber(fiatRate)),
   );
 
@@ -99,7 +101,7 @@ function Balances() {
   }, [walletInUse, activeChain, wallets[walletInUse].address]);
 
   useEffect(() => {
-    getCryptoRate(activeChain, 'USD');
+    getCryptoRate(activeChain, sspConfig().fiatCurrency);
   }, [cryptoRates, fiatRates]);
 
   const fetchBalance = () => {
@@ -124,8 +126,8 @@ function Balances() {
       .plus(new BigNumber(wallets[walletInUse].unconfirmedBalance))
       .dividedBy(10 ** blockchainConfig.decimals);
     setTotalBalance(ttlBal);
-    const balUSD = ttlBal.multipliedBy(new BigNumber(fiatRate));
-    setBalanceUSD(balUSD);
+    const balFIAT = ttlBal.multipliedBy(new BigNumber(fiatRate));
+    setBalanceFIAT(balFIAT);
     const lockedAmnt = myNodes.reduce((acc, node) => {
       return acc.plus(
         new BigNumber(node.name ? node.amount : 0).dividedBy(
@@ -147,7 +149,7 @@ function Balances() {
 
   const refresh = () => {
     fetchBalance();
-    getCryptoRate(activeChain, 'USD');
+    getCryptoRate(activeChain, sspConfig().fiatCurrency);
   };
 
   const onTxRejected = () => {
@@ -166,7 +168,7 @@ function Balances() {
   return (
     <>
       <h3 style={{ marginTop: 0, marginBottom: 0 }}>
-        {totalBalance.toFixed() || '0.00'} {blockchainConfig.symbol}
+        {formatCrypto(totalBalance)} {blockchainConfig.symbol}
       </h3>
       {+lockedBalance > 0 && (
         <div
@@ -176,17 +178,13 @@ function Balances() {
           }}
         >
           {t('home:balances.locked', {
-            balance: lockedBalance.toFixed() || '0.00',
+            balance: formatCrypto(lockedBalance),
             symbol: blockchainConfig.symbol,
           })}
         </div>
       )}
       <h4 style={{ marginTop: 10, marginBottom: 15 }}>
-        {t('home:balances.fiat_value', {
-          fiatSymbol: '$',
-          fiatValue: balanceUSD.toFixed(2) || '0.00',
-          fiatCurrency: 'USD',
-        })}
+        {formatFiatWithSymbol(balanceFIAT)}
       </h4>
       <SocketListener txRejected={onTxRejected} txSent={onTxSent} />
     </>

@@ -83,7 +83,7 @@ function processTransaction(
     }
   }
 
-  const fee = new BigNumber(insightTx.fees).multipliedBy(
+  const fee = new BigNumber(insightTx.fees || 0).multipliedBy(
     new BigNumber(10 ** decimals),
   );
   let amount = amountReceivedInItx.minus(amountSentInItx);
@@ -163,7 +163,7 @@ function processTransactionBlockbook(
     }
   }
 
-  const fee = new BigNumber(blockbookTx.fees);
+  const fee = new BigNumber(blockbookTx.fees || 0);
   let amount = amountReceivedInItx.minus(amountSentInItx);
   if (amount.isNegative()) {
     amount = amount.plus(fee); // we were the ones sending fee

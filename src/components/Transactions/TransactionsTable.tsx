@@ -15,6 +15,10 @@ import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { backends } from '@storage/backends';
+import {
+  formatCrypto,
+  formatFiatWithSymbol,
+} from '../../lib/currency';
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -74,9 +78,11 @@ function TransactionsTable(props: {
               </p>
               <p style={{ margin: 0 }}>
                 {t('home:transactionsTable.fee_with_symbol', {
-                  fee: new BigNumber(record.fee)
-                    .dividedBy(10 ** blockchainConfig.decimals)
-                    .toFixed(),
+                  fee: formatCrypto(
+                    new BigNumber(record.fee).dividedBy(
+                      10 ** blockchainConfig.decimals,
+                    ),
+                  ),
                   symbol: blockchainConfig.symbol,
                 })}{' '}
                 ({(+record.fee / (record.vsize ?? record.size)).toFixed(2)}{' '}
@@ -94,10 +100,10 @@ function TransactionsTable(props: {
               >
                 {t('home:txSent.show_in_explorer')}
               </a>
-              {(record.blockheight <= 0 ||
-                !record.blockheight) &&
+              {(record.blockheight <= 0 || !record.blockheight) &&
                 record.utxos?.length &&
-                +record.amount <= 0 && blockchainConfig.rbf && (
+                +record.amount <= 0 &&
+                blockchainConfig.rbf && (
                   <div
                     style={{
                       marginTop: 16,
@@ -168,18 +174,18 @@ function TransactionsTable(props: {
           dataIndex="amount"
           render={(amnt: string) => (
             <>
-              {new BigNumber(amnt)
-                .dividedBy(10 ** blockchainConfig.decimals)
-                .toFixed()}{' '}
+              {formatCrypto(
+                new BigNumber(amnt).dividedBy(10 ** blockchainConfig.decimals),
+              )}{' '}
               {blockchainConfig.symbol}
               <br />
               <div style={{ color: 'grey', fontSize: 12 }}>
-                {+amnt < 0 ? '-' : ''}$
-                {new BigNumber(Math.abs(+amnt))
-                  .dividedBy(10 ** blockchainConfig.decimals)
-                  .multipliedBy(new BigNumber(fiatRate))
-                  .toFixed(2)}{' '}
-                USD
+                {+amnt < 0 ? '-' : ''}
+                {formatFiatWithSymbol(
+                  new BigNumber(Math.abs(+amnt))
+                    .dividedBy(10 ** blockchainConfig.decimals)
+                    .multipliedBy(new BigNumber(fiatRate)),
+                )}
               </div>
             </>
           )}
