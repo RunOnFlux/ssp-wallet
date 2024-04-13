@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { Typography, Button, Space, Modal } from 'antd';
+import { Typography, Button, Space, Modal, Input } from 'antd';
 import { useAppSelector } from '../../hooks';
-const { Text } = Typography;
+const { Paragraph, Text } = Typography;
+const { TextArea } = Input;
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import secureLocalStorage from 'react-secure-storage';
@@ -15,6 +16,7 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { fluxnode } from '@runonflux/flux-sdk';
 import { randomBytes } from 'crypto';
 import { cryptos } from '../../types';
+import { useState } from 'react';
 
 interface signMessageData {
   status: string;
@@ -26,23 +28,26 @@ interface signMessageData {
 
 function SignMessage(props: {
   open: boolean;
-  openAction: (data: signMessageData | null) => void;
   message: string;
   address: string;
   chain: keyof cryptos;
+  openAction?: (data: signMessageData | null) => void;
+  exitAction?: () => void;
 }) {
   const { sspWalletExternalIdentity: wExternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { identityChain } = useAppSelector((state) => state.sspState);
-  const { t } = useTranslation(['home', 'common']);
-  const { open, openAction, message, address } = props;
+  const { t } = useTranslation(['home', 'common', 'cr']);
+  const { open, openAction, address, exitAction, message } = props;
   let { chain } = props;
   chain = chain || identityChain;
   const blockchainConfig = blockchains[chain];
   console.log(blockchainConfig);
   const identityChainConfig = blockchains[identityChain];
+  const [messageSignature, setMessageSignature] = useState('');
+  const [messageToSign, setMessageToSign] = useState('');
 
   const handleOk = async () => {
     try {
@@ -63,16 +68,22 @@ function SignMessage(props: {
           if (xpriv && typeof xpriv === 'string') {
             const externalIdentity = generateExternalIdentityKeypair(xpriv);
             // sign message
-            const signature = signMessage(message, externalIdentity.privKey);
+            const signature = signMessage(
+              message ? message : messageToSign,
+              externalIdentity.privKey,
+            );
             if (!signature) {
               throw new Error('Unable to sign message');
             }
-            openAction({
-              status: t('common:success'),
-              signature: signature,
-              address: wExternalIdentity,
-              message: message,
-            });
+            setMessageSignature(signature);
+            openAction
+              ? openAction({
+                  status: t('common:success'),
+                  signature: signature,
+                  address: wExternalIdentity,
+                  message: message,
+                })
+              : null;
           } else {
             throw new Error('Unknown error: address mismatch');
           }
@@ -82,10 +93,12 @@ function SignMessage(props: {
         // todo case for signing with any address
       }
     } catch (error) {
-      openAction({
-        status: t('common:error'),
-        data: 'Error signing message.',
-      });
+      openAction
+        ? openAction({
+            status: t('common:error'),
+            data: 'Error signing message.',
+          })
+        : null;
     }
   };
 
@@ -124,7 +137,14 @@ function SignMessage(props: {
   }
 
   const handleCancel = () => {
-    openAction(null);
+    setMessageSignature('');
+    setMessageToSign('');
+    openAction ? openAction(null) : null;
+    exitAction ? exitAction() : null;
+  };
+
+  const handleTextInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessageToSign(event.target.value.trim());
   };
 
   return (
@@ -138,7 +158,7 @@ function SignMessage(props: {
       >
         <Space
           direction="vertical"
-          size={32}
+          size="middle"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
           <Space direction="vertical" size="small">
@@ -151,24 +171,52 @@ function SignMessage(props: {
                 })}
               </Text>
             )}
-            <Text strong>{address || wExternalIdentity}</Text>
+            <Paragraph
+              copyable={{ text: wExternalIdentity }}
+              className="copyableAddress"
+            >
+              <Text strong>{address || wExternalIdentity}</Text>
+            </Paragraph>
           </Space>
           <Space direction="vertical" size="small">
             <Text>{t('home:signMessage.message')}:</Text>
-            <Text strong>{message}</Text>
+            <TextArea
+              onChange={handleTextInput}
+              style={{ width: 340 }}
+              size={'large'}
+              rows={4}
+              disabled={message ? true : false}
+              value={message ? message : messageToSign}
+            />
           </Space>
-        </Space>
-        <Space direction="vertical" size="large" style={{ marginTop: 64 }}>
-          <Button type="primary" size="large" onClick={handleOk}>
-            {t('home:signMessage.sign')}
-          </Button>
-          <Button type="link" block size="small" onClick={handleCancel}>
-            {t('common:cancel')}
-          </Button>
+          {messageSignature && (
+            <Space direction="vertical" size="small">
+              <Text>{t('home:signMessage.signature')}:</Text>
+              <Paragraph
+                copyable={{ text: messageSignature }}
+                className="copyableAddress"
+              >
+                {messageSignature}
+              </Paragraph>
+            </Space>
+          )}
+          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
+            <Button type="primary" size="large" onClick={handleOk}>
+              {t('home:signMessage.sign')}
+            </Button>
+            <Button type="link" block size="small" onClick={handleCancel}>
+              {t('common:cancel')}
+            </Button>
+          </Space>
         </Space>
       </Modal>
     </>
   );
 }
+
+SignMessage.defaultProps = {
+  openAction: undefined,
+  exitAction: undefined,
+};
 
 export default SignMessage;
