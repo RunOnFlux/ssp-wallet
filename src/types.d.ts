@@ -178,14 +178,6 @@ export interface wallet {
   nodes?: node[];
 }
 
-export interface signMessageData {
-  status: string;
-  signature?: string;
-  address?: string;
-  message?: string;
-  data?: string;
-}
-
 export interface node {
   txid: string;
   vout: number;

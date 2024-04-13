@@ -1,28 +1,26 @@
 import { useAppSelector } from '../../hooks';
 import SignMessage from '../SignMessage/SignMessage';
 
-function ManualSign (props: {
+function ManualSign(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
-  
-  const { sspWalletExternalIdentity: wExternalIdentity } = useAppSelector(
-    (state) => state.sspState,
-  );
+  const { sspWalletExternalIdentity: wExternalIdentity, identityChain } =
+    useAppSelector((state) => state.sspState);
 
   const handleExit = () => {
     props.openAction(false);
   };
 
   return (
-    <SignMessage 
-      open={props.open} 
+    <SignMessage
+      open={props.open}
       address={wExternalIdentity}
       message={''}
-      chain={'btc'}
+      chain={identityChain}
       exitAction={handleExit}
     />
-  )
+  );
 }
 
-export default ManualSign
+export default ManualSign;

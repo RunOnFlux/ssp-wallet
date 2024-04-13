@@ -371,7 +371,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
               key: 'sspwallet',
             },
             {
-              label: t('home:navbar.manual_sign'),
+              label: t('home:navbar.ssp_message_sign'),
               key: 'manualsign',
             },
             {
@@ -393,7 +393,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
               key: 'sspwallet',
             },
             {
-              label: t('home:navbar.manual_sign'),
+              label: t('home:navbar.ssp_message_sign'),
               key: 'manualsign',
             },
             {

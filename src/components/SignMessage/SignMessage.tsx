@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { Typography, Button, Space, Modal, Input } from 'antd';
 import { useAppSelector } from '../../hooks';
-const { Text } = Typography;
+const { Paragraph, Text } = Typography;
+const { TextArea } = Input;
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import secureLocalStorage from 'react-secure-storage';
@@ -14,10 +15,16 @@ import {
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { fluxnode } from '@runonflux/flux-sdk';
 import { randomBytes } from 'crypto';
-import { cryptos, signMessageData } from '../../types';
-import TextArea from 'antd/es/input/TextArea';
+import { cryptos } from '../../types';
 import { useState } from 'react';
-import Paragraph from 'antd/es/typography/Paragraph';
+
+interface signMessageData {
+  status: string;
+  signature?: string;
+  address?: string;
+  message?: string;
+  data?: string;
+}
 
 function SignMessage(props: {
   open: boolean;
@@ -61,17 +68,22 @@ function SignMessage(props: {
           if (xpriv && typeof xpriv === 'string') {
             const externalIdentity = generateExternalIdentityKeypair(xpriv);
             // sign message
-            const signature = signMessage(message ? message : messageToSign, externalIdentity.privKey);
+            const signature = signMessage(
+              message ? message : messageToSign,
+              externalIdentity.privKey,
+            );
             if (!signature) {
               throw new Error('Unable to sign message');
             }
             setMessageSignature(signature);
-            openAction ? openAction({
-              status: t('common:success'),
-              signature: signature,
-              address: wExternalIdentity,
-              message: message,
-            }) : null
+            openAction
+              ? openAction({
+                  status: t('common:success'),
+                  signature: signature,
+                  address: wExternalIdentity,
+                  message: message,
+                })
+              : null;
           } else {
             throw new Error('Unknown error: address mismatch');
           }
@@ -81,10 +93,12 @@ function SignMessage(props: {
         // todo case for signing with any address
       }
     } catch (error) {
-      openAction ? openAction({
-        status: t('common:error'),
-        data: 'Error signing message.',
-      }) : null
+      openAction
+        ? openAction({
+            status: t('common:error'),
+            data: 'Error signing message.',
+          })
+        : null;
     }
   };
 
@@ -125,8 +139,8 @@ function SignMessage(props: {
   const handleCancel = () => {
     setMessageSignature('');
     setMessageToSign('');
-    openAction ? openAction(null) : null
-    exitAction ? exitAction() : null
+    openAction ? openAction(null) : null;
+    exitAction ? exitAction() : null;
   };
 
   const handleTextInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -157,36 +171,36 @@ function SignMessage(props: {
                 })}
               </Text>
             )}
-            <Paragraph copyable={{ text: wExternalIdentity }} className="copyableAddress">
+            <Paragraph
+              copyable={{ text: wExternalIdentity }}
+              className="copyableAddress"
+            >
               <Text strong>{address || wExternalIdentity}</Text>
-            </Paragraph>            
+            </Paragraph>
           </Space>
           <Space direction="vertical" size="small">
             <Text>{t('home:signMessage.message')}:</Text>
-            <Input.TextArea 
-              onChange={handleTextInput} 
+            <TextArea
+              onChange={handleTextInput}
               style={{ width: 340 }}
               size={'large'}
               rows={4}
-              disabled={message ? true : false} 
-              value={message ? message : messageToSign} 
+              disabled={message ? true : false}
+              value={message ? message : messageToSign}
             />
           </Space>
-          { messageSignature && (
+          {messageSignature && (
             <Space direction="vertical" size="small">
-            <Text>{t('home:signMessage.signature')}:</Text>
-            <Paragraph copyable={{ text: messageSignature }} className="copyableAddress">
-              <TextArea 
-                style={{ width: 340 }} 
-                size={'large'}
-                rows={4}
-                disabled={ messageSignature ? true : false} 
-                value={messageSignature} 
-              />
-            </Paragraph>            
-          </Space>
-          )}          
-          <Space direction="horizontal" size="large">
+              <Text>{t('home:signMessage.signature')}:</Text>
+              <Paragraph
+                copyable={{ text: messageSignature }}
+                className="copyableAddress"
+              >
+                {messageSignature}
+              </Paragraph>
+            </Space>
+          )}
+          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button type="primary" size="large" onClick={handleOk}>
               {t('home:signMessage.sign')}
             </Button>
@@ -202,7 +216,7 @@ function SignMessage(props: {
 
 SignMessage.defaultProps = {
   openAction: undefined,
-  exitAction: undefined
-}
+  exitAction: undefined,
+};
 
 export default SignMessage;
