@@ -9,6 +9,7 @@ import {
   Space,
   Popconfirm,
   Popover,
+  Select,
 } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
@@ -29,7 +30,7 @@ import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined, BookOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
@@ -38,6 +39,17 @@ import { blockchains } from '@storage/blockchains';
 import { transaction, utxo } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
+import './Send.css';
+
+interface contactOption {
+  label: string;
+  value: string;
+}
+
+interface contacts {
+  label: string;
+  options: contactOption[];
+}
 
 interface sendForm {
   receiver: string;
@@ -94,6 +106,7 @@ function Send() {
   const [useMaximum, setUseMaximum] = useState(false);
   const [manualFee, setManualFee] = useState(false);
   const [txSizeVBytes, setTxSize] = useState(0);
+  const [contactsItems, setContactsItems] = useState<contacts[]>([]);
   const { networkFees } = useAppSelector((state) => state.networkFees);
 
   const blockchainConfig = blockchains[activeChain];
@@ -139,6 +152,52 @@ function Send() {
       console.log(error);
     }
   });
+
+  useEffect(() => {
+    const wItems: contactOption[] = [];
+    Object.keys(wallets).forEach((wallet) => {
+      const typeNumber = Number(wallet.split('-')[0]);
+      const walletNumber = Number(wallet.split('-')[1]) + 1;
+      let walletName = 'Wallet ' + walletNumber;
+      if (typeNumber === 1) {
+        walletName = 'Change ' + walletNumber;
+      }
+      const wal = {
+        value: wallets[wallet].address,
+        label: t('home:navbar.chain_wallet', {
+          chain: blockchainConfig.name,
+          wallet: walletName,
+        }),
+      };
+      wItems.push(wal);
+    });
+    wItems.sort((a, b) => {
+      if (+a.value.split('-')[1] < +b.value.split('-')[1]) return -1;
+      if (+a.value.split('-')[1] > +b.value.split('-')[1]) return 1;
+      return 0;
+    });
+    wItems.sort((a, b) => {
+      if (+a.value.split('-')[0] < +b.value.split('-')[0]) return -1;
+      if (+a.value.split('-')[0] > +b.value.split('-')[0]) return 1;
+      return 0;
+    });
+    const contacts = [
+      {
+        label: 'Contacts', // this is to load if we have, if not do display
+        options: [
+          {
+            label: 'yiminghe',
+            value: 'Yiminghe',
+          },
+        ],
+      },
+      {
+        label: 'My Wallets',
+        options: wItems,
+      },
+    ];
+    setContactsItems(contacts);
+  }, [wallets, activeChain]);
 
   // on every chain, address adjustment, fetch utxos
   // used to get a precise estimate of the tx size
@@ -380,8 +439,10 @@ function Send() {
     const cr = cryptoRates[activeChain] ?? 0;
     const fiUSD = fiatRates.USD ?? 0;
     const fiatPriceUSD = cr * fiUSD;
-    const maxFeeUSD = sspConfig().maxTxFeeUSD // max USD fee per tranasction
-    const maxFeeUNIT = new BigNumber(maxFeeUSD).dividedBy(fiatPriceUSD).toFixed();
+    const maxFeeUSD = sspConfig().maxTxFeeUSD; // max USD fee per tranasction
+    const maxFeeUNIT = new BigNumber(maxFeeUSD)
+      .dividedBy(fiatPriceUSD)
+      .toFixed();
     const maxFeeSat = new BigNumber(maxFeeUNIT)
       .multipliedBy(10 ** blockchainConfig.decimals)
       .toFixed();
@@ -531,7 +592,7 @@ function Send() {
         const cr = cryptoRates[activeChain] ?? 0;
         const fiUSD = fiatRates.USD ?? 0;
         const fiatPriceUSD = cr * fiUSD;
-        const maxFeeUSD = sspConfig().maxTxFeeUSD // max USD fee per tranasction
+        const maxFeeUSD = sspConfig().maxTxFeeUSD; // max USD fee per tranasction
         const maxFeeUNIT = new BigNumber(maxFeeUSD)
           .dividedBy(fiatPriceUSD)
           .toFixed();
@@ -689,12 +750,40 @@ function Send() {
             },
           ]}
         >
-          <Input
-            size="large"
-            value={txReceiver}
-            placeholder={t('send:receiver_address')}
-            onChange={(e) => setTxReceiver(e.target.value)}
-          />
+          <Input.Group compact>
+            <Input
+              size="large"
+              style={{ width: 'calc(100% - 35px)', textAlign: 'left' }}
+              value={txReceiver}
+              placeholder={t('send:receiver_address')}
+              onChange={(e) => setTxReceiver(e.target.value)}
+            />
+            <Select
+              size="middle"
+              className='no-text-select'
+              style={{ width: '35px', height: '39.1px' }}
+              defaultValue=""
+              value={txReceiver}
+              popupMatchSelectWidth={false}
+              onChange={(value) => setTxReceiver(value)}
+              options={contactsItems}
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider style={{ margin: '8px 0' }} />
+                  <Space style={{ padding: '0 8px 4px' }}>
+                    <Button
+                      type="text"
+                      icon={<BookOutlined />}
+                      onClick={console.log('add contact')}
+                    >
+                      Manage Contacts
+                    </Button>
+                  </Space>
+                </>
+              )}
+            />
+          </Input.Group>
         </Form.Item>
 
         <Form.Item
