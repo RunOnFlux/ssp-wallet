@@ -33,6 +33,7 @@ import {
   setXpubKey,
   setXpubKeyIdentity,
   setXpubWalletIdentity,
+  setContacts,
 } from '../../store';
 
 import { getFingerprint } from '../../lib/fingerprint';
@@ -311,6 +312,11 @@ function Login() {
             }
             if (blockheightChain) {
               setBlockheight(activeChain, blockheightChain);
+            }
+            // load contacts
+            const contacts = (await localForage.getItem('contacts'));
+            if (contacts) {
+              dispatch(setContacts(contacts as Record<keyof cryptos, string[]>));
             }
             navigate('/home');
           } else {

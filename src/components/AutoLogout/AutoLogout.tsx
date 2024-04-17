@@ -2,7 +2,12 @@ import { useEffect, useRef } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { setSSPInitialState, setInitialStateForAllChains, setPasswordBlobInitialState } from '../../store';
+import {
+  setSSPInitialState,
+  setInitialStateForAllChains,
+  setPasswordBlobInitialState,
+  setInitialContactsState,
+} from '../../store';
 
 import { useAppDispatch } from '../../hooks';
 
@@ -28,9 +33,8 @@ function AutoLogout() {
       if (chrome?.storage?.session) {
         try {
           const curTime = new Date().getTime();
-          const resp: lastActivity = await chrome.storage.session.get(
-            'lastActivity',
-          );
+          const resp: lastActivity =
+            await chrome.storage.session.get('lastActivity');
           if (typeof resp.lastActivity === 'number') {
             if (resp.lastActivity + tenMins < curTime) {
               logout();
@@ -77,7 +81,7 @@ function AutoLogout() {
           console.log(error);
         }
       }
-      continueLogout()
+      continueLogout();
     })();
   };
 
@@ -88,9 +92,10 @@ function AutoLogout() {
     setTimeout(() => {
       setInitialStateForAllChains();
       dispatch(setSSPInitialState());
+      dispatch(setInitialContactsState());
       dispatch(setPasswordBlobInitialState());
     }, 100);
-  }
+  };
 
   return <></>;
 }

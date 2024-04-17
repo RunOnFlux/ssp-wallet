@@ -13,6 +13,7 @@ import {
   setSspWalletInternalIdentity,
   setSspWalletKeyInternalIdentity,
   setSspWalletExternalIdentity,
+  setInitialContactsState,
 } from '../../store';
 import { Spin, Divider, message, Space, Tabs } from 'antd';
 import './Home.css';
@@ -167,6 +168,7 @@ function Home() {
         setTimeout(() => {
           setInitialStateForAllChains();
           dispatch(setSSPInitialState());
+          dispatch(setInitialContactsState());
           dispatch(setPasswordBlobInitialState());
         }, 100);
       })();

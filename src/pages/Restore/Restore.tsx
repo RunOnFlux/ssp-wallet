@@ -19,6 +19,7 @@ import {
   setXpubWallet,
   setPasswordBlob,
   setInitialStateForAllChains,
+  setInitialContactsState,
 } from '../../store';
 
 import './Restore.css';
@@ -210,6 +211,7 @@ function Restore() {
           xpubBlob,
         );
         setInitialStateForAllChains();
+        dispatch(setInitialContactsState());
         dispatch(setSSPInitialState());
         if (chrome?.storage?.session) {
           await chrome.storage.session.set({
