@@ -187,6 +187,12 @@ export interface node {
   status: string;
 }
 
+export interface contact {
+  id: number;
+  name: string;
+  address: string;
+}
+
 export interface txIdentifier {
   txid: string;
   vout: number;

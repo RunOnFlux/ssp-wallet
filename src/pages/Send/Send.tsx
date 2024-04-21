@@ -723,7 +723,12 @@ function Send() {
   );
 
   const refresh = () => {
+    // todo?
     console.log('refresh');
+  };
+
+  const addContact = () => {
+    console.log('add contact');
   };
   return (
     <>
@@ -760,7 +765,7 @@ function Send() {
             />
             <Select
               size="middle"
-              className='no-text-select'
+              className="no-text-select"
               style={{ width: '35px', height: '39.1px' }}
               defaultValue=""
               value={txReceiver}
@@ -775,9 +780,9 @@ function Send() {
                     <Button
                       type="text"
                       icon={<BookOutlined />}
-                      onClick={console.log('add contact')}
+                      onClick={() => addContact()}
                     >
-                      Manage Contacts
+                      {t('home:contacts.add_contact')}
                     </Button>
                   </Space>
                 </>

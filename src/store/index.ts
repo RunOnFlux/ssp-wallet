@@ -64,8 +64,13 @@ interface RatesState {
   fiatRates: currency;
 }
 
+interface contact {
+  id: number;
+  name: string;
+  address: string;
+}
 interface ContactsState {
-  contacts: Record<keyof cryptos, string[]>;
+  contacts: Record<keyof cryptos, contact[]>;
 }
 
 const initialRatesState: RatesState = {
@@ -177,7 +182,7 @@ const contactsSlice = createSlice({
   reducers: {
     setContacts: (
       state,
-      action: PayloadAction<Record<keyof cryptos, string[]>>,
+      action: PayloadAction<Record<keyof cryptos, contact[]>>,
     ) => {
       state.contacts = action.payload;
     },
