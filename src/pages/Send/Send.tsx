@@ -783,39 +783,42 @@ function Send() {
         itemRef="txFeeRef"
         style={{ paddingBottom: '43px' }}
       >
-        <Form.Item
-          label={t('send:receiver_address')}
-          name="receiver"
-          rules={[
-            {
-              required: true,
-              message: t('send:input_receiver_address'),
-            },
-          ]}
-        >
-          <Input.Group compact>
-            <Input
-              size="large"
-              style={{ width: 'calc(100% - 35px)', textAlign: 'left' }}
-              value={txReceiver}
-              placeholder={t('send:receiver_address')}
-              onChange={(e) => {
-                setTxReceiver(e.target.value),
-                  form.setFieldValue('receiver', e.target.value);
-              }}
-            />
+        <Form.Item label={t('send:receiver_address')}>
+          <Space.Compact style={{ width: '100%' }}>
+            <Form.Item
+              name="receiver"
+              noStyle
+              rules={[
+                {
+                  required: true,
+                  message: t('send:input_receiver_address'),
+                },
+              ]}
+            >
+              <Input
+                size="large"
+                value={txReceiver}
+                placeholder={t('send:receiver_address')}
+                onChange={(e) => {
+                  setTxReceiver(e.target.value),
+                    form.setFieldValue('receiver', e.target.value);
+                }}
+              />
+            </Form.Item>
             <Select
               size="large"
               className="no-text-select"
-              style={{ width: '35px' }}
+              style={{ width: '40px' }}
               defaultValue=""
               value={txReceiver}
               popupMatchSelectWidth={false}
-              onChange={(value) => setTxReceiver(value)}
+              onChange={(value) => {
+                setTxReceiver(value), form.setFieldValue('receiver', value);
+              }}
               options={contactsItems}
               dropdownRender={(menu) => <>{menu}</>}
             />
-          </Input.Group>
+          </Space.Compact>
         </Form.Item>
 
         <Form.Item
