@@ -22,8 +22,6 @@ import {
   setInitialContactsState,
 } from '../../store';
 
-import './Restore.css';
-
 import {
   getMasterXpriv,
   getMasterXpub,

@@ -51,8 +51,6 @@ import LanguageSelector from '../../components/LanguageSelector/LanguageSelector
 
 import { transaction, generatedWallets, cryptos, node } from '../../types';
 
-import './Login.css';
-
 interface loginForm {
   password: string;
 }
@@ -126,9 +124,8 @@ function Login() {
         try {
           // check if we should stay logged out
           const curTime = new Date().getTime();
-          const respLastActivity: lastActivity = await chrome.storage.session.get(
-            'lastActivity',
-          );
+          const respLastActivity: lastActivity =
+            await chrome.storage.session.get('lastActivity');
           if (typeof respLastActivity.lastActivity === 'number') {
             if (respLastActivity.lastActivity + tenMins < curTime) {
               await chrome.storage.session.clear();
@@ -315,9 +312,11 @@ function Login() {
               setBlockheight(activeChain, blockheightChain);
             }
             // load contacts
-            const contacts = (await localForage.getItem('contacts'));
+            const contacts = await localForage.getItem('contacts');
             if (contacts) {
-              dispatch(setContacts(contacts as Record<keyof cryptos, contact[]>));
+              dispatch(
+                setContacts(contacts as Record<keyof cryptos, contact[]>),
+              );
             }
             navigate('/home');
           } else {
