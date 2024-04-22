@@ -97,9 +97,9 @@ function ContactsTable() {
     return (
       <>
         {name ||
-          new Date(record.id).toLocaleTimeString() +
+          new Date(record.id).toLocaleDateString() +
             ' ' +
-            new Date(record.id).toLocaleDateString()}
+            new Date(record.id).toLocaleTimeString()}
       </>
     );
   };
@@ -130,9 +130,9 @@ function ContactsTable() {
               <p style={{ margin: 0, wordBreak: 'break-all' }}>
                 {t('common:name')}:{' '}
                 {record.name ||
-                  new Date(record.id).toLocaleTimeString() +
+                  new Date(record.id).toLocaleDateString() +
                     ' ' +
-                    new Date(record.id).toLocaleDateString()}
+                    new Date(record.id).toLocaleTimeString()}
               </p>
               <p style={{ wordBreak: 'break-all' }}>
                 {t('common:address')}: {record.address}
@@ -145,9 +145,9 @@ function ContactsTable() {
                 }}
               >
                 {t('home:contacts.created_at')}{' '}
-                {new Date(record.id).toLocaleTimeString() +
+                {new Date(record.id).toLocaleDateString() +
                   ' ' +
-                  new Date(record.id).toLocaleDateString()}
+                  new Date(record.id).toLocaleTimeString()}
               </p>
               <Flex gap="small">
                 <Button size="middle" onClick={() => editContact(record.id)}>

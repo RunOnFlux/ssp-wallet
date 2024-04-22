@@ -189,7 +189,11 @@ function Send() {
     const contactsOptions: contactOption[] = [];
     contacts[activeChain]?.forEach((contact) => {
       const option = {
-        label: contact.name,
+        label:
+          contact.name ||
+          new Date(contact.id).toLocaleDateString() +
+            ' ' +
+            new Date(contact.id).toLocaleTimeString(),
         value: contact.address,
       };
       contactsOptions.push(option);
