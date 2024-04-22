@@ -12,9 +12,9 @@ function Contacts() {
     setAddOpen(true);
   };
 
-  const manageContactAction = (status: boolean) => {
-    setAddOpen(status);
-  }
+  const manageContactAction = () => {
+    setAddOpen(false);
+  };
 
   return (
     <div>
@@ -24,7 +24,7 @@ function Contacts() {
           {t('home:contacts.create_new_contact')}
         </Button>
       </Space>
-      <ManageContact open={addOpen} openAction={manageContactAction} />
+      {addOpen && <ManageContact openAction={manageContactAction} />}
     </div>
   );
 }

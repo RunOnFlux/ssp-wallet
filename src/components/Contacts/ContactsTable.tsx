@@ -2,17 +2,24 @@ import { Table, Empty, message, Flex, Popconfirm, Button } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
+import localForage from 'localforage';
 const { Column } = Table;
 import './Contacts.css';
 import { useTranslation } from 'react-i18next';
-import { useAppSelector } from '../../hooks';
+import ManageContact from './ManageContact.tsx';
+import { useAppSelector, useAppDispatch } from '../../hooks';
+import { contact } from '../../types';
+import { setContacts } from '../../store';
 
 // name, ip, tier, status
 function ContactsTable() {
+  const dispatch = useAppDispatch();
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { contacts } = useAppSelector((state) => state.contacts);
   const [contactsByName, setContactsByName] = useState(contacts[activeChain]);
+  const [manageOpen, setManageOpen] = useState(false);
+  const [manageContactId, setManageContactId] = useState<number>(-1);
 
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
@@ -22,12 +29,32 @@ function ContactsTable() {
     });
   };
 
+  useEffect(() => {
+    setManageOpen(manageContactId !== -1);
+  }, [manageContactId]);
+
   const editContact = (id: number) => {
-    console.log('edit contact', id);
+    setManageContactId(id);
   };
 
   const deleteContact = (id: number) => {
-    displayMessage('error', t('home:contacts.contact_deleted'));
+    const adjustedChainContacts: contact[] = [];
+    contacts[activeChain]?.forEach((contact: contact) => {
+      if (contact.id !== id) {
+        adjustedChainContacts.push(contact);
+      }
+    });
+
+    const completeContacts = {
+      ...contacts,
+      [activeChain]: adjustedChainContacts,
+    };
+
+    // save
+    dispatch(setContacts(completeContacts));
+    void (async function () {
+      await localForage.setItem('contacts', completeContacts);
+    })();
     console.log('delete contact', id);
   };
 
@@ -42,6 +69,15 @@ function ContactsTable() {
     });
     setContactsByName(sortedContacts);
   }, [contacts, activeChain]);
+
+  const manageContactAction = (status: boolean) => {
+    setManageOpen(false);
+    if (status === false) {
+      setManageContactId(-1);
+    } else if (status === true) {
+      displayMessage('success', t('home:contacts.contacts_updated'));
+    }
+  };
 
   return (
     <>
@@ -67,10 +103,7 @@ function ContactsTable() {
           expandedRowRender: (record) => (
             <div>
               <Flex gap="small">
-                <Button
-                  size="middle"
-                  onClick={() => editContact(record.id)}
-                >
+                <Button size="middle" onClick={() => editContact(record.id)}>
                   {t('common:edit')}
                 </Button>
                 <Popconfirm
@@ -81,7 +114,7 @@ function ContactsTable() {
                   onConfirm={() => {
                     void deleteContact(record.id);
                   }}
-                  icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                  icon={<QuestionCircleOutlined style={{ color: 'orange' }} />}
                 >
                   <Button size="middle">{t('common:delete')}</Button>
                 </Popconfirm>
@@ -104,6 +137,9 @@ function ContactsTable() {
           render={(name: string) => <>{name || '---'}</>}
         />
       </Table>
+      {manageOpen && (
+        <ManageContact openAction={manageContactAction} id={manageContactId} />
+      )}
     </>
   );
 }

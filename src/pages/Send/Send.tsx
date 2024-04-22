@@ -30,7 +30,7 @@ import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
-import { QuestionCircleOutlined, BookOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
@@ -46,7 +46,7 @@ interface contactOption {
   value: string;
 }
 
-interface contacts {
+interface contactsInterface {
   label: string;
   options: contactOption[];
 }
@@ -106,8 +106,9 @@ function Send() {
   const [useMaximum, setUseMaximum] = useState(false);
   const [manualFee, setManualFee] = useState(false);
   const [txSizeVBytes, setTxSize] = useState(0);
-  const [contactsItems, setContactsItems] = useState<contacts[]>([]);
+  const [contactsItems, setContactsItems] = useState<contactsInterface[]>([]);
   const { networkFees } = useAppSelector((state) => state.networkFees);
+  const { contacts } = useAppSelector((state) => state.contacts);
 
   const blockchainConfig = blockchains[activeChain];
   const { cryptoRates, fiatRates } = useAppSelector(
@@ -181,22 +182,26 @@ function Send() {
       if (+a.value.split('-')[0] > +b.value.split('-')[0]) return 1;
       return 0;
     });
-    const contacts = [
-      {
-        label: 'Contacts', // this is to load if we have, if not do display
-        options: [
-          {
-            label: 'yiminghe',
-            value: 'Yiminghe',
-          },
-        ],
-      },
-      {
-        label: 'My Wallets',
-        options: wItems,
-      },
-    ];
-    setContactsItems(contacts);
+    const sendContacts = [];
+    const contactsOptions: contactOption[] = [];
+    contacts[activeChain]?.forEach((contact) => {
+      const option = {
+        label: contact.name,
+        value: contact.address,
+      };
+      contactsOptions.push(option);
+    });
+    if (contactsOptions.length > 0) {
+      sendContacts.push({
+        label: 'Contacts',
+        options: contactsOptions,
+      });
+    }
+    sendContacts.push({
+      label: 'My Wallets',
+      options: wItems,
+    });
+    setContactsItems(sendContacts);
   }, [wallets, activeChain]);
 
   // on every chain, address adjustment, fetch utxos
@@ -723,13 +728,9 @@ function Send() {
   );
 
   const refresh = () => {
-    // todo?
-    console.log('refresh');
+    console.log('just a placeholder, navbar has refresh disabled but refresh is required to be passed');
   };
 
-  const addContact = () => {
-    console.log('add contact');
-  };
   return (
     <>
       {contextHolder}
@@ -772,21 +773,7 @@ function Send() {
               popupMatchSelectWidth={false}
               onChange={(value) => setTxReceiver(value)}
               options={contactsItems}
-              dropdownRender={(menu) => (
-                <>
-                  {menu}
-                  <Divider style={{ margin: '8px 0' }} />
-                  <Space style={{ padding: '0 8px 4px' }}>
-                    <Button
-                      type="text"
-                      icon={<BookOutlined />}
-                      onClick={() => addContact()}
-                    >
-                      {t('home:contacts.add_contact')}
-                    </Button>
-                  </Space>
-                </>
-              )}
+              dropdownRender={(menu) => <>{menu}</>}
             />
           </Input.Group>
         </Form.Item>

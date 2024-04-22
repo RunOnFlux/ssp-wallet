@@ -9,12 +9,11 @@ import { setContacts } from '../../store';
 
 function ManageContact(props: {
   id?: number;
-  open: boolean;
   openAction: (status: boolean) => void;
 }) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['home', 'common']);
-  const { open, openAction } = props;
+  const { openAction } = props;
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { contacts } = useAppSelector((state) => state.contacts);
   const [messageApi, contextHolder] = message.useMessage();
@@ -68,8 +67,7 @@ function ManageContact(props: {
       void (async function () {
         await localForage.setItem('contacts', completeContacts);
       })();
-      openAction(false);
-      displayMessage('success', t('home:contacts.contacts_updated'));
+      openAction(true);
     } catch (error) {
       console.log(error);
       displayMessage('error', t('home:contacts.err_saving_contacts'));
@@ -91,7 +89,7 @@ function ManageContact(props: {
       {contextHolder}
       <Modal
         title={t('home:contacts.add_contact')}
-        open={open}
+        open={true}
         onCancel={handleNotOk}
         style={{ textAlign: 'center', top: 60, width: 200 }}
         footer={[]}
