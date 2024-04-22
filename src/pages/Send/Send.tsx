@@ -774,7 +774,6 @@ function Send() {
       <Form
         name="sendForm"
         form={form}
-        initialValues={{ tos: false }}
         onFinish={(values) => void onFinish(values as sendForm)}
         autoComplete="off"
         layout="vertical"

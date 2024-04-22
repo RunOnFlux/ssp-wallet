@@ -16,6 +16,7 @@ import {
 import { NoticeType } from 'antd/es/message/interface';
 
 import { useAppDispatch, useAppSelector } from '../../hooks';
+import { contact } from '../../types';
 
 import {
   setActiveChain,
@@ -316,7 +317,7 @@ function Login() {
             // load contacts
             const contacts = (await localForage.getItem('contacts'));
             if (contacts) {
-              dispatch(setContacts(contacts as Record<keyof cryptos, string[]>));
+              dispatch(setContacts(contacts as Record<keyof cryptos, contact[]>));
             }
             navigate('/home');
           } else {
@@ -353,7 +354,6 @@ function Login() {
           <br />
           <Form
             name="loginForm"
-            initialValues={{ tos: false }}
             onFinish={(values) => void onFinish(values as loginForm)}
             autoComplete="off"
             layout="vertical"
