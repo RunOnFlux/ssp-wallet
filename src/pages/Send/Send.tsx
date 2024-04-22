@@ -656,11 +656,14 @@ function Send() {
                 name: '', // save as empty string which will force date to be shown
                 address: values.receiver,
               };
-              const newContacts = contacts[activeChain] ?? [];
-              newContacts.push(newContact);
+              const adjContacts = [];
+              contacts[activeChain]?.forEach((contact) => {
+                adjContacts.push(contact);
+              });
+              adjContacts.push(newContact);
               const completeContacts = {
                 ...contacts,
-                [activeChain]: newContacts,
+                [activeChain]: adjContacts,
               };
               dispatch(setContacts(completeContacts));
               void (async function () {
@@ -796,12 +799,15 @@ function Send() {
               style={{ width: 'calc(100% - 35px)', textAlign: 'left' }}
               value={txReceiver}
               placeholder={t('send:receiver_address')}
-              onChange={(e) => setTxReceiver(e.target.value)}
+              onChange={(e) => {
+                setTxReceiver(e.target.value),
+                  form.setFieldValue('receiver', e.target.value);
+              }}
             />
             <Select
-              size="middle"
+              size="large"
               className="no-text-select"
-              style={{ width: '35px', height: '39.1px' }}
+              style={{ width: '35px' }}
               defaultValue=""
               value={txReceiver}
               popupMatchSelectWidth={false}
