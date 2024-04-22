@@ -19,7 +19,7 @@ function Contacts() {
   return (
     <div>
       <ContactsTable />
-      <Space size={'large'} style={{ marginTop: 8, marginBottom: 8 }}>
+      <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }}>
         <Button type="primary" size="middle" onClick={() => addContact()}>
           {t('home:contacts.create_new_contact')}
         </Button>

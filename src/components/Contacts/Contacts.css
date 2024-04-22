@@ -1,11 +1,11 @@
 .contact-name {
-  width: 145px;
+  width: 215px;
   word-break: break-all;
   padding: 16px 10px !important;
 }
 
 .contact-address {
-  width: 215px;
+  width: 145px;
   word-break: break-all;
   padding: 16px 10px !important;
 }

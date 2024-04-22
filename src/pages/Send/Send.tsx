@@ -11,6 +11,7 @@ import {
   Popover,
   Select,
 } from 'antd';
+import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
 import {
@@ -19,7 +20,7 @@ import {
   fetchUtxos,
   getTransactionSize,
 } from '../../lib/constructTx';
-import { useAppSelector } from '../../hooks';
+import { useAppSelector, useAppDispatch } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
@@ -35,6 +36,7 @@ import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
+import { setContacts } from '../../store';
 
 import { transaction, utxo } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
@@ -64,6 +66,7 @@ let txSentInterval: string | number | NodeJS.Timeout | undefined;
 let alreadyRunning = false;
 
 function Send() {
+  const dispatch = useAppDispatch();
   const location = useLocation();
   const state = location.state as sendForm;
   const {
@@ -638,6 +641,36 @@ function Send() {
             txSentInterval = setInterval(() => {
               fetchTransactions();
             }, 5000);
+            // construction was successful, save receier to contacts
+            const contactExists = contacts[activeChain]?.find(
+              (contact) => contact.address === values.receiver,
+            );
+            const myAddresses: string[] = [];
+            Object.keys(wallets).forEach((wallet) => {
+              myAddresses.push(wallets[wallet].address);
+            });
+
+            if (!contactExists && !myAddresses.includes(values.receiver)) {
+              const newContact = {
+                id: new Date().getTime(),
+                name: '', // save as empty string which will force date to be shown
+                address: values.receiver,
+              };
+              const newContacts = contacts[activeChain] ?? [];
+              newContacts.push(newContact);
+              const completeContacts = {
+                ...contacts,
+                [activeChain]: newContacts,
+              };
+              dispatch(setContacts(completeContacts));
+              void (async function () {
+                try {
+                  await localForage.setItem('contacts', completeContacts);
+                } catch (error) {
+                  console.log(error);
+                }
+              })();
+            }
           })
           .catch((error: TypeError) => {
             displayMessage('error', error.message);
@@ -728,7 +761,9 @@ function Send() {
   );
 
   const refresh = () => {
-    console.log('just a placeholder, navbar has refresh disabled but refresh is required to be passed');
+    console.log(
+      'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
+    );
   };
 
   return (

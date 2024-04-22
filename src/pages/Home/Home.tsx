@@ -201,14 +201,14 @@ function Home() {
                   children: <Transactions />,
                 },
                 {
-                  label: t('common:nodes'),
-                  key: 'nodes',
-                  children: <Nodes />,
-                },
-                {
                   label: t('home:contacts.contacts'),
                   key: 'contacts',
                   children: <Contacts />,
+                },
+                {
+                  label: t('common:nodes'),
+                  key: 'nodes',
+                  children: <Nodes />,
                 },
               ]}
             />

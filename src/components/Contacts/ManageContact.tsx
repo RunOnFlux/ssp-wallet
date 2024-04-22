@@ -65,7 +65,11 @@ function ManageContact(props: {
       const completeContacts = { ...contacts, [activeChain]: newContacts };
       dispatch(setContacts(completeContacts));
       void (async function () {
-        await localForage.setItem('contacts', completeContacts);
+        try {
+          await localForage.setItem('contacts', completeContacts);
+        } catch (error) {
+          console.log(error);
+        }
       })();
       openAction(true);
     } catch (error) {
@@ -88,7 +92,7 @@ function ManageContact(props: {
     <>
       {contextHolder}
       <Modal
-        title={t('home:contacts.add_contact')}
+        title={editedContact.id > -1 ? t('home:contacts.edit_contact') : t('home:contacts.add_contact')}
         open={true}
         onCancel={handleNotOk}
         style={{ textAlign: 'center', top: 60, width: 200 }}

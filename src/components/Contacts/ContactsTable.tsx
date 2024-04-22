@@ -53,7 +53,11 @@ function ContactsTable() {
     // save
     dispatch(setContacts(completeContacts));
     void (async function () {
-      await localForage.setItem('contacts', completeContacts);
+      try {
+        await localForage.setItem('contacts', completeContacts);
+      } catch (error) {
+        console.log(error);
+      }
     })();
     console.log('delete contact', id);
   };
@@ -72,11 +76,32 @@ function ContactsTable() {
 
   const manageContactAction = (status: boolean) => {
     setManageOpen(false);
-    if (status === false) {
-      setManageContactId(-1);
-    } else if (status === true) {
+    setManageContactId(-1);
+    if (status === true) {
       displayMessage('success', t('home:contacts.contacts_updated'));
     }
+  };
+
+  const renderAddress = (name: string) => {
+    if (name.length > 16)
+      return (
+        <>
+          {name.substring(0, 7)}...{name.substring(name.length - 6) || '---'}
+        </>
+      );
+
+    return <>{name || '---'}</>;
+  };
+
+  const renderName = (name: string, record: contact) => {
+    return (
+      <>
+        {name ||
+          new Date(record.id).toLocaleTimeString() +
+            ' ' +
+            new Date(record.id).toLocaleDateString()}
+      </>
+    );
   };
 
   return (
@@ -102,6 +127,28 @@ function ContactsTable() {
           showExpandColumn: false,
           expandedRowRender: (record) => (
             <div>
+              <p style={{ margin: 0, wordBreak: 'break-all' }}>
+                {t('common:name')}:{' '}
+                {record.name ||
+                  new Date(record.id).toLocaleTimeString() +
+                    ' ' +
+                    new Date(record.id).toLocaleDateString()}
+              </p>
+              <p style={{ wordBreak: 'break-all' }}>
+                {t('common:address')}: {record.address}
+              </p>
+              <p
+                style={{
+                  marginBottom: 20,
+                  wordBreak: 'break-all',
+                  fontSize: 10,
+                }}
+              >
+                {t('home:contacts.created_at')}{' '}
+                {new Date(record.id).toLocaleTimeString() +
+                  ' ' +
+                  new Date(record.id).toLocaleDateString()}
+              </p>
               <Flex gap="small">
                 <Button size="middle" onClick={() => editContact(record.id)}>
                   {t('common:edit')}
@@ -128,13 +175,13 @@ function ContactsTable() {
           title={t('common:name')}
           dataIndex="name"
           className="contact-name"
-          render={(name: string) => <>{name || '---'}</>}
+          render={(name: string, row: contact) => renderName(name, row)}
         />
         <Column
           title={t('common:address')}
           dataIndex="address"
           className="contact-address"
-          render={(name: string) => <>{name || '---'}</>}
+          render={(name: string) => renderAddress(name)}
         />
       </Table>
       {manageOpen && (
