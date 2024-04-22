@@ -16,6 +16,7 @@ import {
   setTransactions,
   setBalance,
   setUnconfirmedBalance,
+  setInitialContactsState,
 } from '../../store';
 import {
   Row,
@@ -338,6 +339,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
       }
       setInitialStateForAllChains();
       dispatch(setSSPInitialState());
+      dispatch(setInitialContactsState());
       dispatch(setPasswordBlobInitialState());
       navigate('/login');
     })();

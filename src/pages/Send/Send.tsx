@@ -9,7 +9,9 @@ import {
   Space,
   Popconfirm,
   Popover,
+  Select,
 } from 'antd';
+import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
 import {
@@ -18,7 +20,7 @@ import {
   fetchUtxos,
   getTransactionSize,
 } from '../../lib/constructTx';
-import { useAppSelector } from '../../hooks';
+import { useAppSelector, useAppDispatch } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
@@ -34,10 +36,22 @@ import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
+import { setContacts } from '../../store';
 
 import { transaction, utxo } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
+import './Send.css';
+
+interface contactOption {
+  label: string;
+  value: string;
+}
+
+interface contactsInterface {
+  label: string;
+  options: contactOption[];
+}
 
 interface sendForm {
   receiver: string;
@@ -52,6 +66,7 @@ let txSentInterval: string | number | NodeJS.Timeout | undefined;
 let alreadyRunning = false;
 
 function Send() {
+  const dispatch = useAppDispatch();
   const location = useLocation();
   const state = location.state as sendForm;
   const {
@@ -94,7 +109,9 @@ function Send() {
   const [useMaximum, setUseMaximum] = useState(false);
   const [manualFee, setManualFee] = useState(false);
   const [txSizeVBytes, setTxSize] = useState(0);
+  const [contactsItems, setContactsItems] = useState<contactsInterface[]>([]);
   const { networkFees } = useAppSelector((state) => state.networkFees);
+  const { contacts } = useAppSelector((state) => state.contacts);
 
   const blockchainConfig = blockchains[activeChain];
   const { cryptoRates, fiatRates } = useAppSelector(
@@ -139,6 +156,60 @@ function Send() {
       console.log(error);
     }
   });
+
+  useEffect(() => {
+    const wItems: contactOption[] = [];
+    Object.keys(wallets).forEach((wallet) => {
+      const typeNumber = Number(wallet.split('-')[0]);
+      const walletNumber = Number(wallet.split('-')[1]) + 1;
+      let walletName = 'Wallet ' + walletNumber;
+      if (typeNumber === 1) {
+        walletName = 'Change ' + walletNumber;
+      }
+      const wal = {
+        value: wallets[wallet].address,
+        label: t('home:navbar.chain_wallet', {
+          chain: blockchainConfig.name,
+          wallet: walletName,
+        }),
+      };
+      wItems.push(wal);
+    });
+    wItems.sort((a, b) => {
+      if (+a.value.split('-')[1] < +b.value.split('-')[1]) return -1;
+      if (+a.value.split('-')[1] > +b.value.split('-')[1]) return 1;
+      return 0;
+    });
+    wItems.sort((a, b) => {
+      if (+a.value.split('-')[0] < +b.value.split('-')[0]) return -1;
+      if (+a.value.split('-')[0] > +b.value.split('-')[0]) return 1;
+      return 0;
+    });
+    const sendContacts = [];
+    const contactsOptions: contactOption[] = [];
+    contacts[activeChain]?.forEach((contact) => {
+      const option = {
+        label:
+          contact.name ||
+          new Date(contact.id).toLocaleDateString() +
+            ' ' +
+            new Date(contact.id).toLocaleTimeString(),
+        value: contact.address,
+      };
+      contactsOptions.push(option);
+    });
+    if (contactsOptions.length > 0) {
+      sendContacts.push({
+        label: 'Contacts',
+        options: contactsOptions,
+      });
+    }
+    sendContacts.push({
+      label: 'My Wallets',
+      options: wItems,
+    });
+    setContactsItems(sendContacts);
+  }, [wallets, activeChain]);
 
   // on every chain, address adjustment, fetch utxos
   // used to get a precise estimate of the tx size
@@ -380,8 +451,10 @@ function Send() {
     const cr = cryptoRates[activeChain] ?? 0;
     const fiUSD = fiatRates.USD ?? 0;
     const fiatPriceUSD = cr * fiUSD;
-    const maxFeeUSD = sspConfig().maxTxFeeUSD // max USD fee per tranasction
-    const maxFeeUNIT = new BigNumber(maxFeeUSD).dividedBy(fiatPriceUSD).toFixed();
+    const maxFeeUSD = sspConfig().maxTxFeeUSD; // max USD fee per tranasction
+    const maxFeeUNIT = new BigNumber(maxFeeUSD)
+      .dividedBy(fiatPriceUSD)
+      .toFixed();
     const maxFeeSat = new BigNumber(maxFeeUNIT)
       .multipliedBy(10 ** blockchainConfig.decimals)
       .toFixed();
@@ -531,7 +604,7 @@ function Send() {
         const cr = cryptoRates[activeChain] ?? 0;
         const fiUSD = fiatRates.USD ?? 0;
         const fiatPriceUSD = cr * fiUSD;
-        const maxFeeUSD = sspConfig().maxTxFeeUSD // max USD fee per tranasction
+        const maxFeeUSD = sspConfig().maxTxFeeUSD; // max USD fee per tranasction
         const maxFeeUNIT = new BigNumber(maxFeeUSD)
           .dividedBy(fiatPriceUSD)
           .toFixed();
@@ -572,6 +645,39 @@ function Send() {
             txSentInterval = setInterval(() => {
               fetchTransactions();
             }, 5000);
+            // construction was successful, save receier to contacts
+            const contactExists = contacts[activeChain]?.find(
+              (contact) => contact.address === values.receiver,
+            );
+            const myAddresses: string[] = [];
+            Object.keys(wallets).forEach((wallet) => {
+              myAddresses.push(wallets[wallet].address);
+            });
+
+            if (!contactExists && !myAddresses.includes(values.receiver)) {
+              const newContact = {
+                id: new Date().getTime(),
+                name: '', // save as empty string which will force date to be shown
+                address: values.receiver,
+              };
+              const adjContacts = [];
+              contacts[activeChain]?.forEach((contact) => {
+                adjContacts.push(contact);
+              });
+              adjContacts.push(newContact);
+              const completeContacts = {
+                ...contacts,
+                [activeChain]: adjContacts,
+              };
+              dispatch(setContacts(completeContacts));
+              void (async function () {
+                try {
+                  await localForage.setItem('contacts', completeContacts);
+                } catch (error) {
+                  console.log(error);
+                }
+              })();
+            }
           })
           .catch((error: TypeError) => {
             displayMessage('error', error.message);
@@ -662,8 +768,11 @@ function Send() {
   );
 
   const refresh = () => {
-    console.log('refresh');
+    console.log(
+      'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
+    );
   };
+
   return (
     <>
       {contextHolder}
@@ -672,29 +781,48 @@ function Send() {
       <Form
         name="sendForm"
         form={form}
-        initialValues={{ tos: false }}
         onFinish={(values) => void onFinish(values as sendForm)}
         autoComplete="off"
         layout="vertical"
         itemRef="txFeeRef"
         style={{ paddingBottom: '43px' }}
       >
-        <Form.Item
-          label={t('send:receiver_address')}
-          name="receiver"
-          rules={[
-            {
-              required: true,
-              message: t('send:input_receiver_address'),
-            },
-          ]}
-        >
-          <Input
-            size="large"
-            value={txReceiver}
-            placeholder={t('send:receiver_address')}
-            onChange={(e) => setTxReceiver(e.target.value)}
-          />
+        <Form.Item label={t('send:receiver_address')}>
+          <Space.Compact style={{ width: '100%' }}>
+            <Form.Item
+              name="receiver"
+              noStyle
+              rules={[
+                {
+                  required: true,
+                  message: t('send:input_receiver_address'),
+                },
+              ]}
+            >
+              <Input
+                size="large"
+                value={txReceiver}
+                placeholder={t('send:receiver_address')}
+                onChange={(e) => {
+                  setTxReceiver(e.target.value),
+                    form.setFieldValue('receiver', e.target.value);
+                }}
+              />
+            </Form.Item>
+            <Select
+              size="large"
+              className="no-text-select"
+              style={{ width: '40px' }}
+              defaultValue=""
+              value={txReceiver}
+              popupMatchSelectWidth={false}
+              onChange={(value) => {
+                setTxReceiver(value), form.setFieldValue('receiver', value);
+              }}
+              options={contactsItems}
+              dropdownRender={(menu) => <>{menu}</>}
+            />
+          </Space.Compact>
         </Form.Item>
 
         <Form.Item

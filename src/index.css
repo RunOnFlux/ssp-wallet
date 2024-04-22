@@ -30,9 +30,11 @@ body {
 }
 
 #root {
-  margin: auto;
+  margin: 0 auto;
   padding: 1rem;
   height: calc(100% - 2rem);
+  max-width: 1280px;
+  text-align: center;
 }
 
 .adjustedWidth {

@@ -64,6 +64,15 @@ interface RatesState {
   fiatRates: currency;
 }
 
+interface contact {
+  id: number;
+  name: string;
+  address: string;
+}
+interface ContactsState {
+  contacts: Record<keyof cryptos, contact[]>;
+}
+
 const initialRatesState: RatesState = {
   cryptoRates: {
     flux: 0,
@@ -128,6 +137,19 @@ const initialRatesState: RatesState = {
   },
 };
 
+const initialContactsState: ContactsState = {
+  contacts: {
+    flux: [],
+    fluxTestnet: [],
+    rvn: [],
+    ltc: [],
+    btc: [],
+    doge: [],
+    btcTestnet: [],
+    btcSignet: [],
+  },
+};
+
 const passwordBlobSlice = createSlice({
   name: 'passwordBlob',
   initialState: initialStatePasswordBlob,
@@ -150,6 +172,22 @@ const fiatCryptoRatesSlice = createSlice({
     },
     setFiatRates: (state, action: PayloadAction<currency>) => {
       state.fiatRates = action.payload;
+    },
+  },
+});
+
+const contactsSlice = createSlice({
+  name: 'contacts',
+  initialState: initialContactsState,
+  reducers: {
+    setContacts: (
+      state,
+      action: PayloadAction<Record<keyof cryptos, contact[]>>,
+    ) => {
+      state.contacts = action.payload;
+    },
+    setInitialContactsState: (state) => {
+      state.contacts = initialContactsState.contacts;
     },
   },
 });
@@ -200,6 +238,8 @@ export const { setCryptoRates, setFiatRates } = fiatCryptoRatesSlice.actions;
 
 export const { setNetworkFees } = networkFeesSlice.actions;
 
+export const { setContacts, setInitialContactsState } = contactsSlice.actions;
+
 export const {
   setSSPInitialState,
   setSspWalletKeyInternalIdentity,
@@ -213,6 +253,7 @@ const reducers = combineReducers({
   fiatCryptoRates: fiatCryptoRatesSlice.reducer,
   networkFees: networkFeesSlice.reducer,
   sspState: sspStateSlice.reducer,
+  contacts: contactsSlice.reducer,
   // === IMPORT CHAINS ===
   flux: chains.flux.reducer,
   fluxTestnet: chains.fluxTestnet.reducer,

@@ -13,6 +13,7 @@ import {
   setSspWalletInternalIdentity,
   setSspWalletKeyInternalIdentity,
   setSspWalletExternalIdentity,
+  setInitialContactsState,
 } from '../../store';
 import { Spin, Divider, message, Space, Tabs } from 'antd';
 import './Home.css';
@@ -20,6 +21,7 @@ import Key from '../../components/Key/Key';
 import Navigation from '../../components/Navigation/Navigation';
 import Transactions from '../../components/Transactions/Transactions';
 import Nodes from '../../components/Nodes/Nodes';
+import Contacts from '../../components/Contacts/Contacts';
 import Balances from '../../components/Balances/Balances';
 import Navbar from '../../components/Navbar/Navbar';
 import AddressContainer from '../../components/AddressContainer/AddressContainer.tsx';
@@ -34,7 +36,7 @@ import { useTranslation } from 'react-i18next';
 import { generatedWallets } from '../../types';
 
 function Home() {
-  const { t } = useTranslation(['home']);
+  const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -167,6 +169,7 @@ function Home() {
         setTimeout(() => {
           setInitialStateForAllChains();
           dispatch(setSSPInitialState());
+          dispatch(setInitialContactsState());
           dispatch(setPasswordBlobInitialState());
         }, 100);
       })();
@@ -193,12 +196,17 @@ function Home() {
               tabBarStyle={{ marginBottom: 0 }}
               items={[
                 {
-                  label: 'Activity',
+                  label: t('common:activity'),
                   key: 'activity',
                   children: <Transactions />,
                 },
                 {
-                  label: 'Nodes',
+                  label: t('home:contacts.contacts'),
+                  key: 'contacts',
+                  children: <Contacts />,
+                },
+                {
+                  label: t('common:nodes'),
                   key: 'nodes',
                   children: <Nodes />,
                 },
@@ -206,7 +214,24 @@ function Home() {
             />
           )}
           {wallets?.[walletInUse] && !wallets[walletInUse].nodes && (
-            <Transactions />
+            <Tabs
+              defaultActiveKey="activity"
+              size="small"
+              centered
+              tabBarStyle={{ marginBottom: 0 }}
+              items={[
+                {
+                  label: t('common:activity'),
+                  key: 'activity',
+                  children: <Transactions />,
+                },
+                {
+                  label: t('home:contacts.contacts'),
+                  key: 'contacts',
+                  children: <Contacts />,
+                },
+              ]}
+            />
           )}
         </div>
       )}

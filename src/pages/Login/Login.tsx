@@ -16,6 +16,7 @@ import {
 import { NoticeType } from 'antd/es/message/interface';
 
 import { useAppDispatch, useAppSelector } from '../../hooks';
+import { contact } from '../../types';
 
 import {
   setActiveChain,
@@ -33,6 +34,7 @@ import {
   setXpubKey,
   setXpubKeyIdentity,
   setXpubWalletIdentity,
+  setContacts,
 } from '../../store';
 
 import { getFingerprint } from '../../lib/fingerprint';
@@ -48,8 +50,6 @@ import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 
 import { transaction, generatedWallets, cryptos, node } from '../../types';
-
-import './Login.css';
 
 interface loginForm {
   password: string;
@@ -124,9 +124,8 @@ function Login() {
         try {
           // check if we should stay logged out
           const curTime = new Date().getTime();
-          const respLastActivity: lastActivity = await chrome.storage.session.get(
-            'lastActivity',
-          );
+          const respLastActivity: lastActivity =
+            await chrome.storage.session.get('lastActivity');
           if (typeof respLastActivity.lastActivity === 'number') {
             if (respLastActivity.lastActivity + tenMins < curTime) {
               await chrome.storage.session.clear();
@@ -312,6 +311,13 @@ function Login() {
             if (blockheightChain) {
               setBlockheight(activeChain, blockheightChain);
             }
+            // load contacts
+            const contacts = await localForage.getItem('contacts');
+            if (contacts) {
+              dispatch(
+                setContacts(contacts as Record<keyof cryptos, contact[]>),
+              );
+            }
             navigate('/home');
           } else {
             displayMessage('error', t('login:err_l2'));
@@ -347,7 +353,6 @@ function Login() {
           <br />
           <Form
             name="loginForm"
-            initialValues={{ tos: false }}
             onFinish={(values) => void onFinish(values as loginForm)}
             autoComplete="off"
             layout="vertical"

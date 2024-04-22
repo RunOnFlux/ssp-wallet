@@ -213,5 +213,20 @@
     "signature_error": "Error signing Fusion request. Try again later.",
     "claim_successful": "Fusion Claim Successful!",
     "claim_received": "Claim Received!"
+  },
+  "contacts": {
+    "no_contacts": "No Contacts Stored",
+    "contacts": "Contacts",
+    "manage_contacts": "Manage Contacts",
+    "create_new_contact": "Create New Contact",
+    "add_contact": "Add Contact",
+    "edit_contact": "Edit Contact",
+    "delete_contact": "Delete Contact",
+    "err_no_name": "Please name your contact first",
+    "err_no_address": "Please input address first",
+    "contacts_updated": "Contacts Updated",
+    "err_saving_contacts": "Error while saving contacts. Please try again.",
+    "contact_deleted": "Contact Deleted",
+    "created_at": "Created at"
   }
 }
