@@ -2299,10 +2299,10 @@ html-parse-stringify@^3.0.1:
   dependencies:
     void-elements "3.1.0"
 
-i18next@~23.11.1:
-  version "23.11.1"
-  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.11.1.tgz#8e384b6ad7d6ba70c40cb86e020438251a5ff8b1"
-  integrity sha512-mXw4A24BiPZKRsbb9ewgSvjYd6fxFCNwJyfK6nYfSTIAX2GkCWcb598m3DFkDZmqADatvuASrKo6qwORz3VwTQ==
+i18next@~23.11.3:
+  version "23.11.3"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.11.3.tgz#d269c9c15bae9d90ab291055cfc433089ca5f77b"
+  integrity sha512-Pq/aSKowir7JM0rj+Wa23Kb6KKDUGno/HjG+wRQu0PxoTbpQ4N89MAT0rFGvXmLkRLNMb1BbBOKGozl01dabzg==
   dependencies:
     "@babel/runtime" "^7.23.2"
 
