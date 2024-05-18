@@ -108,7 +108,8 @@
     "change_pw_restore": "Ubah kata sandi? Kembalikan!",
     "ssp_relay": "Server Relai SSP",
     "chain_node_service": "{{chain}} Layanan Node",
-    "language": "Bahasa"
+    "language": "Bahasa",
+    "fiat_currency": "Mata Uang Fiat"
   },
   "receive": {
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
@@ -134,7 +135,8 @@
     "remove": "Hapus",
     "remove_last_wallet_desc": "Tindakan ini akan menghapus dompet Anda yang terakhir dibuat. Anda dapat membuat dompet baru yang sama kapan saja.",
     "switch_chain": "Beralih Rantai",
-    "max_wallets": "42. Jawaban atas pertanyaan utama tentang kehidupan, alam semesta, dan segalanya. Anda telah mencapai jumlah maksimum dompet."
+    "max_wallets": "42. Jawaban atas pertanyaan utama tentang kehidupan, alam semesta, dan segalanya. Anda telah mencapai jumlah maksimum dompet.",
+    "ssp_message_sign": "Penandatanganan Pesan"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Kata sandi tidak valid. ",
@@ -211,5 +213,20 @@
     "signature_error": "Terjadi kesalahan saat menandatangani permintaan Penggabungan. ",
     "claim_successful": "Klaim Fusion Berhasil!",
     "claim_received": "Klaim Diterima!"
+     },
+  "contacts": {
+    "no_contacts": "No Contacts Stored",
+    "contacts": "Kontak",
+    "manage_contacts": "Kelola Kontak",
+    "create_new_contact": "Buat Kontak Baru",
+    "add_contact": "Tambah kontak",
+    "edit_contact": "Sunting Kontak",
+    "delete_contact": "Hapus kontak",
+    "err_no_name": "Mohon berikan nama kontak Anda terlebih dahulu",
+    "err_no_address": "Silakan masukkan alamat terlebih dahulu",
+    "contacts_updated": "Kontak Diperbarui",
+    "err_saving_contacts": "Terjadi kesalahan saat menyimpan kontak. Silakan coba lagi.",
+    "contact_deleted": "Kontak Dihapus",
+    "created_at": "Dibuat di"
   }
 }

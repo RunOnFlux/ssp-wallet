@@ -34,5 +34,9 @@
   "fluxos": "Flux OS",
   "success": "SUKSES",
   "error": "KESALAHAN",
-  "request_rejected": "Permintaan Ditolak"
+  "request_rejected": "Permintaan Ditolak",
+  "name": "Nama",
+  "address": "Alamat",
+  "activity": "Aktivitas",
+  "nodes": "Nodes"
 }
