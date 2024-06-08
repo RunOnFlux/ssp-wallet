@@ -3,6 +3,7 @@ import { Buffer } from 'buffer';
 import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
+import { toCashAddress } from 'bchaddrjs';
 import {
   keyPair,
   minHDKey,
@@ -111,6 +112,7 @@ export function generateMultisigAddress(
   const bipParams = blockchains[chain].bip32;
   const type = blockchains[chain].scriptType;
   const networkBipParams = utxolib.networks[libID].bip32;
+  const cashAddrPrefix = blockchains[chain].cashaddr;
   let externalChain1, externalChain2;
   try {
     externalChain1 = HDKey.fromExtendedKey(xpub1, bipParams);
@@ -148,7 +150,10 @@ export function generateMultisigAddress(
     const scriptPubKey = utxolib.script.witnessScriptHash.output.encode(
       utxolib.crypto.sha256(witnessScript),
     );
-    const address = utxolib.address.fromOutputScript(scriptPubKey, network);
+    let address = utxolib.address.fromOutputScript(scriptPubKey, network);
+    if (cashAddrPrefix) {
+      address = toCashAddress(address);
+    }
     const witnessScriptHex: string = Buffer.from(witnessScript).toString('hex');
     return {
       address,
@@ -165,9 +170,12 @@ export function generateMultisigAddress(
     const scriptPubKey = utxolib.script.scriptHash.output.encode(
       utxolib.crypto.hash160(redeemScript),
     );
-    const address = utxolib.address.fromOutputScript(scriptPubKey, network);
+    let address = utxolib.address.fromOutputScript(scriptPubKey, network);
     const witnessScriptHex: string = Buffer.from(witnessScript).toString('hex');
     const redeemScriptHex: string = Buffer.from(redeemScript).toString('hex');
+    if (cashAddrPrefix) {
+      address = toCashAddress(address);
+    }
     return {
       address,
       redeemScript: redeemScriptHex,
@@ -183,10 +191,14 @@ export function generateMultisigAddress(
       utxolib.crypto.hash160(redeemScript),
     );
 
-    const address: string = utxolib.address.fromOutputScript(
+    let address: string = utxolib.address.fromOutputScript(
       scriptPubKey,
       network,
     );
+
+    if (cashAddrPrefix) {
+      address = toCashAddress(address);
+    }
 
     const redeemScriptHex: string = Buffer.from(redeemScript).toString('hex');
     return {

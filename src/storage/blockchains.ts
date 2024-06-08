@@ -9,6 +9,7 @@ import btcTestnetLogo from '/src/assets/btcTestnet.svg';
 import btcSignetLogo from '/src/assets/btcSignet.svg';
 import dogeLogo from '/src/assets/doge.svg';
 import zecLogo from '/src/assets/zec.svg';
+import bchLogo from '/src/assets/bch.svg';
 
 // https://github.com/dogecoin/dogecoin/blob/master/doc/fee-recommendation.md
 
@@ -265,11 +266,40 @@ const zec = {
   rbf: false,
 };
 
+const bch = {
+  id: 'bch',
+  libid: 'bitcoincash',
+  name: 'Bitcoin Cash',
+  symbol: 'BCH',
+  decimals: 8,
+  node: backends().bch.node,
+  slip: 145,
+  scriptType: 'p2sh',
+  messagePrefix: '\u0018Bitcoin Signed Message:\n',
+  pubKeyHash: '00',
+  scriptHash: '05',
+  wif: '80',
+  logo: bchLogo,
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  backend: 'blockbook',
+  dustLimit: 546, // min utxo amount
+  minFeePerByte: 1, // min fee per byte
+  feePerByte: 15, // fee per byte
+  maxMessage: 80, // 80 bytes in size
+  maxTxSize: 100000, // 100,000 vbytes
+  rbf: true,
+  cashaddr: 'bitcoincash:',
+};
+
 export const blockchains = {
   btc,
   flux,
   doge,
   ltc,
+  bch,
   rvn,
   zec,
   btcTestnet,

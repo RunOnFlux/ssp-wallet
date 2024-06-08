@@ -22,10 +22,11 @@
     "antd": "~5.18.0",
     "assert": "~2.1.0",
     "axios": "~1.7.2",
+    "bchaddrjs": "~0.5.2",
     "bignumber.js": "~9.1.2",
     "buffer": "~6.0.3",
-    "currency-symbol-map": "~5.1.0",
     "crypto-browserify": "~3.12.0",
+    "currency-symbol-map": "~5.1.0",
     "events": "~3.3.0",
     "i18next": "~23.11.5",
     "localforage": "~1.10.0",
@@ -45,6 +46,7 @@
     "util": "~0.12.5"
   },
   "devDependencies": {
+    "@types/bchaddrjs": "~0.4.3",
     "@types/chrome": "~0.0.268",
     "@types/node": "~20.14.1",
     "@types/react": "~18.3.3",

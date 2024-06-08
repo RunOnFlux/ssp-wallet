@@ -2,6 +2,7 @@ import utxolib from '@runonflux/utxo-lib';
 import { Buffer } from 'buffer';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
+import { toLegacyAddress } from 'bchaddrjs';
 import {
   blockbookUtxo,
   utxo,
@@ -266,6 +267,7 @@ export function buildUnsignedRawTx(
   try {
     const libID = getLibId(chain);
     const network = utxolib.networks[libID];
+    const cashAddrPrefix = blockchains[chain].cashaddr;
     const txb = new utxolib.TransactionBuilder(network, fee);
     if (blockchains[chain].txVersion) {
       txb.setVersion(blockchains[chain].txVersion);
@@ -278,6 +280,10 @@ export function buildUnsignedRawTx(
       utxos.forEach((x) => txb.addInput(x.txid, x.vout, RBFsequence));
     } else {
       utxos.forEach((x) => txb.addInput(x.txid, x.vout));
+    }
+    if (cashAddrPrefix) {
+      receiver = toLegacyAddress(receiver);
+      change = toLegacyAddress(change);
     }
     const recipients = [
       {

@@ -43,6 +43,9 @@ const doge = {
 const zec = {
   node: 'blockbookzcash.app.runonflux.io',
 };
+const bch = {
+  node: 'blockbookbitcoincash.app.runonflux.io',
+};
 const btcTestnet = {
   node: 'blockbookbitcointestnet.app.runonflux.io',
 };
@@ -59,6 +62,7 @@ export function backends() {
     btc: localForgeBackends?.btc || btc,
     doge: localForgeBackends?.doge || doge,
     zec: localForgeBackends?.zec || zec,
+    bch: localForgeBackends?.bch || bch,
     btcTestnet: localForgeBackends?.btcTestnet || btcTestnet,
     btcSignet: localForgeBackends?.btcSignet || btcSignet,
   };
@@ -73,6 +77,7 @@ export function backendsOriginal() {
     btc,
     doge,
     zec,
+    bch,
     btcTestnet,
     btcSignet,
   };
