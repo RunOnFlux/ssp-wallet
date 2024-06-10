@@ -28,6 +28,7 @@ declare module '@storage/blockchains' {
     maxTxSize: number;
     rbf: boolean;
     cashaddr: string;
+    txExpiryHeight: number;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

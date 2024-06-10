@@ -105,6 +105,7 @@ declare module '@runonflux/utxo-lib' {
     addOutput: (address: string, satoshis: number) => void;
     fromTransaction: (tx: TX, network: network) => txBuilder;
     buildIncomplete: () => builtTx;
+    setExpiryHeight: (expiryHeight: number) => void;
   };
   let TransactionBuilder: {
     fromTransaction: (tx: TX, network: network) => txBuilder;

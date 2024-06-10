@@ -17,6 +17,8 @@ import { blockchains } from '@storage/blockchains';
 
 import { LRUCache } from 'lru-cache';
 
+import { getBlockheight } from './blockheight.ts';
+
 const utxoCache = new LRUCache({
   max: 1000,
   ttl: 1 * 60 * 60 * 1000, // 1 hour, just as precaution here, not really needed
@@ -263,6 +265,7 @@ export function buildUnsignedRawTx(
   message: string,
   maxFee: string,
   isRBF = true,
+  expiryHeight?: number,
 ): string {
   try {
     const libID = getLibId(chain);
@@ -274,6 +277,9 @@ export function buildUnsignedRawTx(
     }
     if (blockchains[chain].txGroupID) {
       txb.setVersionGroupId(blockchains[chain].txGroupID);
+    }
+    if (expiryHeight && blockchains[chain].txExpiryHeight) {
+      txb.setExpiryHeight(expiryHeight);
     }
     if (isRBF) {
       const RBFsequence = 0xffffffff - 2;
@@ -595,6 +601,13 @@ export async function getTransactionSize(
     if (mandatoryUtxos?.length) {
       console.log('RBF TX');
     }
+    const rbf = blockchains[chain].rbf ?? false;
+    let expiryHeight;
+    if (blockchains[chain].txExpiryHeight) {
+      // fetch current blockheight
+      const currentBlockheight = await getBlockheight(chain);
+      expiryHeight = currentBlockheight + blockchains[chain].txExpiryHeight;
+    }
     const rawTx = buildUnsignedRawTx(
       chain,
       pickedUtxos,
@@ -604,6 +617,8 @@ export async function getTransactionSize(
       change,
       message,
       maxFee,
+      rbf,
+      expiryHeight,
     );
     if (!rawTx) {
       throw new Error('Could not construct raw tx');
@@ -706,6 +721,13 @@ export async function constructAndSignTransaction(
     if (mandatoryUtxos?.length) {
       console.log('RBF TX');
     }
+    const rbf = blockchains[chain].rbf ?? false;
+    let expiryHeight;
+    if (blockchains[chain].txExpiryHeight) {
+      // fetch current blockheight
+      const currentBlockheight = await getBlockheight(chain);
+      expiryHeight = currentBlockheight + blockchains[chain].txExpiryHeight;
+    }
     const rawTx = buildUnsignedRawTx(
       chain,
       pickedUtxos,
@@ -715,6 +737,8 @@ export async function constructAndSignTransaction(
       change,
       message,
       maxFee,
+      rbf,
+      expiryHeight,
     );
     if (!rawTx) {
       throw new Error('Could not construct raw tx');

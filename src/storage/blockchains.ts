@@ -40,6 +40,7 @@ const flux = {
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 1800000, // 1,800,000 vbytes
   rbf: false,
+  txExpiryHeight: 30, // 30 blocks, 1 hour
 };
 
 const fluxTestnet = {
@@ -69,6 +70,7 @@ const fluxTestnet = {
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 1800000, // 1,800,000 vbytes
   rbf: false,
+  txExpiryHeight: 30, // 30 blocks, 1 hour
 };
 
 const rvn = {
@@ -256,14 +258,15 @@ const zec = {
     private: 0x0488ade4,
   },
   txVersion: 4,
-  txGroupID: 0xc2d6d0b4,
+  txGroupID: 0x892f2085,
   backend: 'blockbook',
   dustLimit: 546, // min utxo amount
   minFeePerByte: 1, // min fee per byte
-  feePerByte: 1, // fee per byte
+  feePerByte: 2, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
   rbf: false,
+  txExpiryHeight: 60, // 1 hour
 };
 
 const bch = {
