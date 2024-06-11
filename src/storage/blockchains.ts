@@ -295,6 +295,7 @@ const bch = {
   maxTxSize: 100000, // 100,000 vbytes
   rbf: true,
   cashaddr: 'bitcoincash:',
+  hashType: 0x40, // will force SIGHASH_BITCOINCASHBIP143
 };
 
 export const blockchains = {

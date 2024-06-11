@@ -214,7 +214,14 @@ export function signTransaction(
     const libID = getLibId(chain);
     const network = utxolib.networks[libID];
     const txhex = rawTx;
-    const hashType = utxolib.Transaction.SIGHASH_ALL;
+    let hashType = utxolib.Transaction.SIGHASH_ALL;
+    if (blockchains[chain].hashType) {
+      // only for BCH
+      hashType =
+        // eslint-disable-next-line no-bitwise
+        utxolib.Transaction.SIGHASH_ALL |
+        utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
+    }
     const keyPair = utxolib.ECPair.fromWIF(privateKey, network);
     const txb = utxolib.TransactionBuilder.fromTransaction(
       utxolib.Transaction.fromHex(txhex, network),

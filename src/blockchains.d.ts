@@ -29,6 +29,7 @@ declare module '@storage/blockchains' {
     rbf: boolean;
     cashaddr: string;
     txExpiryHeight: number;
+    hashType: number;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;
