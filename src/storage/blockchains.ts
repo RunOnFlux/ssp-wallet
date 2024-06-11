@@ -293,7 +293,7 @@ const bch = {
   feePerByte: 2, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
-  rbf: true,
+  rbf: false,
   cashaddr: 'bitcoincash:',
   hashType: 0x40, // will force SIGHASH_BITCOINCASHBIP143
 };
