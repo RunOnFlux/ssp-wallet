@@ -308,6 +308,8 @@ export interface cryptos {
   ltc: number;
   btc: number;
   doge: number;
+  zec: number;
+  bch: number;
   btcTestnet: number;
   btcSignet: number;
 }

@@ -8,6 +8,8 @@ import btcLogo from '/src/assets/btc.svg';
 import btcTestnetLogo from '/src/assets/btcTestnet.svg';
 import btcSignetLogo from '/src/assets/btcSignet.svg';
 import dogeLogo from '/src/assets/doge.svg';
+import zecLogo from '/src/assets/zec.svg';
+import bchLogo from '/src/assets/bch.svg';
 
 // https://github.com/dogecoin/dogecoin/blob/master/doc/fee-recommendation.md
 
@@ -36,8 +38,9 @@ const flux = {
   minFeePerByte: 1, // min fee per byte
   feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
-  maxTxSize: 1900000, // 1,800,000 vbytes
+  maxTxSize: 1800000, // 1,800,000 vbytes
   rbf: false,
+  txExpiryHeight: 30, // 30 blocks, 1 hour
 };
 
 const fluxTestnet = {
@@ -65,8 +68,9 @@ const fluxTestnet = {
   minFeePerByte: 1, // min fee per byte
   feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
-  maxTxSize: 1900000, // 1,800,000 vbytes
+  maxTxSize: 1800000, // 1,800,000 vbytes
   rbf: false,
+  txExpiryHeight: 30, // 30 blocks, 1 hour
 };
 
 const rvn = {
@@ -235,12 +239,73 @@ const btcSignet = {
   rbf: true,
 };
 
+const zec = {
+  id: 'zec',
+  libid: 'zcash',
+  name: 'Zcash',
+  symbol: 'ZEC',
+  decimals: 8,
+  node: backends().zec.node,
+  slip: 133,
+  scriptType: 'p2sh',
+  messagePrefix: '\u0018Zcash Signed Message:\n',
+  pubKeyHash: '1cb8',
+  scriptHash: '1cbd',
+  wif: '80',
+  logo: zecLogo,
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  txVersion: 4,
+  txGroupID: 0x892f2085,
+  backend: 'blockbook',
+  dustLimit: 546, // min utxo amount
+  minFeePerByte: 1, // min fee per byte
+  feePerByte: 3, // fee per byte
+  maxMessage: 80, // 80 bytes in size
+  maxTxSize: 100000, // 100,000 vbytes
+  rbf: false,
+  txExpiryHeight: 60, // 1 hour
+};
+
+const bch = {
+  id: 'bch',
+  libid: 'bitcoincash',
+  name: 'Bitcoin Cash',
+  symbol: 'BCH',
+  decimals: 8,
+  node: backends().bch.node,
+  slip: 145,
+  scriptType: 'p2sh',
+  messagePrefix: '\u0018Bitcoin Signed Message:\n',
+  pubKeyHash: '00',
+  scriptHash: '05',
+  wif: '80',
+  logo: bchLogo,
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  backend: 'blockbook',
+  dustLimit: 546, // min utxo amount
+  minFeePerByte: 1, // min fee per byte
+  feePerByte: 4, // fee per byte
+  maxMessage: 80, // 80 bytes in size
+  maxTxSize: 100000, // 100,000 vbytes
+  rbf: false,
+  cashaddr: 'bitcoincash:',
+  hashType: 0x40, // will force SIGHASH_BITCOINCASHBIP143
+};
+
 export const blockchains = {
   btc,
   flux,
   doge,
   ltc,
+  bch,
   rvn,
+  zec,
   btcTestnet,
   btcSignet,
   fluxTestnet,

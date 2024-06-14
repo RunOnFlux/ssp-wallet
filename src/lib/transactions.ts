@@ -1,6 +1,7 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import utxolib from '@runonflux/utxo-lib';
+import { toCashAddress } from 'bchaddrjs';
 import {
   transacitonsInsight,
   transactionInsight,
@@ -249,6 +250,7 @@ export function decodeTransactionForApproval(
   try {
     const libID = getLibId(chain);
     const decimals = blockchains[chain].decimals;
+    const cashAddrPrefix = blockchains[chain].cashaddr;
     const network = utxolib.networks[libID];
     const txhex = rawTx;
     const txb = utxolib.TransactionBuilder.fromTransaction(
@@ -303,6 +305,10 @@ export function decodeTransactionForApproval(
           .dividedBy(new BigNumber(10 ** decimals))
           .toFixed();
       }
+    }
+    if (cashAddrPrefix) {
+      senderAddress = toCashAddress(senderAddress);
+      txReceiver = toCashAddress(txReceiver);
     }
     const txInfo = {
       sender: senderAddress,

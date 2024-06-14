@@ -92,6 +92,7 @@ declare module '@runonflux/utxo-lib' {
   let Transaction: {
     fromHex: (txhex: string, network: network) => TX;
     SIGHASH_ALL: number;
+    SIGHASH_BITCOINCASHBIP143: number;
   };
   // Other methods/properties...
   // Replace 'any' with the appropriate type // Define the constructor signature and any other methods/properties
@@ -105,6 +106,7 @@ declare module '@runonflux/utxo-lib' {
     addOutput: (address: string, satoshis: number) => void;
     fromTransaction: (tx: TX, network: network) => txBuilder;
     buildIncomplete: () => builtTx;
+    setExpiryHeight: (expiryHeight: number) => void;
   };
   let TransactionBuilder: {
     fromTransaction: (tx: TX, network: network) => txBuilder;
