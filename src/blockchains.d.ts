@@ -30,6 +30,12 @@ declare module '@storage/blockchains' {
     cashaddr: string;
     txExpiryHeight: number;
     hashType: number;
+    // evm
+    chainType: string;
+    accountSalt: string;
+    factorySalt: string;
+    factoryAddress: string;
+    entrypointAddress: string;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

@@ -1,15 +1,15 @@
 import { backends } from './backends';
 
-import fluxLogo from '/src/assets/flux.svg';
-import fluxTestnetLogo from '/src/assets/fluxTestnet.svg';
-import rvnLogo from '/src/assets/rvn.svg';
-import ltcLogo from '/src/assets/ltc.svg';
-import btcLogo from '/src/assets/btc.svg';
-import btcTestnetLogo from '/src/assets/btcTestnet.svg';
-import btcSignetLogo from '/src/assets/btcSignet.svg';
-import dogeLogo from '/src/assets/doge.svg';
-import zecLogo from '/src/assets/zec.svg';
-import bchLogo from '/src/assets/bch.svg';
+const fluxLogo = '@assets/flux.svg';
+const fluxTestnetLogo = '@assets/fluxTestnet.svg';
+const rvnLogo = '@assets/rvn.svg';
+const ltcLogo = '@assets/ltc.svg';
+const btcLogo = '@assets/btc.svg';
+const btcTestnetLogo = '@assets/btcTestnet.svg';
+const btcSignetLogo = '@assets/btcSignet.svg';
+const dogeLogo = '@assets/doge.svg';
+const zecLogo = '@assets/zec.svg';
+const bchLogo = '@assets/bch.svg';
 
 // https://github.com/dogecoin/dogecoin/blob/master/doc/fee-recommendation.md
 
@@ -298,6 +298,24 @@ const bch = {
   hashType: 0x40, // will force SIGHASH_BITCOINCASHBIP143
 };
 
+const sepolia = {
+  id: 'sepolia',
+  name: 'Sepolia Ethereum Testnet',
+  symbol: 'TETH',
+  logo: bchLogo,
+  slip: 1,
+  bip32: { // not specified, use default
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh', // not specified, use default
+  chainType: 'evm',
+  accountSalt: 'aasalt', // ssp uses this salt for smart accounts
+  factorySalt: 'aafactorysalt', // factory uses this salt
+  factoryAddress: '0xA76f98D25C9775F67DCf8B9EF9618d454D287467',
+  entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+}
+
 export const blockchains = {
   btc,
   flux,
@@ -309,4 +327,5 @@ export const blockchains = {
   btcTestnet,
   btcSignet,
   fluxTestnet,
+  sepolia,
 };

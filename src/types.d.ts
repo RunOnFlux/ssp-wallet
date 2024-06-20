@@ -312,6 +312,7 @@ export interface cryptos {
   bch: number;
   btcTestnet: number;
   btcSignet: number;
+  sepolia: number;
 }
 
 export interface externalIdentity {

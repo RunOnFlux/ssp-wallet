@@ -1,4 +1,5 @@
 import utxolib from '@runonflux/utxo-lib';
+import aaSchnorrMultisig from '@runonflux/aa-schnorr-multisig-sdk';
 import { Buffer } from 'buffer';
 import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
@@ -208,6 +209,85 @@ export function generateMultisigAddress(
   }
 }
 
+// given xpubs of two parties, generate multisig address. EVM chains
+export function generateMultisigAddressEVM(
+  xpub1: string,
+  xpub2: string,
+  typeIndex: 0 | 1 | 10, // normal, change, internal identity
+  addressIndex: number,
+  chain: keyof cryptos,
+): multisig {
+  const bipParams = blockchains[chain].bip32;
+  const { accountSalt, factorySalt, factoryAddress, entrypointAddress } =
+    blockchains[chain];
+  const externalChain1 = HDKey.fromExtendedKey(xpub1, bipParams);
+  const externalChain2 = HDKey.fromExtendedKey(xpub2, bipParams);
+
+  const externalAddress1 = externalChain1
+    .deriveChild(typeIndex)
+    .deriveChild(addressIndex);
+  const externalAddress2: HDKey = externalChain2
+    .deriveChild(typeIndex)
+    .deriveChild(addressIndex);
+
+  // Uint8Array(32)
+  const publicKey1 = externalAddress1.publicKey;
+  const publicKey2 = externalAddress2.publicKey;
+
+  const pubKeyBuffer1 = Buffer.from(publicKey1!);
+  const pubKeyBuffer2 = Buffer.from(publicKey2!);
+
+  const keyPubKey1 = new aaSchnorrMultisig.types.Key(pubKeyBuffer1);
+  const keyPubKey2 = new aaSchnorrMultisig.types.Key(pubKeyBuffer2);
+
+  const publicKeys = [keyPubKey1, keyPubKey2];
+
+  const combinedAddresses =
+    aaSchnorrMultisig.helpers.SchnorrHelpers.getAllCombinedAddrFromKeys(
+      publicKeys,
+      publicKeys.length,
+    );
+
+  const accountImplementationAddress =
+    aaSchnorrMultisig.helpers.create2Helpers.predictAccountImplementationAddrOffchain(
+      factorySalt,
+      factoryAddress,
+      entrypointAddress,
+    );
+
+  const address =
+    aaSchnorrMultisig.helpers.create2Helpers.predictAccountAddrOffchain(
+      factoryAddress,
+      accountImplementationAddress,
+      combinedAddresses,
+      accountSalt,
+    );
+
+  return {
+    address,
+  };
+}
+
+// given xpriv of our party, generate keypair consisting of privateKey in and public key belonging to it
+export function generateRawAddressKeypair(
+  xpriv: string,
+  typeIndex: 0 | 1,
+  addressIndex: number,
+  chain: keyof cryptos,
+): keyPair {
+  const bipParams = blockchains[chain].bip32;
+  const externalChain = HDKey.fromExtendedKey(xpriv, bipParams);
+
+  const externalAddress = externalChain
+    .deriveChild(typeIndex)
+    .deriveChild(addressIndex);
+
+  const publicKey = Buffer.from(externalAddress.publicKey!).toString('hex');
+  const privateKey = Buffer.from(externalAddress.privateKey!).toString('hex');
+
+  return { privKey: privateKey, pubKey: publicKey };
+}
+
 // given xpriv of our party, generate keypair consisting of privateKey in WIF format and public key belonging to it
 export function generateAddressKeypair(
   xpriv: string,
@@ -215,6 +295,10 @@ export function generateAddressKeypair(
   addressIndex: number,
   chain: keyof cryptos,
 ): keyPair {
+  const { chainType } = blockchains[chain];
+  if (chainType === 'evm') {
+    return generateRawAddressKeypair(xpriv, typeIndex, addressIndex, chain);
+  }
   const libID = getLibId(chain);
   const bipParams = blockchains[chain].bip32;
   const networkBipParams = utxolib.networks[libID].bip32;
@@ -234,6 +318,7 @@ export function generateAddressKeypair(
     .deriveChild(addressIndex);
 
   const derivedExternalAddress: minHDKey = utxolib.HDNode.fromBase58(
+    // to get priv key in wif via lib
     externalAddress.toJSON().xpriv,
     network,
   );
@@ -242,7 +327,7 @@ export function generateAddressKeypair(
 
   const publicKey = derivedExternalAddress.keyPair
     .getPublicKeyBuffer()
-    .toString('hex');
+    .toString('hex'); // same as Buffer.from(externalAddress.pubKey).toString('hex);. Library does not expose keypair from just hex of private key, workaround
 
   return { privKey: privateKeyWIF, pubKey: publicKey };
 }
