@@ -1,6 +1,6 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
-import { balanceInsight, balanceBlockbook, balance } from '../types';
+import { balanceInsight, balanceBlockbook, balance, evm_call } from '../types';
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
@@ -11,7 +11,22 @@ export async function fetchAddressBalance(
 ): Promise<balance> {
   try {
     const backendConfig = backends()[chain];
-    if (blockchains[chain].backend === 'blockbook') {
+    if (blockchains[chain].backend === 'alchemy') {
+      const url = `https://${backendConfig.node}`;
+      const data = {
+        id: Date.now(),
+        jsonrpc: '2.0',
+        method: 'eth_getBalance',
+        params: [address, 'latest'],
+      };
+      const response = await axios.post<evm_call>(url, data);
+      const bal: balance = {
+        confirmed: new BigNumber(response.data.result).toFixed(),
+        unconfirmed: '0',
+        address: address,
+      };
+      return bal;
+    } else if (blockchains[chain].backend === 'blockbook') {
       const url = `https://${backendConfig.node}/api/v2/address/${address}?details=basic`;
       const response = await axios.get<balanceBlockbook>(url);
       const bal: balance = {
@@ -20,7 +35,6 @@ export async function fetchAddressBalance(
         address: response.data.address,
         totalTransactions: response.data.txs,
       };
-      console.log(bal);
       return bal;
     } else {
       const url = `https://${backendConfig.node}/api/addr/${address}?noTxList=1`;
@@ -33,7 +47,6 @@ export async function fetchAddressBalance(
         address: response.data.addrStr,
         totalTransactions: response.data.txApperances,
       };
-      console.log(bal);
       return bal;
     }
   } catch (error) {

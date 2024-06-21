@@ -235,7 +235,7 @@ export interface getInfoBlockbook {
   };
 }
 
-export interface eth_blockNumber {
+export interface evm_call {
   jsonrpc: string;
   id: number;
   result: string;

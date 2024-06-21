@@ -207,7 +207,9 @@ export async function fetchAddressTransactions(
 ): Promise<transaction[]> {
   try {
     const backendConfig = backends()[chain];
-    if (blockchains[chain].backend === 'blockbook') {
+    if (blockchains[chain].backend === 'alchemy') {
+      return [];
+    } else if (blockchains[chain].backend === 'blockbook') {
       const pageSize = to - from;
       const page = Math.round(from / pageSize);
       const url = `https://${backendConfig.node}/api/v2/address/${address}?pageSize=${pageSize}&details=txs&page=${page}`;
