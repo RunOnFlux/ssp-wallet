@@ -52,6 +52,9 @@ const btcTestnet = {
 const btcSignet = {
   node: 'blockbookbitcoinsignet.app.runonflux.io',
 };
+const sepolia = {
+  node: 'node.sepolia.runonflux.io',
+}
 
 export function backends() {
   return {
@@ -65,6 +68,7 @@ export function backends() {
     bch: localForgeBackends?.bch || bch,
     btcTestnet: localForgeBackends?.btcTestnet || btcTestnet,
     btcSignet: localForgeBackends?.btcSignet || btcSignet,
+    sepolia: localForgeBackends?.sepolia || sepolia,
   };
 }
 
@@ -80,5 +84,6 @@ export function backendsOriginal() {
     bch,
     btcTestnet,
     btcSignet,
+    sepolia,
   };
 }

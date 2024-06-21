@@ -23,6 +23,7 @@ const chains = {
   bch: chainSliceBase('bch'),
   btcTestnet: chainSliceBase('btcTestnet'),
   btcSignet: chainSliceBase('btcSignet'),
+  sepolia: chainSliceBase('sepolia'),
 };
 // ********** Import chains **********
 
@@ -60,6 +61,7 @@ const initialNetworkFeeState = {
     bch: blockchains.bch.feePerByte,
     btcTestnet: blockchains.btcTestnet.feePerByte,
     btcSignet: blockchains.btcSignet.feePerByte,
+    sepolia: 0, // TODO
   },
 };
 
@@ -89,6 +91,7 @@ const initialRatesState: RatesState = {
     bch: 0,
     btcTestnet: 0,
     btcSignet: 0,
+    sepolia: 0,
   },
   fiatRates: {
     EUR: 0,
@@ -155,6 +158,7 @@ const initialContactsState: ContactsState = {
     bch: [],
     btcTestnet: [],
     btcSignet: [],
+    sepolia: [],
   },
 };
 
@@ -273,6 +277,7 @@ const reducers = combineReducers({
   bch: chains.bch.reducer,
   btcTestnet: chains.btcTestnet.reducer,
   btcSignet: chains.btcSignet.reducer,
+  sepolia: chains.sepolia.reducer,
 });
 
 export const store = configureStore({

@@ -10,6 +10,7 @@ const btcSignetLogo = '@assets/btcSignet.svg';
 const dogeLogo = '@assets/doge.svg';
 const zecLogo = '@assets/zec.svg';
 const bchLogo = '@assets/bch.svg';
+const ethLogo = '@assets/eth.svg';
 
 // https://github.com/dogecoin/dogecoin/blob/master/doc/fee-recommendation.md
 
@@ -301,15 +302,18 @@ const bch = {
 const sepolia = {
   id: 'sepolia',
   name: 'Sepolia Ethereum Testnet',
-  symbol: 'TETH',
-  logo: bchLogo,
+  symbol: 'ETH',
+  logo: ethLogo,
   slip: 1,
+  decimals: 18,
+  node: backends().sepolia.node,
   bip32: { // not specified, use default
     public: 0x0488b21e,
     private: 0x0488ade4,
   },
   scriptType: 'p2sh', // not specified, use default
   chainType: 'evm',
+  backend: 'alchemy',
   accountSalt: 'aasalt', // ssp uses this salt for smart accounts
   factorySalt: 'aafactorysalt', // factory uses this salt
   factoryAddress: '0xA76f98D25C9775F67DCf8B9EF9618d454D287467',

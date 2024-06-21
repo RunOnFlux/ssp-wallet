@@ -235,6 +235,12 @@ export interface getInfoBlockbook {
   };
 }
 
+export interface eth_blockNumber {
+  jsonrpc: string;
+  id: number;
+  result: string;
+}
+
 export interface syncSSPRelay {
   chain: string;
   walletIdentity: string;
