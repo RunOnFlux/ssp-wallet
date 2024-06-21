@@ -54,7 +54,7 @@ const btcSignet = {
 };
 const sepolia = {
   node: 'node.sepolia.runonflux.io',
-}
+};
 
 export function backends() {
   return {

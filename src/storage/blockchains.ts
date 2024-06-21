@@ -12,8 +12,6 @@ const zecLogo = '@assets/zec.svg';
 const bchLogo = '@assets/bch.svg';
 const ethLogo = '@assets/eth.svg';
 
-// https://github.com/dogecoin/dogecoin/blob/master/doc/fee-recommendation.md
-
 const flux = {
   id: 'flux',
   libid: 'flux',
@@ -307,7 +305,8 @@ const sepolia = {
   slip: 1,
   decimals: 18,
   node: backends().sepolia.node,
-  bip32: { // not specified, use default
+  bip32: {
+    // not specified, use default
     public: 0x0488b21e,
     private: 0x0488ade4,
   },
@@ -318,7 +317,7 @@ const sepolia = {
   factorySalt: 'aafactorysalt', // factory uses this salt
   factoryAddress: '0xA76f98D25C9775F67DCf8B9EF9618d454D287467',
   entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-}
+};
 
 export const blockchains = {
   btc,
