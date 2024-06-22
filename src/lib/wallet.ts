@@ -1,5 +1,5 @@
 import utxolib from '@runonflux/utxo-lib';
-import aaSchnorrMultisig from '@runonflux/aa-schnorr-multisig-sdk';
+import * as aaSchnorrMultisig from '@runonflux/aa-schnorr-multisig-sdk';
 import { Buffer } from 'buffer';
 import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
@@ -108,6 +108,15 @@ export function generateMultisigAddress(
   addressIndex: number,
   chain: keyof cryptos,
 ): multisig {
+  if (blockchains[chain].chainType === 'evm') {
+    return generateMultisigAddressEVM(
+      xpub1,
+      xpub2,
+      typeIndex,
+      addressIndex,
+      chain,
+    );
+  }
   const libID = getLibId(chain);
   const network = utxolib.networks[libID];
   const bipParams = blockchains[chain].bip32;

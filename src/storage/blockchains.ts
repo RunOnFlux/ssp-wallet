@@ -299,7 +299,7 @@ const bch = {
 
 const sepolia = {
   id: 'sepolia',
-  name: 'Sepolia Ethereum Testnet',
+  name: 'Sepolia Ethereum',
   symbol: 'ETH',
   logo: ethLogo,
   slip: 1,
