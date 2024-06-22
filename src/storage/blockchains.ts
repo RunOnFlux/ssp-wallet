@@ -1,16 +1,16 @@
 import { backends } from './backends';
 
-const fluxLogo = '@assets/flux.svg';
-const fluxTestnetLogo = '@assets/fluxTestnet.svg';
-const rvnLogo = '@assets/rvn.svg';
-const ltcLogo = '@assets/ltc.svg';
-const btcLogo = '@assets/btc.svg';
-const btcTestnetLogo = '@assets/btcTestnet.svg';
-const btcSignetLogo = '@assets/btcSignet.svg';
-const dogeLogo = '@assets/doge.svg';
-const zecLogo = '@assets/zec.svg';
-const bchLogo = '@assets/bch.svg';
-const ethLogo = '@assets/eth.svg';
+const fluxLogo = '/src/assets/flux.svg';
+const fluxTestnetLogo = '/src/assets/fluxTestnet.svg';
+const rvnLogo = '/src/assets/rvn.svg';
+const ltcLogo = '/src/assets/ltc.svg';
+const btcLogo = '/src/assets/btc.svg';
+const btcTestnetLogo = '/src/assets/btcTestnet.svg';
+const btcSignetLogo = '/src/assets/btcSignet.svg';
+const dogeLogo = '/src/assets/doge.svg';
+const zecLogo = '/src/assets/zec.svg';
+const bchLogo = '/src/assets/bch.svg';
+const ethLogo = '/src/assets/eth.svg';
 
 const flux = {
   id: 'flux',
