@@ -278,7 +278,7 @@ export function generateMultisigAddressEVM(
 }
 
 // given xpriv of our party, generate keypair consisting of privateKey in and public key belonging to it
-export function generateRawAddressKeypair(
+export function generateAddressKeypairEVM(
   xpriv: string,
   typeIndex: 0 | 1,
   addressIndex: number,
@@ -292,7 +292,8 @@ export function generateRawAddressKeypair(
     .deriveChild(addressIndex);
 
   const publicKey = Buffer.from(externalAddress.publicKey!).toString('hex');
-  const privateKey = Buffer.from(externalAddress.privateKey!).toString('hex');
+  const privateKey =
+    '0x' + Buffer.from(externalAddress.privateKey!).toString('hex');
 
   return { privKey: privateKey, pubKey: publicKey };
 }
@@ -306,7 +307,7 @@ export function generateAddressKeypair(
 ): keyPair {
   const { chainType } = blockchains[chain];
   if (chainType === 'evm') {
-    return generateRawAddressKeypair(xpriv, typeIndex, addressIndex, chain);
+    return generateAddressKeypairEVM(xpriv, typeIndex, addressIndex, chain);
   }
   const libID = getLibId(chain);
   const bipParams = blockchains[chain].bip32;

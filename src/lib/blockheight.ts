@@ -12,7 +12,7 @@ import { blockchains } from '@storage/blockchains';
 export async function getBlockheight(chain: keyof cryptos): Promise<number> {
   try {
     const backendConfig = backends()[chain];
-    if (blockchains[chain].backend === 'alchemy') {
+    if (blockchains[chain].chainType === 'evm') {
       const url = `https://${backendConfig.node}`;
       const data = {
         id: Date.now(),

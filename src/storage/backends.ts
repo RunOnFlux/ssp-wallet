@@ -2,6 +2,7 @@ import localForage from 'localforage';
 
 interface Backend {
   node: string;
+  api?: string;
 }
 type backends = Record<string, Backend>;
 
@@ -53,7 +54,8 @@ const btcSignet = {
   node: 'blockbookbitcoinsignet.app.runonflux.io',
 };
 const sepolia = {
-  node: 'node.sepolia.runonflux.io',
+  node: 'eth-sepolia.g.alchemy.com/v2/APIKEY',
+  api: 'api-sepolia.etherscan.io/api',
 };
 
 export function backends() {

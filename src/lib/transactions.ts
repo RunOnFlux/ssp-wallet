@@ -10,6 +10,12 @@ import {
   transaction,
   cryptos,
   txIdentifier,
+  evm_call_txs,
+  evm_transfer,
+  etherscan_call_internal_txs,
+  etherscan_call_external_txs,
+  etherscan_internal_tx,
+  etherscan_external_tx,
 } from '../types';
 
 import { backends } from '@storage/backends';
@@ -199,6 +205,57 @@ function processTransactionBlockbook(
   return tx;
 }
 
+export function processTransactionEVM(
+  transfer: evm_transfer,
+  decimals: number,
+): transaction {
+  const amount = new BigNumber(transfer.value).multipliedBy(
+    new BigNumber(10 ** decimals),
+  );
+  const tx: transaction = {
+    txid: transfer.hash,
+    fee: '0',
+    blockheight: parseInt(transfer.blockNum, 16),
+    timestamp: new Date(transfer.metadata.blockTimestamp).getTime(),
+    amount: amount.toFixed(),
+    message: '',
+    size: 0,
+    vsize: 0,
+    receiver: transfer.to,
+  };
+  return tx;
+}
+
+export function processTransactionScan(
+  transaction: etherscan_external_tx | etherscan_internal_tx,
+  address: string,
+): transaction {
+  // const isErrortx = Number(tx.isError);
+  // const myTimeStamp = tx.timeStamp;
+  // const valueFull = tx.value;
+  // const { gasUsed, gasPrice, confirmations, hash: txid, input: hexx, contractAddress, blockNumber, value } = tx;
+  // const totalGas = gasUsed === "0" ? 0 : (parseInt(gasUsed) * parseInt(gasPrice)) / 10e17;
+
+  // let myConfirmations = confirmations ? Number(confirmations) : 1;
+  // const internalTx = !confirmations;
+  let amount = transaction.value;
+  if (address.toLowerCase() !== transaction.to.toLowerCase()) {
+    amount = '-' + amount;
+  }
+  const tx: transaction = {
+    txid: transaction.hash,
+    fee: '0',
+    blockheight: Number(transaction.blockNumber),
+    timestamp: Number(transaction.timeStamp) * 1000,
+    amount,
+    message: '',
+    size: 0,
+    vsize: 0,
+    receiver: transaction.to,
+  };
+  return tx;
+}
+
 export async function fetchAddressTransactions(
   address: string,
   chain: keyof cryptos,
@@ -207,8 +264,80 @@ export async function fetchAddressTransactions(
 ): Promise<transaction[]> {
   try {
     const backendConfig = backends()[chain];
-    if (blockchains[chain].backend === 'alchemy') {
-      return [];
+    if (blockchains[chain].chainType === 'evm') {
+      const params = {
+        module: 'account',
+        startblock: 0,
+        endblock: 99999999,
+        page: 1,
+        offset: to - from,
+        sort: 'desc',
+        apiKey: 'APIKEy',
+        address,
+        action: 'txlist',
+      };
+
+      const url = `https://${backendConfig.api}`;
+
+      const responseExternal = await axios.get<etherscan_call_external_txs>(
+        url,
+        { params },
+      );
+      const externalTxs = responseExternal.data.result;
+      params.action = 'txlistinternal';
+      const responseInternal = await axios.get<etherscan_call_internal_txs>(
+        url,
+        { params },
+      );
+      const internalTxs = responseInternal.data.result;
+
+      const allTransactions = [...externalTxs, ...internalTxs];
+
+      const txs = [];
+      for (const tx of allTransactions) {
+        // transfers to alchemy entrypoint disregard - that is a fee. Transfer to no to disregard that is contract creation. TODO this is fee we paying, fix tx processing
+        if (
+          !tx.to ||
+          tx.to.toLowerCase() ===
+            blockchains[chain].entrypointAddress.toLowerCase()
+        ) {
+          continue;
+        }
+        const processedTransaction = processTransactionScan(tx, address);
+        txs.push(processedTransaction);
+      }
+      return txs.sort((a, b) => b.timestamp - a.timestamp);
+    }
+    if (blockchains[chain].chainType === 'evmv') {
+      const url = `https://${backendConfig.api}`;
+      const amount = to - from;
+      const amountInHex = '0x' + amount.toString(16);
+      const data = {
+        id: Date.now(),
+        jsonrpc: '2.0',
+        method: 'alchemy_getAssetTransfers',
+        params: [
+          {
+            // fromAddress: address,
+            toAddress: address,
+            maxCount: amountInHex,
+            category: ['external'],
+            withMetadata: true,
+          },
+        ],
+      };
+      const response = await axios.post<evm_call_txs>(url, data);
+      const txs = [];
+      for (const tx of response.data.result.transfers) {
+        const processedTransaction = processTransactionEVM(
+          tx,
+          blockchains[chain].decimals,
+        );
+        txs.push(processedTransaction);
+      }
+      // this shall me two calls one with fromAddress, second with toAddress
+      console.log(response.data.result.transfers);
+      return txs;
     } else if (blockchains[chain].backend === 'blockbook') {
       const pageSize = to - from;
       const page = Math.round(from / pageSize);

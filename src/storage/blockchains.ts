@@ -305,6 +305,7 @@ const sepolia = {
   slip: 1,
   decimals: 18,
   node: backends().sepolia.node,
+  api: backends().sepolia.api,
   bip32: {
     // not specified, use default
     public: 0x0488b21e,

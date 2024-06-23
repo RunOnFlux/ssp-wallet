@@ -241,6 +241,88 @@ export interface evm_call {
   result: string;
 }
 
+export interface evm_transfer {
+  blockNum: string;
+  uniqueId: string;
+  hash: string;
+  from: string;
+  to: string;
+  value: number;
+  erc721TokenId: string;
+  erc1155Metadata: string;
+  tokenId: string;
+  asset: string;
+  category: string;
+  rawContract: {
+    value: string;
+    address: string;
+    decimal: string;
+  };
+  metadata: {
+    blockTimestamp: string;
+  }
+}
+
+export interface evm_call_txs {
+  jsonrpc: string;
+  id: number;
+  result: {
+    transfers: evm_transfer[]
+  }
+}
+
+export interface etherscan_external_tx {
+  blockNumber: string;
+  timeStamp: string;
+  hash: string;
+  from: string;
+  to: string;
+  nonce: string;
+  blockHash: string;
+  transactionIndex: string;
+  value: string;
+  gas: string;
+  gasPrice: string;
+  cumulativeGasUsed: string;
+  gasUsed: string;
+  isError: string;
+  errCode: string;
+  txreceipt_status: string;
+  input: string;
+  confirmations: string;
+  methodId: string;
+  functionName: string;
+}
+
+export interface etherscan_internal_tx {
+  blockNumber: string;
+  timeStamp: string;
+  hash: string;
+  from: string;
+  to: string;
+  value: string;
+  contractAddress: string;
+  input: string;
+  type: string;
+  gas: string;
+  gasUsed: string;
+  traceId: string;
+  isError: string;
+  errCode: string;
+}
+
+export interface etherscan_call_external_txs {
+  status: string;
+  message: string;
+  result: etherscan_external_tx[]
+}
+
+export interface etherscan_call_internal_txs {
+  status: string;
+  message: string;
+  result: etherscan_internal_tx[]
+}
+
 export interface syncSSPRelay {
   chain: string;
   walletIdentity: string;

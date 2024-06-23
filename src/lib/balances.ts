@@ -11,7 +11,7 @@ export async function fetchAddressBalance(
 ): Promise<balance> {
   try {
     const backendConfig = backends()[chain];
-    if (blockchains[chain].backend === 'alchemy') {
+    if (blockchains[chain].chainType === 'evm') {
       const url = `https://${backendConfig.node}`;
       const data = {
         id: Date.now(),
