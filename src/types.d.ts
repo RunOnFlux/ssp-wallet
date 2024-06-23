@@ -209,9 +209,11 @@ export interface transaction {
   amount: string; // satoshis
   message: string;
   receiver: string;
-  size: number;
+  size?: number;
   vsize?: number;
   utxos?: txIdentifier[];
+  type?: string; // evm
+  isError?: boolean;
 }
 
 export interface pendingTransaction {
@@ -239,36 +241,6 @@ export interface evm_call {
   jsonrpc: string;
   id: number;
   result: string;
-}
-
-export interface evm_transfer {
-  blockNum: string;
-  uniqueId: string;
-  hash: string;
-  from: string;
-  to: string;
-  value: number;
-  erc721TokenId: string;
-  erc1155Metadata: string;
-  tokenId: string;
-  asset: string;
-  category: string;
-  rawContract: {
-    value: string;
-    address: string;
-    decimal: string;
-  };
-  metadata: {
-    blockTimestamp: string;
-  }
-}
-
-export interface evm_call_txs {
-  jsonrpc: string;
-  id: number;
-  result: {
-    transfers: evm_transfer[]
-  }
 }
 
 export interface etherscan_external_tx {
