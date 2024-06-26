@@ -299,6 +299,7 @@ const bch = {
 
 const sepolia = {
   id: 'sepolia',
+  libid: 'sepolia',
   name: 'Sepolia Ethereum',
   symbol: 'ETH',
   logo: ethLogo,

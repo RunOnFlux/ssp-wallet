@@ -3,6 +3,14 @@ import { Buffer } from 'buffer';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { toLegacyAddress } from 'bchaddrjs';
+import { http as viemHttp, parseUnits } from 'viem';
+import * as viemChains from 'viem/chains';
+import * as accountAbstraction from '@runonflux/aa-schnorr-multisig-sdk';
+import {
+  getEntryPoint,
+  createSmartAccountClient,
+  deepHexlify,
+} from '@alchemy/aa-core';
 import {
   blockbookUtxo,
   utxo,
@@ -790,6 +798,114 @@ export async function broadcastTx(
       });
       return response.data.txid;
     }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function constructAndSignEVMTransaction(
+  chain: keyof cryptos,
+  receiver: string,
+  amount: string,
+  privateKey: `0x${string}`, // ssp
+  // publicKey1 is generated here. ssp wallet
+  publicKey2HEX: string,
+  // publicNonces1 is generated here. ssp wallet
+  publicNonces2: string[], // ssp key public nonces
+): Promise<accountAbstraction.userOperation.MultiSigUserOp> {
+  try {
+    const blockchainConfig = blockchains[chain];
+    const backendConfig = backends()[chain];
+    const accountSalt = blockchainConfig.accountSalt;
+    const schnorrSigner1 =
+      accountAbstraction.helpers.SchnorrHelpers.createSchnorrSigner(privateKey);
+    const publicKey1 = schnorrSigner1.getPubKey();
+    const publicKey2 = new accountAbstraction.types.Key(
+      Buffer.from(publicKey2HEX, 'hex'),
+    );
+
+    const publicNonces1 = schnorrSigner1.generatePubNonces();
+    const publicNoncesKey: accountAbstraction.types.PublicNonces = {
+      kPublic: new accountAbstraction.types.Key(
+        Buffer.from(publicNonces2[0], 'hex'),
+      ),
+      kTwoPublic: new accountAbstraction.types.Key(
+        Buffer.from(publicNonces2[1], 'hex'),
+      ),
+    };
+    const publicKeys = [publicKey1, publicKey2];
+    const combinedAddresses =
+      accountAbstraction.helpers.SchnorrHelpers.getAllCombinedAddrFromKeys(
+        publicKeys,
+        2,
+      );
+
+    const rpcUrl = backendConfig.node;
+
+    const transport = viemHttp(rpcUrl);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const CHAIN = viemChains[blockchainConfig.libid as keyof typeof viemChains];
+    const multiSigSmartAccount =
+      await accountAbstraction.accountAbstraction.createMultiSigSmartAccount({
+        // @ts-expect-error library issue
+        transport,
+        // @ts-expect-error library issue
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        chain: CHAIN,
+        combinedAddress: combinedAddresses,
+        salt: accountAbstraction.helpers.create2Helpers.saltToHex(accountSalt),
+        // @ts-expect-error type mismatch as of library
+        entryPoint: getEntryPoint(CHAIN),
+      });
+
+    const CLIENT_OPT = { // @TODO make it configurable
+      feeOptions: {
+        maxPriorityFeePerGas: { multiplier: 1.5 },
+        maxFeePerGas: { multiplier: 1.5 },
+        preVerificationGas: { multiplier: 1.5 },
+      },
+      txMaxRetries: 5,
+      txRetryMultiplier: 3,
+    };
+
+    const smartAccountClient = createSmartAccountClient({
+      // @ts-expect-error library issue
+      transport,
+      // @ts-expect-error library issue
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      chain: CHAIN,
+      // @ts-expect-error library issue
+      account: multiSigSmartAccount,
+      opts: CLIENT_OPT,
+    });
+
+    const uoStruct = await smartAccountClient.buildUserOperation({
+      // @ts-expect-error library issue
+      account: multiSigSmartAccount,
+      // @ts-expect-error library issue
+      uo: {
+        data: '0x',
+        target: receiver,
+        value: parseUnits(amount, blockchainConfig.decimals),
+      },
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const uoStructHexlified = deepHexlify(uoStruct);
+    const uoStructHash = multiSigSmartAccount
+      .getEntryPoint()
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      .getUserOperationHash(uoStructHexlified);
+    const multiSigUserOp = new accountAbstraction.userOperation.MultiSigUserOp(
+      publicKeys,
+      [publicNonces1, publicNoncesKey],
+      uoStructHash,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      uoStructHexlified,
+    );
+    multiSigUserOp.signMultiSigHash(schnorrSigner1); // we post this to our server
+    console.log(multiSigUserOp);
+    return multiSigUserOp;
   } catch (error) {
     console.log(error);
     throw error;

@@ -322,7 +322,7 @@ export async function fetchAddressTransactions(
         endblock: 99999999,
         page: 1,
         offset: to - from,
-        sort: 'desc',
+        sort: 'desc', 
         apiKey: 'APIKEY',
         address,
         action: 'txlist',
@@ -330,16 +330,16 @@ export async function fetchAddressTransactions(
 
       const url = `https://${backendConfig.api}`;
 
-      const responseExternal = await axios.get<etherscan_call_external_txs>(
-        url,
-        { params },
-      );
-      const externalTxs = responseExternal.data.result;
-      const externalTxsProcessed = processTransactionsExternalScan(externalTxs, address);
-
-      params.action = 'txlistinternal';
-      const responseInternal = await axios.get<etherscan_call_internal_txs>(
-        url,
+        const responseExternal = await axios.get<etherscan_call_external_txs>(
+          url,
+          { params },
+        );
+        const externalTxs = responseExternal.data.result;
+        const externalTxsProcessed = processTransactionsExternalScan(externalTxs, address);
+        
+        params.action = 'txlistinternal';
+        const responseInternal = await axios.get<etherscan_call_internal_txs>(
+          url,
         { params },
       );
       const internalTxs = responseInternal.data.result;

@@ -303,8 +303,13 @@ function PaymentRequest(props: {
       message: props.message,
       paymentAction: true,
     };
-    // navigate to the particular chain send for mand fill in the data.
-    navigate('/send', { state: navigationObject });
+    if (blockchainConfig.chainType === 'evm') {
+      // navigate to the particular chain send for mand fill in the data.
+      navigate('/sendevm', { state: navigationObject });
+    } else {
+      // navigate to the particular chain send for mand fill in the data.
+      navigate('/send', { state: navigationObject });
+    }
     // close dialog
     openAction('continue');
   };
