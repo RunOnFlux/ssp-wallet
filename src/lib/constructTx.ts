@@ -804,6 +804,7 @@ export async function broadcastTx(
   }
 }
 
+// return stringified multisig user operation
 export async function constructAndSignEVMTransaction(
   chain: keyof cryptos,
   receiver: string,
@@ -813,7 +814,7 @@ export async function constructAndSignEVMTransaction(
   publicKey2HEX: string,
   // publicNonces1 is generated here. ssp wallet
   publicNonces2: string[], // ssp key public nonces
-): Promise<accountAbstraction.userOperation.MultiSigUserOp> {
+): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
     const backendConfig = backends()[chain];
@@ -859,7 +860,8 @@ export async function constructAndSignEVMTransaction(
         entryPoint: getEntryPoint(CHAIN),
       });
 
-    const CLIENT_OPT = { // @TODO make it configurable
+    const CLIENT_OPT = {
+      // @TODO make it configurable
       feeOptions: {
         maxPriorityFeePerGas: { multiplier: 1.5 },
         maxFeePerGas: { multiplier: 1.5 },
@@ -904,8 +906,8 @@ export async function constructAndSignEVMTransaction(
       uoStructHexlified,
     );
     multiSigUserOp.signMultiSigHash(schnorrSigner1); // we post this to our server
-    console.log(multiSigUserOp);
-    return multiSigUserOp;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    return JSON.stringify(multiSigUserOp.toJson());
   } catch (error) {
     console.log(error);
     throw error;
