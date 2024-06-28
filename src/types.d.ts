@@ -295,11 +295,16 @@ export interface etherscan_call_internal_txs {
   result: etherscan_internal_tx[]
 }
 
+export interface publicNonce {
+  kPublic: string;
+  kTwoPublic: string;
+}
 export interface syncSSPRelay {
   chain: string;
   walletIdentity: string;
   keyXpub: string;
   wkIdentity: string;
+  publicNonces?: publicNonce[]
 }
 
 export interface actionSSPRelay {

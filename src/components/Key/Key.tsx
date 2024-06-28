@@ -80,7 +80,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         .get<syncSSPRelay>(
           `https://${sspConfig().relay}/v1/sync/${sspWalletInternalIdentity}`,
         )
-        .then((res) => {
+        .then(async (res) => {
           if (res.data.chain !== activeChain) {
             return;
           }
@@ -113,6 +113,10 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               0,
               activeChain,
             );
+          }
+          if (res.data.publicNonces) { // ssp key can send us newly generated public nonces. Replace our nonces with these
+            const sspKeyPublicNonces = res.data.publicNonces;
+            await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces).catch((error) => console.log(error)); // we do not need to throw an error
           }
           // synced ok
           syncRunning = false;
