@@ -804,6 +804,11 @@ export async function broadcastTx(
   }
 }
 
+interface publicNonces {
+  kPublic: string;
+  kTwoPublic: string;
+}
+
 // return stringified multisig user operation
 export async function constructAndSignEVMTransaction(
   chain: keyof cryptos,
@@ -813,7 +818,7 @@ export async function constructAndSignEVMTransaction(
   // publicKey1 is generated here. ssp wallet
   publicKey2HEX: string,
   // publicNonces1 is generated here. ssp wallet
-  publicNonces2: string[], // ssp key public nonces
+  publicNonces2: publicNonces, // ssp key public nonces
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
@@ -829,10 +834,10 @@ export async function constructAndSignEVMTransaction(
     const publicNonces1 = schnorrSigner1.generatePubNonces();
     const publicNoncesKey: accountAbstraction.types.PublicNonces = {
       kPublic: new accountAbstraction.types.Key(
-        Buffer.from(publicNonces2[0], 'hex'),
+        Buffer.from(publicNonces2.kPublic, 'hex'),
       ),
       kTwoPublic: new accountAbstraction.types.Key(
-        Buffer.from(publicNonces2[1], 'hex'),
+        Buffer.from(publicNonces2.kTwoPublic, 'hex'),
       ),
     };
     const publicKeys = [publicKey1, publicKey2];

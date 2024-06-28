@@ -218,6 +218,25 @@ export function generateMultisigAddress(
   }
 }
 
+export function deriveEVMPublicKey(
+  xpub2: string,
+  typeIndex: 0 | 1 | 10, // normal, change, internal identity
+  addressIndex: number,
+  chain: keyof cryptos,
+): string {
+  const bipParams = blockchains[chain].bip32;
+  const externalChain2 = HDKey.fromExtendedKey(xpub2, bipParams);
+
+  const externalAddress2: HDKey = externalChain2
+    .deriveChild(typeIndex)
+    .deriveChild(addressIndex);
+
+  const publicKey2 = externalAddress2.publicKey;
+  const pubKeyBuffer2 = Buffer.from(publicKey2!);
+
+  return pubKeyBuffer2.toString('hex');
+}
+
 // given xpubs of two parties, generate multisig address. EVM chains
 export function generateMultisigAddressEVM(
   xpub1: string,

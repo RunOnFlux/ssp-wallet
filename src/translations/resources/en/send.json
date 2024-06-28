@@ -27,5 +27,6 @@
   "err_insufficient_balance": "Insufficient balance",
   "err_tx_size_limit": "Transaction size exceeds blockchain limits. Please lower your amount or consolidate UTXOs first.",
   "replace_by_fee_tx": "This is a Replace by Fee (RBF) transaction.",
-  "replace_by_fee_stop": "To cancel Replace by Fee (RBF) transaction, hit Cancel or navigate back by clicking on SSP logo."
+  "replace_by_fee_stop": "To cancel Replace by Fee (RBF) transaction, hit Cancel or navigate back by clicking on SSP logo.",
+  "err_public_nonces": "Public nonces are not available, please sync public nonces from SSP Key first."
 }
