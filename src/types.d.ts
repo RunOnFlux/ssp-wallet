@@ -286,25 +286,34 @@ export interface etherscan_internal_tx {
 export interface etherscan_call_external_txs {
   status: string;
   message: string;
-  result: etherscan_external_tx[]
+  result: etherscan_external_tx[];
 }
 
 export interface etherscan_call_internal_txs {
   status: string;
   message: string;
-  result: etherscan_internal_tx[]
+  result: etherscan_internal_tx[];
 }
 
 export interface publicNonce {
   kPublic: string;
   kTwoPublic: string;
 }
+
+export interface publicPrivateNonce {
+  k: string;
+  kTwo: string;
+  kPublic: string;
+  kTwoPublic: string;
+}
+
 export interface syncSSPRelay {
   chain: string;
   walletIdentity: string;
   keyXpub: string;
   wkIdentity: string;
-  publicNonces?: publicNonce[]
+  keyToken?: string | null;
+  publicNonces?: publicNonce[];
 }
 
 export interface actionSSPRelay {
