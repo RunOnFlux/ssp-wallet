@@ -868,7 +868,7 @@ export async function constructAndSignEVMTransaction(
     const CLIENT_OPT = {
       // @TODO make it configurable
       feeOptions: {
-        maxPriorityFeePerGas: { multiplier: 1.5 },
+        maxPriorityFeePerGas: { multiplier: 100.5 },
         maxFeePerGas: { multiplier: 1.5 },
         preVerificationGas: { multiplier: 1.5 },
       },

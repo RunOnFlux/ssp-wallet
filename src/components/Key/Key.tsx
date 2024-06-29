@@ -39,9 +39,8 @@ function Key(props: { synchronised: (status: boolean) => void }) {
   const [keyInput, setKeyInput] = useState('');
   const [keyAutomaticInput, setKeyAutomaticInput] = useState('');
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const { sspWalletInternalIdentity, activeChain, identityChain } = useAppSelector(
-    (state) => state.sspState,
-  );
+  const { sspWalletInternalIdentity, activeChain, identityChain } =
+    useAppSelector((state) => state.sspState);
   const dispatch = useAppDispatch();
   const { xpubKey, xpubWallet } = useAppSelector((state) => state[activeChain]);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
@@ -106,17 +105,14 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               return;
             }
           } else {
-            generateMultisigAddress(
-              xpubWallet,
-              xpubKey,
-              0,
-              0,
-              activeChain,
-            );
+            generateMultisigAddress(xpubWallet, xpubKey, 0, 0, activeChain);
           }
-          if (res.data.publicNonces) { // ssp key can send us newly generated public nonces. Replace our nonces with these
+          if (res.data.publicNonces) {
+            // ssp key can send us newly generated public nonces. Replace our nonces with these
             const sspKeyPublicNonces = res.data.publicNonces;
-            await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces).catch((error) => console.log(error)); // we do not need to throw an error
+            await localForage
+              .setItem('sspKeyPublicNonces', sspKeyPublicNonces)
+              .catch((error) => console.log(error)); // we do not need to throw an error
           }
           // synced ok
           syncRunning = false;
@@ -330,7 +326,10 @@ function Key(props: { synchronised: (status: boolean) => void }) {
             <TextArea
               value={keyInput}
               onChange={(e) => setKeyInput(e.target.value)}
-              placeholder={t('home:key.input_xpub', { path: derivationPath, chain: blockchainConfig.name })}
+              placeholder={t('home:key.input_xpub', {
+                path: derivationPath,
+                chain: blockchainConfig.name,
+              })}
               autoSize
             />
           </>

@@ -207,7 +207,7 @@ function processTransactionBlockbook(
 export function processTransactionInternalScan(
   txGroup: etherscan_internal_tx[],
   address: string,
-  chain: keyof cryptos
+  chain: keyof cryptos,
 ): transaction {
   const tran: transaction = {
     type: 'evm',
@@ -229,8 +229,13 @@ export function processTransactionInternalScan(
       continue;
     }
     if (tx.from.toLowerCase() === address.toLowerCase()) {
-      if (tx.to.toLowerCase() === blockchains[chain].entrypointAddress.toLowerCase()) {
-        tran.fee = new BigNumber(tran.fee).plus(new BigNumber(tx.value)).toFixed();
+      if (
+        tx.to.toLowerCase() ===
+        blockchains[chain].entrypointAddress.toLowerCase()
+      ) {
+        tran.fee = new BigNumber(tran.fee)
+          .plus(new BigNumber(tx.value))
+          .toFixed();
       } else {
         amountSending = amountSending.plus(new BigNumber(tx.value));
       }
@@ -238,7 +243,9 @@ export function processTransactionInternalScan(
     if (tx.to.toLowerCase() === address.toLowerCase()) {
       amountReceiving = amountReceiving.plus(new BigNumber(tx.value));
     }
-    if (tx.to.toLowerCase() !== blockchains[chain].entrypointAddress.toLowerCase()) {
+    if (
+      tx.to.toLowerCase() !== blockchains[chain].entrypointAddress.toLowerCase()
+    ) {
       tran.receiver = tx.to;
     }
   }
@@ -264,12 +271,15 @@ export function processTransactionsInternalScan(
     }
   }
   for (const txGroup of Object.keys(groupedTxs)) {
-    const processedTransaction = processTransactionInternalScan(groupedTxs[txGroup], address, chain);
+    const processedTransaction = processTransactionInternalScan(
+      groupedTxs[txGroup],
+      address,
+      chain,
+    );
     txs.push(processedTransaction);
   }
   return txs;
 }
-
 
 export function processTransactionExternalScan(
   tx: etherscan_external_tx,
@@ -322,7 +332,7 @@ export async function fetchAddressTransactions(
         endblock: 99999999,
         page: 1,
         offset: to - from,
-        sort: 'desc', 
+        sort: 'desc',
         apiKey: 'APIKEY',
         address,
         action: 'txlist',
@@ -330,22 +340,32 @@ export async function fetchAddressTransactions(
 
       const url = `https://${backendConfig.api}`;
 
-        const responseExternal = await axios.get<etherscan_call_external_txs>(
-          url,
-          { params },
-        );
-        const externalTxs = responseExternal.data.result;
-        const externalTxsProcessed = processTransactionsExternalScan(externalTxs, address);
-        
-        params.action = 'txlistinternal';
-        const responseInternal = await axios.get<etherscan_call_internal_txs>(
-          url,
+      const responseExternal = await axios.get<etherscan_call_external_txs>(
+        url,
+        { params },
+      );
+      const externalTxs = responseExternal.data.result;
+      const externalTxsProcessed = processTransactionsExternalScan(
+        externalTxs,
+        address,
+      );
+
+      params.action = 'txlistinternal';
+      const responseInternal = await axios.get<etherscan_call_internal_txs>(
+        url,
         { params },
       );
       const internalTxs = responseInternal.data.result;
-      const internalTxsProcessed = processTransactionsInternalScan(internalTxs, address, chain);
+      const internalTxsProcessed = processTransactionsInternalScan(
+        internalTxs,
+        address,
+        chain,
+      );
 
-      const allTransactions = [...externalTxsProcessed, ...internalTxsProcessed];
+      const allTransactions = [
+        ...externalTxsProcessed,
+        ...internalTxsProcessed,
+      ];
 
       return allTransactions.sort((a, b) => b.timestamp - a.timestamp);
     } else if (blockchains[chain].backend === 'blockbook') {

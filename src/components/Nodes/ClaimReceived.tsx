@@ -18,7 +18,10 @@ function ClaimReceived(props: {
   };
 
   const openInExplorer = () => {
-    window.open(`https://${backendConfig.node}/tx/${props.txid}`, '_blank');
+    window.open(
+      `https://${backendConfig.explorer ?? backendConfig.node}/tx/${props.txid}`,
+      '_blank',
+    );
   };
   return (
     <>
@@ -49,7 +52,7 @@ function ClaimReceived(props: {
             <Text>{props.txid}</Text>
           </Paragraph>
           <Button type="primary" size="middle" onClick={openInExplorer}>
-          {t('home:txSent.show_in_explorer')}
+            {t('home:txSent.show_in_explorer')}
           </Button>
         </Space>
       </Modal>
