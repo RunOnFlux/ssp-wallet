@@ -847,7 +847,7 @@ export async function constructAndSignEVMTransaction(
         2,
       );
 
-    const rpcUrl = backendConfig.node;
+    const rpcUrl = `https://${backendConfig.node}`;
 
     const transport = viemHttp(rpcUrl);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

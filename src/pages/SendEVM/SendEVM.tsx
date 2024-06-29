@@ -19,7 +19,11 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
-import { generateAddressKeypair, getScriptType, deriveEVMPublicKey } from '../../lib/wallet';
+import {
+  generateAddressKeypair,
+  getScriptType,
+  deriveEVMPublicKey,
+} from '../../lib/wallet';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
@@ -314,7 +318,7 @@ function SendEVM() {
   const getSpendableBalance = () => {
     // get spendable balance
     // fetch our address new balance
-    setSpendableBalance('1');
+    setSpendableBalance('1000000000000000000000000');
   };
 
   const calculateTxFeeSize = () => {
@@ -388,8 +392,14 @@ function SendEVM() {
           addressIndex,
           activeChain,
         );
-        const publicKey2HEX = deriveEVMPublicKey(xpubKey, typeIndex, addressIndex, activeChain); // ssp key
-        const sspKeyPublicNonces: publicNonces[] = await localForage.getItem('sspKeyPublicNonces') ?? []; // an array of [{kPublic, kTwoPublic}...]
+        const publicKey2HEX = deriveEVMPublicKey(
+          xpubKey,
+          typeIndex,
+          addressIndex,
+          activeChain,
+        ); // ssp key
+        const sspKeyPublicNonces: publicNonces[] =
+          (await localForage.getItem('sspKeyPublicNonces')) ?? []; // an array of [{kPublic, kTwoPublic}...]
         if (!sspKeyPublicNonces.length) {
           throw new Error(t('send:err_public_nonces'));
         }
@@ -400,9 +410,7 @@ function SendEVM() {
         sspKeyPublicNonces.splice(pos, 1);
         // save the array back to storage
         await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
-        const amount = new BigNumber(values.amount)
-          .multipliedBy(10 ** blockchainConfig.decimals)
-          .toFixed();
+        const amount = new BigNumber(values.amount).toFixed();
         constructAndSignEVMTransaction(
           activeChain,
           values.receiver,
