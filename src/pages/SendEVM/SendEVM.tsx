@@ -44,6 +44,7 @@ import './SendEVM.css';
 
 interface contactOption {
   label: string;
+  index?: string;
   value: string;
 }
 
@@ -101,7 +102,9 @@ function SendEVM() {
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txReceiver, setTxReceiver] = useState('');
-  const [txFee, setTxFee] = useState('0');
+  const [baseGasPrice, setBaseGasPrice] = useState('2');
+  const [priorityGasPrice, setPriorityGasPrice] = useState('2');
+  const [totalGasLimit, setTotalGasLimit] = useState('200000');
   const [validateStatusAmount, setValidateStatusAmount] = useState<
     '' | 'success' | 'error' | 'warning' | 'validating' | undefined
   >('success');
@@ -150,6 +153,7 @@ function SendEVM() {
       }
       const wal = {
         value: wallets[wallet].address,
+        index: wallet,
         label: t('home:navbar.chain_wallet', {
           chain: blockchainConfig.name,
           wallet: walletName,
@@ -158,13 +162,15 @@ function SendEVM() {
       wItems.push(wal);
     });
     wItems.sort((a, b) => {
-      if (+a.value.split('-')[1] < +b.value.split('-')[1]) return -1;
-      if (+a.value.split('-')[1] > +b.value.split('-')[1]) return 1;
+      if (!a.index || !b.index) return 0;
+      if (+a.index.split('-')[1] < +b.index.split('-')[1]) return -1;
+      if (+a.index.split('-')[1] > +b.index.split('-')[1]) return 1;
       return 0;
     });
     wItems.sort((a, b) => {
-      if (+a.value.split('-')[0] < +b.value.split('-')[0]) return -1;
-      if (+a.value.split('-')[0] > +b.value.split('-')[0]) return 1;
+      if (!a.index || !b.index) return 0;
+      if (+a.index.split('-')[0] < +b.index.split('-')[0]) return -1;
+      if (+a.index.split('-')[0] > +b.index.split('-')[0]) return 1;
       return 0;
     });
     const sendContacts = [];
@@ -209,10 +215,10 @@ function SendEVM() {
     }
     getSpendableBalance();
     calculateTxFeeSize();
-  }, [txFee]);
+  }, [baseGasPrice, priorityGasPrice, totalGasLimit]);
 
   useEffect(() => {
-    const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
+    const totalAmount = new BigNumber(sendingAmount).plus(baseGasPrice || '0');
     const maxSpendable = new BigNumber(spendableBalance).dividedBy(
       10 ** blockchainConfig.decimals,
     );
@@ -222,14 +228,14 @@ function SendEVM() {
     } else {
       setValidateStatusAmount('success');
     }
-  }, [walletInUse, activeChain, sendingAmount, txFee]);
+  }, [walletInUse, activeChain, sendingAmount, baseGasPrice]);
 
   useEffect(() => {
     if (useMaximum) {
       const maxSpendable = new BigNumber(spendableBalance).dividedBy(
         10 ** blockchainConfig.decimals,
       );
-      const fee = new BigNumber(txFee || '0');
+      const fee = new BigNumber(baseGasPrice || '0');
       setSendingAmount(
         maxSpendable.minus(fee).isGreaterThan(0)
           ? maxSpendable.minus(fee).toFixed()
@@ -242,7 +248,7 @@ function SendEVM() {
           : '0',
       );
     }
-  }, [useMaximum, txFee, spendableBalance]);
+  }, [useMaximum, spendableBalance]);
 
   useEffect(() => {
     if (txid) {
@@ -654,16 +660,49 @@ function SendEVM() {
         </Button>
 
         <Form.Item
-          label={t('send:fee')}
+          label={t('send:base_gas_price')}
           name="fee"
-          rules={[{ required: true, message: t('send:input_fee') }]}
+          style={{ paddingTop: '2px' }}
+          rules={[{ required: true, message: t('send:input_gas_price') }]}
         >
           <Input
             size="large"
-            value={txFee}
-            placeholder={t('send:tx_fee')}
-            suffix={blockchainConfig.symbol}
-            onChange={(e) => setTxFee(e.target.value)}
+            value={baseGasPrice}
+            placeholder={t('send:input_gas_price')}
+            suffix="gwei"
+            onChange={(e) => setBaseGasPrice(e.target.value)}
+            disabled={!manualFee}
+          />
+        </Form.Item>
+        <Form.Item
+          label={t('send:priority_gas_price')}
+          name="fee"
+          style={{ paddingTop: '2px' }}
+          rules={[
+            { required: true, message: t('send:input_priority_gas_price') },
+          ]}
+        >
+          <Input
+            size="large"
+            value={baseGasPrice}
+            placeholder={t('send:input_priority_gas_price')}
+            suffix="gwei"
+            onChange={(e) => setPriorityGasPrice(e.target.value)}
+            disabled={!manualFee}
+          />
+        </Form.Item>
+        <Form.Item
+          label={t('send:total_gas_limit')}
+          name="fee"
+          style={{ paddingTop: '2px' }}
+          rules={[{ required: true, message: t('send:input_gas_limit') }]}
+        >
+          <Input
+            size="large"
+            value={baseGasPrice}
+            placeholder={t('send:input_gas_limit')}
+            suffix="gas"
+            onChange={(e) => setTotalGasLimit(e.target.value)}
             disabled={!manualFee}
           />
         </Form.Item>

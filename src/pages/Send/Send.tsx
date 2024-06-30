@@ -45,6 +45,7 @@ import './Send.css';
 
 interface contactOption {
   label: string;
+  index?: string;
   value: string;
 }
 
@@ -168,6 +169,7 @@ function Send() {
       }
       const wal = {
         value: wallets[wallet].address,
+        index: wallet,
         label: t('home:navbar.chain_wallet', {
           chain: blockchainConfig.name,
           wallet: walletName,
@@ -176,13 +178,15 @@ function Send() {
       wItems.push(wal);
     });
     wItems.sort((a, b) => {
-      if (+a.value.split('-')[1] < +b.value.split('-')[1]) return -1;
-      if (+a.value.split('-')[1] > +b.value.split('-')[1]) return 1;
+      if (!a.index || !b.index) return 0;
+      if (+a.index.split('-')[1] < +b.index.split('-')[1]) return -1;
+      if (+a.index.split('-')[1] > +b.index.split('-')[1]) return 1;
       return 0;
     });
     wItems.sort((a, b) => {
-      if (+a.value.split('-')[0] < +b.value.split('-')[0]) return -1;
-      if (+a.value.split('-')[0] > +b.value.split('-')[0]) return 1;
+      if (!a.index || !b.index) return 0;
+      if (+a.index.split('-')[0] < +b.index.split('-')[0]) return -1;
+      if (+a.index.split('-')[0] > +b.index.split('-')[0]) return 1;
       return 0;
     });
     const sendContacts = [];
