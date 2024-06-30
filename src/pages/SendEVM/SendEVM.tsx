@@ -10,6 +10,7 @@ import {
   Popconfirm,
   Popover,
   Select,
+  Collapse,
 } from 'antd';
 import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
@@ -102,6 +103,7 @@ function SendEVM() {
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txReceiver, setTxReceiver] = useState('');
+  const [txFee, setTxFee] = useState('0');
   const [baseGasPrice, setBaseGasPrice] = useState('2');
   const [priorityGasPrice, setPriorityGasPrice] = useState('2');
   const [totalGasLimit, setTotalGasLimit] = useState('200000');
@@ -658,59 +660,90 @@ function SendEVM() {
             .dividedBy(10 ** blockchainConfig.decimals)
             .toFixed()}
         </Button>
-
         <Form.Item
-          label={t('send:base_gas_price')}
+          label={t('send:max_fee')}
           name="fee"
           style={{ paddingTop: '2px' }}
-          rules={[{ required: true, message: t('send:input_gas_price') }]}
+          rules={[{ required: true, message: t('send:invalid_tx_fee') }]}
         >
           <Input
             size="large"
-            value={baseGasPrice}
-            placeholder={t('send:input_gas_price')}
-            suffix="gwei"
-            onChange={(e) => setBaseGasPrice(e.target.value)}
-            disabled={!manualFee}
+            value={txFee}
+            placeholder={t('send:max_tx_fee')}
+            suffix={blockchainConfig.symbol}
+            onChange={(e) => setTxFee(e.target.value)}
+            disabled={true}
           />
         </Form.Item>
-        <Form.Item
-          label={t('send:priority_gas_price')}
-          name="fee"
-          style={{ paddingTop: '2px' }}
-          rules={[
-            { required: true, message: t('send:input_priority_gas_price') },
+        <Collapse
+          size="small"
+          style={{ marginTop: '-20px', textAlign: 'left' }}
+          items={[
+            {
+              key: '1',
+              label: t('send:fee_details'),
+              children: (
+                <div>
+                  <Form.Item
+                    label={t('send:base_gas_price')}
+                    name="fee"
+                    rules={[
+                      { required: true, message: t('send:input_gas_price') },
+                    ]}
+                  >
+                    <Input
+                      size="large"
+                      value={baseGasPrice}
+                      placeholder={t('send:input_gas_price')}
+                      suffix="gwei"
+                      onChange={(e) => setBaseGasPrice(e.target.value)}
+                      disabled={!manualFee}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label={t('send:priority_gas_price')}
+                    name="fee"
+                    rules={[
+                      {
+                        required: true,
+                        message: t('send:input_priority_gas_price'),
+                      },
+                    ]}
+                  >
+                    <Input
+                      size="large"
+                      value={baseGasPrice}
+                      placeholder={t('send:input_priority_gas_price')}
+                      suffix="gwei"
+                      onChange={(e) => setPriorityGasPrice(e.target.value)}
+                      disabled={!manualFee}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label={t('send:total_gas_limit')}
+                    name="fee"
+                    rules={[
+                      { required: true, message: t('send:input_gas_limit') },
+                    ]}
+                  >
+                    <Input
+                      size="large"
+                      value={baseGasPrice}
+                      placeholder={t('send:input_gas_limit')}
+                      suffix="gas"
+                      onChange={(e) => setTotalGasLimit(e.target.value)}
+                      disabled={!manualFee}
+                    />
+                  </Form.Item>
+                </div>
+              ),
+            },
           ]}
-        >
-          <Input
-            size="large"
-            value={baseGasPrice}
-            placeholder={t('send:input_priority_gas_price')}
-            suffix="gwei"
-            onChange={(e) => setPriorityGasPrice(e.target.value)}
-            disabled={!manualFee}
-          />
-        </Form.Item>
-        <Form.Item
-          label={t('send:total_gas_limit')}
-          name="fee"
-          style={{ paddingTop: '2px' }}
-          rules={[{ required: true, message: t('send:input_gas_limit') }]}
-        >
-          <Input
-            size="large"
-            value={baseGasPrice}
-            placeholder={t('send:input_gas_limit')}
-            suffix="gas"
-            onChange={(e) => setTotalGasLimit(e.target.value)}
-            disabled={!manualFee}
-          />
-        </Form.Item>
+        />
         <Button
           type="text"
           size="small"
           style={{
-            marginTop: '-22px',
             float: 'left',
             marginLeft: 3,
             fontSize: 12,
