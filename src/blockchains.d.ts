@@ -39,6 +39,7 @@ declare module '@storage/blockchains' {
     entrypointAddress: string;
     baseFee: number;
     priorityFee: number;
+    gasLimit: number;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

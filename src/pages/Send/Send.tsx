@@ -233,7 +233,7 @@ function Send() {
           // reset fee
           setFeePerByte(networkFees[activeChain].base.toFixed());
           setTxFee('0');
-          form.setFieldsValue({ fee: '' });
+          form.setFieldValue('fee', '');
         } else {
           // set fee per byte to 0
           setFeePerByte('---');
@@ -256,7 +256,7 @@ function Send() {
           // reset fee
           setFeePerByte(networkFees[activeChain].base.toFixed());
           setTxFee('0');
-          form.setFieldsValue({ fee: '' });
+          form.setFieldValue('fee', '');
         } else {
           // set fee per byte to 0
           setFeePerByte('---');
@@ -480,7 +480,9 @@ function Send() {
     // target recommended fee of blockchain config
     setTxSize(txSize);
     const fpb =
-      feePerByte === '---' ? networkFees[activeChain].base.toFixed() : feePerByte;
+      feePerByte === '---'
+        ? networkFees[activeChain].base.toFixed()
+        : feePerByte;
     const feeSats = new BigNumber(txSize)
       .multipliedBy(manualFee ? fpb : networkFees[activeChain].base.toFixed())
       .toFixed(); // satoshis
@@ -504,7 +506,7 @@ function Send() {
     ) {
       if (!manualFee) {
         setFeePerByte(networkFees[activeChain].base.toFixed());
-        form.setFieldsValue({ fee: feeUnit });
+        form.setFieldValue('fee', feeUnit);
         setTxFee(feeUnit);
       } else {
         // set fee per byte

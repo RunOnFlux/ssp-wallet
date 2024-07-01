@@ -321,6 +321,7 @@ const sepolia = {
   entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
   baseFee: 3000000000, // 3 gwei
   priorityFee: 5000000000, // 5 gwei
+  gasLimit: 400000, // 400k gas
 };
 
 export const blockchains = {

@@ -222,7 +222,11 @@ const networkFeesSlice = createSlice({
   reducers: {
     setNetworkFees: (state, action: PayloadAction<networkFee[]>) => {
       action.payload.forEach((element) => {
+        if (!state.networkFees[element.coin as keyof cryptos]) {
+          return;
+        }
         if (element.base) {
+          console.log(state.networkFees[element.coin as keyof cryptos]);
           state.networkFees[element.coin as keyof cryptos].base = element.base;
           state.networkFees[element.coin as keyof cryptos].priority = element.recommended;
         } else {

@@ -31,6 +31,7 @@ import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
+import { fetchAddressBalance } from '../../lib/balances.ts';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
@@ -68,8 +69,12 @@ interface sendForm {
   paymentAction?: boolean;
 }
 
+interface balancesObj {
+  confirmed: string;
+  unconfirmed: string;
+}
+
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
-let alreadyRunning = false;
 
 function SendEVM() {
   const dispatch = useAppDispatch();
@@ -103,10 +108,17 @@ function SendEVM() {
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txReceiver, setTxReceiver] = useState('');
+  const blockchainConfig = blockchains[activeChain];
   const [txFee, setTxFee] = useState('0');
-  const [baseGasPrice, setBaseGasPrice] = useState('2');
-  const [priorityGasPrice, setPriorityGasPrice] = useState('2');
-  const [totalGasLimit, setTotalGasLimit] = useState('200000');
+  const [baseGasPrice, setBaseGasPrice] = useState(
+    blockchainConfig.baseFee.toString(),
+  );
+  const [priorityGasPrice, setPriorityGasPrice] = useState(
+    blockchainConfig.priorityFee.toString(),
+  );
+  const [totalGasLimit, setTotalGasLimit] = useState(
+    blockchainConfig.gasLimit.toString(),
+  );
   const [validateStatusAmount, setValidateStatusAmount] = useState<
     '' | 'success' | 'error' | 'warning' | 'validating' | undefined
   >('success');
@@ -116,7 +128,6 @@ function SendEVM() {
   const { networkFees } = useAppSelector((state) => state.networkFees);
   const { contacts } = useAppSelector((state) => state.contacts);
 
-  const blockchainConfig = blockchains[activeChain];
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
   useEffect(() => {
@@ -137,14 +148,29 @@ function SendEVM() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    if (!manualFee) {
-      // reset fee
-      setBaseGasPrice(networkFees[activeChain].base.toFixed());
-      setPriorityGasPrice(networkFees[activeChain].priority!.toFixed());
-      form.setFieldsValue({ base_gas_price: baseGasPrice });
-      form.setFieldsValue({ priority_gas_price: priorityGasPrice });
-      // todo total fee?
+    setBaseGasPrice(networkFees[activeChain].base.toFixed());
+    setPriorityGasPrice(networkFees[activeChain].priority!.toFixed());
+    setTotalGasLimit(blockchainConfig.gasLimit.toString());
+    form.setFieldValue(
+      'base_gas_price',
+      networkFees[activeChain].base.toFixed(),
+    );
+    form.setFieldValue(
+      'priority_gas_price',
+      networkFees[activeChain].priority!.toFixed(),
+    );
+    form.setFieldValue('total_gas_limit', blockchainConfig.gasLimit.toString());
+    const totalGas = new BigNumber(blockchainConfig.gasLimit.toString()); // get better estimation
+    const totalGasPrice = new BigNumber(networkFees[activeChain].base.toFixed()).plus(networkFees[activeChain].priority!.toFixed());
+    const totalFee = totalGas.multipliedBy(totalGasPrice);
+    const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
+    if (totalFeeETH === 'NaN') {
+      setTxFee('---');
+      form.setFieldValue('fee', '---');
+      return;
     }
+    setTxFee(totalFeeETH);
+    form.setFieldValue('fee', totalFeeETH);
     try {
       console.log(networkFees);
     } catch (error) {
@@ -212,20 +238,16 @@ function SendEVM() {
   // on every chain, address adjustment, fetch utxos
   // used to get a precise estimate of the tx size
   useEffect(() => {
-    if (alreadyRunning) return;
-    alreadyRunning = true;
+    refreshAutomaticFee();
     getSpendableBalance();
-    calculateTxFeeSize();
-    alreadyRunning = false;
-  }, [walletInUse, activeChain, sendingAmount, manualFee]);
+  }, [networkFees, walletInUse, activeChain, manualFee]);
 
   useEffect(() => {
-    if (useMaximum && !manualFee) {
-      return;
-    }
-    getSpendableBalance();
-    calculateTxFeeSize();
-  }, [baseGasPrice, priorityGasPrice, totalGasLimit]);
+    form.setFieldValue('base_gas_price', baseGasPrice);
+    form.setFieldValue('priority_gas_price', priorityGasPrice);
+    form.setFieldValue('total_gas_limit', totalGasLimit);
+    calculateTxFee();
+  }, [baseGasPrice, priorityGasPrice, totalGasLimit, manualFee]);
 
   useEffect(() => {
     const totalAmount = new BigNumber(sendingAmount).plus(baseGasPrice || '0');
@@ -245,7 +267,7 @@ function SendEVM() {
       const maxSpendable = new BigNumber(spendableBalance).dividedBy(
         10 ** blockchainConfig.decimals,
       );
-      const fee = new BigNumber(baseGasPrice || '0');
+      const fee = new BigNumber(txFee || '0');
       setSendingAmount(
         maxSpendable.minus(fee).isGreaterThan(0)
           ? maxSpendable.minus(fee).toFixed()
@@ -258,7 +280,7 @@ function SendEVM() {
           : '0',
       );
     }
-  }, [useMaximum, spendableBalance]);
+  }, [useMaximum, txFee, spendableBalance]);
 
   useEffect(() => {
     if (txid) {
@@ -331,14 +353,62 @@ function SendEVM() {
     setOpenTxRejected(status);
   };
 
-  const getSpendableBalance = () => {
-    // get spendable balance
-    // fetch our address new balance
-    setSpendableBalance('1000000000000000000000000');
+  const refreshAutomaticFee = () => {
+    if (!manualFee) {
+      // reset fee
+      setBaseGasPrice(networkFees[activeChain].base.toFixed());
+      setPriorityGasPrice(networkFees[activeChain].priority!.toFixed());
+      setTotalGasLimit(blockchainConfig.gasLimit.toString());
+    }
   };
 
-  const calculateTxFeeSize = () => {
+  const getSpendableBalance = () => {
+    void (async function () {
+      try {
+        const balancesWallet: balancesObj | null = await localForage.getItem(
+          `balances-${activeChain}-${walletInUse}`,
+        );
+        if (balancesWallet) {
+          setSpendableBalance(balancesWallet.confirmed);
+        } else {
+          fetchBalance();
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  };
+
+  const fetchBalance = () => {
+    const chainFetched = activeChain;
+    const walletFetched = walletInUse;
+    fetchAddressBalance(wallets[walletFetched].address, chainFetched)
+      .then(async (balance) => {
+        await localForage.setItem(
+          `balances-${chainFetched}-${walletFetched}`,
+          balance,
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const calculateTxFee = () => {
+    // here how much gas our transaction will use by maximum?
+    // here we set the overall gas limit and calculate the ETH value
     console.log('CALC tx fee');
+    const totalGas = new BigNumber(totalGasLimit); // get better estimation
+    const totalGasPrice = new BigNumber(baseGasPrice).plus(priorityGasPrice);
+    const totalFee = totalGas.multipliedBy(totalGasPrice);
+    const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
+    if (totalFeeETH === 'NaN') {
+      setTxFee('---');
+      form.setFieldValue('fee', '---');
+      return;
+    }
+    setTxFee(totalFeeETH);
+    form.setFieldValue('fee', totalFeeETH);
   };
 
   const postAction = (
@@ -703,7 +773,7 @@ function SendEVM() {
                       size="large"
                       value={baseGasPrice}
                       placeholder={t('send:input_gas_price')}
-                      suffix="gwei"
+                      suffix="wei"
                       onChange={(e) => setBaseGasPrice(e.target.value)}
                       disabled={!manualFee}
                     />
@@ -722,7 +792,7 @@ function SendEVM() {
                       size="large"
                       value={baseGasPrice}
                       placeholder={t('send:input_priority_gas_price')}
-                      suffix="gwei"
+                      suffix="wei"
                       onChange={(e) => setPriorityGasPrice(e.target.value)}
                       disabled={!manualFee}
                     />
