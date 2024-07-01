@@ -15,7 +15,7 @@ import {
 import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
-import { constructAndSignEVMTransaction } from '../../lib/constructTx';
+import { constructAndSignEVMTransaction, estimateGas } from '../../lib/constructTx';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
@@ -160,6 +160,7 @@ function SendEVM() {
       networkFees[activeChain].priority!.toFixed(),
     );
     form.setFieldValue('total_gas_limit', blockchainConfig.gasLimit.toString());
+    void getTotalGasLimit();
     const totalGas = new BigNumber(blockchainConfig.gasLimit.toString()); // get better estimation
     const totalGasPrice = new BigNumber(networkFees[activeChain].base.toFixed()).plus(networkFees[activeChain].priority!.toFixed());
     const totalFee = totalGas.multipliedBy(totalGasPrice);
@@ -240,6 +241,7 @@ function SendEVM() {
   useEffect(() => {
     refreshAutomaticFee();
     getSpendableBalance();
+    void getTotalGasLimit();
   }, [networkFees, walletInUse, activeChain, manualFee]);
 
   useEffect(() => {
@@ -394,6 +396,11 @@ function SendEVM() {
       });
   };
 
+  const getTotalGasLimit = async () => {
+    const gasLimit = await estimateGas(activeChain, sender);
+    setTotalGasLimit(gasLimit);
+  }
+
   const calculateTxFee = () => {
     // here how much gas our transaction will use by maximum?
     // here we set the overall gas limit and calculate the ETH value
@@ -504,6 +511,8 @@ function SendEVM() {
           keyPair.privKey as `0x${string}`,
           publicKey2HEX,
           publicNoncesSSP,
+          baseGasPrice,
+          priorityGasPrice,
         )
           .then((signedTx) => {
             console.log(signedTx);

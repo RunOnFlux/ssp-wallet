@@ -18,6 +18,7 @@ import {
   broadcastTxResult,
   cryptos,
   txIdentifier,
+  eth_evm,
 } from '../types';
 
 import { backends } from '@storage/backends';
@@ -804,6 +805,67 @@ export async function broadcastTx(
   }
 }
 
+const nonceCache = {} as Record<string, string>;
+
+export async function estimateGas(
+  chain: keyof cryptos,
+  sender: string,
+): Promise<string> {
+  const backendConfig = backends()[chain];
+  const url = `https://${backendConfig.node}`;
+
+  // get address nonce. if 0, use gas limit of 347763  * 1.5
+  // if > =, use gas limit of 119098 * 1.5
+
+  // const data = {
+  //   id: new Date().getTime(),
+  //   jsonrpc: '2.0',
+  //   method: 'eth_estimateUserOperationGas',
+  //   params: [estimateUserOpData, blockchainConfig.entrypointAddress],
+  // };
+  // get account nonce
+  // account creation:
+
+  // result: {
+  //   preVerificationGas: '0xb904',
+  //   callGasLimit: '0x4bb8',
+  //   verificationGasLimit: '0x449b7'
+  // }
+  // = 347763 gas
+
+  // account exists:
+
+  // result: {
+  //   preVerificationGas: '0xb2d4',
+  //   callGasLimit: '0x3bb8',
+  //   verificationGasLimit: '0xe2ae'
+  // }
+  // = 119098 gas
+  // // 2 scenarios coded
+  // 1st transfer with account creation if nonce is 0
+  // 2nd transfer if nonce is present, account present
+
+  if (nonceCache[sender]) {
+    if (nonceCache[sender] === '0x0') {
+      return (347763 * 1.5).toFixed();
+    }
+    return (119098 * 1.5).toFixed();
+  }
+  const data = {
+    id: new Date().getTime(),
+    jsonrpc: '2.0',
+    method: 'eth_getTransactionCount',
+    params: [sender],
+  };
+  const response = await axios.post<eth_evm>(url, data);
+  console.log(response.data);
+  nonceCache[sender] = response.data.result;
+  if (response.data.result === '0x0') {
+    return (347763 * 1.5).toFixed();
+  }
+  return (119098 * 1.5).toFixed();
+}
+
 interface publicNonces {
   kPublic: string;
   kTwoPublic: string;
@@ -819,6 +881,8 @@ export async function constructAndSignEVMTransaction(
   publicKey2HEX: string,
   // publicNonces1 is generated here. ssp wallet
   publicNonces2: publicNonces, // ssp key public nonces
+  baseGasPrice: string,
+  priorityGasPrice: string,
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
@@ -868,9 +932,11 @@ export async function constructAndSignEVMTransaction(
     const CLIENT_OPT = {
       // @TODO make it configurable
       feeOptions: {
-        maxPriorityFeePerGas: { multiplier: 100.5 },
-        maxFeePerGas: { multiplier: 1.5 },
+        maxPriorityFeePerGas: { max: BigInt(priorityGasPrice) },
+        maxFeePerGas: { max: BigInt(baseGasPrice) },
         preVerificationGas: { multiplier: 1.5 },
+        callGasLimit: { multiplier: 1.5 },
+        verificationGasLimit: { multiplier: 1.5 },
       },
       txMaxRetries: 5,
       txRetryMultiplier: 3,
@@ -897,6 +963,7 @@ export async function constructAndSignEVMTransaction(
         value: parseUnits(amount, blockchainConfig.decimals),
       },
     });
+    console.log(uoStruct);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const uoStructHexlified = deepHexlify(uoStruct);
     const uoStructHash = multiSigSmartAccount

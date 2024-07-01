@@ -283,6 +283,12 @@ export interface etherscan_internal_tx {
   errCode: string;
 }
 
+export interface eth_evm {
+  jsonrpc: string;
+  id: number;
+  result: string;
+}
+
 export interface etherscan_call_external_txs {
   status: string;
   message: string;
