@@ -137,6 +137,14 @@ function SendEVM() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
+    if (!manualFee) {
+      // reset fee
+      setBaseGasPrice(networkFees[activeChain].base.toFixed());
+      setPriorityGasPrice(networkFees[activeChain].priority!.toFixed());
+      form.setFieldsValue({ base_gas_price: baseGasPrice });
+      form.setFieldsValue({ priority_gas_price: priorityGasPrice });
+      // todo total fee?
+    }
     try {
       console.log(networkFees);
     } catch (error) {
@@ -686,7 +694,7 @@ function SendEVM() {
                 <div>
                   <Form.Item
                     label={t('send:base_gas_price')}
-                    name="fee"
+                    name="base_gas_price"
                     rules={[
                       { required: true, message: t('send:input_gas_price') },
                     ]}
@@ -702,7 +710,7 @@ function SendEVM() {
                   </Form.Item>
                   <Form.Item
                     label={t('send:priority_gas_price')}
-                    name="fee"
+                    name="priority_gas_price"
                     rules={[
                       {
                         required: true,
@@ -721,7 +729,7 @@ function SendEVM() {
                   </Form.Item>
                   <Form.Item
                     label={t('send:total_gas_limit')}
-                    name="fee"
+                    name="total_gas_limit"
                     rules={[
                       { required: true, message: t('send:input_gas_limit') },
                     ]}

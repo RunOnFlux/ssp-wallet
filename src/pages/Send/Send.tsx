@@ -124,7 +124,7 @@ function Send() {
     try {
       if (state.amount || state.receiver || state.message) {
         console.log('TRIGGERED A');
-        setFeePerByte(networkFees[activeChain].toFixed());
+        setFeePerByte(networkFees[activeChain].base.toFixed());
         obtainFreshUtxos();
         if (state.amount) {
           setSendingAmount(state.amount);
@@ -150,7 +150,7 @@ function Send() {
     try {
       if (!state.amount && !state.receiver && !state.message) {
         console.log('TRIGGERED B');
-        setFeePerByte(networkFees[activeChain].toFixed());
+        setFeePerByte(networkFees[activeChain].base.toFixed());
         obtainFreshUtxos();
       }
     } catch (error) {
@@ -231,7 +231,7 @@ function Send() {
         console.log(error);
         if (!manualFee) {
           // reset fee
-          setFeePerByte(networkFees[activeChain].toFixed());
+          setFeePerByte(networkFees[activeChain].base.toFixed());
           setTxFee('0');
           form.setFieldsValue({ fee: '' });
         } else {
@@ -254,7 +254,7 @@ function Send() {
         console.log(error);
         if (!manualFee) {
           // reset fee
-          setFeePerByte(networkFees[activeChain].toFixed());
+          setFeePerByte(networkFees[activeChain].base.toFixed());
           setTxFee('0');
           form.setFieldsValue({ fee: '' });
         } else {
@@ -411,7 +411,7 @@ function Send() {
 
   const calculateTxFeeSize = async () => {
     if (!manualFee) {
-      setFeePerByte(networkFees[activeChain].toFixed());
+      setFeePerByte(networkFees[activeChain].base.toFixed());
     }
     // this method should be more light and not require private key.
     // get size estimate
@@ -480,9 +480,9 @@ function Send() {
     // target recommended fee of blockchain config
     setTxSize(txSize);
     const fpb =
-      feePerByte === '---' ? networkFees[activeChain].toFixed() : feePerByte;
+      feePerByte === '---' ? networkFees[activeChain].base.toFixed() : feePerByte;
     const feeSats = new BigNumber(txSize)
-      .multipliedBy(manualFee ? fpb : networkFees[activeChain].toFixed())
+      .multipliedBy(manualFee ? fpb : networkFees[activeChain].base.toFixed())
       .toFixed(); // satoshis
     console.log(feeSats);
     console.log(fpb);
@@ -503,7 +503,7 @@ function Send() {
         .gt(20)
     ) {
       if (!manualFee) {
-        setFeePerByte(networkFees[activeChain].toFixed());
+        setFeePerByte(networkFees[activeChain].base.toFixed());
         form.setFieldsValue({ fee: feeUnit });
         setTxFee(feeUnit);
       } else {

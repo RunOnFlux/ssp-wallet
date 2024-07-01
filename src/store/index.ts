@@ -49,19 +49,31 @@ const initialSspState: sspState = {
   activeChain: 'btc',
 };
 
-const initialNetworkFeeState = {
+interface nFState {
+  base: number;
+  priority?: number; // EVM must have it
+}
+
+interface networkFeeState {
+  networkFees: Record<keyof cryptos, nFState>;
+}
+
+const initialNetworkFeeState: networkFeeState = {
   networkFees: {
-    flux: blockchains.flux.feePerByte,
-    fluxTestnet: blockchains.fluxTestnet.feePerByte,
-    rvn: blockchains.rvn.feePerByte,
-    ltc: blockchains.ltc.feePerByte,
-    btc: blockchains.btc.feePerByte,
-    doge: blockchains.doge.feePerByte,
-    zec: blockchains.zec.feePerByte,
-    bch: blockchains.bch.feePerByte,
-    btcTestnet: blockchains.btcTestnet.feePerByte,
-    btcSignet: blockchains.btcSignet.feePerByte,
-    sepolia: 0, // TODO
+    flux: { base: blockchains.flux.feePerByte },
+    fluxTestnet: { base: blockchains.fluxTestnet.feePerByte },
+    rvn: { base: blockchains.rvn.feePerByte },
+    ltc: { base: blockchains.ltc.feePerByte },
+    btc: { base: blockchains.btc.feePerByte },
+    doge: { base: blockchains.doge.feePerByte },
+    zec: { base: blockchains.zec.feePerByte },
+    bch: { base: blockchains.bch.feePerByte },
+    btcTestnet: { base: blockchains.btcTestnet.feePerByte },
+    btcSignet: { base: blockchains.btcSignet.feePerByte },
+    sepolia: {
+      base: blockchains.sepolia.baseFee, // wei
+      priority: blockchains.sepolia.priorityFee, // wei
+    },
   },
 };
 
@@ -210,7 +222,13 @@ const networkFeesSlice = createSlice({
   reducers: {
     setNetworkFees: (state, action: PayloadAction<networkFee[]>) => {
       action.payload.forEach((element) => {
-        state.networkFees[element.coin as keyof cryptos] = element.recommended;
+        if (element.base) {
+          state.networkFees[element.coin as keyof cryptos].base = element.base;
+          state.networkFees[element.coin as keyof cryptos].priority = element.recommended;
+        } else {
+          state.networkFees[element.coin as keyof cryptos].base =
+            element.recommended;
+        }
       });
     },
   },

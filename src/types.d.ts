@@ -402,6 +402,7 @@ export interface currencySSPRelay {
 
 export interface networkFee {
   coin: string;
+  base: number;
   economy: number;
   normal: number;
   fast: number;
