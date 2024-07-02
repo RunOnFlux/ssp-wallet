@@ -513,6 +513,7 @@ function SendEVM() {
           publicNoncesSSP,
           baseGasPrice,
           priorityGasPrice,
+          totalGasLimit,
         )
           .then((signedTx) => {
             console.log(signedTx);
@@ -571,9 +572,9 @@ function SendEVM() {
             console.log(error);
           });
       })
-      .catch((error) => {
+      .catch((error: TypeError) => {
         console.log(error);
-        displayMessage('error', t('send:err_s1'));
+        displayMessage('error', error.message ?? t('send:err_s1'));
       });
 
     const fetchTransactions = () => {

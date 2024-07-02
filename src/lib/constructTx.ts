@@ -883,6 +883,7 @@ export async function constructAndSignEVMTransaction(
   publicNonces2: publicNonces, // ssp key public nonces
   baseGasPrice: string,
   priorityGasPrice: string,
+  maxTotalGas: string,
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
@@ -929,17 +930,28 @@ export async function constructAndSignEVMTransaction(
         entryPoint: getEntryPoint(CHAIN),
       });
 
+    const preVerificationGas = Math.ceil(7364 * 1.5);
+    const callGasLimit = Math.ceil(9384 * 1.5);
+    const verificationGasLimit = Math.ceil(
+      Number(maxTotalGas) - preVerificationGas - callGasLimit,
+    );
+
     const CLIENT_OPT = {
-      // @TODO make it configurable
       feeOptions: {
         maxPriorityFeePerGas: {
           max: BigInt(priorityGasPrice),
-          min: BigInt(priorityGasPrice),
+          multiplier: 1.25,
         },
-        maxFeePerGas: { max: BigInt(baseGasPrice), min: BigInt(baseGasPrice) },
-        preVerificationGas: { multiplier: 1.5 },
-        callGasLimit: { multiplier: 1.5 },
-        verificationGasLimit: { multiplier: 1.5 },
+        maxFeePerGas: { max: BigInt(baseGasPrice), multiplier: 1.25 },
+        preVerificationGas: {
+          multiplier: 1.25,
+          max: BigInt(preVerificationGas),
+        },
+        callGasLimit: { multiplier: 1.25, max: BigInt(callGasLimit) },
+        verificationGasLimit: {
+          multiplier: 1.25,
+          max: BigInt(verificationGasLimit),
+        },
       },
       txMaxRetries: 5,
       txRetryMultiplier: 3,
