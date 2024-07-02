@@ -932,8 +932,11 @@ export async function constructAndSignEVMTransaction(
     const CLIENT_OPT = {
       // @TODO make it configurable
       feeOptions: {
-        maxPriorityFeePerGas: { max: BigInt(priorityGasPrice) },
-        maxFeePerGas: { max: BigInt(baseGasPrice) },
+        maxPriorityFeePerGas: {
+          max: BigInt(priorityGasPrice),
+          min: BigInt(priorityGasPrice),
+        },
+        maxFeePerGas: { max: BigInt(baseGasPrice), min: BigInt(baseGasPrice) },
         preVerificationGas: { multiplier: 1.5 },
         callGasLimit: { multiplier: 1.5 },
         verificationGasLimit: { multiplier: 1.5 },
