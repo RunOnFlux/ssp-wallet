@@ -1,6 +1,8 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import utxolib from '@runonflux/utxo-lib';
+import { decodeFunctionData } from 'viem';
+import * as abi from '@runonflux/aa-schnorr-multisig-sdk/dist/abi';
 import { toCashAddress } from 'bchaddrjs';
 import {
   transacitonsInsight,
@@ -409,6 +411,9 @@ export function decodeTransactionForApproval(
   chain: keyof cryptos,
 ) {
   try {
+    if (blockchains[chain].chainType === 'evm') {
+      return decodeEVMTransactionForApproval(rawTx, chain);
+    }
     const libID = getLibId(chain);
     const decimals = blockchains[chain].decimals;
     const cashAddrPrefix = blockchains[chain].cashaddr;
@@ -483,6 +488,68 @@ export function decodeTransactionForApproval(
       sender: 'decodingError',
       receiver: 'decodingError',
       amount: 'decodingError',
+    };
+    return txInfo;
+  }
+}
+
+interface decodedAbiData {
+  functionName: string;
+  args: [string, bigint, string];
+}
+
+interface userOperation {
+  userOpRequest: {
+    sender: string;
+    callData: `0x${string}`;
+  };
+}
+
+export function decodeEVMTransactionForApproval(
+  rawTx: string,
+  chain: keyof cryptos,
+) {
+  try {
+    const decimals = blockchains[chain].decimals;
+    const multisigUserOpJSON = JSON.parse(rawTx) as userOperation;
+    const { callData, sender } = multisigUserOpJSON.userOpRequest;
+
+    const decodedData: decodedAbiData = decodeFunctionData({
+      abi: abi.MultiSigSmartAccount_abi,
+      data: callData,
+    }) as decodedAbiData; // Cast decodedData to decodedAbiData type.
+
+    let txReceiver = 'decodingError';
+    let amount = '0';
+
+    if (
+      decodedData &&
+      decodedData.functionName === 'execute' &&
+      decodedData.args &&
+      decodedData.args.length === 3
+    ) {
+      txReceiver = decodedData.args[0];
+      amount = new BigNumber(decodedData.args[1].toString())
+        .dividedBy(new BigNumber(10 ** decimals))
+        .toFixed();
+    } else {
+      throw new Error('Unexpected decoded data.');
+    }
+
+    const txInfo = {
+      sender,
+      receiver: txReceiver,
+      amount,
+      fee: '0', // @todo: calculate fee
+    };
+    return txInfo;
+  } catch (error) {
+    console.log(error);
+    const txInfo = {
+      sender: 'decodingError',
+      receiver: 'decodingError',
+      amount: 'decodingError',
+      fee: 'decodingError',
     };
     return txInfo;
   }
