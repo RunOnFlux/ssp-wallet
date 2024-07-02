@@ -930,8 +930,8 @@ export async function constructAndSignEVMTransaction(
         entryPoint: getEntryPoint(CHAIN),
       });
 
-    const preVerificationGas = Math.ceil(7364 * 1.5);
-    const callGasLimit = Math.ceil(9384 * 1.5);
+    const preVerificationGas = Math.ceil(47364 * 1.5);
+    const callGasLimit = Math.ceil(19384 * 1.5);
     const verificationGasLimit = Math.ceil(
       Number(maxTotalGas) - preVerificationGas - callGasLimit,
     );
@@ -940,9 +940,9 @@ export async function constructAndSignEVMTransaction(
       feeOptions: {
         maxPriorityFeePerGas: {
           max: BigInt(priorityGasPrice),
-          multiplier: 1.25,
+          min: BigInt(priorityGasPrice),
         },
-        maxFeePerGas: { max: BigInt(baseGasPrice), multiplier: 1.25 },
+        maxFeePerGas: { max: BigInt(baseGasPrice), min: BigInt(baseGasPrice) },
         preVerificationGas: {
           multiplier: 1.25,
           max: BigInt(preVerificationGas),
