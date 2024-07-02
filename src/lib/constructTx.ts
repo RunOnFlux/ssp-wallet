@@ -930,8 +930,19 @@ export async function constructAndSignEVMTransaction(
         entryPoint: getEntryPoint(CHAIN),
       });
 
-    const preVerificationGas = Math.ceil(47364 * 1.5);
-    const callGasLimit = Math.ceil(19384 * 1.5);
+    let preVerificationGas = Math.ceil(47364 * 1.5);
+    let callGasLimit = Math.ceil(19384 * 1.5);
+    const suggestedVerLimit = Math.ceil(347763 * 1.5);
+    // if we have more than suggestedVerLimit split it 1, 1, 2
+    const difference = Number(maxTotalGas) - (suggestedVerLimit + callGasLimit + preVerificationGas);
+    if (difference > 0) {
+      const differenceGroup = Math.ceil(difference / 4);
+      preVerificationGas += differenceGroup;
+      callGasLimit += differenceGroup;
+    }
+    preVerificationGas = Math.ceil(preVerificationGas);
+    callGasLimit = Math.ceil(callGasLimit);
+
     const verificationGasLimit = Math.ceil(
       Number(maxTotalGas) - preVerificationGas - callGasLimit,
     );
