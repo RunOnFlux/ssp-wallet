@@ -15,7 +15,10 @@ import {
 import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
-import { constructAndSignEVMTransaction, estimateGas } from '../../lib/constructTx';
+import {
+  constructAndSignEVMTransaction,
+  estimateGas,
+} from '../../lib/constructTx';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
@@ -30,6 +33,9 @@ import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
+import ConfirmPublicNoncesKey from '../../components/ConfirmPublicNoncesKey/ConfirmPublicNoncesKey.tsx';
+import PublicNoncesRejected from '../../components/PublicNoncesRejected/PublicNoncesRejected';
+import PublicNoncesReceived from '../../components/PublicNoncesReceived/PublicNoncesReceived';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { fetchAddressBalance } from '../../lib/balances.ts';
 import { QuestionCircleOutlined } from '@ant-design/icons';
@@ -86,6 +92,10 @@ function SendEVM() {
     txRejected,
     chain: txChain,
     clearTxRejected,
+    publicNonces,
+    publicNoncesRejected,
+    clearPublicNonces,
+    clearPublicNoncesRejected,
   } = useSocket();
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { t } = useTranslation(['send', 'common', 'home']);
@@ -104,6 +114,10 @@ function SendEVM() {
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
+  const [openConfirmPublicNonces, setOpenConfirmPublicNonces] = useState(false);
+  const [openPublicNoncesRejected, setOpenPublicNoncesRejected] =
+    useState(false);
+  const [openPublicNoncsReceived, setOpenPublicNoncesReceived] = useState(false);
   const [txHex, setTxHex] = useState('');
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
@@ -162,7 +176,9 @@ function SendEVM() {
     form.setFieldValue('total_gas_limit', blockchainConfig.gasLimit.toString());
     void getTotalGasLimit();
     const totalGas = new BigNumber(blockchainConfig.gasLimit.toString()); // get better estimation
-    const totalGasPrice = new BigNumber(networkFees[activeChain].base.toFixed()).plus(networkFees[activeChain].priority!.toFixed());
+    const totalGasPrice = new BigNumber(
+      networkFees[activeChain].base.toFixed(),
+    ).plus(networkFees[activeChain].priority!.toFixed());
     const totalFee = totalGas.multipliedBy(totalGasPrice);
     const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
     if (totalFeeETH === 'NaN') {
@@ -312,6 +328,24 @@ function SendEVM() {
   }, [socketTxid]);
 
   useEffect(() => {
+    if (publicNonces) {
+      setOpenConfirmPublicNonces(false);
+      // save to storage
+      const sspKeyPublicNonces = JSON.parse(publicNonces) as publicNonces[];
+      void (async function () {
+        try {
+          await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
+          setOpenPublicNoncesReceived(true);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+
+      clearPublicNonces?.();
+    }
+  }, [publicNonces]);
+
+  useEffect(() => {
     if (txRejected) {
       setOpenConfirmTx(false);
       setTimeout(() => {
@@ -326,6 +360,16 @@ function SendEVM() {
       clearTxRejected?.();
     }
   }, [txRejected]);
+
+  useEffect(() => {
+    if (publicNoncesRejected) {
+      setOpenConfirmPublicNonces(false);
+      setTimeout(() => {
+        setOpenPublicNoncesRejected(true);
+      });
+      clearPublicNoncesRejected?.();
+    }
+  }, [publicNoncesRejected]);
 
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -353,6 +397,18 @@ function SendEVM() {
 
   const txRejectedAction = (status: boolean) => {
     setOpenTxRejected(status);
+  };
+
+  const confirmPublicNoncesAction = (status: boolean) => {
+    setOpenConfirmPublicNonces(status);
+  };
+
+  const publicNoncesRejectedAction = (status: boolean) => {
+    setOpenPublicNoncesRejected(status);
+  };
+
+  const publicNoncesReceivedAction = (status: boolean) => {
+    setOpenPublicNoncesReceived(status);
   };
 
   const refreshAutomaticFee = () => {
@@ -399,7 +455,7 @@ function SendEVM() {
   const getTotalGasLimit = async () => {
     const gasLimit = await estimateGas(activeChain, sender);
     setTotalGasLimit(gasLimit);
-  }
+  };
 
   const calculateTxFee = () => {
     // here how much gas our transaction will use by maximum?
@@ -494,6 +550,15 @@ function SendEVM() {
         const sspKeyPublicNonces: publicNonces[] =
           (await localForage.getItem('sspKeyPublicNonces')) ?? []; // an array of [{kPublic, kTwoPublic}...]
         if (!sspKeyPublicNonces.length) {
+          setOpenConfirmPublicNonces(true);
+          // todo here ask for the nonces
+          postAction(
+            'publicnoncesrequest',
+            '[]',
+            activeChain,
+            '',
+            sspWalletKeyInternalIdentity,
+          );
           throw new Error(t('send:err_public_nonces'));
         }
         // choose random nonce
@@ -904,6 +969,15 @@ function SendEVM() {
         chain={txChain}
       />
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
+      <ConfirmPublicNoncesKey
+        open={openConfirmPublicNonces}
+        openAction={confirmPublicNoncesAction}
+      />
+      <PublicNoncesRejected
+        open={openPublicNoncesRejected}
+        openAction={publicNoncesRejectedAction}
+      />
+      <PublicNoncesReceived open={openPublicNoncsReceived} openAction={publicNoncesReceivedAction} />
       <SspConnect />
       <PoweredByFlux />
     </>
