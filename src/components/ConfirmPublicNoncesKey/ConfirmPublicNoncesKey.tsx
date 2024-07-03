@@ -29,20 +29,44 @@ function ConfirmPublicNoncesKey(props: {
 
   const handleOk = () => {
     if (keyInput.length > 0) {
+      if (!keyInput.startsWith('[') || !keyInput.endsWith(']')) {
+        displayMessage(
+          'error',
+          t('home:confirmPublicNoncesKey.invalid_public_nonces'),
+        );
+        return;
+      }
       // process keyInput
-      const sspKeyPublicNonces = JSON.parse(keyInput) as publicNonces[];
-      void (async function () {
-        try {
-          await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
-          // display message
-          displayMessage('success', t('home:confirmPublicNoncesKey.public_nonces_stored'));
-        } catch (error) {
-          console.log(error);
-        }
-      })();
+      try {
+        const sspKeyPublicNonces = JSON.parse(keyInput) as publicNonces[];
+        void (async function () {
+          try {
+            await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
+            // display message
+            displayMessage(
+              'success',
+              t('home:confirmPublicNoncesKey.public_nonces_stored'),
+            );
+            setKeyInput('');
+            openAction(false);
+          } catch (error) {
+            displayMessage(
+              'error',
+              t('home:confirmPublicNoncesKey.invalid_public_nonces'),
+            );
+            console.log(error);
+          }
+        })();
+      } catch (error) {
+        displayMessage(
+          'error',
+          t('home:confirmPublicNoncesKey.invalid_public_nonces'),
+        );
+      }
+    } else {
+      setKeyInput('');
+      openAction(false);
     }
-    setKeyInput('');
-    openAction(false);
   };
 
   return (

@@ -139,7 +139,8 @@
     "confirm_public_nonces_key_info": "In order to send EVM transaction, we first need to obtain public nonces from SSP Key which are used for transaction construction.",
     "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open your SSP Key on our mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "manual_input": "Input Public Nonces manually instead",
-    "public_nonces_stored": "Public Nonces Stored!"
+    "public_nonces_stored": "Public Nonces Stored!",
+    "invalid_public_nonces": "Invalid Public Nonces."
   },
   "navbar": {
     "refresh": "Refresh",
