@@ -12,7 +12,6 @@ import { actionSSPRelay } from '../../types';
 import { pendingTransaction } from '../../types';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector } from '../../hooks';
-import { sspConfig } from '@storage/ssp';
 import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency';
 
 function PendingTransactionsTable(props: {
@@ -96,12 +95,12 @@ function PendingTransactionsTable(props: {
                 -{formatCrypto(new BigNumber(amnt))} {blockchainConfig.symbol}
                 <br />
                 <div style={{ color: 'grey', fontSize: 12 }}>
-                  -{formatFiatWithSymbol(
+                  -
+                  {formatFiatWithSymbol(
                     new BigNumber(Math.abs(+amnt)).multipliedBy(
                       new BigNumber(fiatRate),
                     ),
                   )}
-                  {sspConfig().fiatSymbol}
                 </div>
               </>
             )}
