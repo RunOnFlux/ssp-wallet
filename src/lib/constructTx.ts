@@ -884,6 +884,7 @@ export async function constructAndSignEVMTransaction(
   baseGasPrice: string,
   priorityGasPrice: string,
   maxTotalGas: string,
+  token?: string,
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
@@ -919,9 +920,7 @@ export async function constructAndSignEVMTransaction(
     const CHAIN = viemChains[blockchainConfig.libid as keyof typeof viemChains];
     const multiSigSmartAccount =
       await accountAbstraction.accountAbstraction.createMultiSigSmartAccount({
-        // @ts-expect-error library issue
         transport,
-        // @ts-expect-error library issue
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         chain: CHAIN,
         combinedAddress: combinedAddresses,
@@ -934,7 +933,9 @@ export async function constructAndSignEVMTransaction(
     let callGasLimit = Math.ceil(19384 * 1.5);
     const suggestedVerLimit = Math.ceil(347763 * 1.5);
     // if we have more than suggestedVerLimit split it 1, 1, 2
-    const difference = Number(maxTotalGas) - (suggestedVerLimit + callGasLimit + preVerificationGas);
+    const difference =
+      Number(maxTotalGas) -
+      (suggestedVerLimit + callGasLimit + preVerificationGas);
     if (difference > 0) {
       const differenceGroup = Math.ceil(difference / 4);
       preVerificationGas += differenceGroup;
@@ -974,21 +975,44 @@ export async function constructAndSignEVMTransaction(
       // @ts-expect-error library issue
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       chain: CHAIN,
-      // @ts-expect-error library issue
       account: multiSigSmartAccount,
       opts: CLIENT_OPT,
     });
 
-    const uoStruct = await smartAccountClient.buildUserOperation({
-      // @ts-expect-error library issue
-      account: multiSigSmartAccount,
-      // @ts-expect-error library issue
-      uo: {
-        data: '0x',
-        target: receiver,
-        value: parseUnits(amount, blockchainConfig.decimals),
-      },
-    });
+    let uoStruct;
+
+    if (token) {
+      const erc20Factory =
+        accountAbstraction.generated.typechain.ERC20__factory;
+      console.log(erc20Factory);
+      const ercInterface = erc20Factory.createInterface();
+      const erc20Decimals = 2; // TODO hardcoded. search for it in our tokens or fetch the contract information??
+      const erc20Amount = parseUnits(amount, erc20Decimals)
+      const uoCallData = ercInterface.encodeFunctionData('transfer', [
+        receiver,
+        erc20Amount, // this needs to be in wei ?
+      ]);
+
+      uoStruct = await smartAccountClient.buildUserOperation({
+        account: multiSigSmartAccount,
+        // @ts-expect-error library
+        uo: {
+          data: uoCallData,
+          target: token, // token contract address
+        },
+      });
+      console.log(uoStruct);
+    } else {
+      uoStruct = await smartAccountClient.buildUserOperation({
+        account: multiSigSmartAccount,
+        // @ts-expect-error library
+        uo: {
+          data: '0x',
+          target: receiver,
+          value: parseUnits(amount, blockchainConfig.decimals),
+        },
+      });
+    }
     console.log(uoStruct);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const uoStructHexlified = deepHexlify(uoStruct);
