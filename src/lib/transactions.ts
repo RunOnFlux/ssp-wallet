@@ -1,7 +1,7 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import utxolib from '@runonflux/utxo-lib';
-import { decodeFunctionData } from 'viem';
+import { decodeFunctionData, erc20Abi } from 'viem';
 import * as abi from '@runonflux/aa-schnorr-multisig-sdk/dist/abi';
 import { toCashAddress } from 'bchaddrjs';
 import {
@@ -526,7 +526,7 @@ export function decodeEVMTransactionForApproval(
       decodedData &&
       decodedData.functionName === 'execute' &&
       decodedData.args &&
-      decodedData.args.length === 3
+      decodedData.args.length >= 3
     ) {
       txReceiver = decodedData.args[0];
       amount = new BigNumber(decodedData.args[1].toString())
@@ -536,12 +536,40 @@ export function decodeEVMTransactionForApproval(
       throw new Error('Unexpected decoded data.');
     }
 
+    if (amount === '0') {
+      const contractData: `0x${string}` = decodedData.args[2] as `0x${string}`;
+      // most likely we are dealing with a contract call, sending some erc20 token
+      // docode args[2] which is operation
+      const decodedDataContract: decodedAbiData = decodeFunctionData({
+        abi: erc20Abi,
+        data: contractData,
+      }) as unknown as decodedAbiData; // Cast decodedDataContract to decodedAbiData type.
+      console.log(decodedDataContract);
+      if (
+        decodedDataContract &&
+        decodedDataContract.functionName === 'transfer' &&
+        decodedDataContract.args &&
+        decodedDataContract.args.length >= 2
+      ) {
+        txReceiver = decodedDataContract.args[0];
+        amount = new BigNumber(decodedDataContract.args[1].toString())
+          .dividedBy(new BigNumber(10 ** decimals)) // todo decimals
+          .toFixed();
+      }
+    }
+
     const txInfo = {
       sender,
       receiver: txReceiver,
       amount,
       fee: '0', // @todo: calculate fee
+      token: '',
     };
+
+    if (amount === '0') {
+      txInfo.token = decodedData.args[0];
+    }
+
     return txInfo;
   } catch (error) {
     console.log(error);
@@ -550,6 +578,7 @@ export function decodeEVMTransactionForApproval(
       receiver: 'decodingError',
       amount: 'decodingError',
       fee: 'decodingError',
+      token: 'decodingError',
     };
     return txInfo;
   }
