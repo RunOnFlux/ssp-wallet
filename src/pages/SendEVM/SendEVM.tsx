@@ -268,7 +268,7 @@ function SendEVM() {
   }, [baseGasPrice, priorityGasPrice, totalGasLimit, manualFee]);
 
   useEffect(() => {
-    const totalAmount = new BigNumber(sendingAmount).plus(baseGasPrice || '0');
+    const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
     const maxSpendable = new BigNumber(spendableBalance).dividedBy(
       10 ** blockchainConfig.decimals,
     );
@@ -278,7 +278,7 @@ function SendEVM() {
     } else {
       setValidateStatusAmount('success');
     }
-  }, [walletInUse, activeChain, sendingAmount, baseGasPrice]);
+  }, [walletInUse, activeChain, sendingAmount, txFee]);
 
   useEffect(() => {
     if (useMaximum) {
