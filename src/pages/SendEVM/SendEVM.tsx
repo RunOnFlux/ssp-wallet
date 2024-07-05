@@ -453,7 +453,8 @@ function SendEVM() {
   };
 
   const getTotalGasLimit = async () => {
-    const gasLimit = await estimateGas(activeChain, sender);
+    const token = 'kappa'; // get from above for erc20 sending
+    const gasLimit = await estimateGas(activeChain, sender, token);
     setTotalGasLimit(gasLimit);
   };
 
@@ -571,7 +572,7 @@ function SendEVM() {
         const amount = new BigNumber(values.amount).toFixed();
         constructAndSignEVMTransaction(
           activeChain,
-          values.receiver,
+          values.receiver as `0x${string}`,
           amount,
           keyPair.privKey as `0x${string}`,
           publicKey2HEX,

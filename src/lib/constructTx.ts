@@ -3,7 +3,12 @@ import { Buffer } from 'buffer';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { toLegacyAddress } from 'bchaddrjs';
-import { http as viemHttp, parseUnits } from 'viem';
+import {
+  http as viemHttp,
+  parseUnits,
+  encodeFunctionData,
+  erc20Abi,
+} from 'viem';
 import * as viemChains from 'viem/chains';
 import * as accountAbstraction from '@runonflux/aa-schnorr-multisig-sdk';
 import {
@@ -810,6 +815,7 @@ const nonceCache = {} as Record<string, string>;
 export async function estimateGas(
   chain: keyof cryptos,
   sender: string,
+  token: string,
 ): Promise<string> {
   const backendConfig = backends()[chain];
   const url = `https://${backendConfig.node}`;
@@ -829,25 +835,51 @@ export async function estimateGas(
   // result: {
   //   preVerificationGas: '0xb904',
   //   callGasLimit: '0x4bb8',
-  //   verificationGasLimit: '0x449b7'
+  //   verificationGasLimit: '0x449b7' 281015
   // }
   // = 347763 gas
 
   // account exists:
 
   // result: {
-  //   preVerificationGas: '0xb2d4',
-  //   callGasLimit: '0x3bb8',
-  //   verificationGasLimit: '0xe2ae'
+  //   preVerificationGas: '0xb2d4', 45780
+  //   callGasLimit: '0x3bb8', 15288
+  //   verificationGasLimit: '0xe2ae' 58030
   // }
   // = 119098 gas
   // // 2 scenarios coded
   // 1st transfer with account creation if nonce is 0
   // 2nd transfer if nonce is present, account present
 
+  //   erc20 account exists {
+  //   jsonrpc: '2.0',
+  //   id: 1720186600388,
+  //   result: {
+  //     preVerificationGas: '0xe2d1', 58065
+  //     callGasLimit: '0x7194', 29076
+  //     verificationGasLimit: '0x11c38' 72760
+  //   }
+  // }
+
+  // with init erc20 does not exists{
+  //   jsonrpc: '2.0',
+  //   id: 1720186774250,
+  //   result: {
+  //     preVerificationGas: '0xea8d', 60045
+  //     callGasLimit: '0x7194', 29076
+  //     verificationGasLimit: '0x55dae' 351662
+  //   }
+  // }
+
   if (nonceCache[sender]) {
     if (nonceCache[sender] === '0x0') {
+      if (token) {
+        return (440783 * 1.5).toFixed();
+      }
       return (347763 * 1.5).toFixed();
+    }
+    if (token) {
+      return (159901 * 1.5).toFixed();
     }
     return (119098 * 1.5).toFixed();
   }
@@ -861,7 +893,13 @@ export async function estimateGas(
   console.log(response.data);
   nonceCache[sender] = response.data.result;
   if (response.data.result === '0x0') {
+    if (token) {
+      return (440783 * 1.5).toFixed();
+    }
     return (347763 * 1.5).toFixed();
+  }
+  if (token) {
+    return (159901 * 1.5).toFixed();
   }
   return (119098 * 1.5).toFixed();
 }
@@ -874,7 +912,7 @@ interface publicNonces {
 // return stringified multisig user operation
 export async function constructAndSignEVMTransaction(
   chain: keyof cryptos,
-  receiver: string,
+  receiver: `0x${string}`,
   amount: string,
   privateKey: `0x${string}`, // ssp
   // publicKey1 is generated here. ssp wallet
@@ -884,7 +922,7 @@ export async function constructAndSignEVMTransaction(
   baseGasPrice: string,
   priorityGasPrice: string,
   maxTotalGas: string,
-  token?: string,
+  token?: `0x${string}`,
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
@@ -929,9 +967,9 @@ export async function constructAndSignEVMTransaction(
         entryPoint: getEntryPoint(CHAIN),
       });
 
-    let preVerificationGas = Math.ceil(47364 * 1.5);
-    let callGasLimit = Math.ceil(19384 * 1.5);
-    const suggestedVerLimit = Math.ceil(347763 * 1.5);
+    let preVerificationGas = Math.ceil((token ? 60045 : 47364) * 1.5);
+    let callGasLimit = Math.ceil((token ? 29076 : 19384) * 1.5);
+    const suggestedVerLimit = Math.ceil((token ? 440783 : 347763) * 1.5);
     // if we have more than suggestedVerLimit split it 1, 1, 2
     const difference =
       Number(maxTotalGas) -
@@ -981,21 +1019,21 @@ export async function constructAndSignEVMTransaction(
 
     let uoStruct;
 
-    if (token) {
-      const erc20Factory =
-        accountAbstraction.generated.typechain.ERC20__factory;
-      console.log(erc20Factory);
-      const ercInterface = erc20Factory.createInterface();
-      const erc20Decimals = 2; // TODO hardcoded. search for it in our tokens or fetch the contract information??
-      const erc20Amount = parseUnits(amount, erc20Decimals)
-      const uoCallData = ercInterface.encodeFunctionData('transfer', [
-        receiver,
-        erc20Amount, // this needs to be in wei ?
-      ]);
+    token = '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B909'; // TODO hardcoded for testing
 
+    if (token) {
+      const erc20Decimals = 8; // TODO hardcoded. search for it in our tokens or fetch the contract information??
+      const erc20Amount = parseUnits(amount, erc20Decimals);
+      console.log(erc20Amount);
+      const uoCallData = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: 'transfer',
+        args: [receiver, erc20Amount],
+      });
+
+      console.log(uoCallData);
       uoStruct = await smartAccountClient.buildUserOperation({
         account: multiSigSmartAccount,
-        // @ts-expect-error library
         uo: {
           data: uoCallData,
           target: token, // token contract address
@@ -1005,7 +1043,6 @@ export async function constructAndSignEVMTransaction(
     } else {
       uoStruct = await smartAccountClient.buildUserOperation({
         account: multiSigSmartAccount,
-        // @ts-expect-error library
         uo: {
           data: '0x',
           target: receiver,
