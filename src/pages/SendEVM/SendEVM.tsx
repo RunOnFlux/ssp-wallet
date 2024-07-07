@@ -61,6 +61,13 @@ interface contactsInterface {
   options: contactOption[];
 }
 
+interface tokenOption {
+  label: string;
+  index?: string;
+  value: string;
+  logo: string;
+}
+
 interface publicNonces {
   kPublic: string;
   kTwoPublic: string;
@@ -117,11 +124,13 @@ function SendEVM() {
   const [openConfirmPublicNonces, setOpenConfirmPublicNonces] = useState(false);
   const [openPublicNoncesRejected, setOpenPublicNoncesRejected] =
     useState(false);
-  const [openPublicNoncsReceived, setOpenPublicNoncesReceived] = useState(false);
+  const [openPublicNoncsReceived, setOpenPublicNoncesReceived] =
+    useState(false);
   const [txHex, setTxHex] = useState('');
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txReceiver, setTxReceiver] = useState('');
+  const [txToken, setTxToken] = useState('');
   const blockchainConfig = blockchains[activeChain];
   const [txFee, setTxFee] = useState('0');
   const [baseGasPrice, setBaseGasPrice] = useState(
@@ -139,6 +148,7 @@ function SendEVM() {
   const [useMaximum, setUseMaximum] = useState(false);
   const [manualFee, setManualFee] = useState(false);
   const [contactsItems, setContactsItems] = useState<contactsInterface[]>([]);
+  const [tokenItems, setTokenItems] = useState<tokenOption[]>([]);
   const { networkFees } = useAppSelector((state) => state.networkFees);
   const { contacts } = useAppSelector((state) => state.contacts);
 
@@ -194,6 +204,10 @@ function SendEVM() {
       console.log(error);
     }
   });
+
+  useEffect(() => {
+    console.log('token change');
+  }, [txToken]);
 
   useEffect(() => {
     const wItems: contactOption[] = [];
@@ -252,6 +266,21 @@ function SendEVM() {
     setContactsItems(sendContacts);
   }, [wallets, activeChain]);
 
+  useEffect(() => {
+    const { tokens } = blockchainConfig;
+    console.log('construct tokens for sending');
+    const tokenItems: tokenOption[] = [];
+    tokens.forEach((token) => {
+      const option = {
+        label: token.name + ' (' + token.symbol + ')',
+        value: token.contract,
+        logo: token.logo,
+      };
+      tokenItems.push(option);
+    });
+    setTokenItems(tokenItems);
+  }, [activeChain]);
+
   // on every chain, address adjustment, fetch utxos
   // used to get a precise estimate of the tx size
   useEffect(() => {
@@ -268,6 +297,7 @@ function SendEVM() {
   }, [baseGasPrice, priorityGasPrice, totalGasLimit, manualFee]);
 
   useEffect(() => {
+    // TODO maximum if token
     const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
     const maxSpendable = new BigNumber(spendableBalance).dividedBy(
       10 ** blockchainConfig.decimals,
@@ -282,6 +312,7 @@ function SendEVM() {
 
   useEffect(() => {
     if (useMaximum) {
+      // TODO if token
       const maxSpendable = new BigNumber(spendableBalance).dividedBy(
         10 ** blockchainConfig.decimals,
       );
@@ -421,6 +452,7 @@ function SendEVM() {
   };
 
   const getSpendableBalance = () => {
+    // todo for token
     void (async function () {
       try {
         const balancesWallet: balancesObj | null = await localForage.getItem(
@@ -580,6 +612,7 @@ function SendEVM() {
           baseGasPrice,
           priorityGasPrice,
           totalGasLimit,
+          txToken as `0x${string}` | '',
         )
           .then((signedTx) => {
             console.log(signedTx);
@@ -740,6 +773,22 @@ function SendEVM() {
         itemRef="txFeeRef"
         style={{ paddingBottom: '43px' }}
       >
+        <Form.Item name="asset" label={t('send:asset')}>
+          <Select
+            size="large"
+            style={{ textAlign: 'left' }}
+            defaultValue={
+              blockchainConfig.name + ' (' + blockchainConfig.symbol + ')'
+            }
+            popupMatchSelectWidth={false}
+            onChange={(value) => {
+              setTxToken(value);
+            }}
+            options={tokenItems}
+            dropdownRender={(menu) => <>{menu}</>}
+          />
+        </Form.Item>
+
         <Form.Item label={t('send:receiver_address')}>
           <Space.Compact style={{ width: '100%' }}>
             <Form.Item
@@ -792,7 +841,10 @@ function SendEVM() {
               setUseMaximum(false);
             }}
             placeholder={t('send:input_amount')}
-            suffix={blockchainConfig.symbol}
+            suffix={
+              blockchainConfig.tokens.find((t) => t.contract === txToken)
+                ?.symbol ?? blockchainConfig.symbol
+            }
           />
         </Form.Item>
         <Button
@@ -811,7 +863,11 @@ function SendEVM() {
         >
           {t('send:max')}:{' '}
           {new BigNumber(spendableBalance)
-            .dividedBy(10 ** blockchainConfig.decimals)
+            .dividedBy(
+              10 **
+                (blockchainConfig.tokens.find((t) => t.contract === txToken)
+                  ?.decimals ?? blockchainConfig.decimals),
+            )
             .toFixed()}
         </Button>
         <Form.Item
@@ -978,7 +1034,10 @@ function SendEVM() {
         open={openPublicNoncesRejected}
         openAction={publicNoncesRejectedAction}
       />
-      <PublicNoncesReceived open={openPublicNoncsReceived} openAction={publicNoncesReceivedAction} />
+      <PublicNoncesReceived
+        open={openPublicNoncsReceived}
+        openAction={publicNoncesReceivedAction}
+      />
       <SspConnect />
       <PoweredByFlux />
     </>

@@ -321,7 +321,23 @@ const sepolia = {
   entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
   baseFee: 120000000000, // 120 gwei
   priorityFee: 5000000000, // 5 gwei
-  gasLimit: 400000, // 400k gas
+  gasLimit: 500000, // 500k gas
+  tokens: [
+    {
+      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
+      name: 'Sepolia',
+      symbol: 'ETH',
+      decimals: 18,
+      logo: ethLogo,
+    },
+    {
+      contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B909',
+      name: 'Fake Flux',
+      symbol: 'FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    }
+  ]
 };
 
 export const blockchains = {

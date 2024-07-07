@@ -922,7 +922,7 @@ export async function constructAndSignEVMTransaction(
   baseGasPrice: string,
   priorityGasPrice: string,
   maxTotalGas: string,
-  token?: `0x${string}`,
+  token?: `0x${string}` | '',
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
@@ -1019,10 +1019,13 @@ export async function constructAndSignEVMTransaction(
 
     let uoStruct;
 
-    token = '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B909'; // TODO hardcoded for testing
-
     if (token) {
-      const erc20Decimals = 8; // TODO hardcoded. search for it in our tokens or fetch the contract information??
+      const tokenInfo = blockchainConfig.tokens.find((x) => x.contract === token);
+      if (!tokenInfo) {
+        throw new Error('Token specifications not found');
+      }
+      const tokenDecimals = tokenInfo.decimals;
+      const erc20Decimals = tokenDecimals;
       const erc20Amount = parseUnits(amount, erc20Decimals);
       console.log(erc20Amount);
       const uoCallData = encodeFunctionData({

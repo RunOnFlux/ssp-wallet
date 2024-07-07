@@ -1,4 +1,12 @@
 declare module '@storage/blockchains' {
+
+  interface Token {
+    contract: string;
+    name: string;
+    symbol: string;
+    decimals: number;
+    logo: string;
+  }
   interface Blockchain {
     id: string;
     libid: string;
@@ -40,6 +48,7 @@ declare module '@storage/blockchains' {
     baseFee: number;
     priorityFee: number;
     gasLimit: number;
+    tokens: Token[];
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;
