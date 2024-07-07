@@ -127,8 +127,13 @@ function Balances() {
       // create contracts array from tokens contracts in specs
       const tokens = blockchains[chainFetched].tokens.map((token) => token.contract);
       fetchAddressTokenBalances(wallets[walletFetched].address, chainFetched, tokens)
-        .then((tokens) => {
-          console.log(tokens)
+        .then(async (balancesTokens) => {
+          console.log(balancesTokens)
+          await localForage.setItem(
+            `token-balances-${chainFetched}-${walletFetched}`,
+            balancesTokens,
+          );
+          // do not se balance, that is set in tokens overview only
         })
         .catch((error) => {
           console.log(error);

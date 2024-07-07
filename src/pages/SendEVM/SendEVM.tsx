@@ -48,7 +48,7 @@ import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
 import { setContacts } from '../../store';
 
-import { transaction, utxo } from '../../types';
+import { transaction, utxo, tokenBalanceEVM } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './SendEVM.css';
@@ -210,6 +210,7 @@ function SendEVM() {
 
   useEffect(() => {
     console.log('token change');
+    getSpendableBalance();
   }, [txToken]);
 
   useEffect(() => {
@@ -300,22 +301,59 @@ function SendEVM() {
   }, [baseGasPrice, priorityGasPrice, totalGasLimit, manualFee]);
 
   useEffect(() => {
-    // TODO maximum if token
-    const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
-    const maxSpendable = new BigNumber(spendableBalance).dividedBy(
-      10 ** blockchainConfig.decimals,
-    );
-    if (totalAmount.isGreaterThan(maxSpendable)) {
-      // mark amount in red box as bad inpout
-      setValidateStatusAmount('error');
+    if (txToken) {
+      const tokenInformation = blockchains[activeChain].tokens.find((token) => {
+        return token.contract === txToken;
+      });
+      if (!tokenInformation) {
+        setValidateStatusAmount('error');
+        return;
+      }
+      const totalAmount = new BigNumber(sendingAmount);
+      const maxSpendable = new BigNumber(spendableBalance).dividedBy(
+        10 ** tokenInformation.decimals,
+      );
+      if (totalAmount.isGreaterThan(maxSpendable)) {
+        // mark amount in red box as bad inpout
+        setValidateStatusAmount('error');
+      } else {
+        setValidateStatusAmount('success');
+      }
     } else {
-      setValidateStatusAmount('success');
+      const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
+      const maxSpendable = new BigNumber(spendableBalance).dividedBy(
+        10 ** blockchainConfig.decimals,
+      );
+      console.log(maxSpendable);
+      if (totalAmount.isGreaterThan(maxSpendable)) {
+        // mark amount in red box as bad inpout
+        setValidateStatusAmount('error');
+      } else {
+        setValidateStatusAmount('success');
+      }
     }
-  }, [walletInUse, activeChain, sendingAmount, txFee]);
+  }, [walletInUse, activeChain, sendingAmount, txFee, spendableBalance]);
 
   useEffect(() => {
     if (useMaximum) {
-      // TODO if token
+      if (txToken) {
+        const tokenInformation = blockchains[activeChain].tokens.find(
+          (token) => {
+            return token.contract === txToken;
+          },
+        );
+        if (!tokenInformation) {
+          setSendingAmount('0');
+          form.setFieldValue('amount', '0');
+        } else {
+          const spendableDecimals = new BigNumber(spendableBalance).dividedBy(
+            10 ** tokenInformation.decimals,
+          );
+          setSendingAmount(spendableDecimals.toFixed());
+          form.setFieldValue('amount', spendableDecimals.toFixed());
+        }
+        return;
+      }
       const maxSpendable = new BigNumber(spendableBalance).dividedBy(
         10 ** blockchainConfig.decimals,
       );
@@ -455,13 +493,29 @@ function SendEVM() {
   };
 
   const getSpendableBalance = () => {
-    // todo for token
     void (async function () {
       try {
         const balancesWallet: balancesObj | null = await localForage.getItem(
           `balances-${activeChain}-${walletInUse}`,
         );
-        if (balancesWallet) {
+        const balancesTokens: tokenBalanceEVM[] | null =
+          await localForage.getItem(
+            `token-balances-${activeChain}-${walletInUse}`,
+          );
+        if (txToken) {
+          if (balancesTokens?.length) {
+            const tokenBalExists = balancesTokens.find(
+              (token) => token.contract === txToken,
+            );
+            if (tokenBalExists) {
+              setSpendableBalance(tokenBalExists.balance);
+            } else {
+              setSpendableBalance('0');
+            }
+          } else {
+            fetchBalance();
+          }
+        } else if (balancesWallet) {
           setSpendableBalance(balancesWallet.confirmed);
         } else {
           fetchBalance();
@@ -477,6 +531,9 @@ function SendEVM() {
     const walletFetched = walletInUse;
     fetchAddressBalance(wallets[walletFetched].address, chainFetched)
       .then(async (balance) => {
+        if (!txToken) {
+          setSpendableBalance(balance.confirmed);
+        }
         await localForage.setItem(
           `balances-${chainFetched}-${walletFetched}`,
           balance,
@@ -497,8 +554,24 @@ function SendEVM() {
         chainFetched,
         tokens,
       )
-        .then((tokens) => {
-          console.log(tokens);
+        .then(async (balancesTokens) => {
+          console.log(balancesTokens);
+          await localForage.setItem(
+            `token-balances-${chainFetched}-${walletFetched}`,
+            balancesTokens,
+          );
+          if (txToken) {
+            if (balancesTokens?.length) {
+              const tokenBalExists = balancesTokens.find(
+                (token) => token.contract === txToken,
+              );
+              if (tokenBalExists) {
+                setSpendableBalance(tokenBalExists.balance);
+              } else {
+                setSpendableBalance('0');
+              }
+            }
+          }
         })
         .catch((error) => {
           console.log(error);
@@ -606,7 +679,7 @@ function SendEVM() {
           (await localForage.getItem('sspKeyPublicNonces')) ?? []; // an array of [{kPublic, kTwoPublic}...]
         if (!sspKeyPublicNonces.length) {
           setOpenConfirmPublicNonces(true);
-          // todo here ask for the nonces
+          // ask for the nonces
           postAction(
             'publicnoncesrequest',
             '[]',

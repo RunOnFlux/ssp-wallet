@@ -244,9 +244,14 @@ export interface evm_call {
   result: string;
 }
 
+export interface tokenBalanceEVM {
+  contract: string;
+  balance: string;
+}
+
 export interface tokenBalance {
-    contractAddress: string;
-    tokenBalance: string;
+  contractAddress: string;
+  tokenBalance: string;
 }
 
 export interface alchemyCallTokenBalances {
@@ -254,7 +259,7 @@ export interface alchemyCallTokenBalances {
   id: number;
   result: {
     address: string;
-    tokenBalances: tokenBalance[]
+    tokenBalances: tokenBalance[];
   };
 }
 

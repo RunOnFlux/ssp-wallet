@@ -7,6 +7,7 @@ import {
   evm_call,
   alchemyCallTokenBalances,
   tokenBalance,
+  tokenBalanceEVM,
 } from '../types';
 
 import { backends } from '@storage/backends';
@@ -86,7 +87,7 @@ export async function fetchAddressTokenBalances(
   address: string,
   chain: string,
   tokens: string[],
-): Promise<tokenBalance[]> {
+): Promise<tokenBalanceEVM[]> {
   try {
     if (blockchains[chain].chainType !== 'evm') {
       throw new Error('Only EVM chains support token balances');
@@ -111,7 +112,15 @@ export async function fetchAddressTokenBalances(
       allBalances.push(...bal);
     });
 
-    return allBalances;
+    const balancesEVM: tokenBalanceEVM[] = [];
+    allBalances.forEach((bal) => {
+      balancesEVM.push({
+        contract: bal.contractAddress,
+        balance: new BigNumber(bal.tokenBalance).toFixed(),
+      });
+    });
+
+    return balancesEVM;
   } catch (error) {
     console.log(error);
     throw error;
