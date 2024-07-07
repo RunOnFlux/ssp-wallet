@@ -176,6 +176,7 @@ export interface wallet {
   unconfirmedBalance: string;
   transactions: transaction[];
   nodes?: node[];
+  tokenBalances?: Record<string, string>;
 }
 
 export interface node {
@@ -241,6 +242,20 @@ export interface evm_call {
   jsonrpc: string;
   id: number;
   result: string;
+}
+
+export interface tokenBalance {
+    contractAddress: string;
+    tokenBalance: string;
+}
+
+export interface alchemyCallTokenBalances {
+  jsonrpc: string;
+  id: number;
+  result: {
+    address: string;
+    tokenBalances: tokenBalance[]
+  };
 }
 
 export interface etherscan_external_tx {

@@ -37,7 +37,10 @@ import ConfirmPublicNoncesKey from '../../components/ConfirmPublicNoncesKey/Conf
 import PublicNoncesRejected from '../../components/PublicNoncesRejected/PublicNoncesRejected';
 import PublicNoncesReceived from '../../components/PublicNoncesReceived/PublicNoncesReceived';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
-import { fetchAddressBalance } from '../../lib/balances.ts';
+import {
+  fetchAddressBalance,
+  fetchAddressTokenBalances,
+} from '../../lib/balances.ts';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
@@ -482,6 +485,25 @@ function SendEVM() {
       .catch((error) => {
         console.log(error);
       });
+
+    // only fetch for evm chainType
+    if (blockchains[chainFetched].chainType === 'evm') {
+      // create contracts array from tokens contracts in specs
+      const tokens = blockchains[chainFetched].tokens.map(
+        (token) => token.contract,
+      );
+      fetchAddressTokenBalances(
+        wallets[walletFetched].address,
+        chainFetched,
+        tokens,
+      )
+        .then((tokens) => {
+          console.log(tokens);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   };
 
   const getTotalGasLimit = async () => {

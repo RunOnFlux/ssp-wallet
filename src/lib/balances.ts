@@ -1,6 +1,13 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
-import { balanceInsight, balanceBlockbook, balance, evm_call } from '../types';
+import {
+  balanceInsight,
+  balanceBlockbook,
+  balance,
+  evm_call,
+  alchemyCallTokenBalances,
+  tokenBalance,
+} from '../types';
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
@@ -49,6 +56,62 @@ export async function fetchAddressBalance(
       };
       return bal;
     }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+async function fetchBalanceChunk(
+  address: string,
+  chain: string,
+  tokens: string[],
+): Promise<tokenBalance[]> {
+  const backendConfig = backends()[chain];
+  const url = `https://${backendConfig.node}`;
+
+  // remove any token in tokens if token does not start with 0x prefix (only fetch proper contracts)
+  const filteredTokens = tokens.filter((token) => token.startsWith('0x'));
+  // get activated tokens
+  const data = {
+    id: Date.now(),
+    jsonrpc: '2.0',
+    method: 'alchemy_getTokenBalances',
+    params: [address, filteredTokens],
+  };
+  const response = await axios.post<alchemyCallTokenBalances>(url, data);
+  return response.data.result.tokenBalances;
+}
+export async function fetchAddressTokenBalances(
+  address: string,
+  chain: string,
+  tokens: string[],
+): Promise<tokenBalance[]> {
+  try {
+    if (blockchains[chain].chainType !== 'evm') {
+      throw new Error('Only EVM chains support token balances');
+    }
+    const tokenChunks = [];
+    // split tokens into chunks of 100
+    for (let i = 0; i < tokens.length; i += 100) {
+      tokenChunks.push(tokens.slice(i, i + 100));
+    }
+
+    const promises: unknown[] = [];
+    tokenChunks.forEach((chunk) => {
+      promises.push(fetchBalanceChunk(address, chain, chunk));
+    });
+    // for each token chunk fetch the token balance, use promise all to fetch all chunks, then put the balances response together
+    const balances: tokenBalance[][] = (await Promise.all(
+      promises,
+    )) as tokenBalance[][];
+    // put the balances array together to one array
+    const allBalances: tokenBalance[] = [];
+    balances.forEach((bal) => {
+      allBalances.push(...bal);
+    });
+
+    return allBalances;
   } catch (error) {
     console.log(error);
     throw error;

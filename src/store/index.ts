@@ -11,6 +11,7 @@ import { blockchains } from '@storage/blockchains';
 // ********** Import chains **********
 import chainSliceBase from './chainSliceBase';
 import chainSliceBaseNodes from './chainSliceBaseNodes';
+import chainSliceBaseTokens from './chainSliceBaseTokens';
 
 const chains = {
   flux: chainSliceBaseNodes('flux'),
@@ -23,7 +24,7 @@ const chains = {
   bch: chainSliceBase('bch'),
   btcTestnet: chainSliceBase('btcTestnet'),
   btcSignet: chainSliceBase('btcSignet'),
-  sepolia: chainSliceBase('sepolia'),
+  sepolia: chainSliceBaseTokens('sepolia'),
 };
 // ********** Import chains **********
 
@@ -228,7 +229,8 @@ const networkFeesSlice = createSlice({
         if (element.base) {
           console.log(state.networkFees[element.coin as keyof cryptos]);
           state.networkFees[element.coin as keyof cryptos].base = element.base;
-          state.networkFees[element.coin as keyof cryptos].priority = element.recommended;
+          state.networkFees[element.coin as keyof cryptos].priority =
+            element.recommended;
         } else {
           state.networkFees[element.coin as keyof cryptos].base =
             element.recommended;
@@ -348,6 +350,15 @@ export function setXpubKeyIdentity(data: string) {
 export function setBalance(chain: keyof cryptos, wallet: string, data: string) {
   store.dispatch(chains[chain].actions.setBalance({ wallet, data }));
 }
+export function setTokenBalances(
+  chain: keyof cryptos,
+  wallet: string,
+  data: Record<string, string>,
+) {
+  if (chain === 'sepolia') { // todo needs to be adjusted on chain add
+    store.dispatch(chains[chain].actions.setTokenBalances({ wallet, data }));
+  }
+}
 export function setUnconfirmedBalance(
   chain: keyof cryptos,
   wallet: string,
@@ -363,7 +374,7 @@ export function setTransactions(
   store.dispatch(chains[chain].actions.setTransactions({ wallet, data }));
 }
 export function setNodes(chain: keyof cryptos, wallet: string, data: node[]) {
-  if (chain === 'fluxTestnet' || chain === 'flux') {
+  if (chain === 'fluxTestnet' || chain === 'flux') { // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setNodes({ wallet, data }));
   }
 }
