@@ -884,28 +884,23 @@ function SendEVM() {
           />
         </Form.Item>
 
-        <Form.Item label={t('send:receiver_address')}>
+        <Form.Item
+          label={t('send:receiver_address')}
+          name="receiver"
+          rules={[
+            { required: true, message: t('send:input_receiver_address') },
+          ]}
+        >
           <Space.Compact style={{ width: '100%' }}>
-            <Form.Item
-              name="receiver"
-              noStyle
-              rules={[
-                {
-                  required: true,
-                  message: t('send:input_receiver_address'),
-                },
-              ]}
-            >
-              <Input
-                size="large"
-                value={txReceiver}
-                placeholder={t('send:receiver_address')}
-                onChange={(e) => {
-                  setTxReceiver(e.target.value),
-                    form.setFieldValue('receiver', e.target.value);
-                }}
-              />
-            </Form.Item>
+            <Input
+              size="large"
+              value={txReceiver}
+              placeholder={t('send:receiver_address')}
+              onChange={(e) => {
+                setTxReceiver(e.target.value),
+                  form.setFieldValue('receiver', e.target.value);
+              }}
+            />
             <Select
               size="large"
               className="no-text-select"
