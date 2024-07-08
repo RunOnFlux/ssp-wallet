@@ -4,7 +4,14 @@ import {
   PayloadAction,
   combineReducers,
 } from '@reduxjs/toolkit';
-import { cryptos, currency, transaction, node, networkFee } from '../types';
+import {
+  cryptos,
+  currency,
+  transaction,
+  node,
+  networkFee,
+  tokenBalanceEVM,
+} from '../types';
 
 import { blockchains } from '@storage/blockchains';
 
@@ -353,9 +360,10 @@ export function setBalance(chain: keyof cryptos, wallet: string, data: string) {
 export function setTokenBalances(
   chain: keyof cryptos,
   wallet: string,
-  data: Record<string, string>,
+  data: tokenBalanceEVM[],
 ) {
-  if (chain === 'sepolia') { // todo needs to be adjusted on chain add
+  if (chain === 'sepolia') {
+    // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setTokenBalances({ wallet, data }));
   }
 }
@@ -374,7 +382,8 @@ export function setTransactions(
   store.dispatch(chains[chain].actions.setTransactions({ wallet, data }));
 }
 export function setNodes(chain: keyof cryptos, wallet: string, data: node[]) {
-  if (chain === 'fluxTestnet' || chain === 'flux') { // todo needs to be adjusted on chain add
+  if (chain === 'fluxTestnet' || chain === 'flux') {
+    // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setNodes({ wallet, data }));
   }
 }

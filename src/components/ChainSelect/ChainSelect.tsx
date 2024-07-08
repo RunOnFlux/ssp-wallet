@@ -12,7 +12,13 @@ import secureLocalStorage from 'react-secure-storage';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { getScriptType } from '../../lib/wallet';
-import { transaction, generatedWallets, cryptos, node } from '../../types';
+import {
+  transaction,
+  generatedWallets,
+  cryptos,
+  node,
+  tokenBalanceEVM,
+} from '../../types';
 import {
   generateMultisigAddress,
   getMasterXpriv,
@@ -33,6 +39,7 @@ import {
   setXpubWallet,
   setXpubKey,
   setActiveChain,
+  setTokenBalances,
 } from '../../store';
 
 interface balancesObj {
@@ -96,9 +103,16 @@ function ChainSelect(props: {
             (await localForage.getItem(
               `balances-${chainToSwitch}-${walInUse}`,
             )) ?? balancesObject;
+          const tokenBalances: tokenBalanceEVM[] =
+            (await localForage.getItem(
+              `token-balances-${chainToSwitch}-${walInUse}`,
+            )) ?? [];
           const nodesWallet: node[] =
             (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
             [];
+          if (tokenBalances) {
+            setTokenBalances(chainToSwitch, walInUse, tokenBalances || []);
+          }
           if (nodesWallet) {
             setNodes(chainToSwitch, walInUse, nodesWallet || []);
           }
@@ -184,10 +198,21 @@ function ChainSelect(props: {
                     (await localForage.getItem(
                       `balances-${chainToSwitch}-${walInUse}`,
                     )) ?? balancesObject;
+                  const tokenBalances: tokenBalanceEVM[] =
+                    (await localForage.getItem(
+                      `token-balances-${chainToSwitch}-${walInUse}`,
+                    )) ?? [];
                   const nodesWallet: node[] =
                     (await localForage.getItem(
                       `nodes-${chainToSwitch}-${walInUse}`,
                     )) ?? [];
+                  if (tokenBalances) {
+                    setTokenBalances(
+                      chainToSwitch,
+                      walInUse,
+                      tokenBalances || [],
+                    );
+                  }
                   if (nodesWallet) {
                     setNodes(chainToSwitch, walInUse, nodesWallet || []);
                   }
@@ -295,9 +320,16 @@ function ChainSelect(props: {
             (await localForage.getItem(
               `balances-${chainToSwitch}-${walInUse}`,
             )) ?? balancesObject;
+          const tokenBalances: tokenBalanceEVM[] =
+            (await localForage.getItem(
+              `token-balances-${chainToSwitch}-${walInUse}`,
+            )) ?? [];
           const nodesWallet: node[] =
             (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
             [];
+          if (tokenBalances) {
+            setTokenBalances(chainToSwitch, walInUse, tokenBalances || []);
+          }
           if (nodesWallet) {
             setNodes(chainToSwitch, walInUse, nodesWallet || []);
           }

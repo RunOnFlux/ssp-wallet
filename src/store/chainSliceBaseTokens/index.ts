@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { transaction, wallets, wallet } from '../../types';
+import { transaction, wallets, wallet, tokenBalanceEVM } from '../../types';
 
 const initialWalletState: wallet = {
   address: '',
@@ -7,7 +7,7 @@ const initialWalletState: wallet = {
   witnessScript: '',
   balance: '0.00',
   unconfirmedBalance: '0.00',
-  tokenBalances: {},
+  tokenBalances: [],
   transactions: [],
 };
 
@@ -87,7 +87,7 @@ function makeChainSlice(chainName: string) {
       },
       setTokenBalances: (
         state,
-        action: PayloadAction<{ wallet: string; data: Record<string, string> }>,
+        action: PayloadAction<{ wallet: string; data: tokenBalanceEVM[] }>,
       ) => {
         state.wallets[action.payload.wallet] = state.wallets[
           action.payload.wallet

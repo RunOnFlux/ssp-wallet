@@ -176,7 +176,7 @@ export interface wallet {
   unconfirmedBalance: string;
   transactions: transaction[];
   nodes?: node[];
-  tokenBalances?: Record<string, string>;
+  tokenBalances?: tokenBalanceEVM[]
 }
 
 export interface node {

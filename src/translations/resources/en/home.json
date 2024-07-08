@@ -245,5 +245,8 @@
     "err_saving_contacts": "Error while saving contacts. Please try again.",
     "contact_deleted": "Contact Deleted",
     "created_at": "Created at"
+  },
+  "tokens": {
+    "import_token": "Import Token"
   }
 }

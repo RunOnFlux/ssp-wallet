@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
 import { useAppSelector } from '../../hooks';
-import { setBalance, setUnconfirmedBalance } from '../../store';
+import {
+  setBalance,
+  setUnconfirmedBalance,
+  setTokenBalances,
+} from '../../store';
 import {
   fetchAddressBalance,
   fetchAddressTokenBalances,
@@ -125,15 +129,21 @@ function Balances() {
     // only fetch for evm chainType
     if (blockchains[chainFetched].chainType === 'evm') {
       // create contracts array from tokens contracts in specs
-      const tokens = blockchains[chainFetched].tokens.map((token) => token.contract);
-      fetchAddressTokenBalances(wallets[walletFetched].address, chainFetched, tokens)
+      const tokens = blockchains[chainFetched].tokens.map(
+        (token) => token.contract,
+      );
+      fetchAddressTokenBalances(
+        wallets[walletFetched].address,
+        chainFetched,
+        tokens,
+      )
         .then(async (balancesTokens) => {
-          console.log(balancesTokens)
+          console.log(balancesTokens);
+          setTokenBalances(chainFetched, walletFetched, balancesTokens);
           await localForage.setItem(
             `token-balances-${chainFetched}-${walletFetched}`,
             balancesTokens,
           );
-          // do not se balance, that is set in tokens overview only
         })
         .catch((error) => {
           console.log(error);

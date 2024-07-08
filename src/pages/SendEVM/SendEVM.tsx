@@ -21,6 +21,11 @@ import {
 } from '../../lib/constructTx';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
+import {
+  setBalance,
+  setUnconfirmedBalance,
+  setTokenBalances,
+} from '../../store';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import {
@@ -534,6 +539,8 @@ function SendEVM() {
         if (!txToken) {
           setSpendableBalance(balance.confirmed);
         }
+        setBalance(chainFetched, walletFetched, balance.confirmed);
+        setUnconfirmedBalance(chainFetched, walletFetched, balance.unconfirmed);
         await localForage.setItem(
           `balances-${chainFetched}-${walletFetched}`,
           balance,
@@ -556,6 +563,7 @@ function SendEVM() {
       )
         .then(async (balancesTokens) => {
           console.log(balancesTokens);
+          setTokenBalances(chainFetched, walletFetched, balancesTokens);
           await localForage.setItem(
             `token-balances-${chainFetched}-${walletFetched}`,
             balancesTokens,
