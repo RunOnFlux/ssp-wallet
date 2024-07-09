@@ -36,6 +36,7 @@ function Tokens() {
           open={openImportTokenDialog}
           openAction={openImportAction}
           chain={activeChain}
+          wInUse={walletInUse}
           contracts={wallets[walletInUse].activatedTokens ?? []}
         />
       )}

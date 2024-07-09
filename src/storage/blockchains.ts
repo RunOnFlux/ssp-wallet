@@ -336,6 +336,27 @@ const sepolia = {
       symbol: 'FLUX',
       decimals: 8,
       logo: fluxLogo,
+    },
+    {
+      contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B901',
+      name: 'Fake Flux A',
+      symbol: 'FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    },
+    {
+      contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B902',
+      name: 'Fake Flux B',
+      symbol: 'FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    },
+    {
+      contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B903',
+      name: 'Fake Flux C',
+      symbol: 'FLUX',
+      decimals: 8,
+      logo: fluxLogo,
     }
   ]
 };

@@ -248,6 +248,7 @@
   },
   "tokens": {
     "import_token": "Import Token",
-    "import": "Import"
+    "import": "Import",
+    "import_selected": "Import Selected"
   }
 }
