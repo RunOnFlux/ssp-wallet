@@ -247,6 +247,7 @@
     "created_at": "Created at"
   },
   "tokens": {
-    "import_token": "Import Token"
+    "import_token": "Import Token",
+    "import": "Import"
   }
 }

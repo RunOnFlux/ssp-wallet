@@ -1,6 +1,5 @@
 import { Card, Avatar } from 'antd';
 import BigNumber from 'bignumber.js';
-import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from 'react';
 import { Token } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
@@ -10,9 +9,8 @@ import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency';
 
 const { Meta } = Card;
 
-function Tokens(props: { chain: keyof cryptos; tokenInfo: Token }) {
+function TokenBox(props: { chain: keyof cryptos; tokenInfo: Token }) {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
-  const { t } = useTranslation(['home']);
   const [fiatRate, setFiatRate] = useState(0);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const { wallets, walletInUse } = useAppSelector(
@@ -97,4 +95,4 @@ function Tokens(props: { chain: keyof cryptos; tokenInfo: Token }) {
   );
 }
 
-export default Tokens;
+export default TokenBox;

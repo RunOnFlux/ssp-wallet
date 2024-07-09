@@ -1,28 +1,24 @@
-import { Button, Space } from 'antd';
-import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector } from '../../hooks';
 import TokenBox from './TokenBox';
 
-function Tokens() {
-  const { t } = useTranslation(['home']);
-  const [fiatRate, setFiatRate] = useState(0);
+function TokensTable() {
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
   const blockchainConfig = blockchains[activeChain];
-  const [openImportTokenDialog, setOpenImportTokenDialog] = useState(false);
+  const activatedTokens = wallets[walletInUse].activatedTokens ?? [];
+  console.log(activatedTokens);
 
-  const importToken = () => {
-    console.log('import token');
-    setOpenImportTokenDialog(true);
-  };
+  // filter blockchainConfig.tokens with activatedTokens contracts
+  const activeTokensInfo = blockchainConfig.tokens.filter((item) =>
+    activatedTokens.includes(item.contract) || !item.contract, // main token is always activated
+  );
 
   return (
     <div>
-      {blockchainConfig.tokens.map((item) => (
+      {activeTokensInfo.map((item) => (
         <TokenBox
           chain={activeChain}
           tokenInfo={item}
@@ -33,4 +29,4 @@ function Tokens() {
   );
 }
 
-export default Tokens;
+export default TokensTable;

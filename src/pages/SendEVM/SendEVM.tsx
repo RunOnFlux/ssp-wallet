@@ -71,9 +71,7 @@ interface contactsInterface {
 
 interface tokenOption {
   label: string;
-  index?: string;
   value: string;
-  logo: string;
 }
 
 interface publicNonces {
@@ -283,7 +281,6 @@ function SendEVM() {
       const option = {
         label: token.name + ' (' + token.symbol + ')',
         value: token.contract,
-        logo: token.logo,
       };
       tokenItems.push(option);
     });
