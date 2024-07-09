@@ -1,18 +1,23 @@
-import { Card, Avatar } from 'antd';
+import { Card, Avatar, Flex, Button, Popconfirm } from 'antd';
 import BigNumber from 'bignumber.js';
-import { useEffect, useRef, useState } from 'react';
-import { Token } from '@storage/blockchains';
+import { useTranslation } from 'react-i18next';
+import { QuestionCircleOutlined } from '@ant-design/icons';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
+import { Token, blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import { useAppSelector } from '../../hooks';
 import { tokenBalanceEVM, cryptos } from '../../types';
 import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency';
 
+import './TokenBox.css';
+
 const { Meta } = Card;
 
-function TokenBox(props: { chain: keyof cryptos; tokenInfo: Token }) {
+function TokenBox(props: { chain: keyof cryptos; tokenInfo: Token, handleRemoveToken: (contract: string) => void}) {
+  const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [fiatRate, setFiatRate] = useState(0);
-  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [infoExpanded, setInfoExpanded] = useState(false);
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[props.chain],
   );
@@ -32,10 +37,20 @@ function TokenBox(props: { chain: keyof cryptos; tokenInfo: Token }) {
     .dividedBy(10 ** props.tokenInfo.decimals)
     .multipliedBy(new BigNumber(fiatRate));
 
-  const openDetails = () => {
-    setOpenDetailsDialog(true);
-    console.log('open details');
-    console.log(openDetailsDialog);
+  const openDetails = (
+    event: MouseEvent<HTMLDivElement, globalThis.MouseEvent>,
+  ) => {
+    const containingElement = document.querySelector(
+      '#token-id' + props.tokenInfo.contract,
+    );
+    if (containingElement) {
+      console.log('kappa');
+      if (containingElement.contains(event.target as Node)) {
+        // do not register clicks here
+        return;
+      }
+    }
+    setInfoExpanded(!infoExpanded);
   };
 
   useEffect(() => {
@@ -56,13 +71,17 @@ function TokenBox(props: { chain: keyof cryptos; tokenInfo: Token }) {
     setFiatRate(cr * fi);
   };
 
+  const removeToken = () => {
+    props.handleRemoveToken(props.tokenInfo.contract);
+  };
+
   return (
     <div>
       <Card
+        onClick={(e) => openDetails(e)}
         hoverable
         style={{ marginTop: 10 }}
         size="small"
-        onClick={openDetails}
       >
         <Meta
           avatar={<Avatar src={props.tokenInfo.logo} size={30} />}
@@ -83,10 +102,57 @@ function TokenBox(props: { chain: keyof cryptos; tokenInfo: Token }) {
           }
           description={
             <>
-              <div style={{ float: 'left' }}>{props.tokenInfo.name}</div>
-              <div style={{ float: 'right' }}>
-                {formatFiatWithSymbol(balanceUsd)}
-              </div>
+              <Flex vertical>
+                <div>
+                  <div style={{ float: 'left' }}>{props.tokenInfo.name}</div>
+                  <div style={{ float: 'right' }}>
+                    {formatFiatWithSymbol(balanceUsd)}
+                  </div>
+                </div>
+                {infoExpanded && (
+                  <div
+                    className={'token-box'}
+                    id={'token-id' + props.tokenInfo.contract}
+                  >
+                    {props.tokenInfo.contract && (
+                      <p style={{ margin: 0, wordBreak: 'break-all' }}>
+                        Contract: {props.tokenInfo.contract}
+                      </p>
+                    )}
+                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
+                      Decimals: {props.tokenInfo.decimals}
+                    </p>
+                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
+                      Network: {blockchains[props.chain].name}
+                    </p>
+                    {props.tokenInfo.contract && (
+                      <div className={'remove-button'}>
+                        <Popconfirm
+                          title={t('home:tokens.remove_token')}
+                          description={
+                            <>{t('home:tokens.remove_token_info')}</>
+                          }
+                          overlayStyle={{ maxWidth: 360, margin: 10 }}
+                          okText={t('home:tokens.remove_token')}
+                          cancelText={t('common:cancel')}
+                          onConfirm={() => {
+                            void removeToken();
+                          }}
+                          icon={
+                            <QuestionCircleOutlined
+                              style={{ color: 'orange' }}
+                            />
+                          }
+                        >
+                          <Button type="default" danger size="small">
+                            {t('home:tokens.remove_token')}
+                          </Button>
+                        </Popconfirm>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Flex>
             </>
           }
         />

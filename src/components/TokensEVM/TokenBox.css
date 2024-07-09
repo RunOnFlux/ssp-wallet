@@ -1,0 +1,12 @@
+.token-box {
+  float: left;
+  text-align: left;
+  font-size: 12px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  cursor: default;
+}
+
+.remove-button {
+  float: right;
+}

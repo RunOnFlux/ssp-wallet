@@ -249,6 +249,9 @@
   "tokens": {
     "import_token": "Import Token",
     "import": "Import",
-    "import_selected": "Import Selected"
+    "import_selected": "Import Selected",
+    "remove_token": "Remove Token",
+    "remove": "Remove",
+    "remove_token_info": "This action will hide the token from your wallet. You can add it back at any time."
   }
 }
