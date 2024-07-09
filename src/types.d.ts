@@ -176,7 +176,8 @@ export interface wallet {
   unconfirmedBalance: string;
   transactions: transaction[];
   nodes?: node[];
-  tokenBalances?: tokenBalanceEVM[]
+  tokenBalances?: tokenBalanceEVM[];
+  activatedTokens?: string[];
 }
 
 export interface node {

@@ -9,6 +9,7 @@ const initialWalletState: wallet = {
   unconfirmedBalance: '0.00',
   tokenBalances: [],
   transactions: [],
+  activatedTokens: [],
 };
 
 interface ChainState {
@@ -93,6 +94,16 @@ function makeChainSlice(chainName: string) {
           action.payload.wallet
         ] || { ...initialWalletState };
         state.wallets[action.payload.wallet].tokenBalances =
+          action.payload.data;
+      },
+      setActivatedTokens: (
+        state,
+        action: PayloadAction<{ wallet: string; data: string[] }>,
+      ) => {
+        state.wallets[action.payload.wallet] = state.wallets[
+          action.payload.wallet
+        ] || { ...initialWalletState };
+        state.wallets[action.payload.wallet].activatedTokens =
           action.payload.data;
       },
       setTransactions: (

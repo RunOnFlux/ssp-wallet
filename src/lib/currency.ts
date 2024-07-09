@@ -67,8 +67,8 @@ export function decimalPlaces() {
   return 2;
 }
 
-export function formatCrypto(amount: BigNumber) {
-  const formated = amount.toNumber().toLocaleString(navigator.language ?? 'en-US',{ maximumFractionDigits: 8, minimumFractionDigits: 0 }); // or force 'en-US'?
+export function formatCrypto(amount: BigNumber, maxDecimals = 8) {
+  const formated = amount.toNumber().toLocaleString(navigator.language ?? 'en-US',{ maximumFractionDigits: maxDecimals, minimumFractionDigits: 0 }); // or force 'en-US'?
   return formated;
 }
 

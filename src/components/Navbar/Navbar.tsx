@@ -18,6 +18,7 @@ import {
   setUnconfirmedBalance,
   setInitialContactsState,
   setTokenBalances,
+  setActivatedTokens,
 } from '../../store';
 import {
   Row,
@@ -176,9 +177,16 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
         (await localForage.getItem(
           `token-balances-${activeChain}-${value.value}`,
         )) ?? [];
+      const activatedTokens: string[] =
+        (await localForage.getItem(
+          `activated-tokens-${activeChain}-${value.value}`,
+        )) ?? [];
       const nodesWallet: node[] =
         (await localForage.getItem(`nodes-${activeChain}-${value.value}`)) ??
         [];
+      if (activatedTokens) {
+        setActivatedTokens(activeChain, value.value, activatedTokens || []);
+      }
       if (tokenBalances) {
         setTokenBalances(activeChain, value.value, tokenBalances || []);
       }

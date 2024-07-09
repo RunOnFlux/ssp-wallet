@@ -36,6 +36,7 @@ import {
   setXpubWalletIdentity,
   setContacts,
   setTokenBalances,
+  setActivatedTokens,
 } from '../../store';
 
 import { getFingerprint } from '../../lib/fingerprint';
@@ -295,9 +296,20 @@ function Login() {
               (await localForage.getItem(
                 `token-balances-${activeChain}-${walInUse}`,
               )) ?? [];
+            const activatedTokens: string[] =
+              (await localForage.getItem(
+                `activated-tokens-${activeChain}-${walInUse}`,
+              )) ?? [];
             const nodesWallet: node[] =
               (await localForage.getItem(`nodes-${activeChain}-${walInUse}`)) ??
               [];
+            if (activatedTokens) {
+              setActivatedTokens(
+                activeChain,
+                walInUse,
+                activatedTokens || [],
+              );
+            }
             if (tokenBalances) {
               setTokenBalances(activeChain, walInUse, tokenBalances || []);
             }

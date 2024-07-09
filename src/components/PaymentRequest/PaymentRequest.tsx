@@ -36,6 +36,7 @@ import {
   setXpubKey,
   setActiveChain,
   setTokenBalances,
+  setActivatedTokens,
 } from '../../store';
 
 interface payRequestData {
@@ -115,9 +116,16 @@ function PaymentRequest(props: {
             (await localForage.getItem(
               `token-balances-${chainToSwitch}-${walInUse}`,
             )) ?? [];
+          const activatedTokens: string[] =
+            (await localForage.getItem(
+              `activated-tokens-${chainToSwitch}-${walInUse}`,
+            )) ?? [];
           const nodesWallet: node[] =
             (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
             [];
+          if (activatedTokens) {
+            setActivatedTokens(chainToSwitch, walInUse, activatedTokens || []);
+          }
           if (tokenBalances) {
             setTokenBalances(chainToSwitch, walInUse, tokenBalances || []);
           }
@@ -216,6 +224,17 @@ function PaymentRequest(props: {
                     (await localForage.getItem(
                       `token-balances-${chainToSwitch}-${walInUse}`,
                     )) ?? [];
+                  const activatedTokens: string[] =
+                    (await localForage.getItem(
+                      `activated-tokens-${chainToSwitch}-${walInUse}`,
+                    )) ?? [];
+                  if (activatedTokens) {
+                    setActivatedTokens(
+                      chainToSwitch,
+                      walInUse,
+                      activatedTokens || [],
+                    );
+                  }
                   const nodesWallet: node[] =
                     (await localForage.getItem(
                       `nodes-${chainToSwitch}-${walInUse}`,

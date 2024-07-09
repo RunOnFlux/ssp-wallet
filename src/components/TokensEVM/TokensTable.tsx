@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector } from '../../hooks';
+import TokenBox from './TokenBox';
 
 function Tokens() {
   const { t } = useTranslation(['home']);
@@ -15,13 +16,19 @@ function Tokens() {
   const [openImportTokenDialog, setOpenImportTokenDialog] = useState(false);
 
   const importToken = () => {
-    console.log('import token')
+    console.log('import token');
     setOpenImportTokenDialog(true);
   };
 
   return (
     <div>
-      tiles with balances loop of TokenBox
+      {blockchainConfig.tokens.map((item) => (
+        <TokenBox
+          chain={activeChain}
+          tokenInfo={item}
+          key={item.contract + item.symbol}
+        />
+      ))}
     </div>
   );
 }

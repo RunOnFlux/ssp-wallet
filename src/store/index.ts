@@ -367,6 +367,16 @@ export function setTokenBalances(
     store.dispatch(chains[chain].actions.setTokenBalances({ wallet, data }));
   }
 }
+export function setActivatedTokens(
+  chain: keyof cryptos,
+  wallet: string,
+  data: string[],
+) {
+  if (chain === 'sepolia') {
+    // todo needs to be adjusted on chain add
+    store.dispatch(chains[chain].actions.setActivatedTokens({ wallet, data }));
+  }
+}
 export function setUnconfirmedBalance(
   chain: keyof cryptos,
   wallet: string,
