@@ -11,6 +11,7 @@ const dogeLogo = '/src/assets/doge.svg';
 const zecLogo = '/src/assets/zec.svg';
 const bchLogo = '/src/assets/bch.svg';
 const ethLogo = '/src/assets/eth.svg';
+const tethLogo = '/src/assets/teth.svg';
 
 const flux = {
   id: 'flux',
@@ -301,8 +302,8 @@ const sepolia = {
   id: 'sepolia',
   libid: 'sepolia',
   name: 'Testnet Sepolia',
-  symbol: 'tETH',
-  logo: ethLogo,
+  symbol: 'TEST-ETH',
+  logo: tethLogo,
   slip: 1,
   decimals: 18,
   node: backends().sepolia.node,
@@ -326,14 +327,14 @@ const sepolia = {
     {
       contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
       name: 'Testnet Ethereum Sepolia',
-      symbol: 'tETH',
+      symbol: 'TEST-ETH',
       decimals: 18,
-      logo: ethLogo,
+      logo: tethLogo,
     },
     {
       contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B909',
       name: 'Fake Flux',
-      symbol: 'FLUX',
+      symbol: 'TEST-FLUX',
       decimals: 8,
       logo: fluxLogo,
     },
