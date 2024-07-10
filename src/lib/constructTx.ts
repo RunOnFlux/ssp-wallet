@@ -986,13 +986,16 @@ export async function constructAndSignEVMTransaction(
       Number(maxTotalGas) - preVerificationGas - callGasLimit,
     );
 
+    const priorityGas = new BigNumber(priorityGasPrice).multipliedBy(10 ** 9).toFixed(0);
+    const baseGas = new BigNumber(baseGasPrice).multipliedBy(10 ** 9).toFixed(0);
+
     const CLIENT_OPT = {
       feeOptions: {
         maxPriorityFeePerGas: {
-          max: BigInt(priorityGasPrice),
-          min: BigInt(priorityGasPrice),
+          max: BigInt(priorityGas),
+          min: BigInt(priorityGas),
         },
-        maxFeePerGas: { max: BigInt(baseGasPrice), min: BigInt(baseGasPrice) },
+        maxFeePerGas: { max: BigInt(baseGas), min: BigInt(baseGas) },
         preVerificationGas: {
           multiplier: 1.25,
           max: BigInt(preVerificationGas),

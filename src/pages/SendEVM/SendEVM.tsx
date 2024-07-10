@@ -595,7 +595,9 @@ function SendEVM() {
     // here we set the overall gas limit and calculate the ETH value
     console.log('CALC tx fee');
     const totalGas = new BigNumber(totalGasLimit); // get better estimation
-    const totalGasPrice = new BigNumber(baseGasPrice).plus(priorityGasPrice);
+    const totalGasPrice = new BigNumber(baseGasPrice)
+      .plus(priorityGasPrice)
+      .multipliedBy(10 ** 9);
     const totalFee = totalGas.multipliedBy(totalGasPrice);
     const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
     if (totalFeeETH === 'NaN') {
@@ -1000,7 +1002,7 @@ function SendEVM() {
                       size="large"
                       value={baseGasPrice}
                       placeholder={t('send:input_gas_price')}
-                      suffix="wei"
+                      suffix="gwei"
                       onChange={(e) => setBaseGasPrice(e.target.value)}
                       disabled={!manualFee}
                     />
@@ -1019,7 +1021,7 @@ function SendEVM() {
                       size="large"
                       value={baseGasPrice}
                       placeholder={t('send:input_priority_gas_price')}
-                      suffix="wei"
+                      suffix="gwei"
                       onChange={(e) => setPriorityGasPrice(e.target.value)}
                       disabled={!manualFee}
                     />

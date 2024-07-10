@@ -80,12 +80,12 @@ const initialNetworkFeeState: networkFeeState = {
     btcTestnet: { base: blockchains.btcTestnet.feePerByte },
     btcSignet: { base: blockchains.btcSignet.feePerByte },
     sepolia: {
-      base: blockchains.sepolia.baseFee, // wei
-      priority: blockchains.sepolia.priorityFee, // wei
+      base: blockchains.sepolia.baseFee, // gwei
+      priority: blockchains.sepolia.priorityFee, // gwei
     },
     eth: {
-      base: blockchains.eth.baseFee, // wei
-      priority: blockchains.eth.priorityFee, // wei
+      base: blockchains.eth.baseFee, // gwei
+      priority: blockchains.eth.priorityFee, // gwei
     },
   },
 };
