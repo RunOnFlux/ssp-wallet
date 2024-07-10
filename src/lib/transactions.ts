@@ -335,7 +335,6 @@ export async function fetchAddressTransactions(
         page: 1,
         offset: to - from,
         sort: 'desc',
-        apiKey: 'APIKEY',
         address,
         action: 'txlist',
       };

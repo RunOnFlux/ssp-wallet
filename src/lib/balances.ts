@@ -73,6 +73,9 @@ async function fetchBalanceChunk(
 
   // remove any token in tokens if token does not start with 0x prefix (only fetch proper contracts)
   const filteredTokens = tokens.filter((token) => token.startsWith('0x'));
+  if (!filteredTokens.length) {
+    return [];
+  }
   // get activated tokens
   const data = {
     id: Date.now(),

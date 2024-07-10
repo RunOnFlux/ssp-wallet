@@ -554,7 +554,7 @@ function SendEVM() {
         (token) => token.contract,
       );
       fetchAddressTokenBalances(
-        wallets[walletFetched].address,
+        wallets[walletFetched].address, // todo evaluate only activated contracts
         chainFetched,
         tokens,
       )

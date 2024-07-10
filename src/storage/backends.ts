@@ -55,8 +55,8 @@ const btcSignet = {
   node: 'blockbookbitcoinsignet.app.runonflux.io',
 };
 const sepolia = {
-  node: 'eth-sepolia.g.alchemy.com/v2/APIKEY',
-  api: 'api-sepolia.etherscan.io/api',
+  node: 'node.ethereum-sepolia.runonflux.io',
+  api: 'api.ethereum-sepolia.runonflux.io/api',
   explorer: 'sepolia.etherscan.io'
 };
 

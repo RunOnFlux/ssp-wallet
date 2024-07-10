@@ -130,7 +130,7 @@ function Balances() {
     if (blockchains[chainFetched].chainType === 'evm') {
       // create contracts array from tokens contracts in specs
       const tokens = blockchains[chainFetched].tokens.map(
-        (token) => token.contract,
+        (token) => token.contract, // TODO evaluate only activated contracts
       );
       fetchAddressTokenBalances(
         wallets[walletFetched].address,

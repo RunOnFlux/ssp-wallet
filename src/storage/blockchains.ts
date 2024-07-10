@@ -325,7 +325,7 @@ const sepolia = {
   tokens: [
     {
       contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
-      name: 'Sepolia',
+      name: 'Testnet Ethereum Sepolia',
       symbol: 'ETH',
       decimals: 18,
       logo: ethLogo,
@@ -337,27 +337,6 @@ const sepolia = {
       decimals: 8,
       logo: fluxLogo,
     },
-    {
-      contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B901',
-      name: 'Fake Flux A',
-      symbol: 'FLUX',
-      decimals: 8,
-      logo: fluxLogo,
-    },
-    {
-      contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B902',
-      name: 'Fake Flux B',
-      symbol: 'FLUX',
-      decimals: 8,
-      logo: fluxLogo,
-    },
-    {
-      contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B903',
-      name: 'Fake Flux C',
-      symbol: 'FLUX',
-      decimals: 8,
-      logo: fluxLogo,
-    }
   ]
 };
 
