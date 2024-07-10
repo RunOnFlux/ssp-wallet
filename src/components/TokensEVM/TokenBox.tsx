@@ -1,4 +1,4 @@
-import { Card, Avatar, Flex, Button, Popconfirm } from 'antd';
+import { Card, Avatar, Flex, Button, Popconfirm, Badge } from 'antd';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 import { QuestionCircleOutlined } from '@ant-design/icons';
@@ -13,7 +13,11 @@ import './TokenBox.css';
 
 const { Meta } = Card;
 
-function TokenBox(props: { chain: keyof cryptos; tokenInfo: Token, handleRemoveToken: (contract: string) => void}) {
+function TokenBox(props: {
+  chain: keyof cryptos;
+  tokenInfo: Token;
+  handleRemoveToken: (contract: string) => void;
+}) {
   const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [fiatRate, setFiatRate] = useState(0);
@@ -84,7 +88,15 @@ function TokenBox(props: { chain: keyof cryptos; tokenInfo: Token, handleRemoveT
         size="small"
       >
         <Meta
-          avatar={<Avatar src={props.tokenInfo.logo} size={30} />}
+          avatar={
+            <Badge
+              count={<Avatar src={blockchains[props.chain].logo} size={18} />}
+              size="small"
+              offset={[-2, 5]}
+            >
+              <Avatar src={props.tokenInfo.logo} size={30} />
+            </Badge>
+          }
           title={
             <>
               <div style={{ float: 'left' }}>{props.tokenInfo.symbol}</div>

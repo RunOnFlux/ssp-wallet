@@ -1,5 +1,5 @@
-import { Card, Avatar, Checkbox } from 'antd';
-import { Token } from '@storage/blockchains';
+import { Card, Avatar, Checkbox, Badge } from 'antd';
+import { Token, blockchains } from '@storage/blockchains';
 import { cryptos } from '../../types';
 
 import './TokenBoxImport.css';
@@ -29,7 +29,15 @@ function TokenBoxImport(props: {
         onClick={() => triggerAction(props.tokenInfo.contract, !props.active)}
       >
         <Meta
-          avatar={<Avatar src={props.tokenInfo.logo} size={30} />}
+          avatar={
+            <Badge
+              count={<Avatar src={blockchains[props.chain].logo} size={18} />}
+              size="small"
+              offset={[-2, 5]}
+            >
+              <Avatar src={props.tokenInfo.logo} size={30} />
+            </Badge>
+          }
           title={
             <>
               <div style={{ float: 'left' }}>{props.tokenInfo.symbol}</div>
