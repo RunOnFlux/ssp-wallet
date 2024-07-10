@@ -293,7 +293,7 @@ function SendEVM() {
     refreshAutomaticFee();
     getSpendableBalance();
     void getTotalGasLimit();
-  }, [networkFees, walletInUse, activeChain, manualFee]);
+  }, [networkFees, walletInUse, activeChain, manualFee, txToken]);
 
   useEffect(() => {
     form.setFieldValue('base_gas_price', baseGasPrice);
@@ -585,7 +585,7 @@ function SendEVM() {
   };
 
   const getTotalGasLimit = async () => {
-    const token = 'kappa'; // get from above for erc20 sending
+    const token = txToken;
     const gasLimit = await estimateGas(activeChain, sender, token);
     setTotalGasLimit(gasLimit);
   };
