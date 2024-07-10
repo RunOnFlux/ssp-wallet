@@ -1,5 +1,4 @@
 declare module '@storage/blockchains' {
-
   export interface Token {
     contract: string;
     name: string;

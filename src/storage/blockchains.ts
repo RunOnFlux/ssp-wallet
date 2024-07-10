@@ -338,7 +338,7 @@ const sepolia = {
       decimals: 8,
       logo: fluxLogo,
     },
-  ]
+  ],
 };
 
 const eth = {
@@ -381,7 +381,7 @@ const eth = {
       decimals: 8,
       logo: fluxLogo,
     },
-  ]
+  ],
 };
 
 export const blockchains = {

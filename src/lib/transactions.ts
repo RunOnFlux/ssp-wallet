@@ -501,6 +501,11 @@ interface userOperation {
   userOpRequest: {
     sender: string;
     callData: `0x${string}`;
+    callGasLimit: `0x${string}`;
+    verificationGasLimit: `0x${string}`;
+    preVerificationGas: `0x${string}`;
+    maxFeePerGas: `0x${string}`;
+    maxPriorityFeePerGas: `0x${string}`;
   };
 }
 
@@ -509,9 +514,31 @@ export function decodeEVMTransactionForApproval(
   chain: keyof cryptos,
 ) {
   try {
-    const decimals = blockchains[chain].decimals;
+    let decimals = blockchains[chain].decimals;
     const multisigUserOpJSON = JSON.parse(rawTx) as userOperation;
-    const { callData, sender } = multisigUserOpJSON.userOpRequest;
+    const {
+      callData,
+      sender,
+      callGasLimit,
+      verificationGasLimit,
+      preVerificationGas,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+    } = multisigUserOpJSON.userOpRequest;
+
+    const totalGasLimit = new BigNumber(callGasLimit)
+      .plus(new BigNumber(verificationGasLimit))
+      .plus(new BigNumber(preVerificationGas));
+
+    const totalMaxWeiPerGas = new BigNumber(maxFeePerGas).plus(
+      new BigNumber(maxPriorityFeePerGas),
+    );
+
+    const totalFeeWei = totalGasLimit.multipliedBy(totalMaxWeiPerGas);
+
+    console.log(multisigUserOpJSON);
+
+    // callGasLimit":"0x5ea6","verificationGasLimit":"0x11b5a","preVerificationGas":"0xdf89","maxFeePerGas":"0xee6b28000","maxPriorityFeePerGas":"0x77359400",
 
     const decodedData: decodedAbiData = decodeFunctionData({
       abi: abi.MultiSigSmartAccount_abi,
@@ -535,7 +562,24 @@ export function decodeEVMTransactionForApproval(
       throw new Error('Unexpected decoded data.');
     }
 
+    const txInfo = {
+      sender,
+      receiver: txReceiver,
+      amount,
+      fee: totalFeeWei.toFixed(),
+      token: '',
+    };
+
     if (amount === '0') {
+      txInfo.token = decodedData.args[0];
+
+      // find the token in our token list
+      const token = blockchains[chain].tokens.find(
+        (t) => t.contract.toLowerCase() === txInfo.token.toLowerCase(),
+      );
+      if (token) {
+        decimals = token.decimals;
+      }
       const contractData: `0x${string}` = decodedData.args[2] as `0x${string}`;
       // most likely we are dealing with a contract call, sending some erc20 token
       // docode args[2] which is operation
@@ -550,23 +594,11 @@ export function decodeEVMTransactionForApproval(
         decodedDataContract.args &&
         decodedDataContract.args.length >= 2
       ) {
-        txReceiver = decodedDataContract.args[0];
-        amount = new BigNumber(decodedDataContract.args[1].toString())
-          .dividedBy(new BigNumber(10 ** decimals)) // todo decimals
+        txInfo.receiver = decodedDataContract.args[0];
+        txInfo.amount = new BigNumber(decodedDataContract.args[1].toString())
+          .dividedBy(new BigNumber(10 ** decimals))
           .toFixed();
       }
-    }
-
-    const txInfo = {
-      sender,
-      receiver: txReceiver,
-      amount,
-      fee: '0', // @todo: calculate fee
-      token: '',
-    };
-
-    if (amount === '0') {
-      txInfo.token = decodedData.args[0];
     }
 
     return txInfo;
