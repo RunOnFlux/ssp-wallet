@@ -59,6 +59,11 @@ const sepolia = {
   api: 'api.ethereum-sepolia.runonflux.io/api',
   explorer: 'sepolia.etherscan.io'
 };
+const eth = {
+  node: 'node.ethereum-mainnet.runonflux.io',
+  api: 'api.ethereum-mainnet.runonflux.io/api',
+  explorer: 'etherscan.io'
+};
 
 export function backends() {
   return {
@@ -73,6 +78,7 @@ export function backends() {
     btcTestnet: localForgeBackends?.btcTestnet || btcTestnet,
     btcSignet: localForgeBackends?.btcSignet || btcSignet,
     sepolia: localForgeBackends?.sepolia || sepolia,
+    eth: localForgeBackends?.eth || eth,
   };
 }
 
@@ -89,5 +95,6 @@ export function backendsOriginal() {
     btcTestnet,
     btcSignet,
     sepolia,
+    eth,
   };
 }

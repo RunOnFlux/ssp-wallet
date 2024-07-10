@@ -485,6 +485,9 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
                         top: '5px',
                         marginLeft: '8px',
                         fontSize: '16px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {blockchainConfig.name}{' '}

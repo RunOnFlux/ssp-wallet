@@ -32,6 +32,7 @@ const chains = {
   btcTestnet: chainSliceBase('btcTestnet'),
   btcSignet: chainSliceBase('btcSignet'),
   sepolia: chainSliceBaseTokens('sepolia'),
+  eth: chainSliceBaseTokens('eth'),
 };
 // ********** Import chains **********
 
@@ -82,6 +83,10 @@ const initialNetworkFeeState: networkFeeState = {
       base: blockchains.sepolia.baseFee, // wei
       priority: blockchains.sepolia.priorityFee, // wei
     },
+    eth: {
+      base: blockchains.eth.baseFee, // wei
+      priority: blockchains.eth.priorityFee, // wei
+    },
   },
 };
 
@@ -112,6 +117,7 @@ const initialRatesState: RatesState = {
     btcTestnet: 0,
     btcSignet: 0,
     sepolia: 0,
+    eth: 0,
   },
   fiatRates: {
     EUR: 0,
@@ -179,6 +185,7 @@ const initialContactsState: ContactsState = {
     btcTestnet: [],
     btcSignet: [],
     sepolia: [],
+    eth: [],
   },
 };
 
@@ -309,6 +316,7 @@ const reducers = combineReducers({
   btcTestnet: chains.btcTestnet.reducer,
   btcSignet: chains.btcSignet.reducer,
   sepolia: chains.sepolia.reducer,
+  eth: chains.eth.reducer,
 });
 
 export const store = configureStore({
@@ -362,7 +370,7 @@ export function setTokenBalances(
   wallet: string,
   data: tokenBalanceEVM[],
 ) {
-  if (chain === 'sepolia') {
+  if (chain === 'sepolia' || chain === 'eth') {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setTokenBalances({ wallet, data }));
   }
@@ -372,7 +380,7 @@ export function setActivatedTokens(
   wallet: string,
   data: string[],
 ) {
-  if (chain === 'sepolia') {
+  if (chain === 'sepolia' || chain === 'eth') {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setActivatedTokens({ wallet, data }));
   }

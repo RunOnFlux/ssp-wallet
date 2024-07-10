@@ -414,6 +414,7 @@ export interface cryptos {
   btcTestnet: number;
   btcSignet: number;
   sepolia: number;
+  eth: number;
 }
 
 export interface externalIdentity {
