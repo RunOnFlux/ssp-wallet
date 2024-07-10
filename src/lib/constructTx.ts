@@ -232,7 +232,6 @@ export function signTransaction(
     if (blockchains[chain].hashType) {
       // only for BCH
       hashType =
-        // eslint-disable-next-line no-bitwise
         utxolib.Transaction.SIGHASH_ALL |
         utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
     }
@@ -954,12 +953,10 @@ export async function constructAndSignEVMTransaction(
     const rpcUrl = `https://${backendConfig.node}`;
 
     const transport = viemHttp(rpcUrl);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const CHAIN = viemChains[blockchainConfig.libid as keyof typeof viemChains];
     const multiSigSmartAccount =
       await accountAbstraction.accountAbstraction.createMultiSigSmartAccount({
         transport,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         chain: CHAIN,
         combinedAddress: combinedAddresses,
         salt: accountAbstraction.helpers.create2Helpers.saltToHex(accountSalt),
@@ -1014,7 +1011,6 @@ export async function constructAndSignEVMTransaction(
       // @ts-expect-error library issue
       transport,
       // @ts-expect-error library issue
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       chain: CHAIN,
       account: multiSigSmartAccount,
       opts: CLIENT_OPT,
@@ -1071,7 +1067,6 @@ export async function constructAndSignEVMTransaction(
       uoStructHexlified,
     );
     multiSigUserOp.signMultiSigHash(schnorrSigner1); // we post this to our server
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     return JSON.stringify(multiSigUserOp.toJson());
   } catch (error) {
     console.log(error);
