@@ -12,6 +12,8 @@ const zecLogo = '/src/assets/zec.svg';
 const bchLogo = '/src/assets/bch.svg';
 const ethLogo = '/src/assets/eth.svg';
 const tethLogo = '/src/assets/teth.svg';
+const usdcLogo = '/src/assets/usdc.svg';
+const usdtLogo = '/src/assets/usdt.svg';
 
 const flux = {
   id: 'flux',
@@ -380,6 +382,20 @@ const eth = {
       symbol: 'FLUX',
       decimals: 8,
       logo: fluxLogo,
+    },
+    {
+      contract: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+      name: 'Tether',
+      symbol: 'USDT',
+      decimals: 6,
+      logo: usdtLogo,
+    },
+    {
+      contract: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 6,
+      logo: usdcLogo,
     },
   ],
 };
