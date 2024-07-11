@@ -345,7 +345,7 @@ const sepolia = {
 
 const eth = {
   id: 'eth',
-  libid: 'eth',
+  libid: 'mainnet',
   name: 'Ethereum',
   symbol: 'ETH',
   logo: ethLogo,
