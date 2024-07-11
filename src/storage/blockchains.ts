@@ -1,19 +1,19 @@
 import { backends } from './backends';
 
-const fluxLogo = '/src/assets/flux.svg';
-const fluxTestnetLogo = '/src/assets/fluxTestnet.svg';
-const rvnLogo = '/src/assets/rvn.svg';
-const ltcLogo = '/src/assets/ltc.svg';
-const btcLogo = '/src/assets/btc.svg';
-const btcTestnetLogo = '/src/assets/btcTestnet.svg';
-const btcSignetLogo = '/src/assets/btcSignet.svg';
-const dogeLogo = '/src/assets/doge.svg';
-const zecLogo = '/src/assets/zec.svg';
-const bchLogo = '/src/assets/bch.svg';
-const ethLogo = '/src/assets/eth.svg';
-const tethLogo = '/src/assets/teth.svg';
-const usdcLogo = '/src/assets/usdc.svg';
-const usdtLogo = '/src/assets/usdt.svg';
+import fluxLogo from '../assets/flux.svg';
+import fluxTestnetLogo from '../assets/fluxTestnet.svg';
+import rvnLogo from '../assets/rvn.svg';
+import ltcLogo from '../assets/ltc.svg';
+import btcLogo from '../assets/btc.svg';
+import btcTestnetLogo from '../assets/btcTestnet.svg';
+import btcSignetLogo from '../assets/btcSignet.svg';
+import dogeLogo from '../assets/doge.svg';
+import zecLogo from '../assets/zec.svg';
+import bchLogo from '../assets/bch.svg';
+import ethLogo from '../assets/eth.svg';
+import tethLogo from '../assets/teth.svg';
+import usdtLogo from '../assets/usdt.svg';
+import usdcLogo from '../assets/usdc.svg';
 
 const flux = {
   id: 'flux',
