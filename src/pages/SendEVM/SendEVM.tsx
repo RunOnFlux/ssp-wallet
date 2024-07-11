@@ -178,23 +178,23 @@ function SendEVM() {
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
-    setBaseGasPrice(networkFees[activeChain].base.toFixed());
-    setPriorityGasPrice(networkFees[activeChain].priority!.toFixed());
+    setBaseGasPrice(networkFees[activeChain].base.toString());
+    setPriorityGasPrice(networkFees[activeChain].priority!.toString());
     setTotalGasLimit(blockchainConfig.gasLimit.toString());
     form.setFieldValue(
       'base_gas_price',
-      networkFees[activeChain].base.toFixed(),
+      networkFees[activeChain].base.toString(),
     );
     form.setFieldValue(
       'priority_gas_price',
-      networkFees[activeChain].priority!.toFixed(),
+      networkFees[activeChain].priority!.toString(),
     );
     form.setFieldValue('total_gas_limit', blockchainConfig.gasLimit.toString());
     void getTotalGasLimit();
     const totalGas = new BigNumber(blockchainConfig.gasLimit.toString()); // get better estimation
     const totalGasPrice = new BigNumber(
-      networkFees[activeChain].base.toFixed(),
-    ).plus(networkFees[activeChain].priority!.toFixed());
+      networkFees[activeChain].base.toString(),
+    ).plus(networkFees[activeChain].priority!.toString());
     const totalFee = totalGas.multipliedBy(totalGasPrice);
     const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
     if (totalFeeETH === 'NaN') {
@@ -488,8 +488,8 @@ function SendEVM() {
   const refreshAutomaticFee = () => {
     if (!manualFee) {
       // reset fee
-      setBaseGasPrice(networkFees[activeChain].base.toFixed());
-      setPriorityGasPrice(networkFees[activeChain].priority!.toFixed());
+      setBaseGasPrice(networkFees[activeChain].base.toString());
+      setPriorityGasPrice(networkFees[activeChain].priority!.toString());
       setTotalGasLimit(blockchainConfig.gasLimit.toString());
     }
   };

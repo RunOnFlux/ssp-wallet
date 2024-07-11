@@ -223,7 +223,10 @@ const contactsSlice = createSlice({
       state,
       action: PayloadAction<Record<keyof cryptos, contact[]>>,
     ) => {
-      state.contacts = action.payload;
+      const definedCryptos = Object.keys(action.payload) as (keyof cryptos)[];
+      definedCryptos.forEach((cc) => {
+        state.contacts[cc] = action.payload[cc];
+      });
     },
     setInitialContactsState: (state) => {
       state.contacts = initialContactsState.contacts;
