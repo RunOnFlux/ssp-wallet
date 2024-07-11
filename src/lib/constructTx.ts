@@ -983,8 +983,12 @@ export async function constructAndSignEVMTransaction(
       Number(maxTotalGas) - preVerificationGas - callGasLimit,
     );
 
-    const priorityGas = new BigNumber(priorityGasPrice).multipliedBy(10 ** 9).toFixed(0);
-    const baseGas = new BigNumber(baseGasPrice).multipliedBy(10 ** 9).toFixed(0);
+    const priorityGas = new BigNumber(priorityGasPrice)
+      .multipliedBy(10 ** 9)
+      .toFixed(0);
+    const baseGas = new BigNumber(baseGasPrice)
+      .multipliedBy(10 ** 9)
+      .toFixed(0);
 
     const CLIENT_OPT = {
       feeOptions: {
@@ -1019,7 +1023,9 @@ export async function constructAndSignEVMTransaction(
     let uoStruct;
 
     if (token) {
-      const tokenInfo = blockchainConfig.tokens.find((x) => x.contract === token);
+      const tokenInfo = blockchainConfig.tokens.find(
+        (x) => x.contract === token,
+      );
       if (!tokenInfo) {
         throw new Error('Token specifications not found');
       }

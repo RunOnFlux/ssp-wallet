@@ -550,10 +550,10 @@
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.18.1.tgz#0cb240c147c0dfd0e3eaff4cc060a772d39e155c"
   integrity sha512-yjk2MAkQmoaPYCSu35RLJ62+dz358nE83VfTePJRp8CG7aMg25mEJYpXFiD+NcevhX8LxD5OP5tktPXnXN7GDw==
 
-"@runonflux/aa-schnorr-multisig-sdk@~1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@runonflux/aa-schnorr-multisig-sdk/-/aa-schnorr-multisig-sdk-1.0.2.tgz#1611e045daacc42d1dcd16a1088f87f16db90e9a"
-  integrity sha512-abSfFQNMB+i7gJfX6XT9bIyz3aIZGNVwGTzdOZIdp2j2NAn6yBlLYc/FdwfmBX8252uvBIytSpxrBBHxgiFQzw==
+"@runonflux/aa-schnorr-multisig-sdk@~1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@runonflux/aa-schnorr-multisig-sdk/-/aa-schnorr-multisig-sdk-1.0.3.tgz#a48466437395b9417a357644bed7e94a0a7ad62d"
+  integrity sha512-Pxml+Kqh0LqiopHRUm4pD79/EU2PXZszHJBoeMtEfmv5qYqblkeOeKSOpBA0A7J3NHoK47Oupu5qIlcj3MCkCQ==
   dependencies:
     "@alchemy/aa-core" "^3.12.3"
     bigi "^1.4.2"
