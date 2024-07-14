@@ -20,7 +20,7 @@ function NetworkFee() {
       () => {
         obtainNetworkFees();
       },
-      1 * 60 * 1000,
+      15 * 1000,
     );
     return () => {
       if (globalThis.refreshIntervalNetworkFee) {
