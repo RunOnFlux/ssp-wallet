@@ -819,8 +819,8 @@ export async function estimateGas(
   const backendConfig = backends()[chain];
   const url = `https://${backendConfig.node}`;
 
-  // get address nonce. if 0, use gas limit of 347763  * 1.5
-  // if > =, use gas limit of 119098 * 1.5
+  // get address nonce. if 0, use gas limit of 347763  * 1.7
+  // if > =, use gas limit of 119098 * 1.7
 
   // const data = {
   //   id: new Date().getTime(),
@@ -873,14 +873,14 @@ export async function estimateGas(
   if (nonceCache[sender]) {
     if (nonceCache[sender] === '0x0') {
       if (token) {
-        return (440783 * 1.5).toFixed();
+        return (440783 * 1.7).toFixed();
       }
-      return (347763 * 1.5).toFixed();
+      return (347763 * 1.7).toFixed();
     }
     if (token) {
-      return (159901 * 1.5).toFixed();
+      return (159901 * 1.7).toFixed();
     }
-    return (119098 * 1.5).toFixed();
+    return (119098 * 1.7).toFixed();
   }
   const data = {
     id: new Date().getTime(),
@@ -893,14 +893,14 @@ export async function estimateGas(
   nonceCache[sender] = response.data.result;
   if (response.data.result === '0x0') {
     if (token) {
-      return (440783 * 1.5).toFixed();
+      return (440783 * 1.7).toFixed();
     }
-    return (347763 * 1.5).toFixed();
+    return (347763 * 1.7).toFixed();
   }
   if (token) {
-    return (159901 * 1.5).toFixed();
+    return (159901 * 1.7).toFixed();
   }
-  return (119098 * 1.5).toFixed();
+  return (119098 * 1.7).toFixed();
 }
 
 interface publicNonces {
@@ -964,9 +964,9 @@ export async function constructAndSignEVMTransaction(
         entryPoint: getEntryPoint(CHAIN),
       });
 
-    let preVerificationGas = Math.ceil((token ? 60045 : 47364) * 1.5);
-    let callGasLimit = Math.ceil((token ? 29076 : 19384) * 1.5);
-    const suggestedVerLimit = Math.ceil((token ? 440783 : 347763) * 1.5);
+    let preVerificationGas = Math.ceil((token ? 60045 : 47364) * 1.7);
+    let callGasLimit = Math.ceil((token ? 29076 : 19384) * 1.7);
+    const suggestedVerLimit = Math.ceil((token ? 440783 : 347763) * 1.7);
     // if we have more than suggestedVerLimit split it 1, 1, 2
     const difference =
       Number(maxTotalGas) -
@@ -998,12 +998,12 @@ export async function constructAndSignEVMTransaction(
         },
         maxFeePerGas: { max: BigInt(baseGas), min: BigInt(baseGas) },
         preVerificationGas: {
-          multiplier: 1.25,
+          multiplier: 1.4,
           max: BigInt(preVerificationGas),
         },
-        callGasLimit: { multiplier: 1.25, max: BigInt(callGasLimit) },
+        callGasLimit: { multiplier: 1.4, max: BigInt(callGasLimit) },
         verificationGasLimit: {
-          multiplier: 1.25,
+          multiplier: 1.4,
           max: BigInt(verificationGasLimit),
         },
       },

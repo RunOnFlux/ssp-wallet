@@ -324,7 +324,7 @@ const sepolia = {
   entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
   baseFee: 120, // 120 gwei
   priorityFee: 5, // 5 gwei
-  gasLimit: 500000, // 500k gas
+  gasLimit: 750000, // 750k gas
   tokens: [
     {
       contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
@@ -365,9 +365,9 @@ const eth = {
   factorySalt: 'aafactorysalt', // factory uses this salt
   factoryAddress: '0xA76f98D25C9775F67DCf8B9EF9618d454D287467',
   entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-  baseFee: 10, // 10 gwei
+  baseFee: 11, // 11 gwei
   priorityFee: 2, // 2 gwei
-  gasLimit: 500000, // 500k gas
+  gasLimit: 750000, // 750k gas
   tokens: [
     {
       contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
