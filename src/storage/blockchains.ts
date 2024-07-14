@@ -365,7 +365,7 @@ const eth = {
   factorySalt: 'aafactorysalt', // factory uses this salt
   factoryAddress: '0xA76f98D25C9775F67DCf8B9EF9618d454D287467',
   entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-  baseFee: 8, // 8 gwei
+  baseFee: 10, // 10 gwei
   priorityFee: 2, // 2 gwei
   gasLimit: 500000, // 500k gas
   tokens: [
