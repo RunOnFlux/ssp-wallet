@@ -30,7 +30,7 @@
     "events": "~3.3.0",
     "i18next": "~23.11.5",
     "localforage": "~1.10.0",
-    "lru-cache": "~10.2.2",
+    "lru-cache": "~11.0.0",
     "patch-package": "~8.0.0",
     "postinstall-postinstall": "~2.1.0",
     "process": "~0.11.10",
