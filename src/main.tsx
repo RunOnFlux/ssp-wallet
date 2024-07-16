@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
+import { ConfigProvider, theme } from 'antd';
 import router from './router';
 import { store } from './store';
 import { Provider } from 'react-redux';
@@ -21,12 +22,23 @@ localForage.config({
   description: 'Database for SSP Wallet',
 });
 
+const { defaultAlgorithm, darkAlgorithm } = theme;
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
       <SocketProvider>
         <SspConnectProvider>
-          <RouterProvider router={router} />
+          <ConfigProvider
+            theme={{
+              algorithm: window.matchMedia('(prefers-color-scheme: dark)')
+                .matches
+                ? darkAlgorithm
+                : defaultAlgorithm,
+            }}
+          >
+            <RouterProvider router={router} />
+          </ConfigProvider>
           <FiatCurrencyController />
           <NetworkFeeController />
         </SspConnectProvider>

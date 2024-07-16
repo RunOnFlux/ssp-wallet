@@ -4,14 +4,7 @@
     'Noto Color Emoji';
   line-height: 1.1;
   font-weight: 500;
-
-  /* color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424; */
-
-  color: #213547;
-  background-color: #ffffff;
-
+  color-scheme: light dark;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -41,13 +34,36 @@ body {
   width: calc(420px - 2rem);
 }
 
+.ant-divider-horizontal {
+  margin: 1rem 0;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
   }
+
+  .copyableAddress {
+    background-color: #f5f5f5;
+  }
+
+  .powered-by-flux {
+    background-color: #ffffff;
+  }
 }
 
-.ant-divider-horizontal {
-  margin: 1rem 0;
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #e7e7e7;
+    background-color: #141414;
+  }
+
+  .copyableAddress {
+    background-color: #292929;
+  }
+
+  .powered-by-flux {
+    background-color: #141414;
+  }
 }

@@ -4,8 +4,9 @@ interface Props {
   isClickeable?: boolean;
 }
 function PoweredByFlux({ isClickeable = false }: Props) {
-  const theme = 'dark';
-  const bgColor: string = theme === 'dark' ? '#fff' : '#000';
+  const theme = window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'light'
+    : 'dark';
 
   const image = `/powered_by_${theme}.svg`;
 
@@ -26,8 +27,8 @@ function PoweredByFlux({ isClickeable = false }: Props) {
         boxShadow: '0 -7px 7px -7px #ddd',
         padding: 10,
         paddingBottom: 14,
-        backgroundColor: bgColor,
       }}
+      className="powered-by-flux"
     >
       {isClickeable && (
         <Image
@@ -38,13 +39,7 @@ function PoweredByFlux({ isClickeable = false }: Props) {
           style={{ cursor: 'pointer' }}
         />
       )}
-      {!isClickeable && (
-        <Image
-          height={18}
-          preview={false}
-          src={image}
-        />
-      )}
+      {!isClickeable && <Image height={18} preview={false} src={image} />}
     </div>
   );
 }
