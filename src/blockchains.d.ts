@@ -1,4 +1,11 @@
 declare module '@storage/blockchains' {
+  export interface Token {
+    contract: string;
+    name: string;
+    symbol: string;
+    decimals: number;
+    logo: string;
+  }
   interface Blockchain {
     id: string;
     libid: string;
@@ -6,6 +13,7 @@ declare module '@storage/blockchains' {
     symbol: string;
     decimals: number;
     node: string;
+    api: string;
     slip: number;
     scriptType: string;
     messagePrefix: string;
@@ -30,6 +38,16 @@ declare module '@storage/blockchains' {
     cashaddr: string;
     txExpiryHeight: number;
     hashType: number;
+    // evm
+    chainType: string;
+    accountSalt: string;
+    factorySalt: string;
+    factoryAddress: string;
+    entrypointAddress: string;
+    baseFee: number;
+    priorityFee: number;
+    gasLimit: number;
+    tokens: Token[];
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

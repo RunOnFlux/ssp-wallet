@@ -13,6 +13,7 @@
   "amount_to_send": "Amount to Send",
   "input_amount": "Input Amount to send",
   "fee": "Fee",
+  "max_fee": "Max Fee",
   "input_fee": "Input Fee to send",
   "tx_fee": "Transaction Fee",
   "message": "Message",
@@ -27,5 +28,16 @@
   "err_insufficient_balance": "Insufficient balance",
   "err_tx_size_limit": "Transaction size exceeds blockchain limits. Please lower your amount or consolidate UTXOs first.",
   "replace_by_fee_tx": "This is a Replace by Fee (RBF) transaction.",
-  "replace_by_fee_stop": "To cancel Replace by Fee (RBF) transaction, hit Cancel or navigate back by clicking on SSP logo."
+  "replace_by_fee_stop": "To cancel Replace by Fee (RBF) transaction, hit Cancel or navigate back by clicking on SSP logo.",
+  "err_public_nonces": "Public nonces are not available, please sync public nonces from SSP Key first.",
+  "base_gas_price": "Base Gas Price",
+  "priority_gas_price": "Priority Gas Price",
+  "total_gas_limit": "Total Gas Limit",
+  "input_gas_price": "Input Base Gas Price in gwei units",
+  "input_priority_gas_price": "Input Priority Gas Price in gwei units",
+  "input_gas_limit": "Input Total Gas Limit per transaction",
+  "fee_details": "Fee Details",
+  "max_tx_fee": "Max Transaction Fee",
+  "invalid_tx_fee": "Invalid Transaction Fee",
+  "asset": "Asset"
 }

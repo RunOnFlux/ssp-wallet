@@ -8,8 +8,12 @@ interface SocketContextType {
   txid: string;
   txRejected: string;
   chain: string;
+  publicNonces: string;
+  publicNoncesRejected: string;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
+  clearPublicNonces?: () => void;
+  clearPublicNoncesRejected?: () => void;
 }
 
 interface serverResponse {
@@ -25,6 +29,8 @@ const defaultValue: SocketContextType = {
   txid: '',
   txRejected: '',
   chain: '',
+  publicNonces: '',
+  publicNoncesRejected: '',
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultValue);
@@ -37,6 +43,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [txRejected, setTxRejected] = useState('');
   const [txid, setTxid] = useState('');
   const [chain, setChain] = useState('');
+  const [publicNonces, setPublicNonces] = useState('');
+  const [publicNoncesRejected, setPublicNoncesRejected] = useState('');
   const [socketIdentiy, setSocketIdentity] = useState('');
 
   useEffect(() => {
@@ -75,8 +83,20 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     newSocket.on('txrejected', (tx: serverResponse) => {
       console.log('tx rejected');
       console.log(tx);
-      setTxRejected(tx.payload)
+      setTxRejected(tx.payload);
       setChain(tx.chain);
+    });
+
+    newSocket.on('publicnonces', (nonces: serverResponse) => {
+      console.log('incoming public nonces');
+      console.log(nonces);
+      setPublicNonces(nonces.payload);
+    });
+
+    newSocket.on('publicnoncesrejected', (nonces: serverResponse) => {
+      console.log('public nonces rejected');
+      console.log(nonces);
+      setPublicNoncesRejected('publicnoncesrejected');
     });
 
     setSocket(newSocket);
@@ -93,8 +113,29 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     setTxRejected('');
   };
 
+  const clearPublicNonces = () => {
+    setPublicNonces('');
+  };
+
+  const clearPublicNoncesRejected = () => {
+    setPublicNoncesRejected('');
+  };
+
   return (
-    <SocketContext.Provider value={{ socket, txRejected: txRejected, txid: txid, chain: chain, clearTxid, clearTxRejected }}>
+    <SocketContext.Provider
+      value={{
+        socket,
+        txRejected,
+        txid,
+        chain,
+        publicNonces,
+        publicNoncesRejected,
+        clearTxid,
+        clearTxRejected,
+        clearPublicNonces,
+        clearPublicNoncesRejected,
+      }}
+    >
       {children}
     </SocketContext.Provider>
   );

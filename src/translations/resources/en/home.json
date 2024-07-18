@@ -13,6 +13,15 @@
     "tx_rejected_info": "Transaction rejected by SSP Key.",
     "tx_rejected_info_2": "Your transaction will not be included in the blockchain. Your funds are fully available and possible to be sent."
   },
+  "publicNoncesRejected": {
+    "public_nonces_rejected": "Public Nonces Rejected!",
+    "public_nonces_rejected_info": "Public Nonces rejected by SSP Key.",
+    "public_nonces_rejected_info_2": "SSP Key rejected to send public nonces. Without public nonces SSP Wallet cannot construct transactions on EVM chains."
+  },
+  "publicNoncesReceived": {
+    "public_nonces_received": "Public Nonces Received!",
+    "public_nonces_received_info": "Public Nonces were received and stored successfully. Public Nonces are used to construct transactions on EVM chains."
+  },
   "transactionsTable": {
     "no_tx_history": "No Transaction History Found",
     "txid_link": "TXID: {{txid}}",
@@ -125,6 +134,14 @@
     "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on our mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or use a manual input."
   },
+  "confirmPublicNoncesKey": {
+    "confirm_public_nonces_key": "Confirm Public Nonces on SSP Key",
+    "confirm_public_nonces_key_info": "In order to send EVM transaction, we first need to obtain public nonces from SSP Key which are used for transaction construction.",
+    "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open your SSP Key on our mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
+    "manual_input": "Input Public Nonces manually instead",
+    "public_nonces_stored": "Public Nonces Stored!",
+    "invalid_public_nonces": "Invalid Public Nonces."
+  },
   "navbar": {
     "refresh": "Refresh",
     "chain_wallet": "{{chain}} {{wallet}}",
@@ -228,5 +245,13 @@
     "err_saving_contacts": "Error while saving contacts. Please try again.",
     "contact_deleted": "Contact Deleted",
     "created_at": "Created at"
+  },
+  "tokens": {
+    "import_token": "Import Token",
+    "import": "Import",
+    "import_selected": "Import Selected",
+    "remove_token": "Remove Token",
+    "remove": "Remove",
+    "remove_token_info": "This action will hide the token from your wallet. You can add it back at any time."
   }
 }

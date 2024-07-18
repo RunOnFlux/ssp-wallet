@@ -6,6 +6,7 @@ import Restore from './pages/Restore/Restore.tsx';
 import Login from './pages/Login/Login.tsx';
 import Home from './pages/Home/Home.tsx';
 import Send from './pages/Send/Send.tsx';
+import SendEVM from './pages/SendEVM/SendEVM.tsx';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
   {
     path: '/send',
     element: <Send />,
+  },
+  {
+    path: '/sendevm',
+    element: <SendEVM />,
   },
   {
     path: '*',

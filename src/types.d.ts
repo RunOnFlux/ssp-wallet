@@ -176,6 +176,8 @@ export interface wallet {
   unconfirmedBalance: string;
   transactions: transaction[];
   nodes?: node[];
+  tokenBalances?: tokenBalanceEVM[];
+  activatedTokens?: string[];
 }
 
 export interface node {
@@ -209,9 +211,11 @@ export interface transaction {
   amount: string; // satoshis
   message: string;
   receiver: string;
-  size: number;
+  size?: number;
   vsize?: number;
   utxos?: txIdentifier[];
+  type?: string; // evm
+  isError?: boolean;
 }
 
 export interface pendingTransaction {
@@ -235,11 +239,108 @@ export interface getInfoBlockbook {
   };
 }
 
+export interface evm_call {
+  jsonrpc: string;
+  id: number;
+  result: string;
+}
+
+export interface tokenBalanceEVM {
+  contract: string;
+  balance: string;
+}
+
+export interface tokenBalance {
+  contractAddress: string;
+  tokenBalance: string;
+}
+
+export interface alchemyCallTokenBalances {
+  jsonrpc: string;
+  id: number;
+  result: {
+    address: string;
+    tokenBalances: tokenBalance[];
+  };
+}
+
+export interface etherscan_external_tx {
+  blockNumber: string;
+  timeStamp: string;
+  hash: string;
+  from: string;
+  to: string;
+  nonce: string;
+  blockHash: string;
+  transactionIndex: string;
+  value: string;
+  gas: string;
+  gasPrice: string;
+  cumulativeGasUsed: string;
+  gasUsed: string;
+  isError: string;
+  errCode: string;
+  txreceipt_status: string;
+  input: string;
+  confirmations: string;
+  methodId: string;
+  functionName: string;
+}
+
+export interface etherscan_internal_tx {
+  blockNumber: string;
+  timeStamp: string;
+  hash: string;
+  from: string;
+  to: string;
+  value: string;
+  contractAddress: string;
+  input: string;
+  type: string;
+  gas: string;
+  gasUsed: string;
+  traceId: string;
+  isError: string;
+  errCode: string;
+}
+
+export interface eth_evm {
+  jsonrpc: string;
+  id: number;
+  result: string;
+}
+
+export interface etherscan_call_external_txs {
+  status: string;
+  message: string;
+  result: etherscan_external_tx[];
+}
+
+export interface etherscan_call_internal_txs {
+  status: string;
+  message: string;
+  result: etherscan_internal_tx[];
+}
+
+export interface publicNonce {
+  kPublic: string;
+  kTwoPublic: string;
+}
+
+export interface publicPrivateNonce {
+  k: string;
+  kTwo: string;
+  kPublic: string;
+  kTwoPublic: string;
+}
+
 export interface syncSSPRelay {
   chain: string;
   walletIdentity: string;
   keyXpub: string;
   wkIdentity: string;
+  keyToken?: string | null;
+  publicNonces?: publicNonce[];
 }
 
 export interface actionSSPRelay {
@@ -312,6 +413,8 @@ export interface cryptos {
   bch: number;
   btcTestnet: number;
   btcSignet: number;
+  sepolia: number;
+  eth: number;
 }
 
 export interface externalIdentity {
@@ -327,6 +430,7 @@ export interface currencySSPRelay {
 
 export interface networkFee {
   coin: string;
+  base: number;
   economy: number;
   normal: number;
   fast: number;

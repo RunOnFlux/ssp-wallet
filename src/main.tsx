@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
-import router from './router';
 import { store } from './store';
 import { Provider } from 'react-redux';
 import localForage from 'localforage';
+import App from './App';
 import { SocketProvider } from './contexts/SocketContext';
 import { SspConnectProvider } from './contexts/sspConnectContext';
 import FiatCurrencyController from './components/FiatCurrencyController/FiatCurrencyController.tsx';
@@ -26,7 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
       <SocketProvider>
         <SspConnectProvider>
-          <RouterProvider router={router} />
+          <App />
           <FiatCurrencyController />
           <NetworkFeeController />
         </SspConnectProvider>

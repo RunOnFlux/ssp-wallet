@@ -22,6 +22,7 @@ import Navigation from '../../components/Navigation/Navigation';
 import Transactions from '../../components/Transactions/Transactions';
 import Nodes from '../../components/Nodes/Nodes';
 import Contacts from '../../components/Contacts/Contacts';
+import Tokens from '../../components/TokensEVM/Tokens';
 import Balances from '../../components/Balances/Balances';
 import Navbar from '../../components/Navbar/Navbar';
 import AddressContainer from '../../components/AddressContainer/AddressContainer.tsx';
@@ -34,6 +35,7 @@ import {
 } from '../../lib/wallet.ts';
 import { useTranslation } from 'react-i18next';
 import { generatedWallets } from '../../types';
+import { blockchains } from '@storage/blockchains';
 
 function Home() {
   const { t } = useTranslation(['home', 'common']);
@@ -213,13 +215,18 @@ function Home() {
               ]}
             />
           )}
-          {wallets?.[walletInUse] && !wallets[walletInUse].nodes && (
+          {blockchains[activeChain].chainType === 'evm' && (
             <Tabs
-              defaultActiveKey="activity"
+              defaultActiveKey="tokens"
               size="small"
               centered
               tabBarStyle={{ marginBottom: 0 }}
               items={[
+                {
+                  label: t('common:tokens'),
+                  key: 'tokens',
+                  children: <Tokens />,
+                },
                 {
                   label: t('common:activity'),
                   key: 'activity',
@@ -233,6 +240,28 @@ function Home() {
               ]}
             />
           )}
+          {wallets?.[walletInUse] &&
+            !wallets[walletInUse].nodes &&
+            blockchains[activeChain].chainType !== 'evm' && (
+              <Tabs
+                defaultActiveKey="activity"
+                size="small"
+                centered
+                tabBarStyle={{ marginBottom: 0 }}
+                items={[
+                  {
+                    label: t('common:activity'),
+                    key: 'activity',
+                    children: <Transactions />,
+                  },
+                  {
+                    label: t('home:contacts.contacts'),
+                    key: 'contacts',
+                    children: <Contacts />,
+                  },
+                ]}
+              />
+            )}
         </div>
       )}
       <Key synchronised={keySynchronised} />

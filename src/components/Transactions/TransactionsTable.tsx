@@ -15,10 +15,7 @@ import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { backends } from '@storage/backends';
-import {
-  formatCrypto,
-  formatFiatWithSymbol,
-} from '../../lib/currency';
+import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -76,25 +73,40 @@ function TransactionsTable(props: {
               <p style={{ margin: 0, wordBreak: 'break-all' }}>
                 {t('home:transactionsTable.txid_link', { txid: record.txid })}
               </p>
-              <p style={{ margin: 0 }}>
-                {t('home:transactionsTable.fee_with_symbol', {
-                  fee: formatCrypto(
-                    new BigNumber(record.fee).dividedBy(
-                      10 ** blockchainConfig.decimals,
+              {record.type !== 'evm' && (
+                <p style={{ margin: 0 }}>
+                  {t('home:transactionsTable.fee_with_symbol', {
+                    fee: formatCrypto(
+                      new BigNumber(record.fee).dividedBy(
+                        10 ** blockchainConfig.decimals,
+                      ),
                     ),
-                  ),
-                  symbol: blockchainConfig.symbol,
-                })}{' '}
-                ({(+record.fee / (record.vsize ?? record.size)).toFixed(2)}{' '}
-                {record.vsize ? '˝sat/vB' : 'sat/B'})
-              </p>
+                    symbol: blockchainConfig.symbol,
+                  })}{' '}
+                  ({(+record.fee / (record.vsize! ?? record.size!)).toFixed(2)}{' '}
+                  {record.vsize ? 'sat/vB' : 'sat/B'})
+                </p>
+              )}
+              {record.type === 'evm' && (
+                <p style={{ margin: 0 }}>
+                  {t('home:transactionsTable.fee_with_symbol', {
+                    fee: formatCrypto(
+                      new BigNumber(record.fee).dividedBy(
+                        10 ** blockchainConfig.decimals,
+                      ),
+                    ),
+                    symbol: blockchainConfig.symbol,
+                  })}
+                </p>
+              )}
+
               <p style={{ margin: 0 }}>
                 {t('home:transactionsTable.note_with_note', {
                   note: record.message || '-',
                 })}
               </p>
               <a
-                href={`https://${backendConfig.node}/tx/${record.txid}`}
+                href={`https://${backendConfig.explorer ?? backendConfig.node}/tx/${record.txid}`}
                 target="_blank"
                 rel="noreferrer"
               >

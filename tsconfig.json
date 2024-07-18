@@ -25,7 +25,16 @@
       "chrome",
       "node",
     ],
-    "checkJs": false
+    "checkJs": false,
+    "baseUrl": "./",
+    "paths": {
+      "@storage/*": [
+        "./src/storage/*"
+      ],
+      "@assets/*": [
+        "./src/assets/*"
+      ],
+    }
   },
   "include": [
     "src",

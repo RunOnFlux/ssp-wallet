@@ -17,6 +17,8 @@ import {
   setBalance,
   setUnconfirmedBalance,
   setInitialContactsState,
+  setTokenBalances,
+  setActivatedTokens,
 } from '../../store';
 import {
   Row,
@@ -48,7 +50,12 @@ import AutoLogout from '../AutoLogout/AutoLogout';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
-import { generatedWallets, transaction, node } from '../../types';
+import {
+  generatedWallets,
+  transaction,
+  node,
+  tokenBalanceEVM,
+} from '../../types';
 import { blockchains } from '@storage/blockchains';
 import ManualSign from '../ManualSign/ManualSign.tsx';
 
@@ -166,9 +173,23 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
       const balancesWallet: balancesObj =
         (await localForage.getItem(`balances-${activeChain}-${value.value}`)) ??
         balancesObject;
+      const tokenBalances: tokenBalanceEVM[] =
+        (await localForage.getItem(
+          `token-balances-${activeChain}-${value.value}`,
+        )) ?? [];
+      const activatedTokens: string[] =
+        (await localForage.getItem(
+          `activated-tokens-${activeChain}-${value.value}`,
+        )) ?? [];
       const nodesWallet: node[] =
         (await localForage.getItem(`nodes-${activeChain}-${value.value}`)) ??
         [];
+      if (activatedTokens) {
+        setActivatedTokens(activeChain, value.value, activatedTokens || []);
+      }
+      if (tokenBalances) {
+        setTokenBalances(activeChain, value.value, tokenBalances || []);
+      }
       if (nodesWallet) {
         setNodes(activeChain, value.value, nodesWallet || []);
       }
@@ -284,7 +305,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
     }
   };
 
-  const sspIdentityAction = (status: boolean) =>{
+  const sspIdentityAction = (status: boolean) => {
     setOpenManualSign(status);
   };
   const sspWalletDetailsAction = (status: boolean) => {
@@ -464,6 +485,9 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
                         top: '5px',
                         marginLeft: '8px',
                         fontSize: '16px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {blockchainConfig.name}{' '}
@@ -549,10 +573,7 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
         open={openAddressDetails}
         openAction={addressDetailsAction}
       />
-      <ManualSign 
-        open={openManualSign}
-        openAction={sspIdentityAction}
-      />
+      <ManualSign open={openManualSign} openAction={sspIdentityAction} />
       <PasswordConfirm
         open={passwordConfirmDialogVisilbe}
         openAction={passwordConfirmDialogAction}

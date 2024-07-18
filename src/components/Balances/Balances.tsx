@@ -2,8 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
 import { useAppSelector } from '../../hooks';
-import { setBalance, setUnconfirmedBalance } from '../../store';
-import { fetchAddressBalance } from '../../lib/balances.ts';
+import {
+  setBalance,
+  setUnconfirmedBalance,
+  setTokenBalances,
+} from '../../store';
+import {
+  fetchAddressBalance,
+  fetchAddressTokenBalances,
+} from '../../lib/balances.ts';
 import SocketListener from '../SocketListener/SocketListener.tsx';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
@@ -119,6 +126,29 @@ function Balances() {
       .catch((error) => {
         console.log(error);
       });
+    // only fetch for evm chainType
+    if (blockchains[chainFetched].chainType === 'evm') {
+      // create contracts array from tokens contracts in specs
+      const tokens = blockchains[chainFetched].tokens.map(
+        (token) => token.contract, // TODO evaluate only activated contracts
+      );
+      fetchAddressTokenBalances(
+        wallets[walletFetched].address,
+        chainFetched,
+        tokens,
+      )
+        .then(async (balancesTokens) => {
+          console.log(balancesTokens);
+          setTokenBalances(chainFetched, walletFetched, balancesTokens);
+          await localForage.setItem(
+            `token-balances-${chainFetched}-${walletFetched}`,
+            balancesTokens,
+          );
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   };
 
   useEffect(() => {

@@ -4,12 +4,26 @@ import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { toLegacyAddress } from 'bchaddrjs';
 import {
+  http as viemHttp,
+  parseUnits,
+  encodeFunctionData,
+  erc20Abi,
+} from 'viem';
+import * as viemChains from 'viem/chains';
+import * as accountAbstraction from '@runonflux/aa-schnorr-multisig-sdk';
+import {
+  getEntryPoint,
+  createSmartAccountClient,
+  deepHexlify,
+} from '@alchemy/aa-core';
+import {
   blockbookUtxo,
   utxo,
   blockbookBroadcastTxResult,
   broadcastTxResult,
   cryptos,
   txIdentifier,
+  eth_evm,
 } from '../types';
 
 import { backends } from '@storage/backends';
@@ -218,7 +232,6 @@ export function signTransaction(
     if (blockchains[chain].hashType) {
       // only for BCH
       hashType =
-        // eslint-disable-next-line no-bitwise
         utxolib.Transaction.SIGHASH_ALL |
         utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
     }
@@ -790,6 +803,277 @@ export async function broadcastTx(
       });
       return response.data.txid;
     }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+const nonceCache = {} as Record<string, string>;
+
+export async function estimateGas(
+  chain: keyof cryptos,
+  sender: string,
+  token: string,
+): Promise<string> {
+  const backendConfig = backends()[chain];
+  const url = `https://${backendConfig.node}`;
+
+  // get address nonce. if 0, use gas limit of 347763  * 1.7
+  // if > =, use gas limit of 119098 * 1.7
+
+  // const data = {
+  //   id: new Date().getTime(),
+  //   jsonrpc: '2.0',
+  //   method: 'eth_estimateUserOperationGas',
+  //   params: [estimateUserOpData, blockchainConfig.entrypointAddress],
+  // };
+  // get account nonce
+  // account creation:
+
+  // result: {
+  //   preVerificationGas: '0xb904',
+  //   callGasLimit: '0x4bb8',
+  //   verificationGasLimit: '0x449b7' 281015
+  // }
+  // = 347763 gas
+
+  // account exists:
+
+  // result: {
+  //   preVerificationGas: '0xb2d4', 45780
+  //   callGasLimit: '0x3bb8', 15288
+  //   verificationGasLimit: '0xe2ae' 58030
+  // }
+  // = 119098 gas
+  // // 2 scenarios coded
+  // 1st transfer with account creation if nonce is 0
+  // 2nd transfer if nonce is present, account present
+
+  //   erc20 account exists {
+  //   jsonrpc: '2.0',
+  //   id: 1720186600388,
+  //   result: {
+  //     preVerificationGas: '0xe2d1', 58065
+  //     callGasLimit: '0x7194', 29076
+  //     verificationGasLimit: '0x11c38' 72760
+  //   }
+  // }
+
+  // with init erc20 does not exists{
+  //   jsonrpc: '2.0',
+  //   id: 1720186774250,
+  //   result: {
+  //     preVerificationGas: '0xea8d', 60045
+  //     callGasLimit: '0x7194', 29076
+  //     verificationGasLimit: '0x55dae' 351662
+  //   }
+  // }
+
+  if (nonceCache[sender]) {
+    if (nonceCache[sender] === '0x0') {
+      if (token) {
+        return (440783 * 1.7).toFixed();
+      }
+      return (347763 * 1.7).toFixed();
+    }
+    if (token) {
+      return (159901 * 1.7).toFixed();
+    }
+    return (119098 * 1.7).toFixed();
+  }
+  const data = {
+    id: new Date().getTime(),
+    jsonrpc: '2.0',
+    method: 'eth_getTransactionCount',
+    params: [sender],
+  };
+  const response = await axios.post<eth_evm>(url, data);
+  console.log(response.data);
+  nonceCache[sender] = response.data.result;
+  if (response.data.result === '0x0') {
+    if (token) {
+      return (440783 * 1.7).toFixed();
+    }
+    return (347763 * 1.7).toFixed();
+  }
+  if (token) {
+    return (159901 * 1.7).toFixed();
+  }
+  return (119098 * 1.7).toFixed();
+}
+
+interface publicNonces {
+  kPublic: string;
+  kTwoPublic: string;
+}
+
+// return stringified multisig user operation
+export async function constructAndSignEVMTransaction(
+  chain: keyof cryptos,
+  receiver: `0x${string}`,
+  amount: string,
+  privateKey: `0x${string}`, // ssp
+  // publicKey1 is generated here. ssp wallet
+  publicKey2HEX: string,
+  // publicNonces1 is generated here. ssp wallet
+  publicNonces2: publicNonces, // ssp key public nonces
+  baseGasPrice: string,
+  priorityGasPrice: string,
+  maxTotalGas: string,
+  token?: `0x${string}` | '',
+): Promise<string> {
+  try {
+    const blockchainConfig = blockchains[chain];
+    const backendConfig = backends()[chain];
+    const accountSalt = blockchainConfig.accountSalt;
+    const schnorrSigner1 =
+      accountAbstraction.helpers.SchnorrHelpers.createSchnorrSigner(privateKey);
+    const publicKey1 = schnorrSigner1.getPubKey();
+    const publicKey2 = new accountAbstraction.types.Key(
+      Buffer.from(publicKey2HEX, 'hex'),
+    );
+
+    const publicNonces1 = schnorrSigner1.generatePubNonces();
+    const publicNoncesKey: accountAbstraction.types.PublicNonces = {
+      kPublic: new accountAbstraction.types.Key(
+        Buffer.from(publicNonces2.kPublic, 'hex'),
+      ),
+      kTwoPublic: new accountAbstraction.types.Key(
+        Buffer.from(publicNonces2.kTwoPublic, 'hex'),
+      ),
+    };
+    const publicKeys = [publicKey1, publicKey2];
+    const combinedAddresses =
+      accountAbstraction.helpers.SchnorrHelpers.getAllCombinedAddrFromKeys(
+        publicKeys,
+        2,
+      );
+
+    const rpcUrl = `https://${backendConfig.node}`;
+
+    const transport = viemHttp(rpcUrl);
+    const CHAIN = viemChains[blockchainConfig.libid as keyof typeof viemChains];
+    const multiSigSmartAccount =
+      await accountAbstraction.accountAbstraction.createMultiSigSmartAccount({
+        transport,
+        chain: CHAIN,
+        combinedAddress: combinedAddresses,
+        salt: accountAbstraction.helpers.create2Helpers.saltToHex(accountSalt),
+        // @ts-expect-error type mismatch as of library
+        entryPoint: getEntryPoint(CHAIN),
+      });
+
+    let preVerificationGas = Math.ceil((token ? 60045 : 47364) * 1.7);
+    let callGasLimit = Math.ceil((token ? 29076 : 19384) * 1.7);
+    const suggestedVerLimit = Math.ceil((token ? 440783 : 347763) * 1.7);
+    // if we have more than suggestedVerLimit split it 1, 1, 2
+    const difference =
+      Number(maxTotalGas) -
+      (suggestedVerLimit + callGasLimit + preVerificationGas);
+    if (difference > 0) {
+      const differenceGroup = Math.ceil(difference / 4);
+      preVerificationGas += differenceGroup;
+      callGasLimit += differenceGroup;
+    }
+    preVerificationGas = Math.ceil(preVerificationGas);
+    callGasLimit = Math.ceil(callGasLimit);
+
+    const verificationGasLimit = Math.ceil(
+      Number(maxTotalGas) - preVerificationGas - callGasLimit,
+    );
+
+    const priorityGas = new BigNumber(priorityGasPrice)
+      .multipliedBy(10 ** 9)
+      .toFixed(0);
+    const baseGas = new BigNumber(baseGasPrice)
+      .multipliedBy(10 ** 9)
+      .toFixed(0);
+
+    const CLIENT_OPT = {
+      feeOptions: {
+        maxPriorityFeePerGas: {
+          max: BigInt(priorityGas),
+          min: BigInt(priorityGas),
+        },
+        maxFeePerGas: { max: BigInt(baseGas), min: BigInt(baseGas) },
+        preVerificationGas: {
+          multiplier: 1.4,
+          max: BigInt(preVerificationGas),
+        },
+        callGasLimit: { multiplier: 1.4, max: BigInt(callGasLimit) },
+        verificationGasLimit: {
+          multiplier: 1.4,
+          max: BigInt(verificationGasLimit),
+        },
+      },
+      txMaxRetries: 5,
+      txRetryMultiplier: 3,
+    };
+
+    const smartAccountClient = createSmartAccountClient({
+      // @ts-expect-error library issue
+      transport,
+      // @ts-expect-error library issue
+      chain: CHAIN,
+      account: multiSigSmartAccount,
+      opts: CLIENT_OPT,
+    });
+
+    let uoStruct;
+
+    if (token) {
+      const tokenInfo = blockchainConfig.tokens.find(
+        (x) => x.contract === token,
+      );
+      if (!tokenInfo) {
+        throw new Error('Token specifications not found');
+      }
+      const tokenDecimals = tokenInfo.decimals;
+      const erc20Decimals = tokenDecimals;
+      const erc20Amount = parseUnits(amount, erc20Decimals);
+      console.log(erc20Amount);
+      const uoCallData = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: 'transfer',
+        args: [receiver, erc20Amount],
+      });
+
+      console.log(uoCallData);
+      uoStruct = await smartAccountClient.buildUserOperation({
+        account: multiSigSmartAccount,
+        uo: {
+          data: uoCallData,
+          target: token, // token contract address
+        },
+      });
+      console.log(uoStruct);
+    } else {
+      uoStruct = await smartAccountClient.buildUserOperation({
+        account: multiSigSmartAccount,
+        uo: {
+          data: '0x',
+          target: receiver,
+          value: parseUnits(amount, blockchainConfig.decimals),
+        },
+      });
+    }
+    console.log(uoStruct);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const uoStructHexlified = deepHexlify(uoStruct);
+    const uoStructHash = multiSigSmartAccount
+      .getEntryPoint()
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      .getUserOperationHash(uoStructHexlified);
+    const multiSigUserOp = new accountAbstraction.userOperation.MultiSigUserOp(
+      publicKeys,
+      [publicNonces1, publicNoncesKey],
+      uoStructHash,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      uoStructHexlified,
+    );
+    multiSigUserOp.signMultiSigHash(schnorrSigner1); // we post this to our server
+    return JSON.stringify(multiSigUserOp.toJson());
   } catch (error) {
     console.log(error);
     throw error;

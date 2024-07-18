@@ -172,7 +172,11 @@ function Transactions() {
         chain={activeChain}
       />
 
-      <SocketListener txRejected={onTxRejected} txSent={onTxSent} />
+      <SocketListener
+        txRejected={onTxRejected}
+        txSent={onTxSent}
+        ignorePopups={true}
+      />
     </div>
   );
 }

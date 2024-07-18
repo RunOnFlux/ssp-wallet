@@ -39,9 +39,8 @@ function Key(props: { synchronised: (status: boolean) => void }) {
   const [keyInput, setKeyInput] = useState('');
   const [keyAutomaticInput, setKeyAutomaticInput] = useState('');
   const [keyInputVisible, setKeyInputVisible] = useState(false);
-  const { sspWalletInternalIdentity, activeChain, identityChain } = useAppSelector(
-    (state) => state.sspState,
-  );
+  const { sspWalletInternalIdentity, activeChain, identityChain } =
+    useAppSelector((state) => state.sspState);
   const dispatch = useAppDispatch();
   const { xpubKey, xpubWallet } = useAppSelector((state) => state[activeChain]);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
@@ -80,7 +79,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         .get<syncSSPRelay>(
           `https://${sspConfig().relay}/v1/sync/${sspWalletInternalIdentity}`,
         )
-        .then((res) => {
+        .then(async (res) => {
           if (res.data.chain !== activeChain) {
             return;
           }
@@ -106,13 +105,14 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               return;
             }
           } else {
-            generateMultisigAddress(
-              xpubWallet,
-              xpubKey,
-              0,
-              0,
-              activeChain,
-            );
+            generateMultisigAddress(xpubWallet, xpubKey, 0, 0, activeChain);
+          }
+          if (res.data.publicNonces) {
+            // ssp key can send us newly generated public nonces. Replace our nonces with these
+            const sspKeyPublicNonces = res.data.publicNonces;
+            await localForage
+              .setItem('sspKeyPublicNonces', sspKeyPublicNonces)
+              .catch((error) => console.log(error)); // we do not need to throw an error
           }
           // synced ok
           syncRunning = false;
@@ -222,8 +222,10 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         void (async function () {
           await localForage.setItem('activeChain', identityChain);
         })();
-        setIsModalKeyOpen(false);
-        synchronised(true);
+        setTimeout(() => { // timeout as we need to wait for activeChain to be switched back
+          setIsModalKeyOpen(false);
+          synchronised(true);
+        }, 100);
       } else {
         // tell parent of failiure to logout
         synchronised(false);
@@ -326,7 +328,10 @@ function Key(props: { synchronised: (status: boolean) => void }) {
             <TextArea
               value={keyInput}
               onChange={(e) => setKeyInput(e.target.value)}
-              placeholder={t('home:key.input_xpub', { path: derivationPath, chain: blockchainConfig.name })}
+              placeholder={t('home:key.input_xpub', {
+                path: derivationPath,
+                chain: blockchainConfig.name,
+              })}
               autoSize
             />
           </>

@@ -16,7 +16,7 @@ import {
 import { NoticeType } from 'antd/es/message/interface';
 
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { contact } from '../../types';
+import { contact, tokenBalanceEVM } from '../../types';
 
 import {
   setActiveChain,
@@ -35,6 +35,8 @@ import {
   setXpubKeyIdentity,
   setXpubWalletIdentity,
   setContacts,
+  setTokenBalances,
+  setActivatedTokens,
 } from '../../store';
 
 import { getFingerprint } from '../../lib/fingerprint';
@@ -290,9 +292,27 @@ function Login() {
               (await localForage.getItem(
                 `balances-${activeChain}-${walInUse}`,
               )) ?? balancesObject;
+            const tokenBalances: tokenBalanceEVM[] =
+              (await localForage.getItem(
+                `token-balances-${activeChain}-${walInUse}`,
+              )) ?? [];
+            const activatedTokens: string[] =
+              (await localForage.getItem(
+                `activated-tokens-${activeChain}-${walInUse}`,
+              )) ?? [];
             const nodesWallet: node[] =
               (await localForage.getItem(`nodes-${activeChain}-${walInUse}`)) ??
               [];
+            if (activatedTokens) {
+              setActivatedTokens(
+                activeChain,
+                walInUse,
+                activatedTokens || [],
+              );
+            }
+            if (tokenBalances) {
+              setTokenBalances(activeChain, walInUse, tokenBalances || []);
+            }
             if (nodesWallet) {
               setNodes(activeChain, walInUse, nodesWallet || []);
             }

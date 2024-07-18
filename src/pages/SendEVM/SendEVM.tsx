@@ -10,27 +10,42 @@ import {
   Popconfirm,
   Popover,
   Select,
+  Collapse,
 } from 'antd';
 import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar';
 import {
-  constructAndSignTransaction,
-  clearUtxoCache,
-  fetchUtxos,
-  getTransactionSize,
+  constructAndSignEVMTransaction,
+  estimateGas,
 } from '../../lib/constructTx';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
+import {
+  setBalance,
+  setUnconfirmedBalance,
+  setTokenBalances,
+} from '../../store';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
-import { generateAddressKeypair, getScriptType } from '../../lib/wallet';
+import {
+  generateAddressKeypair,
+  getScriptType,
+  deriveEVMPublicKey,
+} from '../../lib/wallet';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
+import ConfirmPublicNoncesKey from '../../components/ConfirmPublicNoncesKey/ConfirmPublicNoncesKey.tsx';
+import PublicNoncesRejected from '../../components/PublicNoncesRejected/PublicNoncesRejected';
+import PublicNoncesReceived from '../../components/PublicNoncesReceived/PublicNoncesReceived';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
+import {
+  fetchAddressBalance,
+  fetchAddressTokenBalances,
+} from '../../lib/balances.ts';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
@@ -38,10 +53,10 @@ import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
 import { setContacts } from '../../store';
 
-import { transaction, utxo } from '../../types';
+import { transaction, utxo, tokenBalanceEVM } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
-import './Send.css';
+import './SendEVM.css';
 
 interface contactOption {
   label: string;
@@ -54,6 +69,16 @@ interface contactsInterface {
   options: contactOption[];
 }
 
+interface tokenOption {
+  label: string;
+  value: string;
+}
+
+interface publicNonces {
+  kPublic: string;
+  kTwoPublic: string;
+}
+
 interface sendForm {
   receiver: string;
   amount: string;
@@ -63,10 +88,14 @@ interface sendForm {
   paymentAction?: boolean;
 }
 
-let txSentInterval: string | number | NodeJS.Timeout | undefined;
-let alreadyRunning = false;
+interface balancesObj {
+  confirmed: string;
+  unconfirmed: string;
+}
 
-function Send() {
+let txSentInterval: string | number | NodeJS.Timeout | undefined;
+
+function SendEVM() {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const state = location.state as sendForm;
@@ -76,6 +105,10 @@ function Send() {
     txRejected,
     chain: txChain,
     clearTxRejected,
+    publicNonces,
+    publicNoncesRejected,
+    clearPublicNonces,
+    clearPublicNoncesRejected,
   } = useSocket();
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { t } = useTranslation(['send', 'common', 'home']);
@@ -85,78 +118,103 @@ function Send() {
   const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
-  const { wallets, walletInUse } = useAppSelector(
+  const { xpubKey, wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
   const transactions = wallets[walletInUse].transactions;
-  const redeemScript = wallets[walletInUse].redeemScript;
-  const witnessScript = wallets[walletInUse].witnessScript;
   const sender = wallets[walletInUse].address;
-  const myNodes = wallets[walletInUse].nodes ?? [];
   const [spendableBalance, setSpendableBalance] = useState('0');
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
+  const [openConfirmPublicNonces, setOpenConfirmPublicNonces] = useState(false);
+  const [openPublicNoncesRejected, setOpenPublicNoncesRejected] =
+    useState(false);
+  const [openPublicNoncsReceived, setOpenPublicNoncesReceived] =
+    useState(false);
   const [txHex, setTxHex] = useState('');
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txReceiver, setTxReceiver] = useState('');
-  const [txMessage, setTxMessage] = useState('');
+  const [txToken, setTxToken] = useState('');
+  const blockchainConfig = blockchains[activeChain];
   const [txFee, setTxFee] = useState('0');
-  const [feePerByte, setFeePerByte] = useState('0');
+  const [baseGasPrice, setBaseGasPrice] = useState(
+    blockchainConfig.baseFee.toString(),
+  );
+  const [priorityGasPrice, setPriorityGasPrice] = useState(
+    blockchainConfig.priorityFee.toString(),
+  );
+  const [totalGasLimit, setTotalGasLimit] = useState(
+    blockchainConfig.gasLimit.toString(),
+  );
   const [validateStatusAmount, setValidateStatusAmount] = useState<
     '' | 'success' | 'error' | 'warning' | 'validating' | undefined
   >('success');
   const [useMaximum, setUseMaximum] = useState(false);
   const [manualFee, setManualFee] = useState(false);
-  const [txSizeVBytes, setTxSize] = useState(0);
   const [contactsItems, setContactsItems] = useState<contactsInterface[]>([]);
+  const [tokenItems, setTokenItems] = useState<tokenOption[]>([]);
   const { networkFees } = useAppSelector((state) => state.networkFees);
   const { contacts } = useAppSelector((state) => state.contacts);
 
-  const blockchainConfig = blockchains[activeChain];
-  const { cryptoRates, fiatRates } = useAppSelector(
-    (state) => state.fiatCryptoRates,
-  );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
   useEffect(() => {
     try {
-      if (state.amount || state.receiver || state.message) {
-        console.log('TRIGGERED A');
-        setFeePerByte(networkFees[activeChain].base.toFixed());
-        obtainFreshUtxos();
-        if (state.amount) {
-          setSendingAmount(state.amount);
-          form.setFieldValue('amount', state.amount);
-        }
-        if (state.receiver) {
-          setTxReceiver(state.receiver);
-          form.setFieldValue('receiver', state.receiver);
-        }
-        if (state.message) {
-          setTxMessage(state.message);
-          form.setFieldValue('message', state.message);
-        }
+      if (state.amount) {
+        setSendingAmount(state.amount);
+        form.setFieldValue('amount', state.amount);
+      }
+      if (state.receiver) {
+        setTxReceiver(state.receiver);
+        form.setFieldValue('receiver', state.receiver);
       }
     } catch (error) {
       console.log(error);
     }
-  }, [state.message, state.receiver, state.amount]);
+  }, [state.receiver, state.amount]);
 
   useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
+    setBaseGasPrice(networkFees[activeChain].base.toString());
+    setPriorityGasPrice(networkFees[activeChain].priority!.toString());
+    setTotalGasLimit(blockchainConfig.gasLimit.toString());
+    form.setFieldValue(
+      'base_gas_price',
+      networkFees[activeChain].base.toString(),
+    );
+    form.setFieldValue(
+      'priority_gas_price',
+      networkFees[activeChain].priority!.toString(),
+    );
+    form.setFieldValue('total_gas_limit', blockchainConfig.gasLimit.toString());
+    void getTotalGasLimit();
+    const totalGas = new BigNumber(blockchainConfig.gasLimit.toString()); // get better estimation
+    const totalGasPrice = new BigNumber(
+      networkFees[activeChain].base.toString(),
+    ).plus(networkFees[activeChain].priority!.toString());
+    const totalFee = totalGas.multipliedBy(totalGasPrice);
+    const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
+    if (totalFeeETH === 'NaN') {
+      setTxFee('---');
+      form.setFieldValue('fee', '---');
+      return;
+    }
+    setTxFee(totalFeeETH);
+    form.setFieldValue('fee', totalFeeETH);
     try {
-      if (!state.amount && !state.receiver && !state.message) {
-        console.log('TRIGGERED B');
-        setFeePerByte(networkFees[activeChain].base.toFixed());
-        obtainFreshUtxos();
-      }
+      console.log(networkFees);
     } catch (error) {
       console.log(error);
     }
   });
+
+  useEffect(() => {
+    console.log('token change');
+    getSpendableBalance();
+  }, [txToken]);
 
   useEffect(() => {
     const wItems: contactOption[] = [];
@@ -215,70 +273,89 @@ function Send() {
     setContactsItems(sendContacts);
   }, [wallets, activeChain]);
 
+  useEffect(() => {
+    const { tokens } = blockchainConfig;
+    console.log('construct tokens for sending');
+    const tokenItems: tokenOption[] = [];
+    tokens.forEach((token) => {
+      const option = {
+        label: token.name + ' (' + token.symbol + ')',
+        value: token.contract,
+      };
+      tokenItems.push(option);
+    });
+    setTokenItems(tokenItems);
+  }, [activeChain]);
+
   // on every chain, address adjustment, fetch utxos
   // used to get a precise estimate of the tx size
   useEffect(() => {
-    if (alreadyRunning) return;
-    alreadyRunning = true;
-    fetchUtxos(sender, activeChain, state.utxos?.length ? 1 : 0) // this should always be cached, use confirmed in case of RBF
-      .then(async (utxos) => {
-        getSpendableBalance(utxos);
-        await calculateTxFeeSize();
-        alreadyRunning = false;
-      })
-      .catch((error) => {
-        alreadyRunning = false;
-        console.log(error);
-        if (!manualFee) {
-          // reset fee
-          setFeePerByte(networkFees[activeChain].base.toFixed());
-          setTxFee('0');
-          form.setFieldValue('fee', '');
-        } else {
-          // set fee per byte to 0
-          setFeePerByte('---');
-        }
-      });
-  }, [walletInUse, activeChain, sendingAmount, manualFee]);
+    refreshAutomaticFee();
+    getSpendableBalance();
+    void getTotalGasLimit();
+  }, [networkFees, walletInUse, activeChain, manualFee, txToken]);
 
   useEffect(() => {
-    if (useMaximum && !manualFee) {
-      return;
-    }
-    fetchUtxos(sender, activeChain, state.utxos?.length ? 1 : 0) // this should always be cached. Use confirmed mode if RBF flag
-      .then(async (utxos) => {
-        getSpendableBalance(utxos);
-        await calculateTxFeeSize();
-      })
-      .catch((error) => {
-        console.log(error);
-        if (!manualFee) {
-          // reset fee
-          setFeePerByte(networkFees[activeChain].base.toFixed());
-          setTxFee('0');
-          form.setFieldValue('fee', '');
-        } else {
-          // set fee per byte to 0
-          setFeePerByte('---');
-        }
-      });
-  }, [txFee]);
+    form.setFieldValue('base_gas_price', baseGasPrice);
+    form.setFieldValue('priority_gas_price', priorityGasPrice);
+    form.setFieldValue('total_gas_limit', totalGasLimit);
+    calculateTxFee();
+  }, [baseGasPrice, priorityGasPrice, totalGasLimit, manualFee]);
 
   useEffect(() => {
-    const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
-    const maxSpendable = new BigNumber(spendableBalance).dividedBy(
-      10 ** blockchainConfig.decimals,
-    );
-    if (totalAmount.isGreaterThan(maxSpendable)) {
-      // mark amount in red box as bad inpout
-      setValidateStatusAmount('error');
+    if (txToken) {
+      const tokenInformation = blockchains[activeChain].tokens.find((token) => {
+        return token.contract === txToken;
+      });
+      if (!tokenInformation) {
+        setValidateStatusAmount('error');
+        return;
+      }
+      const totalAmount = new BigNumber(sendingAmount);
+      const maxSpendable = new BigNumber(spendableBalance).dividedBy(
+        10 ** tokenInformation.decimals,
+      );
+      if (totalAmount.isGreaterThan(maxSpendable)) {
+        // mark amount in red box as bad inpout
+        setValidateStatusAmount('error');
+      } else {
+        setValidateStatusAmount('success');
+      }
     } else {
-      setValidateStatusAmount('success');
+      const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
+      const maxSpendable = new BigNumber(spendableBalance).dividedBy(
+        10 ** blockchainConfig.decimals,
+      );
+      console.log(maxSpendable);
+      if (totalAmount.isGreaterThan(maxSpendable)) {
+        // mark amount in red box as bad inpout
+        setValidateStatusAmount('error');
+      } else {
+        setValidateStatusAmount('success');
+      }
     }
-  }, [walletInUse, activeChain, sendingAmount, txFee]);
+  }, [walletInUse, activeChain, sendingAmount, txFee, spendableBalance]);
 
   useEffect(() => {
     if (useMaximum) {
+      if (txToken) {
+        const tokenInformation = blockchains[activeChain].tokens.find(
+          (token) => {
+            return token.contract === txToken;
+          },
+        );
+        if (!tokenInformation) {
+          setSendingAmount('0');
+          form.setFieldValue('amount', '0');
+        } else {
+          const spendableDecimals = new BigNumber(spendableBalance).dividedBy(
+            10 ** tokenInformation.decimals,
+          );
+          setSendingAmount(spendableDecimals.toFixed());
+          form.setFieldValue('amount', spendableDecimals.toFixed());
+        }
+        return;
+      }
       const maxSpendable = new BigNumber(spendableBalance).dividedBy(
         10 ** blockchainConfig.decimals,
       );
@@ -321,9 +398,26 @@ function Send() {
       if (txSentInterval) {
         clearInterval(txSentInterval);
       }
-      obtainFreshUtxos();
     }
   }, [socketTxid]);
+
+  useEffect(() => {
+    if (publicNonces) {
+      setOpenConfirmPublicNonces(false);
+      // save to storage
+      const sspKeyPublicNonces = JSON.parse(publicNonces) as publicNonces[];
+      void (async function () {
+        try {
+          await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
+          setOpenPublicNoncesReceived(true);
+        } catch (error) {
+          console.log(error);
+        }
+      })();
+
+      clearPublicNonces?.();
+    }
+  }, [publicNonces]);
 
   useEffect(() => {
     if (txRejected) {
@@ -340,6 +434,16 @@ function Send() {
       clearTxRejected?.();
     }
   }, [txRejected]);
+
+  useEffect(() => {
+    if (publicNoncesRejected) {
+      setOpenConfirmPublicNonces(false);
+      setTimeout(() => {
+        setOpenPublicNoncesRejected(true);
+      });
+      clearPublicNoncesRejected?.();
+    }
+  }, [publicNoncesRejected]);
 
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -369,152 +473,140 @@ function Send() {
     setOpenTxRejected(status);
   };
 
-  const getSpendableBalance = (utxos: utxo[]) => {
-    // get spendable balance
-    const correctUtxos = utxos.filter(
-      (utxo) =>
-        utxo.coinbase !== true ||
-        (utxo.coinbase === true &&
-          utxo.confirmations &&
-          utxo.confirmations > 100),
-    );
-    let utxoAmountSats = new BigNumber(0);
-    correctUtxos.forEach((utxo) => {
-      utxoAmountSats = utxoAmountSats.plus(utxo.satoshis);
-    });
-    let spAmount = utxoAmountSats.toFixed();
-    myNodes.forEach((node) => {
-      if (node.name) {
-        // if utxo is present in utxo list remove it from spendable balance
-        if (
-          correctUtxos.find(
-            (utxo) => utxo.txid === node.txid && utxo.vout === node.vout,
-          )
-        ) {
-          spAmount = new BigNumber(spAmount).minus(node.amount).toFixed();
-        }
-      }
-    });
-    setSpendableBalance(spAmount);
+  const confirmPublicNoncesAction = (status: boolean) => {
+    setOpenConfirmPublicNonces(status);
   };
 
-  const obtainFreshUtxos = () => {
-    clearUtxoCache();
-    fetchUtxos(sender, activeChain, state.utxos?.length ? 1 : 0) // use confirmed only in case of RBF
-      .then((utxos) => {
-        getSpendableBalance(utxos);
+  const publicNoncesRejectedAction = (status: boolean) => {
+    setOpenPublicNoncesRejected(status);
+  };
+
+  const publicNoncesReceivedAction = (status: boolean) => {
+    setOpenPublicNoncesReceived(status);
+  };
+
+  const refreshAutomaticFee = () => {
+    if (!manualFee) {
+      // reset fee
+      setBaseGasPrice(networkFees[activeChain].base.toString());
+      setPriorityGasPrice(networkFees[activeChain].priority!.toString());
+      setTotalGasLimit(blockchainConfig.gasLimit.toString());
+    }
+  };
+
+  const getSpendableBalance = () => {
+    void (async function () {
+      try {
+        const balancesWallet: balancesObj | null = await localForage.getItem(
+          `balances-${activeChain}-${walletInUse}`,
+        );
+        const balancesTokens: tokenBalanceEVM[] | null =
+          await localForage.getItem(
+            `token-balances-${activeChain}-${walletInUse}`,
+          );
+        if (txToken) {
+          if (balancesTokens?.length) {
+            const tokenBalExists = balancesTokens.find(
+              (token) => token.contract === txToken,
+            );
+            if (tokenBalExists) {
+              setSpendableBalance(tokenBalExists.balance);
+            } else {
+              setSpendableBalance('0');
+            }
+          } else {
+            fetchBalance();
+          }
+        } else if (balancesWallet) {
+          setSpendableBalance(balancesWallet.confirmed);
+        } else {
+          fetchBalance();
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
+  };
+
+  const fetchBalance = () => {
+    const chainFetched = activeChain;
+    const walletFetched = walletInUse;
+    fetchAddressBalance(wallets[walletFetched].address, chainFetched)
+      .then(async (balance) => {
+        if (!txToken) {
+          setSpendableBalance(balance.confirmed);
+        }
+        setBalance(chainFetched, walletFetched, balance.confirmed);
+        setUnconfirmedBalance(chainFetched, walletFetched, balance.unconfirmed);
+        await localForage.setItem(
+          `balances-${chainFetched}-${walletFetched}`,
+          balance,
+        );
       })
       .catch((error) => {
         console.log(error);
       });
+
+    // only fetch for evm chainType
+    if (blockchains[chainFetched].chainType === 'evm') {
+      // create contracts array from tokens contracts in specs
+      const tokens = blockchains[chainFetched].tokens.map(
+        (token) => token.contract,
+      );
+      fetchAddressTokenBalances(
+        wallets[walletFetched].address, // todo evaluate only activated contracts
+        chainFetched,
+        tokens,
+      )
+        .then(async (balancesTokens) => {
+          console.log(balancesTokens);
+          setTokenBalances(chainFetched, walletFetched, balancesTokens);
+          await localForage.setItem(
+            `token-balances-${chainFetched}-${walletFetched}`,
+            balancesTokens,
+          );
+          if (txToken) {
+            if (balancesTokens?.length) {
+              const tokenBalExists = balancesTokens.find(
+                (token) => token.contract === txToken,
+              );
+              if (tokenBalExists) {
+                setSpendableBalance(tokenBalExists.balance);
+              } else {
+                setSpendableBalance('0');
+              }
+            }
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   };
 
-  const calculateTxFeeSize = async () => {
-    if (!manualFee) {
-      setFeePerByte(networkFees[activeChain].base.toFixed());
+  const getTotalGasLimit = async () => {
+    const token = txToken;
+    const gasLimit = await estimateGas(activeChain, sender, token);
+    setTotalGasLimit(gasLimit);
+  };
+
+  const calculateTxFee = () => {
+    // here how much gas our transaction will use by maximum?
+    // here we set the overall gas limit and calculate the ETH value
+    console.log('CALC tx fee');
+    const totalGas = new BigNumber(totalGasLimit); // get better estimation
+    const totalGasPrice = new BigNumber(baseGasPrice)
+      .plus(priorityGasPrice)
+      .multipliedBy(10 ** 9);
+    const totalFee = totalGas.multipliedBy(totalGasPrice);
+    const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
+    if (totalFeeETH === 'NaN') {
+      setTxFee('---');
+      form.setFieldValue('fee', '---');
+      return;
     }
-    // this method should be more light and not require private key.
-    // get size estimate
-    console.log('tx size estimation');
-    // get our password to decrypt xpriv from secure storage
-    const fingerprint: string = getFingerprint();
-    const password = await passworderDecrypt(fingerprint, passwordBlob);
-    if (typeof password !== 'string') {
-      throw new Error(t('send:err_pwd_not_valid'));
-    }
-    const xprivBlob = secureLocalStorage.getItem(
-      `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
-        blockchainConfig.scriptType,
-      )}-${blockchainConfig.id}`,
-    );
-    if (typeof xprivBlob !== 'string') {
-      throw new Error(t('send:err_invalid_xpriv'));
-    }
-    const xprivChain = await passworderDecrypt(password, xprivBlob);
-    if (typeof xprivChain !== 'string') {
-      throw new Error(t('send:err_invalid_xpriv_decrypt'));
-    }
-    const wInUse = walletInUse;
-    const splittedDerPath = wInUse.split('-');
-    const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
-    const addressIndex = Number(splittedDerPath[1]);
-    const keyPair = generateAddressKeypair(
-      xprivChain,
-      typeIndex,
-      addressIndex,
-      activeChain,
-    );
-    const amount = new BigNumber(sendingAmount || '0')
-      .multipliedBy(10 ** blockchainConfig.decimals)
-      .toFixed();
-    const fee = new BigNumber(txFee || '0')
-      .multipliedBy(10 ** blockchainConfig.decimals)
-      .toFixed();
-    const lockedUtxos = myNodes.filter((node) => node.name);
-    // maxFee is max 100USD worth in fee
-    const cr = cryptoRates[activeChain] ?? 0;
-    const fiUSD = fiatRates.USD ?? 0;
-    const fiatPriceUSD = cr * fiUSD;
-    const maxFeeUSD = sspConfig().maxTxFeeUSD; // max USD fee per tranasction
-    const maxFeeUNIT = new BigNumber(maxFeeUSD)
-      .dividedBy(fiatPriceUSD)
-      .toFixed();
-    const maxFeeSat = new BigNumber(maxFeeUNIT)
-      .multipliedBy(10 ** blockchainConfig.decimals)
-      .toFixed();
-    const txSize = await getTransactionSize(
-      activeChain,
-      txReceiver || sender, // estimate as if we are sending to ourselves
-      amount,
-      fee,
-      sender,
-      sender,
-      txMessage || '',
-      keyPair.privKey,
-      redeemScript,
-      witnessScript,
-      maxFeeSat,
-      lockedUtxos,
-      state.utxos,
-    );
-    // target recommended fee of blockchain config
-    setTxSize(txSize);
-    const fpb =
-      feePerByte === '---'
-        ? networkFees[activeChain].base.toFixed()
-        : feePerByte;
-    const feeSats = new BigNumber(txSize)
-      .multipliedBy(manualFee ? fpb : networkFees[activeChain].base.toFixed())
-      .toFixed(); // satoshis
-    console.log(feeSats);
-    console.log(fpb);
-    const feeUnit = new BigNumber(feeSats)
-      .dividedBy(10 ** blockchainConfig.decimals)
-      .toFixed(); // unit
-    console.log(feeUnit);
-    // if the difference is less than 20 satoshis, ignore.
-    if (
-      feeUnit !== txFee &&
-      new BigNumber(feeSats)
-        .minus(
-          new BigNumber(txFee || '0').multipliedBy(
-            10 ** blockchainConfig.decimals,
-          ),
-        )
-        .abs()
-        .gt(20)
-    ) {
-      if (!manualFee) {
-        setFeePerByte(networkFees[activeChain].base.toFixed());
-        form.setFieldValue('fee', feeUnit);
-        setTxFee(feeUnit);
-      } else {
-        // set fee per byte
-        // whats the fee per byte?
-        const fpb = new BigNumber(fee).dividedBy(txSize).toFixed(2);
-        setFeePerByte(fpb);
-      }
-    }
+    setTxFee(totalFeeETH);
+    form.setFieldValue('fee', totalFeeETH);
   };
 
   const postAction = (
@@ -523,7 +615,6 @@ function Send() {
     chain: string,
     path: string,
     wkIdentity: string,
-    utxos: utxo[],
   ) => {
     const data = {
       action,
@@ -531,7 +622,6 @@ function Send() {
       chain,
       path,
       wkIdentity,
-      utxos,
     };
     axios
       .post(`https://${sspConfig().relay}/v1/action`, data)
@@ -545,7 +635,7 @@ function Send() {
 
   const onFinish = (values: sendForm) => {
     console.log(values);
-    if (values.receiver.length < 8) {
+    if (values.receiver.length < 8 || !values.receiver.startsWith('0x')) {
       displayMessage('error', t('send:err_invalid_receiver'));
       return;
     }
@@ -555,19 +645,6 @@ function Send() {
     }
     if (!values.fee || +values.fee < 0 || isNaN(+values.fee)) {
       displayMessage('error', t('send:err_invalid_fee'));
-      return;
-    }
-    if (+txSizeVBytes >= blockchainConfig.maxTxSize) {
-      displayMessage('error', t('send:err_tx_size_limit'));
-      return;
-    }
-    if (values.message && values.message.length > blockchainConfig.maxMessage) {
-      displayMessage(
-        'error',
-        t('send:err_invalid_message', {
-          characters: blockchainConfig.maxMessage,
-        }),
-      );
       return;
     }
     // get our password to decrypt xpriv from secure storage
@@ -599,51 +676,57 @@ function Send() {
           addressIndex,
           activeChain,
         );
-        const amount = new BigNumber(values.amount)
-          .multipliedBy(10 ** blockchainConfig.decimals)
-          .toFixed();
-        const fee = new BigNumber(values.fee)
-          .multipliedBy(10 ** blockchainConfig.decimals)
-          .toFixed();
-        const lockedUtxos = myNodes.filter((node) => node.name);
-        // maxFee is max 100USD worth in fee
-        const cr = cryptoRates[activeChain] ?? 0;
-        const fiUSD = fiatRates.USD ?? 0;
-        const fiatPriceUSD = cr * fiUSD;
-        const maxFeeUSD = sspConfig().maxTxFeeUSD; // max USD fee per tranasction
-        const maxFeeUNIT = new BigNumber(maxFeeUSD)
-          .dividedBy(fiatPriceUSD)
-          .toFixed();
-        const maxFeeSat = new BigNumber(maxFeeUNIT)
-          .multipliedBy(10 ** blockchainConfig.decimals)
-          .toFixed();
-        constructAndSignTransaction(
+        const publicKey2HEX = deriveEVMPublicKey(
+          xpubKey,
+          typeIndex,
+          addressIndex,
           activeChain,
-          values.receiver,
+        ); // ssp key
+        const sspKeyPublicNonces: publicNonces[] =
+          (await localForage.getItem('sspKeyPublicNonces')) ?? []; // an array of [{kPublic, kTwoPublic}...]
+        if (!sspKeyPublicNonces.length) {
+          setOpenConfirmPublicNonces(true);
+          // ask for the nonces
+          postAction(
+            'publicnoncesrequest',
+            '[]',
+            activeChain,
+            '',
+            sspWalletKeyInternalIdentity,
+          );
+          throw new Error(t('send:err_public_nonces'));
+        }
+        // choose random nonce
+        const pos = Math.floor(Math.random() * (sspKeyPublicNonces.length + 1));
+        const publicNoncesSSP = sspKeyPublicNonces[pos];
+        // delete the nonce from the array
+        sspKeyPublicNonces.splice(pos, 1);
+        // save the array back to storage
+        await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
+        const amount = new BigNumber(values.amount).toFixed();
+        constructAndSignEVMTransaction(
+          activeChain,
+          values.receiver as `0x${string}`,
           amount,
-          fee,
-          sender,
-          sender,
-          values.message,
-          keyPair.privKey,
-          redeemScript,
-          witnessScript,
-          maxFeeSat,
-          lockedUtxos,
-          state.utxos,
+          keyPair.privKey as `0x${string}`,
+          publicKey2HEX,
+          publicNoncesSSP,
+          baseGasPrice,
+          priorityGasPrice,
+          totalGasLimit,
+          txToken as `0x${string}` | '',
         )
-          .then((txInfo) => {
-            console.log(txInfo);
+          .then((signedTx) => {
+            console.log(signedTx);
             // post to ssp relay
             postAction(
               'tx',
-              txInfo.signedTx,
+              signedTx,
               activeChain,
               wInUse,
               sspWalletKeyInternalIdentity,
-              txInfo.utxos,
             );
-            setTxHex(txInfo.signedTx);
+            setTxHex(signedTx);
             setOpenConfirmTx(true);
             if (txSentInterval) {
               clearInterval(txSentInterval);
@@ -690,9 +773,9 @@ function Send() {
             console.log(error);
           });
       })
-      .catch((error) => {
+      .catch((error: TypeError) => {
         console.log(error);
-        displayMessage('error', t('send:err_s1'));
+        displayMessage('error', error.message ?? t('send:err_s1'));
       });
 
     const fetchTransactions = () => {
@@ -717,7 +800,6 @@ function Send() {
                 if (txSentInterval) {
                   clearInterval(txSentInterval);
                 }
-                obtainFreshUtxos();
               }
             }
           });
@@ -793,6 +875,22 @@ function Send() {
         itemRef="txFeeRef"
         style={{ paddingBottom: '43px' }}
       >
+        <Form.Item name="asset" label={t('send:asset')}>
+          <Select
+            size="large"
+            style={{ textAlign: 'left' }}
+            defaultValue={
+              blockchainConfig.name + ' (' + blockchainConfig.symbol + ')'
+            }
+            popupMatchSelectWidth={false}
+            onChange={(value) => {
+              setTxToken(value);
+            }}
+            options={tokenItems}
+            dropdownRender={(menu) => <>{menu}</>}
+          />
+        </Form.Item>
+
         <Form.Item
           label={t('send:receiver_address')}
           name="receiver"
@@ -840,7 +938,10 @@ function Send() {
               setUseMaximum(false);
             }}
             placeholder={t('send:input_amount')}
-            suffix={blockchainConfig.symbol}
+            suffix={
+              blockchainConfig.tokens.find((t) => t.contract === txToken)
+                ?.symbol ?? blockchainConfig.symbol
+            }
           />
         </Form.Item>
         <Button
@@ -859,44 +960,97 @@ function Send() {
         >
           {t('send:max')}:{' '}
           {new BigNumber(spendableBalance)
-            .dividedBy(10 ** blockchainConfig.decimals)
+            .dividedBy(
+              10 **
+                (blockchainConfig.tokens.find((t) => t.contract === txToken)
+                  ?.decimals ?? blockchainConfig.decimals),
+            )
             .toFixed()}
         </Button>
         <Form.Item
-          style={{
-            marginTop: '26px',
-          }}
-          label={t('send:message')}
-          name="message"
-          rules={[{ required: false, message: t('send:include_message') }]}
-        >
-          <Input
-            size="large"
-            value={txMessage}
-            placeholder={t('send:payment_note')}
-            onChange={(e) => setTxMessage(e.target.value)}
-          />
-        </Form.Item>
-
-        <Form.Item
-          label={t('send:fee')}
+          label={t('send:max_fee')}
           name="fee"
-          rules={[{ required: true, message: t('send:input_fee') }]}
+          style={{ paddingTop: '2px' }}
+          rules={[{ required: true, message: t('send:invalid_tx_fee') }]}
         >
           <Input
             size="large"
             value={txFee}
-            placeholder={t('send:tx_fee')}
+            placeholder={t('send:max_tx_fee')}
             suffix={blockchainConfig.symbol}
             onChange={(e) => setTxFee(e.target.value)}
-            disabled={!manualFee}
+            disabled={true}
           />
         </Form.Item>
+        <Collapse
+          size="small"
+          style={{ marginTop: '-20px', textAlign: 'left' }}
+          items={[
+            {
+              key: '1',
+              label: t('send:fee_details'),
+              children: (
+                <div>
+                  <Form.Item
+                    label={t('send:base_gas_price')}
+                    name="base_gas_price"
+                    rules={[
+                      { required: true, message: t('send:input_gas_price') },
+                    ]}
+                  >
+                    <Input
+                      size="large"
+                      value={baseGasPrice}
+                      placeholder={t('send:input_gas_price')}
+                      suffix="gwei"
+                      onChange={(e) => setBaseGasPrice(e.target.value)}
+                      disabled={!manualFee}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label={t('send:priority_gas_price')}
+                    name="priority_gas_price"
+                    rules={[
+                      {
+                        required: true,
+                        message: t('send:input_priority_gas_price'),
+                      },
+                    ]}
+                  >
+                    <Input
+                      size="large"
+                      value={baseGasPrice}
+                      placeholder={t('send:input_priority_gas_price')}
+                      suffix="gwei"
+                      onChange={(e) => setPriorityGasPrice(e.target.value)}
+                      disabled={!manualFee}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label={t('send:total_gas_limit')}
+                    name="total_gas_limit"
+                    rules={[
+                      { required: true, message: t('send:input_gas_limit') },
+                    ]}
+                  >
+                    <Input
+                      size="large"
+                      value={baseGasPrice}
+                      placeholder={t('send:input_gas_limit')}
+                      suffix="gas"
+                      onChange={(e) => setTotalGasLimit(e.target.value)}
+                      disabled={!manualFee}
+                    />
+                  </Form.Item>
+                </div>
+              ),
+            },
+          ]}
+        />
         <Button
           type="text"
           size="small"
           style={{
-            marginTop: '-22px',
             float: 'left',
             marginLeft: 3,
             fontSize: 12,
@@ -912,18 +1066,6 @@ function Send() {
             ? t('send:using_manual_fee')
             : t('send:using_automatic_fee')}
         </Button>
-        <div
-          style={{
-            marginTop: '-22px',
-            float: 'right',
-            marginRight: 10,
-            fontSize: 12,
-            color: 'grey',
-          }}
-        >
-          {feePerByte}{' '}
-          {blockchainConfig.scriptType === 'p2sh' ? 'sat/B' : 'sat/vB'}
-        </div>
 
         <Form.Item style={{ marginTop: 50 }}>
           <Space direction="vertical" size="middle">
@@ -981,10 +1123,22 @@ function Send() {
         chain={txChain}
       />
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
+      <ConfirmPublicNoncesKey
+        open={openConfirmPublicNonces}
+        openAction={confirmPublicNoncesAction}
+      />
+      <PublicNoncesRejected
+        open={openPublicNoncesRejected}
+        openAction={publicNoncesRejectedAction}
+      />
+      <PublicNoncesReceived
+        open={openPublicNoncsReceived}
+        openAction={publicNoncesReceivedAction}
+      />
       <SspConnect />
       <PoweredByFlux />
     </>
   );
 }
 
-export default Send;
+export default SendEVM;

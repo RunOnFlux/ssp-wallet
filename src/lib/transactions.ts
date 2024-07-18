@@ -1,6 +1,8 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import utxolib from '@runonflux/utxo-lib';
+import { decodeFunctionData, erc20Abi } from 'viem';
+import * as abi from '@runonflux/aa-schnorr-multisig-sdk/dist/abi';
 import { toCashAddress } from 'bchaddrjs';
 import {
   transacitonsInsight,
@@ -10,6 +12,10 @@ import {
   transaction,
   cryptos,
   txIdentifier,
+  etherscan_call_internal_txs,
+  etherscan_call_external_txs,
+  etherscan_internal_tx,
+  etherscan_external_tx,
 } from '../types';
 
 import { backends } from '@storage/backends';
@@ -199,6 +205,120 @@ function processTransactionBlockbook(
   return tx;
 }
 
+// if I am receiving, we take blockchain fee as a fee. If I am sending, we show total fee.
+export function processTransactionInternalScan(
+  txGroup: etherscan_internal_tx[],
+  address: string,
+  chain: keyof cryptos,
+): transaction {
+  const tran: transaction = {
+    type: 'evm',
+    txid: txGroup[0].hash,
+    blockheight: Number(txGroup[0].blockNumber),
+    timestamp: Number(txGroup[0].timeStamp) * 1000,
+    message: '',
+    isError: !!txGroup[0].isError,
+    receiver: '',
+    fee: '0',
+    amount: '0',
+  };
+
+  let amountSending = new BigNumber(0);
+  let amountReceiving = new BigNumber(0);
+
+  for (const tx of txGroup) {
+    if (!tx.to) {
+      continue;
+    }
+    if (tx.from.toLowerCase() === address.toLowerCase()) {
+      if (
+        tx.to.toLowerCase() ===
+        blockchains[chain].entrypointAddress.toLowerCase()
+      ) {
+        tran.fee = new BigNumber(tran.fee)
+          .plus(new BigNumber(tx.value))
+          .toFixed();
+      } else {
+        amountSending = amountSending.plus(new BigNumber(tx.value));
+      }
+    }
+    if (tx.to.toLowerCase() === address.toLowerCase()) {
+      amountReceiving = amountReceiving.plus(new BigNumber(tx.value));
+    }
+    if (
+      tx.to.toLowerCase() !== blockchains[chain].entrypointAddress.toLowerCase()
+    ) {
+      tran.receiver = tx.to;
+    }
+  }
+
+  const totalAmount = amountReceiving.minus(amountSending);
+  tran.amount = totalAmount.toFixed();
+  return tran;
+}
+
+export function processTransactionsInternalScan(
+  transactions: etherscan_internal_tx[],
+  address: string,
+  chain: keyof cryptos,
+): transaction[] {
+  const txs = [];
+  const groupedTxs: Record<string, etherscan_internal_tx[]> = {};
+  // if hash is the same, treat it as one transaction
+  for (const tx of transactions) {
+    if (!groupedTxs[tx.hash]) {
+      groupedTxs[tx.hash] = [tx];
+    } else {
+      groupedTxs[tx.hash].push(tx);
+    }
+  }
+  for (const txGroup of Object.keys(groupedTxs)) {
+    const processedTransaction = processTransactionInternalScan(
+      groupedTxs[txGroup],
+      address,
+      chain,
+    );
+    txs.push(processedTransaction);
+  }
+  return txs;
+}
+
+export function processTransactionExternalScan(
+  tx: etherscan_external_tx,
+  address: string,
+): transaction {
+  let amount = tx.value;
+  if (address.toLowerCase() !== tx.to.toLowerCase()) {
+    amount = '-' + amount;
+  }
+  const { gasUsed, gasPrice } = tx;
+  const totalGas = new BigNumber(gasUsed).multipliedBy(new BigNumber(gasPrice));
+  const tran: transaction = {
+    type: 'evm',
+    txid: tx.hash,
+    fee: totalGas.toFixed(),
+    blockheight: Number(tx.blockNumber),
+    timestamp: Number(tx.timeStamp) * 1000,
+    amount,
+    message: '',
+    receiver: tx.to,
+    isError: !!tx.isError,
+  };
+  return tran;
+}
+
+export function processTransactionsExternalScan(
+  transactions: etherscan_external_tx[],
+  address: string,
+): transaction[] {
+  const txs = [];
+  for (const tx of transactions) {
+    const processedTransaction = processTransactionExternalScan(tx, address);
+    txs.push(processedTransaction);
+  }
+  return txs;
+}
+
 export async function fetchAddressTransactions(
   address: string,
   chain: keyof cryptos,
@@ -207,7 +327,49 @@ export async function fetchAddressTransactions(
 ): Promise<transaction[]> {
   try {
     const backendConfig = backends()[chain];
-    if (blockchains[chain].backend === 'blockbook') {
+    if (blockchains[chain].chainType === 'evm') {
+      const params = {
+        module: 'account',
+        startblock: 0,
+        endblock: 99999999,
+        page: 1,
+        offset: to - from,
+        sort: 'desc',
+        address,
+        action: 'txlist',
+      };
+
+      const url = `https://${backendConfig.api}`;
+
+      const responseExternal = await axios.get<etherscan_call_external_txs>(
+        url,
+        { params },
+      );
+      const externalTxs = responseExternal.data.result;
+      const externalTxsProcessed = processTransactionsExternalScan(
+        externalTxs,
+        address,
+      );
+
+      params.action = 'txlistinternal';
+      const responseInternal = await axios.get<etherscan_call_internal_txs>(
+        url,
+        { params },
+      );
+      const internalTxs = responseInternal.data.result;
+      const internalTxsProcessed = processTransactionsInternalScan(
+        internalTxs,
+        address,
+        chain,
+      );
+
+      const allTransactions = [
+        ...externalTxsProcessed,
+        ...internalTxsProcessed,
+      ];
+
+      return allTransactions.sort((a, b) => b.timestamp - a.timestamp);
+    } else if (blockchains[chain].backend === 'blockbook') {
       const pageSize = to - from;
       const page = Math.round(from / pageSize);
       const url = `https://${backendConfig.node}/api/v2/address/${address}?pageSize=${pageSize}&details=txs&page=${page}`;
@@ -248,6 +410,9 @@ export function decodeTransactionForApproval(
   chain: keyof cryptos,
 ) {
   try {
+    if (blockchains[chain].chainType === 'evm') {
+      return decodeEVMTransactionForApproval(rawTx, chain);
+    }
     const libID = getLibId(chain);
     const decimals = blockchains[chain].decimals;
     const cashAddrPrefix = blockchains[chain].cashaddr;
@@ -322,6 +487,129 @@ export function decodeTransactionForApproval(
       sender: 'decodingError',
       receiver: 'decodingError',
       amount: 'decodingError',
+    };
+    return txInfo;
+  }
+}
+
+interface decodedAbiData {
+  functionName: string;
+  args: [string, bigint, string];
+}
+
+interface userOperation {
+  userOpRequest: {
+    sender: string;
+    callData: `0x${string}`;
+    callGasLimit: `0x${string}`;
+    verificationGasLimit: `0x${string}`;
+    preVerificationGas: `0x${string}`;
+    maxFeePerGas: `0x${string}`;
+    maxPriorityFeePerGas: `0x${string}`;
+  };
+}
+
+export function decodeEVMTransactionForApproval(
+  rawTx: string,
+  chain: keyof cryptos,
+) {
+  try {
+    let decimals = blockchains[chain].decimals;
+    const multisigUserOpJSON = JSON.parse(rawTx) as userOperation;
+    const {
+      callData,
+      sender,
+      callGasLimit,
+      verificationGasLimit,
+      preVerificationGas,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+    } = multisigUserOpJSON.userOpRequest;
+
+    const totalGasLimit = new BigNumber(callGasLimit)
+      .plus(new BigNumber(verificationGasLimit))
+      .plus(new BigNumber(preVerificationGas));
+
+    const totalMaxWeiPerGas = new BigNumber(maxFeePerGas).plus(
+      new BigNumber(maxPriorityFeePerGas),
+    );
+
+    const totalFeeWei = totalGasLimit.multipliedBy(totalMaxWeiPerGas);
+
+    console.log(multisigUserOpJSON);
+
+    // callGasLimit":"0x5ea6","verificationGasLimit":"0x11b5a","preVerificationGas":"0xdf89","maxFeePerGas":"0xee6b28000","maxPriorityFeePerGas":"0x77359400",
+
+    const decodedData: decodedAbiData = decodeFunctionData({
+      abi: abi.MultiSigSmartAccount_abi,
+      data: callData,
+    }) as decodedAbiData; // Cast decodedData to decodedAbiData type.
+
+    let txReceiver = 'decodingError';
+    let amount = '0';
+
+    if (
+      decodedData &&
+      decodedData.functionName === 'execute' &&
+      decodedData.args &&
+      decodedData.args.length >= 3
+    ) {
+      txReceiver = decodedData.args[0];
+      amount = new BigNumber(decodedData.args[1].toString())
+        .dividedBy(new BigNumber(10 ** decimals))
+        .toFixed();
+    } else {
+      throw new Error('Unexpected decoded data.');
+    }
+
+    const txInfo = {
+      sender,
+      receiver: txReceiver,
+      amount,
+      fee: totalFeeWei.toFixed(),
+      token: '',
+    };
+
+    if (amount === '0') {
+      txInfo.token = decodedData.args[0];
+
+      // find the token in our token list
+      const token = blockchains[chain].tokens.find(
+        (t) => t.contract.toLowerCase() === txInfo.token.toLowerCase(),
+      );
+      if (token) {
+        decimals = token.decimals;
+      }
+      const contractData: `0x${string}` = decodedData.args[2] as `0x${string}`;
+      // most likely we are dealing with a contract call, sending some erc20 token
+      // docode args[2] which is operation
+      const decodedDataContract: decodedAbiData = decodeFunctionData({
+        abi: erc20Abi,
+        data: contractData,
+      }) as unknown as decodedAbiData; // Cast decodedDataContract to decodedAbiData type.
+      console.log(decodedDataContract);
+      if (
+        decodedDataContract &&
+        decodedDataContract.functionName === 'transfer' &&
+        decodedDataContract.args &&
+        decodedDataContract.args.length >= 2
+      ) {
+        txInfo.receiver = decodedDataContract.args[0];
+        txInfo.amount = new BigNumber(decodedDataContract.args[1].toString())
+          .dividedBy(new BigNumber(10 ** decimals))
+          .toFixed();
+      }
+    }
+
+    return txInfo;
+  } catch (error) {
+    console.log(error);
+    const txInfo = {
+      sender: 'decodingError',
+      receiver: 'decodingError',
+      amount: 'decodingError',
+      fee: 'decodingError',
+      token: 'decodingError',
     };
     return txInfo;
   }

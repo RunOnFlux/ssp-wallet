@@ -4,13 +4,21 @@ import {
   PayloadAction,
   combineReducers,
 } from '@reduxjs/toolkit';
-import { cryptos, currency, transaction, node, networkFee } from '../types';
+import {
+  cryptos,
+  currency,
+  transaction,
+  node,
+  networkFee,
+  tokenBalanceEVM,
+} from '../types';
 
 import { blockchains } from '@storage/blockchains';
 
 // ********** Import chains **********
 import chainSliceBase from './chainSliceBase';
 import chainSliceBaseNodes from './chainSliceBaseNodes';
+import chainSliceBaseTokens from './chainSliceBaseTokens';
 
 const chains = {
   flux: chainSliceBaseNodes('flux'),
@@ -23,6 +31,8 @@ const chains = {
   bch: chainSliceBase('bch'),
   btcTestnet: chainSliceBase('btcTestnet'),
   btcSignet: chainSliceBase('btcSignet'),
+  sepolia: chainSliceBaseTokens('sepolia'),
+  eth: chainSliceBaseTokens('eth'),
 };
 // ********** Import chains **********
 
@@ -48,18 +58,35 @@ const initialSspState: sspState = {
   activeChain: 'btc',
 };
 
-const initialNetworkFeeState = {
+interface nFState {
+  base: number;
+  priority?: number; // EVM must have it
+}
+
+interface networkFeeState {
+  networkFees: Record<keyof cryptos, nFState>;
+}
+
+const initialNetworkFeeState: networkFeeState = {
   networkFees: {
-    flux: blockchains.flux.feePerByte,
-    fluxTestnet: blockchains.fluxTestnet.feePerByte,
-    rvn: blockchains.rvn.feePerByte,
-    ltc: blockchains.ltc.feePerByte,
-    btc: blockchains.btc.feePerByte,
-    doge: blockchains.doge.feePerByte,
-    zec: blockchains.zec.feePerByte,
-    bch: blockchains.bch.feePerByte,
-    btcTestnet: blockchains.btcTestnet.feePerByte,
-    btcSignet: blockchains.btcSignet.feePerByte,
+    flux: { base: blockchains.flux.feePerByte },
+    fluxTestnet: { base: blockchains.fluxTestnet.feePerByte },
+    rvn: { base: blockchains.rvn.feePerByte },
+    ltc: { base: blockchains.ltc.feePerByte },
+    btc: { base: blockchains.btc.feePerByte },
+    doge: { base: blockchains.doge.feePerByte },
+    zec: { base: blockchains.zec.feePerByte },
+    bch: { base: blockchains.bch.feePerByte },
+    btcTestnet: { base: blockchains.btcTestnet.feePerByte },
+    btcSignet: { base: blockchains.btcSignet.feePerByte },
+    sepolia: {
+      base: blockchains.sepolia.baseFee, // gwei
+      priority: blockchains.sepolia.priorityFee, // gwei
+    },
+    eth: {
+      base: blockchains.eth.baseFee, // gwei
+      priority: blockchains.eth.priorityFee, // gwei
+    },
   },
 };
 
@@ -89,6 +116,8 @@ const initialRatesState: RatesState = {
     bch: 0,
     btcTestnet: 0,
     btcSignet: 0,
+    sepolia: 0,
+    eth: 0,
   },
   fiatRates: {
     EUR: 0,
@@ -155,6 +184,8 @@ const initialContactsState: ContactsState = {
     bch: [],
     btcTestnet: [],
     btcSignet: [],
+    sepolia: [],
+    eth: [],
   },
 };
 
@@ -192,7 +223,10 @@ const contactsSlice = createSlice({
       state,
       action: PayloadAction<Record<keyof cryptos, contact[]>>,
     ) => {
-      state.contacts = action.payload;
+      const definedCryptos = Object.keys(action.payload) as (keyof cryptos)[];
+      definedCryptos.forEach((cc) => {
+        state.contacts[cc] = action.payload[cc];
+      });
     },
     setInitialContactsState: (state) => {
       state.contacts = initialContactsState.contacts;
@@ -206,7 +240,18 @@ const networkFeesSlice = createSlice({
   reducers: {
     setNetworkFees: (state, action: PayloadAction<networkFee[]>) => {
       action.payload.forEach((element) => {
-        state.networkFees[element.coin as keyof cryptos] = element.recommended;
+        if (!state.networkFees[element.coin as keyof cryptos]) {
+          return;
+        }
+        if (element.base) {
+          console.log(state.networkFees[element.coin as keyof cryptos]);
+          state.networkFees[element.coin as keyof cryptos].base = element.base;
+          state.networkFees[element.coin as keyof cryptos].priority =
+            element.recommended;
+        } else {
+          state.networkFees[element.coin as keyof cryptos].base =
+            element.recommended;
+        }
       });
     },
   },
@@ -273,6 +318,8 @@ const reducers = combineReducers({
   bch: chains.bch.reducer,
   btcTestnet: chains.btcTestnet.reducer,
   btcSignet: chains.btcSignet.reducer,
+  sepolia: chains.sepolia.reducer,
+  eth: chains.eth.reducer,
 });
 
 export const store = configureStore({
@@ -321,6 +368,26 @@ export function setXpubKeyIdentity(data: string) {
 export function setBalance(chain: keyof cryptos, wallet: string, data: string) {
   store.dispatch(chains[chain].actions.setBalance({ wallet, data }));
 }
+export function setTokenBalances(
+  chain: keyof cryptos,
+  wallet: string,
+  data: tokenBalanceEVM[],
+) {
+  if (chain === 'sepolia' || chain === 'eth') {
+    // todo needs to be adjusted on chain add
+    store.dispatch(chains[chain].actions.setTokenBalances({ wallet, data }));
+  }
+}
+export function setActivatedTokens(
+  chain: keyof cryptos,
+  wallet: string,
+  data: string[],
+) {
+  if (chain === 'sepolia' || chain === 'eth') {
+    // todo needs to be adjusted on chain add
+    store.dispatch(chains[chain].actions.setActivatedTokens({ wallet, data }));
+  }
+}
 export function setUnconfirmedBalance(
   chain: keyof cryptos,
   wallet: string,
@@ -337,6 +404,7 @@ export function setTransactions(
 }
 export function setNodes(chain: keyof cryptos, wallet: string, data: node[]) {
   if (chain === 'fluxTestnet' || chain === 'flux') {
+    // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setNodes({ wallet, data }));
   }
 }

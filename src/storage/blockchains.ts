@@ -1,17 +1,19 @@
 import { backends } from './backends';
 
-import fluxLogo from '/src/assets/flux.svg';
-import fluxTestnetLogo from '/src/assets/fluxTestnet.svg';
-import rvnLogo from '/src/assets/rvn.svg';
-import ltcLogo from '/src/assets/ltc.svg';
-import btcLogo from '/src/assets/btc.svg';
-import btcTestnetLogo from '/src/assets/btcTestnet.svg';
-import btcSignetLogo from '/src/assets/btcSignet.svg';
-import dogeLogo from '/src/assets/doge.svg';
-import zecLogo from '/src/assets/zec.svg';
-import bchLogo from '/src/assets/bch.svg';
-
-// https://github.com/dogecoin/dogecoin/blob/master/doc/fee-recommendation.md
+import fluxLogo from '../assets/flux.svg';
+import fluxTestnetLogo from '../assets/fluxTestnet.svg';
+import rvnLogo from '../assets/rvn.svg';
+import ltcLogo from '../assets/ltc.svg';
+import btcLogo from '../assets/btc.svg';
+import btcTestnetLogo from '../assets/btcTestnet.svg';
+import btcSignetLogo from '../assets/btcSignet.svg';
+import dogeLogo from '../assets/doge.svg';
+import zecLogo from '../assets/zec.svg';
+import bchLogo from '../assets/bch.svg';
+import ethLogo from '../assets/eth.svg';
+import tethLogo from '../assets/teth.svg';
+import usdtLogo from '../assets/usdt.svg';
+import usdcLogo from '../assets/usdc.svg';
 
 const flux = {
   id: 'flux',
@@ -298,9 +300,110 @@ const bch = {
   hashType: 0x40, // will force SIGHASH_BITCOINCASHBIP143
 };
 
+const sepolia = {
+  id: 'sepolia',
+  libid: 'sepolia',
+  name: 'Testnet Sepolia',
+  symbol: 'TEST-ETH',
+  logo: tethLogo,
+  slip: 1,
+  decimals: 18,
+  node: backends().sepolia.node,
+  api: backends().sepolia.api,
+  bip32: {
+    // not specified, use default
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh', // not specified, use default
+  chainType: 'evm',
+  backend: 'alchemy',
+  accountSalt: 'aasalt', // ssp uses this salt for smart accounts
+  factorySalt: 'aafactorysalt', // factory uses this salt
+  factoryAddress: '0xA76f98D25C9775F67DCf8B9EF9618d454D287467',
+  entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  baseFee: 120, // 120 gwei
+  priorityFee: 5, // 5 gwei
+  gasLimit: 750000, // 750k gas
+  tokens: [
+    {
+      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
+      name: 'Testnet Ethereum Sepolia',
+      symbol: 'TEST-ETH',
+      decimals: 18,
+      logo: tethLogo,
+    },
+    {
+      contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B909',
+      name: 'Fake Flux',
+      symbol: 'TEST-FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    },
+  ],
+};
+
+const eth = {
+  id: 'eth',
+  libid: 'mainnet',
+  name: 'Ethereum',
+  symbol: 'ETH',
+  logo: ethLogo,
+  slip: 60,
+  decimals: 18,
+  node: backends().eth.node,
+  api: backends().eth.api,
+  bip32: {
+    // not specified, use default
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh', // not specified, use default
+  chainType: 'evm',
+  backend: 'alchemy',
+  accountSalt: 'aasalt', // ssp uses this salt for smart accounts
+  factorySalt: 'aafactorysalt', // factory uses this salt
+  factoryAddress: '0xA76f98D25C9775F67DCf8B9EF9618d454D287467',
+  entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  baseFee: 11, // 11 gwei
+  priorityFee: 2, // 2 gwei
+  gasLimit: 750000, // 750k gas
+  tokens: [
+    {
+      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
+      name: 'Ethereum',
+      symbol: 'ETH',
+      decimals: 18,
+      logo: ethLogo,
+    },
+    {
+      contract: '0x720cd16b011b987da3518fbf38c3071d4f0d1495',
+      name: 'Flux',
+      symbol: 'FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    },
+    {
+      contract: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+      name: 'Tether',
+      symbol: 'USDT',
+      decimals: 6,
+      logo: usdtLogo,
+    },
+    {
+      contract: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 6,
+      logo: usdcLogo,
+    },
+  ],
+};
+
 export const blockchains = {
   btc,
   flux,
+  eth,
   doge,
   ltc,
   bch,
@@ -309,4 +412,5 @@ export const blockchains = {
   btcTestnet,
   btcSignet,
   fluxTestnet,
+  sepolia,
 };

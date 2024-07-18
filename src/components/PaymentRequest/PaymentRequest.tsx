@@ -11,7 +11,13 @@ import secureLocalStorage from 'react-secure-storage';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { getScriptType } from '../../lib/wallet';
-import { cryptos, generatedWallets, transaction, node } from '../../types';
+import {
+  cryptos,
+  generatedWallets,
+  transaction,
+  node,
+  tokenBalanceEVM,
+} from '../../types';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
 
@@ -29,6 +35,8 @@ import {
   setXpubWallet,
   setXpubKey,
   setActiveChain,
+  setTokenBalances,
+  setActivatedTokens,
 } from '../../store';
 
 interface payRequestData {
@@ -104,9 +112,23 @@ function PaymentRequest(props: {
             (await localForage.getItem(
               `balances-${chainToSwitch}-${walInUse}`,
             )) ?? balancesObject;
+          const tokenBalances: tokenBalanceEVM[] =
+            (await localForage.getItem(
+              `token-balances-${chainToSwitch}-${walInUse}`,
+            )) ?? [];
+          const activatedTokens: string[] =
+            (await localForage.getItem(
+              `activated-tokens-${chainToSwitch}-${walInUse}`,
+            )) ?? [];
           const nodesWallet: node[] =
             (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
             [];
+          if (activatedTokens) {
+            setActivatedTokens(chainToSwitch, walInUse, activatedTokens || []);
+          }
+          if (tokenBalances) {
+            setTokenBalances(chainToSwitch, walInUse, tokenBalances || []);
+          }
           if (nodesWallet) {
             setNodes(chainToSwitch, walInUse, nodesWallet || []);
           }
@@ -198,10 +220,32 @@ function PaymentRequest(props: {
                     (await localForage.getItem(
                       `balances-${chainToSwitch}-${walInUse}`,
                     )) ?? balancesObject;
+                  const tokenBalances: tokenBalanceEVM[] =
+                    (await localForage.getItem(
+                      `token-balances-${chainToSwitch}-${walInUse}`,
+                    )) ?? [];
+                  const activatedTokens: string[] =
+                    (await localForage.getItem(
+                      `activated-tokens-${chainToSwitch}-${walInUse}`,
+                    )) ?? [];
+                  if (activatedTokens) {
+                    setActivatedTokens(
+                      chainToSwitch,
+                      walInUse,
+                      activatedTokens || [],
+                    );
+                  }
                   const nodesWallet: node[] =
                     (await localForage.getItem(
                       `nodes-${chainToSwitch}-${walInUse}`,
                     )) ?? [];
+                  if (tokenBalances) {
+                    setTokenBalances(
+                      chainToSwitch,
+                      walInUse,
+                      tokenBalances || [],
+                    );
+                  }
                   if (nodesWallet) {
                     setNodes(chainToSwitch, walInUse, nodesWallet || []);
                   }
@@ -303,8 +347,13 @@ function PaymentRequest(props: {
       message: props.message,
       paymentAction: true,
     };
-    // navigate to the particular chain send for mand fill in the data.
-    navigate('/send', { state: navigationObject });
+    if (blockchainConfig.chainType === 'evm') {
+      // navigate to the particular chain send for mand fill in the data.
+      navigate('/sendevm', { state: navigationObject });
+    } else {
+      // navigate to the particular chain send for mand fill in the data.
+      navigate('/send', { state: navigationObject });
+    }
     // close dialog
     openAction('continue');
   };
