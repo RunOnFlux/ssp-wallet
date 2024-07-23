@@ -104,21 +104,23 @@ interface ContactsState {
   contacts: Record<keyof cryptos, contact[]>;
 }
 
-const initialRatesState: RatesState = {
-  cryptoRates: {
-    flux: 0,
-    fluxTestnet: 0,
-    rvn: 0,
-    ltc: 0,
-    btc: 0,
-    doge: 0,
-    zec: 0,
-    bch: 0,
-    btcTestnet: 0,
-    btcSignet: 0,
-    sepolia: 0,
-    eth: 0,
+const chainKeys = Object.keys(chains) as (keyof cryptos)[];
+// create {btc: [], rvn: [], ...} object
+const initialContacts: Record<keyof cryptos, contact[]> = chainKeys.reduce(
+  (acc, key) => {
+    acc[key] = [];
+    return acc;
   },
+  {} as Record<keyof cryptos, contact[]>,
+);
+// create {btc: 0, rvn: 0, ...} object
+const initialCryptoRates: cryptos = chainKeys.reduce((acc, key) => {
+  acc[key] = 0;
+  return acc;
+}, {} as cryptos);
+
+const initialRatesState: RatesState = {
+  cryptoRates: initialCryptoRates,
   fiatRates: {
     EUR: 0,
     AUD: 0,
@@ -173,20 +175,7 @@ const initialRatesState: RatesState = {
 };
 
 const initialContactsState: ContactsState = {
-  contacts: {
-    flux: [],
-    fluxTestnet: [],
-    rvn: [],
-    ltc: [],
-    btc: [],
-    doge: [],
-    zec: [],
-    bch: [],
-    btcTestnet: [],
-    btcSignet: [],
-    sepolia: [],
-    eth: [],
-  },
+  contacts: initialContacts,
 };
 
 const passwordBlobSlice = createSlice({
