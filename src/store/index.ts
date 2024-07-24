@@ -3,6 +3,7 @@ import {
   createSlice,
   PayloadAction,
   combineReducers,
+  Reducer,
 } from '@reduxjs/toolkit';
 import {
   cryptos,
@@ -36,6 +37,8 @@ const chains = {
 };
 // ********** Import chains **********
 
+const chainKeys = Object.keys(chains) as (keyof cryptos)[];
+
 const initialStatePasswordBlob = {
   passwordBlob: '',
 };
@@ -67,27 +70,21 @@ interface networkFeeState {
   networkFees: Record<keyof cryptos, nFState>;
 }
 
-const initialNetworkFeeState: networkFeeState = {
-  networkFees: {
-    flux: { base: blockchains.flux.feePerByte },
-    fluxTestnet: { base: blockchains.fluxTestnet.feePerByte },
-    rvn: { base: blockchains.rvn.feePerByte },
-    ltc: { base: blockchains.ltc.feePerByte },
-    btc: { base: blockchains.btc.feePerByte },
-    doge: { base: blockchains.doge.feePerByte },
-    zec: { base: blockchains.zec.feePerByte },
-    bch: { base: blockchains.bch.feePerByte },
-    btcTestnet: { base: blockchains.btcTestnet.feePerByte },
-    btcSignet: { base: blockchains.btcSignet.feePerByte },
-    sepolia: {
-      base: blockchains.sepolia.baseFee, // gwei
-      priority: blockchains.sepolia.priorityFee, // gwei
-    },
-    eth: {
-      base: blockchains.eth.baseFee, // gwei
-      priority: blockchains.eth.priorityFee, // gwei
-    },
+// make network fees based on chains object
+// create {btc: 0, rvn: 0, ...} object
+const initialNetworkFees: Record<keyof cryptos, nFState> = chainKeys.reduce(
+  (acc, key) => {
+    acc[key] = {
+      base: blockchains[key].feePerByte ?? blockchains[key].baseFee, // feePerByte is for BTC, baseFee is for EVM (gwei)
+      priority: blockchains[key].priorityFee, // for EVM only (gwei)
+    };
+    return acc;
   },
+  {} as Record<keyof cryptos, nFState>,
+);
+
+const initialNetworkFeeState: networkFeeState = {
+  networkFees: initialNetworkFees,
 };
 
 interface RatesState {
@@ -104,7 +101,6 @@ interface ContactsState {
   contacts: Record<keyof cryptos, contact[]>;
 }
 
-const chainKeys = Object.keys(chains) as (keyof cryptos)[];
 // create {btc: [], rvn: [], ...} object
 const initialContacts: Record<keyof cryptos, contact[]> = chainKeys.reduce(
   (acc, key) => {
@@ -297,18 +293,13 @@ const reducers = combineReducers({
   sspState: sspStateSlice.reducer,
   contacts: contactsSlice.reducer,
   // === IMPORT CHAINS ===
-  flux: chains.flux.reducer,
-  fluxTestnet: chains.fluxTestnet.reducer,
-  rvn: chains.rvn.reducer,
-  ltc: chains.ltc.reducer,
-  btc: chains.btc.reducer,
-  doge: chains.doge.reducer,
-  zec: chains.zec.reducer,
-  bch: chains.bch.reducer,
-  btcTestnet: chains.btcTestnet.reducer,
-  btcSignet: chains.btcSignet.reducer,
-  sepolia: chains.sepolia.reducer,
-  eth: chains.eth.reducer,
+  ...chainKeys.reduce(
+    (acc, key) => {
+      acc[key] = chains[key].reducer;
+      return acc;
+    },
+    {} as Record<keyof cryptos, Reducer>,
+  ),
 });
 
 export const store = configureStore({
