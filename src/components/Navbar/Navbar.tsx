@@ -74,7 +74,11 @@ const balancesObject = {
   unconfirmed: '0.00',
 };
 
-function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
+function Navbar(props: {
+  refresh: () => void;
+  hasRefresh: boolean;
+  allowChainSwitch?: boolean;
+}) {
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
@@ -497,49 +501,53 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
                     </span>
                   </div>
                   {menu}
-                  <Divider style={{ margin: '8px 0' }} />
-                  <Button
-                    type="text"
-                    icon={<PlusOutlined />}
-                    onClick={addWallet}
-                    style={{ width: '100%', textAlign: 'left' }}
-                  >
-                    {t('home:navbar.generate_new_wallet')}
-                  </Button>
-                  {walletItems.length > 1 && (
-                    <Popconfirm
-                      title={t('home:navbar.remove_last_wallet')}
-                      description={
-                        <>{t('home:navbar.remove_last_wallet_desc')}</>
-                      }
-                      overlayStyle={{ maxWidth: 360, margin: 10 }}
-                      okText={t('home:navbar.remove')}
-                      cancelText={t('common:cancel')}
-                      onConfirm={() => {
-                        removeAddress();
-                      }}
-                      icon={
-                        <QuestionCircleOutlined style={{ color: 'blue' }} />
-                      }
-                    >
+                  {props.allowChainSwitch && (
+                    <>
+                      <Divider style={{ margin: '8px 0' }} />
                       <Button
                         type="text"
-                        icon={<MinusOutlined />}
+                        icon={<PlusOutlined />}
+                        onClick={addWallet}
                         style={{ width: '100%', textAlign: 'left' }}
                       >
-                        {t('home:navbar.remove_last_wallet')}
+                        {t('home:navbar.generate_new_wallet')}
                       </Button>
-                    </Popconfirm>
+                      {walletItems.length > 1 && (
+                        <Popconfirm
+                          title={t('home:navbar.remove_last_wallet')}
+                          description={
+                            <>{t('home:navbar.remove_last_wallet_desc')}</>
+                          }
+                          overlayStyle={{ maxWidth: 360, margin: 10 }}
+                          okText={t('home:navbar.remove')}
+                          cancelText={t('common:cancel')}
+                          onConfirm={() => {
+                            removeAddress();
+                          }}
+                          icon={
+                            <QuestionCircleOutlined style={{ color: 'blue' }} />
+                          }
+                        >
+                          <Button
+                            type="text"
+                            icon={<MinusOutlined />}
+                            style={{ width: '100%', textAlign: 'left' }}
+                          >
+                            {t('home:navbar.remove_last_wallet')}
+                          </Button>
+                        </Popconfirm>
+                      )}
+                      <Divider style={{ margin: '8px 0' }} />
+                      <Button
+                        type="text"
+                        style={{ width: '100%', textAlign: 'left' }}
+                        icon={<NodeIndexOutlined />}
+                        onClick={() => selectChain()}
+                      >
+                        {t('home:navbar.switch_chain')}
+                      </Button>
+                    </>
                   )}
-                  <Divider style={{ margin: '8px 0' }} />
-                  <Button
-                    type="text"
-                    style={{ width: '100%', textAlign: 'left' }}
-                    icon={<NodeIndexOutlined />}
-                    onClick={() => selectChain()}
-                  >
-                    {t('home:navbar.switch_chain')}
-                  </Button>
                 </>
               )}
             />
@@ -587,5 +595,9 @@ function Navbar(props: { refresh: () => void; hasRefresh: boolean }) {
     </>
   );
 }
+
+Navbar.defaultProps = {
+  allowChainSwitch: true,
+};
 
 export default Navbar;
