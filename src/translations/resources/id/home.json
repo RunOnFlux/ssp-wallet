@@ -208,7 +208,7 @@
     "sign_message": "Tandatangani Pesan",
     "sign_message_sspwid": "Tanda tangani pesan dengan Identitas Dompet SSP Anda:",
     "sign_message_info": "Tanda tangani pesan dengan Anda {{chainName}} alamat:",
-    "sign": "Tanda",
+    "sign": "Tanda Tangani",
     "message": "Pesan",
     "signature": "Tanda tangan"
   },
