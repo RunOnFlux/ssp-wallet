@@ -1,5 +1,5 @@
 {
-  "err_panic": "PANIC: Kunci SSP tidak valid.",
+  "err_panic": "PANIK: Kunci SSP tidak valid.",
   "balances": {
     "locked": "Terkunci: {{balance}} {{symbol}}",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
@@ -11,14 +11,23 @@
   "txRejected": {
     "tx_rejected": "Transaksi Ditolak!",
     "tx_rejected_info": "Transaksi ditolak oleh SSP Key.",
-    "tx_rejected_info_2": "Transaksi Anda tidak akan disertakan dalam blockchain. Dana Anda sepenuhnya tersedia dan dapat dikirim."
+    "tx_rejected_info_2": "Transaksi Anda tidak akan dimasukkan ke dalam blockchain. "
+  },
+  "publicNoncesRejected": {
+    "public_nonces_rejected": "Nonce Publik Ditolak!",
+    "public_nonces_rejected_info": "Nonce Publik ditolak oleh SSP Key.",
+    "public_nonces_rejected_info_2": "SSP Key menolak mengirimkan nonce publik. "
+  },
+  "publicNoncesReceived": {
+    "public_nonces_received": "Nonce Publik Diterima!",
+    "public_nonces_received_info": "Nonce Publik berhasil diterima dan disimpan. "
   },
   "transactionsTable": {
     "no_tx_history": "Tidak Ditemukan Riwayat Transaksi",
     "txid_link": "TXID: {{txid}}",
     "fee_with_symbol": "Biaya: {{fee}} {{symbol}}",
     "note_with_note": "Catatan: {{note}}",
-    "direction": "Arah",
+    "direction": "Petunjuk",
     "date": "Tanggal",
     "amount": "Jumlah",
     "confirmations": "Konfirmasi",
@@ -32,7 +41,7 @@
   },
   "nodesTable": {
     "no_nodes": "Alamat tidak memiliki node",
-    "what_is_node": "Apa yang di maksud {{chainName}} node?",
+    "what_is_node": "Node Apakah itu {{chainName}}?",
     "name": "Nama",
     "ip": "Alamat IP",
     "tier": "Tingkat",
@@ -40,29 +49,29 @@
     "status": "Status",
     "identitypk": "Kunci Identitas Node",
     "sspid": "ID Dompet SSP (FluxID)",
-    "start_node": "Awal {{chainName}} node",
-    "start_node_info": "Tindakan ini akan menyiarkan Mulai Transaksi ke blockchain yang mencoba memulai Transaksi Anda {{chainName}} node.",
+    "start_node": "Awal {{chainName}} simpul",
+    "start_node_info": "Tindakan ini akan menyiarkan Mulai Transaksi ke blockchain yang mencoba memulai Transaksi Anda {{chainName}} simpul.",
     "start_node_info_2": "Pastikan Anda {{chainName}} Node sedang berjalan dan melewati benchmark sebelum memulai node Anda untuk menghindari status DoS.",
-    "delete_node": "Menghapus {{chainName}} node",
-    "delete_node_info": "Tindakan ini akan membuat Anda {{chainName}} Agunan terkunci node tersedia untuk dibelanjakan.",
+    "delete_node": "Menghapus {{chainName}} simpul",
+    "delete_node_info": "Tindakan ini akan membuat Anda {{chainName}} Agunan terkunci simpul tersedia untuk dibelanjakan.",
     "delete_node_info_2": "Milikmu {{chainName}} Node akan terus berjalan dan dapat diatur kembali jika jaminan node Anda tidak habis.",
     "open_fluxos": "Buka FluxOS",
     "open_fluxos_info": "Tindakan ini akan membuka FluxOS di browser Anda, meminimalkan SSP Wallet.",
-    "setup_node": "Mempersiapkan {{chainName}} node",
-    "err_start": "Kesalahan saat memulai {{chainName}} node. ",
+    "setup_node": "Mempersiapkan {{chainName}} simpul",
+    "err_start": "Kesalahan saat memulai {{chainName}} simpul. ",
     "offline": "Luring",
     "confirmed": "Dikonfirmasi",
-    "started": "Memulai",
+    "started": "Dimulai",
     "starting": "Mulai",
     "unassigned": "Belum ditetapkan",
     "dos": "DoS",
     "node_started": "{{chainName}} Node Dimulai!",
-    "err_unable_identity": "Tidak dapat menghasilkan identitas node. ",
-    "err_delete": "Terjadi kesalahan saat menghapus {{chainName}} node. ",
+    "err_unable_identity": "Tidak dapat menghasilkan identitas simpul. ",
+    "err_delete": "Terjadi kesalahan saat menghapus {{chainName}} simpul. ",
     "node_deleted": "{{chainName}} Node Dihapus!"
   },
   "setupNode": {
-    "setup_node": "Mempersiapkan {{chainName}} node",
+    "setup_node": "Mempersiapkan {{chainName}} simpul",
     "node_name": "Nama Node",
     "node_ip": "Alamat IP",
     "err_saving_node": "Terjadi kesalahan saat menyimpan node. ",
@@ -104,8 +113,8 @@
   "settings": {
     "err_saving_conf": "Terjadi kesalahan saat menyimpan konfigurasi. ",
     "settings": "Pengaturan",
-    "change_pw": "Ubah kata sandi",
-    "change_pw_restore": "Ubah kata sandi? Kembalikan!",
+    "change_pw": "Ganti kata sandi",
+    "change_pw_restore": "Ganti kata sandi? ",
     "ssp_relay": "Server Relai SSP",
     "chain_node_service": "{{chain}} Layanan Node",
     "language": "Bahasa",
@@ -122,8 +131,16 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Konfirmasi Transaksi pada Kunci SSP",
-    "info_1": "Untuk mengonfirmasi transaksi pada SSP Key Anda, buka SSP Key Anda di ponsel kami dan konfirmasikan tindakan tersebut. Anda dapat mengetuk untuk menyegarkan atau memindai kode QR berikut ini.",
-    "info_2": "Untuk mengonfirmasi transaksi pada SSP Key Anda, buka SSP Key di ponsel Anda dan konfirmasikan tindakan tersebut. Anda dapat mengetuk untuk menyegarkan atau menggunakan input manual."
+    "info_1": "Untuk mengonfirmasi transaksi pada Kunci SSP Anda, buka Kunci SSP Anda di ponsel kami dan konfirmasikan tindakannya. ",
+    "info_2": "Untuk mengonfirmasi transaksi pada Kunci SSP Anda, buka Kunci SSP di ponsel Anda dan konfirmasikan tindakannya. "
+  },
+  "confirmPublicNoncesKey": {
+    "confirm_public_nonces_key": "Konfirmasikan Nonce Publik pada Kunci SSP",
+    "confirm_public_nonces_key_info": "Untuk mengirim transaksi EVM, pertama-tama kita perlu mendapatkan nonce publik dari SSP Key yang digunakan untuk konstruksi transaksi.",
+    "confirm_public_nonces_key_info_2": "Untuk mengonfirmasi nonce publik pada Kunci SSP Anda, buka Kunci SSP Anda di ponsel kami dan konfirmasikan tindakannya. ",
+    "manual_input": "Masukkan Nonce Publik secara manual",
+    "public_nonces_stored": "Nonce Publik Disimpan!",
+    "invalid_public_nonces": "Nonce Publik Tidak Valid."
   },
   "navbar": {
     "refresh": "Segarkan",
@@ -132,11 +149,11 @@
     "addr_details": "Alamat Lengkap",
     "generate_new_wallet": "Hasilkan Dompet Baru",
     "remove_last_wallet": "Hapus Dompet Terakhir",
-    "remove": "Hapus",
-    "remove_last_wallet_desc": "Tindakan ini akan menghapus dompet Anda yang terakhir dibuat. Anda dapat membuat dompet baru yang sama kapan saja.",
+    "remove": "Menghapus",
+    "remove_last_wallet_desc": "Tindakan ini akan menghapus dompet Anda yang terakhir dibuat. ",
     "switch_chain": "Beralih Rantai",
-    "max_wallets": "42. Jawaban atas pertanyaan utama tentang kehidupan, alam semesta, dan segalanya. Anda telah mencapai jumlah maksimum dompet.",
-    "ssp_message_sign": "Penandatanganan Pesan"
+    "max_wallets": "42. Jawaban atas pertanyaan utama tentang kehidupan, alam semesta, dan segalanya. ",
+    "ssp_message_sign": "Tandatangani Pesan"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Kata sandi tidak valid. ",
@@ -148,27 +165,27 @@
   },
   "key": {
     "sync_key": "Kunci Sinkronisasi",
-    "err_sync_fail": "Sinkronisasi gagal. Silakan coba lagi secara manual.",
+    "err_sync_fail": "Sinkronisasi gagal. ",
     "warn_await_sync": "Menunggu sinkronisasi Kunci SSP atau input manual.",
-    "err_sync_1": "Silakan masukkan Kunci SSP XPUB. SSP Key XPUB berbeda dengan SSP Wallet XPUB.",
+    "err_sync_1": "Silakan masukkan Kunci SSP XPUB. ",
     "err_invalid_key": "Kunci SSP tidak valid.",
     "err_k2": "Kode K2: Ada yang tidak beres saat mendekripsi kata sandi.",
     "err_k1": "Kode K1: Ada yang tidak beres saat mendekripsi kata sandi.",
     "cancel_sync_q": "Batalkan Sinkronisasi Kunci SSP?",
     "cancel_sync": "Batalkan Sinkronisasi SSP",
     "back_to_sync": "Kembali ke Sinkronisasi Kunci SSP",
-    "sync_info_content": "Dompet SSP tidak dapat digunakan tanpa Kunci SSP. Ini akan mengeluarkan Anda dari SSP Wallet.",
+    "sync_info_content": "Dompet SSP tidak dapat digunakan tanpa Kunci SSP. ",
     "dual_factor_key": "Kunci SSP Faktor Ganda",
-    "sync_info_1": "Dompet SSP adalah Dompet Tanda Tangan Ganda. Anda perlu mengunduh Kunci SSP di perangkat seluler Anda untuk mengakses dompet Anda.",
+    "sync_info_1": "Dompet SSP adalah Dompet Tanda Tangan Ganda. ",
     "sync_info_2": "Pindai kode QR berikut untuk menyinkronkan Dompet SSP Anda dengan Kunci SSP Anda.",
-    "issues_syncing": "Masalah sinkronisasi? Masukan Manual",
+    "issues_syncing": "Masalah sinkronisasi? ",
     "dual_factor_key_chain": "Kunci SSP Faktor Ganda untuk {{chain}}",
     "input_xpub": "Masukkan Kunci SSP {{chain}} Kunci Publik yang Diperluas {{path}} Di Sini",
     "sync_key_chain": "Kunci Sinkronisasi untuk {{chain}}",
     "warn_await_sync_chain": "Menunggu sinkronisasi Kunci SSP atau input manual.",
-    "err_sync_1_chain": "Silakan masukkan Kunci SSP XPUB untuk {{chain}} ranti. SSP Key XPUB berbeda dengan SSP Wallet XPUB.",
+    "err_sync_1_chain": "Silakan masukan SSP Key XPUB {{chain}} rantai. ",
     "cancel_sync_q_chain": "Batalkan Sinkronisasi Kunci SSP untuk {{chain}}?",
-    "sync_info_content_chain": "Dompet SSP untuk rantai {{chain}} tidak dapat digunakan tanpa Kunci SSP. Ini akan beralih kembali ke Flux Chain",
+    "sync_info_content_chain": "Dompet SSP untuk rantai {{chain}} tidak dapat digunakan tanpa Kunci SSP. ",
     "sync_info_2_chain": "Pindai kode QR berikut untuk menyinkronkan Dompet SSP Anda untuk rantai {{chain}} dengan Kunci SSP Anda."
   },
   "chainSelect": {
@@ -182,7 +199,7 @@
     "to": "ke",
     "received": "diterima",
     "attached_message": "Pesan terlampir: {{message}}",
-    "proceed_to_pay": "Lanjutkan ke Pembayaran",
+    "proceed_to_pay": "Lanjutkan ke Bayar",
     "tx_rejected": "Transaksi Ditolak",
     "invalid_request": "Permintaan Tidak Valid",
     "transaction_sent": "Transaksi Terkirim"
@@ -191,7 +208,7 @@
     "sign_message": "Tandatangani Pesan",
     "sign_message_sspwid": "Tanda tangani pesan dengan Identitas Dompet SSP Anda:",
     "sign_message_info": "Tanda tangani pesan dengan Anda {{chainName}} alamat:",
-    "sign": "Tanda Tangani",
+    "sign": "Tanda",
     "message": "Pesan",
     "signature": "Tanda tangan"
   },
@@ -205,7 +222,7 @@
     "claim_with_fusion": "Klaim dengan Fusion!",
     "claim_reward": "Klaim Hadiah",
     "claim_pa_reward": "Klaim Hadiah Aset Paralel",
-    "pa_info": "Aset Paralel (PA) adalah aset tambahan Flux di berbagai blockchain. Anda dapat mengklaim Hadiah Aset Paralel Anda di sini menggunakan jembatan Fusion. Fusion akan secara otomatis mengklaim hadiah PA Anda, mengonversinya menjadi Flux, dan mengirimkannya ke dompet Flux Anda .",
+    "pa_info": "Aset Paralel (PA) adalah aset tambahan Flux di berbagai blockchain. ",
     "total_to_claim": "Total PA yang Akan Diklaim: {{amount}} {{symbol}}",
     "fees_to_pay": "Biaya Fusion yang Harus Dibayar: {{amount}} {{symbol}}",
     "total_reward": "Total Hadiah yang Akan Diterima: {{amount}} {{symbol}}",
@@ -213,20 +230,28 @@
     "signature_error": "Terjadi kesalahan saat menandatangani permintaan Penggabungan. ",
     "claim_successful": "Klaim Fusion Berhasil!",
     "claim_received": "Klaim Diterima!"
-     },
+  },
   "contacts": {
-    "no_contacts": "No Contacts Stored",
+    "no_contacts": "Tidak Ada Kontak Tersimpan",
     "contacts": "Kontak",
     "manage_contacts": "Kelola Kontak",
     "create_new_contact": "Buat Kontak Baru",
     "add_contact": "Tambah kontak",
     "edit_contact": "Sunting Kontak",
     "delete_contact": "Hapus kontak",
-    "err_no_name": "Mohon berikan nama kontak Anda terlebih dahulu",
+    "err_no_name": "Harap beri nama kontak Anda terlebih dahulu",
     "err_no_address": "Silakan masukkan alamat terlebih dahulu",
     "contacts_updated": "Kontak Diperbarui",
-    "err_saving_contacts": "Terjadi kesalahan saat menyimpan kontak. Silakan coba lagi.",
+    "err_saving_contacts": "Terjadi kesalahan saat menyimpan kontak. ",
     "contact_deleted": "Kontak Dihapus",
     "created_at": "Dibuat di"
+  },
+  "tokens": {
+    "import_token": "Impor Token",
+    "import": "Impor",
+    "import_selected": "Impor yang Dipilih",
+    "remove_token": "Hapus Token",
+    "remove": "Menghapus",
+    "remove_token_info": "Tindakan ini akan menyembunyikan token dari dompet Anda. "
   }
 }
