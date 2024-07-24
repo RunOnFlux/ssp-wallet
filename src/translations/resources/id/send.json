@@ -26,7 +26,7 @@
   "using_automatic_fee": "Menggunakan biaya jaringan otomatis",
   "using_manual_fee": "Menggunakan biaya jaringan manual",
   "err_insufficient_balance": "Saldo tidak mencukupi",
-  "err_tx_size_limit": "Ukuran transaksi melebihi batas blockchain. ",
+  "err_tx_size_limit": "Ukuran transaksi melebihi batas blockchain.",
   "replace_by_fee_tx": "Ini adalah transaksi Ganti dengan Biaya (RBF).",
   "replace_by_fee_stop": "Untuk membatalkan transaksi Ganti berdasarkan Biaya (RBF), tekan Batal atau kembali dengan mengklik logo SSP.",
   "err_public_nonces": "Nonce publik tidak tersedia, harap sinkronkan nonce publik dari Kunci SSP terlebih dahulu.",
