@@ -38,6 +38,6 @@
   "name": "Nama",
   "address": "Alamat",
   "activity": "Aktivitas",
-  "nodes": "Nodes"
+  "nodes": "Nodes",
   "tokens": "Token"
 }
