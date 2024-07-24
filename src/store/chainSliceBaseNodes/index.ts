@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { transaction, wallets, wallet, node } from '../../types';
+import { transaction, wallet, node, chainState } from '../../types';
 
 const initialWalletState: wallet = {
   address: '',
@@ -11,15 +11,7 @@ const initialWalletState: wallet = {
   nodes: [],
 };
 
-interface ChainState {
-  xpubWallet: string;
-  xpubKey: string;
-  wallets: wallets;
-  blockheight: number;
-  walletInUse: string;
-}
-
-const initialState: ChainState = {
+const initialState: chainState = {
   xpubWallet: '',
   xpubKey: '',
   wallets: {},

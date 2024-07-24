@@ -12,6 +12,7 @@ import {
   node,
   networkFee,
   tokenBalanceEVM,
+  chainState,
 } from '../types';
 
 import { blockchains } from '@storage/blockchains';
@@ -298,7 +299,7 @@ const reducers = combineReducers({
       acc[key] = chains[key].reducer;
       return acc;
     },
-    {} as Record<keyof cryptos, Reducer>,
+    {} as Record<keyof cryptos, Reducer<chainState>>,
   ),
 });
 

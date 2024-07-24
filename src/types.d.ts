@@ -526,6 +526,14 @@ export interface fusionMessage {
   data: errorResponse | string;
 }
 
+export interface chainState {
+  xpubWallet: string;
+  xpubKey: string;
+  wallets: wallets;
+  blockheight: number;
+  walletInUse: string;
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;
