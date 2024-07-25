@@ -864,7 +864,7 @@ function SendEVM() {
   return (
     <>
       {contextHolder}
-      <Navbar refresh={refresh} hasRefresh={false} />
+      <Navbar refresh={refresh} hasRefresh={false} allowChainSwitch={false} />
       <Divider />
       <Form
         name="sendForm"

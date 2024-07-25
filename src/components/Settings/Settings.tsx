@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Modal, Input, Space, message, Select } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
@@ -17,9 +17,6 @@ import LanguageSelector from '../../components/LanguageSelector/LanguageSelector
 import { currency } from '../../types';
 import { supportedFiatValues, getFiatSymbol } from '../../lib/currency.ts';
 import { setFiatRates } from '../../store';
-
-const backendsOriginalConfig = backendsOriginal();
-const originalConfig = sspConfigOriginal();
 
 interface sspConfigType {
   relay?: string;
@@ -43,6 +40,13 @@ function Settings(props: {
   const { open, openAction } = props;
   const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[activeChain];
+
+  const backendsOriginalConfig = backendsOriginal();
+  const originalConfig = sspConfigOriginal();
+
+  useEffect(() => {
+    setNodeConfig(NC);
+  }, [activeChain]);
 
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
