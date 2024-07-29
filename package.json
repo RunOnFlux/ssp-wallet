@@ -46,7 +46,7 @@
     "socket.io-client": "~4.7.5",
     "stream-browserify": "~3.0.0",
     "util": "~0.12.5",
-    "viem": "~2.17.3"
+    "viem": "~2.18.4"
   },
   "devDependencies": {
     "@types/bchaddrjs": "~0.4.3",
