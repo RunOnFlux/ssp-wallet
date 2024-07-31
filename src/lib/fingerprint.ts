@@ -34,7 +34,7 @@ export function getFingerprint(): string {
       const txt = 'ClientJS,org <canvas> 1.0';
       ctx.textBaseline = 'top';
       // The most common type
-      // eslint-disable-next-line quotes
+
       ctx.font = "14px 'Arial'";
       ctx.textBaseline = 'alphabetic';
       ctx.fillStyle = '#f60';

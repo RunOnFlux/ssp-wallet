@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Modal, Input, Space, message, Select } from 'antd';

@@ -92,7 +92,11 @@ function ManageContact(props: {
     <>
       {contextHolder}
       <Modal
-        title={editedContact.id > -1 ? t('home:contacts.edit_contact') : t('home:contacts.add_contact')}
+        title={
+          editedContact.id > -1
+            ? t('home:contacts.edit_contact')
+            : t('home:contacts.add_contact')
+        }
         open={true}
         onCancel={handleNotOk}
         style={{ textAlign: 'center', top: 60, width: 200 }}

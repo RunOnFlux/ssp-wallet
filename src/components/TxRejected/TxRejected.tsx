@@ -24,7 +24,11 @@ function TxRejected(props: {
         onCancel={handleOk}
         footer={[]}
       >
-        <Space direction="vertical" size={32} style={{ marginBottom: 16, marginTop: 16 }}>
+        <Space
+          direction="vertical"
+          size={32}
+          style={{ marginBottom: 16, marginTop: 16 }}
+        >
           <Text>{t('home:txRejected.tx_rejected_info')}</Text>
           <IssuesCloseOutlined style={{ fontSize: '48px' }} />
           <Text>{t('home:txRejected.tx_rejected_info_2')}</Text>

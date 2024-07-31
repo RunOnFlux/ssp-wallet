@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';

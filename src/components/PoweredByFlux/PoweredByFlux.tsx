@@ -10,7 +10,9 @@ function PoweredByFlux({ isClickeable = false }: Props) {
   const [themeStyle, setThemeStyle] = useState(
     darkModePreference.matches ? 'light' : 'dark',
   );
-  const [colorBox, setColorBox] = useState(darkModePreference.matches ? '#333' : '#ddd',);
+  const [colorBox, setColorBox] = useState(
+    darkModePreference.matches ? '#333' : '#ddd',
+  );
 
   const changeTheme = (isDark: boolean) => {
     if (isDark) {
@@ -20,7 +22,7 @@ function PoweredByFlux({ isClickeable = false }: Props) {
       setThemeStyle('dark');
       setColorBox('#ddd');
     }
-  }
+  };
 
   const open = (url: string) => {
     window.open(url, '_blank');

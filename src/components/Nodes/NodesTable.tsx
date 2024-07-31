@@ -28,13 +28,11 @@ function NodesTable(props: {
   const { t } = useTranslation(['home', 'common']);
   const { chain } = props;
   const parsedNodes = JSON.parse(JSON.stringify(props.nodes)) as node[];
-  const sortedNodesByName = parsedNodes.sort(
-    (a, b) => {
-      if (a.name > b.name) return 1;
-      else if (a.name < b.name) return -1;
-      else return 0;
-    },
-  );
+  const sortedNodesByName = parsedNodes.sort((a, b) => {
+    if (a.name > b.name) return 1;
+    else if (a.name < b.name) return -1;
+    else return 0;
+  });
   const blockchainConfig = blockchains[chain];
   const [messageApi, contextHolder] = message.useMessage();
   const [editedTxid, setEditedTxid] = useState('');

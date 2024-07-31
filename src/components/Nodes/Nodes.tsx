@@ -42,7 +42,7 @@ function Nodes() {
   const myNodes = wallets[walletInUse].nodes ?? [];
   const [nodeIdentityPK, setNodeIdentityPK] = useState('');
   const [collateralPrivKey, setCollateralPrivKey] = useState('');
-  const [collateralPublicKey, setCollateralPublicKey] = useState('')
+  const [collateralPublicKey, setCollateralPublicKey] = useState('');
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -240,7 +240,12 @@ function Nodes() {
   return (
     <div>
       {contextHolder}
-      <PArewards redeemScript={redeemScript} collateralPrivKey={collateralPrivKey} collateralPubKey={collateralPublicKey} sspwid={sspwid} />
+      <PArewards
+        redeemScript={redeemScript}
+        collateralPrivKey={collateralPrivKey}
+        collateralPubKey={collateralPublicKey}
+        sspwid={sspwid}
+      />
       <NodesTable
         nodes={myNodes}
         chain={activeChain}

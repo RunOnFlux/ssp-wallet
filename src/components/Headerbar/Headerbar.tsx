@@ -23,7 +23,10 @@ function Headerbar({ headerTitle, navigateTo }: Props) {
               style={{ cursor: 'pointer' }}
             />
           </Col>
-          <Col span={16} style={{ fontSize: '16px', lineHeight: '36px', fontWeight: 'bold' }}>
+          <Col
+            span={16}
+            style={{ fontSize: '16px', lineHeight: '36px', fontWeight: 'bold' }}
+          >
             {headerTitle}
           </Col>
           <Col span={4} />

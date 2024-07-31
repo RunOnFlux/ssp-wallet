@@ -152,7 +152,7 @@ function PArewards(props: {
           signature: signature,
           redeemScript: props.redeemScript,
           publicKey: props.collateralPubKey,
-          fluxid: props.sspwid, 
+          fluxid: props.sspwid,
         };
 
         axios
@@ -210,7 +210,7 @@ function PArewards(props: {
           </div>
           <Popconfirm
             title={t('home:fusion.claim_pa_reward')}
-            placement='bottomRight'
+            placement="bottomRight"
             description={
               <>
                 <Paragraph type="secondary" className="detailsDescription">

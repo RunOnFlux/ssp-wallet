@@ -5,6 +5,7 @@ async function request(method, params) {
   };
   const event = new CustomEvent('fromPageEvent', { detail: message });
   window.dispatchEvent(event);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const response = await new Promise((resolve, reject) => {
     window.addEventListener(
       'fromContentScript',

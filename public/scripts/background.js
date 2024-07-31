@@ -1,3 +1,4 @@
+/*global chrome*/
 // https://github.com/MetaMask/metamask-extension/blob/develop/app/scripts/app-init.js
 
 /*
@@ -11,7 +12,6 @@ let popupId;
 
 const registerInPageContentScript = async () => {
   try {
-    // eslint-disable-next-line no-undef
     await chrome.scripting.registerContentScripts([
       {
         id: 'sspinpage',
@@ -29,10 +29,7 @@ const registerInPageContentScript = async () => {
      * 2. await chrome.scripting.getRegisteredContentScripts() to check for an existing
      *    inpage script before registering - The provider is not loaded on time.
      */
-    console.warn(
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `Dropped attempt to register inpage content script. ${err}`,
-    );
+    console.warn(`Dropped attempt to register inpage content script. ${err}`);
   }
 };
 
@@ -46,9 +43,9 @@ async function getAllWindows() {
 function getPopupIn(windows) {
   return windows
     ? windows.find((win) => {
-      // Returns notification popup
-      return win && win.type === 'popup' && win.id === popupId;
-    })
+        // Returns notification popup
+        return win && win.type === 'popup' && win.id === popupId;
+      })
     : null;
 }
 
@@ -58,7 +55,6 @@ async function getPopup() {
 }
 
 async function focusWindow(windowId, options = { focused: true }) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   await chrome.windows.update(windowId, options);
 }
 
@@ -89,10 +85,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const lastFocused = await chrome.windows.getLastFocused();
     if (lastFocused) {
       top = lastFocused.top + 80;
-      left = Math.max(
-        lastFocused.left + (lastFocused.width - 420 - 10),
-        10,
-      );
+      left = Math.max(lastFocused.left + (lastFocused.width - 420 - 10), 10);
     }
     const popup = await getPopup(popupId);
     let timeout = 1000;
@@ -112,12 +105,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         width: 420,
         height: 620,
       };
-      const newPopup = await chrome.windows
-        .create(options)
+      const newPopup = await chrome.windows.create(options);
       popupId = newPopup.id;
     }
     setTimeout(() => {
-      void chrome.runtime.sendMessage({ // send new message to poup. We do not await a response. Instead we listen for a new message from popup
+      void chrome.runtime.sendMessage({
+        // send new message to poup. We do not await a response. Instead we listen for a new message from popup
         origin: 'ssp-background',
         data: request,
         // data: {

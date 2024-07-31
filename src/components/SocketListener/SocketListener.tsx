@@ -75,5 +75,4 @@ SocketListener.defaultProps = {
   ignorePopups: false,
 };
 
-
 export default SocketListener;

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { Typography, Button, Space, Modal, Input } from 'antd';
 import { useAppSelector } from '../../hooks';
 const { Paragraph, Text } = Typography;
