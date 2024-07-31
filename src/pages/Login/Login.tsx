@@ -304,11 +304,7 @@ function Login() {
               (await localForage.getItem(`nodes-${activeChain}-${walInUse}`)) ??
               [];
             if (activatedTokens) {
-              setActivatedTokens(
-                activeChain,
-                walInUse,
-                activatedTokens || [],
-              );
+              setActivatedTokens(activeChain, walInUse, activatedTokens || []);
             }
             if (tokenBalances) {
               setTokenBalances(activeChain, walInUse, tokenBalances || []);

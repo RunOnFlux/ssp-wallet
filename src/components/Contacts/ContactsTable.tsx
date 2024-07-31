@@ -65,7 +65,7 @@ function ContactsTable() {
   // on chain change and on load, sort contacts and set it
   useEffect(() => {
     console.log(contacts[activeChain]);
-    const contactsCopy = [...contacts[activeChain]] || [];
+    const contactsCopy = [...contacts[activeChain]];
     const sortedContacts = contactsCopy.sort((a, b) => {
       if (a.name > b.name) return 1;
       else if (a.name < b.name) return -1;

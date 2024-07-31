@@ -1,10 +1,5 @@
 import axios from 'axios';
-import {
-  getInfoInsight,
-  cryptos,
-  getInfoBlockbook,
-  evm_call,
-} from '../types';
+import { getInfoInsight, cryptos, getInfoBlockbook, evm_call } from '../types';
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';

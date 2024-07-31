@@ -10,10 +10,14 @@ async function request(details) {
   }
 }
 
-window.addEventListener('fromPageEvent', async function (event) {
-  // console.log(event)
-  const result = await request(event.detail);
-  // console.log(result);
-  const eventB = new CustomEvent('fromContentScript', { detail: result });
-  window.dispatchEvent(eventB);
-}, false);
+window.addEventListener(
+  'fromPageEvent',
+  async function (event) {
+    // console.log(event)
+    const result = await request(event.detail);
+    // console.log(result);
+    const eventB = new CustomEvent('fromContentScript', { detail: result });
+    window.dispatchEvent(eventB);
+  },
+  false,
+);

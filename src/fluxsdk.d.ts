@@ -19,5 +19,5 @@ declare module '@runonflux/flux-sdk' {
         extraEntropy?: Buffer;
       },
     ) => string;
-  }
+  };
 }

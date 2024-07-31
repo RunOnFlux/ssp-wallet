@@ -24,10 +24,18 @@ function PublicNoncesRejected(props: {
         onCancel={handleOk}
         footer={[]}
       >
-        <Space direction="vertical" size={32} style={{ marginBottom: 16, marginTop: 16 }}>
-          <Text>{t('home:publicNoncesRejected.public_nonces_rejected_info')}</Text>
+        <Space
+          direction="vertical"
+          size={32}
+          style={{ marginBottom: 16, marginTop: 16 }}
+        >
+          <Text>
+            {t('home:publicNoncesRejected.public_nonces_rejected_info')}
+          </Text>
           <IssuesCloseOutlined style={{ fontSize: '48px' }} />
-          <Text>{t('home:publicNoncesRejected.public_nonces_rejected_info_2')}</Text>
+          <Text>
+            {t('home:publicNoncesRejected.public_nonces_rejected_info_2')}
+          </Text>
           <Button type="primary" size="middle" onClick={handleOk}>
             {t('common:ok')}
           </Button>

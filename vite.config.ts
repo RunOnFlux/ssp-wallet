@@ -29,7 +29,8 @@ export default defineConfig({
     'process.env': {
       // mainly disable user agent to prevent
       VITE_SECURE_LOCAL_STORAGE_DISABLED_KEYS: 'UserAgent|Plugins|TimeZone',
-      REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS: 'UserAgent|Plugins|TimeZone',
+      REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS:
+        'UserAgent|Plugins|TimeZone',
       SECURE_LOCAL_STORAGE_DISABLED_KEYS: 'UserAgent|Plugins|TimeZone',
     },
   },

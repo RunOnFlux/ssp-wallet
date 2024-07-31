@@ -24,7 +24,12 @@ function Navigation() {
           shape="round"
           icon={<ArrowUpOutlined />}
           size={'large'}
-          onClick={() => navigate(blockchainConfig.chainType === 'evm' ? '/sendevm' : '/send', { state: { receiver: '' } })}
+          onClick={() =>
+            navigate(
+              blockchainConfig.chainType === 'evm' ? '/sendevm' : '/send',
+              { state: { receiver: '' } },
+            )
+          }
         >
           {t('home:navigation.send')}
         </Button>

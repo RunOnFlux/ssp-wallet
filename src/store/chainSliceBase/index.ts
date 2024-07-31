@@ -48,7 +48,8 @@ function makeChainSlice(chainName: string) {
         state.wallets[action.payload.wallet] = state.wallets[
           action.payload.wallet
         ] || { ...initialWalletState };
-        state.wallets[action.payload.wallet].witnessScript = action.payload.data;
+        state.wallets[action.payload.wallet].witnessScript =
+          action.payload.data;
       },
       setXpubWallet: (state, action: PayloadAction<string>) => {
         state.xpubWallet = action.payload;
@@ -93,10 +94,7 @@ function makeChainSlice(chainName: string) {
         };
         state.walletInUse = action.payload;
       },
-      removeWallet: (
-        state,
-        action: PayloadAction<{ wallet: string }>,
-      ) => {
+      removeWallet: (state, action: PayloadAction<{ wallet: string }>) => {
         delete state.wallets[action.payload.wallet];
       },
       setChainInitialState: (state) => {

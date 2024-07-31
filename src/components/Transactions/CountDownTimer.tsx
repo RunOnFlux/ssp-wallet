@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { ColorFormat, CountdownCircleTimer } from 'react-countdown-circle-timer';
+import {
+  ColorFormat,
+  CountdownCircleTimer,
+} from 'react-countdown-circle-timer';
 
 interface CountdownTimerProps {
   createdAtDateTime: string; // Date-time in ISO format (e.g., "2021-01-01T00:00:00")
@@ -7,7 +10,11 @@ interface CountdownTimerProps {
   onFinish?: () => void;
 }
 
-const CountdownTimer: React.FC<CountdownTimerProps> = ({ createdAtDateTime, expireAtDateTime, onFinish }) => {
+const CountdownTimer: React.FC<CountdownTimerProps> = ({
+  createdAtDateTime,
+  expireAtDateTime,
+  onFinish,
+}) => {
   const [remainingTimeInSeconds] = useState(() => {
     const endTime = new Date(expireAtDateTime).getTime();
     const now = Date.now();
@@ -15,7 +22,10 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ createdAtDateTime, expi
   });
   const [color, setColor] = useState('');
 
-  const totalTime = (new Date(expireAtDateTime).getTime() - new Date(createdAtDateTime).getTime()) / 1000;
+  const totalTime =
+    (new Date(expireAtDateTime).getTime() -
+      new Date(createdAtDateTime).getTime()) /
+    1000;
 
   const getColor = (remainingTimeInSeconds: number) => {
     if (remainingTimeInSeconds > 12 * 60) {

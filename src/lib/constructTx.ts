@@ -1059,17 +1059,17 @@ export async function constructAndSignEVMTransaction(
       });
     }
     console.log(uoStruct);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const uoStructHexlified = deepHexlify(uoStruct);
     const uoStructHash = multiSigSmartAccount
       .getEntryPoint()
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
       .getUserOperationHash(uoStructHexlified);
     const multiSigUserOp = new accountAbstraction.userOperation.MultiSigUserOp(
       publicKeys,
       [publicNonces1, publicNoncesKey],
       uoStructHash,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
       uoStructHexlified,
     );
     multiSigUserOp.signMultiSigHash(schnorrSigner1); // we post this to our server

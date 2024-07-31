@@ -24,9 +24,15 @@ function PublicNoncesReceived(props: {
         onCancel={handleOk}
         footer={[]}
       >
-        <Space direction="vertical" size={32} style={{ marginBottom: 16, marginTop: 16 }}>
+        <Space
+          direction="vertical"
+          size={32}
+          style={{ marginBottom: 16, marginTop: 16 }}
+        >
           <CheckCircleOutlined style={{ fontSize: '48px' }} />
-          <Text>{t('home:publicNoncesReceived.public_nonces_received_info')}</Text>
+          <Text>
+            {t('home:publicNoncesReceived.public_nonces_received_info')}
+          </Text>
           <Button type="primary" size="middle" onClick={handleOk}>
             {t('common:ok')}
           </Button>
