@@ -175,7 +175,7 @@ function NodesTable(props: {
         }}
         pagination={false}
         showHeader={false}
-        rowKey="txid"
+        rowKey={(record) => record.txid + record.vout}
         bordered={false}
         loading={false}
         dataSource={sortedNodesByName}
