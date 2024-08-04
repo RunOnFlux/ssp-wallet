@@ -17,6 +17,10 @@ import {
   deepHexlify,
 } from '@alchemy/aa-core';
 import {
+  alchemyFeeEstimator,
+  createAlchemyPublicRpcClient,
+} from '@alchemy/aa-alchemy';
+import {
   blockbookUtxo,
   utxo,
   blockbookBroadcastTxResult,
@@ -956,7 +960,9 @@ export async function constructAndSignEVMTransaction(
     const CHAIN = viemChains[blockchainConfig.libid as keyof typeof viemChains];
     const multiSigSmartAccount =
       await accountAbstraction.accountAbstraction.createMultiSigSmartAccount({
+        // @ts-expect-error type mismatch as of library
         transport,
+        // @ts-expect-error type mismatch as of library
         chain: CHAIN,
         combinedAddress: combinedAddresses,
         salt: accountAbstraction.helpers.create2Helpers.saltToHex(accountSalt),
@@ -1011,13 +1017,21 @@ export async function constructAndSignEVMTransaction(
       txRetryMultiplier: 3,
     };
 
+    const alchemyClient = createAlchemyPublicRpcClient({
+      connectionConfig: { rpcUrl },
+      // @ts-expect-error library issue
+      chain: CHAIN,
+    });
+
     const smartAccountClient = createSmartAccountClient({
       // @ts-expect-error library issue
       transport,
       // @ts-expect-error library issue
       chain: CHAIN,
+      // @ts-expect-error library issue
       account: multiSigSmartAccount,
       opts: CLIENT_OPT,
+      feeEstimator: alchemyFeeEstimator(alchemyClient),
     });
 
     let uoStruct;
@@ -1041,6 +1055,7 @@ export async function constructAndSignEVMTransaction(
 
       console.log(uoCallData);
       uoStruct = await smartAccountClient.buildUserOperation({
+        // @ts-expect-error library issue
         account: multiSigSmartAccount,
         uo: {
           data: uoCallData,
@@ -1050,6 +1065,7 @@ export async function constructAndSignEVMTransaction(
       console.log(uoStruct);
     } else {
       uoStruct = await smartAccountClient.buildUserOperation({
+        // @ts-expect-error library issue
         account: multiSigSmartAccount,
         uo: {
           data: '0x',
