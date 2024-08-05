@@ -14,7 +14,6 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "@alchemy/aa-alchemy": "~3.18.2",
     "@alchemy/aa-core": "~3.18.2",
     "@metamask/browser-passworder": "~5.0.1",
     "@noble/hashes": "~1.4.0",

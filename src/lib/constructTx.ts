@@ -17,10 +17,6 @@ import {
   deepHexlify,
 } from '@alchemy/aa-core';
 import {
-  alchemyFeeEstimator,
-  createAlchemyPublicRpcClient,
-} from '@alchemy/aa-alchemy';
-import {
   blockbookUtxo,
   utxo,
   blockbookBroadcastTxResult,
@@ -1017,12 +1013,6 @@ export async function constructAndSignEVMTransaction(
       txRetryMultiplier: 3,
     };
 
-    const alchemyClient = createAlchemyPublicRpcClient({
-      connectionConfig: { rpcUrl },
-      // @ts-expect-error library issue
-      chain: CHAIN,
-    });
-
     const smartAccountClient = createSmartAccountClient({
       // @ts-expect-error library issue
       transport,
@@ -1031,7 +1021,6 @@ export async function constructAndSignEVMTransaction(
       // @ts-expect-error library issue
       account: multiSigSmartAccount,
       opts: CLIENT_OPT,
-      feeEstimator: alchemyFeeEstimator(alchemyClient),
     });
 
     let uoStruct;
