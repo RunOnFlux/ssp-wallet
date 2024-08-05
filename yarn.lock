@@ -12,10 +12,10 @@
   resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.10.1.tgz#63430d04bd8c5e74f8d7d049338f1cd9d4f02069"
   integrity sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==
 
-"@alchemy/aa-core@^3.12.3", "@alchemy/aa-core@~3.18.2":
-  version "3.18.2"
-  resolved "https://registry.yarnpkg.com/@alchemy/aa-core/-/aa-core-3.18.2.tgz#b11f189404e97132f5affab938b3d4040c99f475"
-  integrity sha512-uXVpPz5tpBiARC4QCj/MAK45J09Pt3pJQpmFDiHSj4ZEcQB7ZraP2z8Bi6jLMkMDyHPjUiTeJf+aRV3Gqyeunw==
+"@alchemy/aa-core@^3.12.3", "@alchemy/aa-core@~3.19.0":
+  version "3.19.0"
+  resolved "https://registry.yarnpkg.com/@alchemy/aa-core/-/aa-core-3.19.0.tgz#e59c0f1832de2b9e6b120022d49f995da3dc34fd"
+  integrity sha512-gVSesLsXORMuiA3w/w+4eQikzrikpj1XN2Sbrcik0v25AKH5QrHn0HddhyrN1aCFW2NoXjyhwxlySiTDVfTgxQ==
   dependencies:
     abitype "^0.8.3"
     eventemitter3 "^5.0.1"
