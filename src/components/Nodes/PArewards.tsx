@@ -63,6 +63,7 @@ function PArewards(props: {
     axios
       .get<fusionPAavailable>(
         `https://fusion.runonflux.io/coinbase/multiavailable/${address}`,
+        { headers: { fluxid: props.sspwid } },
       )
       .then((res) => {
         console.log(res);
