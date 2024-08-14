@@ -30,6 +30,7 @@ function LanguageSelector(props: { label: boolean }) {
         options={[
           { value: 'en', label: 'en', desc: 'English' },
           { value: 'id', label: 'id', desc: 'Bahasa Indonesia' },
+          { value: 'cs', label: 'cs', desc: 'Čeština' },
         ]}
         optionRender={(option) => <>{option.data.desc}</>}
       />
