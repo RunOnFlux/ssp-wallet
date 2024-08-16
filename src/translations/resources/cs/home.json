@@ -147,8 +147,8 @@
     "chain_wallet": "{{chain}} {{wallet}}",
     "ssp_details": "Detaily SSP Peněženky",
     "addr_details": "Detaily Adresy",
-    "generate_new_wallet": "Generovat Novou Peněženku",
-    "remove_last_wallet": "Odebrat Poslední Peněženku",
+    "generate_new_wallet": "Generovat Peněženku",
+    "remove_last_wallet": "Odebrat Peněženku",
     "remove": "Odebrat",
     "remove_last_wallet_desc": "Tato akce odebere vaši poslední vygenerovanou peněženku. Kdykoliv později můžete vygenerovat tu samou peněženku.",
     "switch_chain": "Změnit Chain",
@@ -159,7 +159,7 @@
     "err_pw_not_valid_try": "Heslo není platné. Zkuste prosím později.",
     "err_pc1": "Kód PC1: Chybějí data peněženky. Prosím obnovte svou peněženku.",
     "grant_access_info_1": "Chystáte se zobrazit citlivé informace.",
-    "grant_access_info_2": "Povolit přístup heslem.",
+    "grant_access_info_2": "Povolte přístup heslem.",
     "confirm_with_pw": "Potvrďte heslem",
     "grant_access": "Povolit Přístup"
   },
@@ -244,7 +244,7 @@
     "contacts_updated": "Kontakty Aktualizovány",
     "err_saving_contacts": "Chyba při ukládání kontaktů. Zkuste prosím později.",
     "contact_deleted": "Kontakt Smazán",
-    "created_at": "Vytvořeno v"
+    "created_at": "Přidáno"
   },
   "tokens": {
     "import_token": "Importovat Token",
