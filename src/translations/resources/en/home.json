@@ -58,7 +58,7 @@
     "open_fluxos": "Open FluxOS",
     "open_fluxos_info": "This action will open FluxOS in your browser, minimizing SSP Wallet.",
     "setup_node": "Setup {{chainName}} Node",
-    "err_start": "Error while starting {{chainName}} Node. Please try again.",
+    "err_start": "Error while starting {{chainName}} Node. Make sure your collateral has 100 confirmations, and node status is offlin, then please try again.",
     "offline": "Offline",
     "confirmed": "Confirmed",
     "started": "Started",

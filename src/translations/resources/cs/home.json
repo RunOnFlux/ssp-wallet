@@ -58,7 +58,7 @@
     "open_fluxos": "Otevřít FluxOS",
     "open_fluxos_info": "Tato akce otevře FluxOS ve vašem prohlížeci a minimalizuje SSP Peněženku.",
     "setup_node": "Nastavi {{chainName}} Node",
-    "err_start": "Chyba při startu {{chainName}} Nodu. Zkuste prosím později.",
+    "err_start": "Chyba při startu {{chainName}} Nodu. Ujistěte se, že vaše transakční záloha nodu má více než 100 potvrzení sítí a její status je Offline, poté zkuste Node nastartovat znovu.",
     "offline": "Vypnuto",
     "confirmed": "Potvrzeno",
     "started": "Nastartováno",
