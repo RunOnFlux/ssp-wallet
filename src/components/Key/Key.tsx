@@ -169,6 +169,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
       try {
         generateMultisigAddress(xpubWallet, xpubKeyInput, 0, 0, activeChain);
       } catch (error) {
+        console.log(error);
         keyValid = false;
         displayMessage('error', t('home:key.err_invalid_key'));
       }

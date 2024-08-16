@@ -353,6 +353,7 @@ function Restore() {
         <Button
           type="dashed"
           onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             setMnemonicShow(!mnemonicShow), setWSPwasShown(true);
           }}
         >

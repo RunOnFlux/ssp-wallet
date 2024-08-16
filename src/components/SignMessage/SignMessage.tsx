@@ -75,14 +75,14 @@ function SignMessage(props: {
               throw new Error('Unable to sign message');
             }
             setMessageSignature(signature);
-            openAction
-              ? openAction({
-                  status: t('common:success'),
-                  signature: signature,
-                  address: wExternalIdentity,
-                  message: message,
-                })
-              : null;
+            if (openAction) {
+              openAction({
+                status: t('common:success'),
+                signature: signature,
+                address: externalIdentity.address,
+                message: message,
+              });
+            }
           } else {
             throw new Error('Unknown error: address mismatch');
           }
@@ -92,12 +92,13 @@ function SignMessage(props: {
         // todo case for signing with any address
       }
     } catch (error) {
-      openAction
-        ? openAction({
-            status: t('common:error'),
-            data: 'Error signing message.',
-          })
-        : null;
+      console.log(error);
+      if (openAction) {
+        openAction({
+          status: t('common:error'),
+          data: 'Error signing message.',
+        });
+      }
     }
   };
 
@@ -138,8 +139,12 @@ function SignMessage(props: {
   const handleCancel = () => {
     setMessageSignature('');
     setMessageToSign('');
-    openAction ? openAction(null) : null;
-    exitAction ? exitAction() : null;
+    if (openAction) {
+      openAction(null);
+    }
+    if (exitAction) {
+      exitAction();
+    }
   };
 
   const handleTextInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
