@@ -21,7 +21,7 @@
   "payment_note": "Platební poznámka",
   "confirm_tx": "Potvrdit transakci?",
   "tx_to_sspkey": "Transakce bude odeslána na potvrzení do vašeho SSP Klíče.",
-  "double_check_tx": "Překontrolujte detailz transakce před jejím potvrzením.",
+  "double_check_tx": "Překontrolujte detaily transakce před jejím potvrzením.",
   "max": "Max",
   "using_automatic_fee": "Používají se automaické poplatky sítě",
   "using_manual_fee": "Používají se manuální poplatky sítě",

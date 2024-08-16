@@ -106,7 +106,7 @@
     "wallet_redeem_script": "Wallet Redeem Script",
     "wallet_witness_script": "Wallet Witness Script",
     "wallet_priv_key": "Wallet Private Key",
-    "wallet_redeem_script_desc": "Redeem script code is describing the conditions that must be met to spend funds of your wallet.You will generally never need this code, but it is good to have it saved somewhere in case you need it. It is safe to share, does not grant control over your funds but exposes public keys.",
+    "wallet_redeem_script_desc": "Redeem script code is describing the conditions that must be met to spend funds of your wallet. You will generally never need this code, but it is good to have it saved somewhere in case you need it. It is safe to share, does not grant control over your funds but exposes public keys.",
     "wallet_witness_script_desc": "Witness script code is describing the conditions that must be met to spend funds of your wallet. You will generally never need this code, but it is good to have it saved somewhere in case you need it. It is safe to share, does not grant control over your funds but exposes public keys.",
     "wallet_priv_key_desc": "Private key grants control over your specific wallet address. This is a private part, do NOT ever share as it grants access to funds."
   },
