@@ -25,6 +25,7 @@
   "transactionsTable": {
     "no_tx_history": "Ždná Historie Transakcí",
     "txid_link": "TXID: {{txid}}",
+    "out_id": "Výstupní ID: {{vout}}",
     "fee_with_symbol": "Poplatek: {{fee}} {{symbol}}",
     "note_with_note": "Poznámka: {{note}}",
     "direction": "Směr",

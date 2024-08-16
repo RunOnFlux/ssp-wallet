@@ -25,6 +25,7 @@
   "transactionsTable": {
     "no_tx_history": "No Transaction History Found",
     "txid_link": "TXID: {{txid}}",
+    "out_id": "Output ID: {{vout}}",
     "fee_with_symbol": "Fee: {{fee}} {{symbol}}",
     "note_with_note": "Note: {{note}}",
     "direction": "Direction",
