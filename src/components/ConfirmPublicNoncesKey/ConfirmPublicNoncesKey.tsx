@@ -58,6 +58,7 @@ function ConfirmPublicNoncesKey(props: {
           }
         })();
       } catch (error) {
+        console.log(error);
         displayMessage(
           'error',
           t('home:confirmPublicNoncesKey.invalid_public_nonces'),

@@ -9,11 +9,19 @@ import reactHooks from 'eslint-plugin-react-hooks';
 export default [
   eslintPluginPrettierRecommended,
   pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   pluginReact.configs.flat.recommended,
   {
     files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
     languageOptions: {
+      parserOptions: {
+        projectService: {
+          allowDefaultProject: ['*.js', '*.ts'],
+          defaultProject: './tsconfig.json',
+        },
+        tsconfigRootDir: import.meta.dirname,
+      },
       globals: {
         ...globals.browser,
         ...globals.node,
@@ -21,11 +29,13 @@ export default [
       },
     },
     plugins: {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       reactRefresh,
       reactHooks,
     },
     rules: {
       'react/react-in-jsx-scope': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
     },
   },
 ];

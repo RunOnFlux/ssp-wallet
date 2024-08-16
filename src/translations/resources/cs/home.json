@@ -1,0 +1,258 @@
+{
+  "err_panic": "PANIKA: Neplatný SSP Klíč.",
+  "balances": {
+    "locked": "Uzamčeno: {{balance}} {{symbol}}",
+    "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
+  },
+  "txSent": {
+    "show_in_explorer": "Ukázat v prohlížeči",
+    "tx_sent": "Transakce Odeslána!"
+  },
+  "txRejected": {
+    "tx_rejected": "Transakce Odmítnuta!",
+    "tx_rejected_info": "Transakce odmítnuta SSP Klíčem.",
+    "tx_rejected_info_2": "Vaše transakce nebude zahrnuta do blockchainu. Vaše prostředky jsou znovu plně k dispozici k dalším transakcím."
+  },
+  "publicNoncesRejected": {
+    "public_nonces_rejected": "Veřejné Nonce Odmítnuty!",
+    "public_nonces_rejected_info": "Veřejné nonce byly odmítnuty SSP Klíčem.",
+    "public_nonces_rejected_info_2": "SSP Klíč odmítnul odeslat veřejné nonce. Bez veřejných noncí nemůže SSP Peněženka konstruovat transakce na EVM chainech."
+  },
+  "publicNoncesReceived": {
+    "public_nonces_received": "Veřejné Nonce Obdrženy!",
+    "public_nonces_received_info": "Veřejné nonce byly obdrženy a úspěšně uloženy. Veřejné nonce se používají ke konstrukci transakcí na EVM chainech."
+  },
+  "transactionsTable": {
+    "no_tx_history": "Ždná Historie Transakcí",
+    "txid_link": "TXID: {{txid}}",
+    "out_id": "Výstupní ID: {{vout}}",
+    "fee_with_symbol": "Poplatek: {{fee}} {{symbol}}",
+    "note_with_note": "Poznámka: {{note}}",
+    "direction": "Směr",
+    "date": "Datum",
+    "amount": "Částka",
+    "confirmations": "Potvrzení",
+    "tx_confirmed": "Potvrzeno.",
+    "tx_unconfirmed": "Nepotvrzeno. Transakce ještě nebyla vytěžena.",
+    "tx_pending": "Výčkáva. Transakce vyčkává autorizační potvrzení SSP Klíčem.",
+    "replace_by_fee": "Nahradit Poplatkem",
+    "replace_by_fee_info": "Navyší poplatek, nahradí nebo zruší transakci.",
+    "replace_by_fee_desc": "Nahrazení poplatkem (RBF) vám umožní nahradi nepotvrzenou transakci jinou transakcí, která má větší poplatek síti. Jestliže vaše transakce je nepotvrzená po delší dobu, zkuste zvážit funkci RBF ke zvýšení poplatku. Navíc můžete změnit příjemce, částku i poznámku u transakce. Jestliže změnite příjemce na vaši adresu, můžete tímto nasměrovat prostředky zpět a tak celou transakci zrušit.",
+    "replace_by_fee_desc_b": "RBF vždy požaduje vyšší transakční poplatek. Nahrazení transakce není producenty bloků garantováno, předchozí transakce může stále být sítí preferována. Pouze nepotvrzené transakce mohou být nahrazeny."
+  },
+  "nodesTable": {
+    "no_nodes": "Adresa nemá žádné nody.",
+    "what_is_node": "Co je to {{chainName}} Node?",
+    "name": "Jméno",
+    "ip": "IP Addresa",
+    "tier": "Úroveň",
+    "amount": "Částka",
+    "status": "Status",
+    "identitypk": "Identifikační Klíč Nodu",
+    "sspid": "ID SSP Peněženky (FluxID)",
+    "start_node": "Nastartovat {{chainName}} Node",
+    "start_node_info": "Tato akce odešle Start Transakci na blockchain a pokusí se ta nastartovat váš {{chainName}} Node.",
+    "start_node_info_2": "Před startem {{chainName}} Nodu se ujistěte, že váš {{chainName}} Node běží správně a úspěšně překonal benchmark testování abyste zabránili statu DoS.",
+    "delete_node": "Smazat {{chainName}} Node",
+    "delete_node_info": "Tato akce odblokuje zamčené prostředky {{chainName}} Nodu a budou tak dostupné pro utrácení.",
+    "delete_node_info_2": "Váš {{chainName}} Node stále poběžeí a může být znovu nastaven a to až do doby než utratíte jeho zamčené prostředky.",
+    "open_fluxos": "Otevřít FluxOS",
+    "open_fluxos_info": "Tato akce otevře FluxOS ve vašem prohlížeci a minimalizuje SSP Peněženku.",
+    "setup_node": "Nastavi {{chainName}} Node",
+    "err_start": "Chyba při startu {{chainName}} Nodu. Ujistěte se, že vaše transakční záloha nodu má více než 100 potvrzení sítí a její status je Offline, poté zkuste Node nastartovat znovu.",
+    "offline": "Vypnuto",
+    "confirmed": "Potvrzeno",
+    "started": "Nastartováno",
+    "starting": "Startuji",
+    "unassigned": "Nepřiřazeno",
+    "dos": "DoS",
+    "node_started": "{{chainName}} Node Nastartován!",
+    "err_unable_identity": "Nedaří se vygenerovat identitu nodu. Zkuste prosím později.",
+    "err_delete": "Chyba pri mazání {{chainName}} Nodu. Zkuste prosím později.",
+    "node_deleted": "{{chainName}} Node Smazán!"
+  },
+  "setupNode": {
+    "setup_node": "Nastavit {{chainName}} Node",
+    "node_name": "Jméno Nodu",
+    "node_ip": "IP Addresa",
+    "err_saving_node": "Chyba při ukládání nodu. Zkuste prosím později.",
+    "node_saved": "{{chainName}} Node Uložen!",
+    "err_no_name": "Prosím pojmenujte svůj node."
+  },
+  "sspWalletDetails": {
+    "err_pw_not_valid": "Heslo není správné.",
+    "err_invalid_wallet_xpriv": "Neplatná xpriv peněženky.",
+    "err_invalid_wallet_xpriv_2": "Neplatný xpriv peněženk, nedaří se odemknout.",
+    "err_invalid_wallet_xpub": "Neplatný xpub peněženky.",
+    "err_invalid_wallet_xpub_2": "Neplatný xpub peněženky, nedaří se odemknout.",
+    "err_invalid_wallet_seed": "Neplatný seed peněženky",
+    "err_invalid_wallet_seed_2": "Neplatný seed peněženky, nedaří se odemknout.",
+    "err_invalid_wallet_xpub_id": "Neplatný xpub identity peněženky",
+    "err_invalid_wallet_xpub_2_id": "Neplatný xpub identity peněženky, nedaří se odemknout.",
+    "err_s1": "Kód S1: Něco se pokazilo při dešifrování hesla.",
+    "ssp_bip": "Detaily {{chain}} SSP Peněženky (BIP-48)",
+    "ssp_mnemonic": "Mnemonická Seed Fráze SSP Peněženky",
+    "ssp_sync_wallet_key": "Synchronizace SSP Peněženky s SSP Klíčem",
+    "chain_sync_ssp_key": "{{chain}} Synchronizace s SSP Key",
+    "chain_extended_pub": "{{chain}} Prodloužený Veřejný Klíč",
+    "chain_extended_priv": "{{chain}} Prodloužený Soukromý Klíč",
+    "ssp_mnemonic_desc": "Seed Fráze je nejdůležitejší součást vaší peněženky. Používá se k odvození rozšířejných veřejných a soukromých klíču vaší peněženky. Prosím napište si ji a uložte na bezpečné místo. Jestliže ztratíte vaši Seed Frázi, ztratíte tím přístup k vašim prostředkům. NIKDY nesdílejte Seed Frázi s nikým! Kdokoliv kdo k ní má přístup má plný přístup k SSP Peněžence.",
+    "ssp_sync_wallet_key_desc": "Tento QR kód se používá k synchronizování SSP Peněženky s vašim SSP Klíčem. Naskenujte tento QR kód vašim SSP Klíčem k synchronizaci SSP Peněženky s SSP Klíčem. Současně se synchronizuje i Bitcoin chain.",
+    "chain_sync_ssp_key_desc": "Tento QR kód se používá k synchronizování blockchainu {{chain}} SSP PPeněženky s vašim SSP Klíčem. Naskenujte tento QR kód vašim SSP Klíčem k synchronizaci {{chain}} chainu.",
+    "chain_extended_pub_desc": "Rozšířený Veřejný Klíč se používá k odvození všech vašich veřejných klíčů blockchainu {{chain}}. Následně se z něj odvozují veškeré vaše adresy. Tohle je veřejný část a je bezpečné ji sdílet. Veřejná část nedává přístup k prostředkům adres. Tuto část synchronizuje SSP Peněženka s vašim SSP Klíčem ke generování adres.",
+    "chain_extended_priv_desc": "Rozšířený Soukromý Klíč se používá k odvození všech vašich soukromých klíčů blockchainu {{chain}}. Soukromé klíče kontrolují veřejné klíče - adresy. Tohle je soukromá část. NIKDY ji s nikým nesdílejte. Tato část dává přímý přístup k prostředkům."
+  },
+  "addressDetails": {
+    "chain_bip": "Detaily {{chain}} Adresy (BIP-48)",
+    "wallet_redeem_script": "Redeem Skript Peněženky",
+    "wallet_witness_script": "Witness Skript Peněženky",
+    "wallet_priv_key": "Soukromý Klíč Peněženky",
+    "wallet_redeem_script_desc": "Redeem Skrip je část kódu, která popisuje podmínky jež musí být naplněny ppro odesílání prostředků z vaší peněženky. Obecně nikde tento kód nebudete potřebovat, ale je dobré jej znát. Je bezpečné jej i sdílet, nedává kontrolu na prostředky ale zobrazuje veřejné klíče adresy.",
+    "wallet_witness_script_desc": "Witness Skript je část kódu, která popisuje podmínky jež musí být naplněny ppro odesílání prostředků z vaší peněženky. Obecně nikde tento kód nebudete potřebovat, ale je dobré jej znát. Je bezpečné jej i sdílet, nedává kontrolu na prostředky ale zobrazuje veřejné klíče adresy.",
+    "wallet_priv_key_desc": "Soukromý klíč dává přímou kontrolu nad specifickou adresou peněženky.  Tohle je soukromá část. NIKDY ji s nikým nesdílejte. Tento klíč dává plný přístup k prostředkům."
+  },
+  "settings": {
+    "err_saving_conf": "Chyba při ukládání nastavení. Prosím zkuste později.",
+    "settings": "Nastavení",
+    "change_pw": "Změnit heslo",
+    "change_pw_restore": "Změna Hesla? Obnovit!",
+    "ssp_relay": "SSP Relay Server",
+    "chain_node_service": "{{chain}} Node Služba",
+    "language": "Jazyk",
+    "fiat_currency": "Měna"
+  },
+  "receive": {
+    "receive_chain_wallet": "Obdržet do {{chain}} {{wallet}}",
+    "wallet_address": "Adresa Peněženky",
+    "wallet_address_desc": "Tohle je vaše adresa peněženky. Můžete ji sdílet s kýmkoliv pro obdržení prostředků."
+  },
+  "navigation": {
+    "send": "Odeslat",
+    "receive": "Přijmout"
+  },
+  "confirmTxKey": {
+    "confirm_tx_key": "Potvrďte Transakci na SSP Klíči",
+    "info_1": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo naskenovat následující QR Kód.",
+    "info_2": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo použít ruční zadání."
+  },
+  "confirmPublicNoncesKey": {
+    "confirm_public_nonces_key": "Potvrďte Veřejné Nonce na SSP Klíči",
+    "confirm_public_nonces_key_info": "Jestliže chcete odesílat transakce na EVM blockchainu, je zapotřebí nejprveo obdržet veřejné nonce z SSP Klíče. Veřejné nonce se používají ke konstrukci transakcí.",
+    "confirm_public_nonces_key_info_2": "Pro potvrzení veřejných noncí na vašem SSP Klíči, otevřete SSP Klíč na mobilním zařízení a potvrďte akci. Můžete kliknout na tačítko Obnovit nebo naskenovat následující QR kód.",
+    "manual_input": "Zadat Veřejné Nonce ručně",
+    "public_nonces_stored": "Veřejné Nonce Uloženy!",
+    "invalid_public_nonces": "Neplatné Veřejné Nonce."
+  },
+  "navbar": {
+    "refresh": "Obnovit",
+    "chain_wallet": "{{chain}} {{wallet}}",
+    "ssp_details": "Detaily SSP Peněženky",
+    "addr_details": "Detaily Adresy",
+    "generate_new_wallet": "Generovat Peněženku",
+    "remove_last_wallet": "Odebrat Peněženku",
+    "remove": "Odebrat",
+    "remove_last_wallet_desc": "Tato akce odebere vaši poslední vygenerovanou peněženku. Kdykoliv později můžete vygenerovat tu samou peněženku.",
+    "switch_chain": "Změnit Chain",
+    "max_wallets": "42. Odpověď na otázku celého života, vesmíru a tak nějak čehokoliv. Dosáhli jste maximální počtu peněženek.",
+    "ssp_message_sign": "Podepisování Zpráv"
+  },
+  "passwordConfirm": {
+    "err_pw_not_valid_try": "Heslo není platné. Zkuste prosím později.",
+    "err_pc1": "Kód PC1: Chybějí data peněženky. Prosím obnovte svou peněženku.",
+    "grant_access_info_1": "Chystáte se zobrazit citlivé informace.",
+    "grant_access_info_2": "Povolte přístup heslem.",
+    "confirm_with_pw": "Potvrďte heslem",
+    "grant_access": "Povolit Přístup"
+  },
+  "key": {
+    "sync_key": "Synchronizovat Klíč",
+    "err_sync_fail": "Synchronizace neúspěšná. Prosím zkuste znovu ručně.",
+    "warn_await_sync": "Čekání na synchronizaci SSP Klíče nebo ruční zadání.",
+    "err_sync_1": "Prosím zadejte XPUB od SSP Klíče. XPUB od SSP Klíče je rozdílný od XPUBu SSP Peněženky.",
+    "err_invalid_key": "Neplatný SSP Klíč.",
+    "err_k2": "Kód K2: Něco se pokazilo při dešifrování hesla.",
+    "err_k1": "Kód K1: Něco se pokazilo při dešifrování hesla.",
+    "cancel_sync_q": "Zrušit Synchronizaci SSP Klíče?",
+    "cancel_sync": "Zrušit SSP Synchronizaci",
+    "back_to_sync": "Zpět do synchronizace SSP Klíče",
+    "sync_info_content": "SSP Peněženku nelze používat bez SSP Klíče. Tato akce vás odhlásí z SSP Peněženky.",
+    "dual_factor_key": "Dvoufázové ověření SSP Klíč",
+    "sync_info_1": "SSP Peněženka je Dvou Podpisová Peněženka. Budete si muset stáhnout SSP Klíč do vašeho mobilního zařízení abyste peněženku mohli používat.",
+    "sync_info_2": "Naskenujte následující QR kód pro synchronizaci vaší SSP Peněženky s SSP Klíčem.",
+    "issues_syncing": "Problémy se synchronizací? Ruční zadání",
+    "dual_factor_key_chain": "Dvoufázové ověření SSP Klíč pro {{chain}}",
+    "input_xpub": "Vložte Rozšířený Veřejný Klíč blockchainu {{chain}}, který má odvozenou cestu {{path}} zde",
+    "sync_key_chain": "Synchronizovat SSP Klíč pro {{chain}}",
+    "warn_await_sync_chain": "Čekání na synchronizaci SSP Klíče nebo ruční zadání.",
+    "err_sync_1_chain": "Prosím vložte XPUB blockchainu {{chain}} vašeho SSP Klíče. XPUB SSP Klíče je jiný než XPUB SSP Peněženky.",
+    "cancel_sync_q_chain": "Zrušit synchronizaci SSP Klíče pro {{chain}}?",
+    "sync_info_content_chain": "SSP Peněženka pro blockchain {{chain}} nemůže být použita bez SSP Klíče. Tato akce změni blockchain zpět na Bitcoin Chain.",
+    "sync_info_2_chain": "Naskenujte následující QR kód pro synchronizaci vaší SSP Peněženky pro chain {{chain}} s vašim SSP Klíčem."
+  },
+  "chainSelect": {
+    "select_chain": "Vybrat Chain",
+    "unable_switch_chain": "Nepovedlo se změnit chain.",
+    "sync_chain_first": "Prosím nejdříve synchronizujte {{chainName}} chain."
+  },
+  "payment_request": {
+    "payment_request": "Platební Žádost",
+    "pay_for": "Žádost o platbu",
+    "to": "pro",
+    "received": "obddržena",
+    "attached_message": "Připojená zpráva: {{message}}",
+    "proceed_to_pay": "Pokračovat k Platbě",
+    "tx_rejected": "Transakce Odmítnuta",
+    "invalid_request": "Neplatný Požadavek",
+    "transaction_sent": "Transakce Odeslána"
+  },
+  "signMessage": {
+    "sign_message": "Podepsat Zprávu",
+    "sign_message_sspwid": "Podepsat zprávu s identitou vaší SSP Peněženky:",
+    "sign_message_info": "Podepsat zprávu s vaší {{chainName}} addresou:",
+    "sign": "Podepsat",
+    "message": "Zpráva",
+    "signature": "Podpis"
+  },
+  "sspConnect": {
+    "invalid_chain": "Neplatný chain.",
+    "invalid_method": "Neplatná metoda."
+  },
+  "fusion": {
+    "pa_reward": "Odměny Souběžných Aktiv",
+    "x_y_available": "{{amount}} {{symbol}} dostupné",
+    "claim_with_fusion": "Vyzvednout s Fusion!",
+    "claim_reward": "Vyzvednout Odměnu",
+    "claim_pa_reward": "Vyzvednout Odměnu Souběžných Aktiv",
+    "pa_info": "Souběžná Aktiva (PA) jsou další aktiva Fluxu na různých blockchainech. Můžete si vyzvednout Odměnu Souběžných Aktiv zde s pomocí aplikace Fusion. Fusion automaticky vyzvedne odměny, přemení je na hlavní chain Fluxu a odešle do vaší Flux peněženky.",
+    "total_to_claim": "Celkem PA k Vyzvednutí: {{amount}} {{symbol}}",
+    "fees_to_pay": "Poplatky Fusion k zaplacení: {{amount}} {{symbol}}",
+    "total_reward": "Celková odměna k obdržení: {{amount}} {{symbol}}",
+    "fusion_maintenance": "Fusion je nyní pod technickou údržbou. Zkuste prosím za chvíli.",
+    "signature_error": "Chyba podepisování požadavku Fusion. Zkuste prosím později.",
+    "claim_successful": "Vyzvědnutí Odměny Fusion Úspěšné!",
+    "claim_received": "Odměna Vyzvednuta!"
+  },
+  "contacts": {
+    "no_contacts": "Žádné kontakty nejsou uloženy",
+    "contacts": "Kontakty",
+    "manage_contacts": "Správa Kontaktu",
+    "create_new_contact": "Vytvořit Nový Kontakt",
+    "add_contact": "Přidat Kontakt",
+    "edit_contact": "Upravit Kontakt",
+    "delete_contact": "Smazat Kontakt",
+    "err_no_name": "Prosím pojmenujte svůj kontakt",
+    "err_no_address": "Prosím vložte adresu kontaktu",
+    "contacts_updated": "Kontakty Aktualizovány",
+    "err_saving_contacts": "Chyba při ukládání kontaktů. Zkuste prosím později.",
+    "contact_deleted": "Kontakt Smazán",
+    "created_at": "Přidáno"
+  },
+  "tokens": {
+    "import_token": "Importovat Token",
+    "import": "Importovat",
+    "import_selected": "Importovat Vybrané",
+    "remove_token": "Odebrat Token",
+    "remove": "Odebra",
+    "remove_token_info": "Tato akce schová token z vaší peněženky. Můžete jej kdykoliv přidat zpět."
+  }
+}

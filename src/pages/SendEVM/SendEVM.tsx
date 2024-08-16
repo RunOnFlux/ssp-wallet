@@ -904,6 +904,7 @@ function SendEVM() {
               value={txReceiver}
               placeholder={t('send:receiver_address')}
               onChange={(e) => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 setTxReceiver(e.target.value),
                   form.setFieldValue('receiver', e.target.value);
               }}
@@ -916,6 +917,7 @@ function SendEVM() {
               value={txReceiver}
               popupMatchSelectWidth={false}
               onChange={(value) => {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 setTxReceiver(value), form.setFieldValue('receiver', value);
               }}
               options={contactsItems}

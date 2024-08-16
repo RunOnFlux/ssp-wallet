@@ -9,7 +9,7 @@ function LanguageSelector(props: { label: boolean }) {
   console.log(i18n.languages);
   console.log(i18n);
 
-  const handleChange = async (value: string) => {
+  const handleChange = async (value: string): Promise<void> => {
     console.log(`selected ${value}`);
     await i18n.changeLanguage(value);
     await localForage.setItem('language', value);
@@ -30,6 +30,7 @@ function LanguageSelector(props: { label: boolean }) {
         options={[
           { value: 'en', label: 'en', desc: 'English' },
           { value: 'id', label: 'id', desc: 'Bahasa Indonesia' },
+          { value: 'cs', label: 'cs', desc: 'Čeština' },
         ]}
         optionRender={(option) => <>{option.data.desc}</>}
       />

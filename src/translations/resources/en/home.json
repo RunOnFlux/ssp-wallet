@@ -9,7 +9,7 @@
     "tx_sent": "Transaction Sent!"
   },
   "txRejected": {
-    "tx_rejected": "Trasaciton Rejected!",
+    "tx_rejected": "Transaction Rejected!",
     "tx_rejected_info": "Transaction rejected by SSP Key.",
     "tx_rejected_info_2": "Your transaction will not be included in the blockchain. Your funds are fully available and possible to be sent."
   },
@@ -25,6 +25,7 @@
   "transactionsTable": {
     "no_tx_history": "No Transaction History Found",
     "txid_link": "TXID: {{txid}}",
+    "out_id": "Output ID: {{vout}}",
     "fee_with_symbol": "Fee: {{fee}} {{symbol}}",
     "note_with_note": "Note: {{note}}",
     "direction": "Direction",
@@ -58,7 +59,7 @@
     "open_fluxos": "Open FluxOS",
     "open_fluxos_info": "This action will open FluxOS in your browser, minimizing SSP Wallet.",
     "setup_node": "Setup {{chainName}} Node",
-    "err_start": "Error while starting {{chainName}} Node. Please try again.",
+    "err_start": "Error while starting {{chainName}} Node. Make sure your collateral has 100 confirmations, and node status is offlin, then please try again.",
     "offline": "Offline",
     "confirmed": "Confirmed",
     "started": "Started",
@@ -106,7 +107,7 @@
     "wallet_redeem_script": "Wallet Redeem Script",
     "wallet_witness_script": "Wallet Witness Script",
     "wallet_priv_key": "Wallet Private Key",
-    "wallet_redeem_script_desc": "Redeem script code is describing the conditions that must be met to spend funds of your wallet.You will generally never need this code, but it is good to have it saved somewhere in case you need it. It is safe to share, does not grant control over your funds but exposes public keys.",
+    "wallet_redeem_script_desc": "Redeem script code is describing the conditions that must be met to spend funds of your wallet. You will generally never need this code, but it is good to have it saved somewhere in case you need it. It is safe to share, does not grant control over your funds but exposes public keys.",
     "wallet_witness_script_desc": "Witness script code is describing the conditions that must be met to spend funds of your wallet. You will generally never need this code, but it is good to have it saved somewhere in case you need it. It is safe to share, does not grant control over your funds but exposes public keys.",
     "wallet_priv_key_desc": "Private key grants control over your specific wallet address. This is a private part, do NOT ever share as it grants access to funds."
   },
@@ -185,7 +186,7 @@
     "warn_await_sync_chain": "Awaiting SSP Key synchronisation or manual input.",
     "err_sync_1_chain": "Please input SSP Key XPUB of {{chain}} chain. SSP Key XPUB is different than SSP Wallet XPUB.",
     "cancel_sync_q_chain": "Cancel SSP Key Sync for {{chain}}?",
-    "sync_info_content_chain": "SSP Wallet for chain {{chain}} cannot be used without SSP Key. This will switch back to Flux Chain",
+    "sync_info_content_chain": "SSP Wallet for chain {{chain}} cannot be used without SSP Key. This will switch back to Bitcoin Chain",
     "sync_info_2_chain": "Scan the following QR code to sync your SSP Wallet for chain {{chain}} with your SSP Key."
   },
   "chainSelect": {
@@ -195,7 +196,7 @@
   },
   "payment_request": {
     "payment_request": "Payment Request",
-    "pay_for": "payment request for",
+    "pay_for": "Payment request for",
     "to": "to",
     "received": "received",
     "attached_message": "Attached message: {{message}}",

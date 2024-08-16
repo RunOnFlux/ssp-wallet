@@ -383,6 +383,7 @@ function PaymentRequest(props: {
       // set chain to switch to to trigger effect
       setChainToSwitch(chain);
     } catch (error) {
+      console.log(error);
       openAction({
         status: t('common:error'),
         data: t('home:payment_request.tx_rejected'),

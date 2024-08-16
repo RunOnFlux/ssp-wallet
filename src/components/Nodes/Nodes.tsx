@@ -133,6 +133,7 @@ function Nodes() {
         }
       }
     } catch (error) {
+      console.log(error);
       displayMessage('error', t('home:nodesTable.err_unable_identity'));
     }
   };

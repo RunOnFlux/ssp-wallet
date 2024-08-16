@@ -25,6 +25,7 @@ export function getFingerprint(): string {
       // attempt to give ctx a 2d canvas context value
       ctx = canvas.getContext('2d');
     } catch (e) {
+      console.log(e);
       // return empty string if canvas element not supported
       return '';
     }

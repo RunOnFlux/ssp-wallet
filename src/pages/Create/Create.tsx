@@ -316,6 +316,7 @@ function Create() {
         <Button
           type="dashed"
           onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             setMnemonicShow(!mnemonicShow), setWSPwasShown(true);
           }}
         >
@@ -347,6 +348,7 @@ function Create() {
       const randomWordList: string[] = [];
       for (let index = 0; index < 10; index++) {
         const newWord = RandomWord();
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         randomWordList.includes(newWord) || mnemonic.includes(newWord)
           ? index--
           : randomWordList.push(newWord);
@@ -359,6 +361,7 @@ function Create() {
     };
 
     const correctWord = () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       wordIndex === 9
         ? setIsConfirmed(true)
         : setWordIndex((prevIndex) => prevIndex + 4);

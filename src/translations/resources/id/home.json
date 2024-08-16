@@ -25,6 +25,7 @@
   "transactionsTable": {
     "no_tx_history": "Tidak Ditemukan Riwayat Transaksi",
     "txid_link": "TXID: {{txid}}",
+    "out_id": "Output ID: {{vout}}",
     "fee_with_symbol": "Biaya: {{fee}} {{symbol}}",
     "note_with_note": "Catatan: {{note}}",
     "direction": "Petunjuk",
@@ -195,7 +196,7 @@
   },
   "payment_request": {
     "payment_request": "Permintaan pembayaran",
-    "pay_for": "permintaan pembayaran untuk",
+    "pay_for": "Permintaan pembayaran untuk",
     "to": "ke",
     "received": "diterima",
     "attached_message": "Pesan terlampir: {{message}}",

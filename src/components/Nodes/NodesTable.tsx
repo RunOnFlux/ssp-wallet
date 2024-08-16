@@ -175,7 +175,7 @@ function NodesTable(props: {
         }}
         pagination={false}
         showHeader={false}
-        rowKey="txid"
+        rowKey={(record) => record.txid + record.vout}
         bordered={false}
         loading={false}
         dataSource={sortedNodesByName}
@@ -192,7 +192,12 @@ function NodesTable(props: {
               </p>
               <p style={{ margin: 0, wordBreak: 'break-all' }}>
                 {t('home:transactionsTable.txid_link', {
-                  txid: record.txid + ':' + record.vout,
+                  txid: record.txid,
+                })}
+              </p>
+              <p style={{ margin: 0, wordBreak: 'break-all' }}>
+                {t('home:transactionsTable.out_id', {
+                  vout: record.vout,
                 })}
               </p>
               <p style={{ marginTop: 10, wordBreak: 'break-all' }}>

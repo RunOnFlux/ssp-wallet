@@ -15,6 +15,7 @@ import {
   getEntryPoint,
   createSmartAccountClient,
   deepHexlify,
+  UserOperationRequest_v6,
 } from '@alchemy/aa-core';
 import {
   blockbookUtxo,
@@ -1060,16 +1061,14 @@ export async function constructAndSignEVMTransaction(
     }
     console.log(uoStruct);
 
-    const uoStructHexlified = deepHexlify(uoStruct);
+    const uoStructHexlified = deepHexlify(uoStruct) as UserOperationRequest_v6;
     const uoStructHash = multiSigSmartAccount
       .getEntryPoint()
-
       .getUserOperationHash(uoStructHexlified);
     const multiSigUserOp = new accountAbstraction.userOperation.MultiSigUserOp(
       publicKeys,
       [publicNonces1, publicNoncesKey],
       uoStructHash,
-
       uoStructHexlified,
     );
     multiSigUserOp.signMultiSigHash(schnorrSigner1); // we post this to our server
