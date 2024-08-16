@@ -195,7 +195,7 @@
   },
   "payment_request": {
     "payment_request": "Permintaan pembayaran",
-    "pay_for": "permintaan pembayaran untuk",
+    "pay_for": "Permintaan pembayaran untuk",
     "to": "ke",
     "received": "diterima",
     "attached_message": "Pesan terlampir: {{message}}",
