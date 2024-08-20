@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "test": "nyc --reporter=lcov ts-mocha -p tsconfig.json tests/**/*.spec.ts",
     "lint": "eslint ./src ./public",
     "lint:fix": "eslint ./src ./public --fix",
     "type-check": "tsc",
@@ -73,7 +74,11 @@
     "tsx": "~4.17.0",
     "typescript": "~5.5.4",
     "typescript-eslint": "~8.1.0",
-    "vite": "~5.4.1"
+    "vite": "~5.4.1",
+    "nyc": "~17.0.0",
+    "ts-mocha": "~10.0.0",
+    "sinon": "~18.0.0",
+    "node-mocks-http": "~1.15.1"
   },
   "engines": {
     "node": ">=20"
