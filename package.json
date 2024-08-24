@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test": "nyc --reporter=lcov ts-mocha -p tsconfig.json tests/**/*.spec.ts",
+    "test": "nyc --reporter=lcov ts-mocha -p tsconfig.test.json -r tsconfig-paths/register tests/**/*.spec.ts",
     "lint": "eslint ./src ./public",
     "lint:fix": "eslint ./src ./public --fix",
     "type-check": "tsc",
@@ -60,6 +60,8 @@
     "@types/react-dom": "~18.3.0",
     "@types/react-redux": "~7.1.33",
     "@types/react-router-dom": "~5.3.3",
+    "@types/chai": "~4.3.17",
+    "@types/mocha": "~10.0.7",
     "@typescript-eslint/eslint-plugin": "~8.1.0",
     "@typescript-eslint/parser": "~8.1.0",
     "@vitejs/plugin-react-swc": "~3.7.0",
@@ -77,8 +79,10 @@
     "vite": "~5.4.1",
     "nyc": "~17.0.0",
     "ts-mocha": "~10.0.0",
+    "chai": "~4.4.1",
     "sinon": "~18.0.0",
-    "node-mocks-http": "~1.15.1"
+    "node-mocks-http": "~1.15.1",
+    "mock-browser":"~0.92.14"
   },
   "engines": {
     "node": ">=20"
