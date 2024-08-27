@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test": "nyc --reporter=lcov ts-mocha -p tsconfig.test.json -r tsconfig-paths/register tests/**/*.spec.ts",
+    "test": "nyc --reporter=lcov ts-mocha -p tsconfig.test.json -r tsconfig-paths/register -r ignore-styles tests/**/*.spec.ts",
     "lint": "eslint ./src ./public",
     "lint:fix": "eslint ./src ./public --fix",
     "type-check": "tsc",
@@ -82,7 +82,9 @@
     "chai": "~4.4.1",
     "sinon": "~18.0.0",
     "node-mocks-http": "~1.15.1",
-    "mock-browser":"~0.92.14"
+    "mock-browser": "~0.92.14",
+    "ignore-styles": "~5.0.1",
+    "tsconfig-paths": "~4.2.0"
   },
   "engines": {
     "node": ">=20"
