@@ -52,8 +52,8 @@ describe('Balances Lib', () => {
       assert.equal(res.address, '0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1');
     });
 
-    it.skip('should return fetchAddressTokenBalances data when value is invalid', async () => {
-      await fetchAddressTokenBalances('','flux', []).catch((r) => {
+    it('should return fetchAddressTokenBalances data when value is invalid', async () => {
+      await fetchAddressTokenBalances('t1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd','flux', []).catch((r) => {
         assert.equal(r, 'Error: Only EVM chains support token balances');
       });
     });
