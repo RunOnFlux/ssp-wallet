@@ -58,7 +58,7 @@ const fluxTestnet = {
   pubKeyHash: '1d25',
   scriptHash: '1cba',
   wif: 'ef',
-  logo: "fluxTestnetLogo",
+  logo: fluxTestnetLogo,
   bip32: {
     public: 0x043587cf,
     private: 0x04358394,
