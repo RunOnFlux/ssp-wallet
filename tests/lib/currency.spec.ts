@@ -2,6 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
 import chai from 'chai';
+
 import { restore, stub } from 'sinon';
 import axios from 'axios';
 import { describe, it, afterEach } from 'mocha';
@@ -17,8 +18,9 @@ import {
 } from '../../src/lib/currency';
 
 import { sspConfig } from '@storage/ssp';
+import BigNumber from 'bignumber.js';
 
-const BigNumber = require('bignumber.js');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
 const MockBrowser = require('mock-browser').mocks.MockBrowser;
 
 const { expect, assert } = chai;
@@ -26,11 +28,14 @@ const { expect, assert } = chai;
 describe('Currency Lib', function () {
   describe('Verifies currency', function () {
     afterEach(function () {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       restore();
     });
 
     before(function () {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
       const mock = new MockBrowser();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
       global.navigator = mock.getNavigator();
     });
 
@@ -50,6 +55,7 @@ describe('Currency Lib', function () {
     });
 
     it.skip('should return data 4 when value is valid', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       await stub(sspConfig, 'fiatCurrency').returns('BTC');
       const res = decimalPlaces();
       assert.equal(res, 4);
@@ -71,6 +77,7 @@ describe('Currency Lib', function () {
     });
 
     it('should return rates when value is undefined', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       await stub(axios, 'get').returns(undefined);
       await fetchRate('ETH').catch((e) => {
         assert.equal(
@@ -81,6 +88,7 @@ describe('Currency Lib', function () {
     });
 
     it('should return rates when value is null', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       await stub(axios, 'get').returns(null);
       await fetchRate('ETH').catch((e) => {
         assert.equal(
@@ -91,6 +99,7 @@ describe('Currency Lib', function () {
     });
 
     it('should return rates for fiat when value is valid', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       await stub(axios, 'get').returns({
         data: {
           fiat: { JPY: 145.2032555 },
@@ -113,6 +122,7 @@ describe('Currency Lib', function () {
     });
 
     it('should return rates for crypto when value is valid', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       await stub(axios, 'get').returns({
         data: {
           fiat: { JPY: 145.2032555 },
@@ -135,6 +145,7 @@ describe('Currency Lib', function () {
     });
 
     it('should return all rates when value is valid', async function () {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       await stub(axios, 'get').returns({
         data: {
           fiat: { JPY: 145.2032555 },
