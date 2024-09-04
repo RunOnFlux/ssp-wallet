@@ -6,22 +6,20 @@ import sinon from 'sinon';
 import httpMocks from 'node-mocks-http';
 import axios from 'axios';
 
-import { 
-    getBlockheight, 
-} from '../../src/lib/blockheight';
+import { getBlockheight } from '../../src/lib/blockheight';
 
 const { expect, assert } = chai;
 
 describe('Currency Lib', () => {
   describe('Verifies currency', () => {
-    afterEach(function() {
+    afterEach(function () {
       sinon.restore();
     });
 
     it('should return data when value is valid evm', async () => {
-        const res = await getBlockheight('eth');
-        expect(res).to.not.be.null;
-        expect(res).to.not.be.undefined;
+      const res = await getBlockheight('eth');
+      expect(res).to.not.be.null;
+      expect(res).to.not.be.undefined;
     });
 
     it('should return data when value is valid', async () => {
@@ -35,6 +33,5 @@ describe('Currency Lib', () => {
       expect(res).to.not.be.null;
       expect(res).to.not.be.undefined;
     });
-
   });
 });

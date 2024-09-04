@@ -6,40 +6,46 @@ import sinon from 'sinon';
 import httpMocks from 'node-mocks-http';
 import axios from 'axios';
 
-import { 
-    fetchNodesUtxos,
-    getNodesOnNetwork,
-    fetchDOSFlux,
-    fetchStartFlux
+import {
+  fetchNodesUtxos,
+  getNodesOnNetwork,
+  fetchDOSFlux,
+  fetchStartFlux,
 } from '../../src/lib/nodes';
 
 const { expect, assert } = chai;
 
 describe('Nodes Lib', () => {
   describe('Verifies nodes', () => {
-    afterEach(function() {
+    afterEach(function () {
       sinon.restore();
     });
 
     it('should return fetchNodesUtxos data when value is valid', async () => {
-        const res = await fetchNodesUtxos('t1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd','flux');
-        expect(res[0]).to.not.be.null;
-        expect(res[0]).to.not.be.undefined;
-        expect(res[0].txid).to.not.be.null;
-        expect(res[0].txid).to.not.be.undefined;
-        expect(res[0].vout).to.not.be.null;
-        expect(res[0].vout).to.not.be.undefined;
-        expect(res[0].scriptPubKey).to.not.be.null;
-        expect(res[0].scriptPubKey).to.not.be.undefined;
-        expect(res[0].satoshis).to.not.be.null;
-        expect(res[0].satoshis).to.not.be.undefined;
-        expect(res[0].confirmations).to.not.be.null;
-        expect(res[0].confirmations).to.not.be.undefined;
-        assert.equal(res[0].coinbase, false);
+      const res = await fetchNodesUtxos(
+        't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
+        'flux',
+      );
+      expect(res[0]).to.not.be.null;
+      expect(res[0]).to.not.be.undefined;
+      expect(res[0].txid).to.not.be.null;
+      expect(res[0].txid).to.not.be.undefined;
+      expect(res[0].vout).to.not.be.null;
+      expect(res[0].vout).to.not.be.undefined;
+      expect(res[0].scriptPubKey).to.not.be.null;
+      expect(res[0].scriptPubKey).to.not.be.undefined;
+      expect(res[0].satoshis).to.not.be.null;
+      expect(res[0].satoshis).to.not.be.undefined;
+      expect(res[0].confirmations).to.not.be.null;
+      expect(res[0].confirmations).to.not.be.undefined;
+      assert.equal(res[0].coinbase, false);
     });
 
     it('should return getNodesOnNetwork data when value is valid', async () => {
-      const res = await getNodesOnNetwork('t1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd','flux');
+      const res = await getNodesOnNetwork(
+        't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
+        'flux',
+      );
       expect(res[0]).to.not.be.null;
       expect(res[0]).to.not.be.undefined;
       expect(res[0].collateral).to.not.be.null;
@@ -105,6 +111,5 @@ describe('Nodes Lib', () => {
       expect(res[0].amount).to.not.be.null;
       expect(res[0].amount).to.not.be.undefined;
     });
-
   });
 });
