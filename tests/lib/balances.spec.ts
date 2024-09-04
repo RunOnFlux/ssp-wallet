@@ -2,9 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
 import chai from 'chai';
-import sinon from 'sinon';
-import httpMocks from 'node-mocks-http';
-import axios from 'axios';
+import { describe, it } from 'mocha';
 
 import {
   fetchAddressBalance,
@@ -13,13 +11,9 @@ import {
 
 const { expect, assert } = chai;
 
-describe('Balances Lib', () => {
-  describe('Verifies balances', () => {
-    afterEach(function () {
-      sinon.restore();
-    });
-
-    it('should return fetchAddressBalance data when value is flux', async () => {
+describe('Balances Lib', function () {
+  describe('Verifies balances', function () {
+    it('should return fetchAddressBalance data when value is flux', async function () {
       const res = await fetchAddressBalance(
         't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
         'flux',
@@ -33,7 +27,7 @@ describe('Balances Lib', () => {
       assert.equal(res.address, 't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd');
     });
 
-    it('should return fetchAddressBalance data when value is blockbook type', async () => {
+    it('should return fetchAddressBalance data when value is blockbook type', async function () {
       const res = await fetchAddressBalance(
         'bitcoincash:qzq4ehw7h3jgcx5tx687zyunfk6pm9hcrys4u3tvhl',
         'bch',
@@ -50,7 +44,7 @@ describe('Balances Lib', () => {
       );
     });
 
-    it('should return fetchAddressBalance data when value is evm type', async () => {
+    it('should return fetchAddressBalance data when value is evm type', async function () {
       const res = await fetchAddressBalance(
         '0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1',
         'sepolia',
@@ -64,7 +58,7 @@ describe('Balances Lib', () => {
       assert.equal(res.address, '0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1');
     });
 
-    it('should return fetchAddressTokenBalances data when value is invalid', async () => {
+    it('should return fetchAddressTokenBalances data when value is invalid', async function () {
       await fetchAddressTokenBalances(
         't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
         'flux',
@@ -74,7 +68,7 @@ describe('Balances Lib', () => {
       });
     });
 
-    it('should return fetchAddressTokenBalances data when value is evm type', async () => {
+    it('should return fetchAddressTokenBalances data when value is evm type', async function () {
       const res = await fetchAddressTokenBalances(
         '0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1',
         'sepolia',

@@ -2,12 +2,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
 import chai from 'chai';
-import sinon from 'sinon';
-import httpMocks from 'node-mocks-http';
+import { restore, stub } from 'sinon';
 import axios from 'axios';
+import { describe, it, afterEach } from 'mocha';
 
 import {
-  supportedFiatValues,
   getFiatSymbol,
   decimalPlaces,
   formatCrypto,
@@ -24,10 +23,10 @@ const MockBrowser = require('mock-browser').mocks.MockBrowser;
 
 const { expect, assert } = chai;
 
-describe('Currency Lib', () => {
-  describe('Verifies currency', () => {
+describe('Currency Lib', function () {
+  describe('Verifies currency', function () {
     afterEach(function () {
-      sinon.restore();
+      restore();
     });
 
     before(function () {
@@ -35,44 +34,44 @@ describe('Currency Lib', () => {
       global.navigator = mock.getNavigator();
     });
 
-    it('should return data when value is valid', async () => {
+    it('should return data when value is valid', function () {
       const res = getFiatSymbol('USD');
       assert.equal(res, `$`);
     });
 
-    it('should return without data when value is invalid', async () => {
+    it('should return without data when value is invalid', function () {
       const res = getFiatSymbol('UST');
       assert.equal(res, '');
     });
 
-    it('should return data 2 when value is valid', async () => {
+    it('should return data 2 when value is valid', function () {
       const res = decimalPlaces();
       assert.equal(res, 2);
     });
 
-    it.skip('should return data 4 when value is valid', async () => {
-      await sinon.stub(sspConfig, 'fiatCurrency').returns('BTC');
+    it.skip('should return data 4 when value is valid', async function () {
+      await stub(sspConfig, 'fiatCurrency').returns('BTC');
       const res = decimalPlaces();
       assert.equal(res, 4);
     });
 
-    it('should return crypto data formatted when value is valid', async () => {
+    it('should return crypto data formatted when value is valid', function () {
       const res = formatCrypto(new BigNumber(1.0));
       assert.equal(res, 1.0);
     });
 
-    it('should return fiat data formatted when value is valid', async () => {
+    it('should return fiat data formatted when value is valid', function () {
       const res = formatFiat(new BigNumber(1.0));
       assert.equal(res, 1.0);
     });
 
-    it('should return fiat with symbol formatted when value is valid', async () => {
+    it('should return fiat with symbol formatted when value is valid', function () {
       const res = formatFiatWithSymbol(new BigNumber(1.0));
       assert.equal(res, `$1.00 USD`);
     });
 
-    it('should return rates when value is undefined', async () => {
-      await sinon.stub(axios, 'get').returns(undefined);
+    it('should return rates when value is undefined', async function () {
+      await stub(axios, 'get').returns(undefined);
       await fetchRate('ETH').catch((e) => {
         assert.equal(
           e,
@@ -81,8 +80,8 @@ describe('Currency Lib', () => {
       });
     });
 
-    it('should return rates when value is null', async () => {
-      await sinon.stub(axios, 'get').returns(null);
+    it('should return rates when value is null', async function () {
+      await stub(axios, 'get').returns(null);
       await fetchRate('ETH').catch((e) => {
         assert.equal(
           e,
@@ -91,8 +90,8 @@ describe('Currency Lib', () => {
       });
     });
 
-    it('should return rates for fiat when value is valid', async () => {
-      await sinon.stub(axios, 'get').returns({
+    it('should return rates for fiat when value is valid', async function () {
+      await stub(axios, 'get').returns({
         data: {
           fiat: { JPY: 145.2032555 },
           crypto: {
@@ -113,8 +112,8 @@ describe('Currency Lib', () => {
       assert.deepEqual(res, { JPY: 145.20292781997438 });
     });
 
-    it('should return rates for crypto when value is valid', async () => {
-      await sinon.stub(axios, 'get').returns({
+    it('should return rates for crypto when value is valid', async function () {
+      await stub(axios, 'get').returns({
         data: {
           fiat: { JPY: 145.2032555 },
           crypto: {
@@ -135,8 +134,8 @@ describe('Currency Lib', () => {
       assert.deepEqual(res, { JPY: 8931248.682850353 });
     });
 
-    it('should return all rates when value is valid', async () => {
-      await sinon.stub(axios, 'get').returns({
+    it('should return all rates when value is valid', async function () {
+      await stub(axios, 'get').returns({
         data: {
           fiat: { JPY: 145.2032555 },
           crypto: {

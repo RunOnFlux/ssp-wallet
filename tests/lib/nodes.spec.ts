@@ -2,9 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
 import chai from 'chai';
-import sinon from 'sinon';
-import httpMocks from 'node-mocks-http';
-import axios from 'axios';
+import { describe, it } from 'mocha';
 
 import {
   fetchNodesUtxos,
@@ -15,13 +13,9 @@ import {
 
 const { expect, assert } = chai;
 
-describe('Nodes Lib', () => {
-  describe('Verifies nodes', () => {
-    afterEach(function () {
-      sinon.restore();
-    });
-
-    it('should return fetchNodesUtxos data when value is valid', async () => {
+describe('Nodes Lib', function () {
+  describe('Verifies nodes', function () {
+    it('should return fetchNodesUtxos data when value is valid', async function () {
       const res = await fetchNodesUtxos(
         't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
         'flux',
@@ -41,7 +35,7 @@ describe('Nodes Lib', () => {
       assert.equal(res[0].coinbase, false);
     });
 
-    it('should return getNodesOnNetwork data when value is valid', async () => {
+    it('should return getNodesOnNetwork data when value is valid', async function () {
       const res = await getNodesOnNetwork(
         't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
         'flux',
@@ -80,7 +74,7 @@ describe('Nodes Lib', () => {
       expect(res[0].rank).to.not.be.undefined;
     });
 
-    it('should return fetchDOSFlux data when value is flux', async () => {
+    it('should return fetchDOSFlux data when value is flux', async function () {
       const res = await fetchDOSFlux('flux');
       expect(res[0]).to.not.be.null;
       expect(res[0]).to.not.be.undefined;
@@ -96,7 +90,7 @@ describe('Nodes Lib', () => {
       expect(res[0].amount).to.not.be.undefined;
     });
 
-    it('should return fetchStartFlux data when value is flux', async () => {
+    it('should return fetchStartFlux data when value is flux', async function () {
       const res = await fetchStartFlux('flux');
       expect(res[0]).to.not.be.null;
       expect(res[0]).to.not.be.undefined;

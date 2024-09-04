@@ -2,9 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
 import chai from 'chai';
-import sinon from 'sinon';
-import httpMocks from 'node-mocks-http';
-import axios from 'axios';
+import { describe, it } from 'mocha';
 
 import {
   processTransactionInternalScan,
@@ -73,14 +71,10 @@ const rawTxSepolia = JSON.stringify({
 const rawTxFlux =
   '0400008085202f89016bf2b6449710be3300c3cc4a9ad2d4db7e88cea56168c46a16278b496e3415eb0000000092000047304402204d287d270c0d35e7c65f2b0f02b2ba8ca75e04934051691445115beb729beb54022060f01fcbf92957eb17d8a221a7d062a1fe5c86114deaf69bec99b65edafb82f201475221022a316c22acf16a9108b57f48802143cc0c0ac4b8fc360a87568e1794e51558752103749c957461154dfca921d0872ba3c9ac85d98c92e4a34fdac32bd03597fbd2f252aeffffffff02608501000000000017a914c9a895ceb2368f39686f8c77f6bc8c148ae6d54e870000000000000000136a1174657374207061796d656e74206e6f746500000000f7071a000000000000000000000000';
 
-describe('Transactions Lib', () => {
-  describe('Verifies transactions', () => {
-    afterEach(function () {
-      sinon.restore();
-    });
-
-    it('should return processTransactionInternalScan data when value is valid', async () => {
-      const res = await processTransactionInternalScan(
+describe('Transactions Lib', function () {
+  describe('Verifies transactions', function () {
+    it('should return processTransactionInternalScan data when value is valid', function () {
+      const res = processTransactionInternalScan(
         [
           {
             hash: '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
@@ -107,8 +101,8 @@ describe('Transactions Lib', () => {
       assert.equal(res.amount, 0);
     });
 
-    it('should return processTransactionsInternalScan data when value is valid', async () => {
-      const res = await processTransactionsInternalScan(
+    it('should return processTransactionsInternalScan data when value is valid', function () {
+      const res = processTransactionsInternalScan(
         [
           {
             hash: '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
@@ -135,8 +129,8 @@ describe('Transactions Lib', () => {
       assert.equal(res[0].amount, 0);
     });
 
-    it('should return processTransactionExternalScan data when value is valid', async () => {
-      const res = await processTransactionExternalScan(
+    it('should return processTransactionExternalScan data when value is valid', function () {
+      const res = processTransactionExternalScan(
         {
           hash: '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
           blockNumber: 20597003,
@@ -165,8 +159,8 @@ describe('Transactions Lib', () => {
       assert.equal(res.receiver, '0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1');
     });
 
-    it('should return processTransactionsExternalScan data when value is valid', async () => {
-      const res = await processTransactionsExternalScan(
+    it('should return processTransactionsExternalScan data when value is valid', function () {
+      const res = processTransactionsExternalScan(
         [
           {
             hash: '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
@@ -200,7 +194,7 @@ describe('Transactions Lib', () => {
       );
     });
 
-    it.skip('should return fetchAddressTransactions data when value is evm', async () => {
+    it.skip('should return fetchAddressTransactions data when value is evm', async function () {
       const res = await fetchAddressTransactions(
         '0xE6F30E1B28C67d787Bf8Bd21bA8E9756707E4713',
         'eth',
@@ -225,7 +219,7 @@ describe('Transactions Lib', () => {
       expect(res[0].receiver).to.not.be.undefined;
     });
 
-    it('should return fetchAddressTransactions data when value is flux', async () => {
+    it('should return fetchAddressTransactions data when value is flux', async function () {
       const res = await fetchAddressTransactions(
         't1cwbdvsWGHjeG3sd2esrjbchSrzW62w3GY',
         'flux',
@@ -249,7 +243,7 @@ describe('Transactions Lib', () => {
       expect(res[0].receiver).to.not.be.undefined;
     });
 
-    it('should return fetchAddressTransactions data when value is blockbook', async () => {
+    it('should return fetchAddressTransactions data when value is blockbook', async function () {
       const res = await fetchAddressTransactions(
         'bitcoincash:qrq0l3x9mqy6cjzxz85q5avj2gu5wj359ygc8kqmtm',
         'bch',
@@ -276,8 +270,8 @@ describe('Transactions Lib', () => {
       expect(res[0].receiver).to.not.be.undefined;
     });
 
-    it('should return decodeTransactionForApproval data when value is invalid', async () => {
-      const res = await decodeTransactionForApproval('{}', 'sepolia');
+    it('should return decodeTransactionForApproval data when value is invalid', function () {
+      const res = decodeTransactionForApproval('{}', 'sepolia');
       assert.deepEqual(res, {
         sender: 'decodingError',
         receiver: 'decodingError',
@@ -287,8 +281,8 @@ describe('Transactions Lib', () => {
       });
     });
 
-    it('should return decodeTransactionForApproval data when value is invalid rawTx', async () => {
-      const res = await decodeTransactionForApproval(rawTxSepolia, 'flux');
+    it('should return decodeTransactionForApproval data when value is invalid rawTx', function () {
+      const res = decodeTransactionForApproval(rawTxSepolia, 'flux');
       assert.deepEqual(res, {
         sender: 'decodingError',
         receiver: 'decodingError',
@@ -296,8 +290,8 @@ describe('Transactions Lib', () => {
       });
     });
 
-    it('should return decodeTransactionForApproval data when value is valid', async () => {
-      const res = await decodeTransactionForApproval(rawTxFlux, 'flux');
+    it('should return decodeTransactionForApproval data when value is valid', function () {
+      const res = decodeTransactionForApproval(rawTxFlux, 'flux');
       assert.deepEqual(res, {
         sender: 't3VhYxSXapJEq2mH1z5MmFUcVLYvrYNfqbv',
         receiver: 't3cwthwVvGg7WKkxhzw87xnDDsdb9kS92x3',
@@ -305,11 +299,8 @@ describe('Transactions Lib', () => {
       });
     });
 
-    it('should return decodeEVMTransactionForApproval data when value is valid', async () => {
-      const res = await decodeEVMTransactionForApproval(
-        rawTxSepolia,
-        'sepolia',
-      );
+    it('should return decodeEVMTransactionForApproval data when value is valid', function () {
+      const res = decodeEVMTransactionForApproval(rawTxSepolia, 'sepolia');
       assert.deepEqual(res, {
         sender: '0xd447BA08b0d395fCAd6e480d270529c932289Ce1',
         receiver: '0x66324EE406cCccdDdAd7f510a61Af22DeC391606',
@@ -319,8 +310,8 @@ describe('Transactions Lib', () => {
       });
     });
 
-    it('should return decodeEVMTransactionForApproval data when value is invalid', async () => {
-      const res = await decodeEVMTransactionForApproval('{}', 'sepolia');
+    it('should return decodeEVMTransactionForApproval data when value is invalid', function () {
+      const res = decodeEVMTransactionForApproval('{}', 'sepolia');
       assert.deepEqual(res, {
         sender: 'decodingError',
         receiver: 'decodingError',

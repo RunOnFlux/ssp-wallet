@@ -2,10 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
 import chai from 'chai';
-import sinon from 'sinon';
-import httpMocks from 'node-mocks-http';
-import axios from 'axios';
-import utxolib from '@runonflux/utxo-lib';
+import { describe, it } from 'mocha';
 
 import {
   getLibId,
@@ -79,82 +76,79 @@ const rawTxSepolia = {
   },
 };
 
-describe('ConstructTx Lib', () => {
-  describe('Verifies constructTx', () => {
-    afterEach(function () {
-      sinon.restore();
-    });
-
-    it('should return getLibId data when value is flux', async () => {
-      const res = await getLibId('flux');
+describe('ConstructTx Lib', function () {
+  describe('Verifies constructTx', function () {
+    it('should return getLibId data when value is flux', function () {
+      const res = getLibId('flux');
       assert.equal(res, 'flux');
     });
 
-    it('should return getLibId data when value is evm', async () => {
-      const res = await getLibId('sepolia');
+    it('should return getLibId data when value is evm', function () {
+      const res = getLibId('sepolia');
       assert.equal(res, 'sepolia');
     });
 
-    it('should return getLibId data when value is blockbook', async () => {
-      const res = await getLibId('bch');
+    it('should return getLibId data when value is blockbook', function () {
+      const res = getLibId('bch');
       assert.equal(res, 'bitcoincash');
     });
 
-    it('should return clearUtxoCache data when value is valid', async () => {
-      await clearUtxoCache();
+    it('should return clearUtxoCache data when value is valid', function () {
+      clearUtxoCache();
     });
 
-    it('should return fetchUtxos data when value is valid blockbook', async () => {
-      const res = await fetchUtxos(
+    it('should return fetchUtxos data when value is valid blockbook', async function () {
+      await fetchUtxos(
         'bitcoincash:qrq0l3x9mqy6cjzxz85q5avj2gu5wj359ygc8kqmtm',
         'bch',
-      );
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].txid).to.not.be.null;
-      expect(res[0].txid).to.not.be.undefined;
-      expect(res[0].vout).to.not.be.null;
-      expect(res[0].vout).to.not.be.undefined;
-      expect(res[0].scriptPubKey).to.not.be.null;
-      expect(res[0].scriptPubKey).to.not.be.undefined;
-      expect(res[0].satoshis).to.not.be.null;
-      expect(res[0].satoshis).to.not.be.undefined;
-      expect(res[0].confirmations).to.not.be.null;
-      expect(res[0].confirmations).to.not.be.undefined;
-      assert.equal(res[0].coinbase, false);
+      ).then((res) => {
+        expect(res[0]).to.not.be.null;
+        expect(res[0]).to.not.be.undefined;
+        expect(res[0].txid).to.not.be.null;
+        expect(res[0].txid).to.not.be.undefined;
+        expect(res[0].vout).to.not.be.null;
+        expect(res[0].vout).to.not.be.undefined;
+        expect(res[0].scriptPubKey).to.not.be.null;
+        expect(res[0].scriptPubKey).to.not.be.undefined;
+        expect(res[0].satoshis).to.not.be.null;
+        expect(res[0].satoshis).to.not.be.undefined;
+        expect(res[0].confirmations).to.not.be.null;
+        expect(res[0].confirmations).to.not.be.undefined;
+        assert.equal(res[0].coinbase, false);
+      });
     });
 
-    it('should return fetchUtxos data when value is valid flux', async () => {
-      const res = await fetchUtxos(
-        't1cwbdvsWGHjeG3sd2esrjbchSrzW62w3GY',
-        'flux',
+    it('should return fetchUtxos data when value is valid flux', async function () {
+      await fetchUtxos('t1cwbdvsWGHjeG3sd2esrjbchSrzW62w3GY', 'flux').then(
+        (res) => {
+          console.log(res[0]);
+          expect(res[0]).to.not.be.null;
+          expect(res[0]).to.not.be.undefined;
+          expect(res[0].txid).to.not.be.null;
+          expect(res[0].txid).to.not.be.undefined;
+          expect(res[0].vout).to.not.be.null;
+          expect(res[0].vout).to.not.be.undefined;
+          expect(res[0].scriptPubKey).to.not.be.null;
+          expect(res[0].scriptPubKey).to.not.be.undefined;
+          expect(res[0].satoshis).to.not.be.null;
+          expect(res[0].satoshis).to.not.be.undefined;
+          expect(res[0].confirmations).to.not.be.null;
+          expect(res[0].confirmations).to.not.be.undefined;
+          assert.equal(res[0].coinbase, false);
+        },
       );
-      console.log(res[0]);
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].txid).to.not.be.null;
-      expect(res[0].txid).to.not.be.undefined;
-      expect(res[0].vout).to.not.be.null;
-      expect(res[0].vout).to.not.be.undefined;
-      expect(res[0].scriptPubKey).to.not.be.null;
-      expect(res[0].scriptPubKey).to.not.be.undefined;
-      expect(res[0].satoshis).to.not.be.null;
-      expect(res[0].satoshis).to.not.be.undefined;
-      expect(res[0].confirmations).to.not.be.null;
-      expect(res[0].confirmations).to.not.be.undefined;
-      assert.equal(res[0].coinbase, false);
     });
 
-    it('should return finaliseTransaction data when value is valid', async () => {
-      const res = await finaliseTransaction(rawTxFlux, 'flux');
+    it('should return finaliseTransaction data when value is valid', function () {
+      const res = finaliseTransaction(rawTxFlux, 'flux');
       assert.equal(
         res,
         '0400008085202f89016bf2b6449710be3300c3cc4a9ad2d4db7e88cea56168c46a16278b496e3415eb00000000910047304402204d287d270c0d35e7c65f2b0f02b2ba8ca75e04934051691445115beb729beb54022060f01fcbf92957eb17d8a221a7d062a1fe5c86114deaf69bec99b65edafb82f201475221022a316c22acf16a9108b57f48802143cc0c0ac4b8fc360a87568e1794e51558752103749c957461154dfca921d0872ba3c9ac85d98c92e4a34fdac32bd03597fbd2f252aeffffffff02608501000000000017a914c9a895ceb2368f39686f8c77f6bc8c148ae6d54e870000000000000000136a1174657374207061796d656e74206e6f746500000000f7071a000000000000000000000000',
       );
     });
 
-    it.skip('should return signTransaction data when value is valid', async () => {
-      const res = await signTransaction(
+    it.skip('should return signTransaction data when value is valid', function () {
+      signTransaction(
         rawTxFlux,
         'flux',
         '0x29c6fbfe8f749d4d122a3a8422e63977aaf943fb3674a927fb88f1a2833a53ad',
@@ -171,8 +165,8 @@ describe('ConstructTx Lib', () => {
       );
     });
 
-    it.skip('should return buildUnsignedRawTx data when value is valid', async () => {
-      const res = await buildUnsignedRawTx(
+    it.skip('should return buildUnsignedRawTx data when value is valid', function () {
+      buildUnsignedRawTx(
         'flux',
         [
           {
@@ -195,13 +189,13 @@ describe('ConstructTx Lib', () => {
       );
     });
 
-    it('should return getSizeOfRawTransaction data when value is valid', async () => {
-      const res = await getSizeOfRawTransaction(rawTxFlux, 'flux');
+    it('should return getSizeOfRawTransaction data when value is valid', function () {
+      const res = getSizeOfRawTransaction(rawTxFlux, 'flux');
       assert.equal(res, 276);
     });
 
-    it.skip('should return getTransactionSize data when value is valid', async () => {
-      const res = await getTransactionSize(
+    it.skip('should return getTransactionSize data when value is valid', async function () {
+      await getTransactionSize(
         'flux',
         't3aBF8ML2AJgXuW93Gp9MUs3YcQ8DkFQ2B5',
         '100',
@@ -213,11 +207,11 @@ describe('ConstructTx Lib', () => {
         '52210313b0012725426394a61c44a0ec4be91be554d1625d97ee6565db61b30500f8da210313b0012725426394a61c44a0ec4be91be554d1625d97ee6565db61b30500f8da52ae',
         '52210313b0012725426394a61c44a0ec4be91be554d1625d97ee6565db61b30500f8da210313b0012725426394a61c44a0ec4be91be554d1625d97ee6565db61b30500f8da52ae',
         '1',
-      );
+      ).then(() => {});
     });
 
-    it.skip('should return constructAndSignTransaction data when value is valid', async () => {
-      const res = await constructAndSignTransaction(
+    it.skip('should return constructAndSignTransaction data when value is valid', async function () {
+      await constructAndSignTransaction(
         'flux',
         't3aBF8ML2AJgXuW93Gp9MUs3YcQ8DkFQ2B5',
         '100.00',
@@ -229,29 +223,31 @@ describe('ConstructTx Lib', () => {
         '52210313b0012725426394a61c44a0ec4be91be554d1625d97ee6565db61b30500f8da210313b0012725426394a61c44a0ec4be91be554d1625d97ee6565db61b30500f8da52ae',
         '52210313b0012725426394a61c44a0ec4be91be554d1625d97ee6565db61b30500f8da210313b0012725426394a61c44a0ec4be91be554d1625d97ee6565db61b30500f8da52ae',
         '10.00',
-      );
+      ).then(() => {});
     });
 
-    it.skip('should return broadcastTx data when value is valid', async () => {
-      const res = await broadcastTx(rawTxSepolia, 'sepolia');
-      console.log(res);
+    it.skip('should return broadcastTx data when value is valid', async function () {
+      await broadcastTx(rawTxSepolia, 'sepolia').then((res) => {
+        console.log(res);
+      });
     });
 
-    it('should return estimateGas data when value is valid', async () => {
-      const res = await estimateGas(
+    it('should return estimateGas data when value is valid', async function () {
+      await estimateGas(
         'sepolia',
         '0xd447BA08b0d395fCAd6e480d270529c932289Ce1',
         'sepolia',
-      );
-      assert.equal(res, 271832);
+      ).then((res) => {
+        assert.equal(res, 271832);
+      });
     });
 
-    it.skip('should return constructAndSignEVMTransaction data when value is valid', async () => {
-      const res = await constructAndSignEVMTransaction(
+    it.skip('should return constructAndSignEVMTransaction data when value is valid', async function () {
+      await constructAndSignEVMTransaction(
         'sepolia',
         '0xd447BA08b0d395fCAd6e480d270529c932289Ce1',
         'sepolia',
-      );
+      ).then(() => {});
     });
   });
 });

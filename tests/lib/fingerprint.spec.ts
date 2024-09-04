@@ -1,20 +1,15 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
 import chai from 'chai';
-import sinon from 'sinon';
-import httpMocks from 'node-mocks-http';
 import { getFingerprint } from '../../src/lib/fingerprint';
+import { describe, it } from 'mocha';
 
 const MockBrowser = require('mock-browser').mocks.MockBrowser;
 
-const { expect, assert } = chai;
+const { assert } = chai;
 
-describe('Fingerprint Lib', () => {
-  describe('Verifies fingerprint', () => {
-    afterEach(function () {
-      sinon.restore();
-    });
-
+describe('Fingerprint Lib', function () {
+  describe('Verifies fingerprint', function () {
     before(function () {
       const mock = new MockBrowser();
       global.window = mock.getWindow();
@@ -22,7 +17,7 @@ describe('Fingerprint Lib', () => {
     });
 
     // Testing using stub data
-    it('should return successful result if value is valid', async () => {
+    it('should return successful result if value is valid', async function () {
       const res = await getFingerprint();
       assert.equal(
         res,
