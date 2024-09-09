@@ -194,7 +194,7 @@ describe('Transactions Lib', function () {
       );
     });
 
-    it.skip('should return fetchAddressTransactions data when value is evm', async function () {
+    it('should return fetchAddressTransactions data when value is evm', async function () {
       const res = await fetchAddressTransactions(
         '0xE6F30E1B28C67d787Bf8Bd21bA8E9756707E4713',
         'eth',
@@ -217,7 +217,7 @@ describe('Transactions Lib', function () {
       assert.equal(res[0].message, '');
       expect(res[0].receiver).to.not.be.null;
       expect(res[0].receiver).to.not.be.undefined;
-    });
+    }).timeout(5000);
 
     it('should return fetchAddressTransactions data when value is flux', async function () {
       const res = await fetchAddressTransactions(

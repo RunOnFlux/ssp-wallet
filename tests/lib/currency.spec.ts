@@ -17,7 +17,7 @@ import {
   fetchAllRates,
 } from '../../src/lib/currency';
 
-import { sspConfig } from '@storage/ssp';
+import * as sspStorage from '@storage/ssp';
 import BigNumber from 'bignumber.js';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
@@ -54,9 +54,12 @@ describe('Currency Lib', function () {
       assert.equal(res, 2);
     });
 
-    it.skip('should return data 4 when value is valid', async function () {
+    it('should return data 4 when value is valid', async function () {
+      const sspConfigStub = stub(sspStorage, 'sspConfig');
+      sspConfigStub.returns({
+        fiatCurrency: 'BTC',
+      });
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      await stub(sspConfig, 'fiatCurrency').returns('BTC');
       const res = decimalPlaces();
       assert.equal(res, 4);
     });
