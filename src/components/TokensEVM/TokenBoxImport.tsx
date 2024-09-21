@@ -53,7 +53,7 @@ function TokenBoxImport(props: {
           }
           description={
             <>
-              <div style={{ float: 'left' }}>{props.tokenInfo.name}</div>
+              <div style={{ textAlign: 'left', float: 'left' }}>{props.tokenInfo.name}</div>
             </>
           }
         />
