@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "moduleDetection": "force",
+    "jsx": "react",
+    "types": [
+      "node",
+      "mocha",
+      "vite",
+      "chrome"
+    ],
+    "baseUrl": "./",
+    "paths": {
+      "@storage/*": ["./src/storage/*"],
+      "@assets/*": ["/src/assets/*"],
+    },
+  },
+  "include": [
+    "src",
+    "tests",
+  ],
+  "exclude": [
+    "node_modules",
+    "package.json",
+    "logs",
+  ],
+}
