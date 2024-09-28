@@ -32,6 +32,7 @@
     "date": "Date",
     "amount": "Amount",
     "confirmations": "Confirmations",
+    "export_tx": "Export Transactions",
     "tx_confirmed": "Confirmed.",
     "tx_unconfirmed": "Unconfirmed. Transaction not yet mined.",
     "tx_pending": "Pending. Transaction is awaiting SSP Key authorization.",

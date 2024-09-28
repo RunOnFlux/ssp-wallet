@@ -168,8 +168,9 @@ function Transactions() {
         transactions={wallets[walletInUse]?.transactions ?? []}
         blockheight={blockheight}
         fiatRate={fiatRate}
-        refresh={getTransactions}
+        address={wallets[walletInUse].address ?? ''}
         chain={activeChain}
+        refresh={getTransactions}
       />
 
       <SocketListener

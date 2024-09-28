@@ -32,6 +32,7 @@
     "date": "Tanggal",
     "amount": "Jumlah",
     "confirmations": "Konfirmasi",
+    "export_tx": "Transaksi Ekspor",
     "tx_confirmed": "Dikonfirmasi.",
     "tx_unconfirmed": "Belum dikonfirmasi.",
     "tx_pending": "Tertunda.",

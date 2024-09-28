@@ -1,4 +1,4 @@
-import { Table, Empty, Tooltip, Popconfirm, Button } from 'antd';
+import { Table, Empty, Tooltip, Popconfirm, Button, Space } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -16,11 +16,13 @@ import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { backends } from '@storage/backends';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
+import { mkConfig, generateCsv, download } from "export-to-csv";
 
 function TransactionsTable(props: {
   transactions: transaction[];
   blockheight: number;
   fiatRate: number;
+  address: string,
   chain: string;
   refresh: () => void;
 }) {
@@ -47,6 +49,33 @@ function TransactionsTable(props: {
     };
     navigate('/send', { state: navigationObject });
   };
+
+  const csvConfig = mkConfig({ 
+    useKeysAsHeaders: true,
+    filename: `${blockchainConfig.symbol}.${props.address}`,
+  });
+
+  let data: any = [];
+
+  props.transactions.forEach ((t) => {
+    data.push({
+      ticker: blockchainConfig.symbol,
+      transaction_id: t.txid,
+      amount: `${formatCrypto(new BigNumber(t.amount).dividedBy(10 ** blockchainConfig.decimals))} ${blockchainConfig.symbol}`,
+      fiat: `${formatFiatWithSymbol(new BigNumber(Math.abs(+t.amount)).dividedBy(10 ** blockchainConfig.decimals).multipliedBy(new BigNumber(fiatRate)))}`,
+      fee: `${formatCrypto(new BigNumber(t.fee).dividedBy(10 ** blockchainConfig.decimals))} ${blockchainConfig.symbol}`,
+      note: t.message,
+      timestamp: t.timestamp,
+      direction: t.receiver.length > 0 ? 'Received' : 'Send',
+      blockheight: t.blockheight,
+      contract: t.type
+    });
+  });
+
+  const handleExport = () => {
+    const csv = generateCsv(csvConfig)(data);
+    download(csvConfig)(csv)
+  }
 
   return (
     <>
@@ -221,6 +250,11 @@ function TransactionsTable(props: {
           )}
         />
       </Table>
+      <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }}>
+        <Button type="primary" size="middle" onClick={handleExport} disabled={data.length == 0}>
+          {t('home:transactionsTable.export_tx')}
+        </Button>
+      </Space>
     </>
   );
 }

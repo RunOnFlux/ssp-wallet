@@ -1,4 +1,4 @@
-import { Button, Modal, Flex, Space } from 'antd';
+import { Button, Modal, Flex, Space, Input } from 'antd';
 import { useState, useEffect } from 'react';
 import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
@@ -19,6 +19,7 @@ function ImportToken(props: {
   const blockchainConfig = blockchains[props.chain];
 
   const [selectedContracts, setSelectedContracts] = useState(props.contracts);
+  const [search, setSearch] = useState('');
 
   const handleOk = () => {
     openAction(false);
@@ -42,6 +43,10 @@ function ImportToken(props: {
     console.log(selectedContracts);
   }, [selectedContracts]);
 
+  useEffect(() => {
+    console.log("Search")
+  }, [search]);
+
   const contractChanged = (contract: string, value: boolean) => {
     if (value) {
       setSelectedContracts([...selectedContracts, contract]);
@@ -50,6 +55,10 @@ function ImportToken(props: {
         selectedContracts.filter((item) => item !== contract),
       );
     }
+  };
+
+  const handleChange = (e: any) => {
+    setSearch(e.target.value);
   };
 
   return (
@@ -62,12 +71,27 @@ function ImportToken(props: {
         onCancel={handleCancel}
         footer={[]}
       >
+        <Input
+          id='outlined-basic'
+          variant='outlined'
+          placeholder='Search Token'
+          allowClear
+          onChange={handleChange}
+          size='large'
+        />
         <Flex
           wrap
           gap="middle"
           style={{ marginTop: '20px', marginBottom: '20px' }}
         >
-          {blockchainConfig.tokens.map((item) => (
+          {blockchainConfig.tokens.filter((item) => {
+            if (search == '') {
+              return true;
+            } else {
+              return item.symbol.toLowerCase().includes(search.toLowerCase()) 
+                || item.name.toLowerCase().includes(search.toLowerCase())
+            }
+          }).map((item) => (
             <TokenBoxImport
               chain={props.chain}
               tokenInfo={item}
