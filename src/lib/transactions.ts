@@ -324,6 +324,7 @@ export async function fetchAddressTransactions(
   chain: keyof cryptos,
   from: number,
   to: number,
+  page: number,
 ): Promise<transaction[]> {
   try {
     const backendConfig = backends()[chain];
@@ -332,7 +333,7 @@ export async function fetchAddressTransactions(
         module: 'account',
         startblock: 0,
         endblock: 99999999,
-        page: 1,
+        page: page,
         offset: to - from,
         sort: 'desc',
         address,
