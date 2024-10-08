@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { backends } from '@storage/backends';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import { fetchAddressTransactions } from "../../lib/transactions";
+import { collectData } from "../../lib/transactions";
 import {
   cryptos,
 } from '../../types';
@@ -59,36 +59,8 @@ function TransactionsTable(props: {
     filename: `${blockchainConfig.symbol}.${props.address}`,
   });
 
-  async function collectData () {
-    let page = 1;
-    let data: any = [];
-    let items: any = [];
-    let inc = 0;
-
-    do {
-      items = await fetchAddressTransactions(props.address, chain, page, 0 + inc, 50 + inc);
-      items.forEach((t: any) => {
-        data.push({
-          ticker: blockchainConfig.symbol,
-          transaction_id: t.txid,
-          amount: `${formatCrypto(new BigNumber(t.amount).dividedBy(10 ** blockchainConfig.decimals))} ${blockchainConfig.symbol}`,
-          fiat: `${formatFiatWithSymbol(new BigNumber(Math.abs(+t.amount)).dividedBy(10 ** blockchainConfig.decimals).multipliedBy(new BigNumber(fiatRate)))}`,
-          fee: `${formatCrypto(new BigNumber(t.fee).dividedBy(10 ** blockchainConfig.decimals))} ${blockchainConfig.symbol}`,
-          note: t.message.length > 0 ? t.message : '-',
-          timestamp: t.timestamp,
-          direction: t.receiver.length > 0 ? 'Received' : 'Send',
-          blockheight: t.blockheight,
-          contract: t.type
-        });
-      });
-      inc += 50;
-    } while (items.length >= 50);
-
-    return data;
-  }
-
   const handleExport = () => {
-    collectData().then((data) => {
+    collectData(blockchainConfig, props, chain, fiatRate).then((data) => {
       const csv = generateCsv(csvConfig)(data);
       download(csvConfig)(csv)
     });

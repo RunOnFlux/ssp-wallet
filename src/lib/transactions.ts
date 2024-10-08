@@ -20,6 +20,7 @@ import {
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
+import { formatCrypto, formatFiatWithSymbol } from './currency';
 
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
@@ -404,6 +405,39 @@ export async function fetchAddressTransactions(
 interface output {
   script: Buffer;
   value: number;
+}
+
+export async function collectData (
+  blockchainConfig: any, 
+  props: any, 
+  chain: any,
+  fiatRate: any
+) {
+  let page = 1;
+  let data: any = [];
+  let items: any = [];
+  let inc = 0;
+
+  do {
+    items = await fetchAddressTransactions(props.address, chain, page, 0 + inc, 50 + inc);
+    items.forEach((t: any) => {
+      data.push({
+        ticker: blockchainConfig.symbol,
+        transaction_id: t.txid,
+        amount: `${formatCrypto(new BigNumber(t.amount).dividedBy(10 ** blockchainConfig.decimals))} ${blockchainConfig.symbol}`,
+        fiat: `${formatFiatWithSymbol(new BigNumber(Math.abs(+t.amount)).dividedBy(10 ** blockchainConfig.decimals).multipliedBy(new BigNumber(fiatRate)))}`,
+        fee: `${formatCrypto(new BigNumber(t.fee).dividedBy(10 ** blockchainConfig.decimals))} ${blockchainConfig.symbol}`,
+        note: t.message.length > 0 ? t.message : '-',
+        timestamp: t.timestamp,
+        direction: t.receiver.length > 0 ? 'Received' : 'Send',
+        blockheight: t.blockheight,
+        contract: t.type
+      });
+    });
+    inc += 50;
+  } while (items.length >= 50);
+
+  return data;
 }
 
 export function decodeTransactionForApproval(
