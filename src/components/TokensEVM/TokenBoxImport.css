@@ -1,3 +1,11 @@
 .not-selectable {
   filter: opacity(0.7) grayscale(0.7);
 }
+
+.token-box {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+  max-width: 20ch;
+}

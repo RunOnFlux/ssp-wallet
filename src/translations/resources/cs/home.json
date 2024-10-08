@@ -32,6 +32,7 @@
     "date": "Datum",
     "amount": "Částka",
     "confirmations": "Potvrzení",
+    "export_tx": "Export transakcí",
     "tx_confirmed": "Potvrzeno.",
     "tx_unconfirmed": "Nepotvrzeno. Transakce ještě nebyla vytěžena.",
     "tx_pending": "Výčkáva. Transakce vyčkává autorizační potvrzení SSP Klíčem.",

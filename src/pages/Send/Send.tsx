@@ -696,7 +696,7 @@ function Send() {
       });
 
     const fetchTransactions = () => {
-      fetchAddressTransactions(sender, activeChain, 0, 3)
+      fetchAddressTransactions(sender, activeChain, 1, 0, 3)
         .then((txs) => {
           const amount = new BigNumber(0)
             .minus(
