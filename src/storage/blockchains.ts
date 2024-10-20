@@ -287,7 +287,7 @@ const bch = {
   hashType: 0x40, // will force SIGHASH_BITCOINCASHBIP143
 };
 
-const sepolia = {
+const sepolia: any = {
   id: 'sepolia',
   libid: 'sepolia',
   name: 'Testnet Sepolia',
@@ -312,10 +312,9 @@ const sepolia = {
   baseFee: 120, // 120 gwei
   priorityFee: 5, // 5 gwei
   gasLimit: 750000, // 750k gas
-  tokens: await tokens.sepolia()
 };
 
-const eth = {
+const eth: any = {
   id: 'eth',
   libid: 'mainnet',
   name: 'Ethereum',
@@ -340,8 +339,10 @@ const eth = {
   baseFee: 11, // 11 gwei
   priorityFee: 2, // 2 gwei
   gasLimit: 750000, // 750k gas
-  tokens: await tokens.eth()
 };
+
+eth.tokens = await tokens.eth();
+sepolia.tokens = await tokens.sepolia()
 
 export const blockchains = {
   btc,
