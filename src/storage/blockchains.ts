@@ -342,7 +342,7 @@ const eth: any = {
 };
 
 eth.tokens = await tokens.eth();
-sepolia.tokens = await tokens.sepolia()
+sepolia.tokens = await tokens.sepolia();
 
 export const blockchains = {
   btc,
