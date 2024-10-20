@@ -252,6 +252,7 @@
     "import_token": "Importovat Token",
     "import": "Importovat",
     "import_selected": "Importovat Vybrané",
+    "add_to_list": "Přidat do seznamu",
     "remove_token": "Odebrat Token",
     "remove": "Odebra",
     "remove_token_info": "Tato akce schová token z vaší peněženky. Můžete jej kdykoliv přidat zpět."

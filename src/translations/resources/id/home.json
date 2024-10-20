@@ -252,6 +252,7 @@
     "import_token": "Impor Token",
     "import": "Impor",
     "import_selected": "Impor yang Dipilih",
+    "add_to_list": "Tambahkan Ke Daftar",
     "remove_token": "Hapus Token",
     "remove": "Menghapus",
     "remove_token_info": "Tindakan ini akan menyembunyikan token dari dompet Anda."
