@@ -341,8 +341,11 @@ const eth: any = {
   gasLimit: 750000, // 750k gas
 };
 
-eth.tokens = await tokens.eth();
-sepolia.tokens = await tokens.sepolia();
+void(async () => {
+  eth.tokens = await tokens.eth();
+  sepolia.tokens = await tokens.sepolia();
+})();
+
 
 export const blockchains = {
   btc,
