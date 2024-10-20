@@ -312,7 +312,7 @@ const sepolia = {
   baseFee: 120, // 120 gwei
   priorityFee: 5, // 5 gwei
   gasLimit: 750000, // 750k gas
-  tokens: tokens.sepolia()
+  tokens: await tokens.sepolia()
 };
 
 const eth = {
@@ -340,7 +340,7 @@ const eth = {
   baseFee: 11, // 11 gwei
   priorityFee: 2, // 2 gwei
   gasLimit: 750000, // 750k gas
-  tokens: tokens.eth()
+  tokens: await tokens.eth()
 };
 
 export const blockchains = {
