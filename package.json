@@ -17,7 +17,7 @@
   "dependencies": {
     "@alchemy/aa-core": "~3.19.0",
     "@metamask/browser-passworder": "~5.0.1",
-    "@noble/hashes": "~1.4.0",
+    "@noble/hashes": "~1.5.0",
     "@reduxjs/toolkit": "~2.2.7",
     "@runonflux/aa-schnorr-multisig-sdk": "~1.0.3",
     "@runonflux/flux-sdk": "~1.0.2",
