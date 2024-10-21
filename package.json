@@ -22,7 +22,7 @@
     "@runonflux/aa-schnorr-multisig-sdk": "~1.0.3",
     "@runonflux/flux-sdk": "~1.0.2",
     "@runonflux/utxo-lib": "~1.0.0",
-    "@scure/bip32": "~1.4.0",
+    "@scure/bip32": "~1.5.0",
     "@scure/bip39": "~1.3.0",
     "antd": "~5.20.1",
     "assert": "~2.1.0",
