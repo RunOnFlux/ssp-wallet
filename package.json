@@ -50,7 +50,7 @@
     "socket.io-client": "~4.8.0",
     "stream-browserify": "~3.0.0",
     "util": "~0.12.5",
-    "export-to-csv": "~1.4.0"
+    "export-to-csv": "~1.4.0",
     "viem": "~2.21.33"
   },
   "devDependencies": {
