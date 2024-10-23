@@ -1,6 +1,5 @@
 .navbar {
   margin: auto;
-  place-items: center;
   line-height: 30px;
   width: calc(420px - 2rem);
   height: 25px;
