@@ -1,4 +1,4 @@
-import { Table, Empty, Tooltip, Popconfirm, Button } from 'antd';
+import { Table, Empty, Tooltip, Popconfirm, Button, Space } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -16,12 +16,18 @@ import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { backends } from '@storage/backends';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
+import { mkConfig, generateCsv, download } from "export-to-csv";
+import { collectData } from "../../lib/transactions";
+import {
+  cryptos,
+} from '../../types';
 
 function TransactionsTable(props: {
   transactions: transaction[];
   blockheight: number;
   fiatRate: number;
-  chain: string;
+  address: string,
+  chain: keyof cryptos;
   refresh: () => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
@@ -47,6 +53,18 @@ function TransactionsTable(props: {
     };
     navigate('/send', { state: navigationObject });
   };
+
+  const csvConfig = mkConfig({ 
+    useKeysAsHeaders: true,
+    filename: `${blockchainConfig.symbol}.${props.address}`,
+  });
+
+  const handleExport = () => {
+    collectData(blockchainConfig, props, chain, fiatRate).then((data) => {
+      const csv = generateCsv(csvConfig)(data);
+      download(csvConfig)(csv)
+    });
+  }
 
   return (
     <>
@@ -221,6 +239,11 @@ function TransactionsTable(props: {
           )}
         />
       </Table>
+      <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }}>
+        <Button type="primary" size="middle" onClick={handleExport} disabled={props.transactions.length == 0}>
+          {t('home:transactionsTable.export_tx')}
+        </Button>
+      </Space>
     </>
   );
 }
