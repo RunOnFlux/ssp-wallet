@@ -276,6 +276,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         open={isModalKeyOpen}
         onOk={handleOkModalKey}
         onCancel={handleCancelModalKey}
+        cancelText={t('common:cancel')}
         okText={
           isIdentityChain
             ? t('home:key.sync_key')

@@ -332,6 +332,7 @@ function Restore() {
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
+        cancelText={t('common:cancel')}
         okText={t('cr:restore_wallet')}
         style={{ textAlign: 'center', top: 60 }}
       >
