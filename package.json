@@ -5,7 +5,7 @@
   "version": "1.7.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc && vite build",
     "test": "nyc --reporter=lcov ts-mocha -p tsconfig.test.json -r tsconfig-paths/register -r ignore-styles tests/**/*.spec.ts",
     "lint": "eslint ./src ./public",

@@ -20,6 +20,8 @@ body {
   width: 420px;
   /* maximum size is 600 */
   height: 600px;
+  overflow: overlay;
+  overflow-x: hidden;
 }
 
 #root {
