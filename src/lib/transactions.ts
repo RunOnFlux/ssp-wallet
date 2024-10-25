@@ -408,8 +408,8 @@ interface output {
 }
 
 export async function getTokenMetadata (contractAddress: any, network: any) {
-  const url = `http://localhost:9876/v1/tokeninfo/${network}/${contractAddress}`; // local env
-  // const url = `https://relay.sspwallet.io/v1/tokeninfo/${network}/${contractAddress}`;
+  // const url = `http://localhost:9876/v1/tokeninfo/${network}/${contractAddress}`; // local env
+  const url = `https://relay.sspwallet.io/v1/tokeninfo/${network}/${contractAddress}`;
   const data = await axios.get(url).then((response) => response.data)
   return data;
 }
