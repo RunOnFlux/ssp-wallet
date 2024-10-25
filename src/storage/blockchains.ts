@@ -1,6 +1,5 @@
 import { backends } from './backends';
 import { tokens } from './tokens';
-const logos = import.meta.glob("../assets/*.svg", {import: 'default', eager: true});
 
 const flux = {
   id: 'flux',
@@ -15,7 +14,7 @@ const flux = {
   pubKeyHash: '1cb8',
   scriptHash: '1cbd',
   wif: '80',
-  logo: logos['../assets/flux.svg'],
+  logo: 'src/assets/flux.svg',
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -45,7 +44,7 @@ const fluxTestnet = {
   pubKeyHash: '1d25',
   scriptHash: '1cba',
   wif: 'ef',
-  logo: logos['../assets/fluxTestnet.svg'],
+  logo: 'src/assets/fluxTestnet.svg',
   bip32: {
     public: 0x043587cf,
     private: 0x04358394,
@@ -75,7 +74,7 @@ const rvn = {
   pubKeyHash: '3c',
   scriptHash: '7a',
   wif: '80',
-  logo: logos['../assets/rvn.svg'],
+  logo: 'src/assets/rvn.svg',
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -102,7 +101,7 @@ const ltc = {
   pubKeyHash: '30',
   scriptHash: '32',
   wif: 'b0',
-  logo: logos['../assets/ltc.svg'],
+  logo: 'src/assets/ltc.svg',
   bip32: {
     public: 0x019da462,
     private: 0x019d9cfe,
@@ -130,7 +129,7 @@ const btc = {
   pubKeyHash: '00',
   scriptHash: '05',
   wif: '80',
-  logo: logos['../assets/btc.svg'],
+  logo: 'src/assets/btc.svg',
   bip32: {
     public: 0x02aa7ed3,
     private: 0x02aa7a99,
@@ -158,7 +157,7 @@ const doge = {
   pubKeyHash: '1e',
   scriptHash: '16',
   wif: '9e',
-  logo: logos['../assets/doge.svg'],
+  logo: 'src/assets/doge.svg',
   bip32: {
     public: 0x02facafd,
     private: 0x02fac398,
@@ -185,7 +184,7 @@ const btcTestnet = {
   pubKeyHash: '6f',
   scriptHash: 'c4',
   wif: 'ef',
-  logo: logos['../assets/btcTestnet.svg'],
+  logo: 'src/assets/btcTestnet.svg',
   bip32: {
     public: 0x02575483,
     private: 0x02575048,
@@ -213,7 +212,7 @@ const btcSignet = {
   pubKeyHash: '6f',
   scriptHash: 'c4',
   wif: 'ef',
-  logo: logos['../assets/btcSignet.svg'],
+  logo: 'src/assets/btcSignet.svg',
   bip32: {
     public: 0x02575483,
     private: 0x02575048,
@@ -241,7 +240,7 @@ const zec = {
   pubKeyHash: '1cb8',
   scriptHash: '1cbd',
   wif: '80',
-  logo: logos['../assets/zec.svg'],
+  logo: 'src/assets/zec.svg',
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -271,7 +270,7 @@ const bch = {
   pubKeyHash: '00',
   scriptHash: '05',
   wif: '80',
-  logo: logos['../assets/bch.svg'],
+  logo: 'src/assets/bch.svg',
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -292,7 +291,7 @@ const sepolia: any = {
   libid: 'sepolia',
   name: 'Testnet Sepolia',
   symbol: 'TEST-ETH',
-  logo: logos['../assets/teth.svg'],
+  logo: 'src/assets/teth.svg',
   slip: 1,
   decimals: 18,
   node: backends().sepolia.node,
@@ -319,7 +318,7 @@ const eth: any = {
   libid: 'mainnet',
   name: 'Ethereum',
   symbol: 'ETH',
-  logo: logos['../assets/eth.svg'],
+  logo: 'src/assets/eth.svg',
   slip: 60,
   decimals: 18,
   node: backends().eth.node,

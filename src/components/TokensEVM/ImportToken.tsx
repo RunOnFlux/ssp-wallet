@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import TokenBoxImport from './TokenBoxImport';
 import { setActivatedTokens } from '../../store';
 import { getTokenMetadata } from '../../lib/transactions';
-const logos :any = import.meta.glob("../../assets/*.svg", {import: 'default', eager: true});
 
 function ImportToken(props: {
   open: boolean;
@@ -23,6 +22,7 @@ function ImportToken(props: {
   const [selectedContracts, setSelectedContracts] = useState(props.contracts);
   const [search, setSearch] = useState('');
   const [contractAddress, setContractAddress] = useState('');
+  const [token, setToken] = useState(false);
 
   const handleOk = () => {
     openAction(false);
@@ -38,23 +38,21 @@ function ImportToken(props: {
   };
 
   const handleCustomImport = async () => {
-    openAction(false);
-
     let arr : string[] = [];
     arr = selectedContracts.slice();
     const data: any = await getTokenMetadata(contractAddress, props.chain);
     arr.concat(contractAddress);
 
-    let logo :any = logos['../../assets/etht.svg'];
+    let logo :any = 'src/assets/etht.svg';
     if (props.chain == 'sepolia') {
-      logo = logos['../../assets/teth.svg'];
+      logo = 'src/assets/teth.svg';
     } 
 
     if (!data) {
       return;
     }
 
-    if (data.logo != '') {
+    if (data.logo != '' && data.logo != null) {
       logo = data.logo;
     }
 
@@ -103,11 +101,24 @@ function ImportToken(props: {
         customTokens,
       );
     })();
+
+    setSearch('');
+    setToken(false);
   };
 
   const handleCancel = () => {
     openAction(false);
     setSelectedContracts(props.contracts);
+    setToken(false)
+  };
+
+  const handleCancelToken = () => {
+    setSearch('');
+    setToken(false)
+  };
+
+  const handleToken = () => {
+    setToken(true);
   };
 
   useEffect(() => {
@@ -150,27 +161,32 @@ function ImportToken(props: {
   return (
     <>
       <Modal
-        title={t('home:tokens.import_token')}
+        title={ !token ? t('home:tokens.import_token') : t('common:add_custom_token')}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancel}
         footer={[]}
       >
-        <Input
-          id='searchToken'
-          variant='outlined'
-          placeholder='Search Token'
-          allowClear
-          onChange={handleSearchToken}
-          size='large'
-        />
+        {
+          !token ?
+          <Input
+            id='searchToken'
+            variant='outlined'
+            placeholder='Search Token'
+            allowClear
+            onChange={handleSearchToken}
+            size='large'
+          />
+          : ''
+        }
         <Flex
           wrap
           gap="middle"
           style={{ marginTop: '20px', marginBottom: '20px' }}
         >
           {
+            !token ?
             filterTokens().map((item) => (
               <TokenBoxImport
                 chain={props.chain}
@@ -185,12 +201,12 @@ function ImportToken(props: {
                 selectAction={contractChanged}
               />
             ))
+            : ''
           }
         </Flex>
         {
-          filterTokens().length <= 0 ?
+          token ?
           <>
-            <br /><br />
             <Input
               id='contractAddress'
               variant='outlined'
@@ -204,19 +220,18 @@ function ImportToken(props: {
         }
         <Space direction="vertical" size="large">
           <div></div>
+          <Button type="primary" size="large" onClick={token ? handleCustomImport : handleOk}>
+            {t(token ? 'home:tokens.add_to_list' : 'home:tokens.import_selected')}
+          </Button>
           {
-            filterTokens().length <= 0 ? 
-            <Button type="primary" size="large" onClick={handleCustomImport}>
-              {t('home:tokens.add_to_list')}
+            !token ? 
+            <Button type="link" block size="small" onClick={handleToken}>
+              {t('common:add_custom_token')}
             </Button>
-            :
-            <Button type="primary" size="large" onClick={handleOk}>
-              {t('home:tokens.import_selected')}
-            </Button> 
-            
+            : ''
           }
-          <Button type="link" block size="small" onClick={handleCancel}>
-            {t('common:cancel')}
+          <Button type="link" block size="small" onClick={!token ? handleCancel : handleCancelToken}>
+            {t(!token ? 'common:cancel' : 'common:back_import_token')}
           </Button>
         </Space>
       </Modal>

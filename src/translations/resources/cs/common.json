@@ -39,5 +39,7 @@
   "address": "Adresa",
   "activity": "Aktivita",
   "nodes": "Nody",
-  "tokens": "Tokeny"
+  "tokens": "Tokeny",
+  "add_custom_token": "Přidat vlastní token",
+  "back_import_token": "Zpět na import tokenu"
 }
