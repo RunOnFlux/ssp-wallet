@@ -55,7 +55,7 @@
     "@eslint/js": "~9.13.0",
     "@types/bchaddrjs": "~0.4.3",
     "@types/chrome": "~0.0.279",
-    "@types/node": "~22.7.9",
+    "@types/node": "~22.8.1",
     "@types/react": "~18.3.12",
     "@types/react-dom": "~18.3.1",
     "@types/react-redux": "~7.1.34",
