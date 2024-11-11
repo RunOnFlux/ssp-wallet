@@ -1,3 +1,4 @@
+import { Token } from '@storage/blockchains';
 // wallet.tx
 export interface minHDKey {
   keyPair: {
@@ -532,6 +533,7 @@ export interface chainState {
   wallets: wallets;
   blockheight: number;
   walletInUse: string;
+  importedTokens?: Token[]; // EVM
 }
 
 declare global {

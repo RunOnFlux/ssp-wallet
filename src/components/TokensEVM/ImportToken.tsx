@@ -1,6 +1,6 @@
 import { Button, Modal, Flex, Space, Input } from 'antd';
-import { useState, useEffect } from 'react';
-import { blockchains } from '@storage/blockchains';
+import { useState, useEffect, SetStateAction, SetStateAction } from 'react';
+import { blockchains, Token } from '@storage/blockchains';
 import localForage from 'localforage';
 import { cryptos } from '../../types';
 import { useTranslation } from 'react-i18next';
@@ -39,7 +39,7 @@ function ImportToken(props: {
 
   const handleCustomImport = async () => {
     let arr: string[] = [];
-    arr = selectedContracts.slice();
+    arr = selectedContracts;
     const data = await getTokenMetadata(contractAddress, props.chain);
     arr.concat(contractAddress);
 
@@ -82,20 +82,17 @@ function ImportToken(props: {
     })();
 
     // Adding custom token to local storage for keeping
-    let customTokens = [];
-    const customTokensFromStorage = await localForage.getItem(
+    const customTokensFromStorage: Token[] | null = await localForage.getItem(
       `custom-token-${props.chain}`,
     );
 
-    if (customTokensFromStorage != null && customTokensFromStorage.length > 0) {
-      customTokens = customTokensFromStorage.slice();
-    }
+    const customTokens = customTokensFromStorage || [];
 
-    const num: number = customTokens.filter(
-      (item) => token.name == item.name,
-    ).length;
+    const tokenAlreadyExists = customTokens.find(
+      (item) => item.contract.toLowerCase() === token.contract.toLowerCase(),
+    );
 
-    if (num <= 0) {
+    if (!tokenAlreadyExists) {
       customTokens.push(token);
     }
 
@@ -153,11 +150,15 @@ function ImportToken(props: {
     });
   };
 
-  const handleSearchToken = (e) => {
+  const handleSearchToken = (e: {
+    target: { value: SetStateAction<string> };
+  }) => {
     setSearch(e.target.value);
   };
 
-  const handleContractAddress = (e) => {
+  const handleContractAddress = (e: {
+    target: { value: SetStateAction<string> };
+  }) => {
     setContractAddress(e.target.value);
   };
 

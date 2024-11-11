@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { transaction, chainState, wallet, tokenBalanceEVM } from '../../types';
+import { Token } from '@storage/blockchains';
 
 const initialWalletState: wallet = {
   address: '',
@@ -18,6 +19,7 @@ const initialState: chainState = {
   wallets: {},
   blockheight: 0,
   walletInUse: '0-0',
+  importedTokens: [],
 };
 
 function makeChainSlice(chainName: string) {
@@ -119,12 +121,16 @@ function makeChainSlice(chainName: string) {
       removeWallet: (state, action: PayloadAction<{ wallet: string }>) => {
         delete state.wallets[action.payload.wallet];
       },
+      setImportedTokens: (state, action: PayloadAction<Token[]>) => {
+        state.importedTokens = action.payload;
+      },
       setChainInitialState: (state) => {
         state.xpubWallet = '';
         state.xpubKey = '';
         state.wallets = {};
         state.blockheight = 0;
         state.walletInUse = '0-0';
+        state.importedTokens = [];
       },
     },
   });

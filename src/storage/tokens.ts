@@ -1,6 +1,4 @@
-import localForage from 'localforage';
-
-async function sepolia() {
+function sepolia() {
   const tokens = [
     {
       contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
@@ -17,15 +15,13 @@ async function sepolia() {
       logo: 'src/assets/flux.svg',
     },
   ];
-  const customTokens = await localForage.getItem(`custom-token-sepolia`);
-  if (customTokens) {
-    return tokens.concat(customTokens.slice());
-  } else {
-    return tokens;
-  }
+  return tokens;
+  // const customTokens =
+  //   (await localForage.getItem('custom-token-sepolia')) || [];
+  // return tokens.concat(customTokens);
 }
 
-async function eth() {
+function eth() {
   const tokens = [
     {
       contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
@@ -777,12 +773,9 @@ async function eth() {
       logo: 'src/assets/etht.svg',
     },
   ];
-  const customTokens = await localForage.getItem(`custom-token-eth`);
-  if (customTokens) {
-    return tokens.concat(customTokens.slice());
-  } else {
-    return tokens;
-  }
+  return tokens;
+  // const customTokens = (await localForage.getItem('custom-token-eth')) || [];
+  // return tokens.concat(customTokens);
 }
 
 export const tokens = {
