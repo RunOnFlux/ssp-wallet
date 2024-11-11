@@ -40,6 +40,5 @@
   "activity": "Aktivitas",
   "nodes": "Nodes",
   "tokens": "Token",
-  "add_custom_token": "Tambahkan Token Khusus",
-  "back_import_token": "Kembali Untuk Mengimpor Token"
+  "add_custom_token": "Tambahkan Token Khusus"
 }

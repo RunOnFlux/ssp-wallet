@@ -325,7 +325,7 @@ export async function fetchAddressTransactions(
   chain: keyof cryptos,
   from: number,
   to: number,
-  page: number,
+  page = 1,
 ): Promise<transaction[]> {
   try {
     const backendConfig = backends()[chain];
@@ -405,12 +405,6 @@ export async function fetchAddressTransactions(
 interface output {
   script: Buffer;
   value: number;
-}
-
-export async function getTokenMetadata(contractAddress, network) {
-  const url = `https://relay.sspwallet.io/v1/tokeninfo/${network}/${contractAddress}`;
-  const data = await axios.get(url).then((response) => response.data);
-  return data;
 }
 
 export async function collectData(blockchainConfig, props, chain, fiatRate) {

@@ -6,7 +6,7 @@ import { cryptos } from '../../types';
 import { useTranslation } from 'react-i18next';
 import TokenBoxImport from './TokenBoxImport';
 import { setActivatedTokens } from '../../store';
-import { getTokenMetadata } from '../../lib/transactions';
+import { getTokenMetadata } from '../../lib/tokens';
 
 function ImportToken(props: {
   open: boolean;
@@ -246,7 +246,7 @@ function ImportToken(props: {
             size="small"
             onClick={!token ? handleCancel : handleCancelToken}
           >
-            {t(!token ? 'common:cancel' : 'common:back_import_token')}
+            {t(!token ? 'common:cancel' : 'common:back')}
           </Button>
         </Space>
       </Modal>

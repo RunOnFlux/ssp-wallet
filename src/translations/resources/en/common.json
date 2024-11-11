@@ -40,6 +40,5 @@
   "activity": "Activity",
   "nodes": "Nodes",
   "tokens": "Tokens",
-  "add_custom_token": "Add Custom Token",
-  "back_import_token": "Back To Import Token"
+  "add_custom_token": "Add Custom Token"
 }

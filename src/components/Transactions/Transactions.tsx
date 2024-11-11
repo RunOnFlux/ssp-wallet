@@ -90,7 +90,7 @@ function Transactions() {
 
   const fetchTransactions = () => {
     const wInUse = walletInUse;
-    fetchAddressTransactions(wallets[wInUse].address, activeChain, 1, 0, 10)
+    fetchAddressTransactions(wallets[wInUse].address, activeChain, 0, 10, 1)
       .then(async (txs) => {
         setTransactions(activeChain, wInUse, txs || []);
         await localForage.setItem(`transactions-${activeChain}-${wInUse}`, txs);
