@@ -20,6 +20,15 @@ localForage.config({
   description: 'Database for SSP Wallet',
 });
 
+if (!navigator.userAgent.includes('Mac')) {
+  // only import this css if on windows platform
+  void import('./scrollbar.css')
+    .then(() => {
+      console.log('Scrollbar CSS loaded');
+    })
+    .catch((e) => console.log(e));
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
