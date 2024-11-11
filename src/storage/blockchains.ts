@@ -286,7 +286,7 @@ const bch = {
   hashType: 0x40, // will force SIGHASH_BITCOINCASHBIP143
 };
 
-const sepolia: any = {
+const sepolia = {
   id: 'sepolia',
   libid: 'sepolia',
   name: 'Testnet Sepolia',
@@ -313,7 +313,7 @@ const sepolia: any = {
   gasLimit: 750000, // 750k gas
 };
 
-const eth: any = {
+const eth = {
   id: 'eth',
   libid: 'mainnet',
   name: 'Ethereum',
@@ -340,11 +340,10 @@ const eth: any = {
   gasLimit: 750000, // 750k gas
 };
 
-void(async () => {
+void (async () => {
   eth.tokens = await tokens.eth();
   sepolia.tokens = await tokens.sepolia();
 })();
-
 
 export const blockchains = {
   btc,

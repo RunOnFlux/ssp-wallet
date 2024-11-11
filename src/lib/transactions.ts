@@ -407,27 +407,28 @@ interface output {
   value: number;
 }
 
-export async function getTokenMetadata (contractAddress: any, network: any) {
+export async function getTokenMetadata(contractAddress, network) {
   const url = `http://localhost:9876/v1/tokeninfo/${network}/${contractAddress}`; // local env
   // const url = `https://relay.sspwallet.io/v1/tokeninfo/${network}/${contractAddress}`;
-  const data = await axios.get(url).then((response) => response.data)
+  const data = await axios.get(url).then((response) => response.data);
   return data;
 }
 
-export async function collectData (
-  blockchainConfig: any, 
-  props: any, 
-  chain: any,
-  fiatRate: any
-) {
-  let page = 1;
-  let data: any = [];
-  let items: any = [];
+export async function collectData(blockchainConfig, props, chain, fiatRate) {
+  const page = 1;
+  const data = [];
+  let items = [];
   let inc = 0;
 
   do {
-    items = await fetchAddressTransactions(props.address, chain, page, 0 + inc, 50 + inc);
-    items.forEach((t: any) => {
+    items = await fetchAddressTransactions(
+      props.address,
+      chain,
+      page,
+      0 + inc,
+      50 + inc,
+    );
+    items.forEach((t) => {
       data.push({
         ticker: blockchainConfig.symbol,
         transaction_id: t.txid,
@@ -438,7 +439,7 @@ export async function collectData (
         timestamp: t.timestamp,
         direction: t.receiver.length > 0 ? 'Received' : 'Send',
         blockheight: t.blockheight,
-        contract: t.type
+        contract: t.type,
       });
     });
     inc += 50;

@@ -38,15 +38,15 @@ function ImportToken(props: {
   };
 
   const handleCustomImport = async () => {
-    let arr : string[] = [];
+    let arr: string[] = [];
     arr = selectedContracts.slice();
-    const data: any = await getTokenMetadata(contractAddress, props.chain);
+    const data = await getTokenMetadata(contractAddress, props.chain);
     arr.concat(contractAddress);
 
-    let logo :any = 'src/assets/etht.svg';
+    let logo = 'src/assets/etht.svg';
     if (props.chain == 'sepolia') {
       logo = 'src/assets/teth.svg';
-    } 
+    }
 
     if (!data) {
       return;
@@ -65,7 +65,9 @@ function ImportToken(props: {
     };
 
     // check if the newly added token is duplicate
-    const count : number = blockchains[props.chain].tokens.filter((item) => token.name == item.name).length;
+    const count: number = blockchains[props.chain].tokens.filter(
+      (item) => token.name == item.name,
+    ).length;
 
     if (count <= 0) {
       blockchains[props.chain].tokens.push(token);
@@ -80,26 +82,25 @@ function ImportToken(props: {
     })();
 
     // Adding custom token to local storage for keeping
-    let customTokens : any = [];
-    let customTokensFromStorage :any = await localForage.getItem(
-      `custom-token-${props.chain}`
+    let customTokens = [];
+    const customTokensFromStorage = await localForage.getItem(
+      `custom-token-${props.chain}`,
     );
-  
+
     if (customTokensFromStorage != null && customTokensFromStorage.length > 0) {
       customTokens = customTokensFromStorage.slice();
     }
 
-    const num : number = customTokens.filter((item: any) => token.name == item.name).length;
-    
+    const num: number = customTokens.filter(
+      (item) => token.name == item.name,
+    ).length;
+
     if (num <= 0) {
       customTokens.push(token);
     }
-    
+
     void (async function () {
-      await localForage.setItem(
-        `custom-token-${props.chain}`,
-        customTokens,
-      );
+      await localForage.setItem(`custom-token-${props.chain}`, customTokens);
     })();
 
     setSearch('');
@@ -109,12 +110,12 @@ function ImportToken(props: {
   const handleCancel = () => {
     openAction(false);
     setSelectedContracts(props.contracts);
-    setToken(false)
+    setToken(false);
   };
 
   const handleCancelToken = () => {
     setSearch('');
-    setToken(false)
+    setToken(false);
   };
 
   const handleToken = () => {
@@ -126,7 +127,7 @@ function ImportToken(props: {
   }, [selectedContracts]);
 
   useEffect(() => {
-    console.log("Search")
+    console.log('Search');
   }, [search]);
 
   const contractChanged = (contract: string, value: boolean) => {
@@ -144,93 +145,106 @@ function ImportToken(props: {
       if (search == '') {
         return true;
       } else {
-        return item.symbol.toLowerCase().includes(search.toLowerCase()) 
-          || item.name.toLowerCase().includes(search.toLowerCase())
+        return (
+          item.symbol.toLowerCase().includes(search.toLowerCase()) ||
+          item.name.toLowerCase().includes(search.toLowerCase())
+        );
       }
     });
-  }
+  };
 
-  const handleSearchToken = (e: any) => {
+  const handleSearchToken = (e) => {
     setSearch(e.target.value);
   };
 
-  const handleContractAddress = (e: any) => {
+  const handleContractAddress = (e) => {
     setContractAddress(e.target.value);
   };
 
   return (
     <>
       <Modal
-        title={ !token ? t('home:tokens.import_token') : t('common:add_custom_token')}
+        title={
+          !token ? t('home:tokens.import_token') : t('common:add_custom_token')
+        }
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancel}
         footer={[]}
       >
-        {
-          !token ?
+        {!token ? (
           <Input
-            id='searchToken'
-            variant='outlined'
-            placeholder='Search Token'
+            id="searchToken"
+            variant="outlined"
+            placeholder="Search Token"
             allowClear
             onChange={handleSearchToken}
-            size='large'
+            size="large"
           />
-          : ''
-        }
+        ) : (
+          ''
+        )}
         <Flex
           wrap
           gap="middle"
           style={{ marginTop: '20px', marginBottom: '20px' }}
         >
-          {
-            !token ?
-            filterTokens().map((item) => (
-              <TokenBoxImport
-                chain={props.chain}
-                tokenInfo={item}
-                key={item.contract + item.symbol}
-                active={
-                  selectedContracts.includes(item.contract) || !item.contract
-                }
-                notSelectable={
-                  props.contracts.includes(item.contract) || !item.contract
-                }
-                selectAction={contractChanged}
-              />
-            ))
-            : ''
-          }
+          {!token
+            ? filterTokens().map((item) => (
+                <TokenBoxImport
+                  chain={props.chain}
+                  tokenInfo={item}
+                  key={item.contract + item.symbol}
+                  active={
+                    selectedContracts.includes(item.contract) || !item.contract
+                  }
+                  notSelectable={
+                    props.contracts.includes(item.contract) || !item.contract
+                  }
+                  selectAction={contractChanged}
+                />
+              ))
+            : ''}
         </Flex>
-        {
-          token ?
+        {token ? (
           <>
             <Input
-              id='contractAddress'
-              variant='outlined'
-              placeholder='Enter Token Contract Address'
+              id="contractAddress"
+              variant="outlined"
+              placeholder="Enter Token Contract Address"
               allowClear
               onChange={handleContractAddress}
-              size='large'
+              size="large"
             />
           </>
-          : ''
-        }
+        ) : (
+          ''
+        )}
         <Space direction="vertical" size="large">
           <div></div>
-          <Button type="primary" size="large" onClick={token ? handleCustomImport : handleOk}>
-            {t(token ? 'home:tokens.add_to_list' : 'home:tokens.import_selected')}
+          <Button
+            type="primary"
+            size="large"
+            onClick={token ? handleCustomImport : handleOk}
+          >
+            {t(
+              token ? 'home:tokens.add_to_list' : 'home:tokens.import_selected',
+            )}
           </Button>
-          {
-            !token ? 
+          {!token ? (
             <Button type="link" block size="small" onClick={handleToken}>
               {t('common:add_custom_token')}
             </Button>
-            : ''
-          }
-          <Button type="link" block size="small" onClick={!token ? handleCancel : handleCancelToken}>
+          ) : (
+            ''
+          )}
+          <Button
+            type="link"
+            block
+            size="small"
+            onClick={!token ? handleCancel : handleCancelToken}
+          >
             {t(!token ? 'common:cancel' : 'common:back_import_token')}
           </Button>
         </Space>

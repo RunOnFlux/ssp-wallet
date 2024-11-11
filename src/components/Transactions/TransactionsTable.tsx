@@ -16,17 +16,15 @@ import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { backends } from '@storage/backends';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import { collectData } from "../../lib/transactions";
-import {
-  cryptos,
-} from '../../types';
+import { mkConfig, generateCsv, download } from 'export-to-csv';
+import { collectData } from '../../lib/transactions';
+import { cryptos } from '../../types';
 
 function TransactionsTable(props: {
   transactions: transaction[];
   blockheight: number;
   fiatRate: number;
-  address: string,
+  address: string;
   chain: keyof cryptos;
   refresh: () => void;
 }) {
@@ -54,7 +52,7 @@ function TransactionsTable(props: {
     navigate('/send', { state: navigationObject });
   };
 
-  const csvConfig = mkConfig({ 
+  const csvConfig = mkConfig({
     useKeysAsHeaders: true,
     filename: `${blockchainConfig.symbol}.${props.address}`,
   });
@@ -62,9 +60,9 @@ function TransactionsTable(props: {
   const handleExport = () => {
     collectData(blockchainConfig, props, chain, fiatRate).then((data) => {
       const csv = generateCsv(csvConfig)(data);
-      download(csvConfig)(csv)
+      download(csvConfig)(csv);
     });
-  }
+  };
 
   return (
     <>
@@ -240,7 +238,12 @@ function TransactionsTable(props: {
         />
       </Table>
       <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }}>
-        <Button type="primary" size="middle" onClick={handleExport} disabled={props.transactions.length == 0}>
+        <Button
+          type="primary"
+          size="middle"
+          onClick={handleExport}
+          disabled={props.transactions.length == 0}
+        >
           {t('home:transactionsTable.export_tx')}
         </Button>
       </Space>
