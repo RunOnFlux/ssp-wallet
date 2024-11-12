@@ -71,7 +71,7 @@ function TransactionsTable(props: {
 
   const csvConfig = mkConfig({
     useKeysAsHeaders: true,
-    filename: `${blockchainConfig.symbol}.${props.address}.csv`,
+    filename: `${blockchainConfig.symbol}-${props.address}`,
   });
 
   const handleExport = async () => {
