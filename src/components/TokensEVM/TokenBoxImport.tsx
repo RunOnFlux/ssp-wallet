@@ -1,4 +1,6 @@
-import { Card, Avatar, Checkbox, Badge } from 'antd';
+import { Card, Avatar, Checkbox, Badge, Button } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { Token, blockchains } from '@storage/blockchains';
 import { cryptos } from '../../types';
 
@@ -12,7 +14,9 @@ function TokenBoxImport(props: {
   active: boolean;
   notSelectable: boolean;
   selectAction: (contract: string, value: boolean) => void;
+  deletePossible?: boolean;
 }) {
+  const { t } = useTranslation(['home']);
   const triggerAction = (contract: string, value: boolean) => {
     if (props.notSelectable) {
       return;
@@ -20,8 +24,40 @@ function TokenBoxImport(props: {
     props.selectAction(contract, value);
   };
 
+  const handleDelete = (contract: string) => {
+    console.log('delete', contract);
+    // make sure it is unselected
+    triggerAction(contract, false);
+    // remove from any wallet of activatedTokens array
+    // delete from local storage of imported tokens
+    // reload to redux
+  };
+
   return (
-    <div style={{ minWidth: '170px', width: 'calc(50% - 8px)' }}>
+    <div
+      style={{
+        minWidth: '170px',
+        width: 'calc(50% - 8px)',
+        position: 'relative',
+      }}
+    >
+      {props.deletePossible && (
+        <Button
+          type="default"
+          danger
+          size="small"
+          title={t('home:tokens.delete_token')}
+          onClick={() => handleDelete(props.tokenInfo.contract)}
+          style={{
+            position: 'absolute',
+            left: '14px',
+            bottom: '4px',
+            zIndex: 10,
+          }}
+        >
+          <DeleteOutlined />
+        </Button>
+      )}
       <Card
         className={props.notSelectable ? 'not-selectable' : ''}
         hoverable

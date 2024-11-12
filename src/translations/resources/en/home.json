@@ -264,6 +264,7 @@
     "token_already_imported": "Token already imported",
     "unable_to_fetch_metadata": "Unable to fetch token metadata. Please try again later.",
     "token_imported": "Token Imported!",
-    "invalid_token_contract": "Invalid token contract."
+    "invalid_token_contract": "Invalid token contract.",
+    "delete_token": "Delete Token"
   }
 }

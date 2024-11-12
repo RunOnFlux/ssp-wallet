@@ -141,6 +141,7 @@ function ImportToken(props: {
                     props.contracts.includes(item.contract) || !item.contract
                   }
                   selectAction={contractChanged}
+                  deletePossible
                 />
               ))}
             </>
