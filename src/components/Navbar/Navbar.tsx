@@ -19,6 +19,7 @@ import {
   setInitialContactsState,
   setTokenBalances,
   setActivatedTokens,
+  setImportedTokens,
 } from '../../store';
 import {
   Row,
@@ -56,7 +57,7 @@ import {
   node,
   tokenBalanceEVM,
 } from '../../types';
-import { blockchains } from '@storage/blockchains';
+import { blockchains, Token } from '@storage/blockchains';
 import ManualSign from '../ManualSign/ManualSign.tsx';
 
 interface walletOption {
@@ -188,6 +189,11 @@ function Navbar(props: {
       const nodesWallet: node[] =
         (await localForage.getItem(`nodes-${activeChain}-${value.value}`)) ??
         [];
+      const importedTokens: Token[] =
+        (await localForage.getItem(`imported-tokens-${activeChain}`)) ?? [];
+      if (importedTokens) {
+        setImportedTokens(activeChain, importedTokens || []);
+      }
       if (activatedTokens) {
         setActivatedTokens(activeChain, value.value, activatedTokens || []);
       }

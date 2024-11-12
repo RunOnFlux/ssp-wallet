@@ -37,6 +37,7 @@ import {
   setContacts,
   setTokenBalances,
   setActivatedTokens,
+  setImportedTokens,
 } from '../../store';
 
 import { getFingerprint } from '../../lib/fingerprint';
@@ -46,7 +47,7 @@ import {
   getScriptType,
 } from '../../lib/wallet.ts';
 
-import { blockchains } from '@storage/blockchains';
+import { blockchains, Token } from '@storage/blockchains';
 
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
@@ -303,6 +304,12 @@ function Login() {
             const nodesWallet: node[] =
               (await localForage.getItem(`nodes-${activeChain}-${walInUse}`)) ??
               [];
+            const importedTokens: Token[] =
+              (await localForage.getItem(`imported-tokens-${activeChain}`)) ??
+              [];
+            if (importedTokens) {
+              setImportedTokens(activeChain, importedTokens || []);
+            }
             if (activatedTokens) {
               setActivatedTokens(activeChain, walInUse, activatedTokens || []);
             }
