@@ -28,7 +28,7 @@ import {
 } from '../types';
 
 import { backends } from '@storage/backends';
-import { blockchains } from '@storage/blockchains';
+import { blockchains, Token } from '@storage/blockchains';
 
 import { LRUCache } from 'lru-cache';
 
@@ -923,6 +923,7 @@ export async function constructAndSignEVMTransaction(
   priorityGasPrice: string,
   maxTotalGas: string,
   token?: `0x${string}` | '',
+  importedTokens: Token[] = [],
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
@@ -1024,9 +1025,9 @@ export async function constructAndSignEVMTransaction(
     let uoStruct;
 
     if (token) {
-      const tokenInfo = blockchainConfig.tokens.find(
-        (x) => x.contract === token,
-      );
+      const tokenInfo = blockchainConfig.tokens
+        .concat(importedTokens)
+        .find((x) => x.contract === token);
       if (!tokenInfo) {
         throw new Error('Token specifications not found');
       }

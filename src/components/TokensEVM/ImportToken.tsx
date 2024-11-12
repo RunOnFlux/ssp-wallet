@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import TokenBoxImport from './TokenBoxImport';
 import { setActivatedTokens } from '../../store';
 import ImportCustomToken from './ImportCustomToken';
+import { useAppSelector } from '../../hooks';
 
 function ImportToken(props: {
   open: boolean;
@@ -21,7 +22,10 @@ function ImportToken(props: {
 
   const [selectedContracts, setSelectedContracts] = useState(props.contracts);
   const [search, setSearch] = useState('');
-  const [filteredTokens, setFilteredTokens] = useState(blockchainConfig.tokens);
+  const { importedTokens } = useAppSelector((state) => state[props.chain]);
+  const [filteredTokens, setFilteredTokens] = useState(
+    blockchainConfig.tokens.concat(importedTokens ?? []),
+  );
   const [openCustomImportTokenDialog, setOpenCustomImportTokenDialog] =
     useState(false);
 
@@ -49,12 +53,14 @@ function ImportToken(props: {
 
   useEffect(() => {
     setFilteredTokens(
-      blockchainConfig.tokens.filter(
-        (token) =>
-          token.symbol.toLowerCase().startsWith(search.toLowerCase()) ||
-          token.contract.toLowerCase().startsWith(search.toLowerCase()) ||
-          token.name.toLowerCase().startsWith(search.toLowerCase()),
-      ),
+      blockchainConfig.tokens
+        .concat(importedTokens ?? [])
+        .filter(
+          (token) =>
+            token.symbol.toLowerCase().startsWith(search.toLowerCase()) ||
+            token.contract.toLowerCase().startsWith(search.toLowerCase()) ||
+            token.name.toLowerCase().startsWith(search.toLowerCase()),
+        ),
     );
   }, [search]);
 

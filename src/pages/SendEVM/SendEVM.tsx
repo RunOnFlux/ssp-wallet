@@ -118,7 +118,7 @@ function SendEVM() {
   const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
-  const { xpubKey, wallets, walletInUse } = useAppSelector(
+  const { xpubKey, wallets, walletInUse, importedTokens } = useAppSelector(
     (state) => state[activeChain],
   );
   const transactions = wallets[walletInUse].transactions;
@@ -274,7 +274,17 @@ function SendEVM() {
   }, [wallets, activeChain]);
 
   useEffect(() => {
-    const { tokens } = blockchainConfig;
+    // only use activated tokens
+    const activatedTokens = (
+      wallets[walletInUse].activatedTokens || []
+    ).slice();
+    // add first coin (ethereum) as that is always activated
+    activatedTokens.push(blockchainConfig.tokens[0].contract);
+    // tokens with imported tokens
+    const allTokens = blockchainConfig.tokens.concat(importedTokens ?? []);
+    const tokens = allTokens.filter((token) =>
+      activatedTokens.includes(token.contract),
+    );
     console.log('construct tokens for sending');
     const tokenItems: tokenOption[] = [];
     tokens.forEach((token) => {
@@ -304,9 +314,11 @@ function SendEVM() {
 
   useEffect(() => {
     if (txToken) {
-      const tokenInformation = blockchains[activeChain].tokens.find((token) => {
-        return token.contract === txToken;
-      });
+      const tokenInformation = blockchains[activeChain].tokens
+        .concat(importedTokens ?? [])
+        .find((token) => {
+          return token.contract === txToken;
+        });
       if (!tokenInformation) {
         setValidateStatusAmount('error');
         return;
@@ -339,11 +351,11 @@ function SendEVM() {
   useEffect(() => {
     if (useMaximum) {
       if (txToken) {
-        const tokenInformation = blockchains[activeChain].tokens.find(
-          (token) => {
+        const tokenInformation = blockchains[activeChain].tokens
+          .concat(importedTokens ?? [])
+          .find((token) => {
             return token.contract === txToken;
-          },
-        );
+          });
         if (!tokenInformation) {
           setSendingAmount('0');
           form.setFieldValue('amount', '0');
@@ -550,9 +562,9 @@ function SendEVM() {
     // only fetch for evm chainType
     if (blockchains[chainFetched].chainType === 'evm') {
       // create contracts array from tokens contracts in specs
-      const tokens = blockchains[chainFetched].tokens.map(
-        (token) => token.contract,
-      );
+      const tokens = blockchains[chainFetched].tokens
+        .concat(importedTokens ?? [])
+        .map((token) => token.contract);
       fetchAddressTokenBalances(
         wallets[walletFetched].address, // todo evaluate only activated contracts
         chainFetched,
@@ -715,6 +727,7 @@ function SendEVM() {
           priorityGasPrice,
           totalGasLimit,
           txToken as `0x${string}` | '',
+          importedTokens,
         )
           .then((signedTx) => {
             console.log(signedTx);
@@ -941,8 +954,10 @@ function SendEVM() {
             }}
             placeholder={t('send:input_amount')}
             suffix={
-              blockchainConfig.tokens.find((t) => t.contract === txToken)
-                ?.symbol ?? blockchainConfig.symbol
+              blockchainConfig.tokens
+                .concat(importedTokens ?? [])
+                .find((t) => t.contract === txToken)?.symbol ??
+              blockchainConfig.symbol
             }
           />
         </Form.Item>
@@ -964,8 +979,10 @@ function SendEVM() {
           {new BigNumber(spendableBalance)
             .dividedBy(
               10 **
-                (blockchainConfig.tokens.find((t) => t.contract === txToken)
-                  ?.decimals ?? blockchainConfig.decimals),
+                (blockchainConfig.tokens
+                  .concat(importedTokens ?? [])
+                  .find((t) => t.contract === txToken)?.decimals ??
+                  blockchainConfig.decimals),
             )
             .toFixed()}
         </Button>

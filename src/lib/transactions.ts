@@ -20,7 +20,7 @@ import {
 } from '../types';
 
 import { backends } from '@storage/backends';
-import { blockchains } from '@storage/blockchains';
+import { blockchains, Token } from '@storage/blockchains';
 import { formatCrypto } from './currency';
 
 export function getLibId(chain: keyof cryptos): string {
@@ -466,10 +466,15 @@ export async function fetchDataForCSV(
 export function decodeTransactionForApproval(
   rawTx: string,
   chain: keyof cryptos,
+  importedTokens: Token[] = [],
 ) {
   try {
     if (blockchains[chain].chainType === 'evm') {
-      return decodeEVMTransactionForApproval(rawTx, chain);
+      return decodeEVMTransactionForApproval(
+        rawTx,
+        chain,
+        importedTokens ?? [],
+      );
     }
     const libID = getLibId(chain);
     const decimals = blockchains[chain].decimals;
@@ -570,6 +575,7 @@ interface userOperation {
 export function decodeEVMTransactionForApproval(
   rawTx: string,
   chain: keyof cryptos,
+  importedTokens: Token[] = [],
 ) {
   try {
     let decimals = blockchains[chain].decimals;
@@ -632,9 +638,9 @@ export function decodeEVMTransactionForApproval(
       txInfo.token = decodedData.args[0];
 
       // find the token in our token list
-      const token = blockchains[chain].tokens.find(
-        (t) => t.contract.toLowerCase() === txInfo.token.toLowerCase(),
-      );
+      const token = blockchains[chain].tokens
+        .concat(importedTokens)
+        .find((t) => t.contract.toLowerCase() === txInfo.token.toLowerCase());
       if (token) {
         decimals = token.decimals;
       }

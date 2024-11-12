@@ -18,7 +18,7 @@ function Transactions() {
   const { sspWalletKeyInternalIdentity, activeChain } = useAppSelector(
     (state) => state.sspState,
   );
-  const { wallets, walletInUse, blockheight } = useAppSelector(
+  const { wallets, walletInUse, blockheight, importedTokens } = useAppSelector(
     (state) => state[activeChain],
   );
   const { cryptoRates, fiatRates } = useAppSelector(
@@ -121,6 +121,7 @@ function Transactions() {
           const decoded = decodeTransactionForApproval(
             res.data.payload,
             activeChain,
+            importedTokens ?? [],
           );
           if (decoded.sender !== wallets[wInUse].address) {
             setPendingTxs([]);
