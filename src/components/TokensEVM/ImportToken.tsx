@@ -1,4 +1,4 @@
-import { Button, Modal, Flex, Space, Input } from 'antd';
+import { Button, Modal, Flex, Space, Input, Divider } from 'antd';
 import { useState, useEffect } from 'react';
 import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
@@ -23,8 +23,9 @@ function ImportToken(props: {
   const [selectedContracts, setSelectedContracts] = useState(props.contracts);
   const [search, setSearch] = useState('');
   const { importedTokens } = useAppSelector((state) => state[props.chain]);
-  const [filteredTokens, setFilteredTokens] = useState(
-    blockchainConfig.tokens.concat(importedTokens ?? []),
+  const [filteredTokens, setFilteredTokens] = useState(blockchainConfig.tokens);
+  const [filteredCustomTokens, setFilteredCustomTokens] = useState(
+    importedTokens ?? [],
   );
   const [openCustomImportTokenDialog, setOpenCustomImportTokenDialog] =
     useState(false);
@@ -53,14 +54,20 @@ function ImportToken(props: {
 
   useEffect(() => {
     setFilteredTokens(
-      blockchainConfig.tokens
-        .concat(importedTokens ?? [])
-        .filter(
-          (token) =>
-            token.symbol.toLowerCase().startsWith(search.toLowerCase()) ||
-            token.contract.toLowerCase().startsWith(search.toLowerCase()) ||
-            token.name.toLowerCase().startsWith(search.toLowerCase()),
-        ),
+      blockchainConfig.tokens.filter(
+        (token) =>
+          token.symbol.toLowerCase().startsWith(search.toLowerCase()) ||
+          token.contract.toLowerCase().startsWith(search.toLowerCase()) ||
+          token.name.toLowerCase().startsWith(search.toLowerCase()),
+      ),
+    );
+    setFilteredCustomTokens(
+      (importedTokens ?? []).filter(
+        (token) =>
+          token.symbol.toLowerCase().startsWith(search.toLowerCase()) ||
+          token.contract.toLowerCase().startsWith(search.toLowerCase()) ||
+          token.name.toLowerCase().startsWith(search.toLowerCase()),
+      ),
     );
   }, [search]);
 
@@ -119,6 +126,25 @@ function ImportToken(props: {
               selectAction={contractChanged}
             />
           ))}
+          {filteredCustomTokens.length > 0 && (
+            <>
+              <Divider />
+              {filteredCustomTokens.map((item) => (
+                <TokenBoxImport
+                  chain={props.chain}
+                  tokenInfo={item}
+                  key={item.contract + item.symbol}
+                  active={
+                    selectedContracts.includes(item.contract) || !item.contract
+                  }
+                  notSelectable={
+                    props.contracts.includes(item.contract) || !item.contract
+                  }
+                  selectAction={contractChanged}
+                />
+              ))}
+            </>
+          )}
         </Flex>
         <Space direction="vertical" size="large">
           <Button type="primary" size="large" onClick={handleOk}>
