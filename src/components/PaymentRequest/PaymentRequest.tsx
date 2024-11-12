@@ -235,6 +235,13 @@ function PaymentRequest(props: {
                     (await localForage.getItem(
                       `activated-tokens-${chainToSwitch}-${walInUse}`,
                     )) ?? [];
+                  const importedTokens: Token[] =
+                    (await localForage.getItem(
+                      `imported-tokens-${chainToSwitch}`,
+                    )) ?? [];
+                  if (importedTokens) {
+                    setImportedTokens(chainToSwitch, importedTokens || []);
+                  }
                   if (activatedTokens) {
                     setActivatedTokens(
                       chainToSwitch,
