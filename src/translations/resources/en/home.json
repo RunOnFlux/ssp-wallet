@@ -258,6 +258,12 @@
     "add_to_list": "Add To List",
     "remove_token": "Remove Token",
     "remove": "Remove",
-    "remove_token_info": "This action will hide the token from your wallet. You can add it back at any time."
+    "remove_token_info": "This action will hide the token from your wallet. You can add it back at any time.",
+    "search_token": "Search Token",
+    "enter_contract_address": "Enter Token Contract Address",
+    "token_already_imported": "Token already imported",
+    "unable_to_fetch_metadata": "Unable to fetch token metadata. Please try again later.",
+    "token_imported": "Token Imported!",
+    "invalid_token_contract": "Invalid token contract."
   }
 }
