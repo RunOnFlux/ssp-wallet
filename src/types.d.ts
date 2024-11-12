@@ -219,6 +219,17 @@ export interface transaction {
   isError?: boolean;
 }
 
+export interface csvTransaction {
+  timestamp: number;
+  date: string;
+  amount: string;
+  currency: string;
+  fee: string;
+  feeCurrency: string;
+  txHash: string;
+  note: string;
+}
+
 export interface pendingTransaction {
   amount: string; // satoshis
   createdAt: string;

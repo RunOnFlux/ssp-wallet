@@ -1,5 +1,5 @@
 import { Button, Modal, Flex, Space, Input } from 'antd';
-import { useState, useEffect, SetStateAction, SetStateAction } from 'react';
+import { useState, useEffect, SetStateAction } from 'react';
 import { blockchains, Token } from '@storage/blockchains';
 import localForage from 'localforage';
 import { cryptos } from '../../types';

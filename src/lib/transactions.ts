@@ -10,6 +10,7 @@ import {
   transacitonsBlockbook,
   transactionBlockbook,
   transaction,
+  csvTransaction,
   cryptos,
   txIdentifier,
   etherscan_call_internal_txs,
@@ -20,7 +21,7 @@ import {
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
-import { formatCrypto, formatFiatWithSymbol } from './currency';
+import { formatCrypto } from './currency';
 
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
@@ -84,7 +85,7 @@ function processTransaction(
     }
     // check message
     if (jsonvout.scriptPubKey.asm) {
-      const decodedMessage = decodeMessage(jsonvout.scriptPubKey.asm);
+      const decodedMessage = decodeMessage(jsonvout.scriptPubKey.asm || '');
       if (decodedMessage) {
         message = decodedMessage;
       }
@@ -163,7 +164,7 @@ function processTransactionBlockbook(
     }
     // check message
     if (!jsonvout.isAddress) {
-      const mess = jsonvout.addresses[0];
+      const mess = jsonvout.addresses[0] || '';
       const messSplit = mess.split('OP_RETURN (');
       if (messSplit[1]) {
         message = messSplit[1].slice(0, -1);
@@ -335,7 +336,7 @@ export async function fetchAddressTransactions(
         startblock: 0,
         endblock: 99999999,
         page: page,
-        offset: to - from,
+        offset: to - from, // number of txs per page
         sort: 'desc',
         address,
         action: 'txlist',
@@ -373,7 +374,6 @@ export async function fetchAddressTransactions(
       return allTransactions.sort((a, b) => b.timestamp - a.timestamp);
     } else if (blockchains[chain].backend === 'blockbook') {
       const pageSize = to - from;
-      const page = Math.round(from / pageSize);
       const url = `https://${backendConfig.node}/api/v2/address/${address}?pageSize=${pageSize}&details=txs&page=${page}`;
       const response = await axios.get<transacitonsBlockbook>(url);
       const txs = [];
@@ -402,42 +402,64 @@ export async function fetchAddressTransactions(
   }
 }
 
+export async function fetchAllAddressTransactions(
+  address: string,
+  chain: keyof cryptos,
+): Promise<transaction[]> {
+  const txs = [];
+  let page = 1;
+  let from = 0;
+  let to = 50;
+  let txsPage: transaction[] = [];
+  do {
+    txsPage = await fetchAddressTransactions(address, chain, from, to, page); // 50 txs per page is maximum usually
+    if (txsPage) {
+      txs.push(...txsPage);
+      page++;
+      from = to;
+      to = to + 50;
+    }
+  } while (txsPage.length >= 50 || page === 1);
+  return txs;
+}
+
 interface output {
   script: Buffer;
   value: number;
 }
 
-export async function collectData(blockchainConfig, props, chain, fiatRate) {
-  const page = 1;
-  const data = [];
-  let items = [];
-  let inc = 0;
-
+export async function fetchDataForCSV(
+  address: string,
+  chain: keyof cryptos,
+): Promise<csvTransaction[]> {
+  const txs = [];
+  let page = 1;
+  let from = 0;
+  let to = 50;
+  let txsPage: transaction[] = [];
+  const blockchainConfig = blockchains[chain];
   do {
-    items = await fetchAddressTransactions(
-      props.address,
-      chain,
-      page,
-      0 + inc,
-      50 + inc,
-    );
-    items.forEach((t) => {
-      data.push({
-        ticker: blockchainConfig.symbol,
-        transaction_id: t.txid,
-        amount: `${formatCrypto(new BigNumber(t.amount).dividedBy(10 ** blockchainConfig.decimals))} ${blockchainConfig.symbol}`,
-        fiat: `${formatFiatWithSymbol(new BigNumber(Math.abs(+t.amount)).dividedBy(10 ** blockchainConfig.decimals).multipliedBy(new BigNumber(fiatRate)))}`,
-        fee: `${formatCrypto(new BigNumber(t.fee).dividedBy(10 ** blockchainConfig.decimals))} ${blockchainConfig.symbol}`,
-        note: t.message.length > 0 ? t.message : '-',
-        timestamp: t.timestamp,
-        direction: t.receiver.length > 0 ? 'Received' : 'Send',
-        blockheight: t.blockheight,
-        contract: t.type,
-      });
+    txsPage = await fetchAddressTransactions(address, chain, from, to, page); // 50 txs per page is maximum usually
+    if (txsPage) {
+      txs.push(...txsPage);
+      page++;
+      from = to;
+      to = to + 50;
+    }
+  } while (txsPage.length >= 50 || page === 1);
+  const data = [];
+  for (const t of txs) {
+    data.push({
+      timestamp: t.timestamp,
+      date: new Date(t.timestamp).toUTCString(),
+      amount: `${formatCrypto(new BigNumber(t.amount).dividedBy(10 ** blockchainConfig.decimals))}`,
+      currency: blockchainConfig.symbol,
+      fee: `${formatCrypto(new BigNumber(t.fee).dividedBy(10 ** blockchainConfig.decimals))}`,
+      feeCurrency: blockchainConfig.symbol,
+      txHash: t.txid,
+      note: t.message.length > 0 ? t.message : '-',
     });
-    inc += 50;
-  } while (items.length >= 50);
-
+  }
   return data;
 }
 
