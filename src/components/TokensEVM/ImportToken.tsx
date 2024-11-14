@@ -1,4 +1,5 @@
-import { Button, Modal, Flex, Space, Input, Divider } from 'antd';
+import { Button, Modal, Flex, Space, Input, Divider, message } from 'antd';
+import { NoticeType } from 'antd/es/message/interface';
 import { useState, useEffect } from 'react';
 import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
@@ -17,6 +18,7 @@ function ImportToken(props: {
   contracts: string[]; // contracts that are already imported
 }) {
   const { t } = useTranslation(['home', 'common']);
+  const [messageApi, contextHolder] = message.useMessage();
   const { open, openAction } = props;
   const blockchainConfig = blockchains[props.chain];
 
@@ -27,8 +29,18 @@ function ImportToken(props: {
   const [filteredCustomTokens, setFilteredCustomTokens] = useState(
     importedTokens ?? [],
   );
+  const [currentlyImportedTokens, setCurrentlyImportedTokens] = useState(
+    importedTokens ?? [],
+  );
   const [openCustomImportTokenDialog, setOpenCustomImportTokenDialog] =
     useState(false);
+
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
 
   const handleOk = () => {
     openAction(false);
@@ -69,7 +81,17 @@ function ImportToken(props: {
           token.name.toLowerCase().startsWith(search.toLowerCase()),
       ),
     );
-  }, [search]);
+    if (
+      importedTokens &&
+      importedTokens.length < currentlyImportedTokens.length
+    ) {
+      console.log(
+        'importedTokens is now smaller array than before, some token was deleted, show message',
+      );
+      displayMessage('success', t('home:tokens.token_deleted'));
+    }
+    setCurrentlyImportedTokens(importedTokens ?? []);
+  }, [search, importedTokens]);
 
   const contractChanged = (contract: string, value: boolean) => {
     if (value) {
@@ -91,6 +113,7 @@ function ImportToken(props: {
 
   return (
     <>
+      {contextHolder}
       <Modal
         title={t('home:tokens.import_token')}
         open={open && !openCustomImportTokenDialog}
@@ -115,6 +138,7 @@ function ImportToken(props: {
           {filteredTokens.map((item) => (
             <TokenBoxImport
               chain={props.chain}
+              walletInUse={props.wInUse}
               tokenInfo={item}
               key={item.contract + item.symbol}
               active={
@@ -132,6 +156,7 @@ function ImportToken(props: {
               {filteredCustomTokens.map((item) => (
                 <TokenBoxImport
                   chain={props.chain}
+                  walletInUse={props.wInUse}
                   tokenInfo={item}
                   key={item.contract + item.symbol}
                   active={
