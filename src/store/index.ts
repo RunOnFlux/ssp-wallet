@@ -15,7 +15,7 @@ import {
   chainState,
 } from '../types';
 
-import { blockchains } from '@storage/blockchains';
+import { blockchains, Token } from '@storage/blockchains';
 
 // ********** Import chains **********
 import chainSliceBase from './chainSliceBase';
@@ -367,6 +367,12 @@ export function setActivatedTokens(
   if (chain === 'sepolia' || chain === 'eth') {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setActivatedTokens({ wallet, data }));
+  }
+}
+export function setImportedTokens(chain: keyof cryptos, data: Token[]) {
+  if (chain === 'sepolia' || chain === 'eth') {
+    // todo needs to be adjusted on chain add
+    store.dispatch(chains[chain].actions.setImportedTokens(data));
   }
 }
 export function setUnconfirmedBalance(

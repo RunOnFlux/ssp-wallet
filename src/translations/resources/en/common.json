@@ -39,5 +39,6 @@
   "address": "Address",
   "activity": "Activity",
   "nodes": "Nodes",
-  "tokens": "Tokens"
+  "tokens": "Tokens",
+  "add_custom_token": "Add Custom Token"
 }

@@ -1,19 +1,5 @@
 import { backends } from './backends';
-
-import fluxLogo from '../assets/flux.svg';
-import fluxTestnetLogo from '../assets/fluxTestnet.svg';
-import rvnLogo from '../assets/rvn.svg';
-import ltcLogo from '../assets/ltc.svg';
-import btcLogo from '../assets/btc.svg';
-import btcTestnetLogo from '../assets/btcTestnet.svg';
-import btcSignetLogo from '../assets/btcSignet.svg';
-import dogeLogo from '../assets/doge.svg';
-import zecLogo from '../assets/zec.svg';
-import bchLogo from '../assets/bch.svg';
-import ethLogo from '../assets/eth.svg';
-import tethLogo from '../assets/teth.svg';
-import usdtLogo from '../assets/usdt.svg';
-import usdcLogo from '../assets/usdc.svg';
+import { tokens } from './tokens';
 
 const flux = {
   id: 'flux',
@@ -28,7 +14,7 @@ const flux = {
   pubKeyHash: '1cb8',
   scriptHash: '1cbd',
   wif: '80',
-  logo: fluxLogo,
+  logo: 'src/assets/flux.svg',
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -58,7 +44,7 @@ const fluxTestnet = {
   pubKeyHash: '1d25',
   scriptHash: '1cba',
   wif: 'ef',
-  logo: fluxTestnetLogo,
+  logo: 'src/assets/fluxTestnet.svg',
   bip32: {
     public: 0x043587cf,
     private: 0x04358394,
@@ -88,7 +74,7 @@ const rvn = {
   pubKeyHash: '3c',
   scriptHash: '7a',
   wif: '80',
-  logo: rvnLogo,
+  logo: 'src/assets/rvn.svg',
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -115,7 +101,7 @@ const ltc = {
   pubKeyHash: '30',
   scriptHash: '32',
   wif: 'b0',
-  logo: ltcLogo,
+  logo: 'src/assets/ltc.svg',
   bip32: {
     public: 0x019da462,
     private: 0x019d9cfe,
@@ -143,7 +129,7 @@ const btc = {
   pubKeyHash: '00',
   scriptHash: '05',
   wif: '80',
-  logo: btcLogo,
+  logo: 'src/assets/btc.svg',
   bip32: {
     public: 0x02aa7ed3,
     private: 0x02aa7a99,
@@ -171,7 +157,7 @@ const doge = {
   pubKeyHash: '1e',
   scriptHash: '16',
   wif: '9e',
-  logo: dogeLogo,
+  logo: 'src/assets/doge.svg',
   bip32: {
     public: 0x02facafd,
     private: 0x02fac398,
@@ -198,7 +184,7 @@ const btcTestnet = {
   pubKeyHash: '6f',
   scriptHash: 'c4',
   wif: 'ef',
-  logo: btcTestnetLogo,
+  logo: 'src/assets/btcTestnet.svg',
   bip32: {
     public: 0x02575483,
     private: 0x02575048,
@@ -226,7 +212,7 @@ const btcSignet = {
   pubKeyHash: '6f',
   scriptHash: 'c4',
   wif: 'ef',
-  logo: btcSignetLogo,
+  logo: 'src/assets/btcSignet.svg',
   bip32: {
     public: 0x02575483,
     private: 0x02575048,
@@ -254,7 +240,7 @@ const zec = {
   pubKeyHash: '1cb8',
   scriptHash: '1cbd',
   wif: '80',
-  logo: zecLogo,
+  logo: 'src/assets/zec.svg',
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -284,7 +270,7 @@ const bch = {
   pubKeyHash: '00',
   scriptHash: '05',
   wif: '80',
-  logo: bchLogo,
+  logo: 'src/assets/bch.svg',
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -305,7 +291,7 @@ const sepolia = {
   libid: 'sepolia',
   name: 'Testnet Sepolia',
   symbol: 'TEST-ETH',
-  logo: tethLogo,
+  logo: 'src/assets/teth.svg',
   slip: 1,
   decimals: 18,
   node: backends().sepolia.node,
@@ -325,22 +311,7 @@ const sepolia = {
   baseFee: 120, // 120 gwei
   priorityFee: 5, // 5 gwei
   gasLimit: 750000, // 750k gas
-  tokens: [
-    {
-      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
-      name: 'Testnet Ethereum Sepolia',
-      symbol: 'TEST-ETH',
-      decimals: 18,
-      logo: tethLogo,
-    },
-    {
-      contract: '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B909',
-      name: 'Fake Flux',
-      symbol: 'TEST-FLUX',
-      decimals: 8,
-      logo: fluxLogo,
-    },
-  ],
+  tokens: tokens.sepolia(),
 };
 
 const eth = {
@@ -348,7 +319,7 @@ const eth = {
   libid: 'mainnet',
   name: 'Ethereum',
   symbol: 'ETH',
-  logo: ethLogo,
+  logo: 'src/assets/eth.svg',
   slip: 60,
   decimals: 18,
   node: backends().eth.node,
@@ -368,36 +339,7 @@ const eth = {
   baseFee: 11, // 11 gwei
   priorityFee: 2, // 2 gwei
   gasLimit: 750000, // 750k gas
-  tokens: [
-    {
-      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
-      name: 'Ethereum',
-      symbol: 'ETH',
-      decimals: 18,
-      logo: ethLogo,
-    },
-    {
-      contract: '0x720cd16b011b987da3518fbf38c3071d4f0d1495',
-      name: 'Flux',
-      symbol: 'FLUX',
-      decimals: 8,
-      logo: fluxLogo,
-    },
-    {
-      contract: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-      name: 'Tether',
-      symbol: 'USDT',
-      decimals: 6,
-      logo: usdtLogo,
-    },
-    {
-      contract: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-      name: 'USD Coin',
-      symbol: 'USDC',
-      decimals: 6,
-      logo: usdcLogo,
-    },
-  ],
+  tokens: tokens.eth(),
 };
 
 export const blockchains = {

@@ -1,3 +1,4 @@
+import { Token } from '@storage/blockchains';
 // wallet.tx
 export interface minHDKey {
   keyPair: {
@@ -218,6 +219,17 @@ export interface transaction {
   isError?: boolean;
 }
 
+export interface csvTransaction {
+  timestamp: number;
+  date: string;
+  amount: string;
+  currency: string;
+  fee: string;
+  feeCurrency: string;
+  txHash: string;
+  note: string;
+}
+
 export interface pendingTransaction {
   amount: string; // satoshis
   createdAt: string;
@@ -348,6 +360,13 @@ export interface actionSSPRelay {
   action: string;
   createdAt: string;
   expireAt: string;
+}
+
+export interface tokenDataSSPRelay {
+  decimals: number;
+  logo: string | null;
+  name: string;
+  symbol: string;
 }
 
 export interface currency {
@@ -532,6 +551,7 @@ export interface chainState {
   wallets: wallets;
   blockheight: number;
   walletInUse: string;
+  importedTokens?: Token[]; // EVM
 }
 
 declare global {

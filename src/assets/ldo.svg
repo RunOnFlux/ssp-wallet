@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 250 250">
+  <!-- Generator: Adobe Illustrator 29.0.1, SVG Export Plug-In . SVG Version: 2.1.0 Build 192)  -->
+  <defs>
+    <style>
+      .st0, .st1 {
+        fill: none;
+      }
+
+      .st1 {
+        stroke: #000;
+        stroke-miterlimit: 22.9;
+        stroke-width: 0px;
+      }
+
+      .st2 {
+        fill: url(#linear-gradient2);
+      }
+
+      .st3 {
+        fill: url(#linear-gradient1);
+      }
+
+      .st4 {
+        fill: url(#radial-gradient);
+      }
+
+      .st5 {
+        fill: url(#linear-gradient);
+      }
+
+      .st6 {
+        clip-path: url(#clippath-1);
+      }
+
+      .st7 {
+        fill: url(#radial-gradient1);
+      }
+
+      .st8 {
+        fill: url(#radial-gradient2);
+      }
+
+      .st9 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <clipPath id="clippath">
+      <path class="st0" d="M125,2.5h0c67.6,0,122.5,54.9,122.5,122.5s-54.9,122.5-122.5,122.5S2.5,192.6,2.5,125,57.4,2.5,125,2.5Z"/>
+    </clipPath>
+    <linearGradient id="linear-gradient" x1="125" y1="1905.5" x2="125" y2="1660.5" gradientTransform="translate(0 1908) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f89791"/>
+      <stop offset="1" stop-color="#f7c882"/>
+    </linearGradient>
+    <clipPath id="clippath-1">
+      <path class="st0" d="M124.9,146.8l-54.6-31.2-1.5,2.3c-16.8,25.8-13,59.5,9,81.1,26,25.5,68.1,25.5,94.1,0,22.1-21.7,25.8-55.4,9-81.1l-1.5-2.3-54.6,31.2Z"/>
+    </clipPath>
+    <radialGradient id="radial-gradient" cx="4978" cy="-165.1" fx="4978" fy="-165.1" r="58.2" gradientTransform="translate(-113.7 7811.3) rotate(-90.5) scale(1.5 -1.8) skewX(-.4)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c5c6ab"/>
+      <stop offset="1" stop-color="#7985ab"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient1" cx="124.9" cy="1804" fx="124.9" fy="1804" r="2.4" gradientTransform="translate(0 1908) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#06f" stop-opacity="0"/>
+      <stop offset="1" stop-color="#00c2ff" stop-opacity=".4"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient2" cx="124.9" cy="1792.6" fx="124.9" fy="1792.6" r="2.7" gradientTransform="translate(0 1908) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#aee6f9" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#c8d6dc"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient1" x1="101.4" y1="1881" x2="101.4" y2="1783" gradientTransform="translate(0 1908) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#77d4ff"/>
+      <stop offset="1" stop-color="#93d6f2" stop-opacity=".9"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient2" x1="148.4" y1="1881" x2="148.4" y2="1783" gradientTransform="translate(0 1908) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#506aac"/>
+      <stop offset="1" stop-color="#96cfef" stop-opacity=".8"/>
+    </linearGradient>
+  </defs>
+  <g id="Layer_x5F_1">
+    <g id="_2090755387392">
+      <path class="st0" d="M125,2.5h0c67.6,0,122.5,54.9,122.5,122.5h0c0,67.6-54.9,122.5-122.5,122.5h0C57.4,247.5,2.5,192.6,2.5,125h0C2.5,57.4,57.4,2.5,125,2.5Z"/>
+      <g class="st9">
+        <path id="_1" class="st1" d="M2.5,2.5l245,245M247.5,2.5L2.5,247.5"/>
+      </g>
+      <path class="st5" d="M125,2.5h0c67.6,0,122.5,54.9,122.5,122.5h0c0,67.6-54.9,122.5-122.5,122.5h0C57.4,247.5,2.5,192.6,2.5,125h0C2.5,57.4,57.4,2.5,125,2.5Z"/>
+      <g class="st6">
+        <circle class="st4" cx="124.9" cy="153.5" r="66.5"/>
+      </g>
+      <path class="st0" d="M124.9,146.8l-54.6-31.2-1.5,2.3c-16.8,25.8-13,59.5,9,81.1,26,25.5,68.1,25.5,94.1,0,22.1-21.7,25.8-55.4,9-81.1l-1.5-2.3-54.6,31.2Z"/>
+      <polygon class="st7" points="124.9 77.2 77.9 104 124.9 130.9 171.9 104 124.9 77.2"/>
+      <polygon class="st8" points="125 84.1 70.3 115.6 124.9 146.8 179.4 115.6 125 84.1"/>
+      <polygon class="st3" points="124.9 31.9 77.9 104 124.9 130.9 124.9 31.9"/>
+      <polygon class="st2" points="124.9 130.9 171.9 104 124.9 31.9 124.9 130.9"/>
+    </g>
+  </g>
+</svg>

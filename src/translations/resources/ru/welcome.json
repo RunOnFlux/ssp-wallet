@@ -1,0 +1,8 @@
+{
+  "title": "$t(common:appName.full)",
+  "subtitle": "$t(common:appName.moto)",
+  "welcome_to": "Добро пожаловать в SSP Wallet",
+  "description": "Двухподписной кошелек для децентрализованного мира.",
+  "get_started": "Начать!",
+  "restore_with_seed": "Восстановить с помощью Seed"
+}

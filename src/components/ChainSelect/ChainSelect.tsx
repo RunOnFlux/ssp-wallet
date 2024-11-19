@@ -10,7 +10,7 @@ import {
 } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { useTranslation } from 'react-i18next';
-import { blockchains } from '@storage/blockchains';
+import { blockchains, Token } from '@storage/blockchains';
 import { getScriptType } from '../../lib/wallet';
 import {
   transaction,
@@ -41,6 +41,7 @@ import {
   setActiveChain,
   setTokenBalances,
   setActivatedTokens,
+  setImportedTokens,
 } from '../../store';
 
 interface balancesObj {
@@ -115,6 +116,12 @@ function ChainSelect(props: {
           const nodesWallet: node[] =
             (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
             [];
+          const importedTokens: Token[] =
+            (await localForage.getItem(`imported-tokens-${chainToSwitch}`)) ??
+            [];
+          if (importedTokens) {
+            setImportedTokens(chainToSwitch, importedTokens || []);
+          }
           if (activatedTokens) {
             setActivatedTokens(chainToSwitch, walInUse, activatedTokens || []);
           }
@@ -218,6 +225,13 @@ function ChainSelect(props: {
                     (await localForage.getItem(
                       `nodes-${chainToSwitch}-${walInUse}`,
                     )) ?? [];
+                  const importedTokens: Token[] =
+                    (await localForage.getItem(
+                      `imported-tokens-${chainToSwitch}`,
+                    )) ?? [];
+                  if (importedTokens) {
+                    setImportedTokens(chainToSwitch, importedTokens || []);
+                  }
                   if (activatedTokens) {
                     setActivatedTokens(
                       chainToSwitch,
@@ -350,6 +364,12 @@ function ChainSelect(props: {
           const nodesWallet: node[] =
             (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
             [];
+          const importedTokens: Token[] =
+            (await localForage.getItem(`imported-tokens-${chainToSwitch}`)) ??
+            [];
+          if (importedTokens) {
+            setImportedTokens(chainToSwitch, importedTokens || []);
+          }
           if (activatedTokens) {
             setActivatedTokens(chainToSwitch, walInUse, activatedTokens || []);
           }

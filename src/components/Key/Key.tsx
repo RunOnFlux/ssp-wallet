@@ -227,7 +227,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
           // timeout as we need to wait for activeChain to be switched back
           setIsModalKeyOpen(false);
           synchronised(true);
-        }, 100);
+        }, 200);
       } else {
         // tell parent of failiure to logout
         synchronised(false);

@@ -1,22 +1,30 @@
-import { blockchains } from '@storage/blockchains';
+import { blockchains, Token } from '@storage/blockchains';
 import localForage from 'localforage';
 import { useAppSelector } from '../../hooks';
 import TokenBox from './TokenBox';
 import { setActivatedTokens } from '../../store';
+import { useEffect, useState } from 'react';
 
 function TokensTable() {
   const { activeChain } = useAppSelector((state) => state.sspState);
-  const { wallets, walletInUse } = useAppSelector(
+  const { wallets, walletInUse, importedTokens } = useAppSelector(
     (state) => state[activeChain],
   );
   const blockchainConfig = blockchains[activeChain];
   const activatedTokens = wallets[walletInUse].activatedTokens ?? [];
   console.log(activatedTokens);
 
-  // filter blockchainConfig.tokens with activatedTokens contracts
-  const activeTokensInfo = blockchainConfig.tokens.filter(
-    (item) => activatedTokens.includes(item.contract) || !item.contract, // main token is always activated
-  );
+  const [activeTokensInfo, setActiveTokensInfo] = useState<Token[]>([]);
+
+  useEffect(() => {
+    const updatedActiveTokensInfo = blockchainConfig.tokens
+      .concat(importedTokens ?? [])
+      .filter(
+        (item) => activatedTokens.includes(item.contract) || !item.contract, // main token is always activated
+      );
+
+    setActiveTokensInfo(updatedActiveTokensInfo);
+  }, [importedTokens, activatedTokens]);
 
   const handleRemoveToken = (contract: string) => {
     // save to redux
@@ -35,11 +43,11 @@ function TokensTable() {
 
   return (
     <div>
-      {activeTokensInfo.map((item) => (
+      {activeTokensInfo.map((item, index) => (
         <TokenBox
           chain={activeChain}
           tokenInfo={item}
-          key={item.contract + item.symbol}
+          key={item.contract + item.symbol + index}
           handleRemoveToken={handleRemoveToken}
         />
       ))}

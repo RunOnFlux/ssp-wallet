@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 250 250">
+  <!-- Generator: Adobe Illustrator 29.0.1, SVG Export Plug-In . SVG Version: 2.1.0 Build 192)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #fff;
+        fill-rule: evenodd;
+      }
+
+      .st1 {
+        fill: #111;
+        stroke: #111;
+        stroke-width: 4.4px;
+      }
+
+      .st2 {
+        fill: none;
+        stroke: url(#linear-gradient);
+        stroke-width: 4.5px;
+      }
+
+      .st3 {
+        fill: url(#radial-gradient);
+        fill-opacity: .7;
+      }
+    </style>
+    <radialGradient id="radial-gradient" cx="-478.1" cy="-107.5" fx="-478.1" fy="-107.5" r=".6" gradientTransform="translate(-31003.8 196700.4) rotate(90) scale(411.4 289.5)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3a3a3a"/>
+      <stop offset="1" stop-color="#1c1c1c"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient" x1="125" y1="328.2" x2="125" y2="577.8" gradientTransform="translate(0 -328)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#111"/>
+    </linearGradient>
+  </defs>
+  <path class="st1" d="M125,4.7h0c66.4,0,120.3,53.9,120.3,120.3h0c0,66.4-53.9,120.3-120.3,120.3h0c-66.4,0-120.3-53.9-120.3-120.3h0C4.7,58.6,58.6,4.7,125,4.7Z"/>
+  <path class="st3" d="M125,2.5h0C57.3,2.5,2.5,57.3,2.5,125h0c0,67.6,54.8,122.5,122.5,122.5h0c67.6,0,122.5-54.8,122.5-122.5h0C247.5,57.3,192.6,2.5,125,2.5Z"/>
+  <path class="st2" d="M125,4.8h0c66.4,0,120.2,53.8,120.2,120.2h0c0,66.4-53.8,120.2-120.2,120.2h0c-66.4,0-120.2-53.8-120.2-120.2h0C4.8,58.6,58.6,4.8,125,4.8Z"/>
+  <path class="st0" d="M98.2,68.1h-2.6l-1.7,2-43.6,51.3-3.1,3.6,3.1,3.6,43.7,51.3,1.7,2h87v-38.3h-11.3v27h-60.7l36.3-41.9,3.2-3.7-3.2-3.7-36.3-41.9h60.7v27h11.3v-38.3h-84.4ZM98.3,82.4l-36.3,42.6,36.3,42.6,36.9-42.6-36.9-42.6Z"/>
+</svg>

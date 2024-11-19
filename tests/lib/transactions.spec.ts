@@ -10,6 +10,7 @@ import {
   processTransactionExternalScan,
   processTransactionsExternalScan,
   fetchAddressTransactions,
+  fetchAllAddressTransactions,
   decodeTransactionForApproval,
   decodeEVMTransactionForApproval,
 } from '../../src/lib/transactions';
@@ -193,6 +194,75 @@ describe('Transactions Lib', function () {
         '0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1',
       );
     });
+
+    it('should return fetchAllAddressTransactions data when value is evm', async function () {
+      const res = await fetchAllAddressTransactions(
+        '0xa23702e9349fbf9939864da1245f5b358e7ef30b',
+        'eth',
+      );
+      expect(res.length).to.be.greaterThan(55);
+      expect(res[0]).to.not.be.null;
+      expect(res[0]).to.not.be.undefined;
+      expect(res[0].fee).to.not.be.null;
+      expect(res[0].fee).to.not.be.undefined;
+      expect(res[0].amount).to.not.be.null;
+      expect(res[0].amount).to.not.be.undefined;
+      assert.equal(res[0].type, 'evm');
+      expect(res[0].txid).to.not.be.null;
+      expect(res[0].txid).to.not.be.undefined;
+      expect(res[0].blockheight).to.not.be.null;
+      expect(res[0].blockheight).to.not.be.undefined;
+      expect(res[0].timestamp).to.not.be.null;
+      expect(res[0].timestamp).to.not.be.undefined;
+      assert.equal(res[0].message, '');
+      expect(res[0].receiver).to.not.be.null;
+      expect(res[0].receiver).to.not.be.undefined;
+    }).timeout(5000);
+
+    it('should return fetchAllAddressTransactions data when value is utxo insight', async function () {
+      const res = await fetchAllAddressTransactions(
+        't1cjcLaDHkNcuXh6uoyNL7u1jx7GxvzfYAN',
+        'flux',
+      );
+      expect(res.length).to.be.greaterThan(200);
+      expect(res[0]).to.not.be.null;
+      expect(res[0]).to.not.be.undefined;
+      expect(res[0].fee).to.not.be.null;
+      expect(res[0].fee).to.not.be.undefined;
+      expect(res[0].amount).to.not.be.null;
+      expect(res[0].amount).to.not.be.undefined;
+      expect(res[0].txid).to.not.be.null;
+      expect(res[0].txid).to.not.be.undefined;
+      expect(res[0].blockheight).to.not.be.null;
+      expect(res[0].blockheight).to.not.be.undefined;
+      expect(res[0].timestamp).to.not.be.null;
+      expect(res[0].timestamp).to.not.be.undefined;
+      expect(res[0].receiver).to.not.be.null;
+      expect(res[0].receiver).to.not.be.undefined;
+    }).timeout(25000);
+
+    it('should return fetchAllAddressTransactions data when value is utxo blockbook', async function () {
+      const res = await fetchAllAddressTransactions(
+        'bc1pv537rf60ayvhdj2ysdy70vl2w9sqtq2taqp2zx8y6smyj38m4spsr8d3uq',
+        'btc',
+      );
+      expect(res.length).to.be.greaterThan(60);
+      expect(res[0]).to.not.be.null;
+      expect(res[0]).to.not.be.undefined;
+      expect(res[0].fee).to.not.be.null;
+      expect(res[0].fee).to.not.be.undefined;
+      expect(res[0].amount).to.not.be.null;
+      expect(res[0].amount).to.not.be.undefined;
+      expect(res[0].txid).to.not.be.null;
+      expect(res[0].txid).to.not.be.undefined;
+      expect(res[0].blockheight).to.not.be.null;
+      expect(res[0].blockheight).to.not.be.undefined;
+      expect(res[0].timestamp).to.not.be.null;
+      expect(res[0].timestamp).to.not.be.undefined;
+      assert.equal(res[0].message, '');
+      expect(res[0].receiver).to.not.be.null;
+      expect(res[0].receiver).to.not.be.undefined;
+    }).timeout(25000);
 
     it('should return fetchAddressTransactions data when value is evm', async function () {
       const res = await fetchAddressTransactions(

@@ -1,9 +1,18 @@
-import { Table, Empty, Tooltip, Popconfirm, Button } from 'antd';
+import {
+  Table,
+  Empty,
+  Tooltip,
+  Popconfirm,
+  Button,
+  Space,
+  message,
+} from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
+import { NoticeType } from 'antd/es/message/interface';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -16,12 +25,16 @@ import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { backends } from '@storage/backends';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
+import { mkConfig, generateCsv, download } from 'export-to-csv';
+import { fetchDataForCSV } from '../../lib/transactions';
+import { cryptos } from '../../types';
 
 function TransactionsTable(props: {
   transactions: transaction[];
   blockheight: number;
   fiatRate: number;
-  chain: string;
+  address: string;
+  chain: keyof cryptos;
   refresh: () => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
@@ -30,6 +43,14 @@ function TransactionsTable(props: {
   const [fiatRate, setFiatRate] = useState(0);
   const blockchainConfig = blockchains[chain];
   const backendConfig = backends()[chain];
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
 
   useEffect(() => {
     setFiatRate(props.fiatRate);
@@ -48,8 +69,34 @@ function TransactionsTable(props: {
     navigate('/send', { state: navigationObject });
   };
 
+  const csvConfig = mkConfig({
+    useKeysAsHeaders: true,
+    filename: `${blockchainConfig.symbol}-${props.address}`,
+  });
+
+  const handleExport = async () => {
+    try {
+      displayMessage(
+        'info',
+        t('home:transactionsTable.transactions_being_exported'),
+      );
+      const csvData = await fetchDataForCSV(props.address, chain);
+      // @ts-expect-error csvData is of type csvTransaction[]
+      const csv = generateCsv(csvConfig)(csvData);
+      download(csvConfig)(csv);
+      displayMessage(
+        'success',
+        t('home:transactionsTable.transactions_exported'),
+      );
+    } catch (error) {
+      console.error(error);
+      displayMessage('error', t('home:transactionsTable.err_export'));
+    }
+  };
+
   return (
     <>
+      {contextHolder}
       <Table
         className="adjustedWidth"
         locale={{
@@ -221,6 +268,16 @@ function TransactionsTable(props: {
           )}
         />
       </Table>
+      <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }}>
+        <Button
+          type="primary"
+          size="middle"
+          onClick={handleExport}
+          disabled={props.transactions.length == 0}
+        >
+          {t('home:transactionsTable.export_tx')}
+        </Button>
+      </Space>
     </>
   );
 }

@@ -1,0 +1,14 @@
+{
+  "err_invalid_pw": "Hindi wastong password. Pakisubukang muli.",
+  "err_invalid_pw_2": "Hindi wastong password. Pakisubukang muli.",
+  "err_l3": "Code L3: Nawawala ang data ng pitaka. Paki-restore ang iyong pitaka.",
+  "err_l2": "Code L2: Nawawala ang data ng pitaka. Paki-restore ang iyong pitaka.",
+  "err_l1": "Code L1: Nawawala ang data ng pitaka. Paki-restore ang iyong pitaka.",
+  "welcome_back": "Maligayang pagbabalik!",
+  "to_dec_cloud": "Sa iyong desentralisadong Cloud",
+  "unlock_with_pw": "I-unlock gamit ang Password",
+  "enter_pw": "Ipasok ang Password",
+  "unlock_wallet": "I-unlock ang Wallet",
+  "forgot_pw": "Nakalimutan ang Password?",
+  "restore": "Ibalik"
+}

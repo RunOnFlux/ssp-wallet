@@ -6,7 +6,7 @@ import { NoticeType } from 'antd/es/message/interface';
 import BigNumber from 'bignumber.js';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { blockchains } from '@storage/blockchains';
+import { blockchains, Token } from '@storage/blockchains';
 import secureLocalStorage from 'react-secure-storage';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
@@ -37,6 +37,7 @@ import {
   setActiveChain,
   setTokenBalances,
   setActivatedTokens,
+  setImportedTokens,
 } from '../../store';
 
 interface payRequestData {
@@ -123,6 +124,12 @@ function PaymentRequest(props: {
           const nodesWallet: node[] =
             (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
             [];
+          const importedTokens: Token[] =
+            (await localForage.getItem(`imported-tokens-${chainToSwitch}`)) ??
+            [];
+          if (importedTokens) {
+            setImportedTokens(chainToSwitch, importedTokens || []);
+          }
           if (activatedTokens) {
             setActivatedTokens(chainToSwitch, walInUse, activatedTokens || []);
           }
@@ -228,6 +235,13 @@ function PaymentRequest(props: {
                     (await localForage.getItem(
                       `activated-tokens-${chainToSwitch}-${walInUse}`,
                     )) ?? [];
+                  const importedTokens: Token[] =
+                    (await localForage.getItem(
+                      `imported-tokens-${chainToSwitch}`,
+                    )) ?? [];
+                  if (importedTokens) {
+                    setImportedTokens(chainToSwitch, importedTokens || []);
+                  }
                   if (activatedTokens) {
                     setActivatedTokens(
                       chainToSwitch,

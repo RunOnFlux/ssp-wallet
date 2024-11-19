@@ -18,7 +18,7 @@ function Transactions() {
   const { sspWalletKeyInternalIdentity, activeChain } = useAppSelector(
     (state) => state.sspState,
   );
-  const { wallets, walletInUse, blockheight } = useAppSelector(
+  const { wallets, walletInUse, blockheight, importedTokens } = useAppSelector(
     (state) => state[activeChain],
   );
   const { cryptoRates, fiatRates } = useAppSelector(
@@ -90,7 +90,7 @@ function Transactions() {
 
   const fetchTransactions = () => {
     const wInUse = walletInUse;
-    fetchAddressTransactions(wallets[wInUse].address, activeChain, 0, 10)
+    fetchAddressTransactions(wallets[wInUse].address, activeChain, 0, 10, 1)
       .then(async (txs) => {
         setTransactions(activeChain, wInUse, txs || []);
         await localForage.setItem(`transactions-${activeChain}-${wInUse}`, txs);
@@ -121,6 +121,7 @@ function Transactions() {
           const decoded = decodeTransactionForApproval(
             res.data.payload,
             activeChain,
+            importedTokens ?? [],
           );
           if (decoded.sender !== wallets[wInUse].address) {
             setPendingTxs([]);
@@ -168,8 +169,9 @@ function Transactions() {
         transactions={wallets[walletInUse]?.transactions ?? []}
         blockheight={blockheight}
         fiatRate={fiatRate}
-        refresh={getTransactions}
+        address={wallets[walletInUse].address ?? ''}
         chain={activeChain}
+        refresh={getTransactions}
       />
 
       <SocketListener

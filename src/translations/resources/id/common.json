@@ -39,5 +39,6 @@
   "address": "Alamat",
   "activity": "Aktivitas",
   "nodes": "Nodes",
-  "tokens": "Token"
+  "tokens": "Token",
+  "add_custom_token": "Tambahkan Token Khusus"
 }
