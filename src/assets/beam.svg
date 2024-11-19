@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 250 250">
+  <!-- Generator: Adobe Illustrator 29.0.1, SVG Export Plug-In . SVG Version: 2.1.0 Build 192)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: url(#linear-gradient2);
+      }
+
+      .st1 {
+        fill: url(#linear-gradient1);
+      }
+
+      .st2 {
+        fill: url(#linear-gradient3);
+      }
+
+      .st3 {
+        fill: url(#linear-gradient);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="125" y1="5.7" x2="125" y2="58.9" gradientUnits="userSpaceOnUse">
+      <stop offset=".6" stop-color="#bbdcff"/>
+      <stop offset=".9" stop-color="#1d9ddb"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient1" x1="125" y1="68.8" x2="125" y2="124.2" gradientUnits="userSpaceOnUse">
+      <stop offset=".5" stop-color="#ff6b6b"/>
+      <stop offset=".9" stop-color="#ff2a2b"/>
+      <stop offset="1" stop-color="#cb2e0c"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient2" x1="125" y1="132.1" x2="125" y2="184.8" gradientUnits="userSpaceOnUse">
+      <stop offset=".5" stop-color="#f1e869"/>
+      <stop offset=".9" stop-color="#f8921f"/>
+      <stop offset="1" stop-color="#dd9d3e"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient3" x1="125" y1="191.2" x2="125" y2="244.8" gradientUnits="userSpaceOnUse">
+      <stop offset=".5" stop-color="#bbfeca"/>
+      <stop offset=".8" stop-color="#53df22"/>
+      <stop offset="1" stop-color="#31c308"/>
+    </linearGradient>
+  </defs>
+  <path class="st3" d="M231.2,64H18.8C39.9,27.2,79.6,2.5,125,2.5s85.1,24.7,106.2,61.5Z"/>
+  <path class="st1" d="M247.5,125v.4H2.5v-.4c0-22.2,5.9-43.1,16.3-61h212.5c10.4,18,16.3,38.8,16.3,61Z"/>
+  <path class="st0" d="M18.8,186c-10.3-17.9-16.2-38.6-16.3-60.6v-.4h245v.4c0,22.1-6,42.8-16.3,60.6l-.2.4H19l-.2-.4Z"/>
+  <path class="st2" d="M18.8,186h212.5l-.2.4c-21.2,36.5-60.7,61-106,61s-84.8-24.5-106-61l-.2-.4Z"/>
+</svg>

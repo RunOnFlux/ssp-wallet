@@ -375,7 +375,7 @@ function eth() {
       name: 'Wormhole',
       symbol: 'W',
       decimals: 18,
-      logo: 'src/assets/wormhole.svg',
+      logo: 'src/assets/w.svg',
     },
     {
       contract: '0x808507121b80c02388fad14726482e061b8da827',
