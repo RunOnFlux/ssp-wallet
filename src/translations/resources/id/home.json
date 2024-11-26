@@ -32,7 +32,7 @@
     "date": "Tanggal",
     "amount": "Jumlah",
     "confirmations": "Konfirmasi",
-    "export_tx": "Transaksi Ekspor",
+    "export_tx": "Ekspor Transaksi",
     "tx_confirmed": "Dikonfirmasi.",
     "tx_unconfirmed": "Belum dikonfirmasi.",
     "tx_pending": "Tertunda.",
@@ -40,6 +40,9 @@
     "replace_by_fee_info": "Menambah biaya, mengganti atau membatalkan transaksi.",
     "replace_by_fee_desc": "Ganti berdasarkan Biaya (RBF) memungkinkan Anda mengganti transaksi yang belum dikonfirmasi dengan transaksi lain yang menawarkan biaya lebih tinggi.",
     "replace_by_fee_desc_b": "RBF memerlukan biaya transaksi yang lebih tinggi dalam hal apa pun."
+    "err_export": "Kesalahan saat mengekspor transaksi. Silakan coba lagi.",
+    "transactions_being_exported": "Transaksi sedang diekspor...",
+    "transactions_exported": "Transaksi telah diekspor!"
   },
   "nodesTable": {
     "no_nodes": "Alamat tidak memiliki node",
@@ -254,7 +257,17 @@
     "import_selected": "Impor yang Dipilih",
     "add_to_list": "Tambahkan Ke Daftar",
     "remove_token": "Hapus Token",
-    "remove": "Menghapus",
-    "remove_token_info": "Tindakan ini akan menyembunyikan token dari dompet Anda."
+    "remove": "Hapus",
+    "remove_token_info": "Tindakan ini akan menyembunyikan token dari dompet Anda. Anda dapat menambahkannya kembali kapan saja.",
+    "search_token": "Cari Token",
+    "enter_contract_address": "Masukkan Alamat Kontrak Token",
+    "token_already_imported": "Token sudah diimpor",
+    "unable_to_fetch_metadata": "Tidak dapat mengambil metadata token. Silakan coba lagi nanti.",
+    "token_imported": "Token Telah Diimpor!",
+    "invalid_token_contract": "Kontrak token tidak valid.",
+    "delete_token": "Hapus Token",
+    "token_deleted": "Token Telah Dihapus!",
+    "err_delete_token": "Terjadi kesalahan saat menghapus token. Silakan coba lagi."
   }
+}
 }
