@@ -38,8 +38,8 @@
     "tx_pending": "Tertunda.",
     "replace_by_fee": "Ganti dengan Biaya",
     "replace_by_fee_info": "Menambah biaya, mengganti atau membatalkan transaksi.",
-    "replace_by_fee_desc": "Ganti berdasarkan Biaya (RBF) memungkinkan Anda mengganti transaksi yang belum dikonfirmasi dengan transaksi lain yang menawarkan biaya lebih tinggi.",
-    "replace_by_fee_desc_b": "RBF memerlukan biaya transaksi yang lebih tinggi dalam hal apa pun."
+    "replace_by_fee_desc": "Replace by Fee (RBF) memungkinkan Anda mengganti transaksi yang belum dikonfirmasi dengan transaksi lain yang menawarkan biaya lebih tinggi. Jika transaksi Anda tetap belum dikonfirmasi untuk jangka waktu yang lama, Anda dapat mempertimbangkan untuk menggunakan fitur RBF untuk meningkatkan biaya transaksi. Selain itu, dimungkinkan untuk mengubah penerima, jumlah, atau catatan pembayaran. Dengan mengirimkan dana ke salah satu alamat Anda, Anda juga dapat membatalkan transaksi.",
+    "replace_by_fee_desc_b": "RBF memerlukan biaya transaksi yang lebih tinggi dalam hal apa pun. Penggantian tidak dijamin dan memblokir produsen, penambang mungkin masih menyukai transaksi sebelumnya. Hanya transaksi yang belum dikonfirmasi yang dapat diganti.",
     "err_export": "Kesalahan saat mengekspor transaksi. Silakan coba lagi.",
     "transactions_being_exported": "Transaksi sedang diekspor...",
     "transactions_exported": "Transaksi telah diekspor!"
@@ -269,5 +269,4 @@
     "token_deleted": "Token Telah Dihapus!",
     "err_delete_token": "Terjadi kesalahan saat menghapus token. Silakan coba lagi."
   }
-}
 }
