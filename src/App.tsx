@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider } from 'react-router';
 import { ConfigProvider, theme } from 'antd';
 import router from './router';
 

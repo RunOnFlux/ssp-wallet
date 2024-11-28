@@ -160,7 +160,7 @@ function NodesTable(props: {
                   {t('home:nodesTable.no_nodes')}
                   <br />
                   <a
-                    href="https://runonflux.io/nodes"
+                    href="https://runonflux.com/nodes"
                     target="_blank"
                     rel="noreferrer"
                   >

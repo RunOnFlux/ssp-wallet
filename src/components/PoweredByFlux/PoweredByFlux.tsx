@@ -49,7 +49,7 @@ function PoweredByFlux({ isClickeable = false }: Props) {
           height={18}
           preview={false}
           src={`/powered_by_${themeStyle}.svg`}
-          onClick={() => open('https://runonflux.io')}
+          onClick={() => open('https://runonflux.com')}
           style={{ cursor: 'pointer' }}
         />
       )}

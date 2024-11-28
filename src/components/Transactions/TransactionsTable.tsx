@@ -9,7 +9,7 @@ import {
 } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import { NoticeType } from 'antd/es/message/interface';

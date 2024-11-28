@@ -17,7 +17,7 @@ describe('Nodes Lib', function () {
   describe('Verifies nodes', function () {
     it('should return fetchNodesUtxos data when value is valid', async function () {
       const res = await fetchNodesUtxos(
-        't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
+        't3ZQQsd8hJNw6UQKYLwfofdL3ntPmgkwofH',
         'flux',
       );
       expect(res[0]).to.not.be.null;
@@ -37,7 +37,7 @@ describe('Nodes Lib', function () {
 
     it('should return getNodesOnNetwork data when value is valid', async function () {
       const res = await getNodesOnNetwork(
-        't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
+        't3ZQQsd8hJNw6UQKYLwfofdL3ntPmgkwofH',
         'flux',
       );
       expect(res[0]).to.not.be.null;

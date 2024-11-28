@@ -2,7 +2,7 @@ SSP Wallet
 Secure. Simple. Powerful.
 
 <https://sspwallet.io>
-<https://runonflux.io>
+<https://runonflux.com>
 
 SSP Wallet:
 Google Chrome: <https://chromewebstore.google.com/u/3/detail/ssp-wallet/mgfbabcnedcejkfibpafadgkhmkifhbd>

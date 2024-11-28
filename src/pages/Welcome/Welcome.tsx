@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import secureLocalStorage from 'react-secure-storage';
 import { Button, Image, Space, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';

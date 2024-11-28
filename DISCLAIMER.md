@@ -33,8 +33,8 @@ This disclaimer is subject to updates or changes. It is your responsibility to r
 
 *Further Agree with:*
 
-* General RunOnFlux.io Privacy Policy: <https://runonflux.io/privacyPolicy>
+* General RunOnFlux.com Privacy Policy: <https://runonflux.com/privacyPolicy>
 
-* General RunOnFlux.io Terms of Service: <https://runonflux.io/termsandconditions>
+* General RunOnFlux.com Terms of Service: <https://runonflux.com/termsandconditions>
 
 * [Not Being Evil](https://www.youtube.com/watch?v=GJVk_LfASxk&ab_channel=FluxLabs)

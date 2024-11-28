@@ -15,7 +15,7 @@ describe('Balances Lib', function () {
   describe('Verifies balances', function () {
     it('should return fetchAddressBalance data when value is flux', async function () {
       const res = await fetchAddressBalance(
-        't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
+        't3ZQQsd8hJNw6UQKYLwfofdL3ntPmgkwofH',
         'flux',
       );
       expect(res).to.not.be.null;
@@ -24,7 +24,7 @@ describe('Balances Lib', function () {
       expect(res.unconfirmed).to.not.be.undefined;
       expect(res.totalTransactions).to.not.be.null;
       expect(res.totalTransactions).to.not.be.undefined;
-      assert.equal(res.address, 't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd');
+      assert.equal(res.address, 't3ZQQsd8hJNw6UQKYLwfofdL3ntPmgkwofH');
     });
 
     it('should return fetchAddressBalance data when value is blockbook type', async function () {
@@ -60,7 +60,7 @@ describe('Balances Lib', function () {
 
     it('should return fetchAddressTokenBalances data when value is invalid', async function () {
       await fetchAddressTokenBalances(
-        't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
+        't3ZQQsd8hJNw6UQKYLwfofdL3ntPmgkwofH',
         'flux',
         [],
       ).catch((r) => {

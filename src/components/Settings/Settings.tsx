@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Button, Modal, Input, Space, message, Select } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
