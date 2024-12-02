@@ -51,7 +51,7 @@
     "stream-browserify": "~3.0.0",
     "util": "~0.12.5",
     "export-to-csv": "~1.4.0",
-    "viem": "~2.21.51"
+    "viem": "~2.21.53"
   },
   "devDependencies": {
     "@eslint/js": "~9.15.0",
