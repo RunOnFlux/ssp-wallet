@@ -6,14 +6,14 @@ export async function getFiatAssets(
 ): Promise<assetDataSSPRelay> {
   const url = `https://${sspConfig().relay}/v1/assetinfo/assets/fiat`;
   const response = await axios.get<assetDataSSPRelay>(url);
-  return response.data;
+  return response.data.data;
 }
 
 export async function getCryptoAssets(
 ): Promise<assetDataSSPRelay> {
   const url = `https://${sspConfig().relay}/v1/assetinfo/assets/crypto`;
   const response = await axios.get<assetDataSSPRelay>(url);
-  return response.data;
+  return response.data.data;
 }
 
 export async function getPurchaseDetailsByPurchaseId(
@@ -21,7 +21,7 @@ export async function getPurchaseDetailsByPurchaseId(
 ): Promise<assetDataSSPRelay> {
   const url = `https://${sspConfig().relay}/v1/assetinfo/purchase/id/${purchaseId}`;
   const response = await axios.get<assetDataSSPRelay>(url);
-  return response.data;
+  return response.data.data;
 }
 
 export async function sendPurchase(
@@ -30,7 +30,7 @@ export async function sendPurchase(
 ): Promise<assetDataSSPRelay> {
   const url = `https://${sspConfig().relay}/v1/assetinfo/purchase/send/${purchaseId}/${providerId}`;
   const response = await axios.get<assetDataSSPRelay>(url);
-  return response.data;
+  return response.data.data;
 }
 
 export async function getAllPurchase(
@@ -38,7 +38,7 @@ export async function getAllPurchase(
 ): Promise<assetDataSSPRelay> {
   const url = `https://${sspConfig().relay}/v1/assetinfo/purchase/history/${zelId}`;
   const response = await axios.get<assetDataSSPRelay>(url);
-  return response.data;
+  return response.data.data;
 }
 
 export async function getAllPurchaseDetails(
@@ -50,7 +50,7 @@ export async function getAllPurchaseDetails(
       'Content-Type' : 'application/json'
     }
   });
-  return response.data;
+  return response.data.data;
 }
 
 export async function getPurchaseDetailsOnSelectedAsset(
@@ -62,7 +62,8 @@ export async function getPurchaseDetailsOnSelectedAsset(
       'Content-Type' : 'application/json'
     }
   });
-  return response.data;
+
+  return response.data.data;
 }
 
 export async function createPurchaseDetails(
@@ -75,7 +76,7 @@ export async function createPurchaseDetails(
       'Content-Type' : 'application/json'
     }
   });
-  return response.data;
+  return response.data.data;
 }
 
 export async function getAllPurchaseStatus(
@@ -87,5 +88,5 @@ export async function getAllPurchaseStatus(
       'Content-Type' : 'application/json'
     }
   });
-  return response.data;
+  return response.data.data;
 }
