@@ -1,5 +1,6 @@
 import { Image } from 'antd';
 import { useState } from 'react';
+import { version } from '../../../package.json';
 
 interface Props {
   isClickeable?: boolean;
@@ -45,13 +46,20 @@ function PoweredByFlux({ isClickeable = false }: Props) {
       className="powered-by-flux"
     >
       {isClickeable && (
-        <Image
-          height={18}
-          preview={false}
-          src={`/powered_by_${themeStyle}.svg`}
-          onClick={() => open('https://runonflux.com')}
-          style={{ cursor: 'pointer' }}
-        />
+        <>
+          <Image
+            height={18}
+            preview={false}
+            src={`/powered_by_${themeStyle}.svg`}
+            onClick={() => open('https://runonflux.com')}
+            style={{ cursor: 'pointer' }}
+          />
+          <div
+            style={{ fontSize: 10, position: 'absolute', bottom: 10, left: 10 }}
+          >
+            v{version}
+          </div>
+        </>
       )}
       {!isClickeable && (
         <Image
