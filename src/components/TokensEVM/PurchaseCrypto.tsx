@@ -1,4 +1,4 @@
-import { Alert, Steps, Spin, InputNumber, Card, Select, Button, Modal, Space, Input, Divider, message } from 'antd';
+import { Alert, Steps, Spin, InputNumber, Card, Select, Button, Modal, Space, Input, Divider } from 'antd';
 import { useState, useEffect } from 'react';
 import { cryptos } from '../../types';
 import { useTranslation } from 'react-i18next';
