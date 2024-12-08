@@ -178,7 +178,7 @@ const doge = {
   backend: 'blockbook',
   dustLimit: 1000000, // min utxo amount
   minFeePerByte: 1000, // min fee per byte
-  feePerByte: 20, // fee per byte
+  feePerByte: 1100, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
   rbf: true,
