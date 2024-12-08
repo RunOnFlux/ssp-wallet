@@ -1,6 +1,5 @@
 import { Alert, Steps, Spin, InputNumber, Card, Select, Button, Modal, Space, Input, Divider, message } from 'antd';
 import { useState, useEffect } from 'react';
-import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
@@ -19,12 +18,7 @@ function PurchaseCrypto(props: {
   contracts: string[]; // contracts that are already imported
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const [messageApi, contextHolder] = message.useMessage();
   const { open, openAction } = props;
-
-
-  const [openCustomImportTokenDialog, setOpenCustomImportTokenDialog] =
-    useState(false);
 
   const [fiat, setFiat] = useState([]);
   const [crypto, setCrypto] = useState([]);
@@ -140,15 +134,15 @@ function PurchaseCrypto(props: {
     setFeeTransaction(0);
   }
 
-  const handleSelectedCrypto: any = async (e: any, y: any) => {
+  const handleSelectedCrypto: any = async (e: any) => {
     setError(false);
     handleResetValues();
-    const filtered: any = await cryptoList.filter((i: any) => i.contract === y.value && i.chain === props.chain);
+    const filtered: any = await cryptoList.filter((i: any) => i.contract === e && i.chain === props.chain);
     setCryptoActive(filtered[0].contract);
     setCryptoTicker(filtered[0].ticker);
   }
 
-  const handleProviderProcessing: any = async (e: any, y: any) => {
+  const handleProviderProcessing: any = async (e: any) => {
     setError(false);
     setAssetProvider(e);
     handleProviderValues(e);
@@ -201,7 +195,7 @@ function PurchaseCrypto(props: {
     setFeeTransaction(selected.providers[0].transactionFee);
   }
 
-  const handlePurchase: any = async (e: any) => {
+  const handlePurchase: any = async () => {
     const activeChain: any = cryptoList.filter((i: any) => i.chain === props.chain );
     const active: any = activeChain.filter((i: any) => i.contract === cryptoActive );
     const ticker: string = active[0].idzelcore
@@ -264,10 +258,9 @@ function PurchaseCrypto(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:tokens.purchase_crypto_with_fiat')}
-        open={open && !openCustomImportTokenDialog}
+        open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60}}
         onCancel={handleCancel}
