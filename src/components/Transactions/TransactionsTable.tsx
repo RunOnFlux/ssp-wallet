@@ -7,6 +7,7 @@ import {
   Space,
   message,
 } from 'antd';
+import { sspConfig } from '@storage/ssp';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -28,6 +29,7 @@ import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 import { fetchDataForCSV } from '../../lib/transactions';
 import { cryptos } from '../../types';
+import { useAppSelector } from '../../hooks';
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -44,6 +46,9 @@ function TransactionsTable(props: {
   const blockchainConfig = blockchains[chain];
   const backendConfig = backends()[chain];
   const [messageApi, contextHolder] = message.useMessage();
+  const { cryptoRates, fiatRates } = useAppSelector(
+    (state) => state.fiatCryptoRates,
+  );
 
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -92,6 +97,15 @@ function TransactionsTable(props: {
       console.error(error);
       displayMessage('error', t('home:transactionsTable.err_export'));
     }
+  };
+
+  const getCryptoRate = (
+    crypto: keyof typeof cryptoRates,
+    fiat: keyof typeof fiatRates,
+  ) => {
+    const cr = cryptoRates[crypto] ?? 0;
+    const fi = fiatRates[fiat] ?? 0;
+    return cr * fi;
   };
 
   return (
@@ -231,19 +245,32 @@ function TransactionsTable(props: {
           title={t('home:transactionsTable.amount')}
           className="table-amount"
           dataIndex="amount"
-          render={(amnt: string) => (
+          render={(amnt: string, record: transaction) => (
             <>
               {formatCrypto(
-                new BigNumber(amnt).dividedBy(10 ** blockchainConfig.decimals),
+                new BigNumber(amnt).dividedBy(
+                  10 ** (record.decimals ?? blockchainConfig.decimals),
+                ),
               )}{' '}
-              {blockchainConfig.symbol}
+              {record.tokenSymbol || blockchainConfig.symbol}
               <br />
               <div style={{ color: 'grey', fontSize: 12 }}>
                 {+amnt < 0 ? '-' : ''}
                 {formatFiatWithSymbol(
                   new BigNumber(Math.abs(+amnt))
-                    .dividedBy(10 ** blockchainConfig.decimals)
-                    .multipliedBy(new BigNumber(fiatRate)),
+                    .dividedBy(
+                      10 ** (record.decimals ?? blockchainConfig.decimals),
+                    )
+                    .multipliedBy(
+                      new BigNumber(
+                        record.tokenSymbol
+                          ? getCryptoRate(
+                              record.tokenSymbol.toLowerCase() as keyof typeof cryptoRates,
+                              sspConfig().fiatCurrency,
+                            )
+                          : fiatRate,
+                      ),
+                    ),
                 )}
               </div>
             </>
