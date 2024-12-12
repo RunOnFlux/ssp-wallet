@@ -1,8 +1,10 @@
-import { Alert, Steps, Spin, InputNumber, Card, Select, Button, Modal, Space, Input, Divider } from 'antd';
+import { Alert, Spin, InputNumber, Card, Select, Button, Modal, Space, Input, Divider, Flex, Radio } from 'antd';
 import { useState, useEffect } from 'react';
 import { cryptos } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
+import { sspConfig } from '@storage/ssp';
+import { LoadingOutlined, CheckOutlined } from '@ant-design/icons';
 
 import {
   InfoCircleOutlined
@@ -22,15 +24,10 @@ function PurchaseCrypto(props: {
 
   const [fiat, setFiat] = useState([]);
   const [crypto, setCrypto] = useState([]);
-
   const [fiatList, setFiatList] = useState([]);
   const [cryptoList, setCryptoList] = useState([]);
-
-  const [fiatMinAmount, setFiatMinAmount] = useState(0);
-  const [fiatMaxAmount, setFiatMaxAmount] = useState(0);
   const [fiatActive, setFiatActive] = useState('');
   const [fiatActiveAmount, setFiatActiveAmount] = useState(0);
-  const [fiatPrecision, setFiatMinPrecision] = useState(2);
   const [cryptoActive, setCryptoActive] = useState('');
   const [cryptoTicker, setCryptoTicker] = useState('');
   const [cryptoRate, setCryptoRate] = useState('');
@@ -38,18 +35,25 @@ function PurchaseCrypto(props: {
   const [feeNetwork, setFeeNetwork] = useState(0);
   const [feeTransaction, setFeeTransaction] = useState(0);
   const [isSpinning, setSpinning] = useState(false);
-  const [assetProvider, setAssetProvider] = useState('');
   const [title, setTitle] = useState('');
-  const [providerList, setProviderList] = useState([]);
+  const [options, setOptions] = useState([]);
+  const [optionsData, setOptionsData] = useState([]);
+  const [assetProvider, setAssetProvider] = useState('');
+  const [providers, setProviders] = useState([]);
+  const [providerCryptoRate, setProviderCryptoRate] = useState('');
+  const [providerCryptoTicker, setProviderCryptoTicker] = useState('');
+  const [providerFiatAmount, setProviderFiatAmount] = useState(0);
+  const [providerCryptoAmount, setProviderCryptoAmount] = useState(0);
+  const [providerFiatTicker, setProviderFiatTicker] = useState('');
+  const [titleProvider, setTitleProvider] = useState('');
+  const [defaultProvider, setDefaultProvider] = useState('');
+  const [bestRate, setBestRate] = useState(false);
+  const [bestRateProvider, setBestRateProvider] = useState('');
+  const [providerCrypto, setProviderCrypto] = useState('');
   const [error, setError] = useState(false);
+  const [activeProvider, setActiveProvider] = useState(false);
 
   const { sspWalletExternalIdentity: wExternalIdentity} = useAppSelector((state) => state.sspState);
-
-  const items: any = [
-    { title: 'Crypto' },
-    { title: 'Fiat' },
-    { title: 'Provider' },
-  ];
   
   const handleOk = () => {
     openAction(false);
@@ -68,6 +72,10 @@ function PurchaseCrypto(props: {
               value: e.code,
               label: `${e.code} - ${e.name}`
             });
+
+            if (e.code === sspConfig().fiatCurrency) {
+              setFiatActive(`${e.code}`);
+            }
           });
     setFiat(ret);
     setFiatList(fiat);
@@ -82,129 +90,160 @@ function PurchaseCrypto(props: {
               value: e.contract,
               label: `${e.ticker} - ${e.name}`
             });
+
+            if (e.ticker.toLowerCase() === props.chain) {
+              setCryptoActive(e.contract);
+              setCryptoTicker(e.ticker);
+            }
           });
     setCrypto(ret);
     setCryptoList(crypto);
   };
 
   const handleSelectedFiat: any = async (e: any) => {
-    setError(false);
-    const filteredFiat: any = await fiatList.filter((i: any) => i.code === e);
-    setFiatActive(filteredFiat[0].idzelcore);
+    setCryptoAmount(0);
+    setCryptoRate('');
+    setCryptoTicker('');
+    setSpinning(true);
 
     const filtered: any = await cryptoList.filter((i: any) => i.contract === cryptoActive && i.chain === props.chain);
-
     const selected: any = await getPurchaseDetailsOnSelectedAsset({
       sellAsset: e,
       buyAsset: filtered[0].idzelcore,
       sellAmount: fiatActiveAmount,
     });
 
-    let providers: any = [];
-    
-    selected.providers.forEach ((i: any) => {
-      if (i.providerId == 'idmoonpay') {
-        providers.push({value: 'moonpay', label: 'Moonpay'});
-      } 
-      
-      if (i.providerId == 'idtopper') {
-        providers.push({value: 'topper', label: 'Topper'});
-      } 
-      
-      if (i.providerId == 'idguardarian') {
-        providers.push({value: 'guardarian', label: 'Guardarian'});
-      }
-    });
-    
-    setProviderList(providers);
-    setCryptoAmount(0);
-    setAssetProvider('');
-    setCryptoRate('');
-    setFeeNetwork(0);
-    setFeeTransaction(0);
+    if (fiatActiveAmount == 0) {
+      setFiatActiveAmount(0);
+      setSpinning(false);
+    } else {
+      setOptionsData(selected.providers);
+      const def: any = await selected.providers.reduce((prev: any, curr: any) => prev.rate < curr.rate ? prev : curr);
+      const filteredFiat: any = await fiatList.filter((i: any) => i.code === e);
+      setFiatActive(filteredFiat[0].idzelcore);
+      setCryptoAmount(def.buyAmount);
+      setCryptoRate(`1 ${filtered[0].ticker} = ${def.rate} ${selected.sellAsset}`)
+      setFeeNetwork(def.networkFee);
+      setFeeTransaction(def.transactionFee);
+      setTitle(`network fee=${def.networkFee} ${selected.sellAsset}\ntransaction fee=${def.transactionFee} ${selected.sellAsset}`)
+      setSpinning(false);
+      setCryptoTicker(filtered[0].ticker);
+
+      setBestRateProvider(def.providerId);
+      setDefaultProvider(def.providerId);
+    }
   }
 
   const handleSelectedFiatValue: any = async (e: any) => {
-    setError(false);
-    setFiatActiveAmount(e);
     setCryptoAmount(0);
-    setAssetProvider('');
     setCryptoRate('');
-    setFeeNetwork(0);
-    setFeeTransaction(0);
+    setCryptoTicker('');
+    setSpinning(true);
+
+    const filtered: any = await cryptoList.filter((i: any) => i.contract === cryptoActive && i.chain === props.chain);
+    const selected: any = await getPurchaseDetailsOnSelectedAsset({
+      sellAsset: fiatActive,
+      buyAsset: filtered[0].idzelcore,
+      sellAmount: e,
+    });
+
+    if (e == 0) {
+      setFiatActiveAmount(e);
+      setSpinning(false);
+    } else if (e === "") {
+      setSpinning(false);
+    } else {
+      setOptionsData(selected.providers);
+      const def: any = await selected.providers.reduce((prev: any, curr: any) => prev.rate < curr.rate ? prev : curr);
+      setFiatActiveAmount(e);
+      setCryptoAmount(def.buyAmount);
+      setCryptoRate(`1 ${filtered[0].ticker} = ${def.rate} ${selected.sellAsset}`)
+      setFeeNetwork(def.networkFee);
+      setFeeTransaction(def.transactionFee);
+      setTitle(`network fee=${def.networkFee} ${selected.sellAsset}\ntransaction fee=${def.transactionFee} ${selected.sellAsset}`)
+      setSpinning(false);
+      setCryptoTicker(filtered[0].ticker);
+
+      setBestRateProvider(def.providerId);
+      setDefaultProvider(def.providerId);
+    }
   }
 
   const handleSelectedCrypto: any = async (e: any) => {
-    setError(false);
-    handleResetValues();
-    const filtered: any = await cryptoList.filter((i: any) => i.contract === e && i.chain === props.chain);
-    setCryptoActive(filtered[0].contract);
-    setCryptoTicker(filtered[0].ticker);
-  }
-
-  const handleProviderProcessing: any = async (e: any) => {
-    setError(false);
-    setAssetProvider(e);
-    handleProviderValues(e);
-  }
-
-  const handleProviderValues: any = async (e: any) => {
+    setCryptoAmount(0);
+    setCryptoRate('');
+    setCryptoTicker('');
     setSpinning(true);
-    const filtered: any = await cryptoList.filter((i: any) => i.contract === cryptoActive && i.chain === props.chain);
 
+    const filtered: any = await cryptoList.filter((i: any) => i.contract === e && i.chain === props.chain);
     const selected: any = await getPurchaseDetailsOnSelectedAsset({
       sellAsset: fiatActive,
       buyAsset: filtered[0].idzelcore,
       sellAmount: fiatActiveAmount,
     });
 
-    selected.providers.forEach ((i: any) => {
-      if (i.providerId == 'idmoonpay' && e === 'moonpay') {
-        const min: any = !i.minSellAmount ? 0 : i.minSellAmount;
-        const max: any = !i.maxSellAmount ? 0 : i.maxSellAmount;
-        setFiatMinAmount(min);
-        setFiatMaxAmount(max);
-        setFiatMinPrecision(i.precision);
-        setTitle(`min=${min} max=${max}`);
-      } 
-      
-      if (i.providerId == 'idtopper' && e === 'topper') {
-        const min: any = !i.minSellAmount ? 0 : i.minSellAmount;
-        const max: any = !i.maxSellAmount ? 0 : i.maxSellAmount;
-        setFiatMinAmount(min);
-        setFiatMaxAmount(max);
-        setFiatMinPrecision(i.precision);
-        setTitle(`min=${min} max=${max}`);
-      } 
-      
-      if (i.providerId == 'idguardarian' && e === 'guardarian') {
-        const min: any = !i.minSellAmount ? 0 : i.minSellAmount;
-        const max: any = !i.maxSellAmount ? 0 : i.maxSellAmount;
-        setFiatMinAmount(min);
-        setFiatMaxAmount(max);
-        setFiatMinPrecision(i.precision);
-        setTitle(`min=${min} max=${max}`);
-      }
-    });
+    if (fiatActiveAmount == 0) {
+      setFiatActiveAmount(0);
+      setSpinning(false);
+    } else {
+      setOptionsData(selected.providers);
+      const def: any = await selected.providers.reduce((prev: any, curr: any) => prev.rate < curr.rate ? prev : curr);
+      const filteredFiat: any = await fiatList.filter((i: any) => i.code === fiatActive);
+      setFiatActive(filteredFiat[0].idzelcore);
+      setCryptoAmount(def.buyAmount);
+      setCryptoRate(`1 ${filtered[0].ticker} = ${def.rate} ${selected.sellAsset}`)
+      setFeeNetwork(def.networkFee);
+      setFeeTransaction(def.transactionFee);
+      setTitle(`network fee=${def.networkFee} ${selected.sellAsset}\ntransaction fee=${def.transactionFee} ${selected.sellAsset}`)
+      setSpinning(false);
+      setCryptoActive(filtered[0].contract);
+      setCryptoTicker(filtered[0].ticker);
 
-    setSpinning(false);
-    setCryptoActive(filtered[0].contract);
-    setCryptoAmount(selected.providers[0].buyAmount);
-    setCryptoRate(`1 ${filtered[0].ticker} = ${selected.providers[0].rate} ${selected.sellAsset}`)
-    setFeeNetwork(selected.providers[0].networkFee);
-    setFeeTransaction(selected.providers[0].transactionFee);
+      setBestRateProvider(def.providerId);
+      setDefaultProvider(def.providerId);
+    }
+  }
+
+  const handleProceed: any = async () => {
+    let data: any = [];
+    let options: any = [];
+    const providers: any = optionsData;
+    const filtered: any = cryptoList.filter((i: any) => i.contract === cryptoActive && i.chain === props.chain);
+    providers.forEach((i: any) => {
+      data.push({
+        providerId: i.providerId,
+        rate: `1 ${cryptoTicker} = ${i.rate} ${fiatActive}`,
+        sellAsset: fiatActive,
+        buyAsset: filtered[0].idzelcore,
+        ticker: cryptoTicker,
+        networkFee: i.networkFee,
+        transactionFee: i.transactionFee,
+        fiatAmount: i.sellAmount,
+        cryptoAmount: i.buyAmount
+      });
+      options.push({
+        label: i.providerId.replace("id", ""),
+        value: i.providerId
+      })
+    });
+    setProviders(data);
+    setOptions(options);
+    setProviderCryptoRate(cryptoRate);
+    setProviderFiatAmount(fiatActiveAmount);
+    setProviderCryptoAmount(cryptoAmount);
+    setProviderCryptoTicker(cryptoTicker);
+    setProviderFiatTicker(fiatActive);
+    setTitleProvider(title);
+    setActiveProvider(true);
   }
 
   const handlePurchase: any = async () => {
-    const activeChain: any = cryptoList.filter((i: any) => i.chain === props.chain );
-    const active: any = activeChain.filter((i: any) => i.contract === cryptoActive );
-    const ticker: string = active[0].idzelcore
-
+    setError(false);
     const response: any = await createPurchaseDetails({
-      providerId: `id${assetProvider}`,
-      sellAsset: fiatActive,
-      buyAsset: ticker,
-      sellAmount: fiatActiveAmount,
+      providerId: assetProvider,
+      sellAsset: providerFiatTicker,
+      buyAsset: providerCrypto,
+      sellAmount: providerFiatAmount,
       buyAddress: props.wInUse
     }, wExternalIdentity);
 
@@ -217,39 +256,49 @@ function PurchaseCrypto(props: {
     }
   }
 
-  const handleClear: any = async () => {
-    setAssetProvider('');
-    handleResetValues();
+  const handleProviderChange: any = async (e: any) => {
+    setBestRate(false);
+    const data: any = providers.filter((i: any) => i.providerId === e.target.value);
+    setAssetProvider(data[0].providerId)
+    setProviderCryptoRate(data[0].rate);
+    setProviderFiatAmount(data[0].fiatAmount);
+    setProviderCrypto(data[0].buyAsset);
+    setProviderCryptoAmount(data[0].cryptoAmount);
+    setProviderCryptoTicker(data[0].ticker);
+    setProviderFiatTicker(data[0].sellAsset);
+    setTitleProvider(`network fee=${data[0].networkFee} ${data[0].sellAsset}\ntransaction fee=${data[0].transactionFee} ${data[0].sellAsset}`);
+    if (bestRateProvider === data[0].providerId) {
+      setBestRate(true);
+    }
   }
 
-  const handleResetValues: any = async () => {
-    setError(false);
-    setFiatActive('');
-    setFiatActiveAmount(0);
-    setFiatMinAmount(0);
-    setFiatMaxAmount(0);
-    setCryptoActive('');
+  const handleBack: any = async () => {
+    setActiveProvider(false);
     setCryptoAmount(0);
     setCryptoRate('');
-    setFeeNetwork(0);
-    setFeeTransaction(0);
-    setTitle('');
-    setProviderList([]);
-    setAssetProvider('');
   }
 
   useEffect(() => {
     console.log("Set fiat info");
-  }, [fiatMinAmount, fiatMaxAmount, fiatPrecision, fiatActiveAmount, fiatActive, title]);
+  }, [fiatActiveAmount, fiatActive, title]);
 
   useEffect(() => {
     console.log("Set crypto info");
-  }, [cryptoActive, cryptoAmount, cryptoRate, feeNetwork, feeTransaction, providerList]);
+  }, [cryptoActive, cryptoAmount, cryptoRate, feeNetwork, feeTransaction]);
+
+  useEffect(() => {
+    console.log("Set provider info");
+  }, [assetProvider, options, optionsData, defaultProvider, providerCryptoRate, providerFiatAmount, providerCryptoAmount, providerCryptoTicker, providerFiatTicker, providerCrypto]);
+
+  useEffect(() => {
+    console.log("Set additional info");
+  }, [bestRate, bestRateProvider, error, titleProvider]);
 
   useEffect(() => {
     console.log("Set info");
     handleFiat();
     handleCrypto();
+    setFiatActiveAmount(0);
   }, []);
 
   useEffect(() => {
@@ -267,69 +316,79 @@ function PurchaseCrypto(props: {
         footer={[]}
         width={450}
       >        
-        <Steps
-          direction="horizontal"
-          current={ cryptoActive != "" ? fiatActive != "" && fiatActiveAmount != 0 ? assetProvider != "" ? 3 : 2 : 1 : 0 }
-          items={items}
-          size="small"
-        />
         <Divider />
-        <Card title="Crypto">
-          <Space direction="horizontal">
-            <Select
-              placeholder="Crypto"
-              style={{ width: 340  }}
-              options={crypto}
-              onSelect={handleSelectedCrypto}
-              value={cryptoActive}
-            />
-          </Space>
-        </Card>
-        <Divider />
-        <Card title="Fiat">
-          <Space direction="horizontal">
-          <InputNumber onChange={handleSelectedFiatValue} placeholder="Amount" value={fiatActiveAmount} precision={fiatPrecision} style={{ width: 140 }} disabled={cryptoActive != "" ? false : true}/>
-            <Select
-              placeholder="Fiat"
-              style={{ width: 190 }}
-              options={fiat}
-              onSelect={handleSelectedFiat}
-              disabled={fiatActiveAmount > 0 ? false : true}
-              value={fiatActive}
-            />
-          </Space>
-        </Card>
-        <Divider />
-        <Card title="Provider">
-          <Space direction="vertical">
+        { !activeProvider ? 
+          <>
+          <Card title="Crypto">
             <Space direction="horizontal">
               <Select
-                placeholder="Provider"
-                style={{ width: 320 }}
-                options={providerList}
-                onSelect={handleProviderProcessing}
-                disabled={fiatActive != '' ? false : true}
-                value={assetProvider}
+                placeholder="Crypto"
+                style={{ width: 340  }}
+                options={crypto}
+                onSelect={handleSelectedCrypto}
+                value={cryptoActive}
               />
-              <InfoCircleOutlined title={title} />
             </Space>
-            <Input addonBefore={"Crypto Amount"} addonAfter={cryptoTicker} variant="filled" value={cryptoAmount} style={{ width: 340 }} disabled/>
-            <Input addonBefore={"Rate"} value={cryptoRate} variant="filled" style={{ width: 340, alignContent:'left' }} disabled/>
-            <Input addonBefore={"Network Fee"} addonAfter={fiatActive} value={feeNetwork} variant="filled" style={{ width: 340, alignContent:'left' }} disabled/> 
-            <Input addonBefore={"Transaction Fee"} addonAfter={fiatActive} value={feeTransaction} variant="filled" style={{ width: 340, alignContent:'left' }} disabled/> 
+          </Card>
+          <Divider />
+          <Card title="Fiat">
+            <Space direction="vertical">
+              <Space direction="horizontal">
+                { !isSpinning ? <InfoCircleOutlined title={title} /> : <Spin size="small" spinning={isSpinning} indicator={<LoadingOutlined spin />} /> }
+                <InputNumber onInput={handleSelectedFiatValue} placeholder="Amount" style={{ width: 140 }} disabled={cryptoActive != "" ? false : true}/>
+                <Select
+                  placeholder="Fiat"
+                  style={{ width: 170 }}
+                  options={fiat}
+                  onSelect={handleSelectedFiat}
+                  value={fiatActive}
+                />
+              </Space>
+              <Input addonBefore={"Crypto Amount"} addonAfter={cryptoTicker} variant="filled" value={cryptoAmount} style={{ width: 340 }} disabled/>
+              <Input addonBefore={"Rate"} value={cryptoRate} variant="filled" style={{ width: 340, alignContent:'left' }} disabled/>
+            </Space>
+          </Card>
+          <Divider />
+          <Space direction="vertical">
+            <Button type="primary" size="large" onClick={handleProceed} disabled={fiatActiveAmount <= 0 ? true : false}>
+              {t('home:tokens.proceed_crypto_proceed')}
+            </Button>
           </Space>
-        </Card>
-        <Divider />
-        <Space direction="vertical">
-          <Button type="primary" size="large" onClick={handlePurchase} disabled={assetProvider != '' && (fiatMinAmount == 0 || (fiatActiveAmount >= fiatMinAmount && fiatActiveAmount <= fiatMaxAmount)) ? false : true }>
-            {t('home:tokens.proceed_crypto_purchase')}
-          </Button>
-          <Button type="link" block onClick={handleClear}>
-            Clear
-          </Button>
-        </Space>
-        <Spin size="small" spinning={isSpinning}/>
-        { !error ? '' : <Alert message="Provider not available at the moment" type="error" /> }
+        </> : "" }
+        { activeProvider ? 
+        <>
+          <Card title="Choose Provider">
+            <Space direction="vertical">
+              <Flex vertical gap="middle">
+                <Radio.Group
+                  block
+                  defaultValue={defaultProvider}
+                  options={options}
+                  optionType="button"
+                  buttonStyle="solid"
+                  onChange={handleProviderChange}
+                />
+              </Flex>
+              <Input addonBefore={"Fiat Amount"} addonAfter={providerFiatTicker} variant="filled" value={providerFiatAmount} style={{ width: 340 }} disabled/>
+              <Input addonBefore={"Crypto Amount"} addonAfter={providerCryptoTicker} variant="filled" value={providerCryptoAmount} style={{ width: 340 }} disabled/>
+              <Space direction="horizontal">
+                <InfoCircleOutlined title={titleProvider} />
+                <Input addonBefore={"Rate"} value={providerCryptoRate} variant="filled" style={{ width: 320, alignContent:'left' }} disabled/>
+              </Space>
+              <Space direction="horizontal">
+                { bestRate ? <CheckOutlined /> : "" } { bestRate ? "Best Rate" : "" }
+              </Space>
+            </Space>      
+          </Card>
+          <Divider />
+          <Space direction="vertical">
+            <Button type="primary" size="large" onClick={handlePurchase} disabled={fiatActiveAmount <= 0 ? true : false}>
+              {t('home:tokens.proceed_crypto_purchase')}
+            </Button>
+            <Button type="text" onClick={handleBack}>Back</Button>
+            { error ? <Alert message="Please try again later." type="error" closable /> : "" }
+          </Space>
+        </> : "" }
       </Modal>
     </>
   );
