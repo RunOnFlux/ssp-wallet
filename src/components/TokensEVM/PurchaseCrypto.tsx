@@ -336,7 +336,7 @@ function PurchaseCrypto(props: {
             <Space direction="vertical">
               <Space direction="horizontal">
                 { !isSpinning ? <InfoCircleOutlined title={title} /> : <Spin size="small" spinning={isSpinning} indicator={<LoadingOutlined spin />} /> }
-                <InputNumber onInput={handleSelectedFiatValue} placeholder="Amount" style={{ width: 140 }} disabled={cryptoActive != "" ? false : true}/>
+                <InputNumber onChange={handleSelectedFiatValue} placeholder="Amount" style={{ width: 140 }} disabled={cryptoActive != "" ? false : true}/>
                 <Select
                   placeholder="Fiat"
                   style={{ width: 170 }}
