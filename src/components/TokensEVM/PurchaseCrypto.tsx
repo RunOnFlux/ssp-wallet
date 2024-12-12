@@ -235,6 +235,7 @@ function PurchaseCrypto(props: {
     setProviderFiatTicker(fiatActive);
     setTitleProvider(title);
     setActiveProvider(true);
+    setBestRate(true);
   }
 
   const handlePurchase: any = async () => {
@@ -259,7 +260,8 @@ function PurchaseCrypto(props: {
   const handleProviderChange: any = async (e: any) => {
     setBestRate(false);
     const data: any = providers.filter((i: any) => i.providerId === e.target.value);
-    setAssetProvider(data[0].providerId)
+    setAssetProvider(data[0].providerId);
+    setDefaultProvider(data[0].providerId);
     setProviderCryptoRate(data[0].rate);
     setProviderFiatAmount(data[0].fiatAmount);
     setProviderCrypto(data[0].buyAsset);
@@ -363,7 +365,7 @@ function PurchaseCrypto(props: {
               <Flex vertical gap="middle">
                 <Radio.Group
                   block
-                  defaultValue={defaultProvider}
+                  value={defaultProvider}
                   options={options}
                   optionType="button"
                   buttonStyle="solid"
