@@ -276,6 +276,7 @@ function PurchaseCrypto(props: {
     setActiveProvider(false);
     setCryptoAmount(0);
     setCryptoRate('');
+    setFiatActiveAmount(0);
   }
 
   useEffect(() => {
@@ -292,7 +293,7 @@ function PurchaseCrypto(props: {
 
   useEffect(() => {
     console.log("Set additional info");
-  }, [bestRate, bestRateProvider, error, titleProvider]);
+  }, [bestRate, bestRateProvider, error, titleProvider, activeProvider]);
 
   useEffect(() => {
     console.log("Set info");
