@@ -269,8 +269,6 @@
     "token_deleted": "Token Deleted!",
     "err_delete_token": "Error while deleting token. Please try again.",
     "purchase_crypto": "Purchase Crypto",
-    "purchase_crypto_with_fiat": "Purchase Crypto with Fiat",
-    "proceed_crypto_proceed": "Proceed",
-    "proceed_crypto_purchase": "Purchase"
+    "purchase_crypto_with_fiat": "Purchase Crypto"
   }
 }

@@ -266,8 +266,6 @@
     "token_deleted": "Token Tinanggal!",
     "err_delete_token": "Error habang tinatanggal ang token. Pakisubukang muli.",
     "purchase_crypto": "Bumili ng Crypto",
-    "purchase_crypto_with_fiat": "Bumili ng Crypto gamit ang Fiat",
-    "proceed_crypto_proceed": "Ituloy",
-    "proceed_crypto_purchase": "Bumili"
+    "purchase_crypto_with_fiat": "Bumili ng Crypto"
   }
 }
