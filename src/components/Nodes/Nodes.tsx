@@ -36,6 +36,7 @@ function Nodes() {
   const { sspWalletExternalIdentity: sspwid } = useAppSelector(
     (state) => state.sspState,
   );
+  const { identityChain } = useAppSelector((state) => state.sspState);
   const redeemScript = wallets[walletInUse].redeemScript;
   const address = wallets[walletInUse].address;
   const blockchainConfig = blockchains[activeChain];
@@ -256,6 +257,8 @@ function Nodes() {
         collateralPK={collateralPrivKey}
         walletInUse={walletInUse}
         sspwid={sspwid}
+        identityChain={identityChain}
+        passwordBlob={passwordBlob}
       />
     </div>
   );

@@ -265,6 +265,10 @@ export interface evm_call {
   result: string;
 }
 
+export interface flux_storage_call {
+  data: string;
+}
+
 export interface tokenBalanceEVM {
   contract: string;
   balance: string;
