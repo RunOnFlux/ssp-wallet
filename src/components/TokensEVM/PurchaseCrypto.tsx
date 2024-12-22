@@ -1,4 +1,4 @@
-import { Modal } from 'antd';
+import { Divider, Button, Modal } from 'antd';
 import { useState, useEffect } from 'react';
 import { cryptos } from '../../types';
 import { useTranslation } from 'react-i18next';
@@ -13,8 +13,9 @@ function PurchaseCrypto(props: {
   const { t } = useTranslation(['home', 'common']);
   const { open, openAction } = props;
 
-  // const [fiat, setFiat] = useState('');
   const [crypto, setCrypto] = useState('');
+  // const [fiat, setFiat] = useState('');
+  // const [onRamper, setOnRamper] = useState('');
   
   const handleOk = () => {
     openAction(false);
@@ -26,30 +27,34 @@ function PurchaseCrypto(props: {
 
   useEffect(() => {
     console.log("Set properties");
+    setCrypto(props.chain);
     // setFiat(sspConfig().fiatCurrency);
-    setCrypto(props.chain)
+    // setOnRamper('');
   }, []);
 
   return (
     <>
       <Modal
-        title={t('home:tokens.purchase_crypto_with_fiat')}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60}}
-        onCancel={handleCancel}
         footer={[]}
         width={450}
+        closable={false}
       >        
-      {
-        <iframe        
-          src={`https://buy.onramper.com?onlyCryptos=${crypto}&apiKey={''}`}
-          title="Onramper"
-          height="600px"
-          width="380px"
-          allow="accelerometer; autoplay; camera; gyroscope; payment; microphone"
-        />
-      }
+        {
+          <iframe        
+            src={`https://buy.onramper.com?onlyCryptos=${crypto}&apiKey=''`}
+            title="Onramper"
+            height="600px"
+            width="380px"
+            allow="accelerometer; autoplay; camera; gyroscope; payment; microphone"
+          />
+        }
+        <Divider />
+        <Button type="primary" size="middle" onClick={handleCancel}>
+          {t('home:tokens.purchase_crypto_close')}
+        </Button>
       </Modal>
     </>
   );

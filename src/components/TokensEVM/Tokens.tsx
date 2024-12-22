@@ -10,7 +10,7 @@ function Tokens() {
   const { t } = useTranslation(['home']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const [openImportTokenDialog, setOpenImportTokenDialog] = useState(false);
-  const [openPurchaseCryptoDialog, setOpenPurchaseCryptoDialog] = useState(false);
+  const [openBuyCryptoDialog, setOpenBuyCryptoDialog] = useState(false);
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
@@ -21,16 +21,16 @@ function Tokens() {
   };
 
   const purchaseCrypto = () => {
-    console.log('purchase crypto');
-    setOpenPurchaseCryptoDialog(true);
+    console.log('buy crypto');
+    setOpenBuyCryptoDialog(true);
   };
 
   const openImportAction = (open: boolean) => {
     setOpenImportTokenDialog(open);
   };
 
-  const openPurchaseAction = (open: boolean) => {
-    setOpenPurchaseCryptoDialog(open);
+  const openBuyAction = (open: boolean) => {
+    setOpenBuyCryptoDialog(open);
   };
 
   return (
@@ -54,10 +54,10 @@ function Tokens() {
           contracts={wallets[walletInUse].activatedTokens ?? []}
         />
       )}
-       {openPurchaseCryptoDialog && (
+       {openBuyCryptoDialog && (
         <PurchaseCrypto
-          open={openPurchaseCryptoDialog}
-          openAction={openPurchaseAction}
+          open={openBuyCryptoDialog}
+          openAction={openBuyAction}
           chain={activeChain}
           wInUse={wallets[walletInUse].address}
           contracts={wallets[walletInUse].activatedTokens ?? []}
