@@ -369,11 +369,6 @@ export interface tokenDataSSPRelay {
   symbol: string;
 }
 
-export interface assetDataSSPRelay {
-  status: string;
-  data: any;
-}
-
 export interface currency {
   EUR: number;
   AUD: number;
