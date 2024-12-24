@@ -49,7 +49,7 @@ declare module '@storage/blockchains' {
     gasLimit: number;
     tokens: Token[];
     // buy sell
-    onramperNetwork?: string | undefined;
+    onramperNetwork?: string;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

@@ -21,6 +21,18 @@ function Navigation() {
     setOpenReceive(status);
   };
   const openBuyAction = (status: boolean) => {
+    // ANTd fix: https://github.com/ant-design/ant-design/issues/43327
+    if (status) {
+      const elem = document.getElementById('root');
+      if (elem) {
+        elem.style.overflow = 'hidden';
+      }
+    } else {
+      const elem = document.getElementById('root');
+      if (elem) {
+        elem.style.overflow = 'unset';
+      }
+    }
     setOpenBuyCryptoDialog(status);
   };
   const { activeChain } = useAppSelector((state) => state.sspState);

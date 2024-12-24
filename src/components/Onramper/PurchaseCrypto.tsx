@@ -16,6 +16,10 @@ function PurchaseCrypto(props: {
     openAction(false);
   };
 
+  const payloadToSign = `networkWallets=${props.cryptoNetwork}:${props.wInUse}&wallets=${props.cryptoAsset}:${props.wInUse}`; // this we need to sign
+  // todo ask ssp-relay to provide signature for this payload, add &signature=${signature} to the url
+  // display loading icon until the signature is provided, after that display the iframe
+
   return (
     <>
       <Modal
@@ -25,21 +29,22 @@ function PurchaseCrypto(props: {
         onCancel={handleOk}
         style={{
           textAlign: 'center',
-          top: 60,
+          top: 5,
+          paddingBottom: '5px',
           margin: '0 auto',
           padding: '0 !important',
         }}
-        footer={[]}
-        wrapClassName="onramper-modal-test"
-        className="onramper-modal-test"
+        footer={null}
+        wrapClassName="onramper-modal"
+        className="onramper-modal"
       >
         <iframe
-          src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy&defaultCrypto=${props.cryptoAsset}&networkWallets=${props.cryptoNetwork?.toUpperCase()}:${props.wInUse}&wallets=${props.cryptoAsset}:${props.wInUse}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&themeName=${darkModePreference.matches ? 'dark' : 'light'}&containerColor=${darkModePreference.matches ? '1f1f1f' : 'ffffff'}&borderRadius=0&wgBorderRadius=0`}
+          src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy&defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&themeName=${darkModePreference.matches ? 'dark' : 'light'}&containerColor=${darkModePreference.matches ? '1f1f1f' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}`}
           title="Onramper"
-          height="600px"
-          width="400px"
+          height="540px"
+          width="404px"
           allow="accelerometer; autoplay; camera; gyroscope; payment; microphone"
-          sandbox="allow-scripts allow-same-origin"
+          sandbox="allow-scripts allow-same-origin allow-popups"
           style={{
             border: 'none',
             margin: '-6px',
