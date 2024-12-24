@@ -99,6 +99,7 @@ const rvn = {
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
   rbf: true,
+  onramperNetwork: 'ravencoin',
 };
 
 const ltc = {
@@ -127,6 +128,7 @@ const ltc = {
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
   rbf: true,
+  onramperNetwork: 'litecoin',
 };
 
 const btc = {
@@ -155,6 +157,7 @@ const btc = {
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
   rbf: true,
+  onramperNetwork: 'bitcoin',
 };
 
 const doge = {
@@ -182,6 +185,7 @@ const doge = {
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
   rbf: true,
+  onramperNetwork: 'dogecoin',
 };
 
 const btcTestnet = {
@@ -268,6 +272,7 @@ const zec = {
   maxTxSize: 100000, // 100,000 vbytes
   rbf: false,
   txExpiryHeight: 60, // 1 hour
+  onramperNetwork: 'zcash',
 };
 
 const bch = {
@@ -297,6 +302,7 @@ const bch = {
   rbf: false,
   cashaddr: 'bitcoincash:',
   hashType: 0x40, // will force SIGHASH_BITCOINCASHBIP143
+  onramperNetwork: 'bitcoincash',
 };
 
 const sepolia = {
@@ -353,6 +359,7 @@ const eth = {
   priorityFee: 2, // 2 gwei
   gasLimit: 750000, // 750k gas
   tokens: tokens.eth(),
+  onramperNetwork: 'ethereum',
 };
 
 export const blockchains = {

@@ -129,7 +129,9 @@
   },
   "navigation": {
     "send": "Ipadala",
-    "receive": "Tanggapin"
+    "receive": "Tanggapin",
+    "buy": "Bumili",
+    "purchase_crypto": "Bumili ng Crypto"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Kumpirmahin ang Transaksyon sa SSP Key",
@@ -264,8 +266,6 @@
     "invalid_token_contract": "Di-wastong kontrata ng token.",
     "delete_token": "Burahin ang Token",
     "token_deleted": "Token Tinanggal!",
-    "err_delete_token": "Error habang tinatanggal ang token. Pakisubukang muli.",
-    "purchase_crypto": "Bumili ng Crypto",
-    "purchase_crypto_close": "Isara"
+    "err_delete_token": "Error habang tinatanggal ang token. Pakisubukang muli."
   }
 }

@@ -132,7 +132,9 @@
   },
   "navigation": {
     "send": "Send",
-    "receive": "Receive"
+    "receive": "Receive",
+    "buy": "Buy",
+    "purchase_crypto": "Buy Crypto"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirm Transaction on SSP Key",
@@ -267,8 +269,6 @@
     "invalid_token_contract": "Invalid token contract.",
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",
-    "err_delete_token": "Error while deleting token. Please try again.",
-    "purchase_crypto": "Buy Crypto",
-    "purchase_crypto_close": "Close"
+    "err_delete_token": "Error while deleting token. Please try again."
   }
 }
