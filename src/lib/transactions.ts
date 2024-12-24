@@ -15,13 +15,14 @@ import {
   txIdentifier,
   etherscan_call_internal_txs,
   etherscan_call_external_txs,
+  etherscan_call_token_txs,
   etherscan_internal_tx,
   etherscan_external_tx,
+  etherscan_token_tx,
 } from '../types';
 
 import { backends } from '@storage/backends';
 import { blockchains, Token } from '@storage/blockchains';
-import { formatCrypto } from './currency';
 
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
@@ -208,6 +209,46 @@ function processTransactionBlockbook(
 }
 
 // if I am receiving, we take blockchain fee as a fee. If I am sending, we show total fee.
+export function processTransactionTokenScan(
+  tx: etherscan_token_tx,
+  address: string,
+): transaction {
+  let amount = tx.value;
+  if (address.toLowerCase() !== tx.to.toLowerCase()) {
+    amount = '-' + amount;
+  }
+  const { gasUsed, gasPrice } = tx;
+  const totalGas = new BigNumber(gasUsed).multipliedBy(new BigNumber(gasPrice));
+  const tran: transaction = {
+    type: 'evm',
+    txid: tx.hash,
+    fee: totalGas.toFixed(),
+    blockheight: Number(tx.blockNumber),
+    timestamp: Number(tx.timeStamp) * 1000,
+    amount,
+    message: '',
+    receiver: tx.to,
+    isError: false,
+    decimals: Number(tx.tokenDecimal),
+    tokenSymbol: tx.tokenSymbol,
+    contractAddress: tx.contractAddress,
+  };
+  return tran;
+}
+
+export function processTransactionsTokensScan(
+  transactions: etherscan_token_tx[],
+  address: string,
+): transaction[] {
+  const txs = [];
+  for (const tx of transactions) {
+    const processedTransaction = processTransactionTokenScan(tx, address);
+    txs.push(processedTransaction);
+  }
+  return txs;
+}
+
+// if I am receiving, we take blockchain fee as a fee. If I am sending, we show total fee.
 export function processTransactionInternalScan(
   txGroup: etherscan_internal_tx[],
   address: string,
@@ -366,10 +407,30 @@ export async function fetchAddressTransactions(
         chain,
       );
 
-      const allTransactions = [
-        ...externalTxsProcessed,
-        ...internalTxsProcessed,
-      ];
+      params.action = 'tokentx';
+      const responseTokens = await axios.get<etherscan_call_token_txs>(url, {
+        params,
+      });
+      const tokenTxs = responseTokens.data.result;
+      const tokenTxsProcessed = processTransactionsTokensScan(
+        tokenTxs,
+        address,
+      );
+
+      let allTransactions = [...externalTxsProcessed, ...internalTxsProcessed];
+
+      // replace allTransactions transaction with tokenTxsProcessed transaction in case that it is the same txid and value of allTransactions transaction is 0
+      for (const tx of tokenTxsProcessed) {
+        if (
+          allTransactions.find((t) => t.txid === tx.txid && t.amount === '0')
+        ) {
+          allTransactions = allTransactions.map((t) =>
+            t.txid === tx.txid ? tx : t,
+          );
+        } else {
+          allTransactions.push(tx);
+        }
+      }
 
       return allTransactions.sort((a, b) => b.timestamp - a.timestamp);
     } else if (blockchains[chain].backend === 'blockbook') {
@@ -450,14 +511,39 @@ export async function fetchDataForCSV(
   const data = [];
   for (const t of txs) {
     data.push({
-      timestamp: t.timestamp,
-      date: new Date(t.timestamp).toUTCString(),
-      amount: `${formatCrypto(new BigNumber(t.amount).dividedBy(10 ** blockchainConfig.decimals))}`,
-      currency: blockchainConfig.symbol,
-      fee: `${formatCrypto(new BigNumber(t.fee).dividedBy(10 ** blockchainConfig.decimals))}`,
-      feeCurrency: blockchainConfig.symbol,
-      txHash: t.txid,
-      note: t.message.length > 0 ? t.message : '-',
+      Timestamp: t.timestamp,
+      Date: new Date(t.timestamp).toUTCString(),
+      'Koinly Date': new Date(t.timestamp).toUTCString(),
+      Amount: new BigNumber(t.amount)
+        .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
+        .toNumber(),
+      Currency: t.tokenSymbol || blockchainConfig.symbol,
+      'Sent Amount': new BigNumber(t.amount)
+        .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
+        .isNegative()
+        ? new BigNumber(t.amount)
+            .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
+            .toNumber()
+        : 0,
+      'Sent Currency': t.tokenSymbol || blockchainConfig.symbol,
+      'Received Amount': new BigNumber(t.amount)
+        .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
+        .isPositive()
+        ? new BigNumber(t.amount)
+            .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
+            .toNumber()
+        : 0,
+      'Received Currency': t.tokenSymbol || blockchainConfig.symbol,
+      'Fee Amount': new BigNumber(t.amount) // ONLY add fee if I am sending to support koinly well
+        .dividedBy(10 ** blockchainConfig.decimals)
+        .isNegative()
+        ? new BigNumber(t.fee)
+            .dividedBy(10 ** blockchainConfig.decimals)
+            .toNumber()
+        : 0,
+      'Fee Currency': blockchainConfig.symbol,
+      TxHash: t.txid,
+      Note: t.message.length > 0 ? t.message : '-',
     });
   }
   return data;

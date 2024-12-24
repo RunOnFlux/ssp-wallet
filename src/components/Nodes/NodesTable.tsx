@@ -1,18 +1,29 @@
 import { Table, Empty, Button, Flex, Popconfirm, message } from 'antd';
+import axios from 'axios';
 import { NoticeType } from 'antd/es/message/interface';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import localForage from 'localforage';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
-import { node, cryptos } from '../../types';
+import { node, cryptos, flux_storage_call } from '../../types';
 import './Nodes.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 import { fluxnode } from '@runonflux/flux-sdk';
+import secureLocalStorage from 'react-secure-storage';
+import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { QuestionCircleOutlined } from '@ant-design/icons';
+import { randomBytes } from 'crypto';
 import { broadcastTx } from '../../lib/constructTx';
+import { getFingerprint } from '../../lib/fingerprint';
+import {
+  getScriptType,
+  generateExternalIdentityKeypair,
+  wifToPrivateKey,
+} from '../../lib/wallet.ts';
 import { setNodes } from '../../store';
 import SetupNode from './SetupNode.tsx';
+import WordsDialog from './WordsDialog.tsx';
 
 // name, ip, tier, status
 function NodesTable(props: {
@@ -24,6 +35,8 @@ function NodesTable(props: {
   collateralPK: string;
   walletInUse: string;
   sspwid: string;
+  identityChain: keyof cryptos;
+  passwordBlob: string;
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { chain } = props;
@@ -34,9 +47,12 @@ function NodesTable(props: {
     else return 0;
   });
   const blockchainConfig = blockchains[chain];
+  const identityChainConfig = blockchains[props.identityChain];
   const [messageApi, contextHolder] = message.useMessage();
   const [editedTxid, setEditedTxid] = useState('');
   const [editedVout, setEditedVout] = useState(0);
+  const [wordsPhrase, setWordsPhrase] = useState('');
+  const [phraseDialogOpen, setPhraseDialogOpen] = useState(false);
   const [editNodeOpen, setEditNodeOpen] = useState(false);
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -94,6 +110,14 @@ function NodesTable(props: {
     }
   };
 
+  useEffect(() => {
+    if (wordsPhrase) {
+      setPhraseDialogOpen(true);
+    } else {
+      setPhraseDialogOpen(false);
+    }
+  }, [wordsPhrase]);
+
   const deleteNode = async (txhash: string, vout: number) => {
     try {
       console.log(txhash, vout);
@@ -146,6 +170,117 @@ function NodesTable(props: {
     setEditNodeOpen(open);
   };
 
+  /**
+   * Signs the message with the private key.
+   *
+   * @param {string} message
+   * @param {string} pk - private key
+   *
+   * @returns {string} signature
+   */
+  function signMessageSSPWID(message: string, pk: string) {
+    let signature;
+    try {
+      const isCompressed = true; // ssp always has compressed keys
+
+      const privateKey = wifToPrivateKey(pk, chain);
+
+      const messagePrefix = identityChainConfig.messagePrefix;
+
+      // this is base64 encoded
+      signature = fluxnode.signMessage(
+        message,
+        privateKey,
+        isCompressed,
+        messagePrefix,
+        { extraEntropy: randomBytes(32) },
+      );
+
+      // => different (but valid) signature each time
+    } catch (e) {
+      console.log(e);
+      signature = null;
+    }
+    return signature;
+  }
+
+  const uploadToFluxStorage = async (node: node) => {
+    try {
+      const dataToUpload = {
+        adminId: props.sspwid,
+        nodeKey: props.identityPK,
+        transactionOutput: node.txid,
+        transactionIndex: node.vout.toString(),
+        nodeName: node.name,
+      };
+
+      const dataToSign = JSON.stringify(dataToUpload);
+      let signature: string | null = null;
+
+      // sign request
+      const xprivEncrypted = secureLocalStorage.getItem(
+        `xpriv-48-${identityChainConfig.slip}-0-${getScriptType(
+          identityChainConfig.scriptType,
+        )}-${identityChainConfig.id}`,
+      );
+      const fingerprint: string = getFingerprint();
+      const password = await passworderDecrypt(fingerprint, props.passwordBlob);
+      if (typeof password !== 'string') {
+        throw new Error('Unable to decrypt password');
+      }
+      if (xprivEncrypted && typeof xprivEncrypted === 'string') {
+        const xpriv = await passworderDecrypt(password, xprivEncrypted);
+        // generate keypair
+        if (xpriv && typeof xpriv === 'string') {
+          const externalIdentity = generateExternalIdentityKeypair(xpriv);
+          // sign message
+          signature = signMessageSSPWID(dataToSign, externalIdentity.privKey);
+          if (!signature) {
+            throw new Error('Unable to sign message');
+          }
+        } else {
+          throw new Error('Unknown error: address mismatch');
+        }
+      }
+
+      const url = 'https://storage.runonflux.io/v1/node';
+      const options = {
+        headers: {
+          'flux-signature': signature,
+        },
+      };
+      const response = await axios.post<flux_storage_call>(
+        url,
+        dataToUpload,
+        options,
+      );
+
+      displayMessage(
+        'success',
+        t('home:nodesTable.node_uploaded_storage', {
+          chainName: blockchainConfig.name,
+        }),
+      );
+
+      // display dialog with words identifier
+      const identityPhrase = response.data.data;
+      setWordsPhrase(identityPhrase);
+    } catch (error) {
+      console.log(error);
+      displayMessage(
+        'error',
+        t('home:nodesTable.err_upload_storage', {
+          chainName: blockchainConfig.name,
+        }),
+      );
+    }
+  };
+
+  const wordsDialogAction = (status: boolean) => {
+    setWordsPhrase('');
+    setPhraseDialogOpen(status);
+  };
+
   return (
     <>
       {contextHolder}
@@ -160,7 +295,7 @@ function NodesTable(props: {
                   {t('home:nodesTable.no_nodes')}
                   <br />
                   <a
-                    href="https://runonflux.io/nodes"
+                    href="https://runonflux.com/nodes"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -218,7 +353,7 @@ function NodesTable(props: {
                   </Button>
                 )}
                 {record.name && (
-                  <Flex gap="small">
+                  <Flex wrap gap="small">
                     <Popconfirm
                       title={t('home:nodesTable.start_node', {
                         chainName: blockchainConfig.name,
@@ -301,6 +436,25 @@ function NodesTable(props: {
                     >
                       <Button size="middle">{t('common:delete')}</Button>
                     </Popconfirm>
+                    <Popconfirm
+                      title={t('home:nodesTable.add_to_flux_storage')}
+                      description={
+                        <>{t('home:nodesTable.add_to_flux_storage_info')}</>
+                      }
+                      overlayStyle={{ maxWidth: 360, margin: 10 }}
+                      okText={t('home:nodesTable.add_to_flux_storage')}
+                      cancelText={t('common:cancel')}
+                      onConfirm={() => {
+                        void uploadToFluxStorage(record);
+                      }}
+                      icon={
+                        <QuestionCircleOutlined style={{ color: 'blue' }} />
+                      }
+                    >
+                      <Button size="middle">
+                        {t('home:nodesTable.add_to_flux_storage')}
+                      </Button>
+                    </Popconfirm>
                   </Flex>
                 )}
               </div>
@@ -359,6 +513,13 @@ function NodesTable(props: {
           nodes={props.nodes}
           open={editNodeOpen}
           openAction={setupNodeAction}
+        />
+      )}
+      {phraseDialogOpen && (
+        <WordsDialog
+          wordsPhrase={wordsPhrase}
+          open={phraseDialogOpen}
+          openAction={wordsDialogAction}
         />
       )}
     </>
