@@ -73,7 +73,7 @@
     "node_started": "{{chainName}} Node Dimulai!",
     "err_unable_identity": "Tidak dapat menghasilkan identitas simpul.",
     "err_delete": "Terjadi kesalahan saat menghapus {{chainName}} simpul.",
-    "node_deleted": "{{chainName}} Node Dihapus!"
+    "node_deleted": "{{chainName}} Node Dihapus!",
     "add_to_flux_storage": "Tambahkan ke dalam Penyimpanan Flux",
     "add_to_flux_storage_info": "Tindakan ini akan mengunggah Flux Node Anda yang telah dikonfigurasi ke dalam Penyimpanan Flux. Ini digunakan untuk menyederhanakan pengaturan FluxOS milik Anda. Anda akan diberikan pengidentifikasi penyimpanan yang akan digunakan untuk pengaturan FluxOS milik Anda.",
     "node_uploaded_storage": "{{chainName}} Node Diunggah ke dalam Penyimpanan Flux!",
