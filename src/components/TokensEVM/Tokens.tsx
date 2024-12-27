@@ -4,13 +4,15 @@ import { useState } from 'react';
 import { useAppSelector } from '../../hooks';
 import TokensTable from './TokensTable';
 import ImportToken from './ImportToken';
-import PurchaseCrypto from './PurchaseCrypto';
+import BuyCrypto from './BuyCrypto';
+import SellCrypto from './SellCrypto';
 
 function Tokens() {
   const { t } = useTranslation(['home']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const [openImportTokenDialog, setOpenImportTokenDialog] = useState(false);
   const [openBuyCryptoDialog, setOpenBuyCryptoDialog] = useState(false);
+  const [openSellCryptoDialog, setOpenSellCryptoDialog] = useState(false);
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
@@ -20,9 +22,14 @@ function Tokens() {
     setOpenImportTokenDialog(true);
   };
 
-  const purchaseCrypto = () => {
+  const buyCrypto = () => {
     console.log('buy crypto');
     setOpenBuyCryptoDialog(true);
+  };
+
+  const sellCrypto = () => {
+    console.log('sell crypto');
+    setOpenSellCryptoDialog(true);
   };
 
   const openImportAction = (open: boolean) => {
@@ -33,17 +40,26 @@ function Tokens() {
     setOpenBuyCryptoDialog(open);
   };
 
+  const openSellAction = (open: boolean) => {
+    setOpenSellCryptoDialog(open);
+  };
+
   return (
     <div>
       <TokensTable />
       {openImportTokenDialog}
-      <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }} direction='vertical'>
+      <Space size={'large'} style={{ marginTop: 24}} direction='vertical'>
         <Button type="primary" size="middle" onClick={() => importToken()}>
           {t('home:tokens.import_token')}
         </Button>
-        <Button type="primary" size="middle" onClick={() => purchaseCrypto()}>
-          {t('home:tokens.purchase_crypto')}
-        </Button>
+        <Space size={'large'} style={{ marginBottom: 8 }} direction='horizontal'>
+          <Button type="primary" size="middle" onClick={() => buyCrypto()}>
+            {t('home:tokens.buy_crypto')}
+          </Button>
+          <Button type="primary" size="middle" onClick={() => sellCrypto()}>
+            {t('home:tokens.sell_crypto')}
+          </Button>
+        </Space>
       </Space>
       {openImportTokenDialog && (
         <ImportToken
@@ -54,10 +70,19 @@ function Tokens() {
           contracts={wallets[walletInUse].activatedTokens ?? []}
         />
       )}
-       {openBuyCryptoDialog && (
-        <PurchaseCrypto
+      {openBuyCryptoDialog && (
+        <BuyCrypto
           open={openBuyCryptoDialog}
           openAction={openBuyAction}
+          chain={activeChain}
+          wInUse={wallets[walletInUse].address}
+          contracts={wallets[walletInUse].activatedTokens ?? []}
+        />
+      )}
+      {openSellCryptoDialog && (
+        <SellCrypto
+          open={openSellCryptoDialog}
+          openAction={openSellAction}
           chain={activeChain}
           wInUse={wallets[walletInUse].address}
           contracts={wallets[walletInUse].activatedTokens ?? []}

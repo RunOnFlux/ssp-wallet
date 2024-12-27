@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { cryptos } from '../../types';
 import { useTranslation } from 'react-i18next';
 
-function PurchaseCrypto(props: {
+function SellCrypto(props: {
   open: boolean;
   openAction: (status: boolean) => void;
   chain: keyof cryptos;
@@ -44,7 +44,7 @@ function PurchaseCrypto(props: {
       >        
         {
           <iframe        
-            src={`https://buy.onramper.com?onlyCryptos=${crypto}&apiKey=''`}
+            src={`https://buy.onramper.com?defaultCrypto=${crypto}&apiKey=''&mode=sell`}
             title="Onramper"
             height="600px"
             width="380px"
@@ -53,11 +53,11 @@ function PurchaseCrypto(props: {
         }
         <Divider />
         <Button type="primary" size="middle" onClick={handleCancel}>
-          {t('home:tokens.purchase_crypto_close')}
+          {t('home:tokens.crypto_close')}
         </Button>
       </Modal>
     </>
   );
 }
 
-export default PurchaseCrypto;
+export default SellCrypto;

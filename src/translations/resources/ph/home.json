@@ -265,7 +265,8 @@
     "delete_token": "Burahin ang Token",
     "token_deleted": "Token Tinanggal!",
     "err_delete_token": "Error habang tinatanggal ang token. Pakisubukang muli.",
-    "purchase_crypto": "Bumili ng Crypto",
-    "purchase_crypto_close": "Isara"
+    "buy_crypto": "Bumili ng Crypto",
+    "sell_crypto": "Ibenta ang Crypto",
+    "crypto_close": "Isara"
   }
 }
