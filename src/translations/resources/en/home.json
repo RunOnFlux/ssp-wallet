@@ -274,6 +274,9 @@
     "invalid_token_contract": "Invalid token contract.",
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",
-    "err_delete_token": "Error while deleting token. Please try again."
+    "err_delete_token": "Error while deleting token. Please try again.",
+    "buysell_crypto": "Buy & Sell",
+    "swap_crypto": "Swap",
+    "crypto_close": "Close"
   }
 }
