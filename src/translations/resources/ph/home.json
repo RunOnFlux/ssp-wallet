@@ -255,6 +255,18 @@
     "add_to_list": "Idagdag Sa Listahan",
     "remove_token": "Tanggaling ang Token",
     "remove": "Tanggalin",
-    "remove_token_info": "Itatago ng pagkilos na ito ang token mula sa iyong wallet. Maaari mo itong idagdag anumang oras."
+    "remove_token_info": "Itatago ng pagkilos na ito ang token mula sa iyong wallet. Maaari mo itong idagdag anumang oras.",
+    "search_token": "Search Token",
+    "enter_contract_address": "Ipasok ang Token Contract Address",
+    "token_already_imported": "Na-import na ang token",
+    "unable_to_fetch_metadata": "Hindi makuha ang token metadata. Pakisubukang muli mamaya.",
+    "token_imported": "Na-import ang Token!",
+    "invalid_token_contract": "Di-wastong kontrata ng token.",
+    "delete_token": "Burahin ang Token",
+    "token_deleted": "Token Tinanggal!",
+    "err_delete_token": "Error habang tinatanggal ang token. Pakisubukang muli.",
+    "buysell_crypto": "Bumili o Magbenta",
+    "swap_crypto": "I-swap",
+    "crypto_close": "Isara"
   }
 }
