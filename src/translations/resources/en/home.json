@@ -268,8 +268,8 @@
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",
     "err_delete_token": "Error while deleting token. Please try again.",
-    "buy_crypto": "Buy Crypto",
-    "sell_crypto": "Sell Crypto",
+    "buysell_crypto": "Buy & Sell",
+    "swap_crypto": "Swap",
     "crypto_close": "Close"
   }
 }
