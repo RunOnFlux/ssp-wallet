@@ -42,6 +42,7 @@ function LanguageSelector(props: { label: boolean }) {
         dropdownStyle={{ minWidth: '130px' }}
         options={[
           { value: 'en', label: 'en', desc: 'English' },
+          { value: 'de', label: 'de', desc: 'Deutsch' },
           { value: 'ru', label: 'ru', desc: 'Русский' },
           { value: 'id', label: 'id', desc: 'Bahasa Indonesia' },
           { value: 'cs', label: 'cs', desc: 'Čeština' },
