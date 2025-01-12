@@ -39,6 +39,9 @@ function Navigation() {
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
+  const { servicesAvailability } = useAppSelector(
+    (state) => state.servicesAvailability,
+  );
   const blockchainConfig = blockchains[activeChain];
   return (
     <>
@@ -57,7 +60,7 @@ function Navigation() {
         >
           {t('home:navigation.send')}
         </Button>
-        {blockchainConfig.onramperNetwork && (
+        {blockchainConfig.onramperNetwork && servicesAvailability.onramp && (
           <Button
             type="dashed"
             shape="round"
