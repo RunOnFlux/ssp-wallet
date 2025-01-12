@@ -39,5 +39,6 @@
   "address": "Адрес",
   "activity": "Активность",
   "nodes": "Узлы",
-  "tokens": "Токены"
+  "tokens": "Токены",
+  "add_custom_token": "Add Custom Token"
 }
