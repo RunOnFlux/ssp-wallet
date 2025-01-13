@@ -73,7 +73,14 @@
     "node_started": "{{chainName}} Node gestartet!",
     "err_unable_identity": "Nodeidentität kann nicht generiert werden. Später erneut versuchen.",
     "err_delete": "Fehler beim Löschen von {{chainName}} Node. Bitte erneut versuchen.",
-    "node_deleted": "{{chainName}} Node gelöscht!"
+    "node_deleted": "{{chainName}} Node gelöscht!",
+    "add_to_flux_storage": "Add to Flux Storage",
+    "add_to_flux_storage_info": "This action will upload your configured Flux Node to Flux Storage. This is used to simplify the setup of your FluxOS. You will be presented with storage identifier to use for your FluxOS setup.",
+    "node_uploaded_storage": "{{chainName}} Node Uploaded to Flux Storage!",
+    "err_upload_storage": "Error while uploading {{chainName}} Node to Flux Storage. Please try again.",
+    "storage_phrase": "Storage Phrase",
+    "add_to_storage_added": "Your Flux Node is available in Flux Storage, you can now use it in your FluxOS setup.",
+    "add_to_storage_added_info": "Copy the Flux Storage Phrase and use it in your FluxOS setup."
   },
   "setupNode": {
     "setup_node": "{{chainName}} Node einrichten",
