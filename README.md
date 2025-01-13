@@ -62,3 +62,5 @@ Everything SSP is open source. SSP Wallet, SSP Key, SSP Relay as well as any pac
 SSP Wallet is built using React 18, Typescript and requires Node 16+. Dev me out with yarn dev now!
 
 By using SSP you agree with SSP Diclaimer <https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md>
+
+[![Crowdin](https://badges.crowdin.net/sspwallet/localized.svg)](https://crowdin.com/project/sspwallet)
