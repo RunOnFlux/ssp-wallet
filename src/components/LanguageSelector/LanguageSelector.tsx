@@ -46,7 +46,7 @@ function LanguageSelector(props: { label: boolean }) {
           { value: 'ru', label: 'ru', desc: 'Русский' },
           { value: 'id', label: 'id', desc: 'Bahasa Indonesia' },
           { value: 'cs', label: 'cs', desc: 'Čeština' },
-          { value: 'ph', label: 'ph', desc: 'Filipino' },
+          { value: 'fil', label: 'fil', desc: 'Filipino' },
         ]}
         optionRender={(option) => <>{option.data.desc}</>}
       />
