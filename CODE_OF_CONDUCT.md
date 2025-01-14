@@ -63,7 +63,7 @@ This Code of Conduct applies within all official SSP Wallet-managed spaces, incl
 ## **Reporting and Enforcement**
 
 ### **Reporting Violations**  
-Instances of abusive, harassing, or otherwise unacceptable behavior can be reported by contacting the project team at **[INSERT CONTACT EMAIL]**.  
+Instances of abusive, harassing, or otherwise unacceptable behavior can be reported by contacting the project team lead at **tadeas@runonflux.io**.  
 
 - All reports will be reviewed and investigated confidentially.  
 - The project team will determine and communicate appropriate actions based on the circumstances.
