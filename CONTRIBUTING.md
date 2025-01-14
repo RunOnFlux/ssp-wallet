@@ -42,7 +42,7 @@ Help us build new features, fix bugs, or improve existing code by submitting a p
 1. Fork the repository.
 2. Clone your fork:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/ssp-wallet.git
+   git clone https://github.com/runonflux/ssp-wallet
    ```
 3. Install dependencies:
    ```bash
