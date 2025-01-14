@@ -177,9 +177,9 @@
   },
   "key": {
     "sync_key": "Schlüssel synchronisieren",
-    "err_sync_fail": "Die Synchronisierung ist fehlgeschlagen. Bitte versuchen Sie es erneut manuell.",
+    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
     "warn_await_sync": "Warten auf SSP Key Synchronisation oder manuelle Eingabe.",
-    "err_sync_1": "Bitte den privaten Schlüssel für SSP Key eingeben. Der private Schlüssel für SSP Key ist unterschiedlich zum privaten Schlüssel für die SSP Wallet.",
+    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
     "err_invalid_key": "Der SSP Key ist ungültig.",
     "err_k2": "Code K2: Beim Entschlüsseln des Passworts ist etwas schief gelaufen.",
     "err_k1": "Code K1: Beim Entschlüsseln des Passworts ist etwas schief gelaufen.",
