@@ -22,6 +22,7 @@
   "not_evil": "not being evil",
   "import_wallet": "Wallet importieren",
   "wallet_seed_info": "Der Wallet-Seed wird verwendet, um alle Adressen zu generieren. Jeder, der Zugriff auf den Wallet-Seed hat, hat teilweise Kontrolle über die Wallet.",
+  "wallet_seed_info_2": "SSP Wallet and SSP Key must both be using unique, different seed phrases.",
   "backup_wallet_seed": "Wallet-Seed sichern",
   "keep_seed_safe": "Bewahren Sie Ihr Wallet-Seed Backup sicher und geschützt auf.",
   "seed_loose_info": "Der Verlust des Wallet-Seeds führt zum Verlust des Zugriffs auf Ihre Wallet.",
