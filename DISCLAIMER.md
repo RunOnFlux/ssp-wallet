@@ -1,40 +1,48 @@
 ### SSP Cryptocurrency Wallet Disclaimer
 
-**SSP is using strong encryption based on your device fingerprint. Altering your device OS, time, language and more variables can result in a need to restore SSP**
+**Important Notice:** SSP Wallet uses strong encryption based on your device's unique fingerprint. Altering your device's operating system, time settings, language, or other variables may require restoring your SSP Wallet. Please exercise caution when making changes to your device.
 
-Thank you for choosing SSP Wallet ("the Wallet") for managing your cryptocurrencies. Please carefully read and understand this disclaimer before using the Wallet.
+---
 
-1. Community Project: The Wallet is an open-source community project. It is available for use by the community for experimentation and testing purposes.
+#### Thank you for choosing SSP Wallet ("the Wallet") for managing your cryptocurrency. Please carefully review and understand this disclaimer before using the Wallet.
 
-2. Use at Your Own Risk: The Wallet is a cryptocurrency management tool. The cryptocurrency space is inherently volatile and carries the risk of financial loss. By using the Wallet, you acknowledge that you are solely responsible for your cryptocurrency holdings and any actions taken within the Wallet.
+1. **Community Project:**  
+   The Wallet is an open-source project developed by the community. It is provided for use as an experimental and testing tool.
 
-3. Security is Vital: Safeguarding your private keys and recovery phrases is of utmost importance. Loss or compromise of these credentials can lead to permanent loss of your cryptocurrency assets. We strongly advise you to educate yourself on best practices for securing your cryptocurrency holdings.
+2. **Use at Your Own Risk:**  
+   The Wallet is a tool for managing cryptocurrencies, an inherently volatile and high-risk asset class. By using the Wallet, you agree that you are solely responsible for your funds and actions.
 
-4. No Recovery Mechanism: Unlike traditional financial institutions, cryptocurrency transactions are irreversible. The Wallet does not have the capability to recover or reverse transactions. Please double-check all transaction details before confirming any cryptocurrency transfers.
+3. **Critical Security Measures:**  
+   Safeguarding your private keys, recovery phrases, and associated credentials is your responsibility. Their loss or compromise may lead to the irrecoverable loss of funds. Familiarize yourself with best practices for securing digital assets.
 
-5. No Warranty: The Wallet is provided "as is" without any warranty, express or implied. There is no guarantee of the Wallet's performance, accuracy, or security. You assume all risks associated with its use.
+4. **Irreversible Transactions:**  
+   Cryptocurrency transactions are final and cannot be reversed. The Wallet does not offer recovery mechanisms. Always double-check transaction details before proceeding.
 
-6. Limited Support: While we strive to provide a reliable service, support for the Wallet may be limited. We may not be able to assist with every issue or inquiry promptly.
+5. **No Warranties:**  
+   The Wallet is provided "as is" without any warranty of performance, security, or accuracy. You assume all risks associated with its use.
 
-7. Backup Your Wallet: Regularly backup your wallet's private keys and recovery phrases in a secure and offline location. Failure to do so may result in the loss of your cryptocurrency funds.
+6. **Limited Support Availability:**  
+   While efforts are made to maintain reliable service, support resources may be limited. Prompt resolution of all inquiries or issues cannot be guaranteed.
 
-8. Security Best Practices: Follow security best practices, such as using hardware wallets, enabling two-factor authentication, and being cautious of phishing attempts. Do not share your private keys or recovery phrases with anyone.
+7. **Backup Responsibility:**  
+   Regularly back up your private keys and recovery phrases in a secure offline location. Failure to do so may result in permanent loss of access to your funds.
 
-9. Legal Compliance: Ensure that your use of the Wallet complies with all relevant laws and regulations in your jurisdiction.
+8. **Adopt Security Best Practices:**  
+   Use secure hardware wallets when possible, enable two-factor authentication, and remain vigilant against phishing attempts. Never share your private keys or recovery phrases.
 
+9. **Legal Compliance:**  
+   Ensure your use of the Wallet complies with applicable laws and regulations in your jurisdiction. The Wallet team assumes no liability for legal issues arising from misuse.
 
-By using the Wallet, you acknowledge the inherent risks associated with cryptocurrency management and the experimental nature of this community project. Flux/InFlux the Wallet developers, and the community members involved in the project disclaim all liability for any direct, indirect, special, incidental, or consequential damages, including the loss of cryptocurrency funds, arising from the use of the Wallet.
+---
 
-Please exercise caution, conduct your research, and use the Wallet responsibly. If you do not agree with any part of this disclaimer, please refrain from using the Wallet.
+By using SSP Wallet, you acknowledge and accept the risks associated with cryptocurrency management, as well as the experimental nature of this project. Flux, InFlux, the Wallet developers, and the broader community disclaim all liability for any direct, indirect, incidental, or consequential damages, including but not limited to the loss of cryptocurrency funds.
 
-This disclaimer is subject to updates or changes. It is your responsibility to review this disclaimer periodically for any updates.
+---
 
+#### Additional Terms
+By using SSP Wallet, you also agree to the following:  
+- [General Privacy Policy](https://runonflux.com/privacyPolicy)  
+- [Terms of Service](https://runonflux.com/termsandconditions)  
+- [Not Being Evil](https://www.youtube.com/watch?v=GJVk_LfASxk&ab_channel=FluxLabs)
 
-
-*Further Agree with:*
-
-* General RunOnFlux.com Privacy Policy: <https://runonflux.com/privacyPolicy>
-
-* General RunOnFlux.com Terms of Service: <https://runonflux.com/termsandconditions>
-
-* [Not Being Evil](https://www.youtube.com/watch?v=GJVk_LfASxk&ab_channel=FluxLabs)
+This disclaimer is subject to updates. Users are advised to periodically review it for any changes. Please use SSP Wallet responsibly and exercise caution when managing your cryptocurrency.
