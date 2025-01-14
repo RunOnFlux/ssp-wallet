@@ -1,7 +1,6 @@
 {
   "appName": {
     "full": "SSP Кошелек",
-    "initials": "SSPWallet",
     "moto": "Безопасно. Просто. Мощно."
   },
   "back": "Назад",
@@ -39,5 +38,6 @@
   "address": "Адрес",
   "activity": "Активность",
   "nodes": "Узлы",
-  "tokens": "Токены"
+  "tokens": "Токены",
+  "add_custom_token": "Add Custom Token"
 }

@@ -39,7 +39,10 @@
     "replace_by_fee": "Nahradit Poplatkem",
     "replace_by_fee_info": "Navyší poplatek, nahradí nebo zruší transakci.",
     "replace_by_fee_desc": "Nahrazení poplatkem (RBF) vám umožní nahradi nepotvrzenou transakci jinou transakcí, která má větší poplatek síti. Jestliže vaše transakce je nepotvrzená po delší dobu, zkuste zvážit funkci RBF ke zvýšení poplatku. Navíc můžete změnit příjemce, částku i poznámku u transakce. Jestliže změnite příjemce na vaši adresu, můžete tímto nasměrovat prostředky zpět a tak celou transakci zrušit.",
-    "replace_by_fee_desc_b": "RBF vždy požaduje vyšší transakční poplatek. Nahrazení transakce není producenty bloků garantováno, předchozí transakce může stále být sítí preferována. Pouze nepotvrzené transakce mohou být nahrazeny."
+    "replace_by_fee_desc_b": "RBF vždy požaduje vyšší transakční poplatek. Nahrazení transakce není producenty bloků garantováno, předchozí transakce může stále být sítí preferována. Pouze nepotvrzené transakce mohou být nahrazeny.",
+    "err_export": "Error while exporting transactions. Please try again.",
+    "transactions_being_exported": "Transactions being exported...",
+    "transactions_exported": "Transactions exported!"
   },
   "nodesTable": {
     "no_nodes": "Adresa nemá žádné nody.",
@@ -70,7 +73,14 @@
     "node_started": "{{chainName}} Node Nastartován!",
     "err_unable_identity": "Nedaří se vygenerovat identitu nodu. Zkuste prosím později.",
     "err_delete": "Chyba pri mazání {{chainName}} Nodu. Zkuste prosím později.",
-    "node_deleted": "{{chainName}} Node Smazán!"
+    "node_deleted": "{{chainName}} Node Smazán!",
+    "add_to_flux_storage": "Add to Flux Storage",
+    "add_to_flux_storage_info": "This action will upload your configured Flux Node to Flux Storage. This is used to simplify the setup of your FluxOS. You will be presented with storage identifier to use for your FluxOS setup.",
+    "node_uploaded_storage": "{{chainName}} Node Uploaded to Flux Storage!",
+    "err_upload_storage": "Error while uploading {{chainName}} Node to Flux Storage. Please try again.",
+    "storage_phrase": "Storage Phrase",
+    "add_to_storage_added": "Your Flux Node is available in Flux Storage, you can now use it in your FluxOS setup.",
+    "add_to_storage_added_info": "Copy the Flux Storage Phrase and use it in your FluxOS setup."
   },
   "setupNode": {
     "setup_node": "Nastavit {{chainName}} Node",
@@ -255,6 +265,15 @@
     "add_to_list": "Přidat do seznamu",
     "remove_token": "Odebrat Token",
     "remove": "Odebra",
-    "remove_token_info": "Tato akce schová token z vaší peněženky. Můžete jej kdykoliv přidat zpět."
+    "remove_token_info": "Tato akce schová token z vaší peněženky. Můžete jej kdykoliv přidat zpět.",
+    "search_token": "Search Token",
+    "enter_contract_address": "Enter Token Contract Address",
+    "token_already_imported": "Token already imported",
+    "unable_to_fetch_metadata": "Unable to fetch token metadata. Please try again later.",
+    "token_imported": "Token Imported!",
+    "invalid_token_contract": "Invalid token contract.",
+    "delete_token": "Delete Token",
+    "token_deleted": "Token Deleted!",
+    "err_delete_token": "Error while deleting token. Please try again."
   }
 }

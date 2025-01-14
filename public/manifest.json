@@ -1,5 +1,5 @@
 {
-  "version": "1.8.3",
+  "version": "1.8.4",
   "manifest_version": 3,
   "name": "SSP Wallet",
   "short_name": "SSP",
@@ -8,7 +8,7 @@
     "default_popup": "index.html",
     "default_title": "SSP Wallet"
   },
-  "author": "https://sspwwallet.io",
+  "author": "https://sspwallet.io",
   "background": {
     "service_worker": "scripts/background.js"
   },

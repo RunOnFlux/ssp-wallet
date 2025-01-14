@@ -23,7 +23,7 @@
   "import_wallet": "Importovat Peněženku",
   "wallet_seed_info": "Seed fráze peněženky generuje veškeré adresy. Kdokoliv kdo má vaši seed frázi má částěčnou kontrolu nad vaší peněženkou.",
   "backup_wallet_seed": "Zálohovat Seed Frázi Peněženky",
-  "keep_seed_safe": "Keep your wallet seed backup safe and secure.",
+  "keep_seed_safe": "Uschovejte si zálohovanou seed frázi na bezpečném místě.",
   "seed_loose_info": "Ztráta seed fráze peněženky způsobí ztrátu přístupu k celé vaší peněžence a jejím financím.",
   "hide_mnemonic": "Skrýt Seed Frázi",
   "show_mnemonic": "Zobrazit Seed Frázi",

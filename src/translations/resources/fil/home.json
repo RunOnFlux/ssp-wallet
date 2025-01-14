@@ -39,7 +39,10 @@
     "replace_by_fee": "Palitan ang Bayad",
     "replace_by_fee_info": "Nagtataas ng bayad, pinapalitan o kinakansela ang transaksyon.",
     "replace_by_fee_desc": "Ang Replace by Fee (RBF) ay nagbibigay-daan sa iyo na palitan ang isang hindi kumpirmadong transaksyon ng isa pang transaksyon na nag-aalok ng mas mataas na bayad. Kung ang iyong transaksyon ay nananatiling hindi nakumpirma para sa isang pinalawig na panahon, maaari mong isaalang-alang ang paggamit ng tampok na RBF upang taasan ang bayarin sa transaksyon. Bukod pa rito, posibleng baguhin ang receiver, halaga, o mga tala sa pagbabayad. Sa pamamagitan ng pagpapadala ng mga pondo sa isa sa iyong mga address, maaari mo ring kanselahin ang transaksyon.",
-    "replace_by_fee_desc_b": "Ang RBF ay nangangailangan ng mas mataas na bayad sa transaksyon sa anumang kaso. Ang pagpapalit ay hindi ginagarantiyahan at i-block ang mga producer, ang mga minero ay maaari pa ring paboran ang nakaraang transaksyon. Ang mga hindi kumpirmadong transaksyon lamang ang maaaring palitan."
+    "replace_by_fee_desc_b": "Ang RBF ay nangangailangan ng mas mataas na bayad sa transaksyon sa anumang kaso. Ang pagpapalit ay hindi ginagarantiyahan at i-block ang mga producer, ang mga minero ay maaari pa ring paboran ang nakaraang transaksyon. Ang mga hindi kumpirmadong transaksyon lamang ang maaaring palitan.",
+    "err_export": "Error while exporting transactions. Please try again.",
+    "transactions_being_exported": "Transactions being exported...",
+    "transactions_exported": "Transactions exported!"
   },
   "nodesTable": {
     "no_nodes": "Ang Address ay walang nodes",
@@ -70,7 +73,14 @@
     "node_started": "Nagsimula ang {{chainName}} Node!",
     "err_unable_identity": "Hindi makabuo ng pagkakakilanlan ng node. Subukang muli mamaya.",
     "err_delete": "Error habang tinatanggal ang {{chainName}} Node. Pakisubukang muli.",
-    "node_deleted": "Natanggal ang {{chainName}} Node!"
+    "node_deleted": "Natanggal ang {{chainName}} Node!",
+    "add_to_flux_storage": "Add to Flux Storage",
+    "add_to_flux_storage_info": "This action will upload your configured Flux Node to Flux Storage. This is used to simplify the setup of your FluxOS. You will be presented with storage identifier to use for your FluxOS setup.",
+    "node_uploaded_storage": "{{chainName}} Node Uploaded to Flux Storage!",
+    "err_upload_storage": "Error while uploading {{chainName}} Node to Flux Storage. Please try again.",
+    "storage_phrase": "Storage Phrase",
+    "add_to_storage_added": "Your Flux Node is available in Flux Storage, you can now use it in your FluxOS setup.",
+    "add_to_storage_added_info": "Copy the Flux Storage Phrase and use it in your FluxOS setup."
   },
   "setupNode": {
     "setup_node": "I-setup ang {{chainName}} Node",
