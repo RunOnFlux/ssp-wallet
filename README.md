@@ -103,7 +103,7 @@ SSP Wallet has a comprehensive documentation available at with many guides, FAQs
 ## Translation
 
 SSP Wallet supports multiple languages! Help us make it accessible to everyone by contributing to translations at:  
-[Translate SSP Wallet](https://translate.sspwallet.io)
+[Translate SSP Wallet](https://translate.sspwallet.io), [Translate SSP Key](https://translatekey.sspwallet.io)
 
 ---
 
