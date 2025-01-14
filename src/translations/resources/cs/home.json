@@ -177,9 +177,9 @@
   },
   "key": {
     "sync_key": "Synchronizovat Klíč",
-    "err_sync_fail": "Synchronizace neúspěšná. Prosím zkuste znovu ručně.",
+    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
     "warn_await_sync": "Čekání na synchronizaci SSP Klíče nebo ruční zadání.",
-    "err_sync_1": "Prosím zadejte XPUB od SSP Klíče. XPUB od SSP Klíče je rozdílný od XPUBu SSP Peněženky.",
+    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
     "err_invalid_key": "Neplatný SSP Klíč.",
     "err_k2": "Kód K2: Něco se pokazilo při dešifrování hesla.",
     "err_k1": "Kód K1: Něco se pokazilo při dešifrování hesla.",
