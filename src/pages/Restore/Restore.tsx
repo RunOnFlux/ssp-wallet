@@ -338,6 +338,7 @@ function Restore() {
       >
         <CreationSteps step={2} import={true} />
         <p>{t('cr:wallet_seed_info')}</p>
+        <p>{t('cr:wallet_seed_info_2')}</p>
         <p>{t('cr:keep_seed_safe')}</p>
         <p>
           <b>{t('cr:seed_loose_info')}</b>

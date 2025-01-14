@@ -86,6 +86,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
           console.log(res);
           const xpubKey = res.data.keyXpub;
           const wkIdentity = res.data.wkIdentity;
+          const sspKeyGeneratedAddress = res.data.generatedAddress;
           // check that wkIdentity is correct
           if (activeChain === identityChain) {
             const generatedSspWalletKeyIdentity = generateMultisigAddress(
@@ -105,7 +106,24 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               return;
             }
           } else {
-            generateMultisigAddress(xpubWallet, xpubKey, 0, 0, activeChain);
+            const generatedAddress = generateMultisigAddress(
+              xpubWallet,
+              xpubKey,
+              0,
+              0,
+              activeChain,
+            );
+            if (
+              sspKeyGeneratedAddress &&
+              generatedAddress.address !== sspKeyGeneratedAddress
+            ) {
+              displayMessage('error', t('home:key.err_sync_fail'));
+              syncRunning = false;
+              if (pollingSyncInterval) {
+                clearInterval(pollingSyncInterval);
+              }
+              return;
+            }
           }
           if (res.data.publicNonces) {
             // ssp key can send us newly generated public nonces. Replace our nonces with these
