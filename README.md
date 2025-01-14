@@ -46,6 +46,7 @@ This design ensures that **both devices are required** to authorize any transact
    - Simplifies the synchronization process by facilitating communication between SSP Wallet and SSP Key.
    - Synchronization starts when the SSP Key scans a Hardened Extended Public Key QR code from SSP Wallet.
    - A special identity path (`m/48'/0'/0'/2'/10/0`) reserved for SSP Wallet verifies unique wallet instances.
+   - [SSP Relay GitHub Repository](https://github.com/RunOnFlux/ssp-relay)
 2. **Public Key Exchange:**
    - SSP Key sends its hardened extended public key (e.g., `m/48'/0'/0'/2'`) to the SSP Relay Server along with a constructed 2-of-2 multisignature address.
    - SSP Wallet validates the received address, ensuring integrity.
@@ -104,6 +105,13 @@ SSP Wallet has a comprehensive documentation available at with many guides, FAQs
 
 SSP Wallet supports multiple languages! Help us make it accessible to everyone by contributing to translations at:  
 [Translate SSP Wallet](https://translate.sspwallet.io), [Translate SSP Key](https://translatekey.sspwallet.io)
+
+---
+
+## Additional Repositories
+- **SSP Key Repository:** [SSP Key GitHub Repository](https://github.com/RunOnFlux/ssp-key)
+- **SSP Relay Repository:** [SSP Relay GitHub Repository](https://github.com/RunOnFlux/ssp-relay)
+- **Account Abstraction Repository:** [Account Abstraction GitHub Repository](https://github.com/RunOnFlux/account-abstraction)
 
 ---
 
