@@ -499,6 +499,12 @@ export interface networkFee {
 
 export type networkFeesSSPRelay = networkFee[];
 
+export type servicesSSPRelay = {
+  onramp: boolean;
+  offramp: boolean;
+  swap: boolean;
+};
+
 export interface confirmedNodeInsight {
   collateral: string;
   txhash: string;
@@ -606,4 +612,6 @@ declare global {
   var refreshIntervalNetworkFee: string | number | NodeJS.Timeout | undefined;
   // eslint-disable-next-line no-var
   var refreshIntervalNodes: string | number | NodeJS.Timeout | undefined;
+  // eslint-disable-next-line no-var
+  var refreshIntervalServices: string | number | NodeJS.Timeout | undefined;
 }
