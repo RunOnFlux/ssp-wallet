@@ -1,6 +1,19 @@
 import { backends } from './backends';
 import { tokens } from './tokens';
 
+import btcLogo from '../assets/btc.svg';
+import fluxLogo from '../assets/flux.svg';
+import dogeLogo from '../assets/doge.svg';
+import ltcLogo from '../assets/ltc.svg';
+import rvnLogo from '../assets/rvn.svg';
+import zecLogo from '../assets/zec.svg';
+import bchLogo from '../assets/bch.svg';
+import btcTestnetLogo from '../assets/btcTestnet.svg';
+import btcSignetLogo from '../assets/btcSignet.svg';
+import fluxTestnetLogo from '../assets/fluxTestnet.svg';
+import sepoliaLogo from '../assets/teth.svg';
+import ethLogo from '../assets/eth.svg';
+
 const flux = {
   id: 'flux',
   libid: 'flux',
@@ -14,7 +27,7 @@ const flux = {
   pubKeyHash: '1cb8',
   scriptHash: '1cbd',
   wif: '80',
-  logo: 'src/assets/flux.svg',
+  logo: fluxLogo,
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -44,7 +57,7 @@ const fluxTestnet = {
   pubKeyHash: '1d25',
   scriptHash: '1cba',
   wif: 'ef',
-  logo: 'src/assets/fluxTestnet.svg',
+  logo: fluxTestnetLogo,
   bip32: {
     public: 0x043587cf,
     private: 0x04358394,
@@ -74,7 +87,7 @@ const rvn = {
   pubKeyHash: '3c',
   scriptHash: '7a',
   wif: '80',
-  logo: 'src/assets/rvn.svg',
+  logo: rvnLogo,
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -101,7 +114,7 @@ const ltc = {
   pubKeyHash: '30',
   scriptHash: '32',
   wif: 'b0',
-  logo: 'src/assets/ltc.svg',
+  logo: ltcLogo,
   bip32: {
     public: 0x019da462,
     private: 0x019d9cfe,
@@ -129,7 +142,7 @@ const btc = {
   pubKeyHash: '00',
   scriptHash: '05',
   wif: '80',
-  logo: 'src/assets/btc.svg',
+  logo: btcLogo,
   bip32: {
     public: 0x02aa7ed3,
     private: 0x02aa7a99,
@@ -157,7 +170,7 @@ const doge = {
   pubKeyHash: '1e',
   scriptHash: '16',
   wif: '9e',
-  logo: 'src/assets/doge.svg',
+  logo: dogeLogo,
   bip32: {
     public: 0x02facafd,
     private: 0x02fac398,
@@ -165,7 +178,7 @@ const doge = {
   backend: 'blockbook',
   dustLimit: 1000000, // min utxo amount
   minFeePerByte: 1000, // min fee per byte
-  feePerByte: 20, // fee per byte
+  feePerByte: 1100, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
   rbf: true,
@@ -184,7 +197,7 @@ const btcTestnet = {
   pubKeyHash: '6f',
   scriptHash: 'c4',
   wif: 'ef',
-  logo: 'src/assets/btcTestnet.svg',
+  logo: btcTestnetLogo,
   bip32: {
     public: 0x02575483,
     private: 0x02575048,
@@ -212,7 +225,7 @@ const btcSignet = {
   pubKeyHash: '6f',
   scriptHash: 'c4',
   wif: 'ef',
-  logo: 'src/assets/btcSignet.svg',
+  logo: btcSignetLogo,
   bip32: {
     public: 0x02575483,
     private: 0x02575048,
@@ -240,7 +253,7 @@ const zec = {
   pubKeyHash: '1cb8',
   scriptHash: '1cbd',
   wif: '80',
-  logo: 'src/assets/zec.svg',
+  logo: zecLogo,
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -250,7 +263,7 @@ const zec = {
   backend: 'blockbook',
   dustLimit: 546, // min utxo amount
   minFeePerByte: 1, // min fee per byte
-  feePerByte: 3, // fee per byte
+  feePerByte: 30, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
   rbf: false,
@@ -270,7 +283,7 @@ const bch = {
   pubKeyHash: '00',
   scriptHash: '05',
   wif: '80',
-  logo: 'src/assets/bch.svg',
+  logo: bchLogo,
   bip32: {
     public: 0x0488b21e,
     private: 0x0488ade4,
@@ -291,7 +304,7 @@ const sepolia = {
   libid: 'sepolia',
   name: 'Testnet Sepolia',
   symbol: 'TEST-ETH',
-  logo: 'src/assets/teth.svg',
+  logo: sepoliaLogo,
   slip: 1,
   decimals: 18,
   node: backends().sepolia.node,
@@ -319,7 +332,7 @@ const eth = {
   libid: 'mainnet',
   name: 'Ethereum',
   symbol: 'ETH',
-  logo: 'src/assets/eth.svg',
+  logo: ethLogo,
   slip: 60,
   decimals: 18,
   node: backends().eth.node,

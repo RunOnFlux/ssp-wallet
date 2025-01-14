@@ -217,17 +217,25 @@ export interface transaction {
   utxos?: txIdentifier[];
   type?: string; // evm
   isError?: boolean;
+  decimals?: number;
+  tokenSymbol?: string;
+  contractAddress?: string;
 }
 
 export interface csvTransaction {
-  timestamp: number;
-  date: string;
-  amount: string;
-  currency: string;
-  fee: string;
-  feeCurrency: string;
-  txHash: string;
-  note: string;
+  Timestamp: number;
+  Date: string;
+  'Koinly Date': string;
+  Amount: number;
+  Currency: string;
+  'Sent Amount': number;
+  'Sent Currency': string;
+  'Received Amount': number;
+  'Received Currency': string;
+  'Fee Amount': number;
+  'Fee Currency': string;
+  TxHash: string;
+  Note: string;
 }
 
 export interface pendingTransaction {
@@ -255,6 +263,10 @@ export interface evm_call {
   jsonrpc: string;
   id: number;
   result: string;
+}
+
+export interface flux_storage_call {
+  data: string;
 }
 
 export interface tokenBalanceEVM {
@@ -316,6 +328,28 @@ export interface etherscan_internal_tx {
   errCode: string;
 }
 
+export interface etherscan_token_tx {
+  blockNumber: string;
+  timeStamp: string;
+  hash: string;
+  nonce: string;
+  blockHash: string;
+  from: string;
+  to: string;
+  value: string;
+  contractAddress: string;
+  tokenName: string;
+  tokenSymbol: string;
+  tokenDecimal: string;
+  transactionIndex: string;
+  input: string;
+  gas: string;
+  gasPrice: string;
+  cumulativeGasUsed: string;
+  gasUsed: string;
+  confirmations: string;
+}
+
 export interface eth_evm {
   jsonrpc: string;
   id: number;
@@ -332,6 +366,12 @@ export interface etherscan_call_internal_txs {
   status: string;
   message: string;
   result: etherscan_internal_tx[];
+}
+
+export interface etherscan_call_token_txs {
+  status: string;
+  message: string;
+  result: etherscan_token_tx[];
 }
 
 export interface publicNonce {
@@ -352,6 +392,7 @@ export interface syncSSPRelay {
   keyXpub: string;
   wkIdentity: string;
   keyToken?: string | null;
+  generatedAddress?: string;
   publicNonces?: publicNonce[];
 }
 

@@ -4,7 +4,7 @@ import localForage from 'localforage';
 const { Text } = Typography;
 import { NoticeType } from 'antd/es/message/interface';
 import BigNumber from 'bignumber.js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { blockchains, Token } from '@storage/blockchains';
 import secureLocalStorage from 'react-secure-storage';

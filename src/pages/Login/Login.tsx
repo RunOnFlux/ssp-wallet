@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Input, Image, Button, Form, message, Spin } from 'antd';
 import localForage from 'localforage';
 import {

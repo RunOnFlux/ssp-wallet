@@ -1,4 +1,4 @@
-import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router';
 
 import Welcome from './pages/Welcome/Welcome.tsx';
 import Create from './pages/Create/Create.tsx';

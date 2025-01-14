@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import { useAppDispatch } from '../../hooks';

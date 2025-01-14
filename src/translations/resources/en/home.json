@@ -73,7 +73,14 @@
     "node_started": "{{chainName}} Node Started!",
     "err_unable_identity": "Unable to generate node identity. Try again later.",
     "err_delete": "Error while deleting {{chainName}} Node. Please try again.",
-    "node_deleted": "{{chainName}} Node Deleted!"
+    "node_deleted": "{{chainName}} Node Deleted!",
+    "add_to_flux_storage": "Add to Flux Storage",
+    "add_to_flux_storage_info": "This action will upload your configured Flux Node to Flux Storage. This is used to simplify the setup of your FluxOS. You will be presented with storage identifier to use for your FluxOS setup.",
+    "node_uploaded_storage": "{{chainName}} Node Uploaded to Flux Storage!",
+    "err_upload_storage": "Error while uploading {{chainName}} Node to Flux Storage. Please try again.",
+    "storage_phrase": "Storage Phrase",
+    "add_to_storage_added": "Your Flux Node is available in Flux Storage, you can now use it in your FluxOS setup.",
+    "add_to_storage_added_info": "Copy the Flux Storage Phrase and use it in your FluxOS setup."
   },
   "setupNode": {
     "setup_node": "Setup {{chainName}} Node",
@@ -170,9 +177,9 @@
   },
   "key": {
     "sync_key": "Sync Key",
-    "err_sync_fail": "Synchronisation failed. Please try again manually.",
+    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
     "warn_await_sync": "Awaiting SSP Key synchronisation or manual input.",
-    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.",
+    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
     "err_invalid_key": "Invalid SSP Key.",
     "err_k2": "Code K2: Something went wrong while decrypting password.",
     "err_k1": "Code K1: Something went wrong while decrypting password.",

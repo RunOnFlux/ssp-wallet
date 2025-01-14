@@ -17,7 +17,7 @@ describe('Nodes Lib', function () {
   describe('Verifies nodes', function () {
     it('should return fetchNodesUtxos data when value is valid', async function () {
       const res = await fetchNodesUtxos(
-        't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
+        't3ZQQsd8hJNw6UQKYLwfofdL3ntPmgkwofH',
         'flux',
       );
       expect(res[0]).to.not.be.null;
@@ -37,7 +37,7 @@ describe('Nodes Lib', function () {
 
     it('should return getNodesOnNetwork data when value is valid', async function () {
       const res = await getNodesOnNetwork(
-        't1ex3ZyD2gYqztumQpgG6uPDGK5iHFY6aEd',
+        't3ZQQsd8hJNw6UQKYLwfofdL3ntPmgkwofH',
         'flux',
       );
       expect(res[0]).to.not.be.null;
@@ -46,7 +46,7 @@ describe('Nodes Lib', function () {
       expect(res[0].collateral).to.not.be.undefined;
       expect(res[0].txhash).to.not.be.null;
       expect(res[0].txhash).to.not.be.undefined;
-      assert.equal(res[0].outidx, 0);
+      assert.equal(+res[0].outidx, 23);
       expect(res[0].ip).to.not.be.null;
       expect(res[0].ip).to.not.be.undefined;
       assert.equal(res[0].network, 'ipv4');
