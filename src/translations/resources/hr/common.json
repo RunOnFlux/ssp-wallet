@@ -1,7 +1,7 @@
 {
   "appName": {
-    "full": "SSP Novčanik",
-    "moto": "Sigurno. Jednostavno. Snažno."
+    "full": "SSP Wallet",
+    "moto": "Secure. Simple. Powerful."
   },
   "back": "Natrag",
   "cancel": "Poništi",
@@ -18,7 +18,7 @@
   "reset": "Resetiraj",
   "close": "Zatvori",
   "chain": "Chain",
-  "get": "Lanac",
+  "get": "Dobiti",
   "started": "Započeta!",
   "import": "Uvoz",
   "create": "Izradi",
@@ -26,18 +26,18 @@
   "password": "Lozinka",
   "backup": "Sigurnosna Kopija",
   "sync": "Sinkroniziraj",
-  "ssp_key": "SSP Ključ",
+  "ssp_key": "SSP Key",
   "start": "Započni",
   "delete": "Izbriši",
   "edit": "Uredi",
   "fluxos": "FluxOS",
   "success": "USPJEH",
-  "error": "POGREŠKA",
+  "error": "ERROR",
   "request_rejected": "Zahtjev Odbijen",
   "name": "Ime",
   "address": "Adresa",
   "activity": "Aktivnost",
-  "nodes": "Čvorovi",
+  "nodes": "Nody",
   "tokens": "Tokeni",
   "add_custom_token": "Dodaj Prilagođeni Token"
 }
