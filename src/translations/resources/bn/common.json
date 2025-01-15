@@ -1,16 +1,16 @@
 {
   "appName": {
-    "full": "SSP Wallet",
+    "full": "SSP ওয়ালেট",
     "moto": "নিরাপদ. সহজ. শক্তিশালী."
   },
-  "back": "Back",
-  "cancel": "Cancel",
-  "refresh": "Refresh",
-  "settings": "Settings",
-  "restore": "Restore",
-  "flux": "Flux",
-  "powered_by": "Powered by",
-  "ok": "OK",
+  "back": "পেছনে",
+  "cancel": "বাতিল করুন",
+  "refresh": "রিফ্রেশ করুন",
+  "settings": "সেটিংস",
+  "restore": "পুনরুদ্ধার করুন",
+  "flux": "ফ্লাক্স",
+  "powered_by": "দ্বারা চালিত",
+  "ok": "ঠিক আছে",
   "help": "Help",
   "save": "Save",
   "confirm": "Confirm",
@@ -39,5 +39,5 @@
   "activity": "Activity",
   "nodes": "Nodes",
   "tokens": "Tokens",
-  "add_custom_token": "Add Custom Token"
+  "add_custom_token": "কাস্টম টোকেন যোগ করুন"
 }
