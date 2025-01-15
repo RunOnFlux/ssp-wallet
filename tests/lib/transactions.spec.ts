@@ -344,10 +344,12 @@ describe('Transactions Lib', function () {
       const res = decodeTransactionForApproval('{}', 'sepolia');
       assert.deepEqual(res, {
         sender: 'decodingError',
+        decimals: 18,
         receiver: 'decodingError',
         amount: 'decodingError',
         fee: 'decodingError',
         token: 'decodingError',
+        tokenSymbol: 'decodingError',
       });
     });
 
@@ -375,8 +377,10 @@ describe('Transactions Lib', function () {
         sender: '0xd447BA08b0d395fCAd6e480d270529c932289Ce1',
         receiver: '0x66324EE406cCccdDdAd7f510a61Af22DeC391606',
         amount: '0.1',
+        decimals: 18,
         fee: '591584934602552',
         token: '',
+        tokenSymbol: 'TEST-ETH',
       });
     });
 
@@ -384,10 +388,12 @@ describe('Transactions Lib', function () {
       const res = decodeEVMTransactionForApproval('{}', 'sepolia');
       assert.deepEqual(res, {
         sender: 'decodingError',
+        decimals: 18,
         receiver: 'decodingError',
         amount: 'decodingError',
         fee: 'decodingError',
         token: 'decodingError',
+        tokenSymbol: 'decodingError',
       });
     });
   });
