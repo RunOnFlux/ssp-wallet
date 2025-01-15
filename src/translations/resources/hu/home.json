@@ -1,8 +1,8 @@
 {
-  "err_panic": "PANIC: Invalid SSP Key.",
+  "err_panic": "PÁNIK: Helytelen SSP kulcs.",
   "balances": {
-    "locked": "Locked: {{balance}} {{symbol}}",
-    "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
+    "locked": "Zárolva",
+    "fiat_value": "{{Ft}}{{HUF}}"
   },
   "txSent": {
     "show_in_explorer": "Show in Explorer",
