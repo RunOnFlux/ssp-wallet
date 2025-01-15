@@ -10,7 +10,7 @@
   "send": "Send",
   "receiver_address": "Receiver Address",
   "input_receiver_address": "Please input receivers address",
-  "amount_to_send": "Amount to Send",
+  "amount_to_send": "Kwota Do Wysłania",
   "input_amount": "Input Amount to send",
   "fee": "Fee",
   "max_fee": "Max Fee",
