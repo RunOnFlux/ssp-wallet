@@ -243,6 +243,8 @@ export interface pendingTransaction {
   createdAt: string;
   expireAt: string;
   payload: string;
+  tokenSymbol?: string;
+  decimals?: number;
 }
 
 export interface getInfoInsight {

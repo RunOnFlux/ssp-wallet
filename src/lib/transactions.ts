@@ -718,6 +718,8 @@ export function decodeEVMTransactionForApproval(
       amount,
       fee: totalFeeWei.toFixed(),
       token: '',
+      tokenSymbol: '',
+      decimals: 18,
     };
 
     if (amount === '0') {
@@ -729,6 +731,8 @@ export function decodeEVMTransactionForApproval(
         .find((t) => t.contract.toLowerCase() === txInfo.token.toLowerCase());
       if (token) {
         decimals = token.decimals;
+        txInfo.tokenSymbol = token.symbol;
+        txInfo.decimals = token.decimals;
       }
       const contractData: `0x${string}` = decodedData.args[2] as `0x${string}`;
       // most likely we are dealing with a contract call, sending some erc20 token
@@ -749,6 +753,8 @@ export function decodeEVMTransactionForApproval(
           .dividedBy(new BigNumber(10 ** decimals))
           .toFixed();
       }
+    } else {
+      txInfo.tokenSymbol = blockchains[chain].symbol;
     }
 
     return txInfo;
@@ -760,6 +766,8 @@ export function decodeEVMTransactionForApproval(
       amount: 'decodingError',
       fee: 'decodingError',
       token: 'decodingError',
+      tokenSymbol: 'decodingError',
+      decimals: 18,
     };
     return txInfo;
   }

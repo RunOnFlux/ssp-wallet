@@ -5,6 +5,7 @@ import BigNumber from 'bignumber.js';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import './Transactions.css';
 import { useTranslation } from 'react-i18next';
+import { sspConfig } from '@storage/ssp';
 import CountdownTimer from './CountDownTimer.tsx';
 import { VerticalAlignTopOutlined } from '@ant-design/icons';
 import ConfirmTxKey from '../ConfirmTxKey/ConfirmTxKey.tsx';
@@ -27,6 +28,9 @@ function PendingTransactionsTable(props: {
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { walletInUse } = useAppSelector((state) => state[activeChain]);
   const blockchainConfig = blockchains[activeChain];
+  const { cryptoRates, fiatRates } = useAppSelector(
+    (state) => state.fiatCryptoRates,
+  );
 
   useEffect(() => {
     setPendingTxs(props.transactions);
@@ -42,6 +46,15 @@ function PendingTransactionsTable(props: {
     setTimeout(() => {
       props.refresh(); // refresh on parent
     }, 500);
+  };
+
+  const getCryptoRate = (
+    crypto: keyof typeof cryptoRates,
+    fiat: keyof typeof fiatRates,
+  ) => {
+    const cr = cryptoRates[crypto] ?? 0;
+    const fi = fiatRates[fiat] ?? 0;
+    return cr * fi;
   };
 
   return (
@@ -90,15 +103,23 @@ function PendingTransactionsTable(props: {
             title={t('home:transactionsTable.amount')}
             className="table-amount"
             dataIndex="amount"
-            render={(amnt: string) => (
+            render={(amnt: string, record: pendingTransaction) => (
               <>
-                -{formatCrypto(new BigNumber(amnt))} {blockchainConfig.symbol}
+                -{formatCrypto(new BigNumber(amnt))}{' '}
+                {record.tokenSymbol || blockchainConfig.symbol}
                 <br />
                 <div style={{ color: 'grey', fontSize: 12 }}>
                   -
                   {formatFiatWithSymbol(
                     new BigNumber(Math.abs(+amnt)).multipliedBy(
-                      new BigNumber(fiatRate),
+                      new BigNumber(
+                        record.tokenSymbol
+                          ? getCryptoRate(
+                              record.tokenSymbol.toLowerCase() as keyof typeof cryptoRates,
+                              sspConfig().fiatCurrency,
+                            )
+                          : fiatRate,
+                      ),
                     ),
                   )}
                 </div>
