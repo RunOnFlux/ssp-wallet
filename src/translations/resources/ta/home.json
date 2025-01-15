@@ -11,7 +11,7 @@
   "txRejected": {
     "tx_rejected": "Transaction Rejected!",
     "tx_rejected_info": "Transaction rejected by SSP Key.",
-    "tx_rejected_info_2": "Your transaction will not be included in the blockchain. Your funds are fully available and possible to be sent."
+    "tx_rejected_info_2": "உங்கள் பரிவர்த்தனை பிளாக்செயினில் சேர்க்கப்படவில்லை. உங்கள் நிதிகள் முழுமையாகக் கிடைக்கின்றன மற்றும் அனுப்புவதற்கு சாத்தியமாக உள்ளது."
   },
   "publicNoncesRejected": {
     "public_nonces_rejected": "Public Nonces Rejected!",
@@ -19,8 +19,8 @@
     "public_nonces_rejected_info_2": "SSP Key rejected to send public nonces. Without public nonces SSP Wallet cannot construct transactions on EVM chains."
   },
   "publicNoncesReceived": {
-    "public_nonces_received": "Public Nonces Received!",
-    "public_nonces_received_info": "Public Nonces were received and stored successfully. Public Nonces are used to construct transactions on EVM chains."
+    "public_nonces_received": "பொதுவான நொன்சுகள் பெற்றவை!",
+    "public_nonces_received_info": "பொதுவான நொன்சுகள் பெறப்பட்டு வெற்றிகரமாகச் சேமிக்கப்பட்டது. பொதுவான நொன்சுகள் EVM சங்கிலிகளில் பரிவர்த்தனைகளை உருவாக்கப் பயன்படுத்தப்படுகின்றன."
   },
   "transactionsTable": {
     "no_tx_history": "No Transaction History Found",
@@ -33,7 +33,7 @@
     "amount": "Amount",
     "confirmations": "Confirmations",
     "export_tx": "Export Transactions",
-    "tx_confirmed": "Confirmed.",
+    "tx_confirmed": "உறுதிப்படுத்தப்பட்டது.",
     "tx_unconfirmed": "Unconfirmed. Transaction not yet mined.",
     "tx_pending": "Pending. Transaction is awaiting SSP Key authorization.",
     "replace_by_fee": "Replace by Fee",
@@ -57,22 +57,22 @@
     "start_node": "Start {{chainName}} Node",
     "start_node_info": "This action will broadcast Start Transaction to the blockchain trying to start your {{chainName}} Node.",
     "start_node_info_2": "Make sure your {{chainName}} Node is running and passing benchmark before starting your node to avoid DoS status.",
-    "delete_node": "Delete {{chainName}} Node",
+    "delete_node": "நீக்கவும் {{chainName}} நொடு",
     "delete_node_info": "This action will make your {{chainName}} Node locked collateral available for spending.",
     "delete_node_info_2": "Your {{chainName}} Node will continue to run and can be set up again if your node collateral is not spent.",
     "open_fluxos": "Open FluxOS",
-    "open_fluxos_info": "This action will open FluxOS in your browser, minimizing SSP Wallet.",
+    "open_fluxos_info": "இந்தச் செயல் உங்கள் உலாவியில் FluxOS ஐ திறக்கக்கூடியது, SSP வாலட்டை குறைப்பதற்கான நடவடிக்கையாகும்.",
     "setup_node": "Setup {{chainName}} Node",
     "err_start": "Error while starting {{chainName}} Node. Make sure your collateral has 100 confirmations, and node status is offlin, then please try again.",
     "offline": "Offline",
     "confirmed": "Confirmed",
     "started": "Started",
-    "starting": "Starting",
-    "unassigned": "Unassigned",
+    "starting": "தொடங்கப்படுகிறது",
+    "unassigned": "ஒதுக்கப்படாதது",
     "dos": "DoS",
     "node_started": "{{chainName}} Node Started!",
     "err_unable_identity": "Unable to generate node identity. Try again later.",
-    "err_delete": "Error while deleting {{chainName}} Node. Please try again.",
+    "err_delete": "{{chainName}} நொடியை நீக்கும்போது பிழை ஏற்பட்டது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
     "node_deleted": "{{chainName}} Node Deleted!",
     "add_to_flux_storage": "Add to Flux Storage",
     "add_to_flux_storage_info": "This action will upload your configured Flux Node to Flux Storage. This is used to simplify the setup of your FluxOS. You will be presented with storage identifier to use for your FluxOS setup.",
