@@ -820,8 +820,10 @@ export async function estimateGas(
   const backendConfig = backends()[chain];
   const url = `https://${backendConfig.node}`;
 
-  // get address nonce. if 0, use gas limit of 347763  * 1.7
-  // if > =, use gas limit of 119098 * 1.7
+  // @TODO we can run the user operation gas estimate before we construct the transaction to check if it has sufficient gas. But this needs to run with address having sufficient funds
+
+  // get address nonce. if 0, use gas limit of 347763  * 1.4
+  // if > =, use gas limit of 119098 * 1.4
 
   // const data = {
   //   id: new Date().getTime(),
@@ -833,20 +835,20 @@ export async function estimateGas(
   // account creation:
 
   // result: {
-  //   preVerificationGas: '0xb904',
-  //   callGasLimit: '0x4bb8',
-  //   verificationGasLimit: '0x449b7' 281015
+  //   preVerificationGas: '0xfb15', // 64277
+  //   callGasLimit: '0xf068', // 61544
+  //   verificationGasLimit: '0x600cd' 393421
   // }
-  // = 347763 gas
+  // = 64277+61544+393421 = 521242
 
   // account exists:
 
   // result: {
-  //   preVerificationGas: '0xb2d4', 45780
-  //   callGasLimit: '0x3bb8', 15288
-  //   verificationGasLimit: '0xe2ae' 58030
+  //   preVerificationGas: '0xf27c', 62076
+  //   callGasLimit: '0x6a02', 27138
+  //   verificationGasLimit: '0x13d5a' 81242
   // }
-  // = 119098 gas
+  // = 62076+27138+81242 = 170456
   // // 2 scenarios coded
   // 1st transfer with account creation if nonce is 0
   // 2nd transfer if nonce is present, account present
@@ -855,33 +857,33 @@ export async function estimateGas(
   //   jsonrpc: '2.0',
   //   id: 1720186600388,
   //   result: {
-  //     preVerificationGas: '0xe2d1', 58065
-  //     callGasLimit: '0x7194', 29076
-  //     verificationGasLimit: '0x11c38' 72760
+  //     preVerificationGas: '0xf618', 63000
+  //     callGasLimit: '0xda02', 55810
+  //     verificationGasLimit: '0x13e54' 81492
   //   }
-  // }
+  // } 63000+55810+81492 = 200302
 
   // with init erc20 does not exists{
   //   jsonrpc: '2.0',
   //   id: 1720186774250,
   //   result: {
-  //     preVerificationGas: '0xea8d', 60045
-  //     callGasLimit: '0x7194', 29076
-  //     verificationGasLimit: '0x55dae' 351662
+  //     preVerificationGas: '0xfed3', 65235
+  //     callGasLimit: '0xda02', 55810
+  //     verificationGasLimit: '0x60285' 393861
   //   }
-  // }
+  // } 65235+49430+393861 = 508526
 
   if (nonceCache[sender]) {
     if (nonceCache[sender] === '0x0') {
       if (token) {
-        return (440783 * 1.7).toFixed();
+        return (521242 * 1.4).toFixed();
       }
-      return (347763 * 1.7).toFixed();
+      return (521242 * 1.4).toFixed();
     }
     if (token) {
-      return (159901 * 1.7).toFixed();
+      return (200302 * 1.4).toFixed();
     }
-    return (119098 * 1.7).toFixed();
+    return (170456 * 1.4).toFixed();
   }
   const data = {
     id: new Date().getTime(),
@@ -892,16 +894,16 @@ export async function estimateGas(
   const response = await axios.post<eth_evm>(url, data);
   console.log(response.data);
   nonceCache[sender] = response.data.result;
-  if (response.data.result === '0x0') {
+  if (nonceCache[sender] === '0x0') {
     if (token) {
-      return (440783 * 1.7).toFixed();
+      return (523242 * 1.4).toFixed();
     }
-    return (347763 * 1.7).toFixed();
+    return (523242 * 1.4).toFixed();
   }
   if (token) {
-    return (159901 * 1.7).toFixed();
+    return (203302 * 1.4).toFixed();
   }
-  return (119098 * 1.7).toFixed();
+  return (173456 * 1.4).toFixed();
 }
 
 interface publicNonces {
@@ -966,9 +968,9 @@ export async function constructAndSignEVMTransaction(
         entryPoint: getEntryPoint(CHAIN),
       });
 
-    let preVerificationGas = Math.ceil((token ? 60045 : 47364) * 1.7);
-    let callGasLimit = Math.ceil((token ? 29076 : 19384) * 1.7);
-    const suggestedVerLimit = Math.ceil((token ? 440783 : 347763) * 1.7);
+    let preVerificationGas = Math.ceil((token ? 65235 : 64277) * 1.4);
+    let callGasLimit = Math.ceil((token ? 63544 : 63544) * 1.4);
+    const suggestedVerLimit = Math.ceil((token ? 393861 : 393421) * 1.4);
     // if we have more than suggestedVerLimit split it 1, 1, 2
     const difference =
       Number(maxTotalGas) -
@@ -985,6 +987,10 @@ export async function constructAndSignEVMTransaction(
       Number(maxTotalGas) - preVerificationGas - callGasLimit,
     );
 
+    if (verificationGasLimit < 0) {
+      throw new Error(`Please increase gas limit manually.`);
+    }
+
     const priorityGas = new BigNumber(priorityGasPrice)
       .multipliedBy(10 ** 9)
       .toFixed(0);
@@ -1000,12 +1006,12 @@ export async function constructAndSignEVMTransaction(
         },
         maxFeePerGas: { max: BigInt(baseGas), min: BigInt(baseGas) },
         preVerificationGas: {
-          multiplier: 1.4,
+          multiplier: 1.3,
           max: BigInt(preVerificationGas),
         },
-        callGasLimit: { multiplier: 1.4, max: BigInt(callGasLimit) },
+        callGasLimit: { multiplier: 1.3, max: BigInt(callGasLimit) },
         verificationGasLimit: {
-          multiplier: 1.4,
+          multiplier: 1.3,
           max: BigInt(verificationGasLimit),
         },
       },
@@ -1073,6 +1079,21 @@ export async function constructAndSignEVMTransaction(
       uoStructHexlified,
     );
     multiSigUserOp.signMultiSigHash(schnorrSigner1); // we post this to our server
+    // @TODO do a preflight check. This is getting 429 oftenly, consult with Alchemy
+    // const userOpJson = multiSigUserOp.toJson();
+    // // do a preflight check that the gas is sufficient
+    // const dataPreflight = {
+    //   id: new Date().getTime(),
+    //   jsonrpc: '2.0',
+    //   method: 'eth_estimateUserOperationGas',
+    //   params: [userOpJson?.userOpRequest, blockchainConfig.entrypointAddress],
+    // };
+    // const responsePreflight = await axios.post<eth_evm>(rpcUrl, dataPreflight);
+    // if (!responsePreflight.data.result) {
+    //   throw new Error(
+    //     'Preflight check failed. Gas limit isinsufficient. Please increase gas limit manually and try again.',
+    //   );
+    // }
     return JSON.stringify(multiSigUserOp.toJson());
   } catch (error) {
     console.log(error);
