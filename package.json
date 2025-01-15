@@ -19,7 +19,7 @@
     "@metamask/browser-passworder": "~5.0.1",
     "@noble/hashes": "~1.6.1",
     "@reduxjs/toolkit": "~2.3.0",
-    "@runonflux/aa-schnorr-multisig-sdk": "~1.0.4",
+    "@runonflux/aa-schnorr-multisig-sdk": "~1.1.1",
     "@runonflux/flux-sdk": "~1.0.3",
     "@runonflux/utxo-lib": "~1.0.1",
     "@scure/bip32": "~1.6.0",
