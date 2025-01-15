@@ -22,7 +22,7 @@
   "not_evil": "nepokusím temnou stranu",
   "import_wallet": "Importovat Peněženku",
   "wallet_seed_info": "Seed fráze peněženky generuje veškeré adresy. Kdokoliv kdo má vaši seed frázi má částečnou kontrolu nad vaší peněženkou.",
-  "wallet_seed_info_2": "SSP Wallet and SSP Key must both be using unique, different seed phrases.",
+  "wallet_seed_info_2": "SSP Peněženka i SSP Klíč musí obě používat jinou unikátní seed frázi.",
   "backup_wallet_seed": "Zálohovat Seed Frázi Peněženky",
   "keep_seed_safe": "Uschovejte si zálohovanou seed frázi na bezpečném místě.",
   "seed_loose_info": "Ztráta seed fráze peněženky způsobí ztrátu přístupu k celé vaší peněžence a jejím financím.",
