@@ -1,14 +1,14 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
-  "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
-  "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "தவறான கடவுச்சொல். தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
+  "err_invalid_pw_2": "தவறான கடவுச்சொல். தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
+  "err_l3": "கோடு L3: வாலட் தரவு காணவில்லை. தயவுசெய்து உங்கள் வாலட்டை மீட்டமைக்கவும்.",
+  "err_l2": "கோடு L2: வாலட் தரவு காணவில்லை. தயவுசெய்து உங்கள் வாலட்டை மீட்டமைக்கவும்.",
+  "err_l1": "கோடு L1: வாலட் தரவு காணவில்லை. தயவுசெய்து உங்கள் வாலட்டை மீட்டமைக்கவும்.",
+  "welcome_back": "மீண்டும் வரவேற்கின்றேன்!",
+  "to_dec_cloud": "உங்கள் விநியோகிக்கப்பட்ட கிளவுட்へ",
+  "unlock_with_pw": "கடவுச்சொல் மூலம் அனுமதிக்கவும்",
+  "enter_pw": "கடவுச்சொல் உள்ளிடவும்",
+  "unlock_wallet": "வாலட்டை திறக்கவும்",
+  "forgot_pw": "கடவுச்சொல் மறந்துவிட்டீர்களா?",
+  "restore": "மீட்டமைக்கவும்"
 }
