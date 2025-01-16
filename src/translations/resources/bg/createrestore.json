@@ -1,5 +1,5 @@
 {
-  "info_backup_needed": "You must backup your wallet seed phrase before you can create a wallet.",
+  "info_backup_needed": "Трябва да направите резервно копие на seed фразата на портфейла си, преди да създадете портфейл.",
   "err_enter_seed": "Please enter your seed phrase.",
   "err_seed_invalid": "Wallet Seed Phrase is invalid. Seed Phrase consists of at least 12 words.",
   "err_seed_invalid_words": "Wallet Seed Phrase has not valid words: {{words}}.",
@@ -35,7 +35,7 @@
   "create_pw": "Създай парола",
   "create_wallet": "Създай портфейл",
   "restore_wallet": "Restore Wallet",
-  "restore_with_seed": "Възстанови чрез сийд фраза",
+  "restore_with_seed": "Възстанови чрез seed фраза",
   "backup_confirmed": "Backup Confirmed!",
   "confirm_wallet_seed_word": "Confirm Wallet Seed",
   "word_number": "Word #{{number}}",
