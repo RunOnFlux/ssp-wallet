@@ -1,40 +1,40 @@
 {
-  "err_panic": "PANIC: Invalid SSP Key.",
+  "err_panic": "PÁNICO: Clave SSP inválida.",
   "balances": {
-    "locked": "Locked: {{balance}} {{symbol}}",
+    "locked": "Bloqueado: {{balance}} {{symbol}}",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
-    "show_in_explorer": "Show in Explorer",
-    "tx_sent": "Transaction Sent!"
+    "show_in_explorer": "Mostrar en el Navegador",
+    "tx_sent": "¡Transacción enviada!"
   },
   "txRejected": {
-    "tx_rejected": "Transaction Rejected!",
-    "tx_rejected_info": "Transaction rejected by SSP Key.",
-    "tx_rejected_info_2": "Your transaction will not be included in the blockchain. Your funds are fully available and possible to be sent."
+    "tx_rejected": "¡Transacción rechazada!",
+    "tx_rejected_info": "Transacción rechazada por la clave SSP.",
+    "tx_rejected_info_2": "Su transacción no se incluirá en la cadena de bloques.\nSus fondos están completamente disponibles para ser enviados."
   },
   "publicNoncesRejected": {
-    "public_nonces_rejected": "Public Nonces Rejected!",
-    "public_nonces_rejected_info": "Public Nonces rejected by SSP Key.",
-    "public_nonces_rejected_info_2": "SSP Key rejected to send public nonces. Without public nonces SSP Wallet cannot construct transactions on EVM chains."
+    "public_nonces_rejected": "¡Nonces Públicos Rechazados!",
+    "public_nonces_rejected_info": "Nonces Públicos rechazados por la Clave SSP.",
+    "public_nonces_rejected_info_2": "Clave SSP rechazada para enviar nonces públicos. Sin nonces públicos la Cartera SSP no puede construir transacciones en cadenas EVM."
   },
   "publicNoncesReceived": {
-    "public_nonces_received": "Public Nonces Received!",
-    "public_nonces_received_info": "Public Nonces were received and stored successfully. Public Nonces are used to construct transactions on EVM chains."
+    "public_nonces_received": "Nonces Públicos Recibidos!",
+    "public_nonces_received_info": "Los Nonces Públicos fueron recibidos y almacenados exitosamente.\nLos Nonces Públicos son usados para construir transacciones en cadenas EVM."
   },
   "transactionsTable": {
-    "no_tx_history": "No Transaction History Found",
+    "no_tx_history": "No se encontró Historial de Transacciones",
     "txid_link": "TXID: {{txid}}",
     "out_id": "Output ID: {{vout}}",
-    "fee_with_symbol": "Fee: {{fee}} {{symbol}}",
-    "note_with_note": "Note: {{note}}",
-    "direction": "Direction",
-    "date": "Date",
-    "amount": "Amount",
-    "confirmations": "Confirmations",
-    "export_tx": "Export Transactions",
-    "tx_confirmed": "Confirmed.",
-    "tx_unconfirmed": "Unconfirmed. Transaction not yet mined.",
+    "fee_with_symbol": "Comisión: {{fee}} {{symbol}}",
+    "note_with_note": "Nota: {{note}}",
+    "direction": "Dirección",
+    "date": "Fecha",
+    "amount": "Cantidad",
+    "confirmations": "Confirmaciones",
+    "export_tx": "Exportar Transacciones",
+    "tx_confirmed": "Confirmado.",
+    "tx_unconfirmed": "Sin confirmar. Transacción aún no minada.",
     "tx_pending": "Pending. Transaction is awaiting SSP Key authorization.",
     "replace_by_fee": "Replace by Fee",
     "replace_by_fee_info": "Increases fee, replaces or cancels transaction.",
