@@ -2,7 +2,7 @@
   "info_backup_needed": "Bạn phải sao lưu các cụm từ phục hồi trước khi bạn có thể khởi tạo một ví.",
   "err_enter_seed": "Hãy điền cụm từ phục hồi của bạn.",
   "err_seed_invalid": "Cụm từ phục hồi chưa chính xác. Cụm từ phục hồi có ít nhất 12 từ độc lập.",
-  "err_seed_invalid_words": "Cụm từ phục hồi không có các từ hợp lệ:.",
+  "err_seed_invalid_words": "Cụm từ phục hồi không có các từ hợp lệ: {{words}}.",
   "err_seed_invalid_spaces": "Cụm từ phục hồi bị dư khoảng trống.",
   "err_pw_min_char": "Mật khẩu phải có ít nhất 8 ký tự.",
   "err_pw_not_match": "Mật khẩu không khớp.",
@@ -38,6 +38,6 @@
   "restore_with_seed": "Khôi phục với cụm từ phục hồi",
   "backup_confirmed": "Đã xác nhận sao lưu!",
   "confirm_wallet_seed_word": "Xác nhận cụm ví",
-  "word_number": "Từ #",
+  "word_number": "Từ #{{number}}",
   "incorrect_backup_confirmation": "Từ chưa chính xác"
 }
