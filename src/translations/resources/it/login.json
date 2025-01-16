@@ -1,14 +1,14 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
-  "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
-  "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Non è una password valida. Per favore riprova.",
+  "err_invalid_pw_2": "Password non valida. Per favore riprova.",
+  "err_l3": "Codice L3: Dati del portafoglio mancanti. Si prega di ripristinare il portafoglio.",
+  "err_l2": "Codice L2: Dati del portafoglio mancanti. Si prega di ripristinare il portafoglio.",
+  "err_l1": "Codice L1: Dati del portafoglio mancanti. Si prega di ripristinare il portafoglio.",
+  "welcome_back": "Bentornato/a!",
+  "to_dec_cloud": "Al tuo Cloud decentralizzato",
+  "unlock_with_pw": "Sblocca con Password",
+  "enter_pw": "Inserisci la Password",
+  "unlock_wallet": "Sblocca Portafoglio",
+  "forgot_pw": "Hai dimenticato la Password?",
+  "restore": "Ripristina"
 }
