@@ -1,8 +1,8 @@
 {
   "title": "$t(common:appName.full)",
   "subtitle": "$t(common:appName.moto)",
-  "welcome_to": "Welcome to SSP Wallet",
-  "description": "Dual signature wallet for the decentralized world.",
-  "get_started": "Get Started!",
-  "restore_with_seed": "Restore with Seed"
+  "welcome_to": "Üdvözöljük az SSP Wallet-ben",
+  "description": "A kétfaktoros wallet a decentralizált világ számára.",
+  "get_started": "Vágjunk bele!",
+  "restore_with_seed": "Viisszaállítás visszaállítási kulccsal"
 }
