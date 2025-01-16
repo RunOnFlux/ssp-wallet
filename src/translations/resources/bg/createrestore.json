@@ -32,12 +32,12 @@
   "phrase_backed_up": "I have backed up my wallet seed phrase in a secure location.",
   "err_wallet_phrase_invalid_login": "Wallet seed phrase is invalid.",
   "err_c1": "Code C1: Something went wrong while creating wallet.",
-  "create_pw": "Create Password",
-  "create_wallet": "Create Wallet",
+  "create_pw": "Създай парола",
+  "create_wallet": "Създай портфейл",
   "restore_wallet": "Restore Wallet",
-  "restore_with_seed": "Restore with Seed Phrase",
+  "restore_with_seed": "Възстанови чрез сийд фраза",
   "backup_confirmed": "Backup Confirmed!",
   "confirm_wallet_seed_word": "Confirm Wallet Seed",
   "word_number": "Word #{{number}}",
-  "incorrect_backup_confirmation": "Incorrect Word"
+  "incorrect_backup_confirmation": "Неправилна Дума"
 }
