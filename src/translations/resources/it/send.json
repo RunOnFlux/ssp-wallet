@@ -38,6 +38,6 @@
   "input_gas_limit": "Inserisci il prezzo massimo per l'invio della transazione in unità gwei",
   "fee_details": "Dettagli della commissione",
   "max_tx_fee": "Costo massimo della Transazione",
-  "invalid_tx_fee": "Costo di commissione per la transazione non valido",
+  "invalid_tx_fee": "Costo commissione per la transazione non valido",
   "asset": "Asset"
 }
