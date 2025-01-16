@@ -1,7 +1,7 @@
 {
   "err_invalid_receiver": "Invalid receiver address.",
   "err_invalid_amount": "Invalid amount.",
-  "err_invalid_fee": "Invalid fee.",
+  "err_invalid_fee": "Невалидна такса.",
   "err_invalid_message": "Message is too long. Maximum is {{characters}} characters.",
   "err_pwd_not_valid": "Password is not valid.",
   "err_invalid_xpriv": "Invalid wallet xpriv.",
