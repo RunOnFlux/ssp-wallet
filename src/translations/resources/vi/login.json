@@ -1,14 +1,14 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
-  "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
-  "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Không phải một mật khẩu hợp lệ. Hãy thử lại lần nữa.",
+  "err_invalid_pw_2": "Mật khẩu không hợp lệ. Hãy thử lại lần nữa.",
+  "err_l3": "Mã L3: Dữ liệu ví bị thiếu. Hãy khôi phục lại ví của bạn.",
+  "err_l2": "Mã L2: Dữ liệu ví bị thiếu. Hãy khôi phục lại ví của bạn.",
+  "err_l1": "Mã L1: Dữ liệu ví bị thiếu. Hãy khôi phục lại ví của bạn.",
+  "welcome_back": "Chào mừng quay trở lại!",
+  "to_dec_cloud": "Đến với dữ liệu đám mây phi tập trung của bạn",
+  "unlock_with_pw": "Mở khoá bằng mật khẩu",
+  "enter_pw": "Nhập mật khẩu",
+  "unlock_wallet": "Mở khóa ví",
+  "forgot_pw": "Quên mật khẩu?",
+  "restore": "Phục hồi"
 }
