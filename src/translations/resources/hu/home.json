@@ -109,8 +109,8 @@
     "chain_extended_priv": "{{chain}} Bővített magán kulcs",
     "ssp_mnemonic_desc": "A Seed Phrase a pénztárca legfontosabb része. Ez szolgál az összes kiterjesztett privát és nyilvános kulcsod származtatására. Kérjük, írja le, és tartsa biztonságban. Ha elveszíti a Seed Phrase-t, elveszíti a hozzáférést a pénzéhez. Soha ne ossza meg senkivel, mivel ez teljes ellenőrzést biztosít az SSP Wallet felett.",
     "ssp_sync_wallet_key_desc": "Ez a QR-kód szolgál az SSP Wallet szinkronizálására az SSP Key segítségével. Szkennelje be ezt a QR-kódot az SSP Key-vel az SSP Wallet szikronizálása érdekében SSP Key-vel. Ez automatikusan szinkronizálja a Bitcoin-láncot is.",
-    "chain_sync_ssp_key_desc": "This QR code is used to sync your {{chain}} SSP Wallet with your SSP Key. Scan this QR code with your SSP Key to sync your {{chain}} chain.",
-    "chain_extended_pub_desc": "Extended Public key is used to derive all your {{chain}} public keys from which addresses are constructed. This is a public part, safe to share, does not grant access to funds. This is what SSP Wallet syncs with your SSP Key to generate addresses.",
+    "chain_sync_ssp_key_desc": "Ez a QR-kód a {{chain}} SSP Wallet szinkronizálására szolgál az SSP kulcs segítségével. Szkenneld be ezt a QR-kódot az SSP kulccsa a {{chain}} láncod szinkronizálásához.",
+    "chain_extended_pub_desc": "A kiterjesztett nyilvános kulcsot az összes nyilvános {{chain}} kulcs képzéséhez használják, amelyekből a címek épülnek fel. Ez egy nyilvános rész, biztonságosan megosztható, nem biztosít hozzáférést az egyenleghez. Ezt szinkronizálja az SSP Wallet az Ön SSP kulcsával a címek létrehozásához.",
     "chain_extended_priv_desc": "Extended Private key is used to derive all your {{chain}} private keys that control your public keys - addresses. This is a private part, do NOT ever share as it grants access to funds."
   },
   "addressDetails": {
