@@ -111,79 +111,79 @@
     "ssp_sync_wallet_key_desc": "Ez a QR-kód szolgál az SSP Wallet szinkronizálására az SSP Key segítségével. Szkennelje be ezt a QR-kódot az SSP Key-vel az SSP Wallet szikronizálása érdekében SSP Key-vel. Ez automatikusan szinkronizálja a Bitcoin-láncot is.",
     "chain_sync_ssp_key_desc": "Ez a QR-kód a {{chain}} SSP Wallet szinkronizálására szolgál az SSP kulcs segítségével. Szkenneld be ezt a QR-kódot az SSP kulccsa a {{chain}} láncod szinkronizálásához.",
     "chain_extended_pub_desc": "A kiterjesztett nyilvános kulcsot az összes nyilvános {{chain}} kulcs képzéséhez használják, amelyekből a címek épülnek fel. Ez egy nyilvános rész, biztonságosan megosztható, nem biztosít hozzáférést az egyenleghez. Ezt szinkronizálja az SSP Wallet az Ön SSP kulcsával a címek létrehozásához.",
-    "chain_extended_priv_desc": "Extended Private key is used to derive all your {{chain}} private keys that control your public keys - addresses. This is a private part, do NOT ever share as it grants access to funds."
+    "chain_extended_priv_desc": "A kibővített magánkulcsot a kiterjesztett {{chain}} magánkulcsuknok képzésére használják, amelyek a nyilvános kulcsokat - címeket - irányítják. Ez egy privát rész, soha ne ossza meg, mivel hozzáférést biztosít az egyenleghez."
   },
   "addressDetails": {
-    "chain_bip": "{{chain}} Address Details (BIP-48)",
-    "wallet_redeem_script": "Wallet Redeem Script",
-    "wallet_witness_script": "Wallet Witness Script",
-    "wallet_priv_key": "Wallet Private Key",
-    "wallet_redeem_script_desc": "Redeem script code is describing the conditions that must be met to spend funds of your wallet. You will generally never need this code, but it is good to have it saved somewhere in case you need it. It is safe to share, does not grant control over your funds but exposes public keys.",
-    "wallet_witness_script_desc": "Witness script code is describing the conditions that must be met to spend funds of your wallet. You will generally never need this code, but it is good to have it saved somewhere in case you need it. It is safe to share, does not grant control over your funds but exposes public keys.",
-    "wallet_priv_key_desc": "Private key grants control over your specific wallet address. This is a private part, do NOT ever share as it grants access to funds."
+    "chain_bip": "{{chain}} címadatok (BIP-48)",
+    "wallet_redeem_script": "Wallet kiváltási script",
+    "wallet_witness_script": "Wallet tanúsítvány script",
+    "wallet_priv_key": "Privát tárcakulcs",
+    "wallet_redeem_script_desc": "Beváltási script kód leírja a feltételeket, amelyeknek teljesülniük kell, a pénztárca egyenleg felhasználásához. Erre a kódra általában soha nem lesz szükséged, de jó, ha valahol elmented arra az esetre, ha szükséged lenne rá. Biztonságosan megosztható, nem ad jogot az egyenleg felett, de a nyilvános kulcsokat feltárja.",
+    "wallet_witness_script_desc": "A “witness script\" kód leírja azokat a feltételeket, amelyeknek teljesülniük kell ahhoz, hogy hozzáférj a pénztárcád egyenlegéhez. Általában soha nem lesz szükséged erre a kódra, de érdemes elmenteni valahova arra az esetre, ha mégis szükséged lenne rá. Megosztása biztonságos, nem ad hozzáférést az egyenlegedhez, azonban a nyilvános kulcsokat felfedi.",
+    "wallet_priv_key_desc": "A privát kulcs irányítást biztosít a pénztárcád adott címe felett. Ez egy bizalmas adat, SOHA NE oszd meg, mivel hozzáférést ad az egyenlegedhez."
   },
   "settings": {
-    "err_saving_conf": "Error while saving configuration. Please try again.",
-    "settings": "Settings",
-    "change_pw": "Change password",
-    "change_pw_restore": "Change password? Restore!",
+    "err_saving_conf": "Hiba lépett fel a Node konfigurálása közben. Kérjük, próbálja meg újra.",
+    "settings": "Beállítások",
+    "change_pw": "Jelszó megváltoztatása",
+    "change_pw_restore": "Jelszó megváltoztatása? Visszaállítás!",
     "ssp_relay": "SSP Relay Server",
-    "chain_node_service": "{{chain}} Node Service",
-    "language": "Language",
-    "fiat_currency": "Fiat Currency"
+    "chain_node_service": "{{chain}} Node szolgáltatás",
+    "language": "Nyelv",
+    "fiat_currency": "Fiat pénznem"
   },
   "receive": {
-    "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
-    "wallet_address": "Wallet Address",
-    "wallet_address_desc": "This is your wallet address. You can share this address with anyone to receive funds."
+    "receive_chain_wallet": "Fogadás a(z) {{chain}} {{wallet}}-ra",
+    "wallet_address": "Tárcacím",
+    "wallet_address_desc": "Ez a pénztárcacímed. Megoszthatod ezt a címet bárkivel, hogy pénzeszközöket fogadj."
   },
   "navigation": {
-    "send": "Send",
-    "receive": "Receive"
+    "send": "Küldés",
+    "receive": "Fogadás"
   },
   "confirmTxKey": {
-    "confirm_tx_key": "Confirm Transaction on SSP Key",
-    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on our mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
-    "info_2": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or use a manual input."
+    "confirm_tx_key": "Fogadja el a tranzakciót az SSP Key-n",
+    "info_1": "Az SSP kulcsodon történő tranzakció megerősítéséhez nyisd meg az SSP kulcsot a mobiltelefonodon, és erősítsd meg a műveletet. Érintsd meg a frissítés gombot, vagy olvasd be a következő QR-kódot.",
+    "info_2": "Az SSP kulcsodon történő tranzakció megerősítéséhez nyisd meg az SSP kulcsot a mobiltelefonodon, és erősítsd meg a műveletet. Érintsd meg a frissítés gombot, vagy használd a kézi bevitel lehetőségét."
   },
   "confirmPublicNoncesKey": {
-    "confirm_public_nonces_key": "Confirm Public Nonces on SSP Key",
-    "confirm_public_nonces_key_info": "In order to send EVM transaction, we first need to obtain public nonces from SSP Key which are used for transaction construction.",
-    "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open your SSP Key on our mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
-    "manual_input": "Input Public Nonces manually instead",
-    "public_nonces_stored": "Public Nonces Stored!",
-    "invalid_public_nonces": "Invalid Public Nonces."
+    "confirm_public_nonces_key": "Erősítsd meg a nyilvános nonce-okat az SSP kulcson",
+    "confirm_public_nonces_key_info": "Ahhoz, hogy EVM tranzakciót küldjünk, először le kell kérnünk a nyilvános nonce-okat az SSP kulcsról, amelyeket a tranzakció felépítéséhez használunk.",
+    "confirm_public_nonces_key_info_2": "A nyilvános nonces SSP kulccsal történő megerősítéshez, nyissa meg a SSP kulcsot a mobiltelefonján és erősítse meg a műveletet. Érintsd meg a frissítés gombot, vagy olvassa be a következő QR-kódot.",
+    "manual_input": "A nyilvános nonce-okat manuálisan is beviheted",
+    "public_nonces_stored": "Nyilvános Nonces mentve!",
+    "invalid_public_nonces": "Érvénytelen nyilvános Nonces."
   },
   "navbar": {
-    "refresh": "Refresh",
-    "chain_wallet": "{{chain}} {{wallet}}",
-    "ssp_details": "SSP Wallet Details",
-    "addr_details": "Address Details",
-    "generate_new_wallet": "Generate New Wallet",
-    "remove_last_wallet": "Remove Last Wallet",
-    "remove": "Remove",
-    "remove_last_wallet_desc": "This action will remove your most recently generated wallet. You can generate the same new wallet at any time.",
-    "switch_chain": "Switch Chain",
-    "max_wallets": "42. The answer to the ultimate question of life, the universe, and everything. You have reached the maximum number of wallets.",
-    "ssp_message_sign": "Message Signing"
+    "refresh": "Frissítés",
+    "chain_wallet": "{{chain}}{{wallet}}",
+    "ssp_details": "SSP Tárca részletek",
+    "addr_details": "Cím részletek",
+    "generate_new_wallet": "Új tárca generálása",
+    "remove_last_wallet": "Utolsó tárca eltávolítása",
+    "remove": "Eltávolítás",
+    "remove_last_wallet_desc": "Ez a művelet eltávolítja a legutóbb létrehozott pénztárcádat. Bármikor létrehozhatod ugyanazt az új pénztárcát.",
+    "switch_chain": "Lánc váltás",
+    "max_wallets": "42. A végső kérdés válasza az életre, a világegyetemre és mindenre. Elérted a pénztárcák maximális számát.",
+    "ssp_message_sign": "Üzenet aláírása"
   },
   "passwordConfirm": {
-    "err_pw_not_valid_try": "Password is not valid. Please try again.",
-    "err_pc1": "Code PC1: Wallet data missing. Please restore your wallet.",
-    "grant_access_info_1": "You are about to access sensitive information.",
-    "grant_access_info_2": "Grant access with password.",
-    "confirm_with_pw": "Confirm with Password",
-    "grant_access": "Grant Access"
+    "err_pw_not_valid_try": "Jelszó érvénytelen. Kérjük, próbálja meg újra.",
+    "err_pc1": "Kód PC1: Tárca adatok hiányoznak. Kérjük, állítsa vissza tárcáját.",
+    "grant_access_info_1": "Érzékeny információkhoz készül hozzáférni.",
+    "grant_access_info_2": "Hozzáférés engedélyezése jelszóval.",
+    "confirm_with_pw": "Jelszóval történő megerősítés",
+    "grant_access": "Hozzáférés engedélyezése"
   },
   "key": {
-    "sync_key": "Sync Key",
-    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
-    "warn_await_sync": "Awaiting SSP Key synchronisation or manual input.",
-    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
-    "err_invalid_key": "Invalid SSP Key.",
-    "err_k2": "Code K2: Something went wrong while decrypting password.",
-    "err_k1": "Code K1: Something went wrong while decrypting password.",
-    "cancel_sync_q": "Cancel SSP Key Sync?",
+    "sync_key": "Szinkronizációs kulcs",
+    "err_sync_fail": "A szinkronizálás sikertelen. A generált cím nem egyezik. Próbáld meg újra manuálisan, és ellenőrizd, hogy ugyanaz a cím lett-e létrehozva az SSP Walletben és az SSP Key-ben. Az SSP Walletnek és az SSP Key-nek egyedi, különböző seed phrase-eket kell használniuk.",
+    "warn_await_sync": "Az SSP kulcs szinkronizálására, vagy a manuális bevitelre vár.",
+    "err_sync_1": "Kérjük, add meg az SSP Key XPUB-t. Az SSP Key XPUB eltér az SSP Wallet XPUB-tól. Győződj meg róla, hogy az SSP Wallet és az SSP Key egyedi, különböző seed phrase-eket használ.",
+    "err_invalid_key": "Érvénytelen SSP kulcs.",
+    "err_k2": "Kód K2: hiba történt a jelszó dekódolásánál.",
+    "err_k1": "Kód K1: hiba történt a jelszó dekódolásánál.",
+    "cancel_sync_q": "SSP Key szinkronizálásának megszakítása?",
     "cancel_sync": "Cancel SSP Sync",
     "back_to_sync": "Back to SSP Key Sync",
     "sync_info_content": "SSP Wallet cannot be used without SSP Key. This will log you out of SSP Wallet.",
