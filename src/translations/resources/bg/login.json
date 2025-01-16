@@ -1,6 +1,6 @@
 {
   "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
+  "err_invalid_pw_2": ".",
   "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
   "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
   "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
