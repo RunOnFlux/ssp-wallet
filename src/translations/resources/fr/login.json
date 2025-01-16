@@ -1,14 +1,14 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
-  "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
-  "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Mot de passe non valide. Veuillez réessayer.",
+  "err_invalid_pw_2": "Mot de passe non valide. Veuillez réessayer.",
+  "err_l3": "Code L3 : Les données du portefeuille sont manquantes. Veuillez restaurer votre portefeuille.",
+  "err_l2": "Code L2 : Les données du portefeuille sont manquantes. Veuillez restaurer votre portefeuille.",
+  "err_l1": "Code L1 : Les données du portefeuille sont manquantes. Veuillez restaurer votre portefeuille.",
+  "welcome_back": "Bon retour parmi nous !",
+  "to_dec_cloud": "Vers votre Cloud décentralisé",
+  "unlock_with_pw": "Déverrouiller avec le mot de passe",
+  "enter_pw": "Entrez votre mot de passe",
+  "unlock_wallet": "Déverrouiller le portefeuille",
+  "forgot_pw": "Mot de passe oublié ?",
+  "restore": "Restaurer"
 }

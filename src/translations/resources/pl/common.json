@@ -1,7 +1,7 @@
 {
   "appName": {
     "full": "SSP Wallet",
-    "moto": "Secure. Simple. Powerful."
+    "moto": "Bezpieczne. Prosty. Wydajny."
   },
   "back": "Back",
   "cancel": "Cancel",
@@ -23,7 +23,7 @@
   "import": "Import",
   "create": "Create",
   "wallet": "Wallet",
-  "password": "Password",
+  "password": "Hasło",
   "backup": "Backup",
   "sync": "Sync",
   "ssp_key": "SSP Key",
@@ -37,7 +37,7 @@
   "name": "Name",
   "address": "Address",
   "activity": "Activity",
-  "nodes": "Nodes",
+  "nodes": "Nody",
   "tokens": "Tokens",
   "add_custom_token": "Add Custom Token"
 }

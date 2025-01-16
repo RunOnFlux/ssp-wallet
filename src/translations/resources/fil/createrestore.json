@@ -22,6 +22,7 @@
   "not_evil": "hindi pagiging masama",
   "import_wallet": "Mag-import ng Wallet",
   "wallet_seed_info": "Ginagamit ang wallet seed para bumuo ng lahat ng address. Ang sinumang may access sa wallet seed ay may bahagyang kontrol sa wallet.",
+  "wallet_seed_info_2": "SSP Wallet and SSP Key must both be using unique, different seed phrases.",
   "backup_wallet_seed": "Mag-backup Wallet Seed",
   "keep_seed_safe": "Panatilihing ligtas at secure ang iyong wallet seed backup.",
   "seed_loose_info": "Ang pagkawala ng wallet seed ay magreresulta sa pagkawala ng access sa iyong wallet..",

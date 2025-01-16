@@ -1,7 +1,7 @@
 {
   "title": "$t(common:appName.full)",
   "subtitle": "$t(common:appName.moto)",
-  "welcome_to": "Vitejte do SSP Peněženky",
+  "welcome_to": "Vítejte do SSP Peněženky",
   "description": "Peněženka pro decentralizovaný svět.",
   "get_started": "Pojďme Začít!",
   "restore_with_seed": "Obnovit se Seed Frází"

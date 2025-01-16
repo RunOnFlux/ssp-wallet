@@ -22,6 +22,7 @@
   "not_evil": "tidak menjadi jahat",
   "import_wallet": "Impor Dompet",
   "wallet_seed_info": "Benih dompet digunakan untuk menghasilkan semua alamat. Siapa pun yang memiliki akses ke seed dompet memiliki kendali sebagian atas dompet tersebut.",
+  "wallet_seed_info_2": "Dompet SSP dan Kunci SSP harus menggunakan frasa awal yang unik dan berbeda.",
   "backup_wallet_seed": "Cadangkan Benih Dompet",
   "keep_seed_safe": "Jaga cadangan benih dompet Anda tetap aman dan terjamin.",
   "seed_loose_info": "Kehilangan benih dompet akan mengakibatkan hilangnya akses ke dompet Anda.",
