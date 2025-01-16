@@ -42,11 +42,18 @@ function LanguageSelector(props: { label: boolean }) {
         dropdownStyle={{ minWidth: '130px' }}
         options={[
           { value: 'en', label: 'en', desc: 'English' },
-          { value: 'de', label: 'de', desc: 'Deutsch' },
-          { value: 'ru', label: 'ru', desc: 'Русский' },
-          { value: 'id', label: 'id', desc: 'Bahasa Indonesia' },
+          { value: 'bn', label: 'bn', desc: 'বাংলা' },
           { value: 'cs', label: 'cs', desc: 'Čeština' },
+          { value: 'de', label: 'de', desc: 'Deutsch' },
+          { value: 'el', label: 'el', desc: 'Ελληνικά' },
           { value: 'fil', label: 'fil', desc: 'Filipino' },
+          { value: 'fr', label: 'fr', desc: 'Français' },
+          { value: 'hr', label: 'hr', desc: 'Hrvatski' },
+          { value: 'hi', label: 'hi', desc: 'हिन्दी' },
+          { value: 'id', label: 'id', desc: 'Bahasa Indonesia' },
+          { value: 'it', label: 'it', desc: 'Italiano' },
+          { value: 'ru', label: 'ru', desc: 'Русский' },
+          { value: 'ta', label: 'ta', desc: 'தமிழ்' },
         ]}
         optionRender={(option) => <>{option.data.desc}</>}
       />

@@ -1,6 +1,13 @@
-export { default as en } from './en/_index';
-export { default as id } from './id/_index';
-export { default as cs } from './cs/_index';
-export { default as fil } from './fil/_index';
-export { default as ru } from './ru/_index';
-export { default as de } from './de/_index';
+export { default as en } from './en/_index'; // English
+export { default as id } from './id/_index'; // Indonesian
+export { default as cs } from './cs/_index'; // Czech
+export { default as fil } from './fil/_index'; // Filipino
+export { default as ru } from './ru/_index'; // Russian
+export { default as de } from './de/_index'; // German
+export { default as fr } from './fr/_index'; // French
+export { default as it } from './it/_index'; // Italian
+export { default as bn } from './bn/_index'; // Bengali
+export { default as hi } from './hi/_index'; // Hindi
+export { default as hr } from './hr/_index'; // Croatian
+export { default as el } from './el/_index'; // Greek
+export { default as ta } from './ta/_index'; // Tamil
