@@ -21,7 +21,7 @@
   "ssp_wallet_disclaimer": "SSP tárca felelősségvállalási nyilatkozat",
   "not_evil": "nem gonoszkodni",
   "import_wallet": "Tárca importálása",
-  "wallet_seed_info": "A pénztárca visszaállítási kulcsa (wallet seed) az összes cím generálására szolgál. Bárki, aki hozzáfér a pénztárca kulcsához, részleges irányítási jogot szerezhet a pénztárca felett.",
+  "wallet_seed_info": "A pénztárca visszaállítási kulcsa az összes cím generálására szolgál. Bárki, aki hozzáfér a pénztárca kulcsához, részleges irányítási jogot szerezhet a pénztárca felett.",
   "wallet_seed_info_2": "Az SSP Tárcának és SSP kulcsnak különböző visszaállítási kulccsal kell rendelkeznie.",
   "backup_wallet_seed": "Készítsen biztonsági mentés a tárca visszaállítási kódjáról",
   "keep_seed_safe": "Tartsa a visszaállítási kulcsát biztonságos és megbízható helyen.",
