@@ -1,14 +1,14 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
-  "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
-  "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "無効なパスワードです。もう一度お試しください.",
+  "err_invalid_pw_2": "パスワードが無効です。もう一度お試しください.",
+  "err_l3": "コード L3: ウォレットデータが欠落しています。ウォレットを復元してください.",
+  "err_l2": "コード L2: ウォレットデータが見つかりません。ウォレットを復元してください.",
+  "err_l1": "コード L1: ウォレットデータが欠落しています。ウォレットを復元してください.",
+  "welcome_back": "お帰りなさい!",
+  "to_dec_cloud": "あなたの分散型クラウドへ",
+  "unlock_with_pw": "パスワードで解除",
+  "enter_pw": "パスワードを入力",
+  "unlock_wallet": "ウォレットを解除",
+  "forgot_pw": "パスワードを忘れましたか?",
+  "restore": "復元"
 }
