@@ -120,7 +120,7 @@
     "wallet_priv_key": "Khóa riêng tư ví",
     "wallet_redeem_script_desc": "Thu đổi mật mã là mô tả các điều kiện cần phải đạt được để chi tiêu tài sản trong ví của bạn. Bạn sẽ thường thì chẳng bao giờ cần mã này, nhưng tốt hơn hết là hãy lưu trữ nó ở đâu đó phòng trường hợp bạn cần đến. Thứ này an toàn để chia sẻ, không cấp quyền truy cập tài sản của bạn những làm lộ các khóa công cộng.",
     "wallet_witness_script_desc": "Bằng chứng mật mã là mô tả các điều kiện cần phải đạt được để chi tiêu tài sản trong ví của bạn. Bạn sẽ thường thì chẳng bao giờ cần mã này, nhưng tốt hơn hết là hãy lưu trữ nó ở đâu đó phòng trường hợp bạn cần đến. Thứ này an toàn để chia sẻ, không cấp quyền truy cập tài sản của bạn những làm lộ các khóa công cộng.",
-    "wallet_priv_key_desc": "Khóa riêng tư đem đến quyền kiểm soát địa chỉ ví đặc thù của bạn. Đây là phần riêng tư, ĐỪNG BAO GIỜ chi sẻ nó vì nó truy cập được vào tài sản của bạn."
+    "wallet_priv_key_desc": "Khóa riêng tư đem đến quyền kiểm soát địa chỉ ví đặc thù của bạn. Đây là phần riêng tư, ĐỪNG BAO GIỜ chia sẻ nó vì nó truy cập được vào tài sản của bạn."
   },
   "settings": {
     "err_saving_conf": "Gặp lỗi khi lưu các tùy chỉnh. Hãy thử lại lần nữa.",
