@@ -2,7 +2,7 @@
   "info_backup_needed": "You must backup your wallet seed phrase before you can create a wallet.",
   "err_enter_seed": "Please enter your seed phrase.",
   "err_seed_invalid": "Wallet Seed Phrase is invalid. Seed Phrase consists of at least 12 words.",
-  "err_seed_invalid_words": "Wallet Seed Phrase has not valid words: {{words}}.",
+  "err_seed_invalid_words": "Cüzdan Gizli Kurtarma İfadesi geçersiz kelimeler içeriyor: {{words}}.",
   "err_seed_invalid_spaces": "Wallet Seed Phrase has extra spaces.",
   "err_pw_min_char": "Password must have at least 8 characters.",
   "err_pw_not_match": "Passwords do not match.",
