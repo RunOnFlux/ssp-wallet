@@ -4,5 +4,5 @@
   "welcome_to": "Welcome to SSP Wallet",
   "description": "Портфейл с двоен подпис за децентрализирания свят.",
   "get_started": "Get Started!",
-  "restore_with_seed": "Възстанови чрез seed фраза"
+  "restore_with_seed": "Възстанови чрез мнемоничната фраза"
 }
