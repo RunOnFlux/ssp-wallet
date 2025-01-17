@@ -38,6 +38,6 @@
   "address": "Dirección",
   "activity": "Actividad",
   "nodes": "Nodos",
-  "tokens": "Fichas",
-  "add_custom_token": "Añadir Ficha Personalizada"
+  "tokens": "Tokens",
+  "add_custom_token": "Añadir Token Personalizado"
 }
