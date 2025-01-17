@@ -1,9 +1,9 @@
 {
   "info_backup_needed": "Трябва да направите резервно копие на seed фразата на портфейла си, преди да създадете портфейл.",
-  "err_enter_seed": "Please enter your seed phrase.",
-  "err_seed_invalid": "Wallet Seed Phrase is invalid. Seed Phrase consists of at least 12 words.",
-  "err_seed_invalid_words": "Wallet Seed Phrase has not valid words: {{words}}.",
-  "err_seed_invalid_spaces": "Wallet Seed Phrase has extra spaces.",
+  "err_enter_seed": "Моля, въведете вашата seed фраза.",
+  "err_seed_invalid": "Мнемоничната фраза на портфейла е невалидна. Мнемоничната фраза трябва да съдържа поне 12 думи.",
+  "err_seed_invalid_words": "Seed фразата на портфейла съдържа невалидни думи: {{words}}.",
+  "err_seed_invalid_spaces": "Seed фразата на портфейла съдържа излишни интервали.",
   "err_pw_min_char": "Password must have at least 8 characters.",
   "err_pw_not_match": "Passwords do not match.",
   "err_tos": "Please agree with Terms of Service.",
@@ -35,9 +35,9 @@
   "create_pw": "Създай парола",
   "create_wallet": "Създай портфейл",
   "restore_wallet": "Restore Wallet",
-  "restore_with_seed": "Възстанови чрез seed фраза",
+  "restore_with_seed": "Възстанови чрез мнемонична фраза",
   "backup_confirmed": "Backup Confirmed!",
-  "confirm_wallet_seed_word": "Confirm Wallet Seed",
+  "confirm_wallet_seed_word": "Потвърдете мнемоничната фраза на портфейла",
   "word_number": "Word #{{number}}",
   "incorrect_backup_confirmation": "Неправилна Дума"
 }
