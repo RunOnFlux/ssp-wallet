@@ -26,7 +26,7 @@
   "using_automatic_fee": "Automatikus hálózati díj használata",
   "using_manual_fee": "Manuális hálózati díj használata",
   "err_insufficient_balance": "Nincs elegendő fedezet",
-  "err_tx_size_limit": "A tranzakció mérete meghaladja a blokklánc korlátait. Kérem, csökkentse az összeget, vagy konszolidálja először az UTXO-kat.",
+  "err_tx_size_limit": "A tranzakció mérete meghaladja a blokklánc korlátait. Kérem, csökkentse az összeget, vagy konszolidálja először a fel nem használt tranzakciós kimeneteket.",
   "replace_by_fee_tx": "Ez egy költség helyettesítő (RBF) tranzakció.",
   "replace_by_fee_stop": "A költség helyettesítő (RBF) tranzakció törléséhez kattintson a Törlés gombra, vagy navigáljon vissza az SSP logóra kattintva.",
   "err_public_nonces": "A nyilvános nonce-ok nem érhetőek el, kérjük, először szinkronizálja a nyilvános nonce-okat az SSP kulcsról.",
