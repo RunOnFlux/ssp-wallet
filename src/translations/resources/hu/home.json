@@ -60,7 +60,7 @@
     "delete_node": "{{chainName}} Node törlése",
     "delete_node_info": "Ez a művelet felszabadítja a {{chainName}} Node-ja lekötött fedezetét, szabad felhasználásra.",
     "delete_node_info_2": "A {{chainName}} Node-ja továbbra is működésben marad, és elérhető lesz az újbóli indításra, amennyiben a biztosíték nem kerül elköltésre.",
-    "open_fluxos": "Flox operációs rendszer megnyitása",
+    "open_fluxos": "Flux operációs rendszer megnyitása",
     "open_fluxos_info": "Ez a művelet megnyitja a Flux operációs rendszert a böngészőben, minimalizálva az SSP tárcát.",
     "setup_node": "{{chainName}} Node beállítása",
     "err_start": "Hiba a {{chainName}} Node indításakor. Győződjön meg arról, hogy a fedezetnek 100 megerősítése van, illetve hogy a Node offline, majd probálja meg újra.",
