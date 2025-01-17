@@ -2,7 +2,7 @@
   "err_panic": "PANIC: Invalid SSP Key.",
   "balances": {
     "locked": "Locked: {{balance}} {{symbol}}",
-    "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
+    "fiat_value": ""
   },
   "txSent": {
     "show_in_explorer": "Show in Explorer",
@@ -27,8 +27,8 @@
     "txid_link": "TXID: {{txid}}",
     "out_id": "Output ID: {{vout}}",
     "fee_with_symbol": "Fee: {{fee}} {{symbol}}",
-    "note_with_note": "Note: {{note}}",
-    "direction": "Direction",
+    "note_with_note": "Бележка: {{note}}",
+    "direction": "Движение /\nНаправление",
     "date": "Date",
     "amount": "Amount",
     "confirmations": "Confirmations",
@@ -67,9 +67,9 @@
     "offline": "Offline",
     "confirmed": "Confirmed",
     "started": "Started",
-    "starting": "Starting",
-    "unassigned": "Unassigned",
-    "dos": "DoS",
+    "starting": "Стартираща",
+    "unassigned": "Неразпределен",
+    "dos": "Отказ на услугата",
     "node_started": "{{chainName}} Node Started!",
     "err_unable_identity": "Unable to generate node identity. Try again later.",
     "err_delete": "Error while deleting {{chainName}} Node. Please try again.",
@@ -179,7 +179,7 @@
     "sync_key": "Sync Key",
     "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
     "warn_await_sync": "Awaiting SSP Key synchronisation or manual input.",
-    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
+    "err_sync_1": "Моля, въведете SSP ключ XPUB. SSP ключ XPUB е различен от SSP портфейл XPUB. Уверете се, че както SSP портфейлът, така и SSP ключът използват уникални, различни мнемонични фрази.",
     "err_invalid_key": "Invalid SSP Key.",
     "err_k2": "Code K2: Something went wrong while decrypting password.",
     "err_k1": "Code K1: Something went wrong while decrypting password.",
