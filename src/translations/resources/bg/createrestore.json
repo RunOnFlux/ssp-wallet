@@ -38,6 +38,6 @@
   "restore_with_seed": "Възстанови чрез мнемонична фраза",
   "backup_confirmed": "Backup Confirmed!",
   "confirm_wallet_seed_word": "Потвърдете мнемоничната фраза на портфейла",
-  "word_number": "Word #{{number}}",
+  "word_number": "Дума #{{number}}",
   "incorrect_backup_confirmation": "Неправилна Дума"
 }
