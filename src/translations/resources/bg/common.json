@@ -1,9 +1,9 @@
 {
   "appName": {
-    "full": "SSP Wallet",
-    "moto": "Secure. Simple. Powerful."
+    "full": "SSP Портфейл",
+    "moto": "Сигурно. Лесно. Мощно."
   },
-  "back": "Back",
+  "back": "Назад",
   "cancel": "Отказ",
   "refresh": "Refresh",
   "settings": "Settings",
@@ -19,7 +19,7 @@
   "close": "Close",
   "chain": "Chain",
   "get": "Get",
-  "started": "Started!",
+  "started": "Стартиран!",
   "import": "Import",
   "create": "Create",
   "wallet": "Портфейл",
@@ -38,6 +38,6 @@
   "address": "Address",
   "activity": "Activity",
   "nodes": "Валидатор",
-  "tokens": "Tokens",
+  "tokens": "Токени\n/Монети",
   "add_custom_token": "Add Custom Token"
 }

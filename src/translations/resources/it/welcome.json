@@ -2,7 +2,7 @@
   "title": "$t(common:appName.full)",
   "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Benvenuto nel Portafoglio SSP",
-  "description": "Portafoglio a doppia firma per il mondo decentralizzato.",
+  "description": "Portafoglio a doppia autenticazione per il mondo decentralizzato.",
   "get_started": "Iniziamo!",
   "restore_with_seed": "Ripristina con Frase Mnemonica"
 }

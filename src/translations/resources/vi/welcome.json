@@ -1,8 +1,8 @@
 {
   "title": "$t(common:appName.full)",
   "subtitle": "$t(common:appName.moto)",
-  "welcome_to": "Welcome to SSP Wallet",
-  "description": "Dual signature wallet for the decentralized world.",
-  "get_started": "Get Started!",
-  "restore_with_seed": "Restore with Seed"
+  "welcome_to": "Chào mừng đến Ví SSP",
+  "description": "Ví đặc điểm đôi cho một thế giới phi tập trung.",
+  "get_started": "Bắt đầu nào!",
+  "restore_with_seed": "Khôi phục với cụm từ phục hồi"
 }

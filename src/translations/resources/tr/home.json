@@ -1,5 +1,5 @@
 {
-  "err_panic": "PANIC: Invalid SSP Key.",
+  "err_panic": "PANİK: Geçersiz SSP Anahtarı.",
   "balances": {
     "locked": "Locked: {{balance}} {{symbol}}",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
@@ -83,11 +83,11 @@
     "add_to_storage_added_info": "Copy the Flux Storage Phrase and use it in your FluxOS setup."
   },
   "setupNode": {
-    "setup_node": "Setup {{chainName}} Node",
+    "setup_node": "{{chainName}} Node Ayarla",
     "node_name": "Node Name",
     "node_ip": "IP Address",
     "err_saving_node": "Error while saving node. Please try again.",
-    "node_saved": "{{chainName}} Node Saved!",
+    "node_saved": "{{chainName}} Node Kaydedildi!",
     "err_no_name": "Please name your node first"
   },
   "sspWalletDetails": {
@@ -270,7 +270,7 @@
     "enter_contract_address": "Enter Token Contract Address",
     "token_already_imported": "Token already imported",
     "unable_to_fetch_metadata": "Unable to fetch token metadata. Please try again later.",
-    "token_imported": "Token Imported!",
+    "token_imported": "Token İçe Aktarıldı!",
     "invalid_token_contract": "Invalid token contract.",
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",

@@ -16,7 +16,7 @@
   "publicNoncesRejected": {
     "public_nonces_rejected": "Public Nonces Rigettata!",
     "public_nonces_rejected_info": "Public Nonces Rifiutata dalla chiave SSP.",
-    "public_nonces_rejected_info_2": "La chiave SSP ha rifiutato l'invio del public nonces. Senza la public nonces il Portafoglio SSP non può costruire transazioni sulle catene EVM."
+    "public_nonces_rejected_info_2": "La chiave SSP ha rifiutato l'invio del public nonces. Senza public nonces il Portafoglio SSP non può costruire transazioni sulle catene EVM."
   },
   "publicNoncesReceived": {
     "public_nonces_received": "Public Nonces Ricevuta!",
@@ -100,7 +100,7 @@
     "err_invalid_wallet_seed_2": "Frase mneomica del portafoglio non valida, impossibile decrittare",
     "err_invalid_wallet_xpub_id": "Xpub di identità del portafoglio non valida",
     "err_invalid_wallet_xpub_2_id": "Xpub di identità del portafoglio non valida, impossibile decrittare.",
-    "err_s1": "Codice R1: Qualcosa è andato storto durante la creazione del portafoglio.",
+    "err_s1": "Codice S1: Qualcosa è andato storto durante la creazione del portafoglio.",
     "ssp_bip": "Dettagli Portafoglio SSP {{chain}} (BIP-48)",
     "ssp_mnemonic": "Frase Mnemonica del Portafoglio SSP",
     "ssp_sync_wallet_key": "Sincronizzazione SSP con la chiave SSP",

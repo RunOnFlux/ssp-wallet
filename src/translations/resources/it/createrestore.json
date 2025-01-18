@@ -22,7 +22,7 @@
   "not_evil": "non essere malvagio",
   "import_wallet": "Importa Portafoglio",
   "wallet_seed_info": "La frase mnemonica del portafoglio viene utilizzata per generare tutti gli indirizzi. Chiunque abbia accesso alla frase ha il controllo parziale sul portafogli.",
-  "wallet_seed_info_2": "Il Portafoglio SSP e la chiave SSP devono essere uniche, diverse frasi Mnemoniche.",
+  "wallet_seed_info_2": "Il Portafoglio SSP e la chiave SSP devono essere uniche e diverse frasi Mnemoniche.",
   "backup_wallet_seed": "Backup della Frase Mnemonica del Portafoglio",
   "keep_seed_safe": "Mantieni il backup della frase mnemonica del tuo portafoglio al sicuro.",
   "seed_loose_info": "Perdere la frase mnemonica del portafoglio comporterà la perdita di accesso al tuo portafoglio.",

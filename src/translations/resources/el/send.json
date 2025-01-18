@@ -5,7 +5,7 @@
   "err_invalid_message": "Το μήνυμα είναι πολύ μεγάλο. Το μέγιστο είναι {{characters}} χαρακτήρες.",
   "err_pwd_not_valid": "Ο κωδικός πρόσβασης δεν είναι έγκυρος.",
   "err_invalid_xpriv": "Μη έγκυρο πορτοφόλι xpriv.",
-  "err_invalid_xpriv_decrypt": "",
+  "err_invalid_xpriv_decrypt": "Invalid wallet xpriv, unable to decrypt",
   "err_s1": "Κωδικός S1: Κάτι πήγε στραβά κατά την αποκρυπτογράφηση του κωδικού πρόσβασης.",
   "send": "Αποστολή",
   "receiver_address": "Διεύθυνση Παραλήπτη",

@@ -1,7 +1,7 @@
 {
   "appName": {
     "full": "SSP Wallet",
-    "moto": "Secure. Simple. Powerful."
+    "moto": "Seguro. Simples. Poderoso."
   },
   "back": "Voltar",
   "cancel": "Cancelar",
@@ -9,7 +9,7 @@
   "settings": "Preferências",
   "restore": "Restaurar",
   "flux": "Fluxo",
-  "powered_by": "Powered by",
+  "powered_by": "Desenvolvido por",
   "ok": "OK",
   "help": "Ajuda",
   "save": "Guardar",
@@ -36,8 +36,8 @@
   "request_rejected": "Pedido rejeitado",
   "name": "Nome",
   "address": "Endereço",
-  "activity": "Actividade",
-  "nodes": "Nodes",
+  "activity": "Atividade",
+  "nodes": "Nós",
   "tokens": "Tokens",
-  "add_custom_token": "Add Custom Token"
+  "add_custom_token": "Adicionar Token Personalizado"
 }
