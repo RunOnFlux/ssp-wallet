@@ -4,7 +4,7 @@
   "err_invalid_fee": "Frais non valides.",
   "err_invalid_message": "Le message est trop long. Le maximum est de {{characters}} caractères.",
   "err_pwd_not_valid": "Mot de passe non valide.",
-  "err_invalid_xpriv": "xpriv de portefeuille non valide",
+  "err_invalid_xpriv": "Xpriv de portefeuille non valide.",
   "err_invalid_xpriv_decrypt": "xpriv de portefeuille non valide, impossible de déchiffrer",
   "err_s1": "Code S1 : Une erreur s'est produite lors du déchiffrement du mot de passe.",
   "send": "Envoyer",
