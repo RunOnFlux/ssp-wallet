@@ -4,7 +4,7 @@
   "err_seed_invalid": "Мнемоничната фраза на портфейла е невалидна. Мнемоничната фраза трябва да съдържа поне 12 думи.",
   "err_seed_invalid_words": "Seed фразата на портфейла съдържа невалидни думи: {{words}}.",
   "err_seed_invalid_spaces": "Seed фразата на портфейла съдържа излишни интервали.",
-  "err_pw_min_char": "Password must have at least 8 characters.",
+  "err_pw_min_char": "Паролата трябва да съдържа поне 8 символа.",
   "err_pw_not_match": "Passwords do not match.",
   "err_tos": "Please agree with Terms of Service.",
   "err_wallet_phrase_invalid": "Your wallet seed phrase is invalid.",
