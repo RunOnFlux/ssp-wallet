@@ -2,7 +2,7 @@
   "info_backup_needed": "Biztonsági másolatot kell készítenie a tárca visszaállítási kulcsáról, mielőtt létrehozhat egy tárcát.",
   "err_enter_seed": "Kérjük, adja meg a visszaállítási kulcsát.",
   "err_seed_invalid": "Visszaállítási kulcs helytelen. A visszaállítási kulcs minimum 12 szóból áll.",
-  "err_seed_invalid_words": "Visszaállítási kulcs helytelen szavakat is tartalmaz.",
+  "err_seed_invalid_words": "Visszaállítási kulcs helytelen szavakat is tartalmaz: {{words}}.",
   "err_seed_invalid_spaces": "A tárca visszaállítási kulcsa extra szóközöket tartalmaz.",
   "err_pw_min_char": "A jelszónak legalább 8 karakterből kell állnia.",
   "err_pw_not_match": "A megadott jelszavak nem egyeznek.",
