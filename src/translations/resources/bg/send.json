@@ -30,7 +30,7 @@
   "replace_by_fee_tx": "This is a Replace by Fee (RBF) transaction.",
   "replace_by_fee_stop": "To cancel Replace by Fee (RBF) transaction, hit Cancel or navigate back by clicking on SSP logo.",
   "err_public_nonces": "Public nonces are not available, please sync public nonces from SSP Key first.",
-  "base_gas_price": "Base Gas Price",
+  "base_gas_price": "Цена на Gas за нормална транзакция",
   "priority_gas_price": "Priority Gas Price",
   "total_gas_limit": "Total Gas Limit",
   "input_gas_price": "Input Base Gas Price in gwei units",
