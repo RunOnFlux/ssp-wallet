@@ -1,14 +1,14 @@
 {
   "err_invalid_pw": "Невалидна парола. Моля опитайте отново.",
   "err_invalid_pw_2": "Невалидна парола. Моля, опитайте отново.",
-  "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
-  "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
-  "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
+  "err_l3": "Код L3: Липсват данни за портфейла. Моля, възстановете портфейла си.",
+  "err_l2": "Код L2: Липсват данни за портфейла. Моля, възстановете портфейла си.",
+  "err_l1": "Код L1: Липсват данни за портфейла. Моля, възстановете портфейла си.",
+  "welcome_back": "Добре дошли отново!",
+  "to_dec_cloud": "Към вашето децентрализирано облачно хранилище",
+  "unlock_with_pw": "Отключете с парола",
   "enter_pw": "Въведете парола",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "unlock_wallet": "Отключи портфейл",
+  "forgot_pw": "Забравена парола?",
+  "restore": "Възстанови"
 }
