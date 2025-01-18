@@ -1,7 +1,7 @@
 {
   "appName": {
     "full": "SSP Портфейл",
-    "moto": "Сигурно. Просто. Мощно."
+    "moto": "Сигурно. Лесно. Мощно."
   },
   "back": "Назад",
   "cancel": "Отказ",
@@ -38,6 +38,6 @@
   "address": "Address",
   "activity": "Activity",
   "nodes": "Валидатор",
-  "tokens": "Тоукъни\n/Монети",
+  "tokens": "Токени\n/Монети",
   "add_custom_token": "Add Custom Token"
 }
