@@ -13,7 +13,7 @@
   "wallet_seed": "Wallet Seed",
   "input_wallet_seed": "Please input your mnemonic wallet seed",
   "input_seed_phrase": "Input Seed Phrase",
-  "set_password": "Set Password",
+  "set_password": "Parola Oluştur",
   "input_password": "Please input your password of at least 8 characters!",
   "confirm_password": "Confirm Password",
   "pls_conf_pwd": "Please confirm your password!",
