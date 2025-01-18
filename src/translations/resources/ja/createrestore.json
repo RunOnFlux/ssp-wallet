@@ -5,7 +5,7 @@
   "err_seed_invalid_words": "ウォレットシードフレーズに無効な単語があります: {{words}}.",
   "err_seed_invalid_spaces": "ウォレットシードフレーズに余分なスペースがあります.",
   "err_pw_min_char": "パスワードは少なくとも 8 文字である必要があります.",
-  "err_pw_not_match": "パスワードが一致しません",
+  "err_pw_not_match": "パスワードが一致しません.",
   "err_tos": "利用規約に同意してください.",
   "err_wallet_phrase_invalid": "ウォレットシードフレーズが無効です.",
   "err_r1": "コードR1: ウォレット作成中に問題が発生しました.",
