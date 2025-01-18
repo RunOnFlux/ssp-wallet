@@ -56,7 +56,7 @@
     "sspid": "SSP Wallet ID (FluxID)",
     "start_node": "Start {{chainName}} Node",
     "start_node_info": "This action will broadcast Start Transaction to the blockchain trying to start your {{chainName}} Node.",
-    "start_node_info_2": "Make sure your {{chainName}} Node is running and passing benchmark before starting your node to avoid DoS status.",
+    "start_node_info_2": "Уверете се, че вашият {{chainName}} валидатор работи и преминава през проверка на ефективността, преди да стартирате валидатора си, за да избегнете DoS статус (Отказ на услугата).",
     "delete_node": "Delete {{chainName}} Node",
     "delete_node_info": "This action will make your {{chainName}} Node locked collateral available for spending.",
     "delete_node_info_2": "Your {{chainName}} Node will continue to run and can be set up again if your node collateral is not spent.",
@@ -106,7 +106,7 @@
     "ssp_sync_wallet_key": "SSP Sync with SSP Key",
     "chain_sync_ssp_key": "{{chain}} Sync with SSP Key",
     "chain_extended_pub": "{{chain}} Extended Public Key",
-    "chain_extended_priv": "{{chain}} Extended Private Key",
+    "chain_extended_priv": "{{chain}} разширен частен ключ",
     "ssp_mnemonic_desc": "Seed Phrase is the most important part of your wallet. It is used to derive all your extended private, public keys. Please write it down and keep it safe. If you lose your Seed Phrase, you will lose access to your funds. Do NOT ever share with anyone as it grants full control over SSP Wallet part.",
     "ssp_sync_wallet_key_desc": "This QR code is used to sync your SSP Wallet with your SSP Key. Scan this QR code with your SSP Key to sync your SSP Wallet with your SSP Key. It also automatically syncs Bitcoin chain.",
     "chain_sync_ssp_key_desc": "This QR code is used to sync your {{chain}} SSP Wallet with your SSP Key. Scan this QR code with your SSP Key to sync your {{chain}} chain.",
@@ -157,7 +157,7 @@
   "navbar": {
     "refresh": "Refresh",
     "chain_wallet": "{{chain}} {{wallet}}",
-    "ssp_details": "SSP Wallet Details",
+    "ssp_details": "Детайли на SSP портфейла",
     "addr_details": "Address Details",
     "generate_new_wallet": "Generate New Wallet",
     "remove_last_wallet": "Remove Last Wallet",
@@ -273,7 +273,7 @@
     "token_imported": "Токенът е импортиран!",
     "invalid_token_contract": "Невалиден контракт на токена.",
     "delete_token": "Delete Token",
-    "token_deleted": "Token Deleted!",
-    "err_delete_token": "Error while deleting token. Please try again."
+    "token_deleted": "Токенът е изтрит!",
+    "err_delete_token": "Грешка при изтриването на токена. Моля, опитайте отново."
   }
 }
