@@ -1,6 +1,6 @@
 {
   "err_invalid_receiver": "Địa chỉ người nhận không hợp lệ.",
-  "err_invalid_amount": "Số lượng không hợp lệ",
+  "err_invalid_amount": "Số lượng không hợp lệ.",
   "err_invalid_fee": "Phí không hợp lệ.",
   "err_invalid_message": "Tin nhắn quá dài. Độ dài tối đa là {{characters}} ký tự.",
   "err_pwd_not_valid": "Mật khẩu không hợp lệ.",
