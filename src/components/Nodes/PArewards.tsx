@@ -2,7 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useAppSelector } from '../../hooks';
 import { useTranslation } from 'react-i18next';
-import { Button, Space, Popconfirm, message, Spin, Typography } from 'antd';
+import {
+  Button,
+  Space,
+  Popconfirm,
+  message,
+  Spin,
+  Typography,
+  Tooltip,
+} from 'antd';
 const { Paragraph } = Typography;
 import { fusionPAavailable, fusionMessage, errorResponse } from '../../types';
 import { blockchains } from '@storage/blockchains';
@@ -197,12 +205,14 @@ function PArewards(props: {
     <>
       {contextHolder}
       {claimInProgress && (
-        <Spin size="large" style={{ marginTop: 8, marginBottom: 8 }} />
+        <Spin size="large" style={{ marginTop: 14, marginBottom: 14 }} />
       )}
-      {!!paRewardsAvailable && !claimInProgress && (
+      {!claimInProgress && (
         <Space size={'large'} style={{ marginTop: 8, marginBottom: 8 }}>
           <div>
-            <b>{t('home:fusion.pa_reward')}</b>
+            <Tooltip title={t('home:fusion.pa_info')}>
+              <b style={{ cursor: 'help' }}>{t('home:fusion.pa_reward')}</b>
+            </Tooltip>
             <br />{' '}
             {t('home:fusion.x_y_available', {
               amount: paRewardsAvailable,
@@ -244,7 +254,7 @@ function PArewards(props: {
             }}
             icon={<QuestionCircleOutlined style={{ color: 'green' }} />}
           >
-            <Button type="primary" size="middle">
+            <Button type="primary" size="middle" disabled={!paRewardsAvailable}>
               {t('home:fusion.claim_with_fusion')}
             </Button>
           </Popconfirm>
