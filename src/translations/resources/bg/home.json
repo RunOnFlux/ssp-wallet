@@ -1,5 +1,5 @@
 {
-  "err_panic": "PANIC: Invalid SSP Key.",
+  "err_panic": "ВНИМАНИЕ: Невалиден SSP ключ.",
   "balances": {
     "locked": "Locked: {{balance}} {{symbol}}",
     "fiat_value": ""
@@ -66,18 +66,18 @@
     "err_start": "Грешка при стартиране на {{chainName}} Валидатор. Уверете се, че вашето обезпечение има 100 потвърждения и статусът на валдидатора е офлайн, след което опитайте отново.",
     "offline": "Offline",
     "confirmed": "Confirmed",
-    "started": "Started",
+    "started": "Стартиран",
     "starting": "Стартираща",
     "unassigned": "Неразпределен",
     "dos": "Отказ на услугата",
-    "node_started": "{{chainName}} Node Started!",
-    "err_unable_identity": "Unable to generate node identity. Try again later.",
-    "err_delete": "Error while deleting {{chainName}} Node. Please try again.",
-    "node_deleted": "{{chainName}} Node Deleted!",
-    "add_to_flux_storage": "Add to Flux Storage",
+    "node_started": "{{chainName}} валидатор стартиран!",
+    "err_unable_identity": "Неуспешно генериране на идентичност на валидатора. Опитайте отново по-късно.",
+    "err_delete": "Грешка при изтриване на {{chainName}} валидатор. Моля, опитайте отново.",
+    "node_deleted": "{{chainName}} валидатор изтрит!",
+    "add_to_flux_storage": "Добави към пространството за съхранение на Flux",
     "add_to_flux_storage_info": "This action will upload your configured Flux Node to Flux Storage. This is used to simplify the setup of your FluxOS. You will be presented with storage identifier to use for your FluxOS setup.",
     "node_uploaded_storage": "{{chainName}} Node Uploaded to Flux Storage!",
-    "err_upload_storage": "Error while uploading {{chainName}} Node to Flux Storage. Please try again.",
+    "err_upload_storage": "Грешка при качването на възела {{chainName}} във Flux пространството за съхранение. Моля, опитайте отново.",
     "storage_phrase": "Storage Phrase",
     "add_to_storage_added": "Your Flux Node is available in Flux Storage, you can now use it in your FluxOS setup.",
     "add_to_storage_added_info": "Copy the Flux Storage Phrase and use it in your FluxOS setup."
@@ -86,7 +86,7 @@
     "setup_node": "Setup {{chainName}} Node",
     "node_name": "Node Name",
     "node_ip": "IP Address",
-    "err_saving_node": "Error while saving node. Please try again.",
+    "err_saving_node": "Грешка при запис на валидатора. Моля, опитайте отново",
     "node_saved": "{{chainName}} Node Saved!",
     "err_no_name": "Please name your node first"
   },
@@ -99,7 +99,7 @@
     "err_invalid_wallet_seed": "Invalid wallet seed",
     "err_invalid_wallet_seed_2": "Invalid wallet seed, unable to decrypt",
     "err_invalid_wallet_xpub_id": "Invalid wallet xpub of identity",
-    "err_invalid_wallet_xpub_2_id": "Invalid wallet xpub of identity, unable to decrypt.",
+    "err_invalid_wallet_xpub_2_id": "Невалиден xpub на портфейл свързан с идентичността, не може да се декриптира.",
     "err_s1": "Code S1: Something went wrong while decrypting password.",
     "ssp_bip": "{{chain}} SSP Wallet Details (BIP-48)",
     "ssp_mnemonic": "SSP Wallet Mnemonic Seed Phrase",
@@ -110,7 +110,7 @@
     "ssp_mnemonic_desc": "Seed Phrase is the most important part of your wallet. It is used to derive all your extended private, public keys. Please write it down and keep it safe. If you lose your Seed Phrase, you will lose access to your funds. Do NOT ever share with anyone as it grants full control over SSP Wallet part.",
     "ssp_sync_wallet_key_desc": "This QR code is used to sync your SSP Wallet with your SSP Key. Scan this QR code with your SSP Key to sync your SSP Wallet with your SSP Key. It also automatically syncs Bitcoin chain.",
     "chain_sync_ssp_key_desc": "This QR code is used to sync your {{chain}} SSP Wallet with your SSP Key. Scan this QR code with your SSP Key to sync your {{chain}} chain.",
-    "chain_extended_pub_desc": "Extended Public key is used to derive all your {{chain}} public keys from which addresses are constructed. This is a public part, safe to share, does not grant access to funds. This is what SSP Wallet syncs with your SSP Key to generate addresses.",
+    "chain_extended_pub_desc": "Разширеният публичен ключ се използва за извеждане на всички ваши публични ключове за {{chain}}, от които се изграждат адреси. Това е публична част, която е безопасно да се споделя и не дава достъп до средства. Това е това, с което SSP портфейлът се синхронизира с вашия SSP ключ, за да генерира адреси.",
     "chain_extended_priv_desc": "Extended Private key is used to derive all your {{chain}} private keys that control your public keys - addresses. This is a private part, do NOT ever share as it grants access to funds."
   },
   "addressDetails": {
@@ -123,7 +123,7 @@
     "wallet_priv_key_desc": "Private key grants control over your specific wallet address. This is a private part, do NOT ever share as it grants access to funds."
   },
   "settings": {
-    "err_saving_conf": "Error while saving configuration. Please try again.",
+    "err_saving_conf": "Грешка при запазване на конфигурацията. Моля, опитайте отново.",
     "settings": "Settings",
     "change_pw": "Change password",
     "change_pw_restore": "Change password? Restore!",
@@ -134,7 +134,7 @@
   },
   "receive": {
     "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
-    "wallet_address": "Wallet Address",
+    "wallet_address": "Адрес на портфейла",
     "wallet_address_desc": "This is your wallet address. You can share this address with anyone to receive funds."
   },
   "navigation": {
@@ -147,10 +147,10 @@
     "info_2": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or use a manual input."
   },
   "confirmPublicNoncesKey": {
-    "confirm_public_nonces_key": "Confirm Public Nonces on SSP Key",
-    "confirm_public_nonces_key_info": "In order to send EVM transaction, we first need to obtain public nonces from SSP Key which are used for transaction construction.",
+    "confirm_public_nonces_key": "Потвърдете публичните nonce (единични произволни стойности) на SSP ключа.",
+    "confirm_public_nonces_key_info": "За да изпратим EVM транзакция, първо трябва да получим публични nonce (еднократни стойности) от SSP ключа, които се използват за изграждане на транзакцията.",
     "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open your SSP Key on our mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
-    "manual_input": "Input Public Nonces manually instead",
+    "manual_input": "Въведете публичните nonces (единични произволни стойности) ръчно вместо това",
     "public_nonces_stored": "Public Nonces Stored!",
     "invalid_public_nonces": "Invalid Public Nonces."
   },
@@ -179,14 +179,14 @@
     "sync_key": "Sync Key",
     "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
     "warn_await_sync": "Awaiting SSP Key synchronisation or manual input.",
-    "err_sync_1": "Моля, въведете SSP ключ XPUB. SSP ключ XPUB е различен от SSP портфейл XPUB. Уверете се, че както SSP портфейлът, така и SSP ключът използват уникални, различни мнемонични фрази.",
+    "err_sync_1": "Моля, въведете SSP XPUB на ключа. SSP XPUB на ключа е различен от SSP XPUB на портфейла . Уверете се, че както SSP портфейлът, така и SSP ключът използват уникални и различни мнемонични фрази.",
     "err_invalid_key": "Invalid SSP Key.",
     "err_k2": "Code K2: Something went wrong while decrypting password.",
     "err_k1": "Code K1: Something went wrong while decrypting password.",
     "cancel_sync_q": "Cancel SSP Key Sync?",
     "cancel_sync": "Cancel SSP Sync",
     "back_to_sync": "Back to SSP Key Sync",
-    "sync_info_content": "SSP Wallet cannot be used without SSP Key. This will log you out of SSP Wallet.",
+    "sync_info_content": "SSP портфейлът не може да се използва без SSP ключ. Това ще ви изхвърли от SSP портфейла.",
     "dual_factor_key": "Dual Factor SSP Key",
     "sync_info_1": "SSP Wallet is a Dual Signature Wallet. You will need to download SSP Key on your mobile device to access your wallet.",
     "sync_info_2": "Scan the following QR code to sync your SSP Wallet with your SSP Key.",
@@ -209,12 +209,12 @@
     "payment_request": "Payment Request",
     "pay_for": "Payment request for",
     "to": "to",
-    "received": "received",
+    "received": "получена",
     "attached_message": "Attached message: {{message}}",
     "proceed_to_pay": "Proceed to Pay",
     "tx_rejected": "Transaction Rejected",
-    "invalid_request": "Invalid Request",
-    "transaction_sent": "Transaction Sent"
+    "invalid_request": "Невалидна заявка",
+    "transaction_sent": "Транзакцията изпратена"
   },
   "signMessage": {
     "sign_message": "Sign Message",
@@ -270,8 +270,8 @@
     "enter_contract_address": "Enter Token Contract Address",
     "token_already_imported": "Token already imported",
     "unable_to_fetch_metadata": "Unable to fetch token metadata. Please try again later.",
-    "token_imported": "Token Imported!",
-    "invalid_token_contract": "Invalid token contract.",
+    "token_imported": "Токенът е импортиран!",
+    "invalid_token_contract": "Невалиден контракт на токена.",
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",
     "err_delete_token": "Error while deleting token. Please try again."
