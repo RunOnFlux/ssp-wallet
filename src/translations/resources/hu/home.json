@@ -132,7 +132,8 @@
     "chain_api_service": "{{chain}} API Service",
     "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Nyelv",
-    "fiat_currency": "Fiat pénznem"
+    "fiat_currency": "Fiat pénznem",
+    "use_system_language": "Use System Language"
   },
   "receive": {
     "receive_chain_wallet": "Fogadás a(z) {{chain}} {{wallet}}-ra",
