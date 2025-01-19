@@ -1,6 +1,6 @@
 declare module '@storage/backends' {
   interface Backend {
-    node: string;
+    node?: string;
     api?: string;
     explorer?: string;
   }

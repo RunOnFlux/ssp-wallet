@@ -1,7 +1,7 @@
 import localForage from 'localforage';
 
 interface Backend {
-  node: string;
+  node?: string;
   api?: string;
   explorer?: string;
 }
@@ -70,7 +70,12 @@ const assetBackends: backends = {
 export function backends() {
   const backendKeys = Object.keys(assetBackends);
   const currentBackends: backends = backendKeys.reduce((acc, key) => {
-    acc[key] = localForgeBackends[key] || assetBackends[key];
+    const localBackend = localForgeBackends[key];
+    acc[key] = {
+      node: localBackend?.node ?? assetBackends[key].node,
+      api: localBackend?.api ?? assetBackends[key].api,
+      explorer: localBackend?.explorer ?? assetBackends[key].explorer,
+    };
     return acc;
   }, {} as backends);
   return currentBackends;

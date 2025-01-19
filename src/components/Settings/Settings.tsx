@@ -31,11 +31,15 @@ function Settings(props: {
   const { fiatRates } = useAppSelector((state) => state.fiatCryptoRates);
   const { t } = useTranslation(['home', 'common']);
   const NC = backends()[activeChain].node;
+  const API = backends()[activeChain].api;
+  const EXPLORER = backends()[activeChain].explorer;
   const SSPR = sspConfig().relay;
   const [sspConfigRelay, setSspConfigRelay] = useState(sspConfig().relay);
   const SSPFC = sspConfig().fiatCurrency;
   const [sspFiatCurrency, setSspFiatCurrency] = useState(SSPFC);
   const [nodeConfig, setNodeConfig] = useState(NC);
+  const [apiConfig, setApiConfig] = useState(API);
+  const [explorerConfig, setExplorerConfig] = useState(EXPLORER);
   const { open, openAction } = props;
   const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[activeChain];
@@ -43,8 +47,16 @@ function Settings(props: {
   const backendsOriginalConfig = backendsOriginal();
   const originalConfig = sspConfigOriginal();
 
+  console.log(backendsOriginalConfig);
+  console.log(NC);
+  console.log(API);
+  console.log(EXPLORER);
+  console.log(backends());
+
   useEffect(() => {
     setNodeConfig(NC);
+    setApiConfig(API);
+    setExplorerConfig(EXPLORER);
   }, [activeChain]);
 
   const displayMessage = (type: NoticeType, content: string) => {
@@ -74,31 +86,60 @@ function Settings(props: {
           console.log(err);
         });
       }
-      // adjust node
+      // adjust node, api, explorer
       const storedBackends: backends =
-        (await localForage.getItem('backends')) ?? {};
+        (await localForage.getItem('backends')) ?? {}; // load our backends
       if (!storedBackends[activeChain]) {
-        storedBackends[activeChain] = backendsOriginalConfig[activeChain];
-      }
+        storedBackends[activeChain] = {
+          ...backendsOriginalConfig[activeChain],
+        };
+      } // if this coin is not present, add it
+      // adjust node
       if (storedBackends?.[activeChain]?.node !== nodeConfig) {
         storedBackends[activeChain].node = nodeConfig;
-        console.log('adjusted');
+      }
+      // adjust api
+      if (storedBackends?.[activeChain]?.api !== apiConfig) {
+        storedBackends[activeChain].api = apiConfig;
+      }
+      // adjust explorer
+      if (storedBackends?.[activeChain]?.explorer !== explorerConfig) {
+        storedBackends[activeChain].explorer = explorerConfig;
+      }
+      // if any config or backend is the same as original, remove it
+      if (
+        storedBackends?.[activeChain]?.node ===
+        backendsOriginalConfig[activeChain].node
+      ) {
+        delete storedBackends?.[activeChain]?.node;
+      }
+      if (
+        storedBackends?.[activeChain]?.api ===
+        backendsOriginalConfig[activeChain].api
+      ) {
+        delete storedBackends?.[activeChain]?.api;
+      }
+      if (
+        storedBackends?.[activeChain]?.explorer ===
+        backendsOriginalConfig[activeChain].explorer
+      ) {
+        delete storedBackends?.[activeChain]?.explorer;
+      }
+      // if config of backend coin is empty, delete it
+      if (Object.keys(storedBackends?.[activeChain]).length === 0) {
+        delete storedBackends?.[activeChain];
+      }
+      // if entire config of backends is empty, delete it, otherwise save it
+      if (Object.keys(storedBackends).length === 0) {
+        await localForage.removeItem('backends').catch((err) => {
+          console.log(err);
+        });
+      } else {
         await localForage.setItem('backends', storedBackends).catch((err) => {
           console.log(err);
         });
-      } else if (storedBackends?.[activeChain]?.node) {
-        delete storedBackends?.[activeChain];
-        if (Object.keys(storedBackends).length === 0) {
-          // remove if present on localForge
-          await localForage.removeItem('backends').catch((err) => {
-            console.log(err);
-          });
-        } else {
-          await localForage.setItem('backends', storedBackends).catch((err) => {
-            console.log(err);
-          });
-        }
       }
+
       // apply configuration
       loadBackendsConfig();
       loadSSPConfig();
@@ -122,6 +163,12 @@ function Settings(props: {
     if (NC !== nodeConfig) {
       setNodeConfig(NC);
     }
+    if (API !== apiConfig) {
+      setApiConfig(API);
+    }
+    if (EXPLORER !== explorerConfig) {
+      setExplorerConfig(EXPLORER);
+    }
     if (SSPFC !== sspFiatCurrency) {
       setSspFiatCurrency(SSPFC);
     }
@@ -137,6 +184,14 @@ function Settings(props: {
 
   const resetNodeConfig = () => {
     setNodeConfig(backendsOriginalConfig[activeChain].node);
+  };
+
+  const resetApiConfig = () => {
+    setApiConfig(backendsOriginalConfig[activeChain].api);
+  };
+
+  const resetExplorerConfig = () => {
+    setExplorerConfig(backendsOriginalConfig[activeChain].explorer);
   };
 
   const fiatOptions = () => {
@@ -200,22 +255,66 @@ function Settings(props: {
             {t('common:reset')}
           </Button>
         </Space.Compact>
-        <h3>
-          {t('home:settings.chain_node_service', {
-            chain: blockchainConfig.name,
-          })}
-        </h3>
-        <Space.Compact style={{ width: '100%' }}>
-          <Input
-            size="large"
-            placeholder={backendsOriginalConfig[activeChain].node}
-            value={nodeConfig}
-            onChange={(e) => setNodeConfig(e.target.value)}
-          />
-          <Button type="default" size="large" onClick={resetNodeConfig}>
-            {t('common:reset')}
-          </Button>
-        </Space.Compact>
+        {backendsOriginalConfig[activeChain].node && (
+          <>
+            <h3>
+              {t('home:settings.chain_node_service', {
+                chain: blockchainConfig.name,
+              })}
+            </h3>
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                size="large"
+                placeholder={backendsOriginalConfig[activeChain].node}
+                value={nodeConfig}
+                onChange={(e) => setNodeConfig(e.target.value)}
+              />
+              <Button type="default" size="large" onClick={resetNodeConfig}>
+                {t('common:reset')}
+              </Button>
+            </Space.Compact>
+          </>
+        )}
+        {backendsOriginalConfig[activeChain].api && (
+          <>
+            <h3>
+              {t('home:settings.chain_api_service', {
+                chain: blockchainConfig.name,
+              })}
+            </h3>
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                size="large"
+                placeholder={backendsOriginalConfig[activeChain].api}
+                value={apiConfig}
+                onChange={(e) => setApiConfig(e.target.value)}
+              />
+              <Button type="default" size="large" onClick={resetApiConfig}>
+                {t('common:reset')}
+              </Button>
+            </Space.Compact>
+          </>
+        )}
+        {backendsOriginalConfig[activeChain].explorer && (
+          <>
+            <h3>
+              {t('home:settings.chain_explorer_service', {
+                chain: blockchainConfig.name,
+              })}
+            </h3>
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                size="large"
+                placeholder={backendsOriginalConfig[activeChain].explorer}
+                value={explorerConfig}
+                onChange={(e) => setExplorerConfig(e.target.value)}
+              />
+              <Button type="default" size="large" onClick={resetExplorerConfig}>
+                {t('common:reset')}
+              </Button>
+            </Space.Compact>
+          </>
+        )}
         <br />
         <br />
         <br />
