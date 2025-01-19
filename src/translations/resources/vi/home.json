@@ -129,6 +129,8 @@
     "change_pw_restore": "Thay đổi mật khẩu? Phục hồi!",
     "ssp_relay": "Máy chủ Rơ-le SSP",
     "chain_node_service": "Dịch vụ nút mạng {{chain}}",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Ngôn ngữ",
     "fiat_currency": "Tiền pháp định"
   },
