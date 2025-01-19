@@ -129,6 +129,8 @@
     "change_pw_restore": "पासवर्ड बदलें? रीस्टोर!",
     "ssp_relay": "एस. एस. पी. रिले सर्वर",
     "chain_node_service": "{{chain}} नोड सर्विस",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "भाषा",
     "fiat_currency": "फिएट मुद्रा"
   },
