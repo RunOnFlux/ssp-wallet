@@ -129,6 +129,8 @@
     "change_pw_restore": "Αλλαγή κωδικού πρόσβασης; Επαναφορά κωδικού!",
     "ssp_relay": "Εξυπηρετητής Relay SSP",
     "chain_node_service": "Υπηρεσία {{chain}} Κόμβων",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Γλώσσα",
     "fiat_currency": "Νομισματική Μονάδα"
   },

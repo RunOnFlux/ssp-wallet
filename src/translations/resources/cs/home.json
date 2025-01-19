@@ -129,6 +129,8 @@
     "change_pw_restore": "Změna Hesla? Obnovit!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Služba",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Jazyk",
     "fiat_currency": "Měna"
   },

@@ -129,6 +129,8 @@
     "change_pw_restore": "Jelszó megváltoztatása? Visszaállítás!",
     "ssp_relay": "SSP Relé szerver",
     "chain_node_service": "{{chain}} Node szolgáltatás",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Nyelv",
     "fiat_currency": "Fiat pénznem"
   },

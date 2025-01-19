@@ -129,6 +129,8 @@
     "change_pw_restore": "Сменить пароль? Восстановить!",
     "ssp_relay": "SSP Релейный Сервер",
     "chain_node_service": "Сервис Узла {{chain}}",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Язык",
     "fiat_currency": "Фиатная валюта"
   },

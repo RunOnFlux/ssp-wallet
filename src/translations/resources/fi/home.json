@@ -129,6 +129,8 @@
     "change_pw_restore": "Vaihda salasana? Palauta!",
     "ssp_relay": "SSP-välityspalvelin",
     "chain_node_service": "{{chain}}-Solmu Palvelu",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Kieli",
     "fiat_currency": "Fiat-valuutta"
   },

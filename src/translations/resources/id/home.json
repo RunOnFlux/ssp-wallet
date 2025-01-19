@@ -129,6 +129,8 @@
     "change_pw_restore": "Ganti kata sandi?",
     "ssp_relay": "Server Relai SSP",
     "chain_node_service": "{{chain}} Layanan Node",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Bahasa",
     "fiat_currency": "Mata Uang Fiat"
   },
