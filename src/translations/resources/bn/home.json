@@ -129,6 +129,8 @@
     "change_pw_restore": "পাসওয়ার্ড পরিবর্তন করবেন? পুনরুদ্ধার করুন!",
     "ssp_relay": "SSP রিলে সার্ভার",
     "chain_node_service": "{{chain}} নোড সেবা",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "ভাষা",
     "fiat_currency": "ফিয়াট মুদ্রা"
   },
