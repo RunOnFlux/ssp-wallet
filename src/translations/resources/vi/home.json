@@ -132,7 +132,8 @@
     "chain_api_service": "{{chain}} API Service",
     "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Ngôn ngữ",
-    "fiat_currency": "Tiền pháp định"
+    "fiat_currency": "Tiền pháp định",
+    "use_system_language": "Use System Language"
   },
   "receive": {
     "receive_chain_wallet": "Nhận đến {{chain}} {{wallet}}",
