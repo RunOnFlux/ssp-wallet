@@ -129,6 +129,8 @@
     "change_pw_restore": "கடவுச்சொல் மாற்ற வேண்டுமா? மீட்டெடுக்கவும்!",
     "ssp_relay": "SSP ரிலே சர்வர்",
     "chain_node_service": "{{chain}} நொடு சேவை",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "மொழி",
     "fiat_currency": "புதிய நாணய"
   },
