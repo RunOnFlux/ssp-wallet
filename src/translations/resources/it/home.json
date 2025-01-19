@@ -129,6 +129,8 @@
     "change_pw_restore": "Cambia la password? Ripristina!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Service",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Lingua",
     "fiat_currency": "Valuta Fiat"
   },
