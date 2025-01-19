@@ -11,3 +11,8 @@ export { default as hi } from './hi/_index'; // Hindi
 export { default as hr } from './hr/_index'; // Croatian
 export { default as el } from './el/_index'; // Greek
 export { default as ta } from './ta/_index'; // Tamil
+export { default as fi } from './fi/_index'; // Finnish
+export { default as hu } from './hu/_index'; // Hungarian
+export { default as ja } from './ja/_index'; // Japanese
+export { default as es } from './es/_index'; // Spanish
+export { default as vi } from './vi/_index'; // Vietnamese
