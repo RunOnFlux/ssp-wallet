@@ -129,6 +129,8 @@
     "change_pw_restore": "パスワードを変更しますか? 復元しましょう!",
     "ssp_relay": "SSP中継サーバー",
     "chain_node_service": "{{chain}}ノードサービス",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "言語",
     "fiat_currency": "法定通貨"
   },
