@@ -40,6 +40,11 @@ body {
   margin: 1rem 0;
 }
 
+.ant-modal-footer button,
+.ant-modal-confirm-btns button {
+  margin-top: 5px; /* fix for modal footer button - if it does not fit on the same line, there is no gap between buttons */
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
