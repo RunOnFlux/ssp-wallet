@@ -132,7 +132,8 @@
     "chain_api_service": "{{chain}} API Service",
     "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Idioma",
-    "fiat_currency": "Moneda Fiat"
+    "fiat_currency": "Moneda Fiat",
+    "use_system_language": "Use System Language"
   },
   "receive": {
     "receive_chain_wallet": "Recibir a {{chain}} {{wallet}}",
