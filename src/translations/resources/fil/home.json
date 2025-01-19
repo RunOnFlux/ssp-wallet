@@ -129,6 +129,8 @@
     "change_pw_restore": "Palitang ang password? Restore!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Service",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Wika",
     "fiat_currency": "Fiat Currency"
   },
