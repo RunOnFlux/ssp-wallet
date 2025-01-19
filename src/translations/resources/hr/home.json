@@ -129,6 +129,8 @@
     "change_pw_restore": "Promijeni lozinku? Vrati!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Usluga",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Jezik",
     "fiat_currency": "Fiat Valuta"
   },
