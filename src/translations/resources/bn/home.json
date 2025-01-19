@@ -132,7 +132,8 @@
     "chain_api_service": "{{chain}} API Service",
     "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "ভাষা",
-    "fiat_currency": "ফিয়াট মুদ্রা"
+    "fiat_currency": "ফিয়াট মুদ্রা",
+    "use_system_language": "Use System Language"
   },
   "receive": {
     "receive_chain_wallet": "{{chain}} {{wallet}}-এ গ্রহণ করুন",
