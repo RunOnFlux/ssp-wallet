@@ -129,6 +129,8 @@
     "change_pw_restore": "¿Cambiar contraseña? ¡Restaurar!",
     "ssp_relay": "Servidor de Retransmisión SSP",
     "chain_node_service": "{{chain}} Servicio de Nodo",
+    "chain_api_service": "{{chain}} API Service",
+    "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Idioma",
     "fiat_currency": "Moneda Fiat"
   },
