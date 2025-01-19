@@ -276,6 +276,25 @@ function NodesTable(props: {
     }
   };
 
+  const transformStatus = (status: string) => {
+    if (status.startsWith('1')) {
+      return t('home:nodesTable.starting');
+    }
+    if (status === 'started') {
+      return t('home:nodesTable.started');
+    }
+    if (status === 'dos') {
+      return t('home:nodesTable.dos');
+    }
+    if (status === 'offline') {
+      return t('home:nodesTable.offline');
+    }
+    if (status === 'confirmed') {
+      return t('home:nodesTable.confirmed');
+    }
+    return status;
+  };
+
   const wordsDialogAction = (status: boolean) => {
     setWordsPhrase('');
     setPhraseDialogOpen(status);
@@ -382,6 +401,7 @@ function NodesTable(props: {
                       <Button
                         size="middle"
                         disabled={
+                          record.status !== 'offline' &&
                           record.status !== t('home:nodesTable.offline')
                         }
                       >
@@ -496,9 +516,7 @@ function NodesTable(props: {
           render={(status: string, row: node) => (
             <>
               {row.name
-                ? status.startsWith('1')
-                  ? t('home:nodesTable.starting')
-                  : status
+                ? transformStatus(status)
                 : t('home:nodesTable.unassigned')}
             </>
           )}

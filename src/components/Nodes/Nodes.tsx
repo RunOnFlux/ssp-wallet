@@ -185,9 +185,12 @@ function Nodes() {
           );
           if (confirmedNode) {
             node.ip = confirmedNode.ip;
-            node.status = t('home:nodesTable.confirmed');
-          } else if (node.status === t('home:nodesTable.confirmed')) {
-            node.status = t('home:nodesTable.offline');
+            node.status = 'confirmed';
+          } else if (
+            node.status === 'confirmed' ||
+            node.status === t('home:nodesTable.confirmed') // backwards compatibility, can be removed after a while
+          ) {
+            node.status = 'offline';
           }
           if (!confirmedNode) {
             fetchDOSandStart = true;
@@ -201,24 +204,30 @@ function Nodes() {
               (n) => n.collateral === `COutPoint(${node.txid}, ${node.vout})`,
             );
             if (dosNode) {
-              node.status = t('home:nodesTable.dos');
-            } else if (node.status === t('home:nodesTable.dos')) {
-              node.status = t('home:nodesTable.offline');
+              node.status = 'dos';
+            } else if (
+              node.status === 'dos' ||
+              node.status === t('home:nodesTable.dos') // backwards compatibility, can be removed after a while
+            ) {
+              node.status = 'offline';
             }
             const startedNode = startedNodes.find(
               (n) => n.collateral === `COutPoint(${node.txid}, ${node.vout})`,
             );
             if (startedNode) {
-              node.status = t('home:nodesTable.started');
-            } else if (node.status === t('home:nodesTable.started')) {
-              node.status = t('home:nodesTable.offline');
+              node.status = 'started';
+            } else if (
+              node.status === 'started' ||
+              node.status === t('home:nodesTable.started') // backwards compatibility, can be removed after a while
+            ) {
+              node.status = 'offline';
             }
           });
         }
         console.log(nodes);
         nodes.forEach((node) => {
           if (!node.status) {
-            node.status = t('home:nodesTable.offline'); // no status means offline
+            node.status = 'offline'; // no status means offline
           }
           if (node.status.startsWith('1')) {
             // timestamp this means it got recently started. Status is Starting
@@ -227,7 +236,7 @@ function Nodes() {
             const now = new Date().getTime();
             const startedAt = new Date(+node.status * 1000).getTime();
             if (now - startedAt > 20 * 60 * 1000) {
-              node.status = t('home:nodesTable.offline'); // timestamp
+              node.status = 'offline'; // timestamp
             }
           }
         });
