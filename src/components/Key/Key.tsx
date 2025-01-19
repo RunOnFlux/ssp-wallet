@@ -240,12 +240,11 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         dispatch(setActiveChain(identityChain));
         void (async function () {
           await localForage.setItem('activeChain', identityChain);
+          setTimeout(() => {
+            setIsModalKeyOpen(false);
+            synchronised(true);
+          }, 10);
         })();
-        setTimeout(() => {
-          // timeout as we need to wait for activeChain to be switched back
-          setIsModalKeyOpen(false);
-          synchronised(true);
-        }, 200);
       } else {
         // tell parent of failiure to logout
         synchronised(false);
