@@ -58,6 +58,7 @@ function LanguageSelector(props: { label: boolean }) {
           { value: 'el', label: 'el', desc: 'Ελληνικά' },
           { value: 'hi', label: 'hi', desc: 'हिन्दी' },
           { value: 'hr', label: 'hr', desc: 'Hrvatski' },
+          { value: 'it', label: 'it', desc: 'Italiano' },
           { value: 'hu', label: 'hu', desc: 'Magyar' },
           { value: 'ja', label: 'ja', desc: '日本語' },
           { value: 'ru', label: 'ru', desc: 'Русский' },
