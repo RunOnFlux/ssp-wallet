@@ -132,7 +132,8 @@
     "chain_api_service": "{{chain}} API Service",
     "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Wika",
-    "fiat_currency": "Fiat Currency"
+    "fiat_currency": "Fiat Currency",
+    "use_system_language": "Use System Language"
   },
   "receive": {
     "receive_chain_wallet": "Tumanggap sa {{chain}} {{wallet}}",
