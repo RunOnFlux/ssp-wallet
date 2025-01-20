@@ -129,11 +129,11 @@
     "change_pw_restore": "Ganti kata sandi?",
     "ssp_relay": "Server Relai SSP",
     "chain_node_service": "{{chain}} Layanan Node",
-    "chain_api_service": "{{chain}} API Service",
-    "chain_explorer_service": "{{chain}} Explorer Service",
+    "chain_api_service": "{{chain}} Layanan API",
+    "chain_explorer_service": "{{chain}} Layanan Penjelajah",
     "language": "Bahasa",
     "fiat_currency": "Mata Uang Fiat",
-    "use_system_language": "Use System Language"
+    "use_system_language": "Gunakan Bahasa Sistem"
   },
   "receive": {
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
