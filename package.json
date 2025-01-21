@@ -79,7 +79,7 @@
     "typescript": "~5.7.2",
     "typescript-eslint": "~8.16.0",
     "chai": "~4.5.0",
-    "vite": "~6.0.1",
+    "vite": "~6.0.9",
     "nyc": "~17.1.0",
     "ts-mocha": "~10.0.0",
     "sinon": "~19.0.2",
