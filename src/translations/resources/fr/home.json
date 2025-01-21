@@ -129,11 +129,11 @@
     "change_pw_restore": "Changer le mot de passe ? Restaurer !",
     "ssp_relay": "Serveur de relais SSP",
     "chain_node_service": "Service de nœud {{chain}}",
-    "chain_api_service": "{{chain}} API Service",
-    "chain_explorer_service": "{{chain}} Explorer Service",
+    "chain_api_service": "Service API {{chain}}",
+    "chain_explorer_service": "Service d'Explorateur {{chain}}",
     "language": "Langue",
     "fiat_currency": "Devise",
-    "use_system_language": "Use System Language"
+    "use_system_language": "Utiliser la langue système"
   },
   "receive": {
     "receive_chain_wallet": "Recevoir vers {{chain}} {{wallet}}",
