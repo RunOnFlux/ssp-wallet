@@ -1,14 +1,14 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
-  "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
-  "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "유효하지 않은 비밀번호입니다. 다시 시도하세요.",
+  "err_invalid_pw_2": "잘못된 비밀번호입니다. 다시 시도하세요.",
+  "err_l3": "코드 L3: 지갑 데이터가 누락되었습니다. 지갑을 복원하세요.",
+  "err_l2": "코드 L2: 지갑 데이터가 누락되었습니다. 지갑을 복원하세요.",
+  "err_l1": "코드 L1: 지갑 데이터가 누락되었습니다. 지갑을 복원하세요.",
+  "welcome_back": "다시 오신 것을 환영합니다!",
+  "to_dec_cloud": "탈중앙화 클라우드로",
+  "unlock_with_pw": "비밀번호로 잠금 해제",
+  "enter_pw": "비밀번호 입력",
+  "unlock_wallet": "지갑 잠금 해제",
+  "forgot_pw": "비밀번호를 잊으셨나요?",
+  "restore": "복원"
 }
