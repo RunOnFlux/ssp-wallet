@@ -1,8 +1,8 @@
 {
   "title": "$t(common:appName.full)",
   "subtitle": "$t(common:appName.moto)",
-  "welcome_to": "Welcome to SSP Wallet",
-  "description": "Dual signature wallet for the decentralized world.",
-  "get_started": "Get Started!",
-  "restore_with_seed": "Restore with Seed"
+  "welcome_to": "SSP 월렛에 오신 것을 환영합니다.",
+  "description": "탈중앙화 세계를 위한 이중 서명 지갑.",
+  "get_started": "시작하기!",
+  "restore_with_seed": "시드로 복원"
 }
