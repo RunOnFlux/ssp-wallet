@@ -48,7 +48,10 @@ function LanguageSelector(props: { label: boolean }) {
         options={[
           { value: 'en', label: 'en', desc: 'English' },
           { value: 'id', label: 'id', desc: 'Bahasa Indonesia' },
+          { value: 'bg', label: 'bg', desc: 'Български' },
           { value: 'bn', label: 'bn', desc: 'বাংলা' },
+          { value: 'zh', label: 'zh', desc: '简体中文' },
+          { value: 'zh_TW', label: 'zh_TW', desc: '繁体中文' },
           { value: 'cs', label: 'cs', desc: 'Čeština' },
           { value: 'de', label: 'de', desc: 'Deutsch' },
           { value: 'es', label: 'es', desc: 'Español' },
@@ -59,6 +62,7 @@ function LanguageSelector(props: { label: boolean }) {
           { value: 'hi', label: 'hi', desc: 'हिन्दी' },
           { value: 'hr', label: 'hr', desc: 'Hrvatski' },
           { value: 'it', label: 'it', desc: 'Italiano' },
+          { value: 'ko', label: 'ko', desc: '한국어' },
           { value: 'hu', label: 'hu', desc: 'Magyar' },
           { value: 'ja', label: 'ja', desc: '日本語' },
           { value: 'ru', label: 'ru', desc: 'Русский' },

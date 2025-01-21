@@ -16,3 +16,7 @@ export { default as hu } from './hu/_index'; // Hungarian
 export { default as ja } from './ja/_index'; // Japanese
 export { default as es } from './es/_index'; // Spanish
 export { default as vi } from './vi/_index'; // Vietnamese
+export { default as zh } from './zh/_index'; // Chinese Simplified
+export { default as zh_TW } from './zh_TW/_index'; // Chinese Traditional
+export { default as ko } from './ko/_index'; // Korean
+export { default as bg } from './bg/_index'; // Bulgarian
