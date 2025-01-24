@@ -1,20 +1,20 @@
 {
-  "err_panic": "PANIC: Invalid SSP Key.",
+  "err_panic": "PANIK: Ugyldig SSP-nøgle.",
   "balances": {
-    "locked": "Locked: {{balance}} {{symbol}}",
+    "locked": "Låst: {{balance}} {{symbol}}",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
-    "show_in_explorer": "Show in Explorer",
-    "tx_sent": "Transaction Sent!"
+    "show_in_explorer": "Vis i Explorer",
+    "tx_sent": "Transaktion Sendt!"
   },
   "txRejected": {
-    "tx_rejected": "Transaction Rejected!",
-    "tx_rejected_info": "Transaction rejected by SSP Key.",
-    "tx_rejected_info_2": "Your transaction will not be included in the blockchain. Your funds are fully available and possible to be sent."
+    "tx_rejected": "Transaktion Afvist!",
+    "tx_rejected_info": "Transaktion afvist af SSP-nøgle.",
+    "tx_rejected_info_2": "Din transaktion vil ikke blive inkluderet i block chainen. Dine penge er fuldt tilgængelige og kan sendes."
   },
   "publicNoncesRejected": {
-    "public_nonces_rejected": "Public Nonces Rejected!",
+    "public_nonces_rejected": "Offentlige Noncer Afvist!",
     "public_nonces_rejected_info": "Public Nonces rejected by SSP Key.",
     "public_nonces_rejected_info_2": "SSP Key rejected to send public nonces. Without public nonces SSP Wallet cannot construct transactions on EVM chains."
   },
@@ -71,8 +71,8 @@
     "unassigned": "Unassigned",
     "dos": "DoS",
     "node_started": "{{chainName}} Node Started!",
-    "err_unable_identity": "Unable to generate node identity. Try again later.",
-    "err_delete": "Error while deleting {{chainName}} Node. Please try again.",
+    "err_unable_identity": "Kan ikke generere node identitet. Prøv igen senere.",
+    "err_delete": "Fejl under sletning af {{chainName}} node. Prøv igen.",
     "node_deleted": "{{chainName}} Node Deleted!",
     "add_to_flux_storage": "Add to Flux Storage",
     "add_to_flux_storage_info": "This action will upload your configured Flux Node to Flux Storage. This is used to simplify the setup of your FluxOS. You will be presented with storage identifier to use for your FluxOS setup.",
