@@ -22,7 +22,7 @@
   "not_evil": "ikke at være ond",
   "import_wallet": "Importer wallet",
   "wallet_seed_info": "Wallet seed bruges til at generere alle adresser. Alle med adgang til wallet seed har delvis kontrol over tegnebogen.",
-  "wallet_seed_info_2": "SSP Wallet og SSP Key skal begge bruge unikke, forskellige seed-fraser.",
+  "wallet_seed_info_2": "SSP Wallet og SSP-nøgle skal begge bruge unikke, forskellige seed-fraser.",
   "backup_wallet_seed": "Sikkerhedskopier wallet seed",
   "keep_seed_safe": "Opbevar din sikkerhedskopi af wallet seed et sikkert og forsvarligt sted.",
   "seed_loose_info": "At miste wallet seed vil resultere i tab af adgang til din wallet.",
