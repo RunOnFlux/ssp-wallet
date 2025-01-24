@@ -1,13 +1,13 @@
 {
   "appName": {
     "full": "",
-    "moto": "Secure. Simple. Powerful."
+    "moto": "آمن. بسيط. قوي."
   },
-  "back": "Back",
-  "cancel": "Cancel",
-  "refresh": "Refresh",
-  "settings": "Settings",
-  "restore": "Restore",
+  "back": "العودة",
+  "cancel": "إلغاء",
+  "refresh": "تحديث",
+  "settings": "الإعدادات",
+  "restore": "إستعادة",
   "flux": "Flux",
   "powered_by": "Powered by",
   "ok": "OK",
