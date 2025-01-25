@@ -15,7 +15,7 @@
   },
   "publicNoncesRejected": {
     "public_nonces_rejected": "Offentlige Noncer Afvist!",
-    "public_nonces_rejected_info": "Public Nonces rejected by SSP Key.",
+    "public_nonces_rejected_info": "Offentlige Nonces afvist af SSP-nøgle.",
     "public_nonces_rejected_info_2": "SSP Key rejected to send public nonces. Without public nonces SSP Wallet cannot construct transactions on EVM chains."
   },
   "publicNoncesReceived": {
