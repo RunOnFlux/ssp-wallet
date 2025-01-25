@@ -32,7 +32,7 @@
     "date": "Дата",
     "amount": "Сумма",
     "confirmations": "Подтверждения",
-    "export_tx": "Export Transactions",
+    "export_tx": "Экспортировать транзакции",
     "tx_confirmed": "Подтверждено.",
     "tx_unconfirmed": "Не подтверждено. Транзакция еще не подтверждена.",
     "tx_pending": "Ожидает. Транзакция ожидает авторизации SSP Ключом.",
@@ -40,9 +40,9 @@
     "replace_by_fee_info": "Увеличивает комиссию, заменяет или отменяет транзакцию.",
     "replace_by_fee_desc": "Replace by Fee (RBF) позволяет заменить неподтвержденную транзакцию на другую с более высокой комиссией. Если ваша транзакция остается неподтвержденной длительное время, вы можете использовать RBF для увеличения комиссии. Также можно изменить получателя, сумму или заметки к платежу. Отправив средства на один из своих адресов, вы можете отменить транзакцию.",
     "replace_by_fee_desc_b": "RBF требует более высокой комиссии за транзакцию в любом случае. Замену не гарантируется, и производители блоков, майнеры могут все равно отдать предпочтение предыдущей транзакции. Только неподтвержденные транзакции могут быть заменены.",
-    "err_export": "Error while exporting transactions. Please try again.",
-    "transactions_being_exported": "Transactions being exported...",
-    "transactions_exported": "Transactions exported!"
+    "err_export": "Ошибка при экспорте транзакций. Пожалуйста, попробуйте снова.",
+    "transactions_being_exported": "Транзакции экспортируются...",
+    "transactions_exported": "Транзакции экспортированы!"
   },
   "nodesTable": {
     "no_nodes": "Адрес не имеет узлов",
@@ -265,18 +265,18 @@
     "import_token": "Импортировать токен",
     "import": "Импортировать",
     "import_selected": "Импортировать выбранное",
-    "add_to_list": "Add To List",
+    "add_to_list": "Добавить в список",
     "remove_token": "Удалить токен",
     "remove": "Удалить",
     "remove_token_info": "Это действие скроет токен из вашего кошелька. Вы можете добавить его обратно в любой момент.",
-    "search_token": "Search Token",
+    "search_token": "Искать токен",
     "enter_contract_address": "Enter Token Contract Address",
-    "token_already_imported": "Token already imported",
-    "unable_to_fetch_metadata": "Unable to fetch token metadata. Please try again later.",
-    "token_imported": "Token Imported!",
+    "token_already_imported": "Токен уже импортирован",
+    "unable_to_fetch_metadata": "Не удалось получить метаданные токена. Пожалуйста, повторите попытку позже.",
+    "token_imported": "Токен импортирован!",
     "invalid_token_contract": "Invalid token contract.",
-    "delete_token": "Delete Token",
-    "token_deleted": "Token Deleted!",
-    "err_delete_token": "Error while deleting token. Please try again."
+    "delete_token": "Удалить токен",
+    "token_deleted": "Токен удалён!",
+    "err_delete_token": "Ошибка при удалении токена. Попробуйте снова."
   }
 }
