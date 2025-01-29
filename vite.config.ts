@@ -42,4 +42,8 @@ export default defineConfig({
       },
     },
   },
+  esbuild: {
+    // disable console and debugger in production
+    drop: ['console', 'debugger'],
+  },
 });
