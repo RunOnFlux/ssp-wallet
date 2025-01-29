@@ -142,7 +142,9 @@
   },
   "navigation": {
     "send": "Ipadala",
-    "receive": "Tanggapin"
+    "receive": "Tanggapin",
+    "buy": "Bumili",
+    "purchase_crypto": "Bumili ng Crypto"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Kumpirmahin ang Transaksyon sa SSP Key",
@@ -270,13 +272,13 @@
     "remove": "Tanggalin",
     "remove_token_info": "Itatago ng pagkilos na ito ang token mula sa iyong wallet. Maaari mo itong idagdag anumang oras.",
     "search_token": "Search Token",
-    "enter_contract_address": "Enter Token Contract Address",
-    "token_already_imported": "Token already imported",
-    "unable_to_fetch_metadata": "Unable to fetch token metadata. Please try again later.",
-    "token_imported": "Token Imported!",
-    "invalid_token_contract": "Invalid token contract.",
-    "delete_token": "Delete Token",
-    "token_deleted": "Token Deleted!",
-    "err_delete_token": "Error while deleting token. Please try again."
+    "enter_contract_address": "Ipasok ang Token Contract Address",
+    "token_already_imported": "Na-import na ang token",
+    "unable_to_fetch_metadata": "Hindi makuha ang token metadata. Pakisubukang muli mamaya.",
+    "token_imported": "Na-import ang Token!",
+    "invalid_token_contract": "Di-wastong kontrata ng token.",
+    "delete_token": "Burahin ang Token",
+    "token_deleted": "Token Tinanggal!",
+    "err_delete_token": "Error habang tinatanggal ang token. Pakisubukang muli."
   }
 }

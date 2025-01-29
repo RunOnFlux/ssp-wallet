@@ -142,7 +142,9 @@
   },
   "navigation": {
     "send": "Send",
-    "receive": "Receive"
+    "receive": "Receive",
+    "buy": "Buy",
+    "purchase_crypto": "Buy Crypto"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirm Transaction on SSP Key",
@@ -278,5 +280,10 @@
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",
     "err_delete_token": "Error while deleting token. Please try again."
+  },
+  "purchase_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "Purchase functionality is using a third party services provided by Onramper. SSP strives to provide maximum security to it's users, but we cannot guarantee the security and privacy of the third party service.",
+    "consent_info_2": "I understand the risks and want to continue"
   }
 }

@@ -13,6 +13,7 @@ import {
   networkFee,
   tokenBalanceEVM,
   chainState,
+  servicesSSPRelay,
 } from '../types';
 
 import { blockchains, Token } from '@storage/blockchains';
@@ -71,6 +72,10 @@ interface networkFeeState {
   networkFees: Record<keyof cryptos, nFState>;
 }
 
+interface servicesAvailabilityState {
+  servicesAvailability: servicesSSPRelay;
+}
+
 // make network fees based on chains object
 // create {btc: 0, rvn: 0, ...} object
 const initialNetworkFees: Record<keyof cryptos, nFState> = chainKeys.reduce(
@@ -86,6 +91,14 @@ const initialNetworkFees: Record<keyof cryptos, nFState> = chainKeys.reduce(
 
 const initialNetworkFeeState: networkFeeState = {
   networkFees: initialNetworkFees,
+};
+
+const initialServicesAvailabilityState: servicesAvailabilityState = {
+  servicesAvailability: {
+    onramp: false,
+    offramp: false,
+    swap: false,
+  },
 };
 
 interface RatesState {
@@ -243,6 +256,19 @@ const networkFeesSlice = createSlice({
   },
 });
 
+const servicesAvailabilitySlice = createSlice({
+  name: 'servicesAvailability',
+  initialState: initialServicesAvailabilityState,
+  reducers: {
+    setServicesAvailability: (
+      state,
+      action: PayloadAction<servicesSSPRelay>,
+    ) => {
+      state.servicesAvailability = action.payload;
+    },
+  },
+});
+
 const sspStateSlice = createSlice({
   name: 'sspState',
   initialState: initialSspState,
@@ -277,6 +303,8 @@ export const { setCryptoRates, setFiatRates } = fiatCryptoRatesSlice.actions;
 
 export const { setNetworkFees } = networkFeesSlice.actions;
 
+export const { setServicesAvailability } = servicesAvailabilitySlice.actions;
+
 export const { setContacts, setInitialContactsState } = contactsSlice.actions;
 
 export const {
@@ -293,6 +321,7 @@ const reducers = combineReducers({
   networkFees: networkFeesSlice.reducer,
   sspState: sspStateSlice.reducer,
   contacts: contactsSlice.reducer,
+  servicesAvailability: servicesAvailabilitySlice.reducer,
   // === IMPORT CHAINS ===
   ...chainKeys.reduce(
     (acc, key) => {
