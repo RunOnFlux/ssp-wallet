@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Input, Button, Checkbox, Form, Divider, message, Modal } from 'antd';
+import {
+  Input,
+  Button,
+  Checkbox,
+  Form,
+  Divider,
+  message,
+  Modal,
+  Popover,
+} from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
 import { wordlist } from '@scure/bip39/wordlists/english';
@@ -9,6 +18,7 @@ import {
   EyeInvisibleOutlined,
   EyeTwoTone,
   LockOutlined,
+  ExclamationCircleFilled,
 } from '@ant-design/icons';
 import secureLocalStorage from 'react-secure-storage';
 
@@ -60,6 +70,7 @@ function Restore() {
   // use localforage to store addresses, balances, transactions and other data. This data is not encrypted for performance reasons and they are not sensitive.
   // if user exists, navigate to login
   const [password, setPassword] = useState('');
+  const [temporaryPassword, setTemporaryPassword] = useState('');
   const [mnemonic, setMnemonic] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mnemonicShow, setMnemonicShow] = useState(false);
@@ -83,6 +94,7 @@ function Restore() {
     setIsModalOpen(false);
     setMnemonic('');
     setPassword('');
+    setTemporaryPassword('');
     setWSPwasShown(false);
     setWSPbackedUp(false);
     setMnemonicShow(false);
@@ -97,10 +109,62 @@ function Restore() {
   };
 
   useEffect(() => {
-    if (mnemonic) {
+    return () => {
+      // reset state
+      setPassword('');
+      setTemporaryPassword('');
+      setMnemonic('');
+      console.log('reset state');
+    };
+  }, []); // Empty dependency array ensures this effect runs only on mount/unmount
+
+  useEffect(() => {
+    if (password) {
       showModal();
     }
-  }, [mnemonic]);
+  }, [password]);
+
+  useEffect(() => {
+    if (temporaryPassword) {
+      warningWeakPassword();
+    }
+  }, [temporaryPassword]);
+
+  const isPasswordStrong = (password: string) => {
+    return (
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /[a-z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[!@#$%^&*]/.test(password)
+    );
+  };
+
+  const warningWeakPassword = () => {
+    Modal.confirm({
+      title: t('cr:weak_password'),
+      icon: <ExclamationCircleFilled />,
+      content: (
+        <>
+          {t('cr:weak_password_info')}
+          <br />
+          <br />
+          {t('cr:weak_password_confirm')}
+        </>
+      ),
+      okText: t('cr:weak_password_confirm_cancel'),
+      cancelText: t('cr:weak_password_confirm_ok'),
+      onOk() {
+        // close dialog
+        setMnemonic('');
+        setTemporaryPassword('');
+      },
+      onCancel() {
+        // proceed with weak password
+        setPassword(temporaryPassword);
+      },
+    });
+  };
 
   const onFinish = (values: passwordForm) => {
     const seedPhrase = values.mnemonic.trim();
@@ -148,8 +212,14 @@ function Restore() {
       displayMessage('error', t('cr:err_tos'));
       return;
     }
-    setPassword(values.password);
     setMnemonic(seedPhrase);
+    // check if password is strong
+    if (!isPasswordStrong(values.password)) {
+      // display confirmation modal that password is not strong
+      setTemporaryPassword(values.password);
+      return;
+    }
+    setPassword(values.password);
   };
 
   const handleNavigation = () => {
@@ -260,26 +330,36 @@ function Restore() {
             <TextArea rows={4} placeholder={t('cr:input_seed_phrase')} />
           </Form.Item>
           <br />
-          <Form.Item
-            label={t('cr:set_password')}
-            name="password"
-            rules={[
-              {
-                required: true,
-                message: t('cr:input_password'),
-              },
-            ]}
+          <Popover
+            placement="top"
+            content={t('cr:strong_password')}
+            arrow={false}
+            overlayInnerStyle={{
+              marginBottom: -30,
+              maxWidth: 300,
+            }}
           >
-            <Input.Password
-              size="large"
-              placeholder={t('cr:set_password')}
-              prefix={<LockOutlined />}
-              iconRender={(visible) =>
-                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-              }
-              className="password-input"
-            />
-          </Form.Item>
+            <Form.Item
+              label={t('cr:set_password')}
+              name="password"
+              rules={[
+                {
+                  required: true,
+                  message: t('cr:input_password'),
+                },
+              ]}
+            >
+              <Input.Password
+                size="large"
+                placeholder={t('cr:set_password')}
+                prefix={<LockOutlined />}
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+                className="password-input"
+              />
+            </Form.Item>
+          </Popover>
 
           <Form.Item
             label={t('cr:confirm_password')}

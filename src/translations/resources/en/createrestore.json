@@ -39,5 +39,11 @@
   "backup_confirmed": "Backup Confirmed!",
   "confirm_wallet_seed_word": "Confirm Wallet Seed",
   "word_number": "Word #{{number}}",
-  "incorrect_backup_confirmation": "Incorrect Word"
+  "incorrect_backup_confirmation": "Incorrect Word",
+  "strong_password": "Strong password should contain at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.",
+  "weak_password": "Weak Password Used",
+  "weak_password_info": "Your password is weak which affects the security of your wallet.",
+  "weak_password_confirm": "Would you like to change it?",
+  "weak_password_confirm_ok": "No, Continue with weak password.",
+  "weak_password_confirm_cancel": "Yes, I want to change it."
 }
