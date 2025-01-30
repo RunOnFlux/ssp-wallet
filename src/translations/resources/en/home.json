@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "This QR code is used to sync your SSP Wallet with your SSP Key. Scan this QR code with your SSP Key to sync your SSP Wallet with your SSP Key. It also automatically syncs Bitcoin chain.",
     "chain_sync_ssp_key_desc": "This QR code is used to sync your {{chain}} SSP Wallet with your SSP Key. Scan this QR code with your SSP Key to sync your {{chain}} chain.",
     "chain_extended_pub_desc": "Extended Public key is used to derive all your {{chain}} public keys from which addresses are constructed. This is a public part, safe to share, does not grant access to funds. This is what SSP Wallet syncs with your SSP Key to generate addresses.",
-    "chain_extended_priv_desc": "Extended Private key is used to derive all your {{chain}} private keys that control your public keys - addresses. This is a private part, do NOT ever share as it grants access to funds."
+    "chain_extended_priv_desc": "Extended Private key is used to derive all your {{chain}} private keys that control your public keys - addresses. This is a private part, do NOT ever share as it grants access to funds.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Address Details (BIP-48)",

@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Typography, Button, Modal, message, QRCode, Space } from 'antd';
+import {
+  Typography,
+  Button,
+  Modal,
+  message,
+  QRCode,
+  Space,
+  Popconfirm,
+} from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
@@ -7,7 +15,11 @@ import { getFingerprint } from '../../lib/fingerprint';
 import { generateAddressKeypair, getScriptType } from '../../lib/wallet';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
-import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import {
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  ExclamationCircleFilled,
+} from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 
@@ -15,7 +27,7 @@ function AddressDetails(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
-  const { t } = useTranslation(['home', 'common']);
+  const { t } = useTranslation(['home', 'common', 'cr']);
   const [privKey, setPrivKey] = useState('');
   const [redeemScriptVisible, setRedeemScriptVisible] = useState(false);
   const [witnessScriptVisible, setWitnessScriptVisible] = useState(false);
@@ -206,7 +218,29 @@ function AddressDetails(props: {
             <EyeTwoTone onClick={() => setPrivateKeyVisible(false)} />
           )}
           {!privateKeyVisible && (
-            <EyeInvisibleOutlined onClick={() => setPrivateKeyVisible(true)} />
+            <Popconfirm
+              title={t('home:sspWalletDetails.show_data', {
+                data: t('home:addressDetails.wallet_priv_key', {
+                  chain: blockchainConfig.name,
+                }),
+              })}
+              description={
+                <>
+                  {t('cr:show_sensitive_data', {
+                    sensitive_data: t('home:addressDetails.wallet_priv_key'),
+                  })}
+                </>
+              }
+              overlayStyle={{ maxWidth: 360, margin: 10 }}
+              okText={t('common:confirm')}
+              cancelText={t('common:cancel')}
+              onConfirm={() => {
+                setPrivateKeyVisible(true);
+              }}
+              icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+            >
+              <EyeInvisibleOutlined />
+            </Popconfirm>
           )}{' '}
           {t('home:addressDetails.wallet_priv_key')}:
         </h3>

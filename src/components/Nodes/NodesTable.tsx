@@ -224,12 +224,12 @@ function NodesTable(props: {
         )}-${identityChainConfig.id}`,
       );
       const fingerprint: string = getFingerprint();
-      const password = await passworderDecrypt(fingerprint, props.passwordBlob);
+      let password = await passworderDecrypt(fingerprint, props.passwordBlob);
       if (typeof password !== 'string') {
         throw new Error('Unable to decrypt password');
       }
       if (xprivEncrypted && typeof xprivEncrypted === 'string') {
-        const xpriv = await passworderDecrypt(password, xprivEncrypted);
+        let xpriv = await passworderDecrypt(password, xprivEncrypted);
         // generate keypair
         if (xpriv && typeof xpriv === 'string') {
           const externalIdentity = generateExternalIdentityKeypair(xpriv);
@@ -241,7 +241,10 @@ function NodesTable(props: {
         } else {
           throw new Error('Unknown error: address mismatch');
         }
+        // reassign xpriv to empty string as it is no longer needed
+        xpriv = '';
       }
+      password = '';
 
       const url = 'https://storage.runonflux.io/v1/node';
       const options = {

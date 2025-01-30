@@ -9,6 +9,7 @@ import {
   message,
   Modal,
   Popover,
+  Popconfirm,
 } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +20,9 @@ import {
   EyeTwoTone,
   LockOutlined,
   ExclamationCircleFilled,
+  CopyOutlined,
+  EyeInvisibleFilled,
+  EyeFilled,
 } from '@ant-design/icons';
 import secureLocalStorage from 'react-secure-storage';
 
@@ -62,7 +66,7 @@ function Create() {
   // if user exists, navigate to login
   const [password, setPassword] = useState('');
   const [temporaryPassword, setTemporaryPassword] = useState('');
-  const [mnemonic, setMnemonic] = useState('');
+  const [mnemonic, setMnemonic] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfrimModalOpen, setIsConfrimModalOpen] = useState(false);
 
@@ -83,7 +87,7 @@ function Create() {
       // reset state
       setPassword('');
       setTemporaryPassword('');
-      setMnemonic('');
+      setMnemonic([]);
       console.log('reset state');
     };
   }, []); // Empty dependency array ensures this effect runs only on mount/unmount
@@ -100,7 +104,7 @@ function Create() {
   });
 
   useEffect(() => {
-    if (mnemonic) {
+    if (mnemonic.length) {
       showModal();
     }
   }, [mnemonic]);
@@ -176,16 +180,18 @@ function Create() {
   };
 
   const generateMnemonicPhrase = (entValue: 128 | 256) => {
-    const generatedMnemonic = generateMnemonic(entValue);
-    setMnemonic(generatedMnemonic);
+    let generatedMnemonic = generateMnemonic(entValue);
+    setMnemonic(generatedMnemonic.split(' '));
+    // reassign generatedMnemonic to empty string as it is no longer needed
+    generatedMnemonic = '';
   };
 
-  const storeMnemonic = (mnemonicPhrase: string) => {
-    if (!mnemonicPhrase) {
+  const storeMnemonic = (mnemonicPhrase: string[]) => {
+    if (!mnemonicPhrase.length) {
       displayMessage('error', t('cr:err_wallet_phrase_invalid_login'));
       return;
     }
-    passworderEncrypt(password, mnemonicPhrase)
+    passworderEncrypt(password, mnemonicPhrase.join(' '))
       .then(async (blob) => {
         secureLocalStorage.clear();
         await localForage.clear();
@@ -194,8 +200,8 @@ function Create() {
         }
         secureLocalStorage.setItem('walletSeed', blob);
         // generate master xpriv for btc - default chain
-        const xpriv = getMasterXpriv(
-          mnemonicPhrase,
+        let xpriv = getMasterXpriv(
+          mnemonicPhrase.join(' '),
           48,
           blockchainConfig.slip,
           0,
@@ -203,14 +209,18 @@ function Create() {
           identityChain,
         );
         const xpub = getMasterXpub(
-          mnemonicPhrase,
+          mnemonicPhrase.join(' '),
           48,
           blockchainConfig.slip,
           0,
           blockchainConfig.scriptType,
           identityChain,
         );
+        // reassign mnemonicPhrase to empty string as it is no longer needed
+        mnemonicPhrase = [];
         const xprivBlob = await passworderEncrypt(password, xpriv);
+        // reassign xpriv to empty string as it is no longer needed
+        xpriv = '';
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();
         const pwBlob = await passworderEncrypt(fingerprint, password);
@@ -336,19 +346,21 @@ function Create() {
     const [mnemonicShow, setMnemonicShow] = useState(false);
     const [wspWasShown, setWSPwasShown] = useState(false);
     const [WSPbackedUp, setWSPbackedUp] = useState(false);
+    const [wpCopied, setWpCopied] = useState(false);
 
     const handleCancel = () => {
       setIsModalOpen(false);
-      setMnemonic('');
+      setMnemonic([]);
       setPassword('');
       setTemporaryPassword('');
       setWSPwasShown(false);
       setWSPbackedUp(false);
       setMnemonicShow(false);
+      setWpCopied(false);
     };
 
     const handleOk = () => {
-      if (WSPbackedUp && wspWasShown) {
+      if (WSPbackedUp && (wspWasShown || wpCopied)) {
         setIsModalOpen(false);
         setIsConfrimModalOpen(true);
       } else {
@@ -357,12 +369,33 @@ function Create() {
     };
 
     const onChangeWSP = (e: CheckboxChangeEvent) => {
-      if (wspWasShown) {
+      if (wspWasShown || wpCopied) {
         setWSPbackedUp(e.target.checked);
       } else {
         displayMessage('info', t('cr:info_backup_needed'));
       }
     };
+
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.font = '10px Tahoma';
+          mnemonic.forEach((word, index) => {
+            const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
+            const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
+            ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
+            ctx.font = '16px Tahoma'; // Larger font for the word
+            ctx.fillText(mnemonicShow ? word : '*****', x + 20, y);
+            ctx.font = '10px Tahoma'; // Reset font for the next number
+          });
+        }
+      }
+    }, [mnemonic, mnemonicShow]);
 
     return (
       <Modal
@@ -380,28 +413,82 @@ function Create() {
         <p>
           <b>{t('cr:seed_loose_info')}</b>
         </p>
-        <br />
         <Divider />
-        <h3>
-          <i>
-            {mnemonicShow
-              ? mnemonic
-              : '*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***'}
-          </i>
-        </h3>
-        <Button
-          type="dashed"
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-            setMnemonicShow(!mnemonicShow), setWSPwasShown(true);
+        <canvas
+          ref={canvasRef}
+          width={366}
+          height={180}
+          style={{ border: '1px solid black', marginLeft: '-15px' }}
+        />
+        {mnemonicShow && (
+          <Button
+            type="dashed"
+            icon={<EyeFilled />}
+            onClick={() => {
+              setMnemonicShow(!mnemonicShow);
+              setWSPwasShown(true);
+            }}
+            style={{ margin: 5 }}
+          >
+            {t('cr:hide_mnemonic')} {t('cr:wallet_seed_phrase')}
+          </Button>
+        )}
+        {!mnemonicShow && (
+          <Popconfirm
+            title={t('cr:show_wallet_seed', {
+              sensitive_data: t('cr:wallet_seed_phrase'),
+            })}
+            description={
+              <>
+                {t('cr:show_sensitive_data', {
+                  sensitive_data: t('cr:wallet_seed_phrase'),
+                })}
+              </>
+            }
+            overlayStyle={{ maxWidth: 360, margin: 10 }}
+            okText={t('common:confirm')}
+            cancelText={t('common:cancel')}
+            onConfirm={() => {
+              setMnemonicShow(!mnemonicShow);
+              setWSPwasShown(true);
+            }}
+            icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+          >
+            <Button
+              type="dashed"
+              icon={<EyeInvisibleFilled />}
+              style={{ margin: 5 }}
+            >
+              {t('cr:show_mnemonic')} {t('cr:wallet_seed_phrase')}
+            </Button>
+          </Popconfirm>
+        )}
+        <Popconfirm
+          title={t('cr:copy_wallet_seed')}
+          description={
+            <>
+              {t('cr:copy_sensitive_data_desc', {
+                sensitive_data: t('cr:wallet_seed_phrase'),
+              })}
+            </>
+          }
+          overlayStyle={{ maxWidth: 360, margin: 10 }}
+          okText={t('common:confirm')}
+          cancelText={t('common:cancel')}
+          onConfirm={() => {
+            navigator.clipboard.writeText(mnemonic.join(' '));
+            displayMessage('success', t('cr:copied'));
+            setWpCopied(true);
           }}
+          icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
         >
-          {mnemonicShow ? t('cr:hide_mnemonic') : t('cr:show_mnemonic')}{' '}
-          {t('cr:wallet_seed_phrase')}
-        </Button>
+          <Button type="dashed" icon={<CopyOutlined />} style={{ margin: 5 }}>
+            {t('cr:copy_wallet_seed')}
+          </Button>
+        </Popconfirm>
         <Divider />
         <br />
-        <Checkbox disabled={!wspWasShown} onChange={onChangeWSP}>
+        <Checkbox disabled={!wspWasShown && !wpCopied} onChange={onChangeWSP}>
           {t('cr:phrase_backed_up')}
         </Checkbox>
         <br />
@@ -457,7 +544,7 @@ function Create() {
               key={index}
               style={{ margin: 5 }}
             >
-              {mnemonic.split(' ')[compProps.wordIndex]}
+              {mnemonic[compProps.wordIndex]}
             </Button>,
           );
         } else {
