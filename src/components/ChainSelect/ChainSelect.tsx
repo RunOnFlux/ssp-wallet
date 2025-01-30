@@ -317,11 +317,11 @@ function ChainSelect(props: {
             blockchainConfig.scriptType,
             chainToSwitch,
           );
-          // reassign walletSeed to empty string as it is no longer needed
-          walletSeed = '';
+          // reassign walletSeed to null as it is no longer needed
+          walletSeed = null;
           const xprivBlob = await passworderEncrypt(password, xprivWallet);
-          // reassign xprivWallet to empty string as it is no longer needed
-          xprivWallet = '';
+          // @ts-expect-error assign to null as it is no longer needed
+          xprivWallet = null;
           const xpubBlob = await passworderEncrypt(password, xpubWallet);
           secureLocalStorage.setItem(
             `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(

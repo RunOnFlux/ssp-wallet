@@ -180,10 +180,10 @@ function Create() {
   };
 
   const generateMnemonicPhrase = (entValue: 128 | 256) => {
-    let generatedMnemonic = generateMnemonic(entValue);
+    let generatedMnemonic: string | null = generateMnemonic(entValue);
     setMnemonic(generatedMnemonic.split(' '));
-    // reassign generatedMnemonic to empty string as it is no longer needed
-    generatedMnemonic = '';
+    // reassign generatedMnemonic to null as it is no longer needed
+    generatedMnemonic = null;
   };
 
   const storeMnemonic = (mnemonicPhrase: string[]) => {
@@ -216,11 +216,12 @@ function Create() {
           blockchainConfig.scriptType,
           identityChain,
         );
-        // reassign mnemonicPhrase to empty string as it is no longer needed
-        mnemonicPhrase = [];
+        // reassign mnemonicPhrase to null as it is no longer needed
+        // @ts-expect-error assign to null as it is no longer needed
+        mnemonicPhrase = null;
         const xprivBlob = await passworderEncrypt(password, xpriv);
-        // reassign xpriv to empty string as it is no longer needed
-        xpriv = '';
+        // @ts-expect-error assign to null as it is no longer needed
+        xpriv = null;
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();
         const pwBlob = await passworderEncrypt(fingerprint, password);

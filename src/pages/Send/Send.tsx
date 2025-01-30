@@ -431,8 +431,8 @@ function Send() {
       throw new Error(t('send:err_invalid_xpriv'));
     }
     let xprivChain = await passworderDecrypt(password, xprivBlob);
-    // reassign password to empty string as it is no longer needed
-    password = '';
+    // reassign password to null as it is no longer needed
+    password = null;
     if (typeof xprivChain !== 'string') {
       throw new Error(t('send:err_invalid_xpriv_decrypt'));
     }
@@ -446,8 +446,8 @@ function Send() {
       addressIndex,
       activeChain,
     );
-    // reassign xprivChain to empty string as it is no longer needed
-    xprivChain = '';
+    // reassign xprivChain to null as it is no longer needed
+    xprivChain = null;
     const amount = new BigNumber(sendingAmount || '0')
       .multipliedBy(10 ** blockchainConfig.decimals)
       .toFixed();
@@ -590,8 +590,8 @@ function Send() {
           throw new Error(t('send:err_invalid_xpriv'));
         }
         let xprivChain = await passworderDecrypt(password, xprivBlob);
-        // reassign password to empty string as it is no longer needed
-        password = '';
+        // reassign password to null as it is no longer needed
+        password = null;
         if (typeof xprivChain !== 'string') {
           throw new Error(t('send:err_invalid_xpriv_decrypt'));
         }
@@ -605,8 +605,8 @@ function Send() {
           addressIndex,
           activeChain,
         );
-        // reassign xprivChain to empty string as it is no longer needed
-        xprivChain = '';
+        // reassign xprivChain to null as it is no longer needed
+        xprivChain = null;
         const amount = new BigNumber(values.amount)
           .multipliedBy(10 ** blockchainConfig.decimals)
           .toFixed();

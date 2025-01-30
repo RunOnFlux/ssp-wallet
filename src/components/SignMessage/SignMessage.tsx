@@ -86,10 +86,10 @@ function SignMessage(props: {
           } else {
             throw new Error('Unknown error: address mismatch');
           }
-          // reassign xpriv to empty string as it is no longer needed
-          xpriv = '';
+          // reassign xpriv to null as it is no longer needed
+          xpriv = null;
         }
-        password = '';
+        password = null;
       } else {
         console.log('todo');
         // todo case for signing with any address

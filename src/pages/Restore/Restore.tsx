@@ -291,11 +291,12 @@ function Restore() {
           identityChain,
         );
         console.log(xpub);
-        // reassign mnemonicPhrase to empty string as it is no longer needed
-        mnemonicPhrase = [];
+        // reassign mnemonicPhrase to null as it is no longer needed
+        // @ts-expect-error assign to null as it is no longer needed
+        mnemonicPhrase = null;
         const xprivBlob = await passworderEncrypt(password, xpriv);
-        // reassign xpriv to empty string as it is no longer needed
-        xpriv = '';
+        // @ts-expect-error assign to null as it is no longer needed
+        xpriv = null;
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();
         const pwBlob = await passworderEncrypt(fingerprint, password);

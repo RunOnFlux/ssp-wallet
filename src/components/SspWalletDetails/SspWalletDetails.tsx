@@ -169,8 +169,8 @@ function SSPWalletDetails(props: {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed_2'));
         }
         setSeedPhrase(walletSeed.split(' '));
-        // reassign walletSeed to empty string as it is no longer needed
-        walletSeed = '';
+        // reassign walletSeed to null as it is no longer needed
+        walletSeed = null;
       })
       .catch((error) => {
         console.log(error);

@@ -100,9 +100,9 @@ function AddressDetails(props: {
           addressIndex,
           activeChain,
         );
-        // reassign xprivChain to empty string as it is no longer needed
-        xprivChain = '';
-        password = '';
+        // reassign xprivChain to null as it is no longer needed
+        xprivChain = null;
+        password = null;
         setPrivKey(keyPair.privKey);
       })
       .catch((error) => {

@@ -43,8 +43,8 @@ function generatexPubxPriv(
   const scriptType = getScriptType(type);
 
   let seed = bip39.mnemonicToSeedSync(mnemonic);
-  // limit memory exposure
-  mnemonic = '';
+  // @ts-expect-error assign to null as it is no longer needed
+  mnemonic = null;
   const bipParams = blockchains[chain].bip32;
   const masterKey = HDKey.fromMasterSeed(seed, bipParams);
   seed = new Uint8Array();
@@ -80,7 +80,8 @@ export function getMasterXpub(
     type,
     chain,
   );
-  mnemonic = '';
+  // @ts-expect-error assign to null as it is no longer needed
+  mnemonic = null;
   return xPubxPriv.xpub;
 }
 
@@ -101,7 +102,8 @@ export function getMasterXpriv(
     type,
     chain,
   );
-  mnemonic = '';
+  // @ts-expect-error assign to null as it is no longer needed
+  mnemonic = null;
   return xPubxPriv.xpriv;
 }
 

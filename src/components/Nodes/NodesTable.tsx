@@ -241,10 +241,10 @@ function NodesTable(props: {
         } else {
           throw new Error('Unknown error: address mismatch');
         }
-        // reassign xpriv to empty string as it is no longer needed
-        xpriv = '';
+        // reassign xpriv to null as it is no longer needed
+        xpriv = null;
       }
-      password = '';
+      password = null;
 
       const url = 'https://storage.runonflux.io/v1/node';
       const options = {

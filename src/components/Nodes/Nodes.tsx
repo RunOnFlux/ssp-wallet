@@ -137,9 +137,9 @@ function Nodes() {
             addressIndex,
             activeChain,
           );
-          // reassign xpriv to empty string as it is no longer needed
-          xpriv = '';
-          password = '';
+          // reassign xpriv to null as it is no longer needed
+          xpriv = null;
+          password = null;
           setCollateralPublicKey(keyPair.pubKey);
           setCollateralPrivKey(keyPair.privKey);
         } else {
