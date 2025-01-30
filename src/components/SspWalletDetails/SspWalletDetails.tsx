@@ -39,7 +39,7 @@ function SSPWalletDetails(props: {
   const [xpriv, setXpriv] = useState('');
   const [xpub, setXpub] = useState('');
   const [xpubIdentity, setXpubIdentity] = useState('');
-  const [seedPhrase, setSeedPhrase] = useState<string[]>([]);
+  const [seedPhrase, setSeedPhrase] = useState<Uint8Array>(new Uint8Array());
   const [extendedPublicKeyVisible, setExtendedPublicKeyVisible] =
     useState(false);
   const [chainSyncKeyVisible, setChainSyncKeyVisible] = useState(false);
@@ -60,7 +60,8 @@ function SSPWalletDetails(props: {
 
   useEffect(() => {
     if (!open) {
-      setSeedPhrase([]);
+      seedPhrase.fill(0);
+      setSeedPhrase(new Uint8Array());
       setXpriv('');
       setXpub('');
       setXpubIdentity('');
@@ -76,14 +77,17 @@ function SSPWalletDetails(props: {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font = '10px Tahoma';
         ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
-        seedPhrase.forEach((word, index) => {
-          const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
-          const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
-          ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
-          ctx.font = '16px Tahoma'; // Larger font for the word
-          ctx.fillText(seedPhraseVisible ? word : '*****', x + 20, y);
-          ctx.font = '10px Tahoma'; // Reset font for the next number
-        });
+        new TextDecoder()
+          .decode(seedPhrase)
+          .split(' ')
+          .forEach((word, index) => {
+            const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
+            const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
+            ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
+            ctx.font = '16px Tahoma'; // Larger font for the word
+            ctx.fillText(seedPhraseVisible ? word : '*****', x + 20, y);
+            ctx.font = '10px Tahoma'; // Reset font for the next number
+          });
       }
     }
   }, [seedPhrase, seedPhraseVisible, open]);
@@ -170,7 +174,7 @@ function SSPWalletDetails(props: {
         if (typeof walletSeed !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed_2'));
         }
-        setSeedPhrase(walletSeed.split(' '));
+        setSeedPhrase(new TextEncoder().encode(walletSeed));
         // reassign walletSeed to null as it is no longer needed
         walletSeed = null;
       })
@@ -414,7 +418,9 @@ function SSPWalletDetails(props: {
             okText={t('common:confirm')}
             cancelText={t('common:cancel')}
             onConfirm={() => {
-              navigator.clipboard.writeText(seedPhrase.join(' '));
+              navigator.clipboard.writeText(
+                new TextDecoder().decode(seedPhrase),
+              );
               displayMessage('success', t('cr:copied'));
             }}
             icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}

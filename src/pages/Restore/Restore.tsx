@@ -75,7 +75,7 @@ function Restore() {
   // if user exists, navigate to login
   const [password, setPassword] = useState('');
   const [temporaryPassword, setTemporaryPassword] = useState('');
-  const [mnemonic, setMnemonic] = useState<string[]>([]);
+  const [mnemonic, setMnemonic] = useState<Uint8Array>(new Uint8Array());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mnemonicShow, setMnemonicShow] = useState(false);
   const [WSPbackedUp, setWSPbackedUp] = useState(false);
@@ -99,7 +99,8 @@ function Restore() {
 
   const handleCancel = () => {
     setIsModalOpen(false);
-    setMnemonic([]);
+    mnemonic.fill(0);
+    setMnemonic(new Uint8Array());
     setPassword('');
     setTemporaryPassword('');
     setWSPwasShown(false);
@@ -121,7 +122,8 @@ function Restore() {
       // reset state
       setPassword('');
       setTemporaryPassword('');
-      setMnemonic([]);
+      mnemonic.fill(0);
+      setMnemonic(new Uint8Array());
       console.log('reset state');
     };
   }, []); // Empty dependency array ensures this effect runs only on mount/unmount
@@ -146,14 +148,17 @@ function Restore() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font = '10px Tahoma';
         ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
-        mnemonic.forEach((word, index) => {
-          const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
-          const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
-          ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
-          ctx.font = '16px Tahoma'; // Larger font for the word
-          ctx.fillText(mnemonicShow ? word : '*****', x + 20, y);
-          ctx.font = '10px Tahoma'; // Reset font for the next number
-        });
+        new TextDecoder()
+          .decode(mnemonic)
+          .split(' ')
+          .forEach((word, index) => {
+            const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
+            const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
+            ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
+            ctx.font = '16px Tahoma'; // Larger font for the word
+            ctx.fillText(mnemonicShow ? word : '*****', x + 20, y);
+            ctx.font = '10px Tahoma'; // Reset font for the next number
+          });
       }
     }
   }, [mnemonic, mnemonicShow, isModalOpen]);
@@ -184,7 +189,8 @@ function Restore() {
       cancelText: t('cr:weak_password_confirm_ok'),
       onOk() {
         // close dialog
-        setMnemonic([]);
+        mnemonic.fill(0);
+        setMnemonic(new Uint8Array());
         setTemporaryPassword('');
       },
       onCancel() {
@@ -195,12 +201,12 @@ function Restore() {
   };
 
   const onFinish = (values: passwordForm) => {
-    const seedPhrase = values.mnemonic.trim();
+    let seedPhrase = values.mnemonic.trim();
     if (!seedPhrase) {
       displayMessage('error', t('cr:err_enter_seed'));
       return;
     }
-    const splittedSeed = seedPhrase.split(' ');
+    let splittedSeed = seedPhrase.split(' ');
     if (splittedSeed.length < 12) {
       displayMessage('error', t('cr:err_seed_invalid'));
       return;
@@ -240,7 +246,13 @@ function Restore() {
       displayMessage('error', t('cr:err_tos'));
       return;
     }
-    setMnemonic(splittedSeed);
+    setMnemonic(new TextEncoder().encode(splittedSeed.join(' ')));
+    // @ts-expect-error assign to null as it is no longer needed
+    splittedSeed = null;
+    // @ts-expect-error assign to null as it is no longer needed
+    seedPhrase = null;
+    // @ts-expect-error assign to null as it is no longer needed
+    values.mnemonic = null;
     // check if password is strong
     if (!isPasswordStrong(values.password)) {
       // display confirmation modal that password is not strong
@@ -258,7 +270,7 @@ function Restore() {
     }
   };
 
-  const storeMnemonic = (mnemonicPhrase: string[]) => {
+  const storeMnemonic = (mnemonicPhrase: Uint8Array) => {
     if (!mnemonicPhrase.length) {
       displayMessage('error', t('cr:err_wallet_phrase_invalid'));
       return;
@@ -273,11 +285,11 @@ function Restore() {
         }
         const mnemonicBlob = await passworderEncrypt(
           password,
-          mnemonicPhrase.join(' '),
+          new TextDecoder().decode(mnemonicPhrase),
         );
         secureLocalStorage.setItem('walletSeed', mnemonicBlob);
         let xpriv = getMasterXpriv(
-          mnemonicPhrase.join(' '),
+          new TextDecoder().decode(mnemonicPhrase),
           48,
           blockchainConfig.slip,
           0,
@@ -285,7 +297,7 @@ function Restore() {
           identityChain,
         );
         const xpub = getMasterXpub(
-          mnemonicPhrase.join(' '),
+          new TextDecoder().decode(mnemonicPhrase),
           48,
           blockchainConfig.slip,
           0,
@@ -294,8 +306,7 @@ function Restore() {
         );
         console.log(xpub);
         // reassign mnemonicPhrase to null as it is no longer needed
-        // @ts-expect-error assign to null as it is no longer needed
-        mnemonicPhrase = null;
+        mnemonicPhrase.fill(0);
         const xprivBlob = await passworderEncrypt(password, xpriv);
         // @ts-expect-error assign to null as it is no longer needed
         xpriv = null;
@@ -526,7 +537,7 @@ function Restore() {
           okText={t('common:confirm')}
           cancelText={t('common:cancel')}
           onConfirm={() => {
-            navigator.clipboard.writeText(mnemonic.join(' '));
+            navigator.clipboard.writeText(new TextDecoder().decode(mnemonic));
             displayMessage('success', t('cr:copied'));
             setWpCopied(true);
           }}

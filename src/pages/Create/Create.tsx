@@ -66,7 +66,7 @@ function Create() {
   // if user exists, navigate to login
   const [password, setPassword] = useState('');
   const [temporaryPassword, setTemporaryPassword] = useState('');
-  const [mnemonic, setMnemonic] = useState<string[]>([]);
+  const [mnemonic, setMnemonic] = useState<Uint8Array>(new Uint8Array());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfrimModalOpen, setIsConfrimModalOpen] = useState(false);
 
@@ -87,7 +87,8 @@ function Create() {
       // reset state
       setPassword('');
       setTemporaryPassword('');
-      setMnemonic([]);
+      mnemonic.fill(0);
+      setMnemonic(new Uint8Array());
       console.log('reset state');
     };
   }, []); // Empty dependency array ensures this effect runs only on mount/unmount
@@ -181,17 +182,17 @@ function Create() {
 
   const generateMnemonicPhrase = (entValue: 128 | 256) => {
     let generatedMnemonic: string | null = generateMnemonic(entValue);
-    setMnemonic(generatedMnemonic.split(' '));
+    setMnemonic(new TextEncoder().encode(generatedMnemonic));
     // reassign generatedMnemonic to null as it is no longer needed
     generatedMnemonic = null;
   };
 
-  const storeMnemonic = (mnemonicPhrase: string[]) => {
+  const storeMnemonic = (mnemonicPhrase: Uint8Array) => {
     if (!mnemonicPhrase.length) {
       displayMessage('error', t('cr:err_wallet_phrase_invalid_login'));
       return;
     }
-    passworderEncrypt(password, mnemonicPhrase.join(' '))
+    passworderEncrypt(password, new TextDecoder().decode(mnemonicPhrase))
       .then(async (blob) => {
         secureLocalStorage.clear();
         await localForage.clear();
@@ -201,7 +202,7 @@ function Create() {
         secureLocalStorage.setItem('walletSeed', blob);
         // generate master xpriv for btc - default chain
         let xpriv = getMasterXpriv(
-          mnemonicPhrase.join(' '),
+          new TextDecoder().decode(mnemonicPhrase),
           48,
           blockchainConfig.slip,
           0,
@@ -209,7 +210,7 @@ function Create() {
           identityChain,
         );
         const xpub = getMasterXpub(
-          mnemonicPhrase.join(' '),
+          new TextDecoder().decode(mnemonicPhrase),
           48,
           blockchainConfig.slip,
           0,
@@ -217,8 +218,7 @@ function Create() {
           identityChain,
         );
         // reassign mnemonicPhrase to null as it is no longer needed
-        // @ts-expect-error assign to null as it is no longer needed
-        mnemonicPhrase = null;
+        mnemonicPhrase.fill(0);
         const xprivBlob = await passworderEncrypt(password, xpriv);
         // @ts-expect-error assign to null as it is no longer needed
         xpriv = null;
@@ -351,7 +351,8 @@ function Create() {
 
     const handleCancel = () => {
       setIsModalOpen(false);
-      setMnemonic([]);
+      mnemonic.fill(0);
+      setMnemonic(new Uint8Array());
       setPassword('');
       setTemporaryPassword('');
       setWSPwasShown(false);
@@ -390,14 +391,17 @@ function Create() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.font = '10px Tahoma';
           ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
-          mnemonic.forEach((word, index) => {
-            const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
-            const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
-            ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
-            ctx.font = '16px Tahoma'; // Larger font for the word
-            ctx.fillText(mnemonicShow ? word : '*****', x + 20, y);
-            ctx.font = '10px Tahoma'; // Reset font for the next number
-          });
+          new TextDecoder()
+            .decode(mnemonic)
+            .split(' ')
+            .forEach((word, index) => {
+              const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
+              const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
+              ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
+              ctx.font = '16px Tahoma'; // Larger font for the word
+              ctx.fillText(mnemonicShow ? word : '*****', x + 20, y);
+              ctx.font = '10px Tahoma'; // Reset font for the next number
+            });
         }
       }
     }, [mnemonic, mnemonicShow]);
@@ -484,7 +488,7 @@ function Create() {
           okText={t('common:confirm')}
           cancelText={t('common:cancel')}
           onConfirm={() => {
-            navigator.clipboard.writeText(mnemonic.join(' '));
+            navigator.clipboard.writeText(new TextDecoder().decode(mnemonic));
             displayMessage('success', t('cr:copied'));
             setWpCopied(true);
           }}
@@ -520,7 +524,8 @@ function Create() {
       for (let index = 0; index < 10; index++) {
         const newWord = RandomWord();
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        randomWordList.includes(newWord) || mnemonic.includes(newWord)
+        randomWordList.includes(newWord) ||
+        new TextDecoder().decode(mnemonic).split(' ').includes(newWord)
           ? index--
           : randomWordList.push(newWord);
       }
@@ -552,7 +557,11 @@ function Create() {
               key={index}
               style={{ margin: 5 }}
             >
-              {mnemonic[compProps.wordIndex]}
+              {
+                new TextDecoder().decode(mnemonic).split(' ')[
+                  compProps.wordIndex
+                ]
+              }
             </Button>,
           );
         } else {
