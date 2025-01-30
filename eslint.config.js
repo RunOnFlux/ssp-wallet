@@ -36,6 +36,7 @@ export default [
     rules: {
       'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/no-misused-promises': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
     },
   },
 ];
