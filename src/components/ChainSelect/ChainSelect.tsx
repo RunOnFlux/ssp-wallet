@@ -295,13 +295,13 @@ function ChainSelect(props: {
           if (!walSeedBlob || typeof walSeedBlob !== 'string') {
             throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed'));
           }
-          const walletSeed = await passworderDecrypt(password, walSeedBlob);
+          let walletSeed = await passworderDecrypt(password, walSeedBlob);
           if (typeof walletSeed !== 'string') {
             throw new Error(
               t('home:sspWalletDetails.err_invalid_wallet_seed_2'),
             );
           }
-          const xprivWallet = getMasterXpriv(
+          let xprivWallet = getMasterXpriv(
             walletSeed,
             48,
             blockchainConfig.slip,
@@ -317,7 +317,11 @@ function ChainSelect(props: {
             blockchainConfig.scriptType,
             chainToSwitch,
           );
+          // reassign walletSeed to empty string as it is no longer needed
+          walletSeed = '';
           const xprivBlob = await passworderEncrypt(password, xprivWallet);
+          // reassign xprivWallet to empty string as it is no longer needed
+          xprivWallet = '';
           const xpubBlob = await passworderEncrypt(password, xpubWallet);
           secureLocalStorage.setItem(
             `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(

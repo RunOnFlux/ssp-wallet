@@ -259,10 +259,7 @@ function Create() {
             placement="top"
             content={t('cr:strong_password')}
             arrow={false}
-            overlayInnerStyle={{
-              marginBottom: -30,
-              maxWidth: 300,
-            }}
+            styles={{ body: { marginBottom: -30, maxWidth: 300 } }}
           >
             <Form.Item
               label={t('cr:set_password')}

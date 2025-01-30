@@ -44,8 +44,20 @@ function SSPWalletDetails(props: {
   };
 
   useEffect(() => {
-    generateAddressInformation();
-  }, [activeChain]);
+    if (!open) {
+      setSeedPhrase('');
+      setXpriv('');
+      setXpub('');
+      setXpubIdentity('');
+      console.log('reset state');
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      generateAddressInformation();
+    }
+  }, [activeChain, open]);
 
   const handleOk = () => {
     setExtendedPrivateKeyVisible(false);

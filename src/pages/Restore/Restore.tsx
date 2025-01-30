@@ -245,7 +245,7 @@ function Restore() {
         }
         const mnemonicBlob = await passworderEncrypt(password, mnemonicPhrase);
         secureLocalStorage.setItem('walletSeed', mnemonicBlob);
-        const xpriv = getMasterXpriv(
+        let xpriv = getMasterXpriv(
           mnemonicPhrase,
           48,
           blockchainConfig.slip,
@@ -262,7 +262,11 @@ function Restore() {
           identityChain,
         );
         console.log(xpub);
+        // reassign mnemonicPhrase to empty string as it is no longer needed
+        mnemonicPhrase = '';
         const xprivBlob = await passworderEncrypt(password, xpriv);
+        // reassign xpriv to empty string as it is no longer needed
+        xpriv = '';
         const xpubBlob = await passworderEncrypt(password, xpub);
         const fingerprint: string = getFingerprint();
         const pwBlob = await passworderEncrypt(fingerprint, password);
@@ -334,10 +338,7 @@ function Restore() {
             placement="top"
             content={t('cr:strong_password')}
             arrow={false}
-            overlayInnerStyle={{
-              marginBottom: -30,
-              maxWidth: 300,
-            }}
+            styles={{ body: { marginBottom: -30, maxWidth: 300 } }}
           >
             <Form.Item
               label={t('cr:set_password')}

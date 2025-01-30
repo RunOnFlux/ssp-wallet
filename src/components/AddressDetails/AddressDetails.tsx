@@ -37,8 +37,18 @@ function AddressDetails(props: {
   };
 
   useEffect(() => {
-    generateAddressInformation();
-  }, [walletInUse, activeChain]);
+    // reset state
+    if (!open) {
+      setPrivKey('');
+      console.log('reset state');
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      generateAddressInformation();
+    }
+  }, [walletInUse, activeChain, open]);
 
   const handleOk = () => {
     setRedeemScriptVisible(false);
@@ -63,7 +73,7 @@ function AddressDetails(props: {
         if (typeof xprivBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_xpriv'));
         }
-        const xprivChain = await passworderDecrypt(password, xprivBlob);
+        let xprivChain = await passworderDecrypt(password, xprivBlob);
         if (typeof xprivChain !== 'string') {
           throw new Error(
             t('home:sspWalletDetails.err_invalid_wallet_xpriv_2'),
@@ -78,6 +88,9 @@ function AddressDetails(props: {
           addressIndex,
           activeChain,
         );
+        // reassign xprivChain to empty string as it is no longer needed
+        xprivChain = '';
+        password = '';
         setPrivKey(keyPair.privKey);
       })
       .catch((error) => {
