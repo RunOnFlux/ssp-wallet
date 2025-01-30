@@ -378,6 +378,9 @@ function Create() {
     };
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const darkModePreference = window.matchMedia(
+      '(prefers-color-scheme: dark)',
+    );
 
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -386,6 +389,7 @@ function Create() {
         if (ctx) {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.font = '10px Tahoma';
+          ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
           mnemonic.forEach((word, index) => {
             const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
             const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
@@ -419,7 +423,10 @@ function Create() {
           ref={canvasRef}
           width={366}
           height={180}
-          style={{ border: '1px solid black', marginLeft: '-15px' }}
+          style={{
+            border: `0.5px solid ${darkModePreference.matches ? '#fff' : '#000'}`,
+            marginLeft: '-15px',
+          }}
         />
         {mnemonicShow && (
           <Button
