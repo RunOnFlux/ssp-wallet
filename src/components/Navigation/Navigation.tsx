@@ -4,7 +4,7 @@ import { Button, Space } from 'antd';
 import {
   ArrowUpOutlined,
   ArrowDownOutlined,
-  PlusOutlined,
+  // PlusOutlined,
 } from '@ant-design/icons';
 import Receive from '../Receive/Receive';
 import PurchaseCrypto from '../Onramper/PurchaseCrypto';
@@ -61,17 +61,18 @@ function Navigation() {
           {t('home:navigation.send')}
         </Button>
         {blockchainConfig.onramperNetwork && servicesAvailability.onramp && (
-          <Button
-            type="dashed"
-            shape="round"
-            icon={<PlusOutlined />}
-            size={'large'}
-            onClick={() => {
-              openBuyAction(true);
-            }}
-          >
-            {t('home:navigation.buy')}
-          </Button>
+          <></>
+          // <Button
+          //   type="dashed"
+          //   shape="round"
+          //   icon={<PlusOutlined />}
+          //   size={'large'}
+          //   onClick={() => {
+          //     openBuyAction(true);
+          //   }}
+          // >
+          //   {t('home:navigation.buy')}
+          // </Button>
         )}
 
         <Button
