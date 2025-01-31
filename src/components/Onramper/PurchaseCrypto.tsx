@@ -27,7 +27,7 @@ function PurchaseCrypto(props: {
   const [loading, setLoading] = useState(false);
   const [signature, setSignature] = useState('');
   const [payloadToSign, setPayloadToSign] = useState(
-    `networkWallets=${props.cryptoNetwork}:${props.wInUse}&wallets=${props.cryptoAsset}:${props.wInUse}`,
+    `networkWallets=${props.cryptoNetwork}:${props.wInUse}`,
   );
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
@@ -50,9 +50,7 @@ function PurchaseCrypto(props: {
   }, [open, payloadToSign]);
 
   useEffect(() => {
-    setPayloadToSign(
-      `networkWallets=${props.cryptoNetwork}:${props.wInUse}&wallets=${props.cryptoAsset}:${props.wInUse}`,
-    );
+    setPayloadToSign(`networkWallets=${props.cryptoNetwork}:${props.wInUse}`);
   }, [props.wInUse, props.cryptoAsset, props.cryptoNetwork]);
 
   const askForSignature = async () => {
