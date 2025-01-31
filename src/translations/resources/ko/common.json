@@ -39,5 +39,6 @@
   "activity": "활동",
   "nodes": "노드",
   "tokens": "토큰",
-  "add_custom_token": "사용자 정의 토큰 추가"
+  "add_custom_token": "사용자 정의 토큰 추가",
+  "loading": "Loading..."
 }
