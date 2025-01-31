@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Este QR code é usado para sincronizar a sua carteira SSP com chave SSP. Faça scan deste QR code com o sua chave SSP para sincronizar a sua carteira com chave SSP. Automaticamente sincroniza a cadeia Bitcoin.",
     "chain_sync_ssp_key_desc": "Este QR code é usado para sincronizar a sue {{chain}} carteira SSP com a sua chave SSP. Faça scan deste QR code com a sua chave SSP para sincronizar a sua {{chain}} cadeia.",
     "chain_extended_pub_desc": "Chave pública estendida é utilizada para derivar todas as suas {{chain}} chaves públicas de onde os endereços são criados.\nEsta parte é pública, seguro partilhar, não garante acesso a fundos. Isto é o que a carteira SSP sincroniza com a chave SSP para criar endereços.",
-    "chain_extended_priv_desc": "Chave privada estendida é utilizada para derivar todas as suas {{chain}} chaves privadas que controlam as suas chaves e endereços públicos. Esta é uma parte privada, não partilhe porque garante acesso a fundos."
+    "chain_extended_priv_desc": "Chave privada estendida é utilizada para derivar todas as suas {{chain}} chaves privadas que controlam as suas chaves e endereços públicos. Esta é uma parte privada, não partilhe porque garante acesso a fundos.",
+    "copy_data": "Copiar {{data}}",
+    "show_data": "Mostrar {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Detalhes do endereço (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Enviar",
-    "receive": "Receber"
+    "receive": "Receber",
+    "buy": "Comprar",
+    "sell": "Vender"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirmar transação na chave SSP",
@@ -180,9 +184,9 @@
   },
   "key": {
     "sync_key": "Sincronizar chave",
-    "err_sync_fail": "Para confirmar a transação na sua chave SSP, abra a sua chave SSP no seu aparelho e confirme a operação. Pode começar a recarregar ou fazer a leitura do QR code a seguir.",
+    "err_sync_fail": "Synchronisation failed. Please try again manually.",
     "warn_await_sync": "Aguardar sincronização da chave SSP ou introduzir manualmente.",
-    "err_sync_1": "Insira SSP Key XPUB. SSP Key XPUB é diferente de SSP Wallet XPUB. Certifique-se de que tanto SSP Wallet quanto SSP Key estão a usar frases de seed únicas e diferentes.",
+    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.",
     "err_invalid_key": "Chave SSP inválida.",
     "err_k2": "Código K2: Algo falhou ao desencriptar a password.",
     "err_k1": "Código K1: Alguma coisa falhou ao desencriptar a password.",
@@ -278,5 +282,12 @@
     "delete_token": "Apagar Token",
     "token_deleted": "Token apagado!",
     "err_delete_token": "Erro ao apagar token. Tente novamente."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Serviço de terceiros",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }
