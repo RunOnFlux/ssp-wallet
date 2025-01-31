@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "此二维码用于将您的SSP钱包与您的SSP密钥同步。使用SSP密钥扫描此二维码以同步您的SSP钱包和SSP密钥。它还会自动同步比特币链。",
     "chain_sync_ssp_key_desc": "此二维码用于将您的{{chain}} SSP钱包与您的SSP密钥同步。使用SSP密钥扫描此二维码以同步您的{{chain}}链。",
     "chain_extended_pub_desc": "扩展公钥用于派生所有{{chain}}公钥，从这些公钥构建地址。这是公开部分，可以安全共享，不会授予对资金的访问权限。这是SSP钱包与您的SSP密钥同步以生成地址的内容。",
-    "chain_extended_priv_desc": "扩展私钥用于派生控制您的公钥（地址）的所有{{chain}}私钥。这是私密部分，请勿共享，因为这将授予对资金的访问权限。"
+    "chain_extended_priv_desc": "扩展私钥用于派生控制您的公钥（地址）的所有{{chain}}私钥。这是私密部分，请勿共享，因为这将授予对资金的访问权限。",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}}地址详情(BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "发送",
-    "receive": "接收"
+    "receive": "接收",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "在SSP密钥上确认交易",
@@ -278,5 +282,12 @@
     "delete_token": "删除代币",
     "token_deleted": "代币已删除！",
     "err_delete_token": "删除代币时出错，请重试."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }
