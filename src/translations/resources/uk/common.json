@@ -39,5 +39,6 @@
   "activity": "Активність",
   "nodes": "Nodes",
   "tokens": "Токени",
-  "add_custom_token": "Додати свій токен"
+  "add_custom_token": "Додати свій токен",
+  "loading": "Loading..."
 }
