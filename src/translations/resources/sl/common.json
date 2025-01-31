@@ -39,5 +39,6 @@
   "activity": "Aktivnost",
   "nodes": "Vozlišča",
   "tokens": "Žetoni",
-  "add_custom_token": "Dodaj prilagojen žeton"
+  "add_custom_token": "Dodaj prilagojen žeton",
+  "loading": "Loading..."
 }
