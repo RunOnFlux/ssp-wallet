@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Button, Space } from 'antd';
+import { Button, Space, Tooltip } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import Receive from '../Receive/Receive';
 import PurchaseCrypto from '../Onramper/PurchaseCrypto';
@@ -44,26 +44,32 @@ function Navigation() {
   return (
     <>
       <Space direction="horizontal" size="small" style={{ marginBottom: 15 }}>
-        <Space direction="vertical" size="small">
-          <Button
-            type="default"
-            icon={<ArrowUpOutlined />}
-            size={'middle'}
-            onClick={() =>
-              navigate(
-                blockchainConfig.chainType === 'evm' ? '/sendevm' : '/send',
-                { state: { receiver: '' } },
-              )
+        <Button
+          type="default"
+          icon={<ArrowUpOutlined />}
+          size={'middle'}
+          onClick={() =>
+            navigate(
+              blockchainConfig.chainType === 'evm' ? '/sendevm' : '/send',
+              { state: { receiver: '' } },
+            )
+          }
+        >
+          <span>{t('home:navigation.send')}</span>
+        </Button>
+        {servicesAvailability.onramp && servicesAvailability.offramp && (
+          <Tooltip
+            title={
+              !blockchainConfig.onramperNetwork &&
+              !blockchainConfig.symbol.includes('TEST')
+                ? t('home:buy_sell_crypto.coming_soon')
+                : ''
             }
           >
-            <span>{t('home:navigation.send')}</span>
-          </Button>
-        </Space>
-        {blockchainConfig.onramperNetwork && servicesAvailability.onramp && (
-          <Space direction="vertical" size="small">
             <Button
               type="default"
               size={'middle'}
+              disabled={!blockchainConfig.onramperNetwork}
               className="linearGradientButton"
               onClick={() => {
                 openBuyAction(true);
@@ -73,21 +79,18 @@ function Navigation() {
                 {t('home:navigation.buy')} / {t('home:navigation.sell')}
               </span>
             </Button>
-          </Space>
+          </Tooltip>
         )}
-
-        <Space direction="vertical" size="small">
-          <Button
-            type="default"
-            icon={<ArrowDownOutlined />}
-            size={'middle'}
-            onClick={() => {
-              receiveAction(true);
-            }}
-          >
-            <span>{t('home:navigation.receive')}</span>
-          </Button>
-        </Space>
+        <Button
+          type="default"
+          icon={<ArrowDownOutlined />}
+          size={'middle'}
+          onClick={() => {
+            receiveAction(true);
+          }}
+        >
+          <span>{t('home:navigation.receive')}</span>
+        </Button>
       </Space>
       <Receive open={openReceive} openAction={receiveAction} />
       <PurchaseCrypto
