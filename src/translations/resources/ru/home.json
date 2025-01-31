@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Этот QR-код используется для синхронизации вашего SSP Кошелька с SSP Ключом. Отсканируйте этот QR-код с вашим SSP Ключом, чтобы синхронизировать SSP Кошелек с SSP Ключом. Он также автоматически синхронизирует цепочку Bitcoin.",
     "chain_sync_ssp_key_desc": "Этот QR-код используется для синхронизации вашего {{chain}} SSP Кошелька с SSP Ключом. Отсканируйте этот QR-код с вашим SSP Ключом, чтобы синхронизировать {{chain}} цепочку.",
     "chain_extended_pub_desc": "Расширенный Публичный ключ используется для получения всех публичных ключей {{chain}} из которых строятся адреса. Это публичная часть, безопасная для обмена, не дает доступа к средствам. Этот ключ используется для синхронизации SSP Кошелька с SSP Ключом для генерации адресов.",
-    "chain_extended_priv_desc": "Расширенный Приватный ключ используется для получения всех приватных ключей {{chain}} для контроля над публичными ключами — адресами. Это приватная часть, НИКОГДА не делитесь этим ключом, так как он дает доступ к средствам."
+    "chain_extended_priv_desc": "Расширенный Приватный ключ используется для получения всех приватных ключей {{chain}} для контроля над публичными ключами — адресами. Это приватная часть, НИКОГДА не делитесь этим ключом, так как он дает доступ к средствам.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Детали Адреса (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Отправить",
-    "receive": "Получить"
+    "receive": "Получить",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Подтвердить транзакцию на SSP Ключе",
@@ -180,9 +184,9 @@
   },
   "key": {
     "sync_key": "Синхронизировать Ключ",
-    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
+    "err_sync_fail": "Синхронизация не удалась. Пожалуйста, попробуйте снова вручную.",
     "warn_await_sync": "Ожидаем синхронизации SSP Ключа или вручную введенные данные.",
-    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
+    "err_sync_1": "Пожалуйста, введите SSP Ключ XPUB. SSP Ключ XPUB отличается от SSP Кошелька XPUB.",
     "err_invalid_key": "Недействительный SSP Ключ.",
     "err_k2": "Код K2: Что-то пошло не так при расшифровке пароля.",
     "err_k1": "Код K1: Что-то пошло не так при расшифровке пароля.",
@@ -278,5 +282,12 @@
     "delete_token": "Удалить токен",
     "token_deleted": "Токен удалён!",
     "err_delete_token": "Ошибка при удалении токена. Попробуйте снова."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }
