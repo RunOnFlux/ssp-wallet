@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Tämä QR-koodi on käytössä SSP-lompakon synkronointiin SSP-avaimen kanssa. Skannaa tämä QR-koodi SSP-avaimellasi synkronoidaksesi SSP-lompakon SSP-avaimesi kanssa. Se myös synkronoi automaattisesti Bitcoin-lohkoketjun.",
     "chain_sync_ssp_key_desc": "Tämä QR-koodi on käytössä {{chain}} SSP-lompakon synkronointiin SSP-avaimen kanssa. Skannaa tämä QR-koodi SSP-avaimellasi synkronoidaksesi {{chain}} lohkoketjun.",
     "chain_extended_pub_desc": "Laajennettua julkista avainta käytetään johdattamaan kaikki {{chain}} julkiset avaimet, joista osoitteet rakennetaan. Tämä on julkinen osa, turvallinen jakaa, ei anna pääsyä varoihin. Tämä on se, mitä SSP-lompakko synkronoi SSP-avaimesi kanssa osoitteiden luomiseksi.",
-    "chain_extended_priv_desc": "Laajennettua yksityistä avainta käytetään johdattamaan kaikki {{chain}} yksityiset avaimet, jotka hallitsevat julkisia avaimiasi - osoitteita. Tämä on yksityinen osa, ÄLÄ koskaan jaa sitä, sillä se antaa pääsyn varoihisi."
+    "chain_extended_priv_desc": "Laajennettua yksityistä avainta käytetään johdattamaan kaikki {{chain}} yksityiset avaimet, jotka hallitsevat julkisia avaimiasi - osoitteita. Tämä on yksityinen osa, ÄLÄ koskaan jaa sitä, sillä se antaa pääsyn varoihisi.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Osoitetiedot (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Lähetä",
-    "receive": "Vastaanota"
+    "receive": "Vastaanota",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Vahvista tapahtuma SSP-avaimella",
@@ -278,5 +282,12 @@
     "delete_token": "Poista Token",
     "token_deleted": "Token poistettu!",
     "err_delete_token": "Virhe tokenin poistamisessa. Yritä uudelleen."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }
