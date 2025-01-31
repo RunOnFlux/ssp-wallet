@@ -4,7 +4,7 @@ import { Button, Space } from 'antd';
 import {
   ArrowUpOutlined,
   ArrowDownOutlined,
-  // PlusOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
 import Receive from '../Receive/Receive';
 import PurchaseCrypto from '../Onramper/PurchaseCrypto';
@@ -46,46 +46,60 @@ function Navigation() {
   return (
     <>
       <Space direction="horizontal" size="small" style={{ marginBottom: 15 }}>
-        <Button
-          type="dashed"
-          shape="round"
-          icon={<ArrowUpOutlined />}
-          size={'large'}
-          onClick={() =>
-            navigate(
-              blockchainConfig.chainType === 'evm' ? '/sendevm' : '/send',
-              { state: { receiver: '' } },
-            )
-          }
-        >
-          {t('home:navigation.send')}
-        </Button>
+        <Space direction="vertical" size="small" className="navigation-button">
+          <Button
+            type="default"
+            icon={<ArrowUpOutlined />}
+            size={'middle'}
+            onClick={() =>
+              navigate(
+                blockchainConfig.chainType === 'evm' ? '/sendevm' : '/send',
+                { state: { receiver: '' } },
+              )
+            }
+          >
+            <span className="navigation-button-text">
+              {t('home:navigation.send')}
+            </span>
+          </Button>
+        </Space>
         {blockchainConfig.onramperNetwork && servicesAvailability.onramp && (
-          <></>
-          // <Button
-          //   type="dashed"
-          //   shape="round"
-          //   icon={<PlusOutlined />}
-          //   size={'large'}
-          //   onClick={() => {
-          //     openBuyAction(true);
-          //   }}
-          // >
-          //   {t('home:navigation.buy')}
-          // </Button>
+          <Space
+            direction="vertical"
+            size="small"
+            className="navigation-button"
+          >
+            <Button
+              type="default"
+              icon={<PlusOutlined />}
+              size={'middle'}
+              variant="filled"
+              color="cyan"
+              onClick={() => {
+                openBuyAction(true);
+              }}
+            >
+              <span className="navigation-button-text">
+                {t('home:navigation.buy')}
+              </span>
+            </Button>
+          </Space>
         )}
 
-        <Button
-          type="dashed"
-          shape="round"
-          icon={<ArrowDownOutlined />}
-          size={'large'}
-          onClick={() => {
-            receiveAction(true);
-          }}
-        >
-          {t('home:navigation.receive')}
-        </Button>
+        <Space direction="vertical" size="small" className="navigation-button">
+          <Button
+            type="default"
+            icon={<ArrowDownOutlined />}
+            size={'middle'}
+            onClick={() => {
+              receiveAction(true);
+            }}
+          >
+            <span className="navigation-button-text">
+              {t('home:navigation.receive')}
+            </span>
+          </Button>
+        </Space>
       </Space>
       <Receive open={openReceive} openAction={receiveAction} />
       <PurchaseCrypto

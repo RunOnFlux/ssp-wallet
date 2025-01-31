@@ -507,6 +507,10 @@ export type servicesSSPRelay = {
   swap: boolean;
 };
 
+export type onramperSignatureSSPRelay = {
+  signature: string;
+};
+
 export interface confirmedNodeInsight {
   collateral: string;
   txhash: string;

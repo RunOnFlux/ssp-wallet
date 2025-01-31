@@ -1,10 +1,17 @@
-import { useState } from 'react';
-import { Button, Modal, Space, Typography } from 'antd';
+import { useState, useEffect } from 'react';
+import { Button, Modal, Space, Typography, message } from 'antd';
+import { NoticeType } from 'antd/es/message/interface';
 const { Text } = Typography;
 import { useTranslation } from 'react-i18next';
-import { WarningOutlined } from '@ant-design/icons';
+import { WarningOutlined, LoadingOutlined } from '@ant-design/icons';
+
+import axios from 'axios';
 
 import './PurchaseCrypto.css';
+
+import { sspConfig } from '@storage/ssp';
+
+import { onramperSignatureSSPRelay } from '../../types';
 
 function PurchaseCrypto(props: {
   open: boolean;
@@ -17,17 +24,61 @@ function PurchaseCrypto(props: {
   const { t } = useTranslation(['home', 'common']);
   const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
   const [userConsentBuy, setUserConsentBuy] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [signature, setSignature] = useState('');
+  const [payloadToSign, setPayloadToSign] = useState(
+    `networkWallets=${props.cryptoNetwork}:${props.wInUse}&wallets=${props.cryptoAsset}:${props.wInUse}`,
+  );
+  const [messageApi, contextHolder] = message.useMessage();
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
+  };
   const handleOk = () => {
     openAction(false);
   };
 
-  const payloadToSign = `networkWallets=${props.cryptoNetwork}:${props.wInUse}&wallets=${props.cryptoAsset}:${props.wInUse}`; // this we need to sign
-  // todo ask ssp-relay to provide signature for this payload, add &signature=${signature} to the url
-  // display loading icon until the signature is provided, after that display the iframe
+  useEffect(() => {
+    if (open) {
+      setLoading(true);
+      askForSignature();
+    } else {
+      setSignature('');
+    }
+  }, [open, payloadToSign]);
+
+  useEffect(() => {
+    setPayloadToSign(
+      `networkWallets=${props.cryptoNetwork}:${props.wInUse}&wallets=${props.cryptoAsset}:${props.wInUse}`,
+    );
+  }, [props.wInUse, props.cryptoAsset, props.cryptoNetwork]);
+
+  const askForSignature = async () => {
+    try {
+      // ask ssp-relay for signature
+      const signature = await axios.post<onramperSignatureSSPRelay>(
+        `https://${sspConfig().relay}/v1/sign/onramper`,
+        payloadToSign,
+      );
+      setSignature(signature.data.signature);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      // display error message todo
+      setLoading(false);
+      setSignature('');
+      displayMessage('error', t('home:purchase_crypto.not_available_later'));
+      setTimeout(() => {
+        openAction(false);
+      }, 100);
+    }
+  };
 
   return (
     <>
+      {contextHolder}
       <Modal
         title="&nbsp;"
         open={open}
@@ -44,9 +95,9 @@ function PurchaseCrypto(props: {
         wrapClassName="onramper-modal"
         className="onramper-modal"
       >
-        {userConsentBuy ? (
+        {userConsentBuy && signature && !loading ? (
           <iframe
-            src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy&defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&themeName=${darkModePreference.matches ? 'dark' : 'light'}&containerColor=${darkModePreference.matches ? '1f1f1f' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}`}
+            src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy&defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&themeName=${darkModePreference.matches ? 'dark' : 'light'}&containerColor=${darkModePreference.matches ? '1f1f1f' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}&signature=${signature}`}
             title="Onramper"
             height="540px"
             width="404px"
@@ -58,6 +109,35 @@ function PurchaseCrypto(props: {
               borderRadius: '5px',
             }}
           />
+        ) : loading && userConsentBuy ? (
+          <div
+            style={{
+              height: '534px',
+              width: '404px',
+            }}
+          >
+            <Space
+              direction="vertical"
+              size={48}
+              style={{ marginBottom: 16, marginTop: 120 }}
+            >
+              <LoadingOutlined style={{ fontSize: '36px' }} />
+              <Text strong style={{ fontSize: '24px' }}>
+                {t('common:loading')}
+              </Text>
+              <Button
+                type="primary"
+                size="middle"
+                style={{ marginTop: 155 }}
+                onClick={() => {
+                  setUserConsentBuy(false);
+                  handleOk();
+                }}
+              >
+                {t('common:cancel')}
+              </Button>
+            </Space>
+          </div>
         ) : (
           <div
             style={{
@@ -75,23 +155,27 @@ function PurchaseCrypto(props: {
               </Text>
               <WarningOutlined style={{ fontSize: '36px' }} />
               <Text>{t('home:purchase_crypto.consent_info')}</Text>
-            </Space>
-            <Space direction="vertical" size="large" style={{ marginTop: 100 }}>
-              <Button
-                type="primary"
-                size="middle"
-                onClick={() => setUserConsentBuy(true)}
+              <Space
+                direction="vertical"
+                size="large"
+                style={{ marginTop: 70 }}
               >
-                {t('home:purchase_crypto.consent_info_2')}
-              </Button>
-              <Button
-                onClick={() => {
-                  setUserConsentBuy(false);
-                  handleOk();
-                }}
-              >
-                {t('common:cancel')}
-              </Button>
+                <Button
+                  type="primary"
+                  size="middle"
+                  onClick={() => setUserConsentBuy(true)}
+                >
+                  {t('home:purchase_crypto.consent_info_2')}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setUserConsentBuy(false);
+                    handleOk();
+                  }}
+                >
+                  {t('common:cancel')}
+                </Button>
+              </Space>
             </Space>
           </div>
         )}
