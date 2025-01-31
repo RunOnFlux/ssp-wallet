@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Kode QR ini digunakan untuk menyinkronkan Dompet SSP Anda dengan Kunci SSP Anda.",
     "chain_sync_ssp_key_desc": "Kode QR ini digunakan untuk menyinkronkan Anda {{chain}} Dompet SSP dengan Kunci SSP Anda.  {{chain}} rantai.",
     "chain_extended_pub_desc": "Kunci Publik yang Diperluas digunakan untuk mendapatkan semua file Anda {{chain}} kunci publik dari mana alamat dibangun.",
-    "chain_extended_priv_desc": "Kunci Pribadi yang Diperluas digunakan untuk mendapatkan semua file Anda {{chain}} kunci pribadi yang mengontrol kunci publik Anda - alamat."
+    "chain_extended_priv_desc": "Kunci Pribadi yang Diperluas digunakan untuk mendapatkan semua file Anda {{chain}} kunci pribadi yang mengontrol kunci publik Anda - alamat.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Detail Alamat (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Kirim",
-    "receive": "Terima"
+    "receive": "Terima",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Konfirmasi Transaksi pada Kunci SSP",
@@ -278,5 +282,12 @@
     "delete_token": "Hapus Token",
     "token_deleted": "Token Telah Dihapus!",
     "err_delete_token": "Terjadi kesalahan saat menghapus token. Silakan coba lagi."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }
