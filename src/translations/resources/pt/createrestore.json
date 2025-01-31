@@ -39,5 +39,16 @@
   "backup_confirmed": "Cópia de segurança confirmada!",
   "confirm_wallet_seed_word": "Confirmar a semente da carteira",
   "word_number": "Palavra #{{number}}",
-  "incorrect_backup_confirmation": "Palavra Incorrecta"
+  "incorrect_backup_confirmation": "Palavra Incorrecta",
+  "strong_password": "Strong password should contain at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.",
+  "weak_password": "Weak Password Used",
+  "weak_password_info": "Your password is weak which affects the security of your wallet.",
+  "weak_password_confirm": "Would you like to change it?",
+  "weak_password_confirm_ok": "No, Continue with weak password.",
+  "weak_password_confirm_cancel": "Yes, I want to change it.",
+  "copy_wallet_seed": "Copy Mnemonic Wallet Seed Phrase",
+  "show_wallet_seed": "Show Mnemonic Wallet Seed Phrase",
+  "copy_sensitive_data_desc": "For security reasons it is highly discouraged to copy your {{sensitive_data}} to clipboard. Be sure to remove it from clipboard after use!",
+  "show_sensitive_data": "This action will reveal your {{sensitive_data}}. Please make sure of your surroundings before proceeding.",
+  "copied": "Copied to clipboard!"
 }
