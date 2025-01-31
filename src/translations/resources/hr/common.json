@@ -39,5 +39,6 @@
   "activity": "Aktivnost",
   "nodes": "Nody",
   "tokens": "Tokeni",
-  "add_custom_token": "Dodaj Prilagođeni Token"
+  "add_custom_token": "Dodaj Prilagođeni Token",
+  "loading": "Loading..."
 }
