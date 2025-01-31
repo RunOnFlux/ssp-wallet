@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "इस क्यूआर कोड का उपयोग आपके एस. एस. पी. वॉलेट को आपकी एस. एस. पी. कुंजी के साथ सिंक करने के लिए किया जाता है। अपने एस. एस. पी. वॉलेट को अपनी एस. एस. पी. कुंजी के साथ सिंक करने के लिए इस क्यूआर कोड को अपनी एस. एस. पी. कुंजी से स्कैन करें। यह बिटकॉइन चेन को भी अपने आप सिंक करता है।",
     "chain_sync_ssp_key_desc": "इस क्यूआर कोड का उपयोग आपके {{chain}} एस. एस. पी. वॉलेट को आपकी एस. एस. पी. कुंजी के साथ सिंक करने के लिए किया जाता है। अपनी {{chain}} चेन को सिंक करने के लिए इस क्यूआर कोड को अपनी एस. एस. पी. कुंजी से स्कैन करें।",
     "chain_extended_pub_desc": "विस्तारित पब्लिक कुंजी का उपयोग आपकी सभी {{chain}} पब्लिक कुंजियों को प्राप्त करने के लिए किया जाता है, जिनसे पते बनाए जाते हैं। यह एक पब्लिक हिस्सा है, शेयर करने के लिए सुरक्षित है, धन तक पहुंच प्रदान नहीं करता है। यह वह है जो एस. एस. पी. वॉलेट पता बनाने के लिए आपकी एस. एस. पी. कुंजी के साथ सिंक करता है।",
-    "chain_extended_priv_desc": "विस्तारित निजी कुंजी का उपयोग आपकी सभी {{chain}} निजी कुंजियों को प्राप्त करने के लिए किया जाता है जो आपकी पब्लिक कुंजियों - पतों को नियंत्रित करती हैं। यह एक निजी हिस्सा है, इसे कभी भी शेयर न करें क्योंकि यह धन तक पहुँच प्रदान करता है।"
+    "chain_extended_priv_desc": "विस्तारित निजी कुंजी का उपयोग आपकी सभी {{chain}} निजी कुंजियों को प्राप्त करने के लिए किया जाता है जो आपकी पब्लिक कुंजियों - पतों को नियंत्रित करती हैं। यह एक निजी हिस्सा है, इसे कभी भी शेयर न करें क्योंकि यह धन तक पहुँच प्रदान करता है।",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} पता विवरण (बीआईपी-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "भेजें",
-    "receive": "प्राप्त करें"
+    "receive": "प्राप्त करें",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "एस. एस. पी. कुंजी पर ट्रांजैक्शन की पुष्टि करें",
@@ -278,5 +282,12 @@
     "delete_token": "टोकन हटाएँ",
     "token_deleted": "टोकन हटा दिया गया!",
     "err_delete_token": "टोकन हटाते समय त्रुटि हुई। कृपया पुनः प्रयास करें।"
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }
