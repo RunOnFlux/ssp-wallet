@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Ta QR koda se uporablja za sinhronizacijo vaše SSP denarnice z vašim SSP ključem. Skenerite to QR kodo s svojim SSP ključem za sinhronizacijo vaše SSP denarnice z vašim SSP ključem. Samodejno sinhronizira tudi Bitcoin verigo.",
     "chain_sync_ssp_key_desc": "Ta QR koda se uporablja za sinhronizacijo vaše {{chain}} SSP denarnice z vašim SSP ključem. Skenerite to QR kodo s svojim SSP ključem za sinhronizacijo vaše {{chain}} verige.",
     "chain_extended_pub_desc": "Razširjeni javni ključ se uporablja za pridobivanje vseh vaših {{chain}} javnih ključev, iz katerih so sestavljeni naslovi. To je javni del, varen za deljenje, ne omogoča dostopa do sredstev. To je tisto, kar SSP denarnica sinhronizira z vašim SSP ključem za generiranje naslovov.",
-    "chain_extended_priv_desc": "Razširjeni zasebni ključ se uporablja za pridobivanje vseh vaših {{chain}} zasebnih ključev, ki nadzorujejo vaše javne ključe - naslove. To je zasebni del, nikoli ga ne delite, saj omogoča dostop do sredstev."
+    "chain_extended_priv_desc": "Razširjeni zasebni ključ se uporablja za pridobivanje vseh vaših {{chain}} zasebnih ključev, ki nadzorujejo vaše javne ključe - naslove. To je zasebni del, nikoli ga ne delite, saj omogoča dostop do sredstev.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "Podrobnosti naslova {{chain}} (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Pošlji",
-    "receive": "Prejmi"
+    "receive": "Prejmi",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Potrdite transakcijo na SSP ključu",
@@ -180,9 +184,9 @@
   },
   "key": {
     "sync_key": "Sinhronizacija ključa",
-    "err_sync_fail": "Sinhronizacija ni uspela. Ustvarjeni naslov se ne ujema. Poskusite znova ročno in preverite, da je isti naslov ustvarjen tako v SSP denarnici kot v SSP ključu. SSP denarnica in SSP ključ morata uporabljati edinstvene, različne semenske fraze.",
+    "err_sync_fail": "Synchronisation failed. Please try again manually.",
     "warn_await_sync": "Čaka na sinhronizacijo SSP ključa ali ročni vnos.",
-    "err_sync_1": "Prosimo vnesite SSP ključ XPUB. SSP ključ XPUB je drugačen od SSP denarnice XPUB. Prepričajte se, da tako SSP denarnica kot SSP ključ uporabljata edinstvene, različne semenske fraze.",
+    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.",
     "err_invalid_key": "Neveljaven SSP ključ.",
     "err_k2": "Koda K2: Prišlo je do napake pri dešifriranju gesla.",
     "err_k1": "Koda K1: Prišlo je do napake pri dešifriranju gesla.",
@@ -278,5 +282,12 @@
     "delete_token": "Izbriši žeton",
     "token_deleted": "Žeton izbrisan!",
     "err_delete_token": "Napaka pri brisanju žetona. Prosimo, poskusite znova."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }
