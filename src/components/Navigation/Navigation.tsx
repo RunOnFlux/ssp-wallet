@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Button, Space } from 'antd';
-import {
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
+import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import Receive from '../Receive/Receive';
 import PurchaseCrypto from '../Onramper/PurchaseCrypto';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
 import { blockchains } from '@storage/blockchains';
+
+import './Navigation.css';
 
 function Navigation() {
   const { t } = useTranslation(['home']);
@@ -46,7 +44,7 @@ function Navigation() {
   return (
     <>
       <Space direction="horizontal" size="small" style={{ marginBottom: 15 }}>
-        <Space direction="vertical" size="small" className="navigation-button">
+        <Space direction="vertical" size="small">
           <Button
             type="default"
             icon={<ArrowUpOutlined />}
@@ -58,35 +56,27 @@ function Navigation() {
               )
             }
           >
-            <span className="navigation-button-text">
-              {t('home:navigation.send')}
-            </span>
+            <span>{t('home:navigation.send')}</span>
           </Button>
         </Space>
         {blockchainConfig.onramperNetwork && servicesAvailability.onramp && (
-          <Space
-            direction="vertical"
-            size="small"
-            className="navigation-button"
-          >
+          <Space direction="vertical" size="small">
             <Button
               type="default"
-              icon={<PlusOutlined />}
               size={'middle'}
-              variant="filled"
-              color="cyan"
+              className="linearGradientButton"
               onClick={() => {
                 openBuyAction(true);
               }}
             >
-              <span className="navigation-button-text">
-                {t('home:navigation.buy')}
+              <span>
+                {t('home:navigation.buy')} / {t('home:navigation.sell')}
               </span>
             </Button>
           </Space>
         )}
 
-        <Space direction="vertical" size="small" className="navigation-button">
+        <Space direction="vertical" size="small">
           <Button
             type="default"
             icon={<ArrowDownOutlined />}
@@ -95,9 +85,7 @@ function Navigation() {
               receiveAction(true);
             }}
           >
-            <span className="navigation-button-text">
-              {t('home:navigation.receive')}
-            </span>
+            <span>{t('home:navigation.receive')}</span>
           </Button>
         </Space>
       </Space>

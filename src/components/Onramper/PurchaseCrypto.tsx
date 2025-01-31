@@ -67,7 +67,7 @@ function PurchaseCrypto(props: {
       // display error message todo
       setLoading(false);
       setSignature('');
-      displayMessage('error', t('home:purchase_crypto.not_available_later'));
+      displayMessage('error', t('home:buy_sell_crypto.not_available_later'));
       setTimeout(() => {
         openAction(false);
       }, 100);
@@ -88,6 +88,7 @@ function PurchaseCrypto(props: {
           paddingBottom: '5px',
           margin: '0 auto',
           padding: '0 !important',
+          maxWidth: '404px',
         }}
         footer={null}
         wrapClassName="onramper-modal"
@@ -95,7 +96,7 @@ function PurchaseCrypto(props: {
       >
         {userConsentBuy && signature && !loading ? (
           <iframe
-            src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy&defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&themeName=${darkModePreference.matches ? 'dark' : 'light'}&containerColor=${darkModePreference.matches ? '1f1f1f' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}&signature=${signature}`}
+            src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy,sell&defaultCrypto=${props.cryptoAsset}&sell_onlyCryptoNetworks=${props.cryptoNetwork}&sell_defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&themeName=${darkModePreference.matches ? 'dark' : 'light'}&containerColor=${darkModePreference.matches ? '1f1f1f' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}&signature=${signature}`}
             title="Onramper"
             height="540px"
             width="404px"
@@ -117,23 +118,37 @@ function PurchaseCrypto(props: {
             <Space
               direction="vertical"
               size={48}
-              style={{ marginBottom: 16, marginTop: 120 }}
+              style={{
+                marginBottom: 16,
+                marginTop: 120,
+              }}
             >
               <LoadingOutlined style={{ fontSize: '36px' }} />
               <Text strong style={{ fontSize: '24px' }}>
                 {t('common:loading')}
               </Text>
-              <Button
-                type="primary"
-                size="middle"
-                style={{ marginTop: 155 }}
-                onClick={() => {
-                  setUserConsentBuy(false);
-                  handleOk();
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
-                {t('common:cancel')}
-              </Button>
+                <Button
+                  type="primary"
+                  size="middle"
+                  style={{
+                    position: 'absolute',
+                    bottom: '40px',
+                  }}
+                  onClick={() => {
+                    setUserConsentBuy(false);
+                    handleOk();
+                  }}
+                >
+                  {t('common:cancel')}
+                </Button>
+              </div>
             </Space>
           </div>
         ) : (
@@ -146,34 +161,57 @@ function PurchaseCrypto(props: {
             <Space
               direction="vertical"
               size={48}
-              style={{ marginBottom: 16, marginTop: 16 }}
+              style={{
+                marginBottom: 16,
+                marginTop: 16,
+                maxWidth: '354px',
+              }}
             >
               <Text strong style={{ fontSize: '24px' }}>
-                {t('home:purchase_crypto.third_party_service')}
+                {t('home:buy_sell_crypto.third_party_service')}
               </Text>
               <WarningOutlined style={{ fontSize: '36px' }} />
-              <Text>{t('home:purchase_crypto.consent_info')}</Text>
-              <Space
-                direction="vertical"
-                size="large"
-                style={{ marginTop: 70 }}
+              <Text>{t('home:buy_sell_crypto.consent_info')}</Text>
+              <div
+                style={{
+                  marginBottom: 16,
+                  marginTop: 16,
+                  maxWidth: '354px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
               >
-                <Button
-                  type="primary"
-                  size="middle"
-                  onClick={() => setUserConsentBuy(true)}
+                <Space
+                  direction="vertical"
+                  size="large"
+                  style={{ position: 'absolute', bottom: '40px' }}
                 >
-                  {t('home:purchase_crypto.consent_info_2')}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setUserConsentBuy(false);
-                    handleOk();
-                  }}
-                >
-                  {t('common:cancel')}
-                </Button>
-              </Space>
+                  <Button
+                    type="primary"
+                    size="middle"
+                    onClick={() => setUserConsentBuy(true)}
+                    block
+                    style={{
+                      maxWidth: '284px',
+                      display: 'block',
+                      whiteSpace: 'normal',
+                      height: 'auto',
+                      padding: '5px 12px',
+                    }}
+                  >
+                    {t('home:buy_sell_crypto.consent_info_2')}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setUserConsentBuy(false);
+                      handleOk();
+                    }}
+                  >
+                    {t('common:cancel')}
+                  </Button>
+                </Space>
+              </div>
             </Space>
           </div>
         )}

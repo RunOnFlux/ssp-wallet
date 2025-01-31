@@ -146,7 +146,7 @@
     "send": "Send",
     "receive": "Receive",
     "buy": "Buy",
-    "purchase_crypto": "Buy Crypto"
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirm Transaction on SSP Key",
@@ -283,10 +283,10 @@
     "token_deleted": "Token Deleted!",
     "err_delete_token": "Error while deleting token. Please try again."
   },
-  "purchase_crypto": {
+  "buy_sell_crypto": {
     "third_party_service": "Third Party Service",
-    "consent_info": "Purchase functionality is using a third party services provided by Onramper. SSP strives to provide maximum security to it's users, but we cannot guarantee the security and privacy of the third party service.",
-    "consent_info_2": "I understand the risks and want to continue",
-    "not_available_later": "Purchasing Cryptocurrencies is currently not available. Please try again later."
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later."
   }
 }
