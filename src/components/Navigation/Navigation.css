@@ -1,0 +1,8 @@
+.linearGradientButton {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(255, 0, 0, 0.15)) !important;
+}
+
+.linearGradientButton:hover {
+  color: rgb(0, 128, 128) !important;
+  border-color: rgba(0, 128, 128, 1) !important;
+}

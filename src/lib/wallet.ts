@@ -42,9 +42,12 @@ function generatexPubxPriv(
 ): xPrivXpub {
   const scriptType = getScriptType(type);
 
-  const seed = bip39.mnemonicToSeedSync(mnemonic);
+  let seed = bip39.mnemonicToSeedSync(mnemonic);
+  // @ts-expect-error assign to null as it is no longer needed
+  mnemonic = null;
   const bipParams = blockchains[chain].bip32;
   const masterKey = HDKey.fromMasterSeed(seed, bipParams);
+  seed = new Uint8Array();
   const externalChain = masterKey.derive(
     `m/${bip}'/${coin}'/${account}'/${scriptType}'`,
   );
@@ -77,6 +80,8 @@ export function getMasterXpub(
     type,
     chain,
   );
+  // @ts-expect-error assign to null as it is no longer needed
+  mnemonic = null;
   return xPubxPriv.xpub;
 }
 
@@ -97,6 +102,8 @@ export function getMasterXpriv(
     type,
     chain,
   );
+  // @ts-expect-error assign to null as it is no longer needed
+  mnemonic = null;
   return xPubxPriv.xpriv;
 }
 

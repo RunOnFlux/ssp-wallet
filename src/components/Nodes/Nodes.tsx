@@ -53,6 +53,16 @@ function Nodes() {
   };
 
   useEffect(() => {
+    return () => {
+      // reset state
+      setNodeIdentityPK('');
+      setCollateralPrivKey('');
+      setCollateralPublicKey('');
+      console.log('reset state');
+    };
+  }, []); // Empty dependency array ensures this effect runs only on mount/unmount
+
+  useEffect(() => {
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
     void generateIdentity();
@@ -104,12 +114,12 @@ function Nodes() {
         )}-${blockchainConfig.id}`,
       );
       const fingerprint: string = getFingerprint();
-      const password = await passworderDecrypt(fingerprint, passwordBlob);
+      let password = await passworderDecrypt(fingerprint, passwordBlob);
       if (typeof password !== 'string') {
         throw new Error('Unable to decrypt password');
       }
       if (xprivEncrypted && typeof xprivEncrypted === 'string') {
-        const xpriv = await passworderDecrypt(password, xprivEncrypted);
+        let xpriv = await passworderDecrypt(password, xprivEncrypted);
         if (xpriv && typeof xpriv === 'string') {
           const splittedDerPath = walletInUse.split('-');
           const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
@@ -127,6 +137,9 @@ function Nodes() {
             addressIndex,
             activeChain,
           );
+          // reassign xpriv to null as it is no longer needed
+          xpriv = null;
+          password = null;
           setCollateralPublicKey(keyPair.pubKey);
           setCollateralPrivKey(keyPair.privKey);
         } else {

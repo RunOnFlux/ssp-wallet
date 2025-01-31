@@ -48,6 +48,8 @@ declare module '@storage/blockchains' {
     priorityFee: number;
     gasLimit: number;
     tokens: Token[];
+    // buy sell
+    onramperNetwork?: string;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

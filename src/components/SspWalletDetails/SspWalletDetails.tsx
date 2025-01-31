@@ -1,12 +1,25 @@
-import { useState, useEffect } from 'react';
-import { Typography, Button, Modal, message, Space, QRCode } from 'antd';
+import { useState, useEffect, useRef } from 'react';
+import {
+  Typography,
+  Button,
+  Modal,
+  message,
+  Space,
+  QRCode,
+  Popconfirm,
+} from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
-import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import {
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  CopyOutlined,
+  ExclamationCircleFilled,
+} from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { getScriptType } from '../../lib/wallet';
@@ -18,13 +31,15 @@ function SSPWalletDetails(props: {
   const { activeChain, identityChain } = useAppSelector(
     (state) => state.sspState,
   );
+  const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const blockchainConfig = blockchains[activeChain];
   const identityChainConfig = blockchains[identityChain];
-  const { t } = useTranslation(['home', 'common']);
+  const { t } = useTranslation(['home', 'common', 'cr']);
   const [xpriv, setXpriv] = useState('');
   const [xpub, setXpub] = useState('');
   const [xpubIdentity, setXpubIdentity] = useState('');
-  const [seedPhrase, setSeedPhrase] = useState('');
+  const [seedPhrase, setSeedPhrase] = useState<Uint8Array>(new Uint8Array());
   const [extendedPublicKeyVisible, setExtendedPublicKeyVisible] =
     useState(false);
   const [chainSyncKeyVisible, setChainSyncKeyVisible] = useState(false);
@@ -44,8 +59,44 @@ function SSPWalletDetails(props: {
   };
 
   useEffect(() => {
-    generateAddressInformation();
-  }, [activeChain]);
+    if (!open) {
+      seedPhrase.fill(0);
+      setSeedPhrase(new Uint8Array());
+      setXpriv('');
+      setXpub('');
+      setXpubIdentity('');
+      console.log('reset state');
+    }
+  }, [open]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = '10px Tahoma';
+        ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
+        new TextDecoder()
+          .decode(seedPhrase)
+          .split(' ')
+          .forEach((word, index) => {
+            const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
+            const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
+            ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
+            ctx.font = '16px Tahoma'; // Larger font for the word
+            ctx.fillText(seedPhraseVisible ? word : '*****', x + 20, y);
+            ctx.font = '10px Tahoma'; // Reset font for the next number
+          });
+      }
+    }
+  }, [seedPhrase, seedPhraseVisible, open]);
+
+  useEffect(() => {
+    if (open) {
+      generateAddressInformation();
+    }
+  }, [activeChain, open]);
 
   const handleOk = () => {
     setExtendedPrivateKeyVisible(false);
@@ -119,11 +170,13 @@ function SSPWalletDetails(props: {
         if (typeof walletSeedBlob !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed'));
         }
-        const walletSeed = await passworderDecrypt(password, walletSeedBlob);
+        let walletSeed = await passworderDecrypt(password, walletSeedBlob);
         if (typeof walletSeed !== 'string') {
           throw new Error(t('home:sspWalletDetails.err_invalid_wallet_seed_2'));
         }
-        setSeedPhrase(walletSeed);
+        setSeedPhrase(new TextEncoder().encode(walletSeed));
+        // reassign walletSeed to null as it is no longer needed
+        walletSeed = null;
       })
       .catch((error) => {
         console.log(error);
@@ -223,9 +276,34 @@ function SSPWalletDetails(props: {
             <EyeTwoTone onClick={() => setExtendedPrivateKeyVisible(false)} />
           )}
           {!extendedPrivateKeyVisible && (
-            <EyeInvisibleOutlined
-              onClick={() => setExtendedPrivateKeyVisible(true)}
-            />
+            <Popconfirm
+              title={t('home:sspWalletDetails.show_data', {
+                data: t('home:sspWalletDetails.chain_extended_priv', {
+                  chain: blockchainConfig.name,
+                }),
+              })}
+              description={
+                <>
+                  {t('cr:show_sensitive_data', {
+                    sensitive_data: t(
+                      'home:sspWalletDetails.chain_extended_priv',
+                      {
+                        chain: blockchainConfig.name,
+                      },
+                    ),
+                  })}
+                </>
+              }
+              overlayStyle={{ maxWidth: 360, margin: 10 }}
+              okText={t('common:confirm')}
+              cancelText={t('common:cancel')}
+              onConfirm={() => {
+                setExtendedPrivateKeyVisible(true);
+              }}
+              icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+            >
+              <EyeInvisibleOutlined />
+            </Popconfirm>
           )}{' '}
           {t('home:sspWalletDetails.chain_extended_priv', {
             chain: blockchainConfig.name,
@@ -284,7 +362,27 @@ function SSPWalletDetails(props: {
             <EyeTwoTone onClick={() => setSeedPhraseVisible(false)} />
           )}
           {!seedPhraseVisible && (
-            <EyeInvisibleOutlined onClick={() => setSeedPhraseVisible(true)} />
+            <Popconfirm
+              title={t('home:sspWalletDetails.show_data', {
+                data: t('home:sspWalletDetails.ssp_mnemonic'),
+              })}
+              description={
+                <>
+                  {t('cr:show_sensitive_data', {
+                    sensitive_data: t('home:sspWalletDetails.ssp_mnemonic'),
+                  })}
+                </>
+              }
+              overlayStyle={{ maxWidth: 360, margin: 10 }}
+              okText={t('common:confirm')}
+              cancelText={t('common:cancel')}
+              onConfirm={() => {
+                setSeedPhraseVisible(true);
+              }}
+              icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+            >
+              <EyeInvisibleOutlined />
+            </Popconfirm>
           )}{' '}
           {t('home:sspWalletDetails.ssp_mnemonic')}:
         </h3>
@@ -294,14 +392,46 @@ function SSPWalletDetails(props: {
           </blockquote>
         </Paragraph>
         <Space direction="vertical" size="small">
-          <Paragraph
-            copyable={{ text: seedPhrase }}
-            className="copyableAddress"
+          <canvas
+            ref={canvasRef}
+            width={366}
+            height={180}
+            style={{
+              border: `0.5px solid ${
+                darkModePreference.matches ? '#fff' : '#000'
+              }`,
+              marginLeft: '-5px',
+            }}
+          />
+          <Popconfirm
+            title={t('home:sspWalletDetails.copy_data', {
+              data: t('home:sspWalletDetails.ssp_mnemonic'),
+            })}
+            description={
+              <>
+                {t('cr:copy_sensitive_data_desc', {
+                  sensitive_data: t('cr:wallet_seed_phrase'),
+                })}
+              </>
+            }
+            overlayStyle={{ maxWidth: 360, margin: 10 }}
+            okText={t('common:confirm')}
+            cancelText={t('common:cancel')}
+            onConfirm={() => {
+              navigator.clipboard.writeText(
+                new TextDecoder().decode(seedPhrase),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+            icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
           >
-            <Text>
-              {seedPhraseVisible ? seedPhrase : '*** *** *** *** *** ***'}
-            </Text>
-          </Paragraph>
+            <Button type="dashed" icon={<CopyOutlined />}>
+              {t('home:sspWalletDetails.copy_data', {
+                data: t('home:sspWalletDetails.ssp_mnemonic'),
+              })}
+            </Button>
+          </Popconfirm>
+          <br />
         </Space>
       </Modal>
     </>
