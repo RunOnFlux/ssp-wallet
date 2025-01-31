@@ -39,5 +39,6 @@
   "activity": "النشاط",
   "nodes": "العقد",
   "tokens": "توكن",
-  "add_custom_token": "إضافة توكن مخصص"
+  "add_custom_token": "إضافة توكن مخصص",
+  "loading": "Loading..."
 }
