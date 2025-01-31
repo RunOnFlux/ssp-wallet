@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Este código QR se utiliza para sincronizar su Cartera SSP con su Clave SSP. Escanee este código QR con su Clave SSP para sincronizar su Cartera SSP con su clave SSP. También sincroniza automáticamente la cadena Bitcoin.",
     "chain_sync_ssp_key_desc": "Este código QR se utiliza para sincronizar su {{chain}} Cartera SSP con su Clave SSP. Escanee este código QR con su Clave SSP para sincronizar su {{chain}} cadena.",
     "chain_extended_pub_desc": "La clave pública extendida se utiliza para derivar todas sus {{chain}} claves públicas a partir de las cuales se construyen direcciones. Esta es una parte pública, segura de compartir, no concede acceso a los fondos. Esto es lo que sincroniza la Cartera SSP con su clave SSP para generar direcciones.",
-    "chain_extended_priv_desc": "La clave privada extendida se utiliza para obtener todas sus {{chain}} claves privadas que controlan sus claves públicas-direcciones. Esta es una parte privada, NO lo comparta nunca, ya que concede acceso a fondos."
+    "chain_extended_priv_desc": "La clave privada extendida se utiliza para obtener todas sus {{chain}} claves privadas que controlan sus claves públicas-direcciones. Esta es una parte privada, NO lo comparta nunca, ya que concede acceso a fondos.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Detalles de Dirección (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Enviar",
-    "receive": "Recibir"
+    "receive": "Recibir",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirmar Transacción en la Clave SSP",
@@ -278,5 +282,12 @@
     "delete_token": "Eliminar token",
     "token_deleted": "¡Token eliminado!",
     "err_delete_token": "Error al eliminar el token. Por favor, inténtelo de nuevo."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }
