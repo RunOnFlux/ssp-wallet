@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Ez a QR-kód szolgál az SSP tárca szinkronizálására az SSP kulcs segítségével. Szkennelje be ezt a QR-kódot az SSP kulcsával az SSP tárca szikronizálása érdekében. Ez automatikusan szinkronizálja a Bitcoin-láncot is.",
     "chain_sync_ssp_key_desc": "Ez a QR-kód a {{chain}} SSP tárca szinkronizálására szolgál az SSP kulcs segítségével. Szkenneld be ezt a QR-kódot az SSP kulccsal a {{chain}} láncod szinkronizálásához.",
     "chain_extended_pub_desc": "A kiterjesztett nyilvános kulcsot az összes nyilvános {{chain}} kulcs képzéséhez használják, amelyekből a címek épülnek fel. Ez egy nyilvános rész, biztonságosan megosztható, nem biztosít hozzáférést az egyenleghez. Ezt szinkronizálja az SSP tárca az Ön SSP kulcsával a címek létrehozásához.",
-    "chain_extended_priv_desc": "A kibővített magánkulcsot a kiterjesztett {{chain}} magánkulcsoknak képzésére használják, amelyek a nyilvános kulcsokat - címeket - irányítják. Ez egy privát rész, soha ne ossza meg, mivel hozzáférést biztosít az egyenleghez."
+    "chain_extended_priv_desc": "A kibővített magánkulcsot a kiterjesztett {{chain}} magánkulcsoknak képzésére használják, amelyek a nyilvános kulcsokat - címeket - irányítják. Ez egy privát rész, soha ne ossza meg, mivel hozzáférést biztosít az egyenleghez.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} címadatok (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Küldés",
-    "receive": "Fogadás"
+    "receive": "Fogadás",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Fogadja el a tranzakciót az SSP kulcson",
@@ -278,5 +282,12 @@
     "delete_token": "Token törlése",
     "token_deleted": "Token törölve!",
     "err_delete_token": "Hiba történt a token törlése során. Kérem, próbálja meg újra."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }
