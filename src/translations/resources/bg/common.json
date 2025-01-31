@@ -39,5 +39,6 @@
   "activity": "Дейност",
   "nodes": "Валидатор",
   "tokens": "Токени\n/Монети",
-  "add_custom_token": "Добави персонализиран тоукън"
+  "add_custom_token": "Добави персонализиран тоукън",
+  "loading": "Loading..."
 }
