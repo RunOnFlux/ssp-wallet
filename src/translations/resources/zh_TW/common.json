@@ -39,5 +39,6 @@
   "activity": "活動",
   "nodes": "節點",
   "tokens": "代幣",
-  "add_custom_token": "新增自訂代幣"
+  "add_custom_token": "新增自訂代幣",
+  "loading": "Loading..."
 }
