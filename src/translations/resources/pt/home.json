@@ -285,9 +285,9 @@
   },
   "buy_sell_crypto": {
     "third_party_service": "Serviço de terceiros",
-    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
-    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
-    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
-    "coming_soon": "Coming Soon!"
+    "consent_info": "A compra e venda de criptomoedas são facilitadas por um serviço de terceiros fornecido pela Onramper. Embora a SSP esteja comprometida em garantir o mais alto nível de segurança para seus utilizadores, não podemos garantir a segurança e a privacidade de serviços de terceiros.",
+    "consent_info_2": "Reconheço os riscos associados e desejo prosseguir.",
+    "not_available_later": "Transações de criptomoeda estão indisponíveis no momento. Tente novamente mais tarde.",
+    "coming_soon": "Brevemente!"
   }
 }
