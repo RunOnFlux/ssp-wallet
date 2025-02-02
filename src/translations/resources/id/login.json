@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "Kata sandi tidak valid. Silakan coba lagi.",
   "err_invalid_pw_2": "Kata sandi tidak valid. Silakan coba lagi.",
-  "err_l3": "Kode L3: Data dompet hilang. Harap kembalikan dompet Anda.",
-  "err_l2": "Kode L2: Data dompet hilang. Harap kembalikan dompet Anda.",
-  "err_l1": "Kode L1: Data dompet hilang. Harap kembalikan dompet Anda.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Selamat Datang kembali!",
   "to_dec_cloud": "Ke Cloud Anda yang terdesentralisasi",
   "unlock_with_pw": "Buka kunci dengan Kata Sandi",
