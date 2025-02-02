@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "Kein gültiges Passwort. Bitte versuchen Sie es erneut.",
   "err_invalid_pw_2": "Kein gültiges Passwort. Bitte versuchen Sie es erneut.",
-  "err_l3": "Code L3: Wallet Daten fehlen. Bitte stellen Sie Ihre Wallet wieder her.",
-  "err_l2": "Code L2: Wallet Daten fehlen. Bitte stellen Sie Ihre Wallet wieder her.",
-  "err_l1": "Code L1: Wallet Daten fehlen. Bitte stellen Sie Ihre Wallet wieder her.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Willkommen zurück!",
   "to_dec_cloud": "zu Ihrer dezentralen Cloud",
   "unlock_with_pw": "Mit Passwort entsperren",
