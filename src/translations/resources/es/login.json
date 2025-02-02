@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "No es una contraseña válida. Por favor, inténtelo de nuevo.",
   "err_invalid_pw_2": "Contraseña no válida. Por favor, inténtelo de nuevo.",
-  "err_l3": "Código L3: Faltan datos de la cartera. Por favor, restaure su cartera.",
-  "err_l2": "Código L2: Faltan datos de la cartera. Por favor, restaure su cartera.",
-  "err_l1": "Código L1: Faltan datos de la cartera. Por favor, restaure su cartera.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "¡Bienvenido de nuevo!",
   "to_dec_cloud": "A su nube descentralizada",
   "unlock_with_pw": "Desbloquear con Contraseña",
