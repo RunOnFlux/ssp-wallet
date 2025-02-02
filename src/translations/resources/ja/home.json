@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "このQRコードは、SSPウォレットとSSPキーを同期するために使用されます. このQRコードをSSPキーでスキャンして、SSPウォレットをSSPキーと同期します. また、ビットコインチェーンも自動的に同期します.",
     "chain_sync_ssp_key_desc": "このQRコードは、{{chain}} SSPウォレットをSSPキーと同期するために使用されます. このQRコードをSSPキーでスキャンして、{{chain}}チェーンを同期します.",
     "chain_extended_pub_desc": "拡張公開鍵は、{{chain}}の公開鍵を導出するために使用され、そこからアドレスが構築されます. これは公開部分であり、共有しても安全で、資金へのアクセスはありません. これがSSPウォレットがSSPキーと同期してアドレスを生成するために使用するものです.",
-    "chain_extended_priv_desc": "拡張秘密鍵は、{{chain}}の秘密鍵を導出するために使用され、これが公開鍵（アドレス）を制御します. これは秘密部分であり、資金へのアクセスを与えるため、決して共有しないでください."
+    "chain_extended_priv_desc": "拡張秘密鍵は、{{chain}}の秘密鍵を導出するために使用され、これが公開鍵（アドレス）を制御します. これは秘密部分であり、資金へのアクセスを与えるため、決して共有しないでください.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}}アドレスの詳細 (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "送信",
-    "receive": "受信"
+    "receive": "受信",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "SSPキーで取引を確認",
@@ -278,5 +282,12 @@
     "delete_token": "トークンを削除",
     "token_deleted": "トークンが削除されました!",
     "err_delete_token": "トークン削除中にエラーが発生しました. もう一度お試しください."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }

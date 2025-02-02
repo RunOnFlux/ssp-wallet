@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Tento QR kód se používá k synchronizování SSP Peněženky s vašim SSP Klíčem. Naskenujte tento QR kód vašim SSP Klíčem k synchronizaci SSP Peněženky s SSP Klíčem. Současně se synchronizuje i Bitcoin chain.",
     "chain_sync_ssp_key_desc": "Tento QR kód se používá k synchronizování blockchainu {{chain}} SSP Peněženky s vašim SSP Klíčem. Naskenujte tento QR kód vašim SSP Klíčem k synchronizaci {{chain}} chainu.",
     "chain_extended_pub_desc": "Rozšířený Veřejný Klíč se používá k odvození všech vašich veřejných klíčů blockchainu {{chain}}. Následně se z něj odvozují veškeré vaše adresy. Tohle je veřejný část a je bezpečné ji sdílet. Veřejná část nedává přístup k prostředkům adres. Tuto část synchronizuje SSP Peněženka s vašim SSP Klíčem ke generování adres.",
-    "chain_extended_priv_desc": "Rozšířený Soukromý Klíč se používá k odvození všech vašich soukromých klíčů blockchainu {{chain}}. Soukromé klíče kontrolují veřejné klíče - adresy. Tohle je soukromá část. NIKDY ji s nikým nesdílejte. Tato část dává přímý přístup k prostředkům."
+    "chain_extended_priv_desc": "Rozšířený Soukromý Klíč se používá k odvození všech vašich soukromých klíčů blockchainu {{chain}}. Soukromé klíče kontrolují veřejné klíče - adresy. Tohle je soukromá část. NIKDY ji s nikým nesdílejte. Tato část dává přímý přístup k prostředkům.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "Detaily {{chain}} Adresy (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Odeslat",
-    "receive": "Přijmout"
+    "receive": "Přijmout",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Potvrďte Transakci na SSP Klíči",
@@ -278,5 +282,12 @@
     "delete_token": "Odebrat Token",
     "token_deleted": "Token Odebrán!",
     "err_delete_token": "Chyba při odebírání tokenu. Zkuste prosím později."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }

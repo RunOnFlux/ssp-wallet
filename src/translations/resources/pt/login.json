@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "Não é uma palavra-passe válida. Por favor, tente novamente.",
   "err_invalid_pw_2": "Palavra-passe inválida. Por favor, tente novamente.",
-  "err_l3": "Código L3: Dados da carteira em falta. Por favor, restaure a sua carteira.",
-  "err_l2": "Código L2: Dados da carteira em falta. Por favor, restaure a sua carteira.",
-  "err_l1": "Código L1: Dados da carteira em falta. Por favor, restaure a sua carteira.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Bem-vindo de volta!",
   "to_dec_cloud": "Para a sua Nuvem descentralizada",
   "unlock_with_pw": "Desbloquear com Palavra-passe",

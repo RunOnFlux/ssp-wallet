@@ -1,60 +1,60 @@
 {
-  "err_panic": "PANIC: Invalid SSP Key.",
+  "err_panic": "حالة طوارئ: مفتاح الأس ب بي غير صالح.",
   "balances": {
-    "locked": "Locked: {{balance}} {{symbol}}",
+    "locked": "مقفل: {{balance}} {{symbol}}",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
-    "show_in_explorer": "Show in Explorer",
-    "tx_sent": "Transaction Sent!"
+    "show_in_explorer": "عرض في المستعرض",
+    "tx_sent": "تم إرسال المعاملة!"
   },
   "txRejected": {
-    "tx_rejected": "Transaction Rejected!",
-    "tx_rejected_info": "Transaction rejected by SSP Key.",
-    "tx_rejected_info_2": "Your transaction will not be included in the blockchain. Your funds are fully available and possible to be sent."
+    "tx_rejected": "تم رفض المعاملة!",
+    "tx_rejected_info": "رفض المعاملة بواسطة مفتاح الأس ب بي.",
+    "tx_rejected_info_2": "لن تتم إضافة معاملاتك إلى البلوك تشين. أموالكم متاحة بالكامل ويمكن إرسالها."
   },
   "publicNoncesRejected": {
-    "public_nonces_rejected": "Public Nonces Rejected!",
-    "public_nonces_rejected_info": "Public Nonces rejected by SSP Key.",
-    "public_nonces_rejected_info_2": "SSP Key rejected to send public nonces. Without public nonces SSP Wallet cannot construct transactions on EVM chains."
+    "public_nonces_rejected": "تم رفض الرموز العامة!",
+    "public_nonces_rejected_info": "تم رفض الرموز العامة بواسطة مفتاح الأس ب بي.",
+    "public_nonces_rejected_info_2": "رفض مفتاح الأس ب بي لإرسال الرموز العامة. بِدون الرموز العامة، لا يمكن لمحفظة الأس ب بي."
   },
   "publicNoncesReceived": {
-    "public_nonces_received": "Public Nonces Received!",
-    "public_nonces_received_info": "Public Nonces were received and stored successfully. Public Nonces are used to construct transactions on EVM chains."
+    "public_nonces_received": "تم استلام الرموز العامة!",
+    "public_nonces_received_info": "تم استلام الرموز العامة وتخزينه بنجاح. تستخدم الرموز العامة لإنشاء المعاملات على شبكات EVM."
   },
   "transactionsTable": {
-    "no_tx_history": "No Transaction History Found",
-    "txid_link": "TXID: {{txid}}",
-    "out_id": "Output ID: {{vout}}",
-    "fee_with_symbol": "Fee: {{fee}} {{symbol}}",
-    "note_with_note": "Note: {{note}}",
-    "direction": "Direction",
-    "date": "Date",
-    "amount": "Amount",
+    "no_tx_history": "لم يتم العثور على سجل أرشِيف المعاملات",
+    "txid_link": "معرّف المعاملة: {{txid}}",
+    "out_id": "ID: {{vout}} إخراج",
+    "fee_with_symbol": "الرسوم: {{fee}} {{symbol}}",
+    "note_with_note": "الاتجاه",
+    "direction": "الاتجاه",
+    "date": "التاريخ",
+    "amount": "المبلغ",
     "confirmations": "Confirmations",
-    "export_tx": "Export Transactions",
+    "export_tx": "تصدير المعاملات",
     "tx_confirmed": "Confirmed.",
-    "tx_unconfirmed": "Unconfirmed. Transaction not yet mined.",
-    "tx_pending": "Pending. Transaction is awaiting SSP Key authorization.",
-    "replace_by_fee": "Replace by Fee",
-    "replace_by_fee_info": "Increases fee, replaces or cancels transaction.",
-    "replace_by_fee_desc": "Replace by Fee (RBF) allows you to replace an unconfirmed transaction with another transaction that offers a higher fee. If your transaction remains unconfirmed for an extended period, you might consider utilizing the RBF feature to increase the transaction fee. Additionally, it is possible to modify the receiver, amount, or payment notes. By sending the funds to one of your addresses, you can also cancel the transaction.",
-    "replace_by_fee_desc_b": "RBF requires a higher transaction fee in any case. Replacement is not guaranteed and block producers, miners may still favor previous transaction. Only unconfirmed transactions can be replaced.",
+    "tx_unconfirmed": "غير مؤكد. المعاملة لم تُّعد بعد.",
+    "tx_pending": "قيد الانتظار. المعاملة بانتظار تفويض مفتاح الأس ب بي.",
+    "replace_by_fee": "استبدال بالرسوم",
+    "replace_by_fee_info": "زيادة الرسوم، تستبدل المعاملة أو تلغيها.",
+    "replace_by_fee_desc": "الاستبدال بالرسوم (RBF) تتيح لك باستبدال معاملة غير مؤكدة بمعاملة أخرى تقدم رسومًا أعلى. إذا ظلت معاملتك غير مؤكدة لفترة طويلة، يمكنك التفكير في استخدام مِيزة \"الاستبدال بالرسوم\" لزيادة رسوم المعاملة. بالإضافة إلى ذلك،يمكنك تعديل المستلم أو المبلغ أو ملاحظات الدفع. كما يمكنك إلغاء المعاملة عن طريق إرسال الأموال إلى أحد عناوين.",
+    "replace_by_fee_desc_b": "يتطلب RBF رسوم معاملة عالية في جميع الحالات. لا يمكن ضَمان الاستبدال وقد يفضل منتجع الكتل أو المعاملة السابقة. إلا المعاملات الغير مؤكدة قابلة للتعويض.",
     "err_export": "Error while exporting transactions. Please try again.",
-    "transactions_being_exported": "Transactions being exported...",
+    "transactions_being_exported": "جاري تصدير المعاملات...",
     "transactions_exported": "Transactions exported!"
   },
   "nodesTable": {
-    "no_nodes": "Address has no nodes",
+    "no_nodes": "العنوان لا يحتاج على عقد",
     "what_is_node": "What is a {{chainName}} Node?",
-    "name": "Name",
-    "ip": "IP Address",
-    "tier": "Tier",
-    "amount": "Amount",
-    "status": "Status",
-    "identitypk": "Node Identity Key",
-    "sspid": "SSP Wallet ID (FluxID)",
-    "start_node": "Start {{chainName}} Node",
+    "name": "ماهو عقد {{chainName}}",
+    "ip": "عنوان IP",
+    "tier": "الدرجة",
+    "amount": "المبلغ",
+    "status": "الحالة",
+    "identitypk": "مفتاح هويِة العقدة",
+    "sspid": "معرفة محفظة SPP فلوكس",
+    "start_node": "بدءْ عقدة {{chainName}}",
     "start_node_info": "This action will broadcast Start Transaction to the blockchain trying to start your {{chainName}} Node.",
     "start_node_info_2": "Make sure your {{chainName}} Node is running and passing benchmark before starting your node to avoid DoS status.",
     "delete_node": "Delete {{chainName}} Node",
@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "This QR code is used to sync your SSP Wallet with your SSP Key. Scan this QR code with your SSP Key to sync your SSP Wallet with your SSP Key. It also automatically syncs Bitcoin chain.",
     "chain_sync_ssp_key_desc": "This QR code is used to sync your {{chain}} SSP Wallet with your SSP Key. Scan this QR code with your SSP Key to sync your {{chain}} chain.",
     "chain_extended_pub_desc": "Extended Public key is used to derive all your {{chain}} public keys from which addresses are constructed. This is a public part, safe to share, does not grant access to funds. This is what SSP Wallet syncs with your SSP Key to generate addresses.",
-    "chain_extended_priv_desc": "Extended Private key is used to derive all your {{chain}} private keys that control your public keys - addresses. This is a private part, do NOT ever share as it grants access to funds."
+    "chain_extended_priv_desc": "Extended Private key is used to derive all your {{chain}} private keys that control your public keys - addresses. This is a private part, do NOT ever share as it grants access to funds.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Address Details (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Send",
-    "receive": "Receive"
+    "receive": "Receive",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirm Transaction on SSP Key",
@@ -180,9 +184,9 @@
   },
   "key": {
     "sync_key": "Sync Key",
-    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
+    "err_sync_fail": "Synchronisation failed. Please try again manually.",
     "warn_await_sync": "Awaiting SSP Key synchronisation or manual input.",
-    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
+    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB.",
     "err_invalid_key": "Invalid SSP Key.",
     "err_k2": "Code K2: Something went wrong while decrypting password.",
     "err_k1": "Code K1: Something went wrong while decrypting password.",
@@ -278,5 +282,12 @@
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",
     "err_delete_token": "Error while deleting token. Please try again."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }

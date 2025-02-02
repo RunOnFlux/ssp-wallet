@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "無効なパスワードです。もう一度お試しください.",
   "err_invalid_pw_2": "パスワードが無効です。もう一度お試しください.",
-  "err_l3": "コード L3: ウォレットデータが欠落しています。ウォレットを復元してください.",
-  "err_l2": "コード L2: ウォレットデータが見つかりません。ウォレットを復元してください.",
-  "err_l1": "コード L1: ウォレットデータが欠落しています。ウォレットを復元してください.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "お帰りなさい!",
   "to_dec_cloud": "あなたの分散型クラウドへ",
   "unlock_with_pw": "パスワードで解除",

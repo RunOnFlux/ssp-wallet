@@ -39,5 +39,6 @@
   "activity": "Tevékenység",
   "nodes": "Node-ok",
   "tokens": "Tokenek",
-  "add_custom_token": "Egyéni Token hozzáadása"
+  "add_custom_token": "Egyéni Token hozzáadása",
+  "loading": "Loading..."
 }

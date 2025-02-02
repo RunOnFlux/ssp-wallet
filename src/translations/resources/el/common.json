@@ -39,5 +39,6 @@
   "activity": "Δραστηριότητα",
   "nodes": "Κόμβοι [Nodes]",
   "tokens": "Tokens",
-  "add_custom_token": "Προσθήκη Προσαρμοσμένου Token"
+  "add_custom_token": "Προσθήκη Προσαρμοσμένου Token",
+  "loading": "Loading..."
 }

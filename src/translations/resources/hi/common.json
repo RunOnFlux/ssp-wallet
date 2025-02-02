@@ -39,5 +39,6 @@
   "activity": "एक्टिविटी",
   "nodes": "नोड्स",
   "tokens": "टोकंस",
-  "add_custom_token": "कस्टम टोकन जोड़ें।"
+  "add_custom_token": "कस्टम टोकन जोड़ें।",
+  "loading": "Loading..."
 }

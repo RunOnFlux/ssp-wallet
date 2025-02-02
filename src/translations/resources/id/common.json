@@ -39,5 +39,6 @@
   "activity": "Aktivitas",
   "nodes": "Nodes",
   "tokens": "Token",
-  "add_custom_token": "Tambahkan Token Khusus"
+  "add_custom_token": "Tambahkan Token Khusus",
+  "loading": "Loading..."
 }

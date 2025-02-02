@@ -32,7 +32,7 @@
     "date": "Дата",
     "amount": "Сумма",
     "confirmations": "Подтверждения",
-    "export_tx": "Export Transactions",
+    "export_tx": "Экспортировать транзакции",
     "tx_confirmed": "Подтверждено.",
     "tx_unconfirmed": "Не подтверждено. Транзакция еще не подтверждена.",
     "tx_pending": "Ожидает. Транзакция ожидает авторизации SSP Ключом.",
@@ -40,9 +40,9 @@
     "replace_by_fee_info": "Увеличивает комиссию, заменяет или отменяет транзакцию.",
     "replace_by_fee_desc": "Replace by Fee (RBF) позволяет заменить неподтвержденную транзакцию на другую с более высокой комиссией. Если ваша транзакция остается неподтвержденной длительное время, вы можете использовать RBF для увеличения комиссии. Также можно изменить получателя, сумму или заметки к платежу. Отправив средства на один из своих адресов, вы можете отменить транзакцию.",
     "replace_by_fee_desc_b": "RBF требует более высокой комиссии за транзакцию в любом случае. Замену не гарантируется, и производители блоков, майнеры могут все равно отдать предпочтение предыдущей транзакции. Только неподтвержденные транзакции могут быть заменены.",
-    "err_export": "Error while exporting transactions. Please try again.",
-    "transactions_being_exported": "Transactions being exported...",
-    "transactions_exported": "Transactions exported!"
+    "err_export": "Ошибка при экспорте транзакций. Пожалуйста, попробуйте снова.",
+    "transactions_being_exported": "Транзакции экспортируются...",
+    "transactions_exported": "Транзакции экспортированы!"
   },
   "nodesTable": {
     "no_nodes": "Адрес не имеет узлов",
@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Этот QR-код используется для синхронизации вашего SSP Кошелька с SSP Ключом. Отсканируйте этот QR-код с вашим SSP Ключом, чтобы синхронизировать SSP Кошелек с SSP Ключом. Он также автоматически синхронизирует цепочку Bitcoin.",
     "chain_sync_ssp_key_desc": "Этот QR-код используется для синхронизации вашего {{chain}} SSP Кошелька с SSP Ключом. Отсканируйте этот QR-код с вашим SSP Ключом, чтобы синхронизировать {{chain}} цепочку.",
     "chain_extended_pub_desc": "Расширенный Публичный ключ используется для получения всех публичных ключей {{chain}} из которых строятся адреса. Это публичная часть, безопасная для обмена, не дает доступа к средствам. Этот ключ используется для синхронизации SSP Кошелька с SSP Ключом для генерации адресов.",
-    "chain_extended_priv_desc": "Расширенный Приватный ключ используется для получения всех приватных ключей {{chain}} для контроля над публичными ключами — адресами. Это приватная часть, НИКОГДА не делитесь этим ключом, так как он дает доступ к средствам."
+    "chain_extended_priv_desc": "Расширенный Приватный ключ используется для получения всех приватных ключей {{chain}} для контроля над публичными ключами — адресами. Это приватная часть, НИКОГДА не делитесь этим ключом, так как он дает доступ к средствам.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Детали Адреса (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Отправить",
-    "receive": "Получить"
+    "receive": "Получить",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Подтвердить транзакцию на SSP Ключе",
@@ -180,9 +184,9 @@
   },
   "key": {
     "sync_key": "Синхронизировать Ключ",
-    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
+    "err_sync_fail": "Синхронизация не удалась. Пожалуйста, попробуйте снова вручную.",
     "warn_await_sync": "Ожидаем синхронизации SSP Ключа или вручную введенные данные.",
-    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
+    "err_sync_1": "Пожалуйста, введите SSP Ключ XPUB. SSP Ключ XPUB отличается от SSP Кошелька XPUB.",
     "err_invalid_key": "Недействительный SSP Ключ.",
     "err_k2": "Код K2: Что-то пошло не так при расшифровке пароля.",
     "err_k1": "Код K1: Что-то пошло не так при расшифровке пароля.",
@@ -265,18 +269,25 @@
     "import_token": "Импортировать токен",
     "import": "Импортировать",
     "import_selected": "Импортировать выбранное",
-    "add_to_list": "Add To List",
+    "add_to_list": "Добавить в список",
     "remove_token": "Удалить токен",
     "remove": "Удалить",
     "remove_token_info": "Это действие скроет токен из вашего кошелька. Вы можете добавить его обратно в любой момент.",
-    "search_token": "Search Token",
+    "search_token": "Искать токен",
     "enter_contract_address": "Enter Token Contract Address",
-    "token_already_imported": "Token already imported",
-    "unable_to_fetch_metadata": "Unable to fetch token metadata. Please try again later.",
-    "token_imported": "Token Imported!",
+    "token_already_imported": "Токен уже импортирован",
+    "unable_to_fetch_metadata": "Не удалось получить метаданные токена. Пожалуйста, повторите попытку позже.",
+    "token_imported": "Токен импортирован!",
     "invalid_token_contract": "Invalid token contract.",
-    "delete_token": "Delete Token",
-    "token_deleted": "Token Deleted!",
-    "err_delete_token": "Error while deleting token. Please try again."
+    "delete_token": "Удалить токен",
+    "token_deleted": "Токен удалён!",
+    "err_delete_token": "Ошибка при удалении токена. Попробуйте снова."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }

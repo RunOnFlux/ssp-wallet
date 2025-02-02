@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "இந்த QR குறியீடு உங்கள் SSP வாலட்டை உங்கள் SSP கீ உடன் ஒத்திசைக்க பயன்படுத்தப்படுகிறது. உங்கள் SSP கீ உடன் இந்த QR குறியீட்டை ஸ்கேன் செய்து, உங்கள் SSP வாலட்டை SSP கீ உடன் ஒத்திசைக்கவும். இது Bitcoin சேனலைவும் தானாகவே ஒத்திசைக்கும்.",
     "chain_sync_ssp_key_desc": "இந்த QR குறியீடு உங்கள் {{chain}} SSP வாலட்டை உங்கள் SSP கீ உடன் ஒத்திசைக்க பயன்படுத்தப்படுகிறது. உங்கள் SSP கீ உடன் இந்த QR குறியீட்டை ஸ்கேன் செய்து, உங்கள் {{chain}} சேனலை ஒத்திசைக்கவும்.",
     "chain_extended_pub_desc": "விரிவாக்கப்பட்ட பொதுக் கீ உங்கள் {{chain}} பொதுக் கீகளை பெற பயன்படுத்தப்படுகிறது, அவற்றிலிருந்து முகவரிகள் உருவாக்கப்படுகின்றன. இது பொதுவான பகுதி ஆகும், பகிர்வதற்கு பாதுகாப்பானது, ஆனால் நிதிகளுக்கு அணுகலை வழங்காது. இது SSP வாலெட் உங்கள் SSP கீயுடன் ஒத்திசைத்து முகவரிகளை உருவாக்குவது ஆகும்.",
-    "chain_extended_priv_desc": "விரிவாக்கப்பட்ட தனியார் கீ உங்கள் {{chain}} தனியார் கீகளை பெற பயன்படுத்தப்படுகிறது, அவை உங்கள் பொதுக் கீகள் - முகவரிகளைக் கட்டுப்படுத்துகின்றன. இது தனிப்பட்ட பகுதி ஆகும், அதை எப்போதும் பகிராதீர்கள், ஏனெனில் இது நிதிகளுக்கு அணுகலை வழங்குகிறது."
+    "chain_extended_priv_desc": "விரிவாக்கப்பட்ட தனியார் கீ உங்கள் {{chain}} தனியார் கீகளை பெற பயன்படுத்தப்படுகிறது, அவை உங்கள் பொதுக் கீகள் - முகவரிகளைக் கட்டுப்படுத்துகின்றன. இது தனிப்பட்ட பகுதி ஆகும், அதை எப்போதும் பகிராதீர்கள், ஏனெனில் இது நிதிகளுக்கு அணுகலை வழங்குகிறது.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} முகவரி விவரங்கள் (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "அனுப்பு",
-    "receive": "பெறு"
+    "receive": "பெறு",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "SSP முக்கியத்தில் பரிவர்த்தனை உறுதிப்படுத்தவும்",
@@ -278,5 +282,12 @@
     "delete_token": "டோக்கன் ஐ அழிக்கவும்",
     "token_deleted": "டோக்கன் நீக்கப்பட்டது!",
     "err_delete_token": "டோக்கன் நீக்குவதில் பிழை ஏற்பட்டது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }

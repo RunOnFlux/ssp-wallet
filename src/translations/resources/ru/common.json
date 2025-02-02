@@ -39,5 +39,6 @@
   "activity": "Активность",
   "nodes": "Узлы",
   "tokens": "Токены",
-  "add_custom_token": "Add Custom Token"
+  "add_custom_token": "Add Custom Token",
+  "loading": "Loading..."
 }

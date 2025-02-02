@@ -39,5 +39,6 @@
   "activity": "Activité",
   "nodes": "Nœuds",
   "tokens": "Jetons",
-  "add_custom_token": "Ajouter un Jeton Personnalisé"
+  "add_custom_token": "Ajouter un Jeton Personnalisé",
+  "loading": "Loading..."
 }

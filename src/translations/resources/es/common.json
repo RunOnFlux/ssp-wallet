@@ -39,5 +39,6 @@
   "activity": "Actividad",
   "nodes": "Nodos",
   "tokens": "Tokens",
-  "add_custom_token": "Añadir Token Personalizado"
+  "add_custom_token": "Añadir Token Personalizado",
+  "loading": "Loading..."
 }

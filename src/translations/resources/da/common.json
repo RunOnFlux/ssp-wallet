@@ -39,5 +39,6 @@
   "activity": "Aktivitet",
   "nodes": "Noder",
   "tokens": "Tokens",
-  "add_custom_token": "Tilføj Brugerdefineret Token"
+  "add_custom_token": "Tilføj Brugerdefineret Token",
+  "loading": "Loading..."
 }

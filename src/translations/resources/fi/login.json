@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "Salasana ei kelpaa. Yritä uudelleen.",
   "err_invalid_pw_2": "Virheellinen salasana. Yritä uudelleen.",
-  "err_l3": "Koodi L3: Lompakon tiedot puuttuvat. Palauta lompakkosi.",
-  "err_l2": "Koodi L2: Lompakon tiedot puuttuvat. Palauta lompakkosi.",
-  "err_l1": "Koodi L1: Lompakon tiedot puuttuvat. Palauta lompakkosi.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Tervetuloa takaisin!",
   "to_dec_cloud": "Hajautettuun pilvipalveluusi",
   "unlock_with_pw": "Avaa salasanalla",

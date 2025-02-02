@@ -39,5 +39,6 @@
   "activity": "ক্রিয়াকলাপ",
   "nodes": "নোডস",
   "tokens": "টোকেনস",
-  "add_custom_token": "কাস্টম টোকেন যোগ করুন"
+  "add_custom_token": "কাস্টম টোকেন যোগ করুন",
+  "loading": "Loading..."
 }

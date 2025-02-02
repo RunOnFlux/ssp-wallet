@@ -39,5 +39,6 @@
   "activity": "Toiminta",
   "nodes": "Solmut",
   "tokens": "Tokenit",
-  "add_custom_token": "Lisää mukautettu token"
+  "add_custom_token": "Lisää mukautettu token",
+  "loading": "Loading..."
 }

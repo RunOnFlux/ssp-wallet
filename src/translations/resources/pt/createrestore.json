@@ -39,5 +39,16 @@
   "backup_confirmed": "Cópia de segurança confirmada!",
   "confirm_wallet_seed_word": "Confirmar a semente da carteira",
   "word_number": "Palavra #{{number}}",
-  "incorrect_backup_confirmation": "Palavra Incorrecta"
+  "incorrect_backup_confirmation": "Palavra Incorrecta",
+  "strong_password": "Uma senha forte deve conter pelo menos 8 caracteres, 1 letra maiúscula, 1 letra minúscula, 1 número e 1 caractere especial.",
+  "weak_password": "Password fraca utilizada",
+  "weak_password_info": "Sua senha é fraca, o que afeta a segurança da sua carteira.",
+  "weak_password_confirm": "Gostaria de mudar?",
+  "weak_password_confirm_ok": "Não, continuar com password fraca.",
+  "weak_password_confirm_cancel": "Sim, quero trocar.",
+  "copy_wallet_seed": "Copiar frase semente mnemônica da carteira",
+  "show_wallet_seed": "Mostrar frase semente mnemônica da carteira",
+  "copy_sensitive_data_desc": "Por razões de segurança, é altamente desencorajado copiar {{sensitive_data}} para a área de transferência. Certifique-se de removê-los da área de transferência após o uso!",
+  "show_sensitive_data": "Esta ação revelará  {{sensitive_data}}. Certifique-se do seu entorno antes de prosseguir.",
+  "copied": "Copiar para o clipboard."
 }

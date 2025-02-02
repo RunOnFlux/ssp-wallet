@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "Érvénytelen jelszó. Kérem, próbálja meg újra.",
   "err_invalid_pw_2": "Érvénytelen jelszó. Kérem, próbálja meg újra.",
-  "err_l3": "Kód L3: Pénztárca adat hiányzik. Kérem, állítsa vissza a pénztárcáját.",
-  "err_l2": "Kód L2: Pénztárca adat hiányzik. Kérem, állítsa vissza a pénztárcáját.",
-  "err_l1": "Kód L1: Pénztárca adat hiányzik. Kérem, állítsa vissza a pénztárcáját.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Üdv újra itt!",
   "to_dec_cloud": "A decentralizált felhőhöz",
   "unlock_with_pw": "Feloldás jelszóval",

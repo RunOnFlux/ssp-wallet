@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "此 QR 碼用於將您的 SSP 錢包與 SSP 密鑰同步.使用 SSP 密鑰掃描此 QR 碼以同步您的 SSP 錢包與 SSP 密鑰.它還會自動同步比特幣鏈.",
     "chain_sync_ssp_key_desc": "此 QR 碼用於將您的 {{chain}} SSP 錢包與 SSP 密鑰同步.使用 SSP 密鑰掃描此 QR 碼以同步您的 {{chain}} 鏈.",
     "chain_extended_pub_desc": "擴展公鑰用於派生所有 {{chain}} 公鑰，地址由此構建.這是一個公共部分，可以安全共享，無法訪問資金.這是 SSP 錢包與 SSP 密鑰同步以生成地址的內容.",
-    "chain_extended_priv_desc": "擴展私鑰用於派生所有控制公鑰 - 地址的 {{chain}} 私鑰.這是一個私人部分，切勿共享，因為它授予訪問資金的權限."
+    "chain_extended_priv_desc": "擴展私鑰用於派生所有控制公鑰 - 地址的 {{chain}} 私鑰.這是一個私人部分，切勿共享，因為它授予訪問資金的權限.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} 地址詳情(BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "發送",
-    "receive": "接收"
+    "receive": "接收",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "在 SSP 密鑰上確認交易",
@@ -278,5 +282,12 @@
     "delete_token": "刪除代幣",
     "token_deleted": "代幣已刪除！",
     "err_delete_token": "刪除代幣時出錯.請再試一次."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }

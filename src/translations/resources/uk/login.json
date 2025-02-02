@@ -1,14 +1,12 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
-  "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
-  "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Недійсний пароль. Спробуйте ще раз.",
+  "err_invalid_pw_2": "Пароль недійсний. Будь ласка, спробуйте ще раз.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
+  "welcome_back": "Ласкаво просимо назад!",
+  "to_dec_cloud": "До вашої децентралізованої хмари",
+  "unlock_with_pw": "Розблокувати за допомогою пароля",
+  "enter_pw": "Введіть пароль",
+  "unlock_wallet": "Розблокувати гаманець",
+  "forgot_pw": "Забули пароль?",
+  "restore": "Відновити"
 }

@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "이 QR 코드는 SSP 월렛을 SSP 키와 동기화하는 데 사용됩니다. SSP 키로 이 QR 코드를 스캔하여 SSP 월렛을 SSP 키와 동기화하세요. 또한 비트코인 체인을 자동으로 동기화합니다.",
     "chain_sync_ssp_key_desc": "이 QR 코드는 {{chain}} SSP 월렛을 SSP 키와 동기화하는 데 사용됩니다. SSP 키로 이 QR 코드를 스캔하여 {{chain}} 체인을 동기화하세요.",
     "chain_extended_pub_desc": "확장 공개 키는 {{chain}} 공개 키를 유도하는 데 사용되며, 이 공개 키에서 주소가 생성됩니다. 이는 공개 부분으로, 공유해도 안전하며 자금 접근 권한을 제공하지 않습니다. SSP 월렛은 이 키를 SSP 키와 동기화하여 주소를 생성합니다.",
-    "chain_extended_priv_desc": "확장 개인 키는 {{chain}} 개인 키를 유도하는 데 사용되며, 이는 공개 키 - 주소를 제어합니다. 이는 비공개 부분으로, 자금에 접근할 수 있으므로 절대로 공유하지 마세요."
+    "chain_extended_priv_desc": "확장 개인 키는 {{chain}} 개인 키를 유도하는 데 사용되며, 이는 공개 키 - 주소를 제어합니다. 이는 비공개 부분으로, 자금에 접근할 수 있으므로 절대로 공유하지 마세요.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} 주소 세부정보 (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "보내기",
-    "receive": "받기"
+    "receive": "받기",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "SSP 키에서 트랜잭션 확인",
@@ -278,5 +282,12 @@
     "delete_token": "토큰 삭제",
     "token_deleted": "토큰 삭제됨!",
     "err_delete_token": "토큰 삭제 중 오류가 발생했습니다. 다시 시도하세요."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }

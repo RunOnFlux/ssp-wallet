@@ -111,7 +111,9 @@
     "ssp_sync_wallet_key_desc": "Dieser QR-Code wird verwendet, um Ihre SSP Wallet mit Ihrem SSP Schlüssel zu synchronisieren. Scannen Sie diesen QR-Code mit Ihrem SSP Schlüssel, um Ihre SSP Wallet mit Ihrem SSP Schlüssel zu synchronisieren. Es wird auch automatisch die Bitcoin Blockchain synchronisiert.",
     "chain_sync_ssp_key_desc": "Dieser QR-Code wird verwendet, um Ihre {{chain}} SSP Wallet mit Ihrem SSP Schlüssel zu synchronisieren. Scannen Sie diesen QR-Code mit Ihrem SSP Schlüssel, um Ihre SSP Wallet mit Ihrer {{chain}} Blockchain zu synchronisieren.",
     "chain_extended_pub_desc": "Der erweiterte öffentliche Schlüssel wird verwendet, um alle Ihre öffentlichen {{chain}} Schlüssel abzuleiten, aus denen Adressen erstellt werden. Dies ist der öffentliche Teil, der sicher geteilt werden kann und keinen Zugang zu Guthaben gewährt. Das ist es, was Ihre SSP Wallet mit Ihrem SSP Schlüssel synchronisiert, um Adressen zu generieren.",
-    "chain_extended_priv_desc": "Der erweiterte private Schlüssel wird verwendet, um alle Ihre privaten {{chain}} Schlüssel abzuleiten, die Ihre öffentlichen Schlüssel und Adressen kontrollieren. Dies ist der private Teil, den Sie NICHT weitergeben dürfen, da er Zugang zu Ihrem Guthaben gewährt."
+    "chain_extended_priv_desc": "Der erweiterte private Schlüssel wird verwendet, um alle Ihre privaten {{chain}} Schlüssel abzuleiten, die Ihre öffentlichen Schlüssel und Adressen kontrollieren. Dies ist der private Teil, den Sie NICHT weitergeben dürfen, da er Zugang zu Ihrem Guthaben gewährt.",
+    "copy_data": "Copy {{data}}",
+    "show_data": "Show {{data}}"
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Angaben zur Adresse (BIP-48)",
@@ -142,7 +144,9 @@
   },
   "navigation": {
     "send": "Senden",
-    "receive": "Empfangen"
+    "receive": "Empfangen",
+    "buy": "Buy",
+    "sell": "Sell"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Transaktion auf dem SSP Schlüssel bestätigen",
@@ -278,5 +282,12 @@
     "delete_token": "Token löschen",
     "token_deleted": "Token gelöscht!",
     "err_delete_token": "Fehler beim Löschen des Tokens. Bitte versuchen Sie es erneut."
+  },
+  "buy_sell_crypto": {
+    "third_party_service": "Third Party Service",
+    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
+    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
+    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
+    "coming_soon": "Coming Soon!"
   }
 }

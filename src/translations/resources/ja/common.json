@@ -39,5 +39,6 @@
   "activity": "アクティビティ",
   "nodes": "ノード",
   "tokens": "トークン",
-  "add_custom_token": "カスタムトークンを追加"
+  "add_custom_token": "カスタムトークンを追加",
+  "loading": "Loading..."
 }

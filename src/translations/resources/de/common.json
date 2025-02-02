@@ -39,5 +39,6 @@
   "activity": "Aktivität",
   "nodes": "Nodes",
   "tokens": "Token",
-  "add_custom_token": "Benutzerdefinierten Token hinzufügen"
+  "add_custom_token": "Benutzerdefinierten Token hinzufügen",
+  "loading": "Loading..."
 }
