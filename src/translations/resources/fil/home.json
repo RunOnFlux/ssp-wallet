@@ -184,7 +184,7 @@
   },
   "key": {
     "sync_key": "Sync Key",
-    "err_sync_fail": "Nabigo ang pag-synchronize. Pakisubukang muli nang manu-mano.",
+    "err_sync_fail": "",
     "warn_await_sync": "Naghihintay ng SSP Key synchronization o manual input.",
     "err_sync_1": "Pakilagay ang SSP Key XPUB. Ang SSP Key XPUB ay iba sa SSP Wallet XPUB.",
     "err_invalid_key": "Mali ang SSP Key.",
