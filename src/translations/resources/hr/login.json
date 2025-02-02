@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "Nije važeća lozinka. Pokušajte ponovo.",
   "err_invalid_pw_2": "Nije važeća lozinka. Pokušajte ponovo.",
-  "err_l3": "Kod L3: Nedostaju podaci o novčaniku. Molimo vratite svoj novčanik.",
-  "err_l2": "Kod L2: Nedostaju podaci o novčaniku. Molimo vratite svoj novčanik.",
-  "err_l1": "Kod L1: Nedostaju podaci o novčaniku. Molimo vratite svoj novčanik.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Dobrodošli natrag!",
   "to_dec_cloud": "Vašoj decentraliziranoj oblačnoj usluzi",
   "unlock_with_pw": "Otključajte s lozinkom",
