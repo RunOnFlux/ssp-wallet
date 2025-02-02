@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "密碼無效.請再試一次.",
   "err_invalid_pw_2": "密碼不正確.請再試一次",
-  "err_l3": "代碼 L3：缺少錢包數據.請恢復您的錢包.",
-  "err_l2": "代碼 L2：缺少錢包數據.請恢復您的錢包",
-  "err_l1": "代碼 L1：缺少錢包數據.請恢復您的錢包.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "歡迎回來！",
   "to_dec_cloud": "進入您的去中心化雲端",
   "unlock_with_pw": "使用密碼解鎖",
