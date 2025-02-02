@@ -1,9 +1,7 @@
 {
   "err_invalid_pw": "Non è una password valida. Per favore riprova.",
   "err_invalid_pw_2": "Password non valida. Per favore riprova.",
-  "err_l3": "Codice L3: Dati del portafoglio mancanti. Si prega di ripristinare il portafoglio.",
-  "err_l2": "Codice L2: Dati del portafoglio mancanti. Si prega di ripristinare il portafoglio.",
-  "err_l1": "Codice L1: Dati del portafoglio mancanti. Si prega di ripristinare il portafoglio.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Bentornato/a!",
   "to_dec_cloud": "Al tuo Cloud decentralizzato",
   "unlock_with_pw": "Sblocca con Password",
