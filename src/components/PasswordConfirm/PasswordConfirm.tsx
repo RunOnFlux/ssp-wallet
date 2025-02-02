@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAppSelector } from '../../hooks';
 import { getScriptType } from '../../lib/wallet';
+import { getFingerprint } from '../../lib/fingerprint';
 import { blockchains } from '@storage/blockchains';
 
 interface passwordForm {
@@ -48,7 +49,22 @@ function PasswordConfirm(props: {
     openAction(false);
   };
 
-  const onFinish = (values: passwordForm) => {
+  const getRandomParams = async () => {
+    const randomParams = secureLocalStorage.getItem('randomParams');
+    const randomParamFingerprint = getFingerprint('forRandomParams');
+    if (
+      randomParams &&
+      typeof randomParams === 'string' &&
+      randomParams.length
+    ) {
+      const rp = await passworderDecrypt(randomParamFingerprint, randomParams);
+      return rp || '';
+    } else {
+      return '';
+    }
+  };
+
+  const onFinish = async (values: passwordForm) => {
     if (values.password.length < 8) {
       displayMessage('error', t('login:err_invalid_pw_2'));
       return;
@@ -59,14 +75,15 @@ function PasswordConfirm(props: {
         blockchainConfig.scriptType,
       )}-${blockchainConfig.id}`,
     );
+    const storedRandomParams = (await getRandomParams()) as string;
     if (typeof xpubEncrypted === 'string') {
-      passworderDecrypt(values.password, xpubEncrypted)
+      passworderDecrypt(values.password + storedRandomParams, xpubEncrypted)
         .then((xpub) => {
           if (typeof xpub === 'string') {
             // went well
             handleOk();
           } else {
-            displayMessage('error', t('login:err_l2'));
+            displayMessage('error', t('login:err_lx', { code: 'L2' }));
           }
         })
         .catch((error) => {

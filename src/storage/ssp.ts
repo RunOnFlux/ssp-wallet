@@ -26,7 +26,7 @@ export function loadSSPConfig() {
 loadSSPConfig();
 
 const ssp: config = {
-  relay: 'relay.ssp.runonflux.io',
+  relay: 'relay.sspwallet.io',
   fiatCurrency: 'USD',
   maxTxFeeUSD: 100, // in USD
 };

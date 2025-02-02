@@ -57,12 +57,12 @@ function SignMessage(props: {
           )}-${identityChainConfig.id}`,
         );
         const fingerprint: string = getFingerprint();
-        const password = await passworderDecrypt(fingerprint, passwordBlob);
+        let password = await passworderDecrypt(fingerprint, passwordBlob);
         if (typeof password !== 'string') {
           throw new Error('Unable to decrypt password');
         }
         if (xprivEncrypted && typeof xprivEncrypted === 'string') {
-          const xpriv = await passworderDecrypt(password, xprivEncrypted);
+          let xpriv = await passworderDecrypt(password, xprivEncrypted);
           // generate keypair
           if (xpriv && typeof xpriv === 'string') {
             const externalIdentity = generateExternalIdentityKeypair(xpriv);
@@ -86,7 +86,10 @@ function SignMessage(props: {
           } else {
             throw new Error('Unknown error: address mismatch');
           }
+          // reassign xpriv to null as it is no longer needed
+          xpriv = null;
         }
+        password = null;
       } else {
         console.log('todo');
         // todo case for signing with any address

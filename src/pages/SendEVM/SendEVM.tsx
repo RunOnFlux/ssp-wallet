@@ -674,7 +674,9 @@ function SendEVM() {
         if (typeof xprivBlob !== 'string') {
           throw new Error(t('send:err_invalid_xpriv'));
         }
-        const xprivChain = await passworderDecrypt(password, xprivBlob);
+        let xprivChain = await passworderDecrypt(password, xprivBlob);
+        // reassign password to null as it is no longer needed
+        password = null;
         if (typeof xprivChain !== 'string') {
           throw new Error(t('send:err_invalid_xpriv_decrypt'));
         }
@@ -688,6 +690,8 @@ function SendEVM() {
           addressIndex,
           activeChain,
         );
+        // reassign xprivChain to null as it is no longer needed
+        xprivChain = null;
         const publicKey2HEX = deriveEVMPublicKey(
           xpubKey,
           typeIndex,

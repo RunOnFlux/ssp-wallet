@@ -418,7 +418,7 @@ function Send() {
     console.log('tx size estimation');
     // get our password to decrypt xpriv from secure storage
     const fingerprint: string = getFingerprint();
-    const password = await passworderDecrypt(fingerprint, passwordBlob);
+    let password = await passworderDecrypt(fingerprint, passwordBlob);
     if (typeof password !== 'string') {
       throw new Error(t('send:err_pwd_not_valid'));
     }
@@ -430,7 +430,9 @@ function Send() {
     if (typeof xprivBlob !== 'string') {
       throw new Error(t('send:err_invalid_xpriv'));
     }
-    const xprivChain = await passworderDecrypt(password, xprivBlob);
+    let xprivChain = await passworderDecrypt(password, xprivBlob);
+    // reassign password to null as it is no longer needed
+    password = null;
     if (typeof xprivChain !== 'string') {
       throw new Error(t('send:err_invalid_xpriv_decrypt'));
     }
@@ -444,6 +446,8 @@ function Send() {
       addressIndex,
       activeChain,
     );
+    // reassign xprivChain to null as it is no longer needed
+    xprivChain = null;
     const amount = new BigNumber(sendingAmount || '0')
       .multipliedBy(10 ** blockchainConfig.decimals)
       .toFixed();
@@ -585,7 +589,9 @@ function Send() {
         if (typeof xprivBlob !== 'string') {
           throw new Error(t('send:err_invalid_xpriv'));
         }
-        const xprivChain = await passworderDecrypt(password, xprivBlob);
+        let xprivChain = await passworderDecrypt(password, xprivBlob);
+        // reassign password to null as it is no longer needed
+        password = null;
         if (typeof xprivChain !== 'string') {
           throw new Error(t('send:err_invalid_xpriv_decrypt'));
         }
@@ -599,6 +605,8 @@ function Send() {
           addressIndex,
           activeChain,
         );
+        // reassign xprivChain to null as it is no longer needed
+        xprivChain = null;
         const amount = new BigNumber(values.amount)
           .multipliedBy(10 ** blockchainConfig.decimals)
           .toFixed();
