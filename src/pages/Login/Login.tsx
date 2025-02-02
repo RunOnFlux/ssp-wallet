@@ -88,6 +88,14 @@ function Login() {
   const blockchainConfigIdentity = blockchains[identityChain];
 
   useEffect(() => {
+    return () => {
+      // reset state
+      setPassword('');
+      console.log('reset state');
+    };
+  }, []); // Empty dependency array ensures this effect runs only on mount/unmount
+
+  useEffect(() => {
     if (globalThis.refreshIntervalBalances) {
       clearInterval(globalThis.refreshIntervalBalances);
     }
@@ -169,7 +177,30 @@ function Login() {
       displayMessage('error', t('login:err_invalid_pw'));
       return;
     }
-    setPassword(values.password);
+    // get random params from secure local storage, decrypt it with light device finger print and combine with password, use promise instead of await
+    const randomParams = secureLocalStorage.getItem('randomParams');
+    if (
+      randomParams &&
+      typeof randomParams === 'string' &&
+      randomParams.length
+    ) {
+      const randomParamFingerprint = getFingerprint('forRandomParams');
+      passworderDecrypt(randomParamFingerprint, randomParams)
+        .then((decryptedRandomParams) => {
+          console.log(decryptedRandomParams);
+          if (typeof decryptedRandomParams === 'string') {
+            setPassword(values.password + decryptedRandomParams);
+          } else {
+            displayMessage('error', t('login:err_lx', { code: 'L4' }));
+          }
+        })
+        .catch((error) => {
+          displayMessage('error', t('login:err_lx', { code: 'L5' }));
+          console.log(error);
+        });
+    } else {
+      setPassword(values.password);
+    }
   };
 
   useEffect(() => {
@@ -214,7 +245,7 @@ function Login() {
       )}-${blockchainConfig.id}`,
     ); // key xpub
     if (!xpubEncrypted || !xpubEncryptedIdentity) {
-      displayMessage('error', t('login:err_l3'));
+      displayMessage('error', t('login:err_lx', { code: 'L3' }));
       setIsLoading(false);
       return;
     }
@@ -343,7 +374,7 @@ function Login() {
             }
             navigate('/home');
           } else {
-            displayMessage('error', t('login:err_l2'));
+            displayMessage('error', t('login:err_lx', { code: 'L2' }));
             setIsLoading(false);
           }
         })
@@ -353,7 +384,7 @@ function Login() {
           console.log(error);
         });
     } else {
-      displayMessage('error', t('login:err_l1'));
+      displayMessage('error', t('login:err_lx', { code: 'L1' }));
       setIsLoading(false);
     }
   };

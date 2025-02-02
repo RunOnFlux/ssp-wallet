@@ -46,7 +46,7 @@ import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
 
 import localForage from 'localforage';
-import { getFingerprint } from '../../lib/fingerprint';
+import { getFingerprint, getRandomParams } from '../../lib/fingerprint';
 import { useAppSelector } from '../../hooks';
 import { blockchains } from '@storage/blockchains';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
@@ -195,7 +195,14 @@ function Restore() {
       },
       onCancel() {
         // proceed with weak password
-        setPassword(temporaryPassword);
+        // add randomly generated parameters to the password randomBytes(64)
+        let randomParams = getRandomParams();
+        let passwordWithParams = temporaryPassword + randomParams;
+        setPassword(passwordWithParams);
+        // @ts-expect-error assign to null as it is no longer needed
+        randomParams = null;
+        // @ts-expect-error assign to null as it is no longer needed
+        passwordWithParams = null;
       },
     });
   };
@@ -228,7 +235,6 @@ function Restore() {
           t('cr:err_seed_invalid_words', { words: invalidWords.join(', ') }),
         );
       } else {
-        console.log('here');
         displayMessage('error', t('cr:err_seed_invalid'));
       }
       return;
@@ -259,7 +265,14 @@ function Restore() {
       setTemporaryPassword(values.password);
       return;
     }
-    setPassword(values.password);
+    // add randomly generated parameters to the password randomBytes(64)
+    let randomParams = getRandomParams();
+    let passwordWithParams = values.password + randomParams;
+    setPassword(passwordWithParams);
+    // @ts-expect-error assign to null as it is no longer needed
+    randomParams = null;
+    // @ts-expect-error assign to null as it is no longer needed
+    passwordWithParams = null;
   };
 
   const handleNavigation = () => {
@@ -287,6 +300,14 @@ function Restore() {
           password,
           new TextDecoder().decode(mnemonicPhrase),
         );
+        const randomParamFingerprint = getFingerprint('forRandomParams');
+        // take last 64 bytes from password, thats our random params
+        const randomParams = password.slice(-128);
+        const randomParamsBlob = await passworderEncrypt(
+          randomParamFingerprint,
+          randomParams,
+        );
+        secureLocalStorage.setItem('randomParams', randomParamsBlob);
         secureLocalStorage.setItem('walletSeed', mnemonicBlob);
         let xpriv = getMasterXpriv(
           new TextDecoder().decode(mnemonicPhrase),

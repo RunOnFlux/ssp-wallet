@@ -1,6 +1,6 @@
-import crypto from 'crypto';
+import crypto, { randomBytes } from 'crypto';
 
-export function getFingerprint(): string {
+export function getFingerprint(extraText = ''): string {
   const {
     cookieEnabled,
     doNotTrack,
@@ -32,7 +32,7 @@ export function getFingerprint(): string {
     if (ctx) {
       // https://www.browserleaks.com/canvas#how-does-it-work
       // Text with lowercase/uppercase/punctuation symbols
-      const txt = 'ClientJS,org <canvas> 1.0';
+      const txt = 'ClientJS,org <canvas> 1.0' + extraText;
       ctx.textBaseline = 'top';
       // The most common type
 
@@ -69,4 +69,9 @@ export function getFingerprint(): string {
     .update(fingerprint)
     .digest('hex');
   return fingerprintHash;
+}
+
+export function getRandomParams(): string {
+  const randomParams = randomBytes(64).toString('hex');
+  return randomParams;
 }
