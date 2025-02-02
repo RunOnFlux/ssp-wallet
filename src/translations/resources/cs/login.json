@@ -1,7 +1,7 @@
 {
   "err_invalid_pw": "To není správné heslo. Zkuste znovu.",
   "err_invalid_pw_2": "Nesprávné heslo. Prosím zkuste znovu.",
-  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
+  "err_lx": "Kód {{code}}: Chybí údaje peněženky. Prosím obnovte peněženku.",
   "welcome_back": "Vítejte zpět!",
   "to_dec_cloud": "Do vašeho decentralizovaného Cloudu",
   "unlock_with_pw": "Odemknout s Heslem",
