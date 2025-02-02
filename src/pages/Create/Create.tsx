@@ -40,7 +40,7 @@ import {
 } from '../../lib/wallet';
 import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
-import { getFingerprint } from '../../lib/fingerprint';
+import { getFingerprint, getRandomParams } from '../../lib/fingerprint';
 import { blockchains } from '@storage/blockchains';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
@@ -153,7 +153,14 @@ function Create() {
       },
       onCancel() {
         // proceed with weak password
-        setPassword(temporaryPassword);
+        // add randomly generated parameters to the password randomBytes(64)
+        let randomParams = getRandomParams();
+        let passwordWithParams = temporaryPassword + randomParams;
+        setPassword(passwordWithParams);
+        // @ts-expect-error assign to null as it is no longer needed
+        randomParams = null;
+        // @ts-expect-error assign to null as it is no longer needed
+        passwordWithParams = null;
       },
     });
   };
@@ -177,7 +184,14 @@ function Create() {
       setTemporaryPassword(values.password);
       return;
     }
-    setPassword(values.password);
+    // add randomly generated parameters to the password randomBytes(64)
+    let randomParams = getRandomParams();
+    let passwordWithParams = values.password + randomParams;
+    setPassword(passwordWithParams);
+    // @ts-expect-error assign to null as it is no longer needed
+    randomParams = null;
+    // @ts-expect-error assign to null as it is no longer needed
+    passwordWithParams = null;
   };
 
   const generateMnemonicPhrase = (entValue: 128 | 256) => {
@@ -199,6 +213,14 @@ function Create() {
         if (chrome?.storage?.session) {
           await chrome.storage.session.clear();
         }
+        const randomParamFingerprint = getFingerprint('forRandomParams');
+        // take last 64 bytes from password, thats our random params
+        const randomParams = password.slice(-128);
+        const randomParamsBlob = await passworderEncrypt(
+          randomParamFingerprint,
+          randomParams,
+        );
+        secureLocalStorage.setItem('randomParams', randomParamsBlob);
         secureLocalStorage.setItem('walletSeed', blob);
         // generate master xpriv for btc - default chain
         let xpriv = getMasterXpriv(
