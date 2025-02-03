@@ -184,7 +184,6 @@
   },
   "key": {
     "sync_key": "Sincronizza Chiave",
-    "err_sync_fail": "Sincronizzazione non riuscita. L'indirizzo generato non corrisponde. Riprova manualmente e ricontrolla che lo stesso indirizzo sia costruito sia nel Portafoglio SSP che nella chiave SSP. Il Portafoglio SSP e la chiave SSP devono avere frasi mnemoniche diverse.",
     "warn_await_sync": "In attesa di sincronizzazione della chiave SSP o input manuale.",
     "err_sync_1": "Inserisci la chiave SSP XPUB. La chiave SSP XPUB è diversa dal portafoglio SSP XPUB. Assicurati che sia il Portafoglio SSP che la Chiave SSP utilizzino frasi mnemoniche diverse.",
     "err_invalid_key": "Chiave SSP non valida.",
