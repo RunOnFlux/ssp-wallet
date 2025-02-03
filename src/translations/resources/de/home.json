@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "Schlüssel synchronisieren",
+    "err_sync_fail": "Synchronisation fehlgeschlagen. Generierte Adresse stimmt nicht überein. Bitte versuchen Sie es erneut und prüfen Sie, dass dieselbe Adresse in SSP Wallet und SSP Schlüssel konstruiert wurde. SSP Wallet und SSP Schlüssel müssen beide eindeutige, unterschiedliche Wiederherstellungsschlüssel benutzen.",
     "warn_await_sync": "Warten auf SSP Schlüssel Synchronisation oder manuelle Eingabe.",
     "err_sync_1": "Bitte geben Sie den SSP Schlüssel XPUB ein. SSP Schlüssel XPUB ist unterschiedlich zu SSP Wallet XPUB. SSP Schlüssel und SSP Wallet müssen beide eindeutige, unterschiedliche Wiederherstellungsschlüssel benutzen.",
     "err_invalid_key": "Der SSP Schlüssel ist ungültig.",
