@@ -184,7 +184,6 @@
   },
   "key": {
     "sync_key": "Sinkroniziraj Ključ",
-    "err_sync_fail": "Sinkronizacija nije uspjela. Generirana adresa se ne podudara. Pokušajte ponovno ručno i provjerite je li ista adresa izgrađena u oba SSP Novčanik i SSP Key. SSP Novčanik i SSP Key moraju koristiti jedinstvene, različite seed fraze.",
     "warn_await_sync": "Čeka se na sinkronizaciju SSP Key-a ili ručni unos.",
     "err_sync_1": "Molimo unesite SSP Key XPUB. SSP Key XPUB je različit od SSP Novčanik XPUB. Osigurajte da SSP Wallet i SSP Key koriste jedinstvene, različite seed fraze.",
     "err_invalid_key": "Nevažeći SSP ključ.",
