@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "Szinkronizációs kulcs",
+    "err_sync_fail": "A szinkronizálás sikertelen. A generált cím nem egyezik. Próbáld meg újra manuálisan, és ellenőrizd, hogy ugyanaz a cím lett-e létrehozva az SSP tárcában és az SSP kulcsban. Az SSP tárca és az SSP kulcsnak egyedi, különböző visszaállítási kulcsot t kell használniuk.",
     "warn_await_sync": "Az SSP kulcs szinkronizálására, vagy a manuális bevitelre vár.",
     "err_sync_1": "Kérjük, add meg az SSP Key XPUB-t. Az SSP Key XPUB eltér az SSP Wallet XPUB-tól. Győződj meg róla, hogy az SSP Wallet és az SSP Key egyedi, különböző seed phrase-eket használ.",
     "err_invalid_key": "Érvénytelen SSP kulcs.",
