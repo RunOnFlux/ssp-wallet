@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "同步密鑰",
+    "err_sync_fail": "同步失敗.生成的地址不匹配.請手動重試並重新檢查在 SSP 錢包和 SSP 密鑰中生成的地址是否相同.SSP 錢包和 SSP 密鑰必須使用唯一且不同的種子詞.",
     "warn_await_sync": "正在等待 SSP 密鑰同步或手動輸入。",
     "err_sync_1": "請輸入 SSP 密鑰 XPUB.SSP 密鑰 XPUB 與 SSP 錢包 XPUB 不同.請確保 SSP 錢包和 SSP 密鑰均使用唯一且不同的種子詞.",
     "err_invalid_key": "無效的 SSP 密鑰.",
