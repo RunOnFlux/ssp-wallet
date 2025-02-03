@@ -1,7 +1,7 @@
 {
   "err_invalid_pw": "Ni veljavno geslo. Prosimo, poskusite znova.",
   "err_invalid_pw_2": "Neveljavno geslo. Prosimo, poskusite znova.",
-  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
+  "err_lx": "Koda {{code}}: Podatki o denarnici manjkajo. Prosimo, obnovite svojo denarnico.",
   "welcome_back": "Dobrodošli nazaj!",
   "to_dec_cloud": "V vašo decentralizirano oblak",
   "unlock_with_pw": "Odklenite z geslom",

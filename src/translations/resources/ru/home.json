@@ -184,9 +184,9 @@
   },
   "key": {
     "sync_key": "Синхронизировать Ключ",
-    "err_sync_fail": "Синхронизация не удалась. Пожалуйста, попробуйте снова вручную.",
+    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
     "warn_await_sync": "Ожидаем синхронизации SSP Ключа или вручную введенные данные.",
-    "err_sync_1": "Пожалуйста, введите SSP Ключ XPUB. SSP Ключ XPUB отличается от SSP Кошелька XPUB.",
+    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
     "err_invalid_key": "Недействительный SSP Ключ.",
     "err_k2": "Код K2: Что-то пошло не так при расшифровке пароля.",
     "err_k1": "Код K1: Что-то пошло не так при расшифровке пароля.",

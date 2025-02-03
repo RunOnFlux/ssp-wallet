@@ -184,9 +184,9 @@
   },
   "key": {
     "sync_key": "Sync Key",
-    "err_sync_fail": "Nabigo ang pag-synchronize. Pakisubukang muli nang manu-mano.",
+    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
     "warn_await_sync": "Naghihintay ng SSP Key synchronization o manual input.",
-    "err_sync_1": "Pakilagay ang SSP Key XPUB. Ang SSP Key XPUB ay iba sa SSP Wallet XPUB.",
+    "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
     "err_invalid_key": "Mali ang SSP Key.",
     "err_k2": "Code K2: Nagkaproblema habang nagde-decrypt ng password.",
     "err_k1": "Code K1: Nagkaproblema habang nagde-decrypt ng password.",

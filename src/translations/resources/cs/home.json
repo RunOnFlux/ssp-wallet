@@ -112,8 +112,8 @@
     "chain_sync_ssp_key_desc": "Tento QR kód se používá k synchronizování blockchainu {{chain}} SSP Peněženky s vašim SSP Klíčem. Naskenujte tento QR kód vašim SSP Klíčem k synchronizaci {{chain}} chainu.",
     "chain_extended_pub_desc": "Rozšířený Veřejný Klíč se používá k odvození všech vašich veřejných klíčů blockchainu {{chain}}. Následně se z něj odvozují veškeré vaše adresy. Tohle je veřejný část a je bezpečné ji sdílet. Veřejná část nedává přístup k prostředkům adres. Tuto část synchronizuje SSP Peněženka s vašim SSP Klíčem ke generování adres.",
     "chain_extended_priv_desc": "Rozšířený Soukromý Klíč se používá k odvození všech vašich soukromých klíčů blockchainu {{chain}}. Soukromé klíče kontrolují veřejné klíče - adresy. Tohle je soukromá část. NIKDY ji s nikým nesdílejte. Tato část dává přímý přístup k prostředkům.",
-    "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "copy_data": "Zkopírovat {{data}}",
+    "show_data": "Ukázat {{data}}"
   },
   "addressDetails": {
     "chain_bip": "Detaily {{chain}} Adresy (BIP-48)",
@@ -131,11 +131,11 @@
     "change_pw_restore": "Změna Hesla? Obnovit!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Služba",
-    "chain_api_service": "{{chain}} API Service",
-    "chain_explorer_service": "{{chain}} Explorer Service",
+    "chain_api_service": "{{chain}} API Služba",
+    "chain_explorer_service": "{{chain}} Explorer Služba",
     "language": "Jazyk",
     "fiat_currency": "Měna",
-    "use_system_language": "Use System Language"
+    "use_system_language": "Použít Systémový Jazyk"
   },
   "receive": {
     "receive_chain_wallet": "Obdržet do {{chain}} {{wallet}}",
@@ -145,8 +145,8 @@
   "navigation": {
     "send": "Odeslat",
     "receive": "Přijmout",
-    "buy": "Buy",
-    "sell": "Sell"
+    "buy": "Koupit",
+    "sell": "Prodat"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Potvrďte Transakci na SSP Klíči",
@@ -284,10 +284,10 @@
     "err_delete_token": "Chyba při odebírání tokenu. Zkuste prosím později."
   },
   "buy_sell_crypto": {
-    "third_party_service": "Third Party Service",
-    "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
-    "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
-    "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
-    "coming_soon": "Coming Soon!"
+    "third_party_service": "Služba Třetí Strany",
+    "consent_info": "Nákup a prodej kryptoměn je umožněn skrze službu třetí strany přes Onramper. SSP peněženka preferuje bezpečnost především a nabízí nejvyšší možnost zabezpečení pro uživatele. Jelikož se jedná o službu třetí strany, nemůžeme garantovat její bezpečnost a soukromí. Vaše adresa bude s touto třetí stranou sdílena.",
+    "consent_info_2": "Rozumím rizikům a přeji si pokračovat.",
+    "not_available_later": "Nákup a prodej kryptoměn je momentálně nedostupný. Zkuste prosím později.",
+    "coming_soon": "Již Brzy!"
   }
 }
