@@ -56,6 +56,7 @@ function LanguageSelector(props: { label: boolean }) {
           { value: 'de', label: 'de', desc: 'Deutsch' },
           { value: 'es', label: 'es', desc: 'Español' },
           { value: 'fi', label: 'fi', desc: 'Suomen kieli' },
+          { value: 'sl', label: 'sl', desc: 'Slovenščina' },
           { value: 'fil', label: 'fil', desc: 'Filipino' },
           { value: 'fr', label: 'fr', desc: 'Français' },
           { value: 'el', label: 'el', desc: 'Ελληνικά' },
@@ -65,7 +66,9 @@ function LanguageSelector(props: { label: boolean }) {
           { value: 'ko', label: 'ko', desc: '한국어' },
           { value: 'hu', label: 'hu', desc: 'Magyar' },
           { value: 'ja', label: 'ja', desc: '日本語' },
+          { value: 'pt', label: 'pt', desc: 'Português' },
           { value: 'ru', label: 'ru', desc: 'Русский' },
+          { value: 'uk', label: 'uk', desc: 'Українська' },
           { value: 'ta', label: 'ta', desc: 'தமிழ்' },
           { value: 'vi', label: 'vi', desc: 'Tiếng Việt' },
           ...(Object.keys(resources).includes(navigator.language.split('-')[0])

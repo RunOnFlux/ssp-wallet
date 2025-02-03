@@ -20,3 +20,6 @@ export { default as zh } from './zh/_index'; // Chinese Simplified
 export { default as zh_TW } from './zh_TW/_index'; // Chinese Traditional
 export { default as ko } from './ko/_index'; // Korean
 export { default as bg } from './bg/_index'; // Bulgarian
+export { default as sl } from './sl/_index'; // Slovenian
+export { default as pt } from './pt/_index'; // Portuguese
+export { default as uk } from './uk/_index'; // Ukrainian
