@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "키 동기화",
+    "err_sync_fail": "동기화 실패. 생성된 주소가 일치하지 않습니다. 수동으로 다시 시도하고 SSP 월렛과 SSP 키에서 동일한 주소가 생성되었는지 확인하세요. SSP 월렛과 SSP 키는 고유하고 다른 시드 문구를 사용해야 합니다.",
     "warn_await_sync": "SSP 키 동기화 또는 수동 입력 대기 중입니다.",
     "err_sync_1": "SSP 키 XPUB를 입력하세요. SSP 키 XPUB는 SSP 월렛 XPUB와 다릅니다. SSP 월렛과 SSP 키가 고유하고 다른 시드 문구를 사용하고 있는지 확인하세요.",
     "err_invalid_key": "유효하지 않은 SSP 키입니다.",
