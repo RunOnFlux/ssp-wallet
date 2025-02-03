@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "Kunci Sinkronisasi",
+    "err_sync_fail": "Sinkronisasi gagal. Alamat yang dihasilkan tidak cocok. Coba lagi secara manual dan periksa kembali apakah alamat yang sama dibuat di Dompet SSP dan Kunci SSP. pada Dompet SSP dan Kunci SSP harus menggunakan frasa awal yang unik dan berbeda.",
     "warn_await_sync": "Menunggu sinkronisasi Kunci SSP atau input manual.",
     "err_sync_1": "Silakan masukkan Kunci SSP XPUB. Kunci SSP XPUB yang berbeda dengan SSP Wallet XPUB. Pastikan Dompet SSP dan Kunci SSP menggunakan frasa awal yang unik dan berbeda.",
     "err_invalid_key": "Kunci SSP tidak valid.",
