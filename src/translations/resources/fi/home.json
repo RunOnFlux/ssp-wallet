@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "Synkronoi avain",
+    "err_sync_fail": "- Synkronointi epäonnistui. Luotu osoite ei täsmää. Yritä uudelleen manuaalisesti ja tarkista, että sama osoite on rakennettu sekä SSP-lompakkoon että SSP-avaimeen. Sekä SSP-lompakon että SSP-avaimen on käytettävä ainutlaatuisia, erilaisia siemenlauseita.",
     "warn_await_sync": "- Odotetaan SSP-avaimen synkronointia tai manuaalista syöttöä.",
     "err_sync_1": "Syötä SSP-avaimen XPUB. SSP-avaimen XPUB on eri kuin SSP-lompakon XPUB. Varmista, että sekä SSP-lompakko että SSP-avain käyttävät ainutlaatuisia, erilaisia siemenlauseita.",
     "err_invalid_key": "Virheellinen SSP-avain.",
