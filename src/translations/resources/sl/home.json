@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "Sinhronizacija ključa",
+    "err_sync_fail": "Sinhronizacija ni uspela. Ustvarjeni naslov se ne ujema. Poskusite znova ročno in preverite, da je isti naslov ustvarjen tako v SSP denarnici kot v SSP ključu. SSP denarnica in SSP ključ morata uporabljati edinstvene, različne semenske fraze.",
     "warn_await_sync": "Čaka na sinhronizacijo SSP ključa ali ročni vnos.",
     "err_sync_1": "Prosimo vnesite SSP ključ XPUB. SSP ključ XPUB je drugačen od SSP denarnice XPUB. Prepričajte se, da tako SSP denarnica kot SSP ključ uporabljata edinstvene, različne semenske fraze.",
     "err_invalid_key": "Neveljaven SSP ključ.",
