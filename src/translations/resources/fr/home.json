@@ -184,7 +184,6 @@
   },
   "key": {
     "sync_key": "Synchroniser la clé",
-    "err_sync_fail": "La synchronisation a échoué. L'adresse générée ne correspond pas. Réessayez manuellement et vérifiez que la même adresse est construite à la fois dans le portefeuille SSP et dans la clé SSP. Le portefeuille SSP et la clé SSP doivent tous deux utiliser des phrases de graine uniques et différentes.",
     "warn_await_sync": "En attente de synchronisation de la clé SSP ou de saisie manuelle.",
     "err_sync_1": "Veuillez entrer le XPUB de la clé SSP. Le XPUB de la clé SSP est différent du XPUB du portefeuille SSP. Assurez-vous que le portefeuille SSP et la clé SSP utilisent des phrases uniques et différentes.",
     "err_invalid_key": "Clé SSP invalide.",
