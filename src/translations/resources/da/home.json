@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "Sync Key",
+    "err_sync_fail": "Synchronisation failed. Please try again manually.",
     "warn_await_sync": "Awaiting SSP Key synchronisation or manual input.",
     "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
     "err_invalid_key": "Invalid SSP Key.",
