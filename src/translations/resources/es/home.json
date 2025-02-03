@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "Sincronizar Clave",
+    "err_sync_fail": "La sincronización ha fallado. La dirección generada no coincide. Inténtelo de nuevo manualmente y vuelva a comprobar que la misma dirección se construye tanto en la Cartera SSP como en la Clave SSP. La Cartera SSP y la Clave SSP deben usar frases únicas y diferentes.",
     "warn_await_sync": "Esperando la sincronización de la Clave SSP o la entrada manual.",
     "err_sync_1": "Por favor, introduzca la Clave SSP XPUB. La clave SSP XPUB es diferente a la Cartera SSP XPUB. Asegúrese de que tanto la Cartera SSP como la clave SSP están usando frases de semilla únicas y diferentes.",
     "err_invalid_key": "Clave SSP no válida.",
