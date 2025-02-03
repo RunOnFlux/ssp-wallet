@@ -184,6 +184,7 @@
   },
   "key": {
     "sync_key": "Sincronizar chave",
+    "err_sync_fail": "Para confirmar a transação na sua chave SSP, abra a sua chave SSP no seu aparelho e confirme a operação. Pode começar a recarregar ou fazer a leitura do QR code a seguir.",
     "warn_await_sync": "Aguardar sincronização da chave SSP ou introduzir manualmente.",
     "err_sync_1": "Insira SSP Key XPUB. SSP Key XPUB é diferente de SSP Wallet XPUB. Certifique-se de que tanto SSP Wallet quanto SSP Key estão a usar frases de seed únicas e diferentes.",
     "err_invalid_key": "Chave SSP inválida.",
