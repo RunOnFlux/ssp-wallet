@@ -184,7 +184,6 @@
   },
   "key": {
     "sync_key": "Đồng bộ Khóa",
-    "err_sync_fail": "Sự đồng bộ bị thất bại. Địa chỉ đã được khởi tạo không khớp. Hãy thử lại một cách thủ và kiểm tra lại rằng cùng một địa chỉ được xây dựng trên cả hai Ví SSP và Khóa SSP. Ví SSP và khóa SSP phải cùng sử dụng các cụm khôi phục khác biệt và độc nhất với nhau.",
     "warn_await_sync": "Đang đợi quá trình đồng bộ Khóa SSP hoặc nhập thủ công.",
     "err_sync_1": "Hãy nhập Khóa XPUB SSP. Khóa XPUB SSP khác so với Ví XPUB SSP. Hãy đảm bảo rằng cả Ví SSP và Khóa SSP đang sử dụng các cụm khôi phục khác nhau, độc nhất.",
     "err_invalid_key": "Khóa SSP không khả dụng.",
