@@ -964,7 +964,6 @@ export async function constructAndSignEVMTransaction(
         chain: CHAIN,
         combinedAddress: combinedAddresses,
         salt: accountAbstraction.helpers.create2Helpers.saltToHex(accountSalt),
-        // @ts-expect-error type mismatch as of library
         entryPoint: getEntryPoint(CHAIN),
       });
 
@@ -1020,9 +1019,7 @@ export async function constructAndSignEVMTransaction(
     };
 
     const smartAccountClient = createSmartAccountClient({
-      // @ts-expect-error library issue
       transport,
-      // @ts-expect-error library issue
       chain: CHAIN,
       account: multiSigSmartAccount,
       opts: CLIENT_OPT,

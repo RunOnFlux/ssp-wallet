@@ -14,6 +14,12 @@
     "preview": "vite preview",
     "postinstall": "patch-package"
   },
+  "resolutions": {
+    "viem": "2.22.21"
+  },
+  "overrides": {
+    "viem": "2.22.21"
+  },
   "dependencies": {
     "@ant-design/v5-patch-for-react-19": "1.0.3",
     "@alchemy/aa-core": "3.19.0",
