@@ -145,8 +145,8 @@
   "navigation": {
     "send": "Kirim",
     "receive": "Terima",
-    "buy": "Buy",
-    "sell": "Sell"
+    "buy": "Beli",
+    "sell": "Jual"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Konfirmasi Transaksi pada Kunci SSP",
@@ -288,6 +288,6 @@
     "consent_info": "The purchase and sale of cryptocurrencies are facilitated through a third-party service provided by Onramper. While SSP is committed to ensuring the highest level of security for its users, we cannot guarantee the security and privacy of third-party services.",
     "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
     "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
-    "coming_soon": "Coming Soon!"
+    "coming_soon": "Segera Hadir!"
   }
 }
