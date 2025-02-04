@@ -111,6 +111,7 @@ function Transactions() {
   };
 
   const getPendingTx = () => {
+    console.log('getPendingTx');
     const wInUse = walletInUse;
     axios
       .get<actionSSPRelay>(
@@ -175,8 +176,8 @@ function Transactions() {
       />
 
       <SocketListener
-        txRejected={onTxRejected}
-        txSent={onTxSent}
+        txRejectedProp={onTxRejected}
+        txSentProp={onTxSent}
         ignorePopups={true}
       />
     </div>

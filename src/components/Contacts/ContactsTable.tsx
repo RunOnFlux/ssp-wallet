@@ -185,7 +185,10 @@ function ContactsTable() {
         />
       </Table>
       {manageOpen && (
-        <ManageContact openAction={manageContactAction} id={manageContactId} />
+        <ManageContact
+          openAction={manageContactAction}
+          contactId={manageContactId}
+        />
       )}
     </>
   );

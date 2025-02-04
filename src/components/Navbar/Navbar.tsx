@@ -75,11 +75,13 @@ const balancesObject = {
   unconfirmed: '0.00',
 };
 
-function Navbar(props: {
+interface Props {
   refresh: () => void;
   hasRefresh: boolean;
   allowChainSwitch?: boolean;
-}) {
+}
+
+function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
@@ -344,7 +346,7 @@ function Navbar(props: {
   };
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
-    if (e.key === 'refresh') props.refresh();
+    if (e.key === 'refresh') refresh();
     if (e.key === 'Lock') logout();
     if (e.key === 'address') {
       setPasswordConfirmDialogVisible(true);
@@ -393,7 +395,7 @@ function Navbar(props: {
         margin: 0,
         marginTop: '-2px',
       },
-      children: props.hasRefresh
+      children: hasRefresh
         ? [
             {
               label: t('home:navbar.addr_details'),
@@ -507,7 +509,7 @@ function Navbar(props: {
                     </span>
                   </div>
                   {menu}
-                  {props.allowChainSwitch && (
+                  {allowChainSwitch && (
                     <>
                       <Divider style={{ margin: '8px 0' }} />
                       <Button
@@ -601,9 +603,5 @@ function Navbar(props: {
     </>
   );
 }
-
-Navbar.defaultProps = {
-  allowChainSwitch: true,
-};
 
 export default Navbar;

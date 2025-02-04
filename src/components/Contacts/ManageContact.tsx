@@ -7,18 +7,19 @@ import { useAppSelector, useAppDispatch } from '../../hooks';
 import { contact } from '../../types';
 import { setContacts } from '../../store';
 
-function ManageContact(props: {
-  id?: number;
+interface Props {
   openAction: (status: boolean) => void;
-}) {
+  contactId?: number;
+}
+
+function ManageContact({ openAction, contactId = -1 }: Props) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['home', 'common']);
-  const { openAction } = props;
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { contacts } = useAppSelector((state) => state.contacts);
   const [messageApi, contextHolder] = message.useMessage();
   const editedContact: contact = contacts[activeChain]?.find(
-    (contact) => contact.id === props.id,
+    (contact) => contact.id === contactId,
   ) ?? {
     id: -1,
     name: '',
@@ -51,7 +52,7 @@ function ManageContact(props: {
       adjustedContact.address = contactAddress;
       const newContacts: contact[] = [];
       contacts[activeChain]?.forEach((n) => {
-        if (n.id === props.id) {
+        if (n.id === contactId) {
           newContacts.push(adjustedContact);
         } else {
           newContacts.push(n);
@@ -138,9 +139,5 @@ function ManageContact(props: {
     </>
   );
 }
-
-ManageContact.defaultProps = {
-  id: -1,
-};
 
 export default ManageContact;

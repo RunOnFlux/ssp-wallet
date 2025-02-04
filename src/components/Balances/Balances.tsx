@@ -213,7 +213,7 @@ function Balances() {
       <h4 style={{ marginTop: 10, marginBottom: 15 }}>
         {formatFiatWithSymbol(balanceFIAT)}
       </h4>
-      <SocketListener txRejected={onTxRejected} txSent={onTxSent} />
+      <SocketListener txRejectedProp={onTxRejected} txSentProp={onTxSent} />
     </>
   );
 }

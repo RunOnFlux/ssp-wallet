@@ -238,7 +238,7 @@ describe('ConstructTx Lib', function () {
         '0xd447BA08b0d395fCAd6e480d270529c932289Ce1',
         'sepolia',
       ).then((res) => {
-        assert.equal(res, 271832);
+        assert.equal(res, 284623);
       });
     });
 

@@ -13,7 +13,9 @@ interface CountdownTimerProps {
 const CountdownTimer: React.FC<CountdownTimerProps> = ({
   createdAtDateTime,
   expireAtDateTime,
-  onFinish,
+  onFinish = () => {
+    console.log('CountdownTimer finished');
+  },
 }) => {
   const [remainingTimeInSeconds] = useState(() => {
     const endTime = new Date(expireAtDateTime).getTime();
@@ -59,12 +61,6 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
       </CountdownCircleTimer>
     </div>
   );
-};
-
-CountdownTimer.defaultProps = {
-  onFinish: () => {
-    console.log('CountdownTimer finished');
-  },
 };
 
 export default CountdownTimer;

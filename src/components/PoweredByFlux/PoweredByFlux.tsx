@@ -72,8 +72,4 @@ function PoweredByFlux({ isClickeable = false }: Props) {
   );
 }
 
-PoweredByFlux.defaultProps = {
-  isClickeable: false,
-};
-
 export default PoweredByFlux;

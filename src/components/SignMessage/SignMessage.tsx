@@ -25,24 +25,31 @@ interface signMessageData {
   data?: string;
 }
 
-function SignMessage(props: {
+interface Props {
   open: boolean;
   message: string;
   address: string;
   chain: keyof cryptos;
   openAction?: (data: signMessageData | null) => void;
   exitAction?: () => void;
-}) {
+}
+
+function SignMessage({
+  open,
+  message,
+  address,
+  chain,
+  openAction,
+  exitAction,
+}: Props) {
   const { sspWalletExternalIdentity: wExternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { identityChain } = useAppSelector((state) => state.sspState);
   const { t } = useTranslation(['home', 'common', 'cr']);
-  const { open, openAction, address, exitAction, message } = props;
-  let { chain } = props;
-  chain = chain || identityChain;
-  const blockchainConfig = blockchains[chain];
+  const selectedChain = chain || identityChain;
+  const blockchainConfig = blockchains[selectedChain];
   console.log(blockchainConfig);
   const identityChainConfig = blockchains[identityChain];
   const [messageSignature, setMessageSignature] = useState('');
@@ -118,7 +125,7 @@ function SignMessage(props: {
     try {
       const isCompressed = true; // ssp always has compressed keys
 
-      const privateKey = wifToPrivateKey(pk, chain);
+      const privateKey = wifToPrivateKey(pk, selectedChain);
 
       const messagePrefix = blockchainConfig.messagePrefix;
 
@@ -220,10 +227,5 @@ function SignMessage(props: {
     </>
   );
 }
-
-SignMessage.defaultProps = {
-  openAction: undefined,
-  exitAction: undefined,
-};
 
 export default SignMessage;

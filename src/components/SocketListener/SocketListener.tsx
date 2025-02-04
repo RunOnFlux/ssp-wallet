@@ -3,11 +3,17 @@ import { useSocket } from '../../hooks/useSocket';
 import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
 
-function SocketListener(props: {
-  txSent: () => void;
-  txRejected: () => void;
+interface Props {
+  txSentProp: () => void;
+  txRejectedProp: () => void;
   ignorePopups?: boolean;
-}) {
+}
+
+function SocketListener({
+  txSentProp,
+  txRejectedProp,
+  ignorePopups = false,
+}: Props) {
   const {
     txid: socketTxid,
     clearTxid,
@@ -20,30 +26,35 @@ function SocketListener(props: {
   const [txid, setTxid] = useState('');
 
   useEffect(() => {
-    if (props.ignorePopups) {
-      return;
-    }
-    console.log(socketTxid);
     if (socketTxid) {
       setTxid(socketTxid);
       clearTxid?.();
-      props.txRejected();
+      txSentProp();
+    }
+    if (ignorePopups) {
+      return;
+    }
+    if (socketTxid) {
+      setTxid(socketTxid);
+      clearTxid?.();
     }
   }, [socketTxid]);
 
   useEffect(() => {
-    if (props.ignorePopups) {
+    if (txRejected) {
+      txRejectedProp();
+    }
+    if (ignorePopups) {
       return;
     }
     if (txRejected) {
       setOpenTxRejected(true);
       clearTxRejected?.();
-      props.txRejected();
     }
   }, [txRejected]);
 
   useEffect(() => {
-    if (props.ignorePopups) {
+    if (ignorePopups) {
       return;
     }
     if (txid) {
@@ -70,9 +81,5 @@ function SocketListener(props: {
     </>
   );
 }
-
-SocketListener.defaultProps = {
-  ignorePopups: false,
-};
 
 export default SocketListener;
