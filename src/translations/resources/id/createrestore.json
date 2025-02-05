@@ -46,9 +46,9 @@
   "weak_password_confirm": "Apakah Anda ingin mengubahnya?",
   "weak_password_confirm_ok": "Tidak, Lanjutkan dengan kata sandi yang lemah.",
   "weak_password_confirm_cancel": "Ya, saya ingin mengubahnya.",
-  "copy_wallet_seed": "Copy Mnemonic Wallet Seed Phrase",
-  "show_wallet_seed": "Show Mnemonic Wallet Seed Phrase",
-  "copy_sensitive_data_desc": "For security reasons it is highly discouraged to copy your {{sensitive_data}} to clipboard. Be sure to remove it from clipboard after use!",
-  "show_sensitive_data": "This action will reveal your {{sensitive_data}}. Please make sure of your surroundings before proceeding.",
-  "copied": "Copied to clipboard!"
+  "copy_wallet_seed": "Salin Frase Benih Dompet Mnemonik",
+  "show_wallet_seed": "Tampilkan Frasa Benih Dompet Mnemonik",
+  "copy_sensitive_data_desc": "Demi alasan keamanan, sangat tidak disarankan untuk menyalin {{sensitive_data}} Anda ke clipboard. Pastikan untuk menghapusnya dari clipboard setelah digunakan!",
+  "show_sensitive_data": "Tindakan ini akan menampilkan {{sensitive_data}} milik Anda. Harap pastikan lingkungan sekitar Anda sebelum melanjutkan.",
+  "copied": "Disalin ke papan klip!"
 }
