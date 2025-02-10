@@ -49,6 +49,12 @@
   "copy_wallet_seed": "Copy Mnemonic Wallet Seed Phrase",
   "show_wallet_seed": "Show Mnemonic Wallet Seed Phrase",
   "copy_sensitive_data_desc": "For security reasons it is highly discouraged to copy your {{sensitive_data}} to clipboard. Be sure to remove it from clipboard after use!",
+  "copy_anyone_can_read": "COYPING IS NOT SECURE! Any application and any website can read your clipboard content!",
+  "seed_phrase_split": "For security reasons, the seed phrase is split into three parts. Copy and paste the three parts together to create a backup or restore your wallet.",
   "show_sensitive_data": "This action will reveal your {{sensitive_data}}. Please make sure of your surroundings before proceeding.",
-  "copied": "Copied to clipboard!"
+  "copy_sensitive_data_split": "For security reasons, the {{sensitive_data}} is split into two parts. Copy and paste the two parts together to use it.",
+  "copy_sensitive_data": "Copy {{sensitive_data}}",
+  "copy_part_x": "Copy Part {{part}}",
+  "copied": "Copied to clipboard!",
+  "finished": "Finished!"
 }
