@@ -19,9 +19,7 @@ import {
 
 import * as sspStorage from '@storage/ssp';
 import BigNumber from 'bignumber.js';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-const MockBrowser = require('mock-browser').mocks.MockBrowser;
+import { JSDOM } from 'jsdom';
 
 const { expect, assert } = chai;
 
@@ -33,10 +31,10 @@ describe('Currency Lib', function () {
     });
 
     before(function () {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-      const mock = new MockBrowser();
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-      global.navigator = mock.getNavigator();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      const { window } = new JSDOM(`<!DOCTYPE html><p>Hello world</p>`);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      global.navigator = window.navigator;
     });
 
     it('should return data when value is valid', function () {
@@ -53,13 +51,13 @@ describe('Currency Lib', function () {
       const res = decimalPlaces();
       assert.equal(res, 2);
     });
-
-    it('should return data 4 when value is valid', async function () {
+    it('should return data 4 when value is valid', function () {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       const sspConfigStub = stub(sspStorage, 'sspConfig');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       sspConfigStub.returns({
         fiatCurrency: 'BTC',
       });
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const res = decimalPlaces();
       assert.equal(res, 4);
     });

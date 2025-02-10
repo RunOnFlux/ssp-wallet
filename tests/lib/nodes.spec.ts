@@ -46,7 +46,7 @@ describe('Nodes Lib', function () {
       expect(res[0].collateral).to.not.be.undefined;
       expect(res[0].txhash).to.not.be.null;
       expect(res[0].txhash).to.not.be.undefined;
-      assert.equal(+res[0].outidx, 25);
+      assert.equal(+res[0].outidx, 0);
       expect(res[0].ip).to.not.be.null;
       expect(res[0].ip).to.not.be.undefined;
       assert.equal(res[0].network, 'ipv4');

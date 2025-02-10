@@ -10,7 +10,6 @@ export default [
   eslintPluginPrettierRecommended,
   pluginJs.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   pluginReact.configs.flat.recommended,
   {
     files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
@@ -29,7 +28,6 @@ export default [
       },
     },
     plugins: {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       reactRefresh,
       reactHooks,
     },

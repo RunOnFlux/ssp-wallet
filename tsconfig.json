@@ -39,6 +39,7 @@
   "include": [
     "src",
     "public/scripts",
+    "tests",
   ],
   "references": [
     {
