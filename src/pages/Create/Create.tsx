@@ -10,6 +10,7 @@ import {
   Modal,
   Popover,
   Popconfirm,
+  Space,
 } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
@@ -370,6 +371,8 @@ function Create() {
     const [wspWasShown, setWSPwasShown] = useState(false);
     const [WSPbackedUp, setWSPbackedUp] = useState(false);
     const [wpCopied, setWpCopied] = useState(false);
+    const [seedPhraseCopyingVisible, setSeedPhraseCopyingVisible] =
+      useState(false);
 
     const handleCancel = () => {
       setIsModalOpen(false);
@@ -429,105 +432,181 @@ function Create() {
     }, [mnemonic, mnemonicShow]);
 
     return (
-      <Modal
-        title={t('cr:backup_wallet_seed')}
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        okText={t('common:confirm')}
-        cancelText={t('common:cancel')}
-        style={{ textAlign: 'center', top: 60, padding: 10 }}
-      >
-        <CreationSteps step={2} import={false} />
-        <p>{t('cr:wallet_seed_info')}</p>
-        <p>{t('cr:keep_seed_safe')}</p>
-        <p>
-          <b>{t('cr:seed_loose_info')}</b>
-        </p>
-        <Divider />
-        <canvas
-          ref={canvasRef}
-          width={366}
-          height={180}
-          style={{
-            border: `0.5px solid ${darkModePreference.matches ? '#fff' : '#000'}`,
-            marginLeft: '-15px',
-          }}
-        />
-        {mnemonicShow && (
-          <Button
-            type="dashed"
-            icon={<EyeFilled />}
-            onClick={() => {
-              setMnemonicShow(!mnemonicShow);
-              setWSPwasShown(true);
+      <>
+        <Modal
+          title={t('cr:backup_wallet_seed')}
+          open={isModalOpen}
+          onOk={handleOk}
+          onCancel={handleCancel}
+          okText={t('common:confirm')}
+          cancelText={t('common:cancel')}
+          style={{ textAlign: 'center', top: 60, padding: 10 }}
+        >
+          <CreationSteps step={2} import={false} />
+          <p>{t('cr:wallet_seed_info')}</p>
+          <p>{t('cr:keep_seed_safe')}</p>
+          <p>
+            <b>{t('cr:seed_loose_info')}</b>
+          </p>
+          <Divider />
+          <canvas
+            ref={canvasRef}
+            width={366}
+            height={180}
+            style={{
+              border: `0.5px solid ${darkModePreference.matches ? '#fff' : '#000'}`,
+              marginLeft: '-15px',
             }}
-            style={{ margin: 5 }}
-          >
-            {t('cr:hide_mnemonic')} {t('cr:wallet_seed_phrase')}
-          </Button>
-        )}
-        {!mnemonicShow && (
+          />
+          {mnemonicShow && (
+            <Button
+              type="dashed"
+              icon={<EyeFilled />}
+              onClick={() => {
+                setMnemonicShow(!mnemonicShow);
+                setWSPwasShown(true);
+              }}
+              style={{ margin: 5 }}
+            >
+              {t('cr:hide_mnemonic')} {t('cr:wallet_seed_phrase')}
+            </Button>
+          )}
+          {!mnemonicShow && (
+            <Popconfirm
+              title={t('cr:show_wallet_seed', {
+                sensitive_data: t('cr:wallet_seed_phrase'),
+              })}
+              description={
+                <>
+                  {t('cr:show_sensitive_data', {
+                    sensitive_data: t('cr:wallet_seed_phrase'),
+                  })}
+                </>
+              }
+              overlayStyle={{ maxWidth: 360, margin: 10 }}
+              okText={t('common:confirm')}
+              cancelText={t('common:cancel')}
+              onConfirm={() => {
+                setMnemonicShow(!mnemonicShow);
+                setWSPwasShown(true);
+              }}
+              icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+            >
+              <Button
+                type="dashed"
+                icon={<EyeInvisibleFilled />}
+                style={{ margin: 5 }}
+              >
+                {t('cr:show_mnemonic')} {t('cr:wallet_seed_phrase')}
+              </Button>
+            </Popconfirm>
+          )}
           <Popconfirm
-            title={t('cr:show_wallet_seed', {
-              sensitive_data: t('cr:wallet_seed_phrase'),
-            })}
+            title={t('cr:copy_wallet_seed')}
             description={
-              <>
-                {t('cr:show_sensitive_data', {
-                  sensitive_data: t('cr:wallet_seed_phrase'),
-                })}
-              </>
+              <Space
+                direction="vertical"
+                size={'middle'}
+                style={{ marginTop: 12, marginBottom: 12 }}
+              >
+                <span>
+                  {t('cr:copy_sensitive_data_desc', {
+                    sensitive_data: t('cr:wallet_seed_phrase'),
+                  })}
+                </span>
+                <span>{t('cr:copy_anyone_can_read')}</span>
+              </Space>
             }
             overlayStyle={{ maxWidth: 360, margin: 10 }}
             okText={t('common:confirm')}
             cancelText={t('common:cancel')}
             onConfirm={() => {
-              setMnemonicShow(!mnemonicShow);
-              setWSPwasShown(true);
+              setSeedPhraseCopyingVisible(true);
+              setWpCopied(true);
             }}
             icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
           >
-            <Button
-              type="dashed"
-              icon={<EyeInvisibleFilled />}
-              style={{ margin: 5 }}
-            >
-              {t('cr:show_mnemonic')} {t('cr:wallet_seed_phrase')}
+            <Button type="dashed" icon={<CopyOutlined />} style={{ margin: 5 }}>
+              {t('cr:copy_wallet_seed')}
             </Button>
           </Popconfirm>
-        )}
-        <Popconfirm
+          <Divider />
+          <br />
+          <Checkbox disabled={!wspWasShown && !wpCopied} onChange={onChangeWSP}>
+            {t('cr:phrase_backed_up')}
+          </Checkbox>
+          <br />
+          <br />
+        </Modal>
+        <Modal
           title={t('cr:copy_wallet_seed')}
-          description={
-            <>
-              {t('cr:copy_sensitive_data_desc', {
-                sensitive_data: t('cr:wallet_seed_phrase'),
-              })}
-            </>
-          }
-          overlayStyle={{ maxWidth: 360, margin: 10 }}
-          okText={t('common:confirm')}
-          cancelText={t('common:cancel')}
-          onConfirm={() => {
-            navigator.clipboard.writeText(new TextDecoder().decode(mnemonic));
-            displayMessage('success', t('cr:copied'));
-            setWpCopied(true);
-          }}
-          icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+          open={seedPhraseCopyingVisible}
+          onOk={() => setSeedPhraseCopyingVisible(false)}
+          style={{ textAlign: 'center', top: 60 }}
+          onCancel={() => setSeedPhraseCopyingVisible(false)}
+          footer={[
+            <Button
+              key="ok"
+              type="primary"
+              onClick={() => setSeedPhraseCopyingVisible(false)}
+            >
+              {t('cr:finished')}
+            </Button>,
+          ]}
         >
-          <Button type="dashed" icon={<CopyOutlined />} style={{ margin: 5 }}>
-            {t('cr:copy_wallet_seed')}
-          </Button>
-        </Popconfirm>
-        <Divider />
-        <br />
-        <Checkbox disabled={!wspWasShown && !wpCopied} onChange={onChangeWSP}>
-          {t('cr:phrase_backed_up')}
-        </Checkbox>
-        <br />
-        <br />
-      </Modal>
+          <h3>{t('cr:seed_phrase_split')}</h3>
+          <Space direction="vertical" size="middle">
+            <Button
+              type="dashed"
+              icon={<CopyOutlined />}
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  new TextDecoder().decode(
+                    mnemonic.slice(0, Math.round(mnemonic.length / 3)),
+                  ),
+                );
+                displayMessage('success', t('cr:copied'));
+              }}
+            >
+              {t('cr:copy_part_x', { part: 1 })}
+            </Button>
+            <Button
+              type="dashed"
+              icon={<CopyOutlined />}
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  new TextDecoder().decode(
+                    mnemonic.slice(
+                      Math.round(mnemonic.length / 3),
+                      Math.round(mnemonic.length / 3) * 2,
+                    ),
+                  ),
+                );
+                displayMessage('success', t('cr:copied'));
+              }}
+            >
+              {t('cr:copy_part_x', { part: 2 })}
+            </Button>
+            <Button
+              type="dashed"
+              icon={<CopyOutlined />}
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  new TextDecoder().decode(
+                    mnemonic.slice(
+                      Math.round(mnemonic.length / 3) * 2,
+                      mnemonic.length,
+                    ),
+                  ),
+                );
+                displayMessage('success', t('cr:copied'));
+              }}
+            >
+              {t('cr:copy_part_x', { part: 3 })}
+            </Button>
+          </Space>
+        </Modal>
+      </>
     );
   };
 

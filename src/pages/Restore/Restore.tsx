@@ -10,6 +10,7 @@ import {
   Modal,
   Popover,
   Popconfirm,
+  Space,
 } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
@@ -81,6 +82,8 @@ function Restore() {
   const [WSPbackedUp, setWSPbackedUp] = useState(false);
   const [wspWasShown, setWSPwasShown] = useState(false);
   const [wpCopied, setWpCopied] = useState(false);
+  const [seedPhraseCopyingVisible, setSeedPhraseCopyingVisible] =
+    useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
@@ -548,18 +551,24 @@ function Restore() {
         <Popconfirm
           title={t('cr:copy_wallet_seed')}
           description={
-            <>
-              {t('cr:copy_sensitive_data_desc', {
-                sensitive_data: t('cr:wallet_seed_phrase'),
-              })}
-            </>
+            <Space
+              direction="vertical"
+              size={'middle'}
+              style={{ marginTop: 12, marginBottom: 12 }}
+            >
+              <span>
+                {t('cr:copy_sensitive_data_desc', {
+                  sensitive_data: t('cr:wallet_seed_phrase'),
+                })}
+              </span>
+              <span>{t('cr:copy_anyone_can_read')}</span>
+            </Space>
           }
           overlayStyle={{ maxWidth: 360, margin: 10 }}
           okText={t('common:confirm')}
           cancelText={t('common:cancel')}
           onConfirm={() => {
-            navigator.clipboard.writeText(new TextDecoder().decode(mnemonic));
-            displayMessage('success', t('cr:copied'));
+            setSeedPhraseCopyingVisible(true);
             setWpCopied(true);
           }}
           icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
@@ -575,6 +584,74 @@ function Restore() {
         </Checkbox>
         <br />
         <br />
+      </Modal>
+      <Modal
+        title={t('cr:copy_wallet_seed')}
+        open={seedPhraseCopyingVisible}
+        onOk={() => setSeedPhraseCopyingVisible(false)}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={() => setSeedPhraseCopyingVisible(false)}
+        footer={[
+          <Button
+            key="ok"
+            type="primary"
+            onClick={() => setSeedPhraseCopyingVisible(false)}
+          >
+            {t('cr:finished')}
+          </Button>,
+        ]}
+      >
+        <h3>{t('cr:seed_phrase_split')}</h3>
+        <Space direction="vertical" size="middle">
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                new TextDecoder().decode(
+                  mnemonic.slice(0, Math.round(mnemonic.length / 3)),
+                ),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 1 })}
+          </Button>
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                new TextDecoder().decode(
+                  mnemonic.slice(
+                    Math.round(mnemonic.length / 3),
+                    Math.round(mnemonic.length / 3) * 2,
+                  ),
+                ),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 2 })}
+          </Button>
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                new TextDecoder().decode(
+                  mnemonic.slice(
+                    Math.round(mnemonic.length / 3) * 2,
+                    mnemonic.length,
+                  ),
+                ),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 3 })}
+          </Button>
+        </Space>
       </Modal>
       <PoweredByFlux />
     </>

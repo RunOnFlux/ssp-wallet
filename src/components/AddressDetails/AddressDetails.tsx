@@ -7,6 +7,7 @@ import {
   QRCode,
   Space,
   Popconfirm,
+  Tooltip,
 } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
@@ -19,6 +20,7 @@ import {
   EyeInvisibleOutlined,
   EyeTwoTone,
   ExclamationCircleFilled,
+  CopyOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
@@ -32,6 +34,7 @@ function AddressDetails(props: {
   const [redeemScriptVisible, setRedeemScriptVisible] = useState(false);
   const [witnessScriptVisible, setWitnessScriptVisible] = useState(false);
   const [privateKeyVisible, setPrivateKeyVisible] = useState(false);
+  const [privKeyCopyingVisible, setPrivKeyCopyingVisible] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   // private key, redeemScript, address
   const { open, openAction } = props;
@@ -225,11 +228,18 @@ function AddressDetails(props: {
                 }),
               })}
               description={
-                <>
-                  {t('cr:show_sensitive_data', {
-                    sensitive_data: t('home:addressDetails.wallet_priv_key'),
-                  })}
-                </>
+                <Space
+                  direction="vertical"
+                  size={'middle'}
+                  style={{ marginTop: 12, marginBottom: 12 }}
+                >
+                  <span>
+                    {t('cr:show_sensitive_data', {
+                      sensitive_data: t('home:addressDetails.wallet_priv_key'),
+                    })}
+                  </span>
+                  <span>{t('cr:copy_anyone_can_read')}</span>
+                </Space>
               }
               overlayStyle={{ maxWidth: 360, margin: 10 }}
               okText={t('common:confirm')}
@@ -250,11 +260,76 @@ function AddressDetails(props: {
           </blockquote>
         </Paragraph>
         <Space direction="vertical" size="small">
-          <Paragraph copyable={{ text: privKey }} className="copyableAddress">
+          <Paragraph className="copyableAddress">
             <Text>
-              {privateKeyVisible ? privKey : '*** *** *** *** *** ***'}
+              {privateKeyVisible ? privKey : '*** *** *** *** *** ***'}{' '}
+              <Tooltip title={'Copy'}>
+                <Button
+                  type="link"
+                  size="small"
+                  color="primary"
+                  className="copyableIcon"
+                  icon={<CopyOutlined />}
+                  onClick={() => {
+                    setPrivKeyCopyingVisible(true);
+                  }}
+                ></Button>
+              </Tooltip>
             </Text>
           </Paragraph>
+        </Space>
+      </Modal>
+      <Modal
+        title={t('cr:copy_sensitive_data', {
+          sensitive_data: t('home:addressDetails.wallet_priv_key'),
+        })}
+        open={privKeyCopyingVisible}
+        onOk={() => setPrivKeyCopyingVisible(false)}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={() => setPrivKeyCopyingVisible(false)}
+        footer={[
+          <Button
+            key="ok"
+            type="primary"
+            onClick={() => setPrivKeyCopyingVisible(false)}
+          >
+            {t('cr:finished')}
+          </Button>,
+        ]}
+      >
+        <h3>
+          {t('cr:copy_sensitive_data_split', {
+            sensitive_data: t('home:addressDetails.wallet_priv_key'),
+          })}
+        </h3>
+        <Space direction="vertical" size="middle">
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                privKey.substring(0, Math.round(privKey.length / 2)),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 1 })}
+          </Button>
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                privKey.substring(
+                  Math.round(privKey.length / 2),
+                  privKey.length,
+                ),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 2 })}
+          </Button>
         </Space>
       </Modal>
     </>

@@ -7,6 +7,7 @@ import {
   Space,
   QRCode,
   Popconfirm,
+  Tooltip,
 } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
@@ -47,6 +48,9 @@ function SSPWalletDetails(props: {
     useState(false);
   const [sspSyncKeyVisible, setSspSyncKeyVisible] = useState(false);
   const [seedPhraseVisible, setSeedPhraseVisible] = useState(false);
+  const [seedPhraseCopyingVisible, setSeedPhraseCopyingVisible] =
+    useState(false);
+  const [xprivCopyingVisible, setXprivCopyingVisible] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   // SSP is seedPhrase, xpub, xpriv
   const { open, openAction } = props;
@@ -283,16 +287,23 @@ function SSPWalletDetails(props: {
                 }),
               })}
               description={
-                <>
-                  {t('cr:show_sensitive_data', {
-                    sensitive_data: t(
-                      'home:sspWalletDetails.chain_extended_priv',
-                      {
-                        chain: blockchainConfig.name,
-                      },
-                    ),
-                  })}
-                </>
+                <Space
+                  direction="vertical"
+                  size={'middle'}
+                  style={{ marginTop: 12, marginBottom: 12 }}
+                >
+                  <span>
+                    {t('cr:show_sensitive_data', {
+                      sensitive_data: t(
+                        'home:sspWalletDetails.chain_extended_priv',
+                        {
+                          chain: blockchainConfig.name,
+                        },
+                      ),
+                    })}
+                  </span>
+                  <span>{t('cr:copy_anyone_can_read')}</span>
+                </Space>
               }
               overlayStyle={{ maxWidth: 360, margin: 10 }}
               okText={t('common:confirm')}
@@ -318,9 +329,21 @@ function SSPWalletDetails(props: {
           </blockquote>
         </Paragraph>
         <Space direction="vertical" size="small">
-          <Paragraph copyable={{ text: xpriv }} className="copyableAddress">
+          <Paragraph className="copyableAddress">
             <Text>
-              {extendedPrivateKeyVisible ? xpriv : '*** *** *** *** *** ***'}
+              {extendedPrivateKeyVisible ? xpriv : '*** *** *** *** *** ***'}{' '}
+              <Tooltip title={'Copy'}>
+                <Button
+                  type="link"
+                  size="small"
+                  color="primary"
+                  className="copyableIcon"
+                  icon={<CopyOutlined />}
+                  onClick={() => {
+                    setXprivCopyingVisible(true);
+                  }}
+                ></Button>
+              </Tooltip>
             </Text>
           </Paragraph>
         </Space>
@@ -408,20 +431,24 @@ function SSPWalletDetails(props: {
               data: t('home:sspWalletDetails.ssp_mnemonic'),
             })}
             description={
-              <>
-                {t('cr:copy_sensitive_data_desc', {
-                  sensitive_data: t('cr:wallet_seed_phrase'),
-                })}
-              </>
+              <Space
+                direction="vertical"
+                size={'middle'}
+                style={{ marginTop: 12, marginBottom: 12 }}
+              >
+                <span>
+                  {t('cr:copy_sensitive_data_desc', {
+                    sensitive_data: t('cr:wallet_seed_phrase'),
+                  })}
+                </span>
+                <span>{t('cr:copy_anyone_can_read')}</span>
+              </Space>
             }
             overlayStyle={{ maxWidth: 360, margin: 10 }}
             okText={t('common:confirm')}
             cancelText={t('common:cancel')}
             onConfirm={() => {
-              navigator.clipboard.writeText(
-                new TextDecoder().decode(seedPhrase),
-              );
-              displayMessage('success', t('cr:copied'));
+              setSeedPhraseCopyingVisible(true);
             }}
             icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
           >
@@ -432,6 +459,128 @@ function SSPWalletDetails(props: {
             </Button>
           </Popconfirm>
           <br />
+        </Space>
+      </Modal>
+      <Modal
+        title={t('cr:copy_wallet_seed')}
+        open={seedPhraseCopyingVisible}
+        onOk={() => setSeedPhraseCopyingVisible(false)}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={() => setSeedPhraseCopyingVisible(false)}
+        footer={[
+          <Button
+            key="ok"
+            type="primary"
+            onClick={() => setSeedPhraseCopyingVisible(false)}
+          >
+            {t('cr:finished')}
+          </Button>,
+        ]}
+      >
+        <h3>{t('cr:seed_phrase_split')}</h3>
+        <Space direction="vertical" size="middle">
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                new TextDecoder().decode(
+                  seedPhrase.slice(0, Math.round(seedPhrase.length / 3)),
+                ),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 1 })}
+          </Button>
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                new TextDecoder().decode(
+                  seedPhrase.slice(
+                    Math.round(seedPhrase.length / 3),
+                    Math.round(seedPhrase.length / 3) * 2,
+                  ),
+                ),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 2 })}
+          </Button>
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                new TextDecoder().decode(
+                  seedPhrase.slice(
+                    Math.round(seedPhrase.length / 3) * 2,
+                    seedPhrase.length,
+                  ),
+                ),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 3 })}
+          </Button>
+        </Space>
+      </Modal>
+      <Modal
+        title={t('cr:copy_sensitive_data', {
+          sensitive_data: t('home:sspWalletDetails.chain_extended_priv', {
+            chain: blockchainConfig.name,
+          }),
+        })}
+        open={xprivCopyingVisible}
+        onOk={() => setXprivCopyingVisible(false)}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={() => setXprivCopyingVisible(false)}
+        footer={[
+          <Button
+            key="ok"
+            type="primary"
+            onClick={() => setXprivCopyingVisible(false)}
+          >
+            {t('cr:finished')}
+          </Button>,
+        ]}
+      >
+        <h3>
+          {t('cr:copy_sensitive_data_split', {
+            sensitive_data: t('home:sspWalletDetails.chain_extended_priv', {
+              chain: blockchainConfig.name,
+            }),
+          })}
+        </h3>
+        <Space direction="vertical" size="middle">
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                xpriv.substring(0, Math.round(xpriv.length / 2)),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 1 })}
+          </Button>
+          <Button
+            type="dashed"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(
+                xpriv.substring(Math.round(xpriv.length / 2), xpriv.length),
+              );
+              displayMessage('success', t('cr:copied'));
+            }}
+          >
+            {t('cr:copy_part_x', { part: 2 })}
+          </Button>
         </Space>
       </Modal>
     </>
