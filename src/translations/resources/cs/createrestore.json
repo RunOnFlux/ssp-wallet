@@ -49,7 +49,7 @@
   "copy_wallet_seed": "Zkopírovat Mnemonickou Seed Frázi Peněženky",
   "show_wallet_seed": "Ukázat Mnemonickou Seed Frázi Peněženky",
   "copy_sensitive_data_desc": "Z bezpečnostních důvodů se důrazně nedoporučuje zkopírovat vaši {{sensitive_data}} do schránky. Kterýkoli program či webová stránka může vaši schránku přečíst! Ujistěte se, že ji ze schránky odstraníte ihned po použití!",
-  "copy_anyone_can_read": "COYPING IS NOT SECURE! Any application and any website can read your clipboard content!",
+  "copy_anyone_can_read": "COPYING IS NOT SECURE! Any application and any website can read your clipboard content!",
   "seed_phrase_split": "For security reasons, the seed phrase is split into three parts. Copy and paste the three parts together to create a backup or restore your wallet.",
   "show_sensitive_data": "Tato akce zobrazí vaši {{sensitive_data}}. Než budete pokračovat, ujistěte se, že je to bezpečné.",
   "copy_sensitive_data_split": "For security reasons, the {{sensitive_data}} is split into two parts. Copy and paste the two parts together to use it.",
