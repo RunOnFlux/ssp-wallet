@@ -49,12 +49,12 @@
   "copy_wallet_seed": "Salin Frase Benih Dompet Mnemonik",
   "show_wallet_seed": "Tampilkan Frasa Benih Dompet Mnemonik",
   "copy_sensitive_data_desc": "Demi alasan keamanan, sangat tidak disarankan untuk menyalin {{sensitive_data}} Anda ke clipboard. Pastikan untuk menghapusnya dari clipboard setelah digunakan!",
-  "copy_anyone_can_read": "COYPING IS NOT SECURE! Any application and any website can read your clipboard content!",
-  "seed_phrase_split": "For security reasons, the seed phrase is split into three parts. Copy and paste the three parts together to create a backup or restore your wallet.",
+  "copy_anyone_can_read": "PENYALINAN TIDAK AMAN! Aplikasi apa pun dan situs web apa pun dapat membaca konten yang ada di dalam papan klip Anda!",
+  "seed_phrase_split": "Untuk alasan keamanan, frasa awal dibagi menjadi tiga bagian terpisah. Salin dan tempel ketiga bagian tersebut untuk membuat cadangan atau memulihkan dompet milik Anda.",
   "show_sensitive_data": "Tindakan ini akan menampilkan {{sensitive_data}} milik Anda. Harap pastikan lingkungan sekitar Anda sebelum melanjutkan.",
-  "copy_sensitive_data_split": "For security reasons, the {{sensitive_data}} is split into two parts. Copy and paste the two parts together to use it.",
-  "copy_sensitive_data": "Copy {{sensitive_data}}",
-  "copy_part_x": "Copy Part {{part}}",
+  "copy_sensitive_data_split": "Demi alasan keamanan, {{sensitive_data}} dibagi menjadi dua bagian terpisah. Salin dan tempel kedua bagian tersebut untuk menggunakannya.",
+  "copy_sensitive_data": "Salin {{sensitive_data}}",
+  "copy_part_x": "Salin Bagian {{part}}",
   "copied": "Disalin ke papan klip!",
-  "finished": "Finished!"
+  "finished": "Selesai!"
 }
