@@ -74,7 +74,7 @@
     "@typescript-eslint/parser": "8.23.0",
     "@vitejs/plugin-react-swc": "3.8.0",
     "chai": "4.5.0",
-    "eslint": "9.20.0",
+    "eslint": "9.20.1",
     "eslint-config-prettier": "10.0.1",
     "eslint-plugin-prettier": "5.2.3",
     "eslint-plugin-react": "7.37.4",
