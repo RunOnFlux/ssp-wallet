@@ -23,3 +23,5 @@ export { default as bg } from './bg/_index'; // Bulgarian
 export { default as sl } from './sl/_index'; // Slovenian
 export { default as pt } from './pt/_index'; // Portuguese
 export { default as uk } from './uk/_index'; // Ukrainian
+export { default as ms } from './ms/_index'; // Malay
+export { default as th } from './th/_index'; // Thai

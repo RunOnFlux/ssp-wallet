@@ -48,6 +48,7 @@ function LanguageSelector(props: { label: boolean }) {
         options={[
           { value: 'en', label: 'en', desc: 'English' },
           { value: 'id', label: 'id', desc: 'Bahasa Indonesia' },
+          { value: 'ms', label: 'ms', desc: 'Bahasa Melayu' },
           { value: 'bg', label: 'bg', desc: 'Български' },
           { value: 'bn', label: 'bn', desc: 'বাংলা' },
           { value: 'zh', label: 'zh', desc: '简体中文' },
@@ -70,6 +71,7 @@ function LanguageSelector(props: { label: boolean }) {
           { value: 'ru', label: 'ru', desc: 'Русский' },
           { value: 'uk', label: 'uk', desc: 'Українська' },
           { value: 'ta', label: 'ta', desc: 'தமிழ்' },
+          { value: 'th', label: 'th', desc: 'ไทย' },
           { value: 'vi', label: 'vi', desc: 'Tiếng Việt' },
           ...(Object.keys(resources).includes(navigator.language.split('-')[0])
             ? [

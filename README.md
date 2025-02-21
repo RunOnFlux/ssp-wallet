@@ -97,7 +97,7 @@ SSP Wallet is fully open source, ensuring transparency and community trust. Revi
 ## Documentation
 
 SSP Wallet has a comprehensive documentation available at with many guides, FAQs, API references and more:  
-[SSP Wallet Documentation](https://sspwallet.gitbook.io/docs/)
+[SSP Wallet Documentation](https://docs.sspwallet.io/)
 
 ---
 

@@ -2,7 +2,7 @@
 
 We’re excited that you’re considering contributing to SSP Wallet! Your contributions are vital for making the wallet more secure, user-friendly, and powerful. Whether you’re reporting bugs, suggesting new features, or improving the codebase, we value your efforts.
 
-For detailed technical information and guidelines, refer to the [SSP Wallet Documentation](https://sspwallet.gitbook.io/docs).
+For detailed technical information and guidelines, refer to the [SSP Wallet Documentation](https://docs.sspwallet.io).
 
 ---
 
@@ -25,7 +25,7 @@ If you discover a bug:
 Have an idea to improve SSP Wallet? Open a feature request in the [issues section](https://github.com/RunOnFlux/ssp-wallet/issues). Be as detailed as possible and include the problem it solves.
 
 ### 3. Improve Documentation
-Help us make SSP Wallet more accessible by contributing to guides, FAQs, or translations via [Crowdin](https://crowdin.com/project/sspwallet). For detailed technical documentation, visit the [SSP Wallet Docs](https://sspwallet.gitbook.io/docs).
+Help us make SSP Wallet more accessible by contributing to guides, FAQs, or translations via [Crowdin](https://crowdin.com/project/sspwallet). For detailed technical documentation, visit the [SSP Wallet Docs](https://docs.sspwallet.io).
 
 ### 4. Submit Code Contributions
 Help us build new features, fix bugs, or improve existing code by submitting a pull request (PR).
@@ -53,7 +53,7 @@ Help us build new features, fix bugs, or improve existing code by submitting a p
    yarn dev
    ```
 
-Refer to the [Documentation](https://sspwallet.gitbook.io/docs/) for more details.
+Refer to the [Documentation](https://docs.sspwallet.io/) for more details.
 
 ---
 
@@ -124,7 +124,7 @@ Follow these steps to submit a PR:
 
 ## Resources
 
-- [SSP Wallet Documentation](https://sspwallet.gitbook.io/docs)  
+- [SSP Wallet Documentation](https://docs.sspwallet.io)  
 - [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)  
 - [GitHub Help](https://help.github.com)  
 
@@ -134,7 +134,7 @@ Follow these steps to submit a PR:
 
 If you have questions or run into issues:
 - Open an issue on GitHub.
-- Refer to the [SSP Wallet Documentation](https://sspwallet.gitbook.io/docs).  
+- Refer to the [SSP Wallet Documentation](https://docs.sspwallet.io).  
 - Join the community via [SSP Wallet Discord](https://discord.gg/runonflux).
 
 We look forward to your contributions. Together, let’s make SSP Wallet a secure, simple, and powerful tool for everyone!
