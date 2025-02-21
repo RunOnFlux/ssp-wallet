@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่",
+  "err_invalid_pw_2": "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่",
+  "err_lx": "รหัส {{code}}: ข้อมูลกระเป๋าหาย กรุณากู้คืนกระเป๋าของคุณ",
+  "welcome_back": "ยินดีต้อนรับกลับ!",
+  "to_dec_cloud": "ไปยังคลาวด์ที่กระจายอำนาจของคุณ",
+  "unlock_with_pw": "ปลดล็อกด้วยรหัสผ่าน",
+  "enter_pw": "กรอกรหัสผ่าน",
+  "unlock_wallet": "ปลดล็อกกระเป๋า",
+  "forgot_pw": "ลืมรหัสผ่าน?",
+  "restore": "กู้คืน"
 }

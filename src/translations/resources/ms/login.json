@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Kata laluan tidak sah. Sila cuba lagi.",
+  "err_invalid_pw_2": "Kata laluan tidak sah. Sila cuba lagi.",
+  "err_lx": "Kod {{code}}: Data dompet hilang. Sila pulihkan dompet anda.",
+  "welcome_back": "Selamat datang kembali!",
+  "to_dec_cloud": "Ke Awan Terdesentralisasi anda",
+  "unlock_with_pw": "Buka kunci dengan Kata Laluan",
+  "enter_pw": "Masukkan Kata Laluan",
+  "unlock_wallet": "Buka Kunci Dompet",
+  "forgot_pw": "Lupa Kata Laluan?",
+  "restore": "Pulihkan"
 }
