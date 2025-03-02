@@ -62,12 +62,13 @@ function PaymentRequest(props: {
   amount: string;
   address: string;
   message: string;
+  contract: string;
   chain: keyof cryptos;
 }) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['home', 'common']);
-  const { open, openAction, address, chain, amount } = props;
+  const { open, openAction, address, chain, amount, contract } = props;
   const blockchainConfig = blockchains[chain];
   const { identityChain } = useAppSelector((state) => state.sspState);
   const [chainToSwitch, setChainToSwitch] = useState<keyof cryptos | ''>('');
@@ -359,6 +360,7 @@ function PaymentRequest(props: {
       receiver: address,
       amount: new BigNumber(amount).toFixed(),
       message: props.message,
+      contract: contract,
       paymentAction: true,
     };
     if (blockchainConfig.chainType === 'evm') {
@@ -430,7 +432,20 @@ function PaymentRequest(props: {
                 <Text strong>{blockchainConfig?.name}</Text>{' '}
                 {t('home:payment_request.pay_for')}{' '}
                 <Text strong>
-                  {amount} {blockchainConfig?.symbol}
+                  {amount}{' '}
+                  {contract
+                    ? blockchainConfig?.tokens?.find(
+                        (t) => t.contract === contract,
+                      )?.symbol
+                    : blockchainConfig?.symbol}
+                  {contract && (
+                    <>
+                      {' '}
+                      {t('home:payment_request.on_chain', {
+                        chain: blockchainConfig?.name,
+                      })}
+                    </>
+                  )}
                 </Text>{' '}
                 {t('home:payment_request.to')}
                 <Text strong> {address} </Text>

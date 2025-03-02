@@ -26,6 +26,7 @@ function SspConnect() {
     chain: sspConnectChain,
     amount: sspConnectAmount,
     type: sspConnectType,
+    contract: sspConnectContract,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common']);
@@ -35,6 +36,7 @@ function SspConnect() {
   const [message, setMessage] = useState('');
   const [chain, setChain] = useState('');
   const [amount, setAmount] = useState('');
+  const [contract, setContract] = useState('');
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -43,6 +45,7 @@ function SspConnect() {
       setMessage(sspConnectMessage);
       setChain(sspConnectChain);
       setAmount(sspConnectAmount);
+      setContract(sspConnectContract);
       if (
         sspConnectType === 'sign_message' ||
         sspConnectType === 'sspwid_sign_message'
@@ -123,6 +126,7 @@ function SspConnect() {
         address={address}
         message={message}
         amount={amount}
+        contract={contract}
         chain={chain as keyof cryptos}
       />
     </>
