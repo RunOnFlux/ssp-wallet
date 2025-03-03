@@ -171,6 +171,33 @@ export const SspConnectProvider = ({
           }
         } else if (request.data.method === 'pay') {
           if (blockchains[request.data.params.chain]) {
+            // if the chain has tokens, set the contract
+            if (blockchains[request.data.params.chain].tokens) {
+              if (request.data.params.contract) {
+                // find if the contract is in the tokens array
+                const token = blockchains[
+                  request.data.params.chain
+                ].tokens.find(
+                  (t) => t.contract === request.data.params.contract,
+                );
+                if (!token) {
+                  console.log(
+                    'Invalid contract' + request.data.params.contract,
+                  );
+                  void chrome.runtime.sendMessage({
+                    origin: 'ssp',
+                    data: {
+                      status: t('common:error'),
+                      result:
+                        t('common:request_rejected') +
+                        ': ' +
+                        t('home:sspConnect.unsupported_contract'),
+                    },
+                  });
+                  return;
+                }
+              }
+            }
             setChain(request.data.params.chain || identityChain);
             // default to btc
             setAmount(request.data.params.amount || '');

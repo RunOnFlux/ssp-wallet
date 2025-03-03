@@ -235,7 +235,8 @@
   "sspConnect": {
     "invalid_chain": "Invalid chain.",
     "invalid_method": "Invalid method.",
-    "invalid_request": "Invalid or malformed request."
+    "invalid_request": "Invalid or malformed request.",
+    "unsupported_contract": "Unsupported contract. Import token contract first."
   },
   "fusion": {
     "pa_reward": "Parallel Assets Reward",
