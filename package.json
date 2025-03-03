@@ -86,7 +86,7 @@
     "mocha": "10.8.2",
     "node-mocks-http": "1.16.2",
     "nyc": "17.1.0",
-    "prettier": "3.5.1",
+    "prettier": "3.5.3",
     "sinon": "19.0.2",
     "ts-mocha": "10.0.0",
     "tsconfig-paths": "4.2.0",
