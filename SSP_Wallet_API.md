@@ -159,30 +159,3 @@ window.ssp.request('user_addresses', {
   console.log(response);
 });
 ```
-
-#### 7. User Address Balance
-
-- **Method:** `'user_address_balance'`
-- **Description:** Requests SSP to get the balance of a given address for a given chain.
-
-- **Parameters:**
-  - `address` (string): Address.
-  - `chain` (string): Chain ID as SSP identifier.
-  - `contract?` (string): For networks that support tokens, the token contract to send from, not needed for ETH itself (e.g., `'0xdac17f958d2ee523a2206206994597c13d831ec7'` to send `'USDT'`).
-
-- **Response:**
-  - `status` (string): Indicates success or error.
-  - `result?` (string): Explanation of error (if any).
-  - `data?` (string): Explanation of success (if any).
-  - `balance?` (string): Balance of the address in UNITs as a string.
-
-#### Example:
-```javascript
-window.ssp.request('user_address_balance', {
-  chain: 'eth',
-  address: '0x342c34702929849b6deaa47496d211cbe4167fa5',
-  contract: '0xdac17f958d2ee523a2206206994597c13d831ec7d'
-}).then(response => {
-  console.log(response);
-});
-```

@@ -3,6 +3,8 @@ import { useSspConnect } from '../../hooks/useSspConnect';
 import SignMessage from '../../components/SignMessage/SignMessage';
 import PaymentRequest from '../../components/PaymentRequest/PaymentRequest';
 import ChainsInfo from '../../components/ChainsInfo/ChainsInfo';
+import TokensInfo from '../../components/TokensInfo/TokensInfo';
+import AddressesInfo from '../../components/AddressesInfo/AddressesInfo';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
 
@@ -40,6 +42,8 @@ function SspConnect() {
   const [contract, setContract] = useState('');
   const [openChainsInfo, setOpenChainsInfo] = useState(false);
   const [userOnlyChains, setUserOnlyChains] = useState(false);
+  const [openTokensInfo, setOpenTokensInfo] = useState(false);
+  const [openAddressesInfo, setOpenAddressesInfo] = useState(false);
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -67,6 +71,12 @@ function SspConnect() {
         // show poup that someone is asking to get all chains information and what information is being given
         setUserOnlyChains(true);
         setOpenChainsInfo(true);
+      } else if (sspConnectType === 'chain_tokens') {
+        // show poup that someone is asking to get all tokens for a chain
+        setOpenTokensInfo(true);
+      } else if (sspConnectType === 'user_addresses') {
+        // show poup that someone is asking to get all addresses for a chain
+        setOpenAddressesInfo(true);
       }
       console.log('sspConnectType');
       console.log(sspConnectType);
@@ -74,7 +84,7 @@ function SspConnect() {
     }
   }, [sspConnectType]);
 
-  const signMessageAction = (data: signMessageData | null) => {
+  const generalAction = (data: signMessageData | null) => {
     if (chrome?.runtime?.sendMessage) {
       // we do not use sendResponse, instead we are sending new message
       if (!data) {
@@ -96,6 +106,9 @@ function SspConnect() {
       console.log('no chrome.runtime.sendMessage');
     }
     setOpenSignMessage(false);
+    setOpenChainsInfo(false);
+    setOpenTokensInfo(false);
+    setOpenAddressesInfo(false);
   };
   const payRequestAction = (data: paymentData | null | 'continue') => {
     console.log(data);
@@ -124,34 +137,11 @@ function SspConnect() {
       console.log('no chrome.runtime.sendMessage');
     }
   };
-  const chainsInfoAction = (data: signMessageData | null) => {
-    if (chrome?.runtime?.sendMessage) {
-      // we do not use sendResponse, instead we are sending new message
-      if (!data) {
-        // reject message
-        void chrome.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: t('common:error'),
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void chrome.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    } else {
-      console.log('no chrome.runtime.sendMessage');
-    }
-    setOpenChainsInfo(false);
-  };
   return (
     <>
       <SignMessage
         open={openSignMessage}
-        openAction={signMessageAction}
+        openAction={generalAction}
         address={address}
         message={message}
         chain={chain as keyof cryptos}
@@ -167,8 +157,18 @@ function SspConnect() {
       />
       <ChainsInfo
         open={openChainsInfo}
-        openAction={chainsInfoAction}
+        openAction={generalAction}
         userOnly={userOnlyChains}
+      />
+      <TokensInfo
+        open={openTokensInfo}
+        openAction={generalAction}
+        chain={chain as keyof cryptos}
+      />
+      <AddressesInfo
+        open={openAddressesInfo}
+        openAction={generalAction}
+        chain={chain as keyof cryptos}
       />
     </>
   );

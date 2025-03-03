@@ -15,7 +15,7 @@ function AddressContainer() {
         className="copyableAddress"
       >
         <Text>
-          {wallets[walletInUse].address.substring(0, 7)}...
+          {wallets[walletInUse].address.substring(0, 8)}...
           {wallets[walletInUse].address.substring(
             wallets[walletInUse].address.length - 6,
           )}

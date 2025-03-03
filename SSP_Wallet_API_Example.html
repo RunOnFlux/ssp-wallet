@@ -30,7 +30,8 @@
     <button id="button4">Test paying with USDT on ETH chain</button>
     <button id="button5">Test obtaining all supported chains information</button>
     <button id="button6">Test obtaining user synced chains information</button>
-
+    <button id="button7">Test obtaining tokens information for ETH chain</button>
+    <button id="button8">Test obtaining addresses information for BTC chain</button>
     <script>
       // Event listeners for buttons
       document.getElementById('button1').addEventListener('click', () =>
@@ -87,6 +88,20 @@
       document.getElementById('button6').addEventListener('click', () =>
         window.ssp
           .request('user_chains_info')
+          .then((response) => {
+            console.log(response);
+          }),
+      );
+      document.getElementById('button7').addEventListener('click', () =>
+        window.ssp
+          .request('chain_tokens', { chain: 'eth' })
+          .then((response) => {
+            console.log(response);
+          }),
+      );
+      document.getElementById('button8').addEventListener('click', () =>
+        window.ssp
+          .request('user_addresses', { chain: 'btc' })
           .then((response) => {
             console.log(response);
           }),

@@ -228,6 +228,16 @@ export const SspConnectProvider = ({
           console.log(request.data.method);
           // show dialog asking for approval to get information about all integarted chains in ssp
           setType(request.data.method);
+        } else if (request.data.method === 'chain_tokens') {
+          console.log(request.data.method);
+          // show dialog asking for approval to get information about all tokens for a given chain
+          setType(request.data.method);
+          setChain(request.data.params.chain || '');
+        } else if (request.data.method === 'user_addresses') {
+          console.log(request.data.method);
+          // show dialog asking for approval to get the list of addresses for a given chain
+          setType(request.data.method);
+          setChain(request.data.params.chain || '');
         } else {
           console.log('Invalid method' + request.data.method);
           void chrome.runtime.sendMessage({

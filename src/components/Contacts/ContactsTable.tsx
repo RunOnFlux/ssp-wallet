@@ -86,7 +86,7 @@ function ContactsTable() {
     if (name.length > 16)
       return (
         <>
-          {name.substring(0, 7)}...{name.substring(name.length - 6) || '---'}
+          {name.substring(0, 8)}...{name.substring(name.length - 6) || '---'}
         </>
       );
 
