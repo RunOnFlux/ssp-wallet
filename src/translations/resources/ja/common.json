@@ -34,11 +34,16 @@
   "success": "成功",
   "error": "エラー",
   "request_rejected": "リクエストが拒否されました",
+  "request_approved": "Request Approved",
   "name": "名前",
   "address": "アドレス",
   "activity": "アクティビティ",
   "nodes": "ノード",
   "tokens": "トークン",
   "add_custom_token": "カスタムトークンを追加",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "approve": "Approve",
+  "reject": "Reject",
+  "approve_request": "Approve Request",
+  "reject_request": "Reject Request"
 }
