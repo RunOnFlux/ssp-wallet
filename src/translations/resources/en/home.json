@@ -230,13 +230,20 @@
     "sign_message_info": "Sign message with your {{chainName}} address:",
     "sign": "Sign",
     "message": "Message",
-    "signature": "Signature"
+    "signature": "Signature",
+    "err_sign_message": "Error signing message."
   },
   "sspConnect": {
     "invalid_chain": "Invalid chain.",
     "invalid_method": "Invalid method.",
     "invalid_request": "Invalid or malformed request.",
     "unsupported_contract": "Unsupported contract. Import token contract first."
+  },
+  "chainsInfo": {
+    "chain_requests": "Chains Information Request",
+    "chain_requests_info": "A request to get information about all integrated chains in SSP was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. No personal data is shared.",
+    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronised was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
+    "chain_requests_info_error": "Error getting chains information."
   },
   "fusion": {
     "pa_reward": "Parallel Assets Reward",

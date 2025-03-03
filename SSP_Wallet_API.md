@@ -79,7 +79,7 @@ window.ssp.request('sspwid_sign_message', {
     - `name` (string): Chain name.
     - `symbol` (string): Chain symbol.
     - `decimals` (number): Chain decimals.
-    - `chainid?` (string): Chain ID (for EVM chains) of the chain.
+    - `chainId?` (string): Chain ID (for EVM chains) of the chain.
 
 #### Example:
 ```javascript
@@ -128,7 +128,7 @@ window.ssp.request('chain_tokens', {
     - `name` (string): Chain name.
     - `symbol` (string): Chain symbol.
     - `decimals` (number): Chain decimals.
-    - `chainid?` (string): Chain ID (for EVM chains) of the chain.
+    - `chainId?` (string): Chain ID (for EVM chains) of the chain.
 
 #### Example:
 ```javascript
@@ -181,7 +181,7 @@ window.ssp.request('user_addresses', {
 window.ssp.request('user_address_balance', {
   chain: 'eth',
   address: '0x342c34702929849b6deaa47496d211cbe4167fa5',
-  contract: '0xdac17f958d2ee523a2206206994597c13d831ec7'
+  contract: '0xdac17f958d2ee523a2206206994597c13d831ec7d'
 }).then(response => {
   console.log(response);
 });

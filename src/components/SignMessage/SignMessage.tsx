@@ -106,7 +106,7 @@ function SignMessage({
       if (openAction) {
         openAction({
           status: t('common:error'),
-          data: 'Error signing message.',
+          data: t('home:signMessage.err_sign_message'),
         });
       }
     }

@@ -221,9 +221,13 @@ export const SspConnectProvider = ({
               },
             });
           }
-        } else if (request.data.method === 'get_ssp_chains_info') {
+        } else if (
+          request.data.method === 'chains_info' ||
+          request.data.method === 'user_chains_info'
+        ) {
+          console.log(request.data.method);
           // show dialog asking for approval to get information about all integarted chains in ssp
-          // for now we just responde with the success data
+          setType(request.data.method);
         } else {
           console.log('Invalid method' + request.data.method);
           void chrome.runtime.sendMessage({

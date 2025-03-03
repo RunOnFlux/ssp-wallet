@@ -28,6 +28,8 @@
     <button id="button2">Test paying with Flux</button>
     <button id="button3">Test paying with ETH</button>
     <button id="button4">Test paying with USDT on ETH chain</button>
+    <button id="button5">Test obtaining all supported chains information</button>
+    <button id="button6">Test obtaining user synced chains information</button>
 
     <script>
       // Event listeners for buttons
@@ -71,6 +73,20 @@
             chain: 'eth',
             contract: '0xdac17f958d2ee523a2206206994597c13d831ec7',
           })
+          .then((response) => {
+            console.log(response);
+          }),
+      );
+      document.getElementById('button5').addEventListener('click', () =>
+        window.ssp
+          .request('chains_info')
+          .then((response) => {
+            console.log(response);
+          }),
+      );
+      document.getElementById('button6').addEventListener('click', () =>
+        window.ssp
+          .request('user_chains_info')
           .then((response) => {
             console.log(response);
           }),
