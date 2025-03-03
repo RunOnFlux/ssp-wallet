@@ -322,6 +322,7 @@ const sepolia = {
   },
   scriptType: 'p2sh', // not specified, use default
   chainType: 'evm',
+  chainId: '11155111',
   backend: 'alchemy',
   accountSalt: 'aasalt', // ssp uses this salt for smart accounts
   factorySalt: 'aafactorysalt', // factory uses this salt
@@ -350,6 +351,7 @@ const eth = {
   },
   scriptType: 'p2sh', // not specified, use default
   chainType: 'evm',
+  chainId: '1',
   backend: 'alchemy',
   accountSalt: 'aasalt', // ssp uses this salt for smart accounts
   factorySalt: 'aafactorysalt', // factory uses this salt

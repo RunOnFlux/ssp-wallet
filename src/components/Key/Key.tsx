@@ -243,7 +243,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
           setTimeout(() => {
             setIsModalKeyOpen(false);
             synchronised(true);
-          }, 10);
+          }, 50);
         })();
       } else {
         // tell parent of failiure to logout

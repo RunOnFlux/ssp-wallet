@@ -25,6 +25,7 @@ import {
   setBalance,
   setUnconfirmedBalance,
   setTokenBalances,
+  setActivatedTokens,
 } from '../../store';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
@@ -85,6 +86,7 @@ interface sendForm {
   fee: string;
   message: string;
   utxos: utxo[]; // RBF mandatory utxos - use all of them or one?
+  contract: string;
   paymentAction?: boolean;
 }
 
@@ -282,6 +284,27 @@ function SendEVM() {
     activatedTokens.push(blockchainConfig.tokens[0].contract);
     // tokens with imported tokens
     const allTokens = blockchainConfig.tokens.concat(importedTokens ?? []);
+    if (state.contract) {
+      // find if the contract exists in the tokens array
+      const token = allTokens.find(
+        (token) => token.contract === state.contract,
+      );
+      // if the token is not in our activatedTokens and it is a token supported, add it to tokens array
+      if (token && !activatedTokens.includes(state.contract)) {
+        activatedTokens.push(state.contract);
+        // save to localforage
+        const tokensToSave = activatedTokens.filter(
+          (token) => token !== blockchainConfig.tokens[0].contract,
+        );
+        setActivatedTokens(activeChain, walletInUse, tokensToSave || []);
+        void (async function () {
+          await localForage.setItem(
+            `activated-tokens-${activeChain}-${walletInUse}`,
+            tokensToSave,
+          );
+        })();
+      }
+    }
     const tokens = allTokens.filter((token) =>
       activatedTokens.includes(token.contract),
     );
@@ -295,7 +318,18 @@ function SendEVM() {
       tokenItems.push(option);
     });
     setTokenItems(tokenItems);
-  }, [activeChain]);
+    if (state.contract) {
+      // find if the contract exists in the tokens array
+      const token = tokens.find((token) => token.contract === state.contract);
+      if (token) {
+        setTxToken(token.contract);
+        form.setFieldValue('asset', token.contract);
+      }
+    } else {
+      setTxToken(blockchainConfig.tokens[0].contract); // default ETH
+      form.setFieldValue('asset', blockchainConfig.tokens[0].contract);
+    }
+  }, [activeChain, state.contract]);
 
   // on every chain, address adjustment, fetch utxos
   // used to get a precise estimate of the tx size
@@ -900,6 +934,7 @@ function SendEVM() {
               blockchainConfig.name + ' (' + blockchainConfig.symbol + ')'
             }
             popupMatchSelectWidth={false}
+            value={txToken}
             onChange={(value) => {
               setTxToken(value);
             }}
