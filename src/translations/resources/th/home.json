@@ -215,6 +215,7 @@
   "payment_request": {
     "payment_request": "คำขอชำระเงิน",
     "pay_for": "คำขอชำระเงินสำหรับ",
+    "on_chain": "on {{chain}} chain",
     "to": "ถึง",
     "received": "ได้รับ",
     "attached_message": "ข้อความที่แนบมา: {{message}}",
@@ -229,11 +230,35 @@
     "sign_message_info": "ลงนามข้อความด้วยที่อยู่ {{chainName}} ของคุณ:",
     "sign": "ลงนาม",
     "message": "ข้อความ",
-    "signature": "ลายเซ็น"
+    "signature": "ลายเซ็น",
+    "err_sign_message": "Error signing message."
   },
   "sspConnect": {
     "invalid_chain": "Chain ไม่ถูกต้อง",
-    "invalid_method": "วิธีการไม่ถูกต้อง"
+    "invalid_method": "วิธีการไม่ถูกต้อง",
+    "invalid_request": "Invalid or malformed request.",
+    "unsupported_contract": "Unsupported contract. Import token contract first."
+  },
+  "chainsInfo": {
+    "chain_requests": "Chains Information Request",
+    "chain_requests_info": "A request to get information about all integrated chains in SSP was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. No personal data is shared.",
+    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronised was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
+    "chain_requests_info_error": "Error getting chains information."
+  },
+  "tokensInfo": {
+    "tokens_requests": "Tokens Information Request",
+    "tokens_requests_info": "A request to get information about tokens for {{chain}} chain was received. Following data of each token will be shared: contract, name, symbol, decimals. No personal data is shared.",
+    "tokens_requests_info_error": "Error getting tokens information.",
+    "chain_not_supported": "Chain not supported.",
+    "no_tokens_supported": "No tokens supported.",
+    "chain_not_specified": "Chain not specified."
+  },
+  "addressesInfo": {
+    "addresses_requests": "Addresses Information Request",
+    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Excersice caution as your addresses will be shared with the requester.",
+    "addresses_requests_info_error": "Error getting addresses information.",
+    "no_addresses": "Chain not synchronised. No addresses found.",
+    "select_addresses": "Select Addresses to Share"
   },
   "fusion": {
     "pa_reward": "รางวัล Parallel Assets",
