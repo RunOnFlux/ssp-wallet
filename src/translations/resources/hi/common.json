@@ -34,11 +34,16 @@
   "success": "सक्सेस",
   "error": "एरर",
   "request_rejected": "रिक्वेस्ट रिजेक्टेड",
+  "request_approved": "Request Approved",
   "name": "नाम",
   "address": "पता",
   "activity": "एक्टिविटी",
   "nodes": "नोड्स",
   "tokens": "टोकंस",
   "add_custom_token": "कस्टम टोकन जोड़ें।",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "approve": "Approve",
+  "reject": "Reject",
+  "approve_request": "Approve Request",
+  "reject_request": "Reject Request"
 }
