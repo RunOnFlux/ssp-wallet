@@ -30,7 +30,7 @@ function AutoLogout() {
     // check if have some recent activity
     // store last activity time in session storage, if its less than 10 mins, continue and stay, store new one
     void (async function () {
-      if (chrome?.storage?.session) {
+      if (window?.chrome?.storage?.session) {
         try {
           const curTime = new Date().getTime();
           const resp: lastActivity =
@@ -48,6 +48,24 @@ function AutoLogout() {
         } catch (error) {
           console.log(error);
         }
+      } else if (window?.browser?.storage?.local) {
+        try {
+          const curTime = new Date().getTime();
+          const resp: lastActivity =
+            await window.browser.storage.local.get('lastActivity');
+          if (typeof resp.lastActivity === 'number') {
+            if (resp.lastActivity + tenMins < curTime) {
+              logout();
+              return;
+            }
+          }
+          await window.browser.storage.local.set({
+            lastActivity: curTime,
+          });
+          refresh();
+        } catch (error) {
+          console.log(error);
+        }
       } else {
         refresh();
       }
@@ -57,8 +75,12 @@ function AutoLogout() {
   const refresh = () => {
     void (async function () {
       const curTime = new Date().getTime();
-      if (chrome?.storage?.session) {
+      if (window?.chrome?.storage?.session) {
         await chrome.storage.session.set({
+          lastActivity: curTime,
+        });
+      } else if (window?.browser?.storage?.local) {
+        await window.browser.storage.local.set({
           lastActivity: curTime,
         });
       }
@@ -74,9 +96,15 @@ function AutoLogout() {
 
   const logout = () => {
     void (async function () {
-      if (chrome?.storage?.session) {
+      if (window?.chrome?.storage?.session) {
         try {
-          await chrome.storage.session.clear();
+          await window.chrome.storage.session.clear();
+        } catch (error) {
+          console.log(error);
+        }
+      } else if (window?.browser?.storage?.local) {
+        try {
+          await window.browser.storage.local.clear();
         } catch (error) {
           console.log(error);
         }

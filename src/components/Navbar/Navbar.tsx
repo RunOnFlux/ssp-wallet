@@ -363,9 +363,15 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
   const dispatch = useAppDispatch();
   const logout = () => {
     void (async function () {
-      if (chrome?.storage?.session) {
+      if (window?.chrome?.storage?.session) {
         try {
-          await chrome.storage.session.clear();
+          await window.chrome.storage.session.clear();
+        } catch (error) {
+          console.log(error);
+        }
+      } else if (window?.browser?.storage?.local) {
+        try {
+          await window.browser.storage.local.clear();
         } catch (error) {
           console.log(error);
         }

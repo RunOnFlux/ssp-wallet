@@ -744,11 +744,11 @@ function Send() {
 
   const payRequestAction = (data: paymentData | null) => {
     console.log(data);
-    if (chrome?.runtime?.sendMessage) {
+    if (window?.chrome?.runtime?.sendMessage) {
       // we do not use sendResponse, instead we are sending new message
       if (!data) {
         // reject message
-        void chrome.runtime.sendMessage({
+        void window.chrome.runtime.sendMessage({
           origin: 'ssp',
           data: {
             status: t('common:error'),
@@ -756,13 +756,30 @@ function Send() {
           },
         });
       } else {
-        void chrome.runtime.sendMessage({
+        void window.chrome.runtime.sendMessage({
+          origin: 'ssp',
+          data,
+        });
+      }
+    } else if (window?.browser?.runtime) {
+      // we do not use sendResponse, instead we are sending new message
+      if (!data) {
+        // reject message
+        void window.browser.runtime.sendMessage({
+          origin: 'ssp',
+          data: {
+            status: t('common:error'),
+            result: t('common:request_rejected'),
+          },
+        });
+      } else {
+        void window.browser.runtime.sendMessage({
           origin: 'ssp',
           data,
         });
       }
     } else {
-      console.log('no chrome.runtime.sendMessage');
+      console.log('no browser or chrome runtime.sendMessage');
     }
   };
 

@@ -211,8 +211,10 @@ function Create() {
       .then(async (blob) => {
         secureLocalStorage.clear();
         await localForage.clear();
-        if (chrome?.storage?.session) {
-          await chrome.storage.session.clear();
+        if (window?.chrome?.storage?.session) {
+          await window.chrome.storage.session.clear();
+        } else if (window?.browser?.storage) {
+          await window.browser.storage.local.clear();
         }
         const randomParamFingerprint = getFingerprint('forRandomParams');
         // take last 64 bytes from password, thats our random params
@@ -261,8 +263,12 @@ function Create() {
           xpubBlob,
         );
         setXpubWallet(identityChain, xpub);
-        if (chrome?.storage?.session) {
-          await chrome.storage.session.set({
+        if (window?.chrome?.storage?.session) {
+          await window.chrome.storage.session.set({
+            pwBlob: pwBlob,
+          });
+        } else if (window?.browser?.storage?.local) {
+          await window.browser.storage.local.set({
             pwBlob: pwBlob,
           });
         }

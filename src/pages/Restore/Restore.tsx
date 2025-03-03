@@ -296,8 +296,10 @@ function Restore() {
     localForage
       .clear()
       .then(async () => {
-        if (chrome?.storage?.session) {
-          await chrome.storage.session.clear();
+        if (window?.chrome?.storage?.session) {
+          await window.chrome.storage.session.clear();
+        } else if (window?.browser?.storage?.local) {
+          await window.browser.storage.local.clear();
         }
         const mnemonicBlob = await passworderEncrypt(
           password,
@@ -352,8 +354,12 @@ function Restore() {
         setInitialStateForAllChains();
         dispatch(setInitialContactsState());
         dispatch(setSSPInitialState());
-        if (chrome?.storage?.session) {
-          await chrome.storage.session.set({
+        if (window?.chrome?.storage?.session) {
+          await window.chrome.storage.session.set({
+            pwBlob: pwBlob,
+          });
+        } else if (window?.browser?.storage?.local) {
+          await window.browser.storage.local.set({
             pwBlob: pwBlob,
           });
         }
