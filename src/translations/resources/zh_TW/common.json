@@ -34,11 +34,16 @@
   "success": "成功",
   "error": "錯誤",
   "request_rejected": "請求被拒絕",
+  "request_approved": "Request Approved",
   "name": "名稱",
   "address": "地址",
   "activity": "活動",
   "nodes": "節點",
   "tokens": "代幣",
   "add_custom_token": "新增自訂代幣",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "approve": "Approve",
+  "reject": "Reject",
+  "approve_request": "Approve Request",
+  "reject_request": "Reject Request"
 }

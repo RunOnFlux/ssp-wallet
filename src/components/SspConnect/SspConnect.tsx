@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useSspConnect } from '../../hooks/useSspConnect';
 import SignMessage from '../../components/SignMessage/SignMessage';
 import PaymentRequest from '../../components/PaymentRequest/PaymentRequest';
+import ChainsInfo from '../../components/ChainsInfo/ChainsInfo';
+import TokensInfo from '../../components/TokensInfo/TokensInfo';
+import AddressesInfo from '../../components/AddressesInfo/AddressesInfo';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
 
@@ -26,6 +29,7 @@ function SspConnect() {
     chain: sspConnectChain,
     amount: sspConnectAmount,
     type: sspConnectType,
+    contract: sspConnectContract,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common']);
@@ -36,6 +40,11 @@ function SspConnect() {
   const [chain, setChain] = useState('');
   const [amount, setAmount] = useState('');
   const browser = window.chrome || window.browser;
+  const [contract, setContract] = useState('');
+  const [openChainsInfo, setOpenChainsInfo] = useState(false);
+  const [userOnlyChains, setUserOnlyChains] = useState(false);
+  const [openTokensInfo, setOpenTokensInfo] = useState(false);
+  const [openAddressesInfo, setOpenAddressesInfo] = useState(false);
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -44,6 +53,7 @@ function SspConnect() {
       setMessage(sspConnectMessage);
       setChain(sspConnectChain);
       setAmount(sspConnectAmount);
+      setContract(sspConnectContract);
       if (
         sspConnectType === 'sign_message' ||
         sspConnectType === 'sspwid_sign_message'
@@ -54,12 +64,28 @@ function SspConnect() {
         // here we should navigate to send page, change chain and input proper address, message, amount.
         console.log(amount);
         setOpenPayRequest(true);
+      } else if (sspConnectType === 'chains_info') {
+        // show poup that someone is asking to get all chains information and what information is being given
+        setUserOnlyChains(false);
+        setOpenChainsInfo(true);
+      } else if (sspConnectType === 'user_chains_info') {
+        // show poup that someone is asking to get all chains information and what information is being given
+        setUserOnlyChains(true);
+        setOpenChainsInfo(true);
+      } else if (sspConnectType === 'chain_tokens') {
+        // show poup that someone is asking to get all tokens for a chain
+        setOpenTokensInfo(true);
+      } else if (sspConnectType === 'user_addresses') {
+        // show poup that someone is asking to get all addresses for a chain
+        setOpenAddressesInfo(true);
       }
+      console.log('sspConnectType');
+      console.log(sspConnectType);
       clearRequest?.();
     }
-  }, [sspConnectMessage]);
+  }, [sspConnectType]);
 
-  const signMessageAction = (data: signMessageData | null) => {
+  const generalAction = (data: signMessageData | null) => {
     if (browser?.runtime?.sendMessage) {
       // we do not use sendResponse, instead we are sending new message
       if (!data) {
@@ -81,6 +107,9 @@ function SspConnect() {
       console.log('no browser or chrome runtime.sendMessage');
     }
     setOpenSignMessage(false);
+    setOpenChainsInfo(false);
+    setOpenTokensInfo(false);
+    setOpenAddressesInfo(false);
   };
   const payRequestAction = (data: paymentData | null | 'continue') => {
     console.log(data);
@@ -113,7 +142,7 @@ function SspConnect() {
     <>
       <SignMessage
         open={openSignMessage}
-        openAction={signMessageAction}
+        openAction={generalAction}
         address={address}
         message={message}
         chain={chain as keyof cryptos}
@@ -124,6 +153,22 @@ function SspConnect() {
         address={address}
         message={message}
         amount={amount}
+        contract={contract}
+        chain={chain as keyof cryptos}
+      />
+      <ChainsInfo
+        open={openChainsInfo}
+        openAction={generalAction}
+        userOnly={userOnlyChains}
+      />
+      <TokensInfo
+        open={openTokensInfo}
+        openAction={generalAction}
+        chain={chain as keyof cryptos}
+      />
+      <AddressesInfo
+        open={openAddressesInfo}
+        openAction={generalAction}
         chain={chain as keyof cryptos}
       />
     </>

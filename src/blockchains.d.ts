@@ -50,6 +50,7 @@ declare module '@storage/blockchains' {
     tokens: Token[];
     // buy sell
     onramperNetwork?: string;
+    chainId?: string;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;
