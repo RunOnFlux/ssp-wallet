@@ -88,7 +88,6 @@ function Restore() {
   const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
   const browser = window.chrome || window.browser;
 
-
   const showModal = () => {
     setIsModalOpen(true);
   };

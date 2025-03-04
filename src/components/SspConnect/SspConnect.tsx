@@ -103,7 +103,7 @@ function SspConnect() {
           data,
         });
       }
-    }  else {
+    } else {
       console.log('no browser or chrome runtime.sendMessage');
     }
     setOpenSignMessage(false);

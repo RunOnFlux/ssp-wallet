@@ -88,7 +88,6 @@ function Login() {
   const blockchainConfigIdentity = blockchains[identityChain];
   const browser = window.chrome || window.browser;
 
-
   useEffect(() => {
     return () => {
       // reset state

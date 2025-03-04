@@ -163,7 +163,6 @@ function SendEVM() {
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const browser = window.chrome || window.browser;
 
-
   useEffect(() => {
     try {
       if (state.amount) {

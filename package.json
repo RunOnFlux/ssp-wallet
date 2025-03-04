@@ -12,9 +12,7 @@
     "lint:fix": "eslint ./src ./public --fix",
     "type-check": "tsc",
     "preview": "vite preview",
-    "postinstall": "patch-package",
-    "start:firefox": "web-ext run --source-dir ./dist/ --verbose",
-    "build:firefox": "web-ext build --source-dir ./dist/ --verbose --overwrite-dest"
+    "postinstall": "patch-package"
   },
   "resolutions": {
     "viem": "2.23.3"
@@ -34,7 +32,6 @@
     "@runonflux/utxo-lib": "1.0.1",
     "@scure/bip32": "1.6.2",
     "@scure/bip39": "1.5.4",
-    "@types/firefox-webext-browser": "120.0.4",
     "antd": "5.24.1",
     "assert": "2.1.0",
     "axios": "1.7.9",
@@ -68,6 +65,7 @@
     "@types/bchaddrjs": "0.4.3",
     "@types/chai": "4.3.20",
     "@types/chrome": "0.0.305",
+    "@types/firefox-webext-browser": "120.0.4",
     "@types/mocha": "10.0.10",
     "@types/node": "22.13.4",
     "@types/react": "19.0.10",
@@ -96,11 +94,9 @@
     "tsx": "4.19.3",
     "typescript": "5.7.3",
     "typescript-eslint": "8.24.1",
-    "vite": "6.1.1",
-    "web-ext": "^8.4.0"
+    "vite": "6.1.1"
   },
   "engines": {
     "node": ">=20"
-  },
-  "packageManager": "yarn@4.5.0+sha512.837566d24eec14ec0f5f1411adb544e892b3454255e61fdef8fd05f3429480102806bac7446bc9daff3896b01ae4b62d00096c7e989f1596f2af10b927532f39"
+  }
 }
