@@ -34,11 +34,16 @@
   "success": "সফলতা",
   "error": "ত্রুটি",
   "request_rejected": "অনুরোধ প্রত্যাখ্যাত",
+  "request_approved": "Request Approved",
   "name": "নাম",
   "address": "ঠিকানা",
   "activity": "ক্রিয়াকলাপ",
   "nodes": "নোডস",
   "tokens": "টোকেনস",
   "add_custom_token": "কাস্টম টোকেন যোগ করুন",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "approve": "Approve",
+  "reject": "Reject",
+  "approve_request": "Approve Request",
+  "reject_request": "Reject Request"
 }

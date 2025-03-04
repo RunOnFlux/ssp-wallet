@@ -34,11 +34,16 @@
   "success": "УСПЕХ",
   "error": "ОШИБКА",
   "request_rejected": "Запрос отклонен",
+  "request_approved": "Request Approved",
   "name": "Имя",
   "address": "Адрес",
   "activity": "Активность",
   "nodes": "Узлы",
   "tokens": "Токены",
   "add_custom_token": "Add Custom Token",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "approve": "Approve",
+  "reject": "Reject",
+  "approve_request": "Approve Request",
+  "reject_request": "Reject Request"
 }
