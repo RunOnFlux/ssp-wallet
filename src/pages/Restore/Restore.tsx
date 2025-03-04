@@ -86,6 +86,8 @@ function Restore() {
     useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+  const browser = window.chrome || window.browser;
+
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -296,10 +298,8 @@ function Restore() {
     localForage
       .clear()
       .then(async () => {
-        if (window?.chrome?.storage?.session) {
-          await window.chrome.storage.session.clear();
-        } else if (window?.browser?.storage?.local) {
-          await window.browser.storage.local.clear();
+        if (browser?.storage?.session) {
+          await browser.storage.session.clear();
         }
         const mnemonicBlob = await passworderEncrypt(
           password,
@@ -354,12 +354,8 @@ function Restore() {
         setInitialStateForAllChains();
         dispatch(setInitialContactsState());
         dispatch(setSSPInitialState());
-        if (window?.chrome?.storage?.session) {
-          await window.chrome.storage.session.set({
-            pwBlob: pwBlob,
-          });
-        } else if (window?.browser?.storage?.local) {
-          await window.browser.storage.local.set({
+        if (browser?.storage?.session) {
+          await browser.storage.session.set({
             pwBlob: pwBlob,
           });
         }

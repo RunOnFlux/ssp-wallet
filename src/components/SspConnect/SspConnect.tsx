@@ -35,6 +35,7 @@ function SspConnect() {
   const [message, setMessage] = useState('');
   const [chain, setChain] = useState('');
   const [amount, setAmount] = useState('');
+  const browser = window.chrome || window.browser;
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -59,11 +60,11 @@ function SspConnect() {
   }, [sspConnectMessage]);
 
   const signMessageAction = (data: signMessageData | null) => {
-    if (window?.chrome?.runtime?.sendMessage) {
+    if (browser?.runtime?.sendMessage) {
       // we do not use sendResponse, instead we are sending new message
       if (!data) {
         // reject message
-        void window.chrome.runtime.sendMessage({
+        void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
             status: t('common:error'),
@@ -71,29 +72,12 @@ function SspConnect() {
           },
         });
       } else {
-        void window.chrome.runtime.sendMessage({
+        void browser.runtime.sendMessage({
           origin: 'ssp',
           data,
         });
       }
-    } else if (window?.browser?.runtime?.sendMessage) { 
-      // we do not use sendResponse, instead we are sending new message
-      if (!data) {
-        // reject message
-        void window.browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: t('common:error'),
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void window.browser.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    } else {
+    }  else {
       console.log('no browser or chrome runtime.sendMessage');
     }
     setOpenSignMessage(false);
@@ -104,11 +88,11 @@ function SspConnect() {
     if (data === 'continue') {
       return;
     }
-    if (window?.chrome?.runtime?.sendMessage) {
+    if (browser?.runtime?.sendMessage) {
       // we do not use sendResponse, instead we are sending new message
       if (!data) {
         // reject message
-        void window.chrome.runtime.sendMessage({
+        void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
             status: t('common:error'),
@@ -116,24 +100,7 @@ function SspConnect() {
           },
         });
       } else {
-        void window.chrome.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    } else if (window?.browser?.runtime?.sendMessage) {
-      // we do not use sendResponse, instead we are sending new message
-      if (!data) {
-        // reject message
-        void window.browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: t('common:error'),
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void window.browser.runtime.sendMessage({
+        void browser.runtime.sendMessage({
           origin: 'ssp',
           data,
         });

@@ -70,6 +70,7 @@ function Create() {
   const [mnemonic, setMnemonic] = useState<Uint8Array>(new Uint8Array());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfrimModalOpen, setIsConfrimModalOpen] = useState(false);
+  const browser = window.chrome || window.browser;
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -211,10 +212,8 @@ function Create() {
       .then(async (blob) => {
         secureLocalStorage.clear();
         await localForage.clear();
-        if (window?.chrome?.storage?.session) {
-          await window.chrome.storage.session.clear();
-        } else if (window?.browser?.storage) {
-          await window.browser.storage.local.clear();
+        if (browser?.storage?.session) {
+          await browser.storage.session.clear();
         }
         const randomParamFingerprint = getFingerprint('forRandomParams');
         // take last 64 bytes from password, thats our random params
@@ -263,12 +262,8 @@ function Create() {
           xpubBlob,
         );
         setXpubWallet(identityChain, xpub);
-        if (window?.chrome?.storage?.session) {
-          await window.chrome.storage.session.set({
-            pwBlob: pwBlob,
-          });
-        } else if (window?.browser?.storage?.local) {
-          await window.browser.storage.local.set({
+        if (browser?.storage?.session) {
+          await browser.storage.session.set({
             pwBlob: pwBlob,
           });
         }

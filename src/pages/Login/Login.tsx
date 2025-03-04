@@ -86,6 +86,8 @@ function Login() {
   );
   const blockchainConfig = blockchains[activeChain];
   const blockchainConfigIdentity = blockchains[identityChain];
+  const browser = window.chrome || window.browser;
+
 
   useEffect(() => {
     return () => {
@@ -131,48 +133,21 @@ function Login() {
         return;
       }
       // check if we have password
-      if (window?.chrome?.storage?.session) {
+      if (browser?.storage?.session) {
         try {
           // check if we should stay logged out
           const curTime = new Date().getTime();
           const respLastActivity: lastActivity =
-            await window.chrome.storage.session.get('lastActivity');
+            await browser.storage.session.get('lastActivity');
           if (typeof respLastActivity.lastActivity === 'number') {
             if (respLastActivity.lastActivity + tenMins < curTime) {
-              await window.chrome.storage.session.clear();
+              await browser.storage.session.clear();
               setIsLoading(false);
               return;
             }
           }
           // if different browser we will need to be inputting password every time
-          const resp: pwdDecrypt = await window.chrome.storage.session.get('pwBlob');
-          const fingerprint: string = getFingerprint();
-          const pwd = await passworderDecrypt(fingerprint, resp.pwBlob);
-          if (typeof pwd === 'string') {
-            setIsLoading(true);
-            setPassword(pwd);
-          } else {
-            setIsLoading(false);
-          }
-        } catch (error) {
-          console.log(error);
-          setIsLoading(false);
-        }
-      } else if (window?.browser?.storage?.local) { 
-        try {
-          // check if we should stay logged out
-          const curTime = new Date().getTime();
-          const respLastActivity: lastActivity =
-            await window.browser.storage.local.get('lastActivity');
-          if (typeof respLastActivity.lastActivity === 'number') {
-            if (respLastActivity.lastActivity + tenMins < curTime) {
-              await window.browser.storage.local.clear();
-              setIsLoading(false);
-              return;
-            }
-          }
-          // if different browser we will need to be inputting password every time
-          const resp: pwdDecrypt = await window.browser.storage.local.get('pwBlob');
+          const resp: pwdDecrypt = await browser.storage.session.get('pwBlob');
           const fingerprint: string = getFingerprint();
           const pwd = await passworderDecrypt(fingerprint, resp.pwBlob);
           if (typeof pwd === 'string') {
@@ -310,14 +285,9 @@ function Login() {
             }
             const fingerprint: string = getFingerprint();
             const pwBlob = await passworderEncrypt(fingerprint, password);
-            if (window?.chrome?.storage?.session) {
+            if (browser?.storage?.session) {
               // if different browser we will need to be inputting password every time
-              await window.chrome.storage.session.set({
-                pwBlob: pwBlob,
-              });
-            } else if (window?.browser?.storage?.local) {
-              // if different browser we will need to be inputting password every time
-              await window.browser.storage.local.set({
+              await browser.storage.session.set({
                 pwBlob: pwBlob,
               });
             }

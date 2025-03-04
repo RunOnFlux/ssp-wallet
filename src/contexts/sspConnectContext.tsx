@@ -53,11 +53,12 @@ export const SspConnectProvider = ({
   const [amount, setAmount] = useState(''); // only for pay
   const [chain, setChain] = useState('');
   const { t } = useTranslation(['home', 'common']);
+  const browser = window.chrome || window.browser;
 
   useEffect(() => {
-    if (window?.chrome?.runtime?.onMessage) {
+    if (browser?.runtime?.onMessage) {
       // this will move to separate lib file
-      window.chrome.runtime.onMessage.addListener((request: bgRequest) => {
+      browser.runtime.onMessage.addListener((request: bgRequest) => {
         console.log(request);
         if (request.origin === 'ssp-background') {
           if (
@@ -75,7 +76,7 @@ export const SspConnectProvider = ({
               setMessage(request.data.params.message || '');
             } else {
               console.log('Invalid chain' + request.data.params.chain);
-              void window.chrome.runtime.sendMessage({
+              void browser.runtime.sendMessage({
                 origin: 'ssp',
                 data: {
                   status: t('common:error'),
@@ -93,7 +94,7 @@ export const SspConnectProvider = ({
               setMessage(request.data.params.message || '');
             } else {
               console.log('Invalid chain' + request.data.params.chain);
-              void window.chrome.runtime.sendMessage({
+              void browser.runtime.sendMessage({
                 origin: 'ssp',
                 data: {
                   status: t('common:error'),
@@ -106,73 +107,7 @@ export const SspConnectProvider = ({
             }
           } else {
             console.log('Invalid method' + request.data.method);
-            void window.chrome.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: t('common:error'),
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_method'),
-              },
-            });
-          }
-        } else {
-          console.log('Ignore Invalid Origin' + request.origin);
-        }
-      });
-    } else if (window?.browser?.runtime?.onMessage) {
-      // this will move to separate lib file
-      window.browser.runtime.onMessage.addListener((request: bgRequest) => {
-        console.log(request);
-        if (request.origin === 'ssp-background') {
-          if (
-            request.data.method === 'sign_message' ||
-            request.data.method === 'sspwid_sign_message'
-          ) {
-            if (
-              blockchains[request.data.params.chain] ||
-              !request.data.params.chain
-            ) {
-              setChain(request.data.params.chain || identityChain);
-              // default to sspwid
-              setType(request.data.method);
-              setAddress(request.data.params.address || wExternalIdentity); // this can be undefined if its a request before we have identity
-              setMessage(request.data.params.message || '');
-            } else {
-              console.log('Invalid chain' + request.data.params.chain);
-              void window.browser.runtime.sendMessage({
-                origin: 'ssp',
-                data: {
-                  status: t('common:error'),
-                  result: 'REQUEST REJECTED: Invalid chain',
-                },
-              });
-            }
-          } else if (request.data.method === 'pay') {
-            if (blockchains[request.data.params.chain]) {
-              setChain(request.data.params.chain || identityChain);
-              // default to btc
-              setAmount(request.data.params.amount || '');
-              setType(request.data.method);
-              setAddress(request.data.params.address || '');
-              setMessage(request.data.params.message || '');
-            } else {
-              console.log('Invalid chain' + request.data.params.chain);
-              void window.browser.runtime.sendMessage({
-                origin: 'ssp',
-                data: {
-                  status: t('common:error'),
-                  result:
-                    t('common:request_rejected') +
-                    ': ' +
-                    t('home:sspConnect.invalid_chain'),
-                },
-              });
-            }
-          } else {
-            console.log('Invalid method' + request.data.method);
-            void window.browser.runtime.sendMessage({
+            void browser.runtime.sendMessage({
               origin: 'ssp',
               data: {
                 status: t('common:error'),
