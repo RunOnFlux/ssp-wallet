@@ -13,8 +13,8 @@
     "type-check": "tsc",
     "preview": "vite preview",
     "postinstall": "patch-package",
-    "start:firefox": "web-ext run --source-dir ./extension-dist/ --verbose",
-    "build:firefox": "web-ext build --source-dir ./extension-dist/ --verbose --overwrite-dest"
+    "start:firefox": "web-ext run --source-dir ./dist/ --verbose",
+    "build:firefox": "web-ext build --source-dir ./dist/ --verbose --overwrite-dest"
   },
   "resolutions": {
     "viem": "2.23.3"
