@@ -315,5 +315,8 @@
     "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
     "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
     "coming_soon": "Coming Soon!"
+  },
+  "swap": {
+    "header": "Swap Crypto"
   }
 }

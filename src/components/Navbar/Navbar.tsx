@@ -79,9 +79,15 @@ interface Props {
   refresh: () => void;
   hasRefresh: boolean;
   allowChainSwitch?: boolean;
+  header?: string;
 }
 
-function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
+function Navbar({
+  refresh,
+  hasRefresh,
+  allowChainSwitch = true,
+  header,
+}: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
@@ -467,98 +473,103 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
             />
           </Col>
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
-            <Select
-              labelInValue
-              value={defaultWallet}
-              style={{ width: 200 }}
-              onChange={handleChange}
-              options={walletItems}
-              variant={'borderless'}
-              size="large"
-              dropdownStyle={{ zIndex: 9 }}
-              dropdownRender={(menu) => (
-                <>
-                  <div
-                    style={{
-                      lineHeight: '25px',
-                      marginBottom: '10px',
-                      marginLeft: '10px',
-                    }}
-                  >
-                    <Image
-                      height={22}
-                      preview={false}
-                      src={blockchainConfig.logo}
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <span
+            {header && <span>{header}</span>}
+            {!header && (
+              <Select
+                labelInValue
+                value={defaultWallet}
+                style={{ width: 200 }}
+                onChange={handleChange}
+                options={walletItems}
+                variant={'borderless'}
+                size="large"
+                dropdownStyle={{ zIndex: 9 }}
+                dropdownRender={(menu) => (
+                  <>
+                    <div
                       style={{
-                        position: 'absolute',
-                        top: '5px',
-                        marginLeft: '8px',
-                        fontSize: '16px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        lineHeight: '25px',
+                        marginBottom: '10px',
+                        marginLeft: '10px',
                       }}
                     >
-                      {blockchainConfig.name}{' '}
-                      {blockchainConfig.name.includes(' ')
-                        ? ''
-                        : t('common:chain')}
-                    </span>
-                  </div>
-                  {menu}
-                  {allowChainSwitch && (
-                    <>
-                      <Divider style={{ margin: '8px 0' }} />
-                      <Button
-                        type="text"
-                        icon={<PlusOutlined />}
-                        onClick={addWallet}
-                        style={{ width: '100%', textAlign: 'left' }}
+                      <Image
+                        height={22}
+                        preview={false}
+                        src={blockchainConfig.logo}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '5px',
+                          marginLeft: '8px',
+                          fontSize: '16px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
                       >
-                        {t('home:navbar.generate_new_wallet')}
-                      </Button>
-                      {walletItems.length > 1 && (
-                        <Popconfirm
-                          title={t('home:navbar.remove_last_wallet')}
-                          description={
-                            <>{t('home:navbar.remove_last_wallet_desc')}</>
-                          }
-                          overlayStyle={{ maxWidth: 360, margin: 10 }}
-                          okText={t('home:navbar.remove')}
-                          cancelText={t('common:cancel')}
-                          onConfirm={() => {
-                            removeAddress();
-                          }}
-                          icon={
-                            <QuestionCircleOutlined style={{ color: 'blue' }} />
-                          }
+                        {blockchainConfig.name}{' '}
+                        {blockchainConfig.name.includes(' ')
+                          ? ''
+                          : t('common:chain')}
+                      </span>
+                    </div>
+                    {menu}
+                    {allowChainSwitch && (
+                      <>
+                        <Divider style={{ margin: '8px 0' }} />
+                        <Button
+                          type="text"
+                          icon={<PlusOutlined />}
+                          onClick={addWallet}
+                          style={{ width: '100%', textAlign: 'left' }}
                         >
-                          <Button
-                            type="text"
-                            icon={<MinusOutlined />}
-                            style={{ width: '100%', textAlign: 'left' }}
+                          {t('home:navbar.generate_new_wallet')}
+                        </Button>
+                        {walletItems.length > 1 && (
+                          <Popconfirm
+                            title={t('home:navbar.remove_last_wallet')}
+                            description={
+                              <>{t('home:navbar.remove_last_wallet_desc')}</>
+                            }
+                            overlayStyle={{ maxWidth: 360, margin: 10 }}
+                            okText={t('home:navbar.remove')}
+                            cancelText={t('common:cancel')}
+                            onConfirm={() => {
+                              removeAddress();
+                            }}
+                            icon={
+                              <QuestionCircleOutlined
+                                style={{ color: 'blue' }}
+                              />
+                            }
                           >
-                            {t('home:navbar.remove_last_wallet')}
-                          </Button>
-                        </Popconfirm>
-                      )}
-                      <Divider style={{ margin: '8px 0' }} />
-                      <Button
-                        type="text"
-                        style={{ width: '100%', textAlign: 'left' }}
-                        icon={<NodeIndexOutlined />}
-                        onClick={() => selectChain()}
-                      >
-                        {t('home:navbar.switch_chain')}
-                      </Button>
-                    </>
-                  )}
-                </>
-              )}
-            />
+                            <Button
+                              type="text"
+                              icon={<MinusOutlined />}
+                              style={{ width: '100%', textAlign: 'left' }}
+                            >
+                              {t('home:navbar.remove_last_wallet')}
+                            </Button>
+                          </Popconfirm>
+                        )}
+                        <Divider style={{ margin: '8px 0' }} />
+                        <Button
+                          type="text"
+                          style={{ width: '100%', textAlign: 'left' }}
+                          icon={<NodeIndexOutlined />}
+                          onClick={() => selectChain()}
+                        >
+                          {t('home:navbar.switch_chain')}
+                        </Button>
+                      </>
+                    )}
+                  </>
+                )}
+              />
+            )}
           </Col>
           <Col span={4}>
             <Menu

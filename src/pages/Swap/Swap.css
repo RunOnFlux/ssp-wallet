@@ -1,3 +1,72 @@
-.no-text-select .ant-select-selection-item {
-  display: none !important;
+.swap-box {
+  margin: 16px;
+}
+
+.swap-box-row {
+  background-color: #0a0a0a;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.swap-box-row-title {
+  font-size: 16px;
+  color: #fff;
+  text-align: left;
+}
+
+.swap-box-row-input {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  text-align: left;
+  width: 100%;
+  margin-left: -8px;
+}
+
+.swap-box-row-input-number {
+  font-size: 24px;
+  color: #fff;
+  text-align: left;
+  margin: 0;
+  width: 100%;
+}
+
+.swap-box-row-input-number input {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.swap-box-row-crypto-selection {
+  position: relative;
+}
+
+.swap-box-row-crypto-selection-button-container {
+  position: absolute;
+  right: 0;
+}
+
+.swap-box-row-crypto-selection-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 16px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.swap-box-row-chain-info {
+  gap: 8px;
+  font-size: 16px;
+  color: #fff;
+  text-align: right;
+  width: 100%;
+}
+
+.swap-box-row-chain-info-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
 }
