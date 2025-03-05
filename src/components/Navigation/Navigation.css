@@ -6,3 +6,19 @@
   color: rgb(0, 128, 128) !important;
   border-color: rgba(0, 128, 128, 1) !important;
 }
+
+.buttonSwap {
+  border-color: #d9d9d9 !important;
+}
+
+.buttonSwapLight {
+  border-color: #424242 !important;
+}
+
+.buttonSwap:hover {
+  border-color: rgba(128, 0, 128, 0.2) !important;
+}
+
+.buttonSwapLight:hover {
+  border-color: rgba(255, 255, 0, 0.5) !important;
+}

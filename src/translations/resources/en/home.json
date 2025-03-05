@@ -146,7 +146,8 @@
     "send": "Send",
     "receive": "Receive",
     "buy": "Buy",
-    "sell": "Sell"
+    "sell": "Sell",
+    "swap": "Swap"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirm Transaction on SSP Key",
