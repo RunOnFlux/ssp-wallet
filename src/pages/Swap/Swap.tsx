@@ -1,56 +1,33 @@
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router';
-import {
-  Form,
-  message,
-  Divider,
-  InputNumber,
-  Row,
-  Col,
-  Image,
-  Button,
-} from 'antd';
+import { useState } from 'react';
+import { Divider, InputNumber, Row, Col, Image, Button } from 'antd';
 import { CaretDownOutlined } from '@ant-design/icons';
-import { NoticeType } from 'antd/es/message/interface';
 import Navbar from '../../components/Navbar/Navbar.tsx';
-import { useAppDispatch } from '../../hooks.ts';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 
-import { utxo } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './Swap.css';
-interface sendForm {
-  receiver: string;
-  amount: string;
-  fee: string;
-  message: string;
-  utxos: utxo[]; // RBF mandatory utxos - use all of them or one?
-  paymentAction?: boolean;
-}
 
 function Swap() {
-  const dispatch = useAppDispatch();
-  const location = useLocation();
-  const state = location.state as sendForm;
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { t } = useTranslation(['send', 'common', 'home']);
-  const [form] = Form.useForm();
-  const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
   const [amountSell, setAmountSell] = useState(0.1);
   const [amountBuy, setAmountBuy] = useState(0);
   const [sellAsset, setSellAsset] = useState('eth');
   const [buyAsset, setBuyAsset] = useState('USDT');
   const [sellAssetChain, setSellAssetChain] = useState('eth');
   const [buyAssetChain, setBuyAssetChain] = useState('eth');
- 
 
   const refresh = () => {
     console.log(
       'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
     );
+    setAmountBuy(0);
+    setAmountSell(0);
+    setSellAsset('eth');
+    setBuyAsset('USDT');
+    setSellAssetChain('eth');
+    setBuyAssetChain('eth');
   };
 
   const onChangeAmountSell = (value: number | null) => {
@@ -65,7 +42,6 @@ function Swap() {
 
   return (
     <>
-      {contextHolder}
       <Navbar
         refresh={refresh}
         hasRefresh={false}
@@ -179,13 +155,13 @@ function Swap() {
           </Col>
         </Row>
       </div>
-      <InputNumber
-        min={0}
-        value={amountBuy}
-        readOnly
-        controls={false}
-        variant="borderless"
-      />
+      address selection sell
+      address selection buy
+      min/max ?
+      show fiat value?
+      1btc = 42 eth
+      provider selection automatic with dropdown
+      continue button
       <SspConnect />
       <PoweredByFlux />
     </>
