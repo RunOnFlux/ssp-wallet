@@ -67,6 +67,7 @@ function PendingTransactionsTable(props: {
           rowKey="expireAt"
           bordered={false}
           loading={false}
+          style={{ width: '100%' }}
           dataSource={pendingTxs}
           onRow={(record) => {
             return {
