@@ -10,7 +10,7 @@
   },
   "author": "https://sspwallet.io",
   "background": {
-    "service_worker": "scripts/background.js"
+    "scripts": ["scripts/background.js"]
   },
   "icons": { "256": "ssp-logo-black-256x256.png" },
   "content_scripts": [
