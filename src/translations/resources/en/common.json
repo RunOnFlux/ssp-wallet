@@ -45,5 +45,6 @@
   "approve": "Approve",
   "reject": "Reject",
   "approve_request": "Approve Request",
-  "reject_request": "Reject Request"
+  "reject_request": "Reject Request",
+  "continue": "Continue"
 }

@@ -1,11 +1,12 @@
-.swap-box {
-  margin: 16px;
+.swap-area {
+  margin: 8px;
 }
 
 .swap-box-row {
   background-color: #0a0a0a;
   border-radius: 10px;
   padding: 16px;
+  margin-bottom: 2px;
 }
 
 .swap-box-row-title {
@@ -69,4 +70,45 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.swap-box-row-sub-title {
+  font-size: 12px;
+  color: #fff;
+  text-align: left;
+}
+
+.swap-box-row-sub-selection {
+  font-size: 12px;
+  color: #fff;
+  text-align: right;
+}
+
+.sub-row {
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.margin-top-12 {
+  margin-top: 12px;
+}
+
+.no-border-top {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.no-border-bottom {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.rate-value {
+  text-align: left;
+  width: 100%;
+  color: #ccc;
+  font-size: 12px;
+  margin-top: 4px;
 }
