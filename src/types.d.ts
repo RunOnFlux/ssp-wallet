@@ -607,6 +607,49 @@ export interface chainState {
   importedTokens?: Token[]; // EVM
 }
 
+export interface abeAsset {
+  idzelcore: string;
+  name: string;
+  ticker: string;
+  chain: number;
+  contract?: string;
+  idchangenowfloat?: string;
+  idchangenowfix?: string;
+  idchangenowfloatlimit?: string[] | null;
+  idchangenowfixlimit?: string[] | null;
+  idchangelloyfloat?: string;
+  idchangellyfix?: string;
+  idchangellyfloatlimit?: string[] | null;
+  idchangellyfixlimit?: string[] | null;
+  idsimpleswapfloat?: string;
+  idsimpleswapfix?: string;
+  idsimpleswapfloatlimit?: string[] | null;
+  idsimpleswapfixlimit?: string[] | null;
+  idchangeherofloat?: string;
+  idchangeherofix?: string;
+  idchangeherofloatlimit?: string[] | null;
+  idchangeherofixlimit?: string[] | null;
+}
+
+export interface abeAssetResponse {
+  status: string;
+  data: abeAsset[];
+}
+
+export interface zelcoreAsset {
+  idzelcore: string;
+  name: string;
+  ticker: string;
+  chain: string;
+  contract?: string;
+  decimals: number | null;
+}
+
+export interface zelcoreAssetResponse {
+  status: string;
+  data: zelcoreAsset[];
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;
@@ -620,4 +663,6 @@ declare global {
   var refreshIntervalNodes: string | number | NodeJS.Timeout | undefined;
   // eslint-disable-next-line no-var
   var refreshIntervalServices: string | number | NodeJS.Timeout | undefined;
+  // eslint-disable-next-line no-var
+  var refreshIntervalABE: string | number | NodeJS.Timeout | undefined;
 }
