@@ -146,6 +146,8 @@ By using SSP Wallet, you agree to the terms outlined in the [SSP Disclaimer](htt
 
 Join us in building a secure, simple, and powerful wallet for the crypto community!
 
+---
+
 ## 🔒 Security Audits  
 
 Our security is a top priority. All critical components of the SSP ecosystem have undergone rigorous security audits by [Halborn](https://halborn.com/), ensuring the highest standards of protection.  
