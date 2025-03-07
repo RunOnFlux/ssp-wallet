@@ -318,6 +318,8 @@
   },
   "swap": {
     "header": "Swap Crypto",
-    "search_asset": "Search Asset"
+    "search_asset": "Search Asset",
+    "you_send": "You Send",
+    "you_get": "You Get"
   }
 }

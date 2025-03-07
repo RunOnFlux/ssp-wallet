@@ -22,6 +22,7 @@ import './Swap.css';
 import { useAppSelector } from '../../hooks.ts';
 import { pairDetailsSellAmount } from '../../lib/ABEController.ts';
 import AssetBox from './AssetBox.tsx';
+import { useNavigate } from 'react-router';
 
 function Swap() {
   const { t } = useTranslation(['send', 'common', 'home']);
@@ -40,9 +41,8 @@ function Swap() {
   const { abeMapping, sellAssets, buyAssets } = useAppSelector(
     (state) => state.abe,
   );
+  const navigate = useNavigate();
 
-  console.log(sellAssets);
-  console.log(buyAssets);
   const refresh = () => {
     console.log(
       'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
@@ -126,11 +126,11 @@ function Swap() {
   };
 
   const proceed = () => {
-    console.log('proceed');
+    console.log('proceed'); // we will navigate to send section after swap creation
   };
 
   const close = () => {
-    console.log('close');
+    navigate('/home');
   };
 
   const handleCancelSellAsset = () => {
@@ -154,7 +154,7 @@ function Swap() {
         <div className="swap-box">
           <Row gutter={[16, 16]} className="swap-box-row no-border-bottom">
             <Col span={24} className="swap-box-row-title">
-              You Send
+              {t('home:swap.you_send')}
             </Col>
             <Col span={15} className="swap-box-row-input">
               <InputNumber
@@ -206,17 +206,19 @@ function Swap() {
         <div className="swap-bo">
           <Row gutter={[16, 16]} className="swap-box-row no-border-top sub-row">
             <Col span={6} className="swap-box-row-sub-title">
-              From
+              {t('common:from')}
             </Col>
             <Col span={18} className="swap-box-row-sub-selection">
-              Wallet 1: bc1qqwe...asdf <CaretDownOutlined />
+              check if chain is synced Wallet 1: bc1qqwe...asdf
+              <CaretDownOutlined />
             </Col>
           </Row>
         </div>
         <div className="swap-box margin-top-12">
           <Row gutter={[16, 16]} className="swap-box-row no-border-bottom">
             <Col span={24} className="swap-box-row-title">
-              You Get&nbsp;&nbsp;
+              {t('home:swap.you_get')}
+              &nbsp;&nbsp;
               {loading ? (
                 <Spin indicator={<LoadingOutlined spin />} size="small" />
               ) : (
@@ -273,15 +275,16 @@ function Swap() {
         <div className="swap-box">
           <Row gutter={[16, 16]} className="swap-box-row no-border-top sub-row">
             <Col span={6} className="swap-box-row-sub-title">
-              To
+              {t('common:to')}
             </Col>
             <Col span={18} className="swap-box-row-sub-selection">
-              Wallet 2: bc1qqwe...asdf <CaretDownOutlined />
+              check if chain is synced Wallet 2: bc1qqwe...asdf
+              <CaretDownOutlined />
             </Col>
           </Row>
         </div>
         <div className="rate-value">
-          {rate > 0 ? (
+          {rate > 0 && loading === false ? (
             `1 ${sellAsset.split('_')[1]} = ${rate} ${buyAsset.split('_')[1]}`
           ) : (
             <span>&nbsp;</span>

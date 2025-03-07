@@ -47,16 +47,7 @@ function AssetBox(props: { asset: string }) {
             <>
               <Flex vertical>
                 <div>
-                  <div
-                    style={{
-                      float: 'left',
-                      textAlign: 'left',
-                      width: '200px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                  <div className="asset-box-chain-name">
                     {blockchains[asset.split('_')[0]].tokens?.find(
                       (token) => token.symbol === asset.split('_')[1],
                     )?.name ?? blockchains[asset.split('_')[0]]?.name}
