@@ -189,28 +189,28 @@ function ABEController() {
           assetsPossibleToBeSold = allSellAssets;
         } else {
           if (asset.idchangeherofixlimit) {
-            assetsPossibleToBeSold.concat(asset.idchangeherofixlimit);
+            assetsPossibleToBeSold.push(...asset.idchangeherofixlimit);
           }
           if (asset.idchangeherofloatlimit) {
-            assetsPossibleToBeSold.concat(asset.idchangeherofloatlimit);
+            assetsPossibleToBeSold.push(...asset.idchangeherofloatlimit);
           }
           if (asset.idchangenowfixlimit) {
-            assetsPossibleToBeSold.concat(asset.idchangenowfixlimit);
+            assetsPossibleToBeSold.push(...asset.idchangenowfixlimit);
           }
           if (asset.idchangenowfloatlimit) {
-            assetsPossibleToBeSold.concat(asset.idchangenowfloatlimit);
+            assetsPossibleToBeSold.push(...asset.idchangenowfloatlimit);
           }
           if (asset.idchangellyfixlimit) {
-            assetsPossibleToBeSold.concat(asset.idchangellyfixlimit);
+            assetsPossibleToBeSold.push(...asset.idchangellyfixlimit);
           }
           if (asset.idchangellyfloatlimit) {
-            assetsPossibleToBeSold.concat(asset.idchangellyfloatlimit);
+            assetsPossibleToBeSold.push(...asset.idchangellyfloatlimit);
           }
           if (asset.idsimpleswapfixlimit) {
-            assetsPossibleToBeSold.concat(asset.idsimpleswapfixlimit);
+            assetsPossibleToBeSold.push(...asset.idsimpleswapfixlimit);
           }
           if (asset.idsimpleswapfloatlimit) {
-            assetsPossibleToBeSold.concat(asset.idsimpleswapfloatlimit);
+            assetsPossibleToBeSold.push(...asset.idsimpleswapfloatlimit);
           }
         }
         assetsPossibleToBeSold = [...new Set(assetsPossibleToBeSold)];
