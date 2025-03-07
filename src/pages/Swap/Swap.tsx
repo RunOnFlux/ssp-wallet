@@ -8,6 +8,7 @@ import {
   Button,
   Space,
   Spin,
+  Modal,
 } from 'antd';
 import { CaretDownOutlined, LoadingOutlined } from '@ant-design/icons';
 import Navbar from '../../components/Navbar/Navbar.tsx';
@@ -19,6 +20,7 @@ import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './Swap.css';
 import { useAppSelector } from '../../hooks.ts';
 import { pairDetailsSellAmount } from '../../lib/ABEController.ts';
+import AssetBox from './AssetBox.tsx';
 
 function Swap() {
   const { t } = useTranslation(['send', 'common', 'home']);
@@ -30,6 +32,8 @@ function Swap() {
   );
   const [rate, setRate] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [sellAssetModalOpen, setSellAssetModalOpen] = useState(false);
+  const [buyAssetModalOpen, setBuyAssetModalOpen] = useState(false);
   const { abeMapping, sellAssets, buyAssets } = useAppSelector(
     (state) => state.abe,
   );
@@ -40,15 +44,11 @@ function Swap() {
     console.log(
       'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
     );
-    setAmountBuy(0);
-    setAmountSell(0);
-    setSellAsset('eth');
-    setBuyAsset('USDT');
   };
 
   useEffect(() => {
     fetchPairDetails();
-  }, [amountSell]);
+  }, [amountSell, sellAsset, buyAsset]);
 
   const fetchPairDetails = async () => {
     try {
@@ -130,6 +130,14 @@ function Swap() {
     console.log('close');
   };
 
+  const handleCancelSellAsset = () => {
+    setSellAssetModalOpen(false);
+  };
+
+  const handleCancelBuyAsset = () => {
+    setBuyAssetModalOpen(false);
+  };
+
   return (
     <>
       <Navbar
@@ -160,6 +168,7 @@ function Swap() {
               <Button
                 size="large"
                 className="swap-box-row-crypto-selection-button-container"
+                onClick={() => setSellAssetModalOpen(true)}
               >
                 <div className="swap-box-row-crypto-selection-button">
                   <Image
@@ -167,16 +176,14 @@ function Swap() {
                     width={20}
                     preview={false}
                     src={
-                      blockchains[sellAsset.split('_')[1]]?.logo ??
-                      blockchains[sellAsset.split('_')[0]].tokens.find(
+                      blockchains[sellAsset.split('_')[0]].tokens?.find(
                         (token) => token.symbol === sellAsset.split('_')[1],
-                      )?.logo
+                      )?.logo ?? blockchains[sellAsset.split('_')[0]]?.logo
                     }
                   />
-                  {blockchains[sellAsset.split('_')[1]]?.symbol ??
-                    blockchains[sellAsset.split('_')[0]].tokens.find(
-                      (token) => token.symbol === sellAsset.split('_')[1],
-                    )?.symbol}
+                  {blockchains[sellAsset.split('_')[0]].tokens?.find(
+                    (token) => token.symbol === sellAsset.split('_')[1],
+                  )?.symbol ?? blockchains[sellAsset.split('_')[0]]?.symbol}
                   <CaretDownOutlined />
                 </div>
               </Button>
@@ -228,6 +235,7 @@ function Swap() {
               <Button
                 size="large"
                 className="swap-box-row-crypto-selection-button-container"
+                onClick={() => setBuyAssetModalOpen(true)}
               >
                 <div className="swap-box-row-crypto-selection-button">
                   <Image
@@ -235,16 +243,14 @@ function Swap() {
                     width={20}
                     preview={false}
                     src={
-                      blockchains[buyAsset.split('_')[1]]?.logo ??
-                      blockchains[buyAsset.split('_')[0]].tokens.find(
+                      blockchains[buyAsset.split('_')[0]].tokens?.find(
                         (token) => token.symbol === buyAsset.split('_')[1],
-                      )?.logo
+                      )?.logo ?? blockchains[buyAsset.split('_')[0]]?.logo
                     }
                   />
-                  {blockchains[buyAsset.split('_')[1]]?.symbol ??
-                    blockchains[buyAsset.split('_')[0]].tokens.find(
-                      (token) => token.symbol === buyAsset.split('_')[1],
-                    )?.symbol}
+                  {blockchains[buyAsset.split('_')[0]].tokens?.find(
+                    (token) => token.symbol === buyAsset.split('_')[1],
+                  )?.symbol ?? blockchains[buyAsset.split('_')[0]]?.symbol}
                   <CaretDownOutlined />
                 </div>
               </Button>
@@ -291,6 +297,80 @@ function Swap() {
           {t('common:close')}
         </Button>
       </Space>
+      <Modal
+        title="Select Asset to Sell"
+        open={sellAssetModalOpen}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={handleCancelSellAsset}
+        footer={[]}
+      >
+        <Space
+          direction="vertical"
+          size="middle"
+          style={{ marginBottom: 16, marginTop: 16 }}
+        >
+          <div className="asset-selection">
+            {buyAssets[buyAsset].map((asset) => (
+              <div
+                onClick={() => {
+                  setSellAsset(asset);
+                  handleCancelSellAsset();
+                }}
+                key={asset}
+              >
+                <AssetBox asset={asset} />
+              </div>
+            ))}
+          </div>
+          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
+            <Button
+              type="link"
+              block
+              size="small"
+              onClick={handleCancelSellAsset}
+            >
+              {t('common:close')}
+            </Button>
+          </Space>
+        </Space>
+      </Modal>
+      <Modal
+        title="Select Asset to Buy"
+        open={buyAssetModalOpen}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={handleCancelBuyAsset}
+        footer={[]}
+      >
+        <Space
+          direction="vertical"
+          size="middle"
+          style={{ marginBottom: 16, marginTop: 16 }}
+        >
+          <div className="asset-selection">
+            {sellAssets[sellAsset].map((asset) => (
+              <div
+                onClick={() => {
+                  setBuyAsset(asset);
+                  handleCancelBuyAsset();
+                }}
+                key={asset}
+              >
+                <AssetBox asset={asset} />
+              </div>
+            ))}
+          </div>
+          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
+            <Button
+              type="link"
+              block
+              size="small"
+              onClick={handleCancelBuyAsset}
+            >
+              {t('common:close')}
+            </Button>
+          </Space>
+        </Space>
+      </Modal>
       <SspConnect />
       <PoweredByFlux />
     </>
