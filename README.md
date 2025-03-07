@@ -162,9 +162,9 @@ Our security is a top priority. All critical components of the SSP ecosystem hav
 - **[Halborn Public Report – SSP Wallet, Key, Relay](https://www.halborn.com/audits/influx-technologies/ssp-wallet-relay-and-key)** (Halborn)  
 
 📄 **Smart Contracts Audit**  
-- **[Halborn Audit Report – Smart Contracts](https://github.com/RunOnFlux/account-abstraction/blob/master/Account_Abstraction_Schnorr_MultiSig_SmartContracts_SecAudit_HALBORN_2025.pdf)** (GitHub)  
+- **[Halborn Audit Report – Smart Contracts](https://github.com/RunOnFlux/ssp-wallet/blob/master/Account_Abstraction_Schnorr_MultiSig_SmartContracts_SecAudit_HALBORN_2025.pdf)** (GitHub)  
 - **[Halborn Public Report – Smart Contracts](https://www.halborn.com/audits/influx-technologies/account-abstraction-schnorr-multisig)** (Halborn)  
 
 📄 **SDK Audit**  
-- **[Halborn Audit Report – SDK](https://github.com/RunOnFlux/account-abstraction/blob/master/Account_Abstraction_Schnorr_MultiSig_SDK_SecAudit_HALBORN_2025.pdf)** (GitHub)  
+- **[Halborn Audit Report – SDK](https://github.com/RunOnFlux/ssp-wallet/blob/master/Account_Abstraction_Schnorr_MultiSig_SDK_SecAudit_HALBORN_2025.pdf)** (GitHub)  
 - **[Halborn Public Report – SDK](https://www.halborn.com/audits/influx-technologies/account-abstraction-schnorr-signatures-sdk)** (Halborn)  
