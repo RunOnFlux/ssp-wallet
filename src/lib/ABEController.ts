@@ -4,6 +4,7 @@ import {
   abeAssetResponse,
   zelcoreAsset,
   zelcoreAssetResponse,
+  pairDetailsResponse,
 } from '../types';
 
 export async function fetchSellAssets(): Promise<abeAsset[]> {
@@ -45,6 +46,26 @@ export async function fetchZelcoreAssets(): Promise<zelcoreAsset[]> {
     } else {
       throw new Error('Invalid response from ABE for zelcore assets');
     }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function pairDetailsSellAmount(
+  sellAsset: string,
+  buyAsset: string,
+  amount: number,
+) {
+  try {
+    const data = {
+      sellAsset,
+      buyAsset,
+      sellAmount: amount,
+    };
+    const url = `https://abe.zelcore.io/v1/exchange/pairdetailssellamount`;
+    const response = await axios.post<pairDetailsResponse>(url, data);
+    return response.data;
   } catch (error) {
     console.log(error);
     throw error;

@@ -8,7 +8,11 @@ import {
   fetchZelcoreAssets,
 } from '../../lib/ABEController.ts';
 
+import { useAppDispatch } from '../../hooks';
+import { setSellAssets, setBuyAssets, setAbeMapping } from '../../store';
+
 function ABEController() {
+  const dispatch = useAppDispatch();
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   useEffect(() => {
     if (alreadyMounted.current) return;
@@ -32,7 +36,33 @@ function ABEController() {
 
   const obtainABE = async () => {
     try {
+      // first load from localforage if we have it
+      const sspMappingStored = await localForage.getItem('sspABEMapping');
+      if (sspMappingStored) {
+        dispatch(setAbeMapping(sspMappingStored as { [key: string]: string }));
+      }
+      const sellAssetsWithLimitsStored = await localForage.getItem(
+        'sellAssetsWithLimits',
+      );
+      if (sellAssetsWithLimitsStored) {
+        dispatch(
+          setSellAssets(
+            sellAssetsWithLimitsStored as { [key: string]: string[] },
+          ),
+        );
+      }
+      const buyAssetsWithLimitsStored = await localForage.getItem(
+        'buyAssetsWithLimits',
+      );
+      if (buyAssetsWithLimitsStored) {
+        dispatch(
+          setBuyAssets(
+            buyAssetsWithLimitsStored as { [key: string]: string[] },
+          ),
+        );
+      }
       const zelcoreAssets = await fetchZelcoreAssets();
+      // now we have all the information we need to display the ABE assets. We shall make nice sell assets and nice buy assets with limits for every asset we have in ssp and store it to localforage
       // now we have all the information we need to display the ABE assets. We shall make nice sell assets and nice buy assets with limits for every asset we have in ssp and store it to localforage
 
       // ssp mapping is chain(id)_unit_contract
@@ -78,6 +108,7 @@ function ABEController() {
       });
       // store this map to localforage
       await localForage.setItem('sspABEMapping', sspMapping);
+      dispatch(setAbeMapping(sspMapping));
       const sellAssets = await fetchSellAssets();
       const buyAssets = await fetchBuyAssets();
       // now we have sell assets and buy assets
@@ -194,7 +225,9 @@ function ABEController() {
             .filter((x) => x !== abeToSspMapping[asset.idzelcore]);
       });
       await localForage.setItem('sellAssetsWithLimits', sellAssetsWithLimits);
+      dispatch(setSellAssets(sellAssetsWithLimits));
       await localForage.setItem('buyAssetsWithLimits', buyAssetsWithLimits);
+      dispatch(setBuyAssets(buyAssetsWithLimits));
     } catch (error) {
       console.log(error);
     }

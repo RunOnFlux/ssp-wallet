@@ -21,7 +21,11 @@
   color: #fff;
   text-align: left;
   width: 100%;
-  margin-left: -8px;
+}
+
+.swap-box-row-input .ant-input-number-input-wrap input {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
 }
 
 .swap-box-row-input-number {

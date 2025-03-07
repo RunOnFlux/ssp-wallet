@@ -101,6 +101,18 @@ const initialServicesAvailabilityState: servicesAvailabilityState = {
   },
 };
 
+interface abeState {
+  sellAssets: { [key: string]: string[] };
+  buyAssets: { [key: string]: string[] };
+  abeMapping: { [key: string]: string };
+}
+
+const initialAbeState: abeState = {
+  sellAssets: {},
+  buyAssets: {},
+  abeMapping: {},
+};
+
 interface RatesState {
   cryptoRates: cryptos;
   fiatRates: currency;
@@ -269,6 +281,31 @@ const servicesAvailabilitySlice = createSlice({
   },
 });
 
+const abeSlice = createSlice({
+  name: 'abe',
+  initialState: initialAbeState,
+  reducers: {
+    setSellAssets: (
+      state,
+      action: PayloadAction<{ [key: string]: string[] }>,
+    ) => {
+      state.sellAssets = action.payload;
+    },
+    setBuyAssets: (
+      state,
+      action: PayloadAction<{ [key: string]: string[] }>,
+    ) => {
+      state.buyAssets = action.payload;
+    },
+    setAbeMapping: (
+      state,
+      action: PayloadAction<{ [key: string]: string }>,
+    ) => {
+      state.abeMapping = action.payload;
+    },
+  },
+});
+
 const sspStateSlice = createSlice({
   name: 'sspState',
   initialState: initialSspState,
@@ -307,6 +344,8 @@ export const { setServicesAvailability } = servicesAvailabilitySlice.actions;
 
 export const { setContacts, setInitialContactsState } = contactsSlice.actions;
 
+export const { setSellAssets, setBuyAssets, setAbeMapping } = abeSlice.actions;
+
 export const {
   setSSPInitialState,
   setSspWalletKeyInternalIdentity,
@@ -322,6 +361,7 @@ const reducers = combineReducers({
   sspState: sspStateSlice.reducer,
   contacts: contactsSlice.reducer,
   servicesAvailability: servicesAvailabilitySlice.reducer,
+  abe: abeSlice.reducer,
   // === IMPORT CHAINS ===
   ...chainKeys.reduce(
     (acc, key) => {

@@ -650,6 +650,28 @@ export interface zelcoreAssetResponse {
   data: zelcoreAsset[];
 }
 
+export interface pairDetailsResponse {
+  status: string;
+  data: {
+    sellAsset: number;
+    buyAsset: number;
+    exchanges: {
+      exchangeId: string;
+      sellAsset: string;
+      buyAsset: string;
+      rate: string;
+      precision: string;
+      destNetworkFee: string;
+      sellAmount: string;
+      buyAmount: string;
+      rateId: string | null;
+      minSellAmount: string;
+      maxSellAmount: string;
+    }[];
+    message?: string;
+  };
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;
