@@ -317,6 +317,7 @@
     "coming_soon": "Coming Soon!"
   },
   "swap": {
-    "header": "Swap Crypto"
+    "header": "Swap Crypto",
+    "search_asset": "Search Asset"
   }
 }

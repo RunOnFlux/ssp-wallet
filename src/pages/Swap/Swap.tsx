@@ -9,6 +9,7 @@ import {
   Space,
   Spin,
   Modal,
+  Input,
 } from 'antd';
 import { CaretDownOutlined, LoadingOutlined } from '@ant-design/icons';
 import Navbar from '../../components/Navbar/Navbar.tsx';
@@ -34,6 +35,8 @@ function Swap() {
   const [loading, setLoading] = useState(false);
   const [sellAssetModalOpen, setSellAssetModalOpen] = useState(false);
   const [buyAssetModalOpen, setBuyAssetModalOpen] = useState(false);
+  const [sellAssetFilter, setSellAssetFilter] = useState('');
+  const [buyAssetFilter, setBuyAssetFilter] = useState('');
   const { abeMapping, sellAssets, buyAssets } = useAppSelector(
     (state) => state.abe,
   );
@@ -310,17 +313,44 @@ function Swap() {
           style={{ marginBottom: 16, marginTop: 16 }}
         >
           <div className="asset-selection">
-            {buyAssets[buyAsset].map((asset) => (
-              <div
-                onClick={() => {
-                  setSellAsset(asset);
-                  handleCancelSellAsset();
-                }}
-                key={asset}
-              >
-                <AssetBox asset={asset} />
-              </div>
-            ))}
+            <Input
+              id="searchSellAsset"
+              variant="outlined"
+              placeholder={t('home:swap.search_asset')}
+              allowClear
+              onChange={(e) => setSellAssetFilter(e.target.value)}
+              size="large"
+              style={{ marginBottom: '16px', width: '350px' }}
+            />
+            {buyAssets[buyAsset]
+              .filter(
+                (asset) =>
+                  (
+                    blockchains[asset.split('_')[0]].tokens?.find(
+                      (token) => token.symbol === asset.split('_')[1],
+                    )?.symbol ?? blockchains[asset.split('_')[0]]?.symbol
+                  )
+                    ?.toLowerCase()
+                    ?.includes(sellAssetFilter.toLowerCase()) ||
+                  (
+                    blockchains[asset.split('_')[0]].tokens?.find(
+                      (token) => token.symbol === asset.split('_')[1],
+                    )?.name ?? blockchains[asset.split('_')[0]]?.name
+                  )
+                    ?.toLowerCase()
+                    ?.includes(sellAssetFilter.toLowerCase()),
+              )
+              .map((asset) => (
+                <div
+                  onClick={() => {
+                    setSellAsset(asset);
+                    handleCancelSellAsset();
+                  }}
+                  key={asset}
+                >
+                  <AssetBox asset={asset} />
+                </div>
+              ))}
           </div>
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button
@@ -347,17 +377,44 @@ function Swap() {
           style={{ marginBottom: 16, marginTop: 16 }}
         >
           <div className="asset-selection">
-            {sellAssets[sellAsset].map((asset) => (
-              <div
-                onClick={() => {
-                  setBuyAsset(asset);
-                  handleCancelBuyAsset();
-                }}
-                key={asset}
-              >
-                <AssetBox asset={asset} />
-              </div>
-            ))}
+            <Input
+              id="searchBuyAsset"
+              variant="outlined"
+              placeholder={t('home:swap.search_asset')}
+              allowClear
+              onChange={(e) => setBuyAssetFilter(e.target.value)}
+              size="large"
+              style={{ marginBottom: '16px', width: '350px' }}
+            />
+            {sellAssets[sellAsset]
+              .filter(
+                (asset) =>
+                  (
+                    blockchains[asset.split('_')[0]].tokens?.find(
+                      (token) => token.symbol === asset.split('_')[1],
+                    )?.symbol ?? blockchains[asset.split('_')[0]]?.symbol
+                  )
+                    ?.toLowerCase()
+                    ?.includes(buyAssetFilter.toLowerCase()) ||
+                  (
+                    blockchains[asset.split('_')[0]].tokens?.find(
+                      (token) => token.symbol === asset.split('_')[1],
+                    )?.name ?? blockchains[asset.split('_')[0]]?.name
+                  )
+                    ?.toLowerCase()
+                    ?.includes(buyAssetFilter.toLowerCase()),
+              )
+              .map((asset) => (
+                <div
+                  onClick={() => {
+                    setBuyAsset(asset);
+                    handleCancelBuyAsset();
+                  }}
+                  key={asset}
+                >
+                  <AssetBox asset={asset} />
+                </div>
+              ))}
           </div>
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button

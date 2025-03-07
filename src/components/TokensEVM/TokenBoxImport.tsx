@@ -124,13 +124,15 @@ function TokenBoxImport(props: {
       >
         <Meta
           avatar={
-            <Badge
-              count={<Avatar src={blockchains[props.chain].logo} size={18} />}
-              size="small"
-              offset={[-2, 5]}
-            >
-              <Avatar src={props.tokenInfo.logo} size={30} />
-            </Badge>
+            <div style={{ marginTop: '12px' }}>
+              <Badge
+                count={<Avatar src={blockchains[props.chain].logo} size={18} />}
+                size="small"
+                offset={[-2, 5]}
+              >
+                <Avatar src={props.tokenInfo.logo} size={30} />
+              </Badge>
+            </div>
           }
           title={
             <>
