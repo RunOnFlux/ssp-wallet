@@ -104,7 +104,10 @@ function Navbar({
     label: t('home:navbar.chain_wallet', {
       chain: blockchainConfig.name,
       wallet:
-        (+walletInUse.split('-')[0] === 1 ? 'Change ' : 'Wallet ') +
+        (+walletInUse.split('-')[0] === 1
+          ? t('common:change')
+          : t('common:wallet')) +
+        ' ' +
         (+walletInUse.split('-')[1] + 1),
     }),
   });
@@ -124,8 +127,11 @@ function Navbar({
       label: t('home:navbar.chain_wallet', {
         chain: blockchainConfig.name,
         wallet:
-          (+walletInUse.split('-')[0] === 1 ? 'Change ' : 'Wallet ') +
-          (+walletInUse.split('-')[1] + 1),
+          (+walletInUse.split('-')[0] === 1
+            ? t('common:change')
+            : t('common:wallet')) +
+          ' ' +
+          (+walletInUse.split('-')[1] + 1).toString(),
       }),
     };
     setWalletValue(defValue);
@@ -136,9 +142,9 @@ function Navbar({
     Object.keys(wallets).forEach((wallet) => {
       const typeNumber = Number(wallet.split('-')[0]);
       const walletNumber = Number(wallet.split('-')[1]) + 1;
-      let walletName = 'Wallet ' + walletNumber;
+      let walletName = `${t('common:wallet')} ${walletNumber.toString()}`;
       if (typeNumber === 1) {
-        walletName = 'Change ' + walletNumber;
+        walletName = `${t('common:change')} ${walletNumber.toString()}`;
       }
       const wal = {
         value: wallet,
@@ -254,7 +260,7 @@ function Navbar({
       // check if that is our activeIndex, if yes. Switch wallet.
       if (pathToDelete === walletInUse) {
         // switch
-        const walletName = 'Wallet 1';
+        const walletName = t('common:wallet') + ' 1';
         const wal = {
           value: '0-0',
           label: t('home:navbar.chain_wallet', {

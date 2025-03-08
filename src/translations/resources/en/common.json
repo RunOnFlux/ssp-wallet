@@ -51,5 +51,6 @@
   "network": "Network",
   "decimals": "Decimals",
   "to": "To",
-  "from": "From"
+  "from": "From",
+  "change": "Change"
 }

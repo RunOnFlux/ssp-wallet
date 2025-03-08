@@ -320,6 +320,7 @@
     "header": "Swap Crypto",
     "search_asset": "Search Asset",
     "you_send": "You Send",
-    "you_get": "You Get"
+    "you_get": "You Get",
+    "chain_sync_required": "Chain synchronisation required first"
   }
 }

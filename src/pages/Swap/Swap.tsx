@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Divider,
   InputNumber,
@@ -23,8 +23,11 @@ import { useAppSelector } from '../../hooks.ts';
 import { pairDetailsSellAmount } from '../../lib/ABEController.ts';
 import AssetBox from './AssetBox.tsx';
 import { useNavigate } from 'react-router';
+import localForage from 'localforage';
+import { generatedWallets } from '../../types';
 
 function Swap() {
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { t } = useTranslation(['send', 'common', 'home']);
   const [amountSell, setAmountSell] = useState(0.1);
   const [amountBuy, setAmountBuy] = useState(0);
@@ -38,9 +41,14 @@ function Swap() {
   const [buyAssetModalOpen, setBuyAssetModalOpen] = useState(false);
   const [sellAssetFilter, setSellAssetFilter] = useState('');
   const [buyAssetFilter, setBuyAssetFilter] = useState('');
+  const [sellAssetAddress, setSellAssetAddress] = useState('0-0');
+  const [buyAssetAddress, setBuyAssetAddress] = useState('0-0');
   const { abeMapping, sellAssets, buyAssets } = useAppSelector(
     (state) => state.abe,
   );
+  const [userAddresses, setUserAddresses] = useState<
+    Record<keyof blockchains, generatedWallets>
+  >({});
   const navigate = useNavigate();
 
   const refresh = () => {
@@ -52,6 +60,28 @@ function Swap() {
   useEffect(() => {
     fetchPairDetails();
   }, [amountSell, sellAsset, buyAsset]);
+
+  useEffect(() => {
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
+    void (async () => {
+      const userAddrs: Record<keyof blockchains, generatedWallets> = {};
+      for (const chain of Object.keys(blockchains)) {
+        const generatedWallets: generatedWallets =
+          (await localForage.getItem(`wallets-${chain}`)) ?? {};
+        if (Object.keys(generatedWallets).length > 0) {
+          // remove any change addresses. Only addresses that start with 0 are valid
+          const adjAddresses = Object.fromEntries(
+            Object.entries(generatedWallets).filter(([key]) =>
+              key.startsWith('0-'),
+            ),
+          );
+          userAddrs[chain] = adjAddresses;
+        }
+      }
+      setUserAddresses(userAddrs);
+    })();
+  });
 
   const fetchPairDetails = async () => {
     try {
@@ -209,8 +239,27 @@ function Swap() {
               {t('common:from')}
             </Col>
             <Col span={18} className="swap-box-row-sub-selection">
-              check if chain is synced Wallet 1: bc1qqwe...asdf
-              <CaretDownOutlined />
+              {userAddresses[sellAsset.split('_')[0]] ? (
+                <>
+                  {t('common:wallet')}{' '}
+                  {Number(sellAssetAddress.split('-')[1]) + 1}:{' '}
+                  {userAddresses[sellAsset.split('_')[0]][
+                    sellAssetAddress
+                  ].substring(0, 8)}
+                  ...
+                  {userAddresses[sellAsset.split('_')[0]][
+                    sellAssetAddress
+                  ].substring(
+                    userAddresses[sellAsset.split('_')[0]][sellAssetAddress]
+                      .length - 6,
+                  )}{' '}
+                  <CaretDownOutlined />
+                </>
+              ) : (
+                <span style={{ color: 'red' }}>
+                  {t('home:swap.chain_sync_required')}
+                </span>
+              )}
             </Col>
           </Row>
         </div>
@@ -278,8 +327,27 @@ function Swap() {
               {t('common:to')}
             </Col>
             <Col span={18} className="swap-box-row-sub-selection">
-              check if chain is synced Wallet 2: bc1qqwe...asdf
-              <CaretDownOutlined />
+              {userAddresses[buyAsset.split('_')[0]] ? (
+                <>
+                  {t('common:wallet')}{' '}
+                  {Number(buyAssetAddress.split('-')[1]) + 1}:{' '}
+                  {userAddresses[buyAsset.split('_')[0]][
+                    buyAssetAddress
+                  ].substring(0, 8)}
+                  ...
+                  {userAddresses[buyAsset.split('_')[0]][
+                    buyAssetAddress
+                  ].substring(
+                    userAddresses[buyAsset.split('_')[0]][buyAssetAddress]
+                      .length - 6,
+                  )}{' '}
+                  <CaretDownOutlined />
+                </>
+              ) : (
+                <span style={{ color: 'red' }}>
+                  {t('home:swap.chain_sync_required')}
+                </span>
+              )}
             </Col>
           </Row>
         </div>

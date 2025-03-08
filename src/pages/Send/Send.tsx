@@ -163,9 +163,9 @@ function Send() {
     Object.keys(wallets).forEach((wallet) => {
       const typeNumber = Number(wallet.split('-')[0]);
       const walletNumber = Number(wallet.split('-')[1]) + 1;
-      let walletName = 'Wallet ' + walletNumber;
+      let walletName = `${t('common:wallet')} ${walletNumber.toString()}`;
       if (typeNumber === 1) {
-        walletName = 'Change ' + walletNumber;
+        walletName = `${t('common:change')} ${walletNumber.toString()}`;
       }
       const wal = {
         value: wallets[wallet].address,
