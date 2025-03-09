@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { version } from '../../package.json';
 import {
   abeAsset,
   abeAssetResponse,
@@ -7,10 +8,16 @@ import {
   pairDetailsResponse,
 } from '../types';
 
+const options = {
+  headers: {
+    ssp: version,
+  },
+};
+
 export async function fetchSellAssets(): Promise<abeAsset[]> {
   try {
     const url = 'https://abe.zelcore.io/v1/exchange/sellassets';
-    const response = await axios.get<abeAssetResponse>(url);
+    const response = await axios.get<abeAssetResponse>(url, options);
     if (response.data && response.data.data.length > 0) {
       return response.data.data;
     } else {
@@ -25,7 +32,7 @@ export async function fetchSellAssets(): Promise<abeAsset[]> {
 export async function fetchBuyAssets(): Promise<abeAsset[]> {
   try {
     const url = 'https://abe.zelcore.io/v1/exchange/buyassets';
-    const response = await axios.get<abeAssetResponse>(url);
+    const response = await axios.get<abeAssetResponse>(url, options);
     if (response.data && response.data.data.length > 0) {
       return response.data.data;
     } else {
@@ -40,7 +47,7 @@ export async function fetchBuyAssets(): Promise<abeAsset[]> {
 export async function fetchZelcoreAssets(): Promise<zelcoreAsset[]> {
   try {
     const url = 'https://abe.zelcore.io/v1/zelcoreassets';
-    const response = await axios.get<zelcoreAssetResponse>(url);
+    const response = await axios.get<zelcoreAssetResponse>(url, options);
     if (response.data && response.data.data.length > 0) {
       return response.data.data;
     } else {
@@ -64,7 +71,7 @@ export async function pairDetailsSellAmount(
       sellAmount: amount,
     };
     const url = `https://abe.zelcore.io/v1/exchange/pairdetailssellamount`;
-    const response = await axios.post<pairDetailsResponse>(url, data);
+    const response = await axios.post<pairDetailsResponse>(url, data, options);
     return response.data;
   } catch (error) {
     console.log(error);
