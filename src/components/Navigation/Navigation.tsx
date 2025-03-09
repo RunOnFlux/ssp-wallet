@@ -108,20 +108,22 @@ function Navigation() {
               </Button>
             </Tooltip>
           )}
-          <Button
-            type="default"
-            className={
-              themeStyle === 'light' ? 'buttonSwapLight' : 'buttonSwap'
-            }
-            size={'small'}
-            variant="filled"
-            color={themeStyle === 'light' ? 'yellow' : 'purple'}
-            onClick={() => {
-              navigate('/swap', { state: { buyAsset: activeChain } });
-            }}
-          >
-            <span>{t('home:navigation.swap')}</span>
-          </Button>
+          {servicesAvailability.swap && (
+            <Button
+              type="default"
+              className={
+                themeStyle === 'light' ? 'buttonSwapLight' : 'buttonSwap'
+              }
+              size={'small'}
+              variant="filled"
+              color={themeStyle === 'light' ? 'yellow' : 'purple'}
+              onClick={() => {
+                navigate('/swap', { state: { buyAsset: activeChain } });
+              }}
+            >
+              <span>{t('home:navigation.swap')}</span>
+            </Button>
+          )}
         </Space>
         <Button
           type="default"
