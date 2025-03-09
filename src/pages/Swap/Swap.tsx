@@ -25,6 +25,7 @@ import AssetBox from './AssetBox.tsx';
 import { useNavigate } from 'react-router';
 import localForage from 'localforage';
 import { generatedWallets } from '../../types';
+import AddressBox from './AddressBox.tsx';
 
 function Swap() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
@@ -39,6 +40,9 @@ function Swap() {
   const [loading, setLoading] = useState(false);
   const [sellAssetModalOpen, setSellAssetModalOpen] = useState(false);
   const [buyAssetModalOpen, setBuyAssetModalOpen] = useState(false);
+  const [receivingWalletModalOpen, setReceivingWalletModalOpen] =
+    useState(false);
+  const [sendingWalletModalOpen, setSendingWalletModalOpen] = useState(false);
   const [sellAssetFilter, setSellAssetFilter] = useState('');
   const [buyAssetFilter, setBuyAssetFilter] = useState('');
   const [sellAssetAddress, setSellAssetAddress] = useState('0-0');
@@ -171,6 +175,14 @@ function Swap() {
     setBuyAssetModalOpen(false);
   };
 
+  const handleCancelReceivingWallet = () => {
+    setReceivingWalletModalOpen(false);
+  };
+
+  const handleCancelSendingWallet = () => {
+    setSendingWalletModalOpen(false);
+  };
+
   return (
     <>
       <Navbar
@@ -238,7 +250,11 @@ function Swap() {
             <Col span={6} className="swap-box-row-sub-title">
               {t('common:from')}
             </Col>
-            <Col span={18} className="swap-box-row-sub-selection">
+            <Col
+              span={18}
+              className="swap-box-row-sub-selection"
+              onClick={() => setSendingWalletModalOpen(true)}
+            >
               {userAddresses[sellAsset.split('_')[0]] ? (
                 <>
                   {t('common:wallet')}{' '}
@@ -326,7 +342,11 @@ function Swap() {
             <Col span={6} className="swap-box-row-sub-title">
               {t('common:to')}
             </Col>
-            <Col span={18} className="swap-box-row-sub-selection">
+            <Col
+              span={18}
+              className="swap-box-row-sub-selection"
+              onClick={() => setReceivingWalletModalOpen(true)}
+            >
               {userAddresses[buyAsset.split('_')[0]] ? (
                 <>
                   {t('common:wallet')}{' '}
@@ -493,6 +513,100 @@ function Swap() {
               block
               size="small"
               onClick={handleCancelBuyAsset}
+            >
+              {t('common:close')}
+            </Button>
+          </Space>
+        </Space>
+      </Modal>
+      <Modal
+        title="Select Sending Wallet"
+        open={sendingWalletModalOpen}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={handleCancelSendingWallet}
+        footer={[]}
+      >
+        <Space
+          direction="vertical"
+          size="middle"
+          style={{ marginBottom: 16, marginTop: 16 }}
+        >
+          {userAddresses[sellAsset.split('_')[0]] && (
+            <div className="asset-selection">
+              {Object.keys(userAddresses[sellAsset.split('_')[0]]).map(
+                (wallet) => (
+                  <div
+                    onClick={() => {
+                      setSellAssetAddress(wallet);
+                      handleCancelSendingWallet();
+                    }}
+                    key={
+                      sellAsset + userAddresses[sellAsset.split('_')[0]].wallet
+                    }
+                  >
+                    <AddressBox
+                      asset={sellAsset}
+                      wallet={wallet}
+                      address={userAddresses[sellAsset.split('_')[0]][wallet]}
+                    />
+                  </div>
+                ),
+              )}
+            </div>
+          )}
+          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
+            <Button
+              type="link"
+              block
+              size="small"
+              onClick={handleCancelSendingWallet}
+            >
+              {t('common:close')}
+            </Button>
+          </Space>
+        </Space>
+      </Modal>
+      <Modal
+        title="Select Receiving Wallet"
+        open={receivingWalletModalOpen}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={handleCancelReceivingWallet}
+        footer={[]}
+      >
+        <Space
+          direction="vertical"
+          size="middle"
+          style={{ marginBottom: 16, marginTop: 16 }}
+        >
+          {userAddresses[buyAsset.split('_')[0]] && (
+            <div className="asset-selection">
+              {Object.keys(userAddresses[buyAsset.split('_')[0]]).map(
+                (wallet) => (
+                  <div
+                    onClick={() => {
+                      setBuyAssetAddress(wallet);
+                      handleCancelReceivingWallet();
+                    }}
+                    key={
+                      buyAsset + userAddresses[buyAsset.split('_')[0]].wallet
+                    }
+                  >
+                    <AddressBox
+                      asset={buyAsset}
+                      wallet={wallet}
+                      address={userAddresses[buyAsset.split('_')[0]][wallet]}
+                    />
+                  </div>
+                ),
+              )}
+            </div>
+          )}
+          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
+            <Button
+              type="link"
+              block
+              size="small"
+              onClick={handleCancelReceivingWallet}
             >
               {t('common:close')}
             </Button>
