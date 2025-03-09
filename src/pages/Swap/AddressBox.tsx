@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Badge, Avatar, Flex } from 'antd';
 const { Meta } = Card;
 import BigNumber from 'bignumber.js';
@@ -15,7 +15,6 @@ interface balancesObj {
 }
 
 function AddressBox(props: { asset: string; wallet: string; address: string }) {
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { asset, wallet, address } = props;
   const { t } = useTranslation(['home', 'common']);
   const [balance, setBalance] = useState(new BigNumber(0));
@@ -23,8 +22,6 @@ function AddressBox(props: { asset: string; wallet: string; address: string }) {
   const blockchainConfig = blockchains[asset.split('_')[0]];
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     void (async () => {
       if (asset.split('_')[2]) {
         const balancesTokens: tokenBalanceEVM[] | null =
@@ -45,7 +42,11 @@ function AddressBox(props: { asset: string; wallet: string; address: string }) {
                 10 ** (token?.decimals ?? 0),
               ),
             );
+          } else {
+            setBalance(new BigNumber(0));
           }
+        } else {
+          setBalance(new BigNumber(0));
         }
       } else {
         const balancesWallet: balancesObj | null = await localForage.getItem(
@@ -56,10 +57,12 @@ function AddressBox(props: { asset: string; wallet: string; address: string }) {
             10 ** blockchainConfig.decimals,
           );
           setBalance(ttlBal);
+        } else {
+          setBalance(new BigNumber(0));
         }
       }
     })();
-  });
+  }, [asset, wallet, address]);
   return (
     <>
       <Card hoverable style={{ marginTop: 5, width: '350px' }} size="small">

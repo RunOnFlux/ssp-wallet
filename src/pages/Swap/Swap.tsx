@@ -605,7 +605,7 @@ function Swap() {
                       setSellAssetAddress(wallet);
                       handleCancelSendingWallet();
                     }}
-                    key={userAddresses[sellAsset.split('_')[0]].wallet}
+                    key={wallet}
                   >
                     <AddressBox
                       asset={sellAsset}
@@ -649,7 +649,7 @@ function Swap() {
                       setBuyAssetAddress(wallet);
                       handleCancelReceivingWallet();
                     }}
-                    key={userAddresses[buyAsset.split('_')[0]].wallet}
+                    key={wallet}
                   >
                     <AddressBox
                       asset={buyAsset}
