@@ -13,11 +13,7 @@ import {
   message,
   Popover,
 } from 'antd';
-import {
-  CaretDownOutlined,
-  LoadingOutlined,
-  QuestionCircleOutlined,
-} from '@ant-design/icons';
+import { CaretDownOutlined, LoadingOutlined } from '@ant-design/icons';
 import Navbar from '../../components/Navbar/Navbar.tsx';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
@@ -426,8 +422,7 @@ function Swap() {
               title={t('home:swap.floating_rate_title')}
               styles={{ body: { maxWidth: 300, marginLeft: 10 } }}
             >
-              1 {sellAsset.split('_')[1]} = {rate} {buyAsset.split('_')[1]}{' '}
-              <QuestionCircleOutlined />
+              1 {sellAsset.split('_')[1]} = {rate} {buyAsset.split('_')[1]}
             </Popover>
           ) : (
             <span>&nbsp;</span>
