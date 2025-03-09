@@ -250,13 +250,14 @@ function Swap() {
             <Col span={6} className="swap-box-row-sub-title">
               {t('common:from')}
             </Col>
-            <Col
-              span={18}
-              className="swap-box-row-sub-selection"
-              onClick={() => setSendingWalletModalOpen(true)}
-            >
+            <Col span={18} onClick={() => setSendingWalletModalOpen(true)}>
               {userAddresses[sellAsset.split('_')[0]] ? (
-                <>
+                <Button
+                  size="small"
+                  type="text"
+                  className="swap-box-row-sub-selection"
+                  onClick={() => setSendingWalletModalOpen(true)}
+                >
                   {t('common:wallet')}{' '}
                   {Number(sellAssetAddress.split('-')[1]) + 1}:{' '}
                   {userAddresses[sellAsset.split('_')[0]][
@@ -268,13 +269,19 @@ function Swap() {
                   ].substring(
                     userAddresses[sellAsset.split('_')[0]][sellAssetAddress]
                       .length - 6,
-                  )}{' '}
+                  )}
                   <CaretDownOutlined />
-                </>
+                </Button>
               ) : (
-                <span style={{ color: 'red' }}>
+                <Button
+                  size="small"
+                  type="text"
+                  className="swap-box-row-sub-selection"
+                  style={{ color: 'red' }}
+                  disabled={true}
+                >
                   {t('home:swap.chain_sync_required')}
-                </span>
+                </Button>
               )}
             </Col>
           </Row>
@@ -342,13 +349,14 @@ function Swap() {
             <Col span={6} className="swap-box-row-sub-title">
               {t('common:to')}
             </Col>
-            <Col
-              span={18}
-              className="swap-box-row-sub-selection"
-              onClick={() => setReceivingWalletModalOpen(true)}
-            >
+            <Col span={18}>
               {userAddresses[buyAsset.split('_')[0]] ? (
-                <>
+                <Button
+                  size="small"
+                  type="text"
+                  className="swap-box-row-sub-selection"
+                  onClick={() => setReceivingWalletModalOpen(true)}
+                >
                   {t('common:wallet')}{' '}
                   {Number(buyAssetAddress.split('-')[1]) + 1}:{' '}
                   {userAddresses[buyAsset.split('_')[0]][
@@ -360,13 +368,19 @@ function Swap() {
                   ].substring(
                     userAddresses[buyAsset.split('_')[0]][buyAssetAddress]
                       .length - 6,
-                  )}{' '}
+                  )}
                   <CaretDownOutlined />
-                </>
+                </Button>
               ) : (
-                <span style={{ color: 'red' }}>
+                <Button
+                  size="small"
+                  type="text"
+                  className="swap-box-row-sub-selection"
+                  style={{ color: 'red' }}
+                  disabled={true}
+                >
                   {t('home:swap.chain_sync_required')}
-                </span>
+                </Button>
               )}
             </Col>
           </Row>
@@ -403,7 +417,7 @@ function Swap() {
           size="middle"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
-          <div className="asset-selection">
+          <div>
             <Input
               id="searchSellAsset"
               variant="outlined"
@@ -467,7 +481,7 @@ function Swap() {
           size="middle"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
-          <div className="asset-selection">
+          <div>
             <Input
               id="searchBuyAsset"
               variant="outlined"
@@ -531,18 +545,16 @@ function Swap() {
           size="middle"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
-          {userAddresses[sellAsset.split('_')[0]] && (
-            <div className="asset-selection">
-              {Object.keys(userAddresses[sellAsset.split('_')[0]]).map(
+          <div>
+            {userAddresses[sellAsset.split('_')[0]] &&
+              Object.keys(userAddresses[sellAsset.split('_')[0]]).map(
                 (wallet) => (
                   <div
                     onClick={() => {
                       setSellAssetAddress(wallet);
                       handleCancelSendingWallet();
                     }}
-                    key={
-                      sellAsset + userAddresses[sellAsset.split('_')[0]].wallet
-                    }
+                    key={userAddresses[sellAsset.split('_')[0]].wallet}
                   >
                     <AddressBox
                       asset={sellAsset}
@@ -552,8 +564,7 @@ function Swap() {
                   </div>
                 ),
               )}
-            </div>
-          )}
+          </div>
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button
               type="link"
@@ -578,18 +589,16 @@ function Swap() {
           size="middle"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
-          {userAddresses[buyAsset.split('_')[0]] && (
-            <div className="asset-selection">
-              {Object.keys(userAddresses[buyAsset.split('_')[0]]).map(
+          <div>
+            {userAddresses[buyAsset.split('_')[0]] &&
+              Object.keys(userAddresses[buyAsset.split('_')[0]]).map(
                 (wallet) => (
                   <div
                     onClick={() => {
                       setBuyAssetAddress(wallet);
                       handleCancelReceivingWallet();
                     }}
-                    key={
-                      buyAsset + userAddresses[buyAsset.split('_')[0]].wallet
-                    }
+                    key={userAddresses[buyAsset.split('_')[0]].wallet}
                   >
                     <AddressBox
                       asset={buyAsset}
@@ -599,8 +608,7 @@ function Swap() {
                   </div>
                 ),
               )}
-            </div>
-          )}
+          </div>
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button
               type="link"

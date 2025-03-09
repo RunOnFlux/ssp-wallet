@@ -1,12 +1,65 @@
+import { useEffect, useRef, useState } from 'react';
 import { Card, Badge, Avatar, Flex } from 'antd';
 const { Meta } = Card;
+import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
+import localForage from 'localforage';
 import './AddressBox.css';
+import { tokenBalanceEVM } from '../../types';
+import { formatCrypto } from '../../lib/currency';
+
+interface balancesObj {
+  confirmed: string;
+  unconfirmed: string;
+}
 
 function AddressBox(props: { asset: string; wallet: string; address: string }) {
+  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { asset, wallet, address } = props;
   const { t } = useTranslation(['home', 'common']);
+  const [balance, setBalance] = useState(new BigNumber(0));
+
+  const blockchainConfig = blockchains[asset.split('_')[0]];
+
+  useEffect(() => {
+    if (alreadyMounted.current) return;
+    alreadyMounted.current = true;
+    void (async () => {
+      if (asset.split('_')[2]) {
+        const balancesTokens: tokenBalanceEVM[] | null =
+          await localForage.getItem(
+            `token-balances-${asset.split('_')[0]}-${wallet}`,
+          );
+        if (balancesTokens?.length) {
+          const tokenBalExists = balancesTokens.find(
+            (token) => token.contract === asset.split('_')[2],
+          );
+          if (tokenBalExists) {
+            // search token in tokens of the blockchain
+            const token = blockchainConfig.tokens?.find(
+              (token) => token.contract === asset.split('_')[2],
+            );
+            setBalance(
+              new BigNumber(tokenBalExists.balance).dividedBy(
+                10 ** (token?.decimals ?? 0),
+              ),
+            );
+          }
+        }
+      } else {
+        const balancesWallet: balancesObj | null = await localForage.getItem(
+          `balances-${asset.split('_')[0]}-${wallet}`,
+        );
+        if (balancesWallet) {
+          const ttlBal = new BigNumber(balancesWallet.confirmed).dividedBy(
+            10 ** blockchainConfig.decimals,
+          );
+          setBalance(ttlBal);
+        }
+      }
+    })();
+  });
   return (
     <>
       <Card hoverable style={{ marginTop: 5, width: '350px' }} size="small">
@@ -43,7 +96,7 @@ function AddressBox(props: { asset: string; wallet: string; address: string }) {
                   ' ' +
                   (+wallet.split('-')[1] + 1).toString()}
               </div>
-              <div style={{ float: 'right' }}>CRYPTO VALUE</div>
+              <div style={{ float: 'right' }}>{formatCrypto(balance, 12)}</div>
             </>
           }
           description={

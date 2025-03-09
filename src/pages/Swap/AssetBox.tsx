@@ -55,7 +55,7 @@ function AssetBox(props: { asset: string }) {
                   <div
                     style={{
                       float: 'right',
-                      marginTop: '-24px',
+                      marginTop: '-34px',
                       fontSize: '12px',
                       textAlign: 'right',
                     }}

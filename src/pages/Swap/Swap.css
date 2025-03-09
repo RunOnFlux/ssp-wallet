@@ -88,6 +88,9 @@
   font-size: 12px;
   color: #fff;
   text-align: right;
+  position: absolute;
+  right: 0;
+  margin-top: -5px;
 }
 
 .sub-row {
