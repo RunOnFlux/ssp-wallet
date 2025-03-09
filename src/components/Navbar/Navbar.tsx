@@ -34,11 +34,11 @@ import {
 } from 'antd';
 import {
   LockOutlined,
-  SettingOutlined,
   PlusOutlined,
   MinusOutlined,
   NodeIndexOutlined,
   QuestionCircleOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import './Navbar.css';
@@ -78,6 +78,7 @@ const balancesObject = {
 interface Props {
   refresh: () => void;
   hasRefresh: boolean;
+  hasSwapHistory?: boolean;
   allowChainSwitch?: boolean;
   header?: string;
 }
@@ -85,6 +86,7 @@ interface Props {
 function Navbar({
   refresh,
   hasRefresh,
+  hasSwapHistory = false,
   allowChainSwitch = true,
   header,
 }: Props) {
@@ -356,6 +358,9 @@ function Navbar({
     }
     setPasswordConfirmDialogVisible(false);
   };
+  const interactWithSwapHistory = () => {
+    displayMessage('info', t('home:buy_sell_crypto.coming_soon'));
+  };
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
     if (e.key === 'refresh') refresh();
@@ -370,6 +375,7 @@ function Navbar({
     }
     if (e.key === 'manualsign') setOpenManualSign(true);
     if (e.key === 'settings') setOpenSettingsDialogVisible(true);
+    if (e.key === 'history') interactWithSwapHistory();
   };
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -396,7 +402,7 @@ function Navbar({
   const menuItems: MenuProps['items'] = [
     {
       key: 'Menu',
-      icon: <SettingOutlined style={{ fontSize: '14px' }} />,
+      icon: <MenuOutlined style={{ fontSize: '14px' }} />,
       style: {
         border: 'none',
         width: '30px',
@@ -430,24 +436,31 @@ function Navbar({
               key: 'refresh',
             },
           ]
-        : [
-            {
-              label: t('home:navbar.addr_details'),
-              key: 'address',
-            },
-            {
-              label: t('home:navbar.ssp_details'),
-              key: 'sspwallet',
-            },
-            {
-              label: t('home:navbar.ssp_message_sign'),
-              key: 'manualsign',
-            },
-            {
-              label: t('home:settings.settings'),
-              key: 'settings',
-            },
-          ],
+        : hasSwapHistory
+          ? [
+              {
+                label: t('home:navbar.swap_history'),
+                key: 'history',
+              },
+            ]
+          : [
+              {
+                label: t('home:navbar.addr_details'),
+                key: 'address',
+              },
+              {
+                label: t('home:navbar.ssp_details'),
+                key: 'sspwallet',
+              },
+              {
+                label: t('home:navbar.ssp_message_sign'),
+                key: 'manualsign',
+              },
+              {
+                label: t('home:settings.settings'),
+                key: 'settings',
+              },
+            ],
     },
     {
       key: 'Lock',

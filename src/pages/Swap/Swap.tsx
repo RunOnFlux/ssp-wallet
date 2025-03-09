@@ -217,6 +217,7 @@ function Swap() {
         refresh={refresh}
         hasRefresh={false}
         allowChainSwitch={false}
+        hasSwapHistory={true}
         header={t('home:swap.header')}
       />
       <Divider />
