@@ -10,6 +10,7 @@ import {
   Spin,
   Modal,
   Input,
+  message,
 } from 'antd';
 import { CaretDownOutlined, LoadingOutlined } from '@ant-design/icons';
 import Navbar from '../../components/Navbar/Navbar.tsx';
@@ -26,6 +27,7 @@ import { useNavigate } from 'react-router';
 import localForage from 'localforage';
 import { generatedWallets } from '../../types';
 import AddressBox from './AddressBox.tsx';
+import { NoticeType } from 'antd/es/message/interface';
 
 function Swap() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
@@ -54,11 +56,19 @@ function Swap() {
     Record<keyof blockchains, generatedWallets>
   >({});
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const refresh = () => {
     console.log(
       'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
     );
+  };
+
+  const displayMessage = (type: NoticeType, content: string) => {
+    void messageApi.open({
+      type,
+      content,
+    });
   };
 
   useEffect(() => {
@@ -160,7 +170,19 @@ function Swap() {
   };
 
   const proceed = () => {
-    console.log('proceed'); // we will navigate to send section after swap creation
+    // check if user sending asset is synchronised
+    if (
+      !userAddresses[sellAsset.split('_')[0]] ||
+      !userAddresses[buyAsset.split('_')[0]]
+    ) {
+      displayMessage('error', t('home:swap.chain_sync_required'));
+      return;
+    }
+    // create swap with abe, after success show a popup with information, tos, warn that its approximate balance, navigate to send section
+    // if error, show error message
+    // adjust send section that its swapping
+    // swap history?
+    // submit header with ssp wallet id prefixed with ssp-
   };
 
   const close = () => {
@@ -185,6 +207,7 @@ function Swap() {
 
   return (
     <>
+      {contextHolder}
       <Navbar
         refresh={refresh}
         hasRefresh={false}
@@ -289,8 +312,7 @@ function Swap() {
         <div className="swap-box margin-top-12">
           <Row gutter={[16, 16]} className="swap-box-row no-border-bottom">
             <Col span={24} className="swap-box-row-title">
-              {t('home:swap.you_get')}
-              &nbsp;&nbsp;
+              {t('home:swap.you_get')} ~ &nbsp;
               {loading ? (
                 <Spin indicator={<LoadingOutlined spin />} size="small" />
               ) : (
@@ -406,7 +428,7 @@ function Swap() {
         </Button>
       </Space>
       <Modal
-        title="Select Asset to Sell"
+        title={t('home:swap.select_sell_asset')}
         open={sellAssetModalOpen}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancelSellAsset}
@@ -470,7 +492,7 @@ function Swap() {
         </Space>
       </Modal>
       <Modal
-        title="Select Asset to Buy"
+        title={t('home:swap.select_buy_asset')}
         open={buyAssetModalOpen}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancelBuyAsset}
@@ -534,7 +556,7 @@ function Swap() {
         </Space>
       </Modal>
       <Modal
-        title="Select Sending Wallet"
+        title={t('home:swap.select_sending_wallet')}
         open={sendingWalletModalOpen}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancelSendingWallet}
@@ -578,7 +600,7 @@ function Swap() {
         </Space>
       </Modal>
       <Modal
-        title="Select Receiving Wallet"
+        title={t('home:swap.select_receiving_wallet')}
         open={receivingWalletModalOpen}
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancelReceivingWallet}

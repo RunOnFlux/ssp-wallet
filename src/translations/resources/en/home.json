@@ -321,6 +321,10 @@
     "search_asset": "Search Asset",
     "you_send": "You Send",
     "you_get": "You Get",
-    "chain_sync_required": "Chain synchronisation required first"
+    "chain_sync_required": "Chain synchronisation required first",
+    "select_receiving_wallet": "Select Receiving Wallet",
+    "select_sending_wallet": "Select Sending Wallet",
+    "select_buy_asset": "Select Asset to Buy",
+    "select_sell_asset": "Select Asset to Sell"
   }
 }
