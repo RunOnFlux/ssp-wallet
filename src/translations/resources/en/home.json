@@ -325,6 +325,11 @@
     "select_receiving_wallet": "Select Receiving Wallet",
     "select_sending_wallet": "Select Sending Wallet",
     "select_buy_asset": "Select Asset to Buy",
-    "select_sell_asset": "Select Asset to Sell"
+    "select_sell_asset": "Select Asset to Sell",
+    "estimated_amount_title": "Estimated Amount",
+    "estimated_amount": "Due to the volatile nature of the cryptocurrency market, you may receive more or fewer coins than initially expected.",
+    "floating_rate_title": "Floating Rate",
+    "floating_rate_fluctuates": "The actual market rate at which a trade transaction is executed might differ from the rate shown at the time your trading order was submitted. This means that the final value of your trade could be different than initially indicated.",
+    "proceeding_agree_tos": "Proceeding agrees to ToS"
   }
 }

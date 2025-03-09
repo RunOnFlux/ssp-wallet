@@ -11,8 +11,13 @@ import {
   Modal,
   Input,
   message,
+  Popover,
 } from 'antd';
-import { CaretDownOutlined, LoadingOutlined } from '@ant-design/icons';
+import {
+  CaretDownOutlined,
+  LoadingOutlined,
+  QuestionCircleOutlined,
+} from '@ant-design/icons';
 import Navbar from '../../components/Navbar/Navbar.tsx';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
@@ -312,12 +317,18 @@ function Swap() {
         <div className="swap-box margin-top-12">
           <Row gutter={[16, 16]} className="swap-box-row no-border-bottom">
             <Col span={24} className="swap-box-row-title">
-              {t('home:swap.you_get')} ~ &nbsp;
-              {loading ? (
-                <Spin indicator={<LoadingOutlined spin />} size="small" />
-              ) : (
-                ''
-              )}
+              <Popover
+                content={t('home:swap.estimated_amount')}
+                title={t('home:swap.estimated_amount_title')}
+                styles={{ body: { maxWidth: 300, marginLeft: 10 } }}
+              >
+                {t('home:swap.you_get')} ~ &nbsp;
+                {loading ? (
+                  <Spin indicator={<LoadingOutlined spin />} size="small" />
+                ) : (
+                  ''
+                )}
+              </Popover>
             </Col>
             <Col span={15} className="swap-box-row-input">
               <InputNumber
@@ -409,10 +420,27 @@ function Swap() {
         </div>
         <div className="rate-value">
           {rate > 0 && loading === false ? (
-            `1 ${sellAsset.split('_')[1]} = ${rate} ${buyAsset.split('_')[1]}`
+            <Popover
+              content={t('home:swap.floating_rate_fluctuates')}
+              title={t('home:swap.floating_rate_title')}
+              styles={{ body: { maxWidth: 300, marginLeft: 10 } }}
+            >
+              1 {sellAsset.split('_')[1]} = {rate} {buyAsset.split('_')[1]}{' '}
+              <QuestionCircleOutlined />
+            </Popover>
           ) : (
             <span>&nbsp;</span>
           )}
+          <span style={{ float: 'right' }}>
+            <a
+              href="https://github.com/RunOnFlux/ssp-wallet/blob/master/Terms_of_Service.md"
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: 'inherit', textDecoration: 'none' }}
+            >
+              {t('home:swap.proceeding_agree_tos')}
+            </a>
+          </span>
         </div>
       </div>
       <Space
