@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Contrasenya no vàlida. Si us plau, intenta-ho de nou.",
+  "err_invalid_pw_2": "Contrasenya invàlida. Si us plau, intenta-ho de nou.",
+  "err_lx": "Codi {{code}}: Dades del moneder mancants. Si us plau, restaura el teu moneder.",
+  "welcome_back": "Benvingut de nou!",
+  "to_dec_cloud": "A la teva Nuvem descentralitzada",
+  "unlock_with_pw": "Desbloqueja amb la Contrasenya",
+  "enter_pw": "Introdueix la Contrasenya",
+  "unlock_wallet": "Desbloqueja el Moneder",
+  "forgot_pw": "Has oblidat la Contrasenya?",
+  "restore": "Restaura"
 }
