@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Parolă invalidă. Te rugăm să încerci din nou.",
+  "err_invalid_pw_2": "Parolă invalidă. Te rugăm să încerci din nou.",
+  "err_lx": "Cod {{code}}: Lipsesc datele portofelului. Te rugăm să îți restaurezi portofelul.",
+  "welcome_back": "Bine ai revenit!",
+  "to_dec_cloud": "La Cloud-ul tău descentralizat",
+  "unlock_with_pw": "Deblochează cu parolă",
+  "enter_pw": "Introdu parola",
+  "unlock_wallet": "Deblochează portofelul",
+  "forgot_pw": "Ai uitat parola?",
+  "restore": "Restaurează"
 }

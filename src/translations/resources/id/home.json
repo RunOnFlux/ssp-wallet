@@ -215,7 +215,7 @@
   "payment_request": {
     "payment_request": "Permintaan pembayaran",
     "pay_for": "Permintaan pembayaran untuk",
-    "on_chain": "on {{chain}} chain",
+    "on_chain": "pada rantai {{chain}}",
     "to": "ke",
     "received": "diterima",
     "attached_message": "Pesan terlampir: {{message}}",
@@ -231,34 +231,34 @@
     "sign": "Tanda Tangani",
     "message": "Pesan",
     "signature": "Tanda tangan",
-    "err_sign_message": "Error signing message."
+    "err_sign_message": "Pesan kesalahan saat menandatangani."
   },
   "sspConnect": {
     "invalid_chain": "Rantai tidak valid.",
     "invalid_method": "Metode tidak valid.",
-    "invalid_request": "Invalid or malformed request.",
-    "unsupported_contract": "Unsupported contract. Import token contract first."
+    "invalid_request": "Permintaan tidak valid atau formatnya salah.",
+    "unsupported_contract": "Kontrak yang tidak didukung. Impor kontrak token terlebih dahulu."
   },
   "chainsInfo": {
-    "chain_requests": "Chains Information Request",
-    "chain_requests_info": "A request to get information about all integrated chains in SSP was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. No personal data is shared.",
-    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronised was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
-    "chain_requests_info_error": "Error getting chains information."
+    "chain_requests": "Permintaan Informasi Rantai",
+    "chain_requests_info": "Permintaan untuk mendapatkan informasi tentang semua rantai yang terintegrasi di SSP telah diterima. Data berikut dari setiap rantai akan dibagikan: id, nama, simbol, desimal, dan chainId. Tidak ada data pribadi yang dibagikan.",
+    "chain_requests_info_user": "Permintaan untuk mendapatkan informasi tentang rantai yang telah disinkronkan Dompet SSP milik Anda telah diterima. Data berikut dari setiap rantai akan dibagikan: id, nama, simbol, desimal, dan chainId. Meskipun tidak ada data pribadi yang dibagikan, permintaan ini dapat digunakan untuk mendapatkan informasi tentang jaringan apa yang Anda gunakan.",
+    "chain_requests_info_error": "Terjadi kesalahan saat mendapatkan informasi rantai."
   },
   "tokensInfo": {
-    "tokens_requests": "Tokens Information Request",
-    "tokens_requests_info": "A request to get information about tokens for {{chain}} chain was received. Following data of each token will be shared: contract, name, symbol, decimals. No personal data is shared.",
-    "tokens_requests_info_error": "Error getting tokens information.",
-    "chain_not_supported": "Chain not supported.",
-    "no_tokens_supported": "No tokens supported.",
-    "chain_not_specified": "Chain not specified."
+    "tokens_requests": "Permintaan Informasi Token",
+    "tokens_requests_info": "Permintaan untuk mendapatkan informasi tentang token untuk rantai {{chain}} telah diterima. Data berikut dari setiap token akan dibagikan: kontrak, nama, simbol, desimal. Tidak ada data pribadi yang dibagikan.",
+    "tokens_requests_info_error": "Terjadi kesalahan saat mendapatkan informasi token.",
+    "chain_not_supported": "Rantai tidak didukung.",
+    "no_tokens_supported": "Tidak ada token yang didukung.",
+    "chain_not_specified": "Rantai tidak ditentukan."
   },
   "addressesInfo": {
-    "addresses_requests": "Addresses Information Request",
-    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Excersice caution as your addresses will be shared with the requester.",
-    "addresses_requests_info_error": "Error getting addresses information.",
-    "no_addresses": "Chain not synchronised. No addresses found.",
-    "select_addresses": "Select Addresses to Share"
+    "addresses_requests": "Alamat Permintaan Informasi",
+    "addresses_requests_info": "Permintaan untuk mendapatkan daftar alamat untuk rantai {{chain}} telah diterima. Permintaan ini akan membagikan alamat pilihan Anda. Berhati-hatilah karena alamat Anda akan dibagikan kepada pemohon.",
+    "addresses_requests_info_error": "Terjadi kesalahan saat mendapatkan informasi alamat.",
+    "no_addresses": "Rantai tidak disinkronkan. Tidak ada alamat yang ditemukan.",
+    "select_addresses": "Pilih Alamat untuk Dibagikan"
   },
   "fusion": {
     "pa_reward": "Hadiah Aset Paralel",
