@@ -878,6 +878,7 @@ function Send() {
             zIndex: 2,
           }}
           onClick={() => setUseMaximum(true)}
+          disabled={!!state.swap}
         >
           {t('send:max')}:{' '}
           {new BigNumber(spendableBalance)

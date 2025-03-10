@@ -187,9 +187,9 @@ function Swap() {
           walletDerivations.forEach((derivation: string) => {
             setAddress(chainToSwitch, derivation, generatedWallets[derivation]);
           });
-          const walInUse: string =
-            (await localForage.getItem(`walletInUse-${chainToSwitch}`)) ??
-            '0-0';
+          const walInUse = sellAssetAddress;
+          // save new walletInUse
+          await localForage.setItem(`walletInUse-${chainToSwitch}`, walInUse);
           setWalletInUse(chainToSwitch, walInUse);
           // load txs, balances, settings etc.
           const txsWallet: transaction[] =
@@ -298,10 +298,12 @@ function Swap() {
                       generatedWallets[derivation],
                     );
                   });
-                  const walInUse: string =
-                    (await localForage.getItem(
-                      `walletInUse-${chainToSwitch}`,
-                    )) ?? '0-0';
+                  const walInUse = sellAssetAddress;
+                  // save new walletInUse
+                  await localForage.setItem(
+                    `walletInUse-${chainToSwitch}`,
+                    walInUse,
+                  );
                   setWalletInUse(chainToSwitch, walInUse);
                   // load txs, balances, settings etc.
                   const txsWallet: transaction[] =
