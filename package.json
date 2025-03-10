@@ -64,7 +64,7 @@
     "@eslint/js": "9.20.0",
     "@types/bchaddrjs": "0.4.3",
     "@types/chai": "4.3.20",
-    "@types/chrome": "0.0.305",
+    "@types/chrome": "0.0.308",
     "@types/mocha": "10.0.10",
     "@types/node": "22.13.4",
     "@types/react": "19.0.10",
