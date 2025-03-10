@@ -59,6 +59,7 @@ import {
 } from '../../types';
 import { blockchains, Token } from '@storage/blockchains';
 import ManualSign from '../ManualSign/ManualSign.tsx';
+import SwapHistory from '../SwapHistory/SwapHistory';
 
 interface walletOption {
   value: string;
@@ -100,6 +101,7 @@ function Navbar({
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [openManualSign, setOpenManualSign] = useState(false);
   const [selectChainOpen, setSelectChainOpen] = useState(false);
+  const [openSwapHistory, setOpenSwapHistory] = useState(false);
   const [deletionToPerform, setDeletionToPerform] = useState('');
   const [defaultWallet, setWalletValue] = useState<walletOption>({
     value: walletInUse,
@@ -331,6 +333,9 @@ function Navbar({
     }
   };
 
+  const swapHistoryAction = (status: boolean) => {
+    setOpenSwapHistory(status);
+  };
   const sspIdentityAction = (status: boolean) => {
     setOpenManualSign(status);
   };
@@ -359,7 +364,7 @@ function Navbar({
     setPasswordConfirmDialogVisible(false);
   };
   const interactWithSwapHistory = () => {
-    displayMessage('info', t('home:buy_sell_crypto.coming_soon'));
+    setOpenSwapHistory(true);
   };
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
@@ -629,6 +634,7 @@ function Navbar({
         openAction={settingsDialogAction}
       />
       <ChainSelect open={selectChainOpen} openAction={selectChainAction} />
+      <SwapHistory open={openSwapHistory} openAction={swapHistoryAction} />
       <AutoLogout />
     </>
   );
