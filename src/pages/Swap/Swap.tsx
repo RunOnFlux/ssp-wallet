@@ -592,6 +592,11 @@ function Swap() {
         data.rateId = selectedExchange.rateId;
       }
       const swap = await createSwap(data, sspwid);
+      if (swap.status !== 'success') {
+        displayMessage('error', t('home:swap.error_creating_swap'));
+        setLoadingSwap(false);
+        return;
+      }
       // set new rate
       // if the buyAmount from swap creation is different from the buyAmount by more than 2%, show a message of rate changed and ask to review
       if (
