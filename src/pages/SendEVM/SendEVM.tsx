@@ -1026,7 +1026,7 @@ function SendEVM() {
             marginRight: 3,
             fontSize: 12,
             color: '#4096ff',
-            cursor: 'pointer',
+            cursor: state.swap ? 'not-allowed' : 'pointer',
             zIndex: 2,
           }}
           onClick={() => setUseMaximum(true)}
