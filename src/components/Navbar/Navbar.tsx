@@ -493,7 +493,7 @@ function Navbar({
           </Col>
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
             {header && <span>{header}</span>}
-            {!header && (
+            {!(header && hasSwapHistory) && (
               <Select
                 labelInValue
                 value={defaultWallet}

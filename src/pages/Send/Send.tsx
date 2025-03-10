@@ -38,7 +38,7 @@ import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
 import { setContacts } from '../../store';
 
-import { transaction, utxo } from '../../types';
+import { transaction, utxo, swapResponseData } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './Send.css';
@@ -61,6 +61,7 @@ interface sendForm {
   message: string;
   utxos: utxo[]; // RBF mandatory utxos - use all of them or one?
   paymentAction?: boolean;
+  swap?: swapResponseData;
 }
 
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
@@ -790,7 +791,12 @@ function Send() {
   return (
     <>
       {contextHolder}
-      <Navbar refresh={refresh} hasRefresh={false} allowChainSwitch={false} />
+      <Navbar
+        refresh={refresh}
+        hasRefresh={false}
+        allowChainSwitch={false}
+        header={state.swap ? t('home:swap.swap_crypto') : ''}
+      />
       <Divider />
       <Form
         name="sendForm"
@@ -799,7 +805,10 @@ function Send() {
         autoComplete="off"
         layout="vertical"
         itemRef="txFeeRef"
-        style={{ paddingBottom: '43px' }}
+        style={{
+          paddingBottom: '43px',
+          marginTop: state.swap ? '24px' : '0',
+        }}
       >
         <Form.Item
           label={t('send:receiver_address')}
@@ -813,6 +822,7 @@ function Send() {
               size="large"
               value={txReceiver}
               placeholder={t('send:receiver_address')}
+              disabled={!!state.swap}
               onChange={(e) => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 setTxReceiver(e.target.value),
@@ -831,6 +841,7 @@ function Send() {
                 setTxReceiver(value), form.setFieldValue('receiver', value);
               }}
               options={contactsItems}
+              disabled={!!state.swap}
               dropdownRender={(menu) => <>{menu}</>}
             />
           </Space.Compact>
@@ -851,6 +862,7 @@ function Send() {
             }}
             placeholder={t('send:input_amount')}
             suffix={blockchainConfig.symbol}
+            disabled={!!state.swap}
           />
         </Form.Item>
         <Button
@@ -967,8 +979,17 @@ function Send() {
               }}
               icon={<QuestionCircleOutlined style={{ color: 'green' }} />}
             >
-              <Button type="primary" size="large">
-                {t('send:send')}
+              <Button
+                type="primary"
+                size="large"
+                style={{ maxWidth: '380px', overflow: 'scroll' }}
+              >
+                {state.swap
+                  ? t('send:send_swap', {
+                      buyAsset: state.swap.buyAsset,
+                      buyAmount: new BigNumber(state.swap.buyAmount).toFixed(),
+                    })
+                  : t('send:send')}
               </Button>
             </Popconfirm>
             <Button type="link" block size="small" onClick={cancelSend}>

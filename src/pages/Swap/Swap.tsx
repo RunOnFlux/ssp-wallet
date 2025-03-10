@@ -16,21 +16,52 @@ import {
 import { CaretDownOutlined, LoadingOutlined } from '@ant-design/icons';
 import Navbar from '../../components/Navbar/Navbar.tsx';
 import { useTranslation } from 'react-i18next';
-import { blockchains } from '@storage/blockchains';
+import { blockchains, Token } from '@storage/blockchains';
+import secureLocalStorage from 'react-secure-storage';
 
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './Swap.css';
-import { useAppSelector } from '../../hooks.ts';
+import { useAppSelector, useAppDispatch } from '../../hooks.ts';
 import { pairDetailsSellAmount, createSwap } from '../../lib/ABEController.ts';
 import AssetBox from './AssetBox.tsx';
 import { useNavigate } from 'react-router';
 import localForage from 'localforage';
-import { createSwapData, generatedWallets } from '../../types';
+import {
+  createSwapData,
+  cryptos,
+  generatedWallets,
+  node,
+  swapResponseData,
+  tokenBalanceEVM,
+  transaction,
+} from '../../types';
 import AddressBox from './AddressBox.tsx';
 import { NoticeType } from 'antd/es/message/interface';
+import BigNumber from 'bignumber.js';
+import {
+  setAddress,
+  setRedeemScript,
+  setWitnessScript,
+  setTransactions,
+  setNodes,
+  setBalance,
+  setUnconfirmedBalance,
+  setBlockheight,
+  setWalletInUse,
+  setChainInitialState,
+  setXpubWallet,
+  setXpubKey,
+  setActiveChain,
+  setTokenBalances,
+  setActivatedTokens,
+  setImportedTokens,
+} from '../../store';
+import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
+import { getFingerprint } from '../../lib/fingerprint.ts';
+import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 
-interface selectedExchange {
+interface selectedExchangeType {
   exchangeId?: string;
   minSellAmount?: string;
   maxSellAmount?: string;
@@ -40,6 +71,23 @@ interface selectedExchange {
   sellAmount?: string;
   buyAmount?: string;
 }
+
+interface navigationObject {
+  receiver: string;
+  amount: string;
+  swap: swapResponseData;
+  contract?: string;
+}
+
+interface balancesObj {
+  confirmed: string;
+  unconfirmed: string;
+}
+
+const balancesObject = {
+  confirmed: '0.00',
+  unconfirmed: '0.00',
+};
 
 function Swap() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
@@ -65,9 +113,9 @@ function Swap() {
   const { abeMapping, sellAssets, buyAssets } = useAppSelector(
     (state) => state.abe,
   );
-  const [selectedExchange, setSelectedExchange] = useState<selectedExchange>(
-    {},
-  );
+  const [selectedExchange, setSelectedExchange] = useState<
+    selectedExchangeType | swapResponseData
+  >({});
   const [userAddresses, setUserAddresses] = useState<
     Record<keyof blockchains, generatedWallets>
   >({});
@@ -77,6 +125,13 @@ function Swap() {
     // associate tx history with ssp wallet id
     (state) => state.sspState,
   );
+  const { identityChain } = useAppSelector((state) => state.sspState);
+  const [chainToSwitch, setChainToSwitch] = useState<keyof cryptos | ''>('');
+  const { xpubWallet, xpubKey } = useAppSelector(
+    (state) => state[(chainToSwitch as keyof cryptos) || identityChain],
+  );
+  const dispatch = useAppDispatch();
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
   const refresh = () => {
     console.log(
@@ -116,6 +171,306 @@ function Swap() {
       setUserAddresses(userAddrs);
     })();
   });
+
+  // chain switching mechanism. todo cleanup This extract and from chainSelect extract too
+  useEffect(() => {
+    console.log('chain switch effect');
+    if (!chainToSwitch) return;
+    void (async function () {
+      try {
+        if (xpubWallet && xpubKey) {
+          // we have it all, generate address and load txs, balances, settings etc.
+          // restore stored wallets
+          const generatedWallets: generatedWallets =
+            (await localForage.getItem(`wallets-${chainToSwitch}`)) ?? {};
+          const walletDerivations = Object.keys(generatedWallets);
+          walletDerivations.forEach((derivation: string) => {
+            setAddress(chainToSwitch, derivation, generatedWallets[derivation]);
+          });
+          const walInUse: string =
+            (await localForage.getItem(`walletInUse-${chainToSwitch}`)) ??
+            '0-0';
+          setWalletInUse(chainToSwitch, walInUse);
+          // load txs, balances, settings etc.
+          const txsWallet: transaction[] =
+            (await localForage.getItem(
+              `transactions-${chainToSwitch}-${walInUse}`,
+            )) ?? [];
+          const blockheightChain: number =
+            (await localForage.getItem(`blockheight-${chainToSwitch}`)) ?? 0;
+          const balancesWallet: balancesObj =
+            (await localForage.getItem(
+              `balances-${chainToSwitch}-${walInUse}`,
+            )) ?? balancesObject;
+          const tokenBalances: tokenBalanceEVM[] =
+            (await localForage.getItem(
+              `token-balances-${chainToSwitch}-${walInUse}`,
+            )) ?? [];
+          const activatedTokens: string[] =
+            (await localForage.getItem(
+              `activated-tokens-${chainToSwitch}-${walInUse}`,
+            )) ?? [];
+          const nodesWallet: node[] =
+            (await localForage.getItem(`nodes-${chainToSwitch}-${walInUse}`)) ??
+            [];
+          const importedTokens: Token[] =
+            (await localForage.getItem(`imported-tokens-${chainToSwitch}`)) ??
+            [];
+          if (importedTokens) {
+            setImportedTokens(chainToSwitch, importedTokens || []);
+          }
+          if (activatedTokens) {
+            setActivatedTokens(chainToSwitch, walInUse, activatedTokens || []);
+          }
+          if (tokenBalances) {
+            setTokenBalances(chainToSwitch, walInUse, tokenBalances || []);
+          }
+          if (nodesWallet) {
+            setNodes(chainToSwitch, walInUse, nodesWallet || []);
+          }
+          if (txsWallet) {
+            setTransactions(chainToSwitch, walInUse, txsWallet || []);
+          }
+          if (balancesWallet) {
+            setBalance(chainToSwitch, walInUse, balancesWallet.confirmed);
+
+            setUnconfirmedBalance(
+              chainToSwitch,
+              walInUse,
+              balancesWallet.unconfirmed,
+            );
+          }
+          if (blockheightChain) {
+            setBlockheight(chainToSwitch, blockheightChain);
+          }
+          await generateAddress(xpubWallet, xpubKey, chainToSwitch, walInUse);
+          const newChain = chainToSwitch;
+          // lastly we set new active chain
+          dispatch(setActiveChain(newChain));
+          await localForage.setItem('activeChain', newChain);
+          setChainToSwitch('');
+          proceedToSwap();
+        } else {
+          setChainInitialState(chainToSwitch);
+          const blockchainConfig = blockchains[chainToSwitch];
+          // check if we have them in secure storage
+          const xpubEncrypted = secureLocalStorage.getItem(
+            `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+              blockchainConfig.scriptType,
+            )}-${blockchainConfig.id}`,
+          );
+          const xpub2Encrypted = secureLocalStorage.getItem(
+            `2-xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+              blockchainConfig.scriptType,
+            )}-${blockchainConfig.id}`,
+          ); // key xpub
+          if (xpubEncrypted && typeof xpubEncrypted === 'string') {
+            const fingerprint: string = getFingerprint();
+            const password = await passworderDecrypt(fingerprint, passwordBlob);
+            if (typeof password !== 'string') {
+              throw new Error(t('home:sspWalletDetails.err_pw_not_valid'));
+            }
+            const xpubChainWallet = await passworderDecrypt(
+              password,
+              xpubEncrypted,
+            );
+            if (xpubChainWallet && typeof xpubChainWallet === 'string') {
+              if (xpub2Encrypted && typeof xpub2Encrypted === 'string') {
+                const xpubChainKey = await passworderDecrypt(
+                  password,
+                  xpub2Encrypted,
+                );
+                console.log(xpubChainWallet);
+                console.log(xpubChainKey);
+                if (xpubChainKey && typeof xpubChainKey === 'string') {
+                  // we have xpubwallet and xpubkey, generate, store and do everything
+                  // set xpubwallet and xpubkey
+                  setXpubWallet(chainToSwitch, xpubChainWallet);
+                  setXpubKey(chainToSwitch, xpubChainKey);
+                  const generatedWallets: generatedWallets =
+                    (await localForage.getItem(`wallets-${chainToSwitch}`)) ??
+                    {};
+                  const walletDerivations = Object.keys(generatedWallets);
+                  walletDerivations.forEach((derivation: string) => {
+                    setAddress(
+                      chainToSwitch,
+                      derivation,
+                      generatedWallets[derivation],
+                    );
+                  });
+                  const walInUse: string =
+                    (await localForage.getItem(
+                      `walletInUse-${chainToSwitch}`,
+                    )) ?? '0-0';
+                  setWalletInUse(chainToSwitch, walInUse);
+                  // load txs, balances, settings etc.
+                  const txsWallet: transaction[] =
+                    (await localForage.getItem(
+                      `transactions-${chainToSwitch}-${walInUse}`,
+                    )) ?? [];
+                  const blockheightChain: number =
+                    (await localForage.getItem(
+                      `blockheight-${chainToSwitch}`,
+                    )) ?? 0;
+                  const balancesWallet: balancesObj =
+                    (await localForage.getItem(
+                      `balances-${chainToSwitch}-${walInUse}`,
+                    )) ?? balancesObject;
+                  const tokenBalances: tokenBalanceEVM[] =
+                    (await localForage.getItem(
+                      `token-balances-${chainToSwitch}-${walInUse}`,
+                    )) ?? [];
+                  const activatedTokens: string[] =
+                    (await localForage.getItem(
+                      `activated-tokens-${chainToSwitch}-${walInUse}`,
+                    )) ?? [];
+                  const importedTokens: Token[] =
+                    (await localForage.getItem(
+                      `imported-tokens-${chainToSwitch}`,
+                    )) ?? [];
+                  if (importedTokens) {
+                    setImportedTokens(chainToSwitch, importedTokens || []);
+                  }
+                  if (activatedTokens) {
+                    setActivatedTokens(
+                      chainToSwitch,
+                      walInUse,
+                      activatedTokens || [],
+                    );
+                  }
+                  const nodesWallet: node[] =
+                    (await localForage.getItem(
+                      `nodes-${chainToSwitch}-${walInUse}`,
+                    )) ?? [];
+                  if (tokenBalances) {
+                    setTokenBalances(
+                      chainToSwitch,
+                      walInUse,
+                      tokenBalances || [],
+                    );
+                  }
+                  if (nodesWallet) {
+                    setNodes(chainToSwitch, walInUse, nodesWallet || []);
+                  }
+                  if (txsWallet) {
+                    setTransactions(chainToSwitch, walInUse, txsWallet || []);
+                  }
+                  if (balancesWallet) {
+                    setBalance(
+                      chainToSwitch,
+                      walInUse,
+                      balancesWallet.confirmed,
+                    );
+
+                    setUnconfirmedBalance(
+                      chainToSwitch,
+                      walInUse,
+                      balancesWallet.unconfirmed,
+                    );
+                  }
+                  if (blockheightChain) {
+                    setBlockheight(chainToSwitch, blockheightChain);
+                  }
+                  await generateAddress(
+                    xpubChainWallet,
+                    xpubChainKey,
+                    chainToSwitch,
+                    walInUse,
+                  );
+                  const newChain = chainToSwitch;
+                  // lastly we set new active chain
+                  dispatch(setActiveChain(newChain));
+                  await localForage.setItem('activeChain', newChain);
+                  setChainToSwitch('');
+                  proceedToSwap();
+                  return;
+                }
+              }
+            }
+          }
+          // if we do not have them, we should ask for them
+          displayMessage(
+            'error',
+            t('home:chainSelect.sync_chain_first', {
+              chainName: blockchainConfig.name,
+            }),
+          );
+          setChainToSwitch('');
+          setLoadingSwap(false);
+        }
+      } catch (error) {
+        console.log(error);
+        setLoadingSwap(false);
+        displayMessage('error', t('home:chainSelect.unable_switch_chain'));
+      }
+    })();
+  }, [chainToSwitch]);
+
+  const generateAddress = async (
+    xpubW: string,
+    xpubK: string,
+    chainToUse: keyof cryptos,
+    walletToUse: string,
+  ) => {
+    try {
+      if (!chainToUse || !xpubK || !xpubW) {
+        console.log('missing data');
+        console.log(chainToSwitch);
+        console.log(xpubK);
+        console.log(xpubW);
+        return; // this case should never happen
+      }
+      const splittedDerPath = walletToUse.split('-');
+      const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+      const addressIndex = Number(splittedDerPath[1]);
+      const addrInfo = generateMultisigAddress(
+        xpubW,
+        xpubK,
+        typeIndex,
+        addressIndex,
+        chainToUse,
+      );
+      setAddress(chainToUse, walletToUse, addrInfo.address);
+      setRedeemScript(chainToUse, walletToUse, addrInfo.redeemScript ?? '');
+      setWitnessScript(chainToUse, walletToUse, addrInfo.witnessScript ?? '');
+      // get stored wallets
+      const generatedWallets: generatedWallets =
+        (await localForage.getItem('wallets-' + chainToUse)) ?? {};
+      generatedWallets[walletToUse] = addrInfo.address;
+      await localForage.setItem('wallets-' + chainToUse, generatedWallets);
+    } catch (error) {
+      // if error, key is invalid! we should never end up here as it is validated before
+      displayMessage('error', t('home:err_panic'));
+      console.log(error);
+    }
+  };
+
+  const proceedToSwap = () => {
+    try {
+      const selEx = selectedExchange as swapResponseData;
+      selEx.buyAsset = buyAsset.split('_')[1];
+      selEx.sellAsset = sellAsset.split('_')[1];
+      const navigationObject: navigationObject = {
+        receiver: selEx.depositAddress,
+        amount: new BigNumber(selEx.sellAmount).toFixed(),
+        swap: selEx,
+      };
+      if (sellAsset.split('_')[2]) {
+        navigationObject.contract = sellAsset.split('_')[2];
+      }
+      // todo change active chain and active address
+      // if chain is eth navigate to SendEVM else navigate to Send
+      if (sellAsset.split('_')[0] === 'eth') {
+        navigate('/sendEvm', { state: navigationObject });
+      } else {
+        navigate('/send', { state: navigationObject });
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoadingSwap(false);
+    }
+  };
 
   const fetchPairDetails = async () => {
     try {
@@ -252,10 +607,12 @@ function Swap() {
       setAmountBuy(parseFloat(swap.data.buyAmount));
       setSelectedExchange(swap.data);
       console.log(swap);
+      // set the chain to switch to
+      setChainToSwitch(sellAsset.split('_')[0] as keyof cryptos);
+      // now we triggered useEffect function of chainSwitching
     } catch (error) {
       console.log(error);
       displayMessage('error', t('home:swap.error_creating_swap'));
-    } finally {
       setLoadingSwap(false);
     }
   };
@@ -298,7 +655,7 @@ function Swap() {
         hasRefresh={false}
         allowChainSwitch={false}
         hasSwapHistory={true}
-        header={t('home:swap.header')}
+        header={t('home:swap.swap_crypto')}
       />
       <Divider />
       <div className="swap-area">
