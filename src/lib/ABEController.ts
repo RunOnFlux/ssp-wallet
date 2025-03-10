@@ -6,11 +6,14 @@ import {
   zelcoreAsset,
   zelcoreAssetResponse,
   pairDetailsResponse,
+  createSwapResponse,
+  createSwapData,
 } from '../types';
 
 const options = {
   headers: {
     ssp: version,
+    zelid: '',
   },
 };
 
@@ -72,6 +75,20 @@ export async function pairDetailsSellAmount(
     };
     const url = `https://abe.zelcore.io/v1/exchange/pairdetailssellamount`;
     const response = await axios.post<pairDetailsResponse>(url, data, options);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function createSwap(data: createSwapData, sspwid: string) {
+  try {
+    console.log(sspwid);
+    const test = 'abc';
+    const url = 'https://abe.zelcore.io/v1/exchange/createswap';
+    options.headers['zelid'] = `ssp-${test}`;
+    const response = await axios.post<createSwapResponse>(url, data, options);
     return response.data;
   } catch (error) {
     console.log(error);

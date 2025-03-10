@@ -22,13 +22,24 @@ import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './Swap.css';
 import { useAppSelector } from '../../hooks.ts';
-import { pairDetailsSellAmount } from '../../lib/ABEController.ts';
+import { pairDetailsSellAmount, createSwap } from '../../lib/ABEController.ts';
 import AssetBox from './AssetBox.tsx';
 import { useNavigate } from 'react-router';
 import localForage from 'localforage';
-import { generatedWallets } from '../../types';
+import { createSwapData, generatedWallets } from '../../types';
 import AddressBox from './AddressBox.tsx';
 import { NoticeType } from 'antd/es/message/interface';
+
+interface selectedExchange {
+  exchangeId?: string;
+  minSellAmount?: string;
+  maxSellAmount?: string;
+  rateId?: string | null;
+  rate?: string;
+  precision?: string;
+  sellAmount?: string;
+  buyAmount?: string;
+}
 
 function Swap() {
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
@@ -50,14 +61,22 @@ function Swap() {
   const [buyAssetFilter, setBuyAssetFilter] = useState('');
   const [sellAssetAddress, setSellAssetAddress] = useState('0-0');
   const [buyAssetAddress, setBuyAssetAddress] = useState('0-0');
+  const [loadingSwap, setLoadingSwap] = useState(false);
   const { abeMapping, sellAssets, buyAssets } = useAppSelector(
     (state) => state.abe,
+  );
+  const [selectedExchange, setSelectedExchange] = useState<selectedExchange>(
+    {},
   );
   const [userAddresses, setUserAddresses] = useState<
     Record<keyof blockchains, generatedWallets>
   >({});
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
+  const { sspWalletExternalIdentity: sspwid } = useAppSelector(
+    // associate tx history with ssp wallet id
+    (state) => state.sspState,
+  );
 
   const refresh = () => {
     console.log(
@@ -104,6 +123,7 @@ function Swap() {
         setAmountBuy(0);
         setRate(0);
         setLoading(false);
+        setSelectedExchange({});
         return;
       }
       setLoading(true);
@@ -134,6 +154,7 @@ function Swap() {
             setAmountBuy(parseFloat(highestBuyAmount.buyAmount));
             setRate(parseFloat(highestBuyAmount.rate));
             setLoading(false);
+            setSelectedExchange(highestBuyAmount);
           }
         } else {
           // todo error
@@ -141,12 +162,14 @@ function Swap() {
           setAmountBuy(0);
           setRate(0);
           setLoading(false);
+          setSelectedExchange({});
         }
       } else {
         console.log(pairDetails.data?.message || pairDetails.data);
         setAmountBuy(0);
         setRate(0);
         setLoading(false);
+        setSelectedExchange({});
         // show som error todo
       }
       console.log(pairDetails);
@@ -155,6 +178,7 @@ function Swap() {
       setAmountBuy(0);
       setRate(0);
       setLoading(false);
+      setSelectedExchange({});
       // show som error todo
     }
   };
@@ -170,20 +194,70 @@ function Swap() {
     setAmountSell(value);
   };
 
-  const proceed = () => {
-    // check if user sending asset is synchronised
-    if (
-      !userAddresses[sellAsset.split('_')[0]] ||
-      !userAddresses[buyAsset.split('_')[0]]
-    ) {
-      displayMessage('error', t('home:swap.chain_sync_required'));
-      return;
+  const proceed = async () => {
+    try {
+      setLoadingSwap(true);
+      // check if user sending asset is synchronised
+      if (
+        !userAddresses[sellAsset.split('_')[0]] ||
+        !userAddresses[buyAsset.split('_')[0]]
+      ) {
+        displayMessage('error', t('home:swap.chain_sync_required'));
+        setLoadingSwap(false);
+        return;
+      }
+      // adjust send section that its swapping
+      // swap history?
+      console.log(selectedExchange);
+      // verify that sellAmount is the same as our amountSell and that buyAmount is the same as our amountBuy
+      if (selectedExchange.sellAmount !== Number(amountSell).toFixed(8)) {
+        displayMessage('warning', t('home:swap.rate_changed'));
+        setLoadingSwap(false);
+        return;
+      }
+      if (selectedExchange.buyAmount !== Number(amountBuy).toFixed(8)) {
+        displayMessage('warning', t('home:swap.rate_changed'));
+        setLoadingSwap(false);
+        return;
+      }
+      // now we do submission of the swap as we have verified what user see is what is stored too
+      const sellAssetZelcoreID = abeMapping[sellAsset];
+      const buyAssetZelcoreID = abeMapping[buyAsset];
+      const data: createSwapData = {
+        exchangeId: selectedExchange.exchangeId ?? '',
+        sellAsset: sellAssetZelcoreID,
+        buyAsset: buyAssetZelcoreID,
+        sellAmount: Number(amountSell).toFixed(8),
+        buyAddress: userAddresses[buyAsset.split('_')[0]][buyAssetAddress],
+        refundAddress: userAddresses[sellAsset.split('_')[0]][sellAssetAddress],
+      };
+      if (selectedExchange.rateId) {
+        data.rateId = selectedExchange.rateId;
+      }
+      const swap = await createSwap(data, sspwid);
+      // set new rate
+      // if the buyAmount from swap creation is different from the buyAmount by more than 2%, show a message of rate changed and ask to review
+      if (
+        Math.abs(parseFloat(swap.data.buyAmount) - Number(amountBuy)) >
+        parseFloat(swap.data.buyAmount) * 0.02
+      ) {
+        displayMessage('warning', t('home:swap.rate_changed'));
+        setLoadingSwap(false);
+        setRate(parseFloat(swap.data.rate));
+        setAmountBuy(parseFloat(swap.data.buyAmount));
+        setSelectedExchange(swap.data);
+        return;
+      }
+      setRate(parseFloat(swap.data.rate));
+      setAmountBuy(parseFloat(swap.data.buyAmount));
+      setSelectedExchange(swap.data);
+      console.log(swap);
+    } catch (error) {
+      console.log(error);
+      displayMessage('error', t('home:swap.error_creating_swap'));
+    } finally {
+      setLoadingSwap(false);
     }
-    // create swap with abe, after success show a popup with information, tos, warn that its approximate balance, navigate to send section
-    // if error, show error message
-    // adjust send section that its swapping
-    // swap history?
-    // submit header with ssp wallet id prefixed with ssp-
   };
 
   const close = () => {
@@ -209,6 +283,16 @@ function Swap() {
   return (
     <>
       {contextHolder}
+      {loadingSwap && (
+        <Spin
+          size="large"
+          fullscreen
+          style={{
+            position: 'absolute',
+            top: '250px',
+          }}
+        />
+      )}
       <Navbar
         refresh={refresh}
         hasRefresh={false}
@@ -444,7 +528,12 @@ function Swap() {
         size="middle"
         style={{ paddingBottom: '43px', marginTop: '12px' }}
       >
-        <Button type="primary" size="large" onClick={proceed}>
+        <Button
+          type="primary"
+          size="large"
+          onClick={proceed}
+          disabled={loadingSwap}
+        >
           {t('common:continue')}
         </Button>
         <Button type="link" block size="small" onClick={close}>

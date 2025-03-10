@@ -629,6 +629,8 @@ export interface abeAsset {
   idchangeherofix?: string;
   idchangeherofloatlimit?: string[] | null;
   idchangeherofixlimit?: string[] | null;
+  idxoswapfloat?: string;
+  idxoswapfloatlimit?: string[] | null;
 }
 
 export interface abeAssetResponse {
@@ -669,6 +671,39 @@ export interface pairDetailsResponse {
       maxSellAmount: string;
     }[];
     message?: string;
+  };
+}
+
+export interface createSwapData {
+  exchangeId: string;
+  sellAsset: string;
+  buyAsset: string;
+  sellAmount: string;
+  buyAddress: string;
+  refundAddress: string;
+  rateId?: string | null;
+  refundAddressExtraId?: string | null;
+  buyAddressExtraId?: string | null;
+}
+export interface createSwapResponse {
+  status: string;
+  data: {
+    exchangeId: string;
+    swapId: string;
+    sellAsset: string;
+    buyAsset: string;
+    sellAmount: string;
+    buyAmount: string;
+    rate: string;
+    rateId: string | null;
+    kycRequired: boolean;
+    depositAddress: string;
+    depositExtraId: string | null;
+    buyAddressExtraId: string | null;
+    refundAddressExtraId: string | null;
+    status: string;
+    createdAt: number;
+    validTill: number;
   };
 }
 
