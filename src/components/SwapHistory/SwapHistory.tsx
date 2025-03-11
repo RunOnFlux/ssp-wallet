@@ -90,6 +90,11 @@ function SwapHistory(props: {
               />
             ))
           )}
+          {!loading && !errorMessage && swapHistory.length === 0 && (
+            <Text style={{ fontSize: '16px' }}>
+              {t('home:swap.no_swap_history')}
+            </Text>
+          )}
           {errorMessage && (
             <Text style={{ color: 'red', fontSize: '16px' }}>
               {errorMessage}

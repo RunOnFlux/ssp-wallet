@@ -356,6 +356,7 @@
     "refund_txid": "Refund TXID",
     "track_swap": "Track Swap",
     "swap_id": "Swap ID",
-    "rate": "Rate"
+    "rate": "Rate",
+    "no_swap_history": "No Swap History"
   }
 }
