@@ -739,7 +739,7 @@ export interface swapHistoryResponse {
 }
 
 export interface exchangeProvider {
-  id: exchangeId;
+  exchangeId: exchangeId;
   name: string;
   type: string;
   website: string;

@@ -20,3 +20,8 @@
   float: right;
   padding: 2px;
 }
+
+.swap-box-timestamp-status {
+  display: flex;
+  justify-content: space-between;
+}

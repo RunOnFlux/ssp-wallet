@@ -71,7 +71,7 @@ function SwapHistory(props: {
       >
         <Space
           direction="vertical"
-          size="middle"
+          size="small"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
           {loading ? (

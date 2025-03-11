@@ -334,6 +334,18 @@
     "proceeding_agree_tos": "Proceeding agrees to ToS",
     "rate_changed": "Rate has changed, please review your amount.",
     "error_creating_swap": "Error creating swap. Please try again.",
-    "error_fetching_swap_history": "Error fetching swap history. Please try again."
+    "error_fetching_swap_history": "Error fetching swap history. Please try again.",
+    "pending": "Pending",
+    "completed": "Completed",
+    "new": "New",
+    "waiting": "Waiting",
+    "confirming": "Confirming",
+    "sending": "Sending",
+    "finished": "Finished",
+    "failed": "Failed",
+    "refunded": "Refunded",
+    "hold": "Hold",
+    "expired": "Expired",
+    "unknown": "Unknown"
   }
 }
