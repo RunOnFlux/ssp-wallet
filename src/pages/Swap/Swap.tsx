@@ -459,7 +459,6 @@ function Swap() {
       if (sellAsset.split('_')[2]) {
         navigationObject.contract = sellAsset.split('_')[2];
       }
-      // todo change active chain and active address
       // if chain is eth navigate to SendEVM else navigate to Send
       if (sellAsset.split('_')[0] === 'eth') {
         navigate('/sendEvm', { state: navigationObject });

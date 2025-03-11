@@ -88,10 +88,8 @@ export async function pairDetailsSellAmount(
 
 export async function createSwap(data: createSwapData, sspwkid: string) {
   try {
-    console.log(sspwkid);
-    const test = 'abc';
     const url = 'https://abe.zelcore.io/v1/exchange/createswap';
-    options.headers['zelid'] = `ssp-${test}`;
+    options.headers['zelid'] = `ssp-${sspwkid}`;
     const response = await axios.post<createSwapResponse>(url, data, options);
     return response.data;
   } catch (error) {
@@ -104,10 +102,8 @@ export async function getSwapHistory(
   sspwkid: string,
 ): Promise<swapHistoryOrder[]> {
   try {
-    console.log(sspwkid);
-    const test = 'abc';
     const url = `https://abe.zelcore.io/v1/exchange/user/history`;
-    options.headers['zelid'] = `ssp-${test}`;
+    options.headers['zelid'] = `ssp-${sspwkid}`;
     const response = await axios.get<swapHistoryResponse>(url, options);
     if (response.data && typeof response.data.data === 'object') {
       return response.data.data;
