@@ -1,50 +1,59 @@
 import { useAppSelector } from '../../hooks';
-import { Modal, Button, Space } from 'antd';
+import { Modal, Button, Space, Typography } from 'antd';
+const { Text } = Typography;
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
-
-interface swapHistory {
-  id: string;
-  amount: string;
-  status: string;
-  createdAt: string;
-}
+import { getSwapHistory } from '../../lib/ABEController';
+import { swapHistoryOrder } from '../../types';
+import { LoadingOutlined } from '@ant-design/icons';
+import SwapBox from './SwapBox';
 
 function SwapHistory(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const { sspWalletExternalIdentity: sspwid } = useAppSelector(
+  const { sspWalletKeyInternalIdentity: sspwkid } = useAppSelector(
     (state) => state.sspState,
   );
-  const [swapHistory, setSwapHistory] = useState<swapHistory[]>([]);
+  const [swapHistory, setSwapHistory] = useState<swapHistoryOrder[]>([]);
+  const { abeMapping } = useAppSelector((state) => state.abe);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [reverseAbeMapping, setReverseAbeMapping] = useState<
+    Record<string, string>
+  >({});
   // on open, fetch swap history
   useEffect(() => {
     if (props.open) {
-      fetchSwapHistory(sspwid);
+      constructReverseAbeMapping();
+      fetchSwapHistory(sspwkid);
     }
   }, [props.open]);
 
-  const fetchSwapHistory = (sspwid: string) => {
-    // const swapHistory = await getSwapHistory(sspwid);
-    // console.log(swapHistory);
-    console.log(sspwid);
-    setSwapHistory([
-      {
-        id: '1',
-        amount: '100',
-        status: 'success',
-        createdAt: '2021-01-01',
-      },
-      {
-        id: '2',
-        amount: '200',
-        status: 'pending',
-        createdAt: '2021-01-02',
-      },
-    ]);
-    console.log(swapHistory);
+  const constructReverseAbeMapping = () => {
+    const reverseAbeMapping: Record<string, string> = {};
+    for (const [key, value] of Object.entries(abeMapping)) {
+      reverseAbeMapping[value] = key;
+    }
+    setReverseAbeMapping(reverseAbeMapping);
+  };
+
+  const fetchSwapHistory = async (sspwid: string) => {
+    try {
+      setLoading(true);
+      const obtainedSwapHistory = await getSwapHistory(sspwid);
+      // we should also fetch provider details
+      // console.log(swapHistory);
+      console.log(sspwid);
+      setSwapHistory(obtainedSwapHistory);
+      console.log(swapHistory);
+    } catch (error) {
+      console.log(error);
+      setErrorMessage(t('home:swap.error_fetching_swap_history'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExit = () => {
@@ -65,9 +74,27 @@ function SwapHistory(props: {
           size="middle"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
-          <Space direction="vertical" size="small">
-            cards with swap history, on click expand to show more details
-          </Space>
+          {loading ? (
+            <>
+              <LoadingOutlined style={{ fontSize: '24px' }} />
+              <Text strong style={{ fontSize: '16px' }}>
+                {t('common:loading')}
+              </Text>
+            </>
+          ) : (
+            swapHistory.map((swap) => (
+              <SwapBox
+                key={swap.swapId}
+                swap={swap}
+                reverseAbeMapping={reverseAbeMapping}
+              />
+            ))
+          )}
+          {errorMessage && (
+            <Text style={{ color: 'red', fontSize: '16px' }}>
+              {errorMessage}
+            </Text>
+          )}
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button type="primary" size="large" onClick={handleExit}>
               {t('common:ok')}

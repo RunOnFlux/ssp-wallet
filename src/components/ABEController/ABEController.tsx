@@ -6,10 +6,16 @@ import {
   fetchSellAssets,
   fetchBuyAssets,
   fetchZelcoreAssets,
+  fetchABEexchangeProviders,
 } from '../../lib/ABEController.ts';
 
 import { useAppDispatch } from '../../hooks';
-import { setSellAssets, setBuyAssets, setAbeMapping } from '../../store';
+import {
+  setSellAssets,
+  setBuyAssets,
+  setAbeMapping,
+  setExchangeProviders,
+} from '../../store';
 
 function ABEController() {
   const dispatch = useAppDispatch();
@@ -236,6 +242,9 @@ function ABEController() {
       dispatch(setSellAssets(sellAssetsWithLimits));
       await localForage.setItem('buyAssetsWithLimits', buyAssetsWithLimits);
       dispatch(setBuyAssets(buyAssetsWithLimits));
+      const exchangeProviders = await fetchABEexchangeProviders();
+      await localForage.setItem('exchangeProviders', exchangeProviders);
+      dispatch(setExchangeProviders(exchangeProviders));
     } catch (error) {
       console.log(error);
     }

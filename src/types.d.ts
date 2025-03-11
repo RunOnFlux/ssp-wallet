@@ -709,6 +709,53 @@ export interface createSwapResponse {
   data: swapResponseData;
 }
 
+export interface swapHistoryOrder {
+  exchangeId: string;
+  swapId: string;
+  sellAsset: string;
+  buyAsset: string;
+  sellAmount: string;
+  buyAmount: string;
+  rate: string;
+  rateId: string | null;
+  kycRequired: boolean;
+  buyAddress: string;
+  refundAddress: string;
+  buyAddressExtraId: string | null;
+  refundAddressExtraId: string | null;
+  status: string;
+  createdAt: number;
+  sellTxid: string | null;
+  buyTxid: string | null;
+  refundTxid: string | null;
+  zelid: string | null;
+  exchangeSellAssetId: string;
+  exchangeBuyAssetId: string;
+}
+
+export interface swapHistoryResponse {
+  status: string;
+  data: swapHistoryOrder[];
+}
+
+export interface exchangeProvider {
+  id: exchangeId;
+  name: string;
+  type: string;
+  website: string;
+  endpoint: string;
+  terms: string;
+  privacy: string;
+  kyc: string;
+  track: string;
+  logo: string;
+}
+
+export interface exchangeProvidersResponse {
+  status: string;
+  data: exchangeProvider[];
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;

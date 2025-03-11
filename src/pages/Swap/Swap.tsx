@@ -121,8 +121,7 @@ function Swap() {
   >({});
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
-  const { sspWalletExternalIdentity: sspwid } = useAppSelector(
-    // associate tx history with ssp wallet id
+  const { sspWalletKeyInternalIdentity: sspwkid } = useAppSelector(
     (state) => state.sspState,
   );
   const { identityChain } = useAppSelector((state) => state.sspState);
@@ -591,7 +590,7 @@ function Swap() {
       if (selectedExchange.rateId) {
         data.rateId = selectedExchange.rateId;
       }
-      const swap = await createSwap(data, sspwid);
+      const swap = await createSwap(data, sspwkid);
       if (swap.status !== 'success') {
         displayMessage('error', t('home:swap.error_creating_swap'));
         setLoadingSwap(false);

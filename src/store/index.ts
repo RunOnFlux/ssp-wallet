@@ -14,6 +14,7 @@ import {
   tokenBalanceEVM,
   chainState,
   servicesSSPRelay,
+  exchangeProvider,
 } from '../types';
 
 import { blockchains, Token } from '@storage/blockchains';
@@ -104,6 +105,7 @@ const initialServicesAvailabilityState: servicesAvailabilityState = {
 interface abeState {
   sellAssets: { [key: string]: string[] };
   buyAssets: { [key: string]: string[] };
+  exchangeProviders: exchangeProvider[];
   abeMapping: { [key: string]: string };
 }
 
@@ -111,6 +113,7 @@ const initialAbeState: abeState = {
   sellAssets: {},
   buyAssets: {},
   abeMapping: {},
+  exchangeProviders: [],
 };
 
 interface RatesState {
@@ -297,6 +300,12 @@ const abeSlice = createSlice({
     ) => {
       state.buyAssets = action.payload;
     },
+    setExchangeProviders: (
+      state,
+      action: PayloadAction<exchangeProvider[]>,
+    ) => {
+      state.exchangeProviders = action.payload;
+    },
     setAbeMapping: (
       state,
       action: PayloadAction<{ [key: string]: string }>,
@@ -344,7 +353,12 @@ export const { setServicesAvailability } = servicesAvailabilitySlice.actions;
 
 export const { setContacts, setInitialContactsState } = contactsSlice.actions;
 
-export const { setSellAssets, setBuyAssets, setAbeMapping } = abeSlice.actions;
+export const {
+  setSellAssets,
+  setBuyAssets,
+  setAbeMapping,
+  setExchangeProviders,
+} = abeSlice.actions;
 
 export const {
   setSSPInitialState,

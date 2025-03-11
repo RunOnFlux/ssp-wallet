@@ -8,6 +8,10 @@ import {
   pairDetailsResponse,
   createSwapResponse,
   createSwapData,
+  swapHistoryResponse,
+  exchangeProvider,
+  exchangeProvidersResponse,
+  swapHistoryOrder,
 } from '../types';
 
 const options = {
@@ -82,14 +86,49 @@ export async function pairDetailsSellAmount(
   }
 }
 
-export async function createSwap(data: createSwapData, sspwid: string) {
+export async function createSwap(data: createSwapData, sspwkid: string) {
   try {
-    console.log(sspwid);
+    console.log(sspwkid);
     const test = 'abc';
     const url = 'https://abe.zelcore.io/v1/exchange/createswap';
     options.headers['zelid'] = `ssp-${test}`;
     const response = await axios.post<createSwapResponse>(url, data, options);
     return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function getSwapHistory(
+  sspwkid: string,
+): Promise<swapHistoryOrder[]> {
+  try {
+    console.log(sspwkid);
+    const test = 'abc';
+    const url = `https://abe.zelcore.io/v1/exchange/user/history`;
+    options.headers['zelid'] = `ssp-${test}`;
+    const response = await axios.get<swapHistoryResponse>(url, options);
+    if (response.data && typeof response.data.data === 'object') {
+      return response.data.data;
+    } else {
+      throw new Error('Invalid response from ABE for swap history');
+    }
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function fetchABEexchangeProviders(): Promise<exchangeProvider[]> {
+  try {
+    const url = 'https://abe.zelcore.io/v1/exchanges';
+    const response = await axios.get<exchangeProvidersResponse>(url, options);
+    if (response.data && response.data.data.length > 0) {
+      return response.data.data;
+    } else {
+      throw new Error('Invalid response from ABE for exchange providers');
+    }
   } catch (error) {
     console.log(error);
     throw error;

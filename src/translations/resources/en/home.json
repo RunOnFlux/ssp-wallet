@@ -333,6 +333,7 @@
     "floating_rate_fluctuates": "The actual market rate at which a trade transaction is executed might differ from the rate shown at the time your trading order was submitted. This means that the final value of your trade could be different than initially indicated.",
     "proceeding_agree_tos": "Proceeding agrees to ToS",
     "rate_changed": "Rate has changed, please review your amount.",
-    "error_creating_swap": "Error creating swap. Please try again."
+    "error_creating_swap": "Error creating swap. Please try again.",
+    "error_fetching_swap_history": "Error fetching swap history. Please try again."
   }
 }
