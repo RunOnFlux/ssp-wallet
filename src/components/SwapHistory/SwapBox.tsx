@@ -237,12 +237,12 @@ function SwapBox(props: {
                 {infoExpanded && (
                   <div className={'token-box'} id={'swap-id' + swap.swapId}>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Created At:{' '}
+                      {t('home:swap.created_at')}:{' '}
                       {new Date(swap.createdAt).toLocaleDateString()},{' '}
                       {new Date(swap.createdAt).toLocaleTimeString()}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Rate: 1{' '}
+                      {t('home:swap.rate')}: 1{' '}
                       {sellAsset
                         ? (blockchains[sellAsset.split('_')[0]].tokens?.find(
                             (token) => token.symbol === sellAsset.split('_')[1],
@@ -258,28 +258,29 @@ function SwapBox(props: {
                         : null}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Swap ID: {swap.swapId}
+                      {t('home:swap.swap_id')}: {swap.swapId}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Provider: {provider.name}{' '}
+                      {t('home:swap.provider')}: {provider.name}{' '}
                       {provider.type.charAt(0).toUpperCase() +
                         swap.exchangeId.slice(-5).slice(1)}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Sell Address: {swap.refundAddress || 'N/A'}
+                      {t('home:swap.sell_address')}:{' '}
+                      {swap.refundAddress || 'N/A'}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Buy Address: {swap.buyAddress || 'N/A'}
+                      {t('home:swap.buy_address')}: {swap.buyAddress || 'N/A'}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Sell TXID: {swap.sellTxid || 'N/A'}
+                      {t('home:swap.sell_txid')}: {swap.sellTxid || 'N/A'}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Buy TXID: {swap.buyTxid || 'N/A'}
+                      {t('home:swap.buy_txid')}: {swap.buyTxid || 'N/A'}
                     </p>
                     {swap.refundTxid && (
                       <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                        Refund TXID: {swap.refundTxid || 'N/A'}
+                        {t('home:swap.refund_txid')}: {swap.refundTxid || 'N/A'}
                       </p>
                     )}
                     {provider.track && (
@@ -294,7 +295,7 @@ function SwapBox(props: {
                           );
                         }}
                       >
-                        Track Swap on Provider
+                        {t('home:swap.track_swap')}
                       </Button>
                     )}
                   </div>

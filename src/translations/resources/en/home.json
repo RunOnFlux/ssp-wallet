@@ -346,6 +346,16 @@
     "refunded": "Refunded",
     "hold": "Hold",
     "expired": "Expired",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "provider": "Provider",
+    "created_at": "Created At",
+    "sell_address": "Sell Address",
+    "buy_address": "Buy Address",
+    "sell_txid": "Sell TXID",
+    "buy_txid": "Buy TXID",
+    "refund_txid": "Refund TXID",
+    "track_swap": "Track Swap",
+    "swap_id": "Swap ID",
+    "rate": "Rate"
   }
 }
