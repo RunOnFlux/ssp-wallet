@@ -45,5 +45,12 @@
   "approve": "Aprova",
   "reject": "Rebutja",
   "approve_request": "Aprova la sol·licitud",
-  "reject_request": "Rebutja la sol·licitud"
+  "reject_request": "Rebutja la sol·licitud",
+  "continue": "Continue",
+  "contract": "Contract",
+  "network": "Network",
+  "decimals": "Decimals",
+  "to": "To",
+  "from": "From",
+  "change": "Change"
 }
