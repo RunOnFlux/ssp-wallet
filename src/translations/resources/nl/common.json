@@ -45,5 +45,12 @@
   "approve": "Goedkeuren",
   "reject": "Afwijzen",
   "approve_request": "Verzoek goedkeuren",
-  "reject_request": "Verzoek afwijzen"
+  "reject_request": "Verzoek afwijzen",
+  "continue": "Continue",
+  "contract": "Contract",
+  "network": "Network",
+  "decimals": "Decimals",
+  "to": "To",
+  "from": "From",
+  "change": "Change"
 }
