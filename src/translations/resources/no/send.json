@@ -39,5 +39,6 @@
   "fee_details": "Gebyrdetaljer",
   "max_tx_fee": "Maks transaksjonsgebyr",
   "invalid_tx_fee": "Ugyldig transaksjonsgebyr",
-  "asset": "Eiendel"
+  "asset": "Eiendel",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
