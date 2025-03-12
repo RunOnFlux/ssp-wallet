@@ -45,5 +45,12 @@
   "approve": "Godkänn",
   "reject": "Avvisa",
   "approve_request": "Godkänn begäran",
-  "reject_request": "Avvisa begäran"
+  "reject_request": "Avvisa begäran",
+  "continue": "Continue",
+  "contract": "Contract",
+  "network": "Network",
+  "decimals": "Decimals",
+  "to": "To",
+  "from": "From",
+  "change": "Change"
 }
