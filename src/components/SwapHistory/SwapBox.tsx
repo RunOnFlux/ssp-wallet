@@ -28,12 +28,24 @@ function SwapBox(props: {
   ) ?? {
     name:
       swap.exchangeId
-        .slice(2, swap.exchangeId.length - 5)
+        .slice(
+          2,
+          swap.exchangeId.slice(-5) === 'float'
+            ? swap.exchangeId.length - 5
+            : swap.exchangeId.length - 3,
+        )
         .charAt(0)
         .toUpperCase() +
-      swap.exchangeId.slice(2, swap.exchangeId.length - 5).slice(1),
+      swap.exchangeId
+        .slice(
+          2,
+          swap.exchangeId.slice(-5) === 'float'
+            ? swap.exchangeId.length - 5
+            : swap.exchangeId.length - 3,
+        )
+        .slice(1),
     exchangeId: swap.exchangeId,
-    type: swap.exchangeId.slice(-5),
+    type: swap.exchangeId.slice(-5) === 'float' ? 'float' : 'fixed',
     website: '',
     endpoint: '',
     terms: '',

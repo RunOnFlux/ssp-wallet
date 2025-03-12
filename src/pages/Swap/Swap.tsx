@@ -13,7 +13,12 @@ import {
   message,
   Popover,
 } from 'antd';
-import { CaretDownOutlined, LoadingOutlined } from '@ant-design/icons';
+import {
+  CaretDownOutlined,
+  LoadingOutlined,
+  PlusCircleOutlined,
+  MinusCircleOutlined,
+} from '@ant-design/icons';
 import Navbar from '../../components/Navbar/Navbar.tsx';
 import { useTranslation } from 'react-i18next';
 import { blockchains, Token } from '@storage/blockchains';
@@ -30,6 +35,7 @@ import localForage from 'localforage';
 import {
   createSwapData,
   cryptos,
+  exchangeProvider,
   generatedWallets,
   node,
   swapResponseData,
@@ -60,6 +66,8 @@ import {
 import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
 import { getFingerprint } from '../../lib/fingerprint.ts';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
+import { formatFiatWithSymbol } from '../../lib/currency.ts';
+import { sspConfig } from '@storage/ssp';
 
 interface selectedExchangeType {
   exchangeId?: string;
@@ -110,6 +118,7 @@ function Swap() {
   const [sellAssetAddress, setSellAssetAddress] = useState('0-0');
   const [buyAssetAddress, setBuyAssetAddress] = useState('0-0');
   const [loadingSwap, setLoadingSwap] = useState(false);
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const { abeMapping, sellAssets, buyAssets } = useAppSelector(
     (state) => state.abe,
   );
@@ -131,6 +140,13 @@ function Swap() {
   );
   const dispatch = useAppDispatch();
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+  const { exchangeProviders } = useAppSelector((state) => state.abe);
+  const provider: exchangeProvider | undefined = exchangeProviders.find(
+    (provider) => provider.exchangeId === selectedExchange.exchangeId,
+  );
+  const { cryptoRates, fiatRates } = useAppSelector(
+    (state) => state.fiatCryptoRates,
+  );
 
   const refresh = () => {
     console.log(
@@ -642,6 +658,15 @@ function Swap() {
     setSendingWalletModalOpen(false);
   };
 
+  const getCryptoRate = (
+    crypto: keyof typeof cryptoRates,
+    fiat: keyof typeof fiatRates,
+  ) => {
+    const cr = cryptoRates[crypto] ?? 0;
+    const fi = fiatRates[fiat] ?? 0;
+    return cr * fi;
+  };
+
   return (
     <>
       {contextHolder}
@@ -679,6 +704,30 @@ function Swap() {
                 variant="borderless"
                 controls={false}
               />
+              {showAdvancedOptions && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    position: 'absolute',
+                    top: 55,
+                  }}
+                >
+                  {formatFiatWithSymbol(
+                    new BigNumber(Math.abs(+amountSell)).multipliedBy(
+                      new BigNumber(
+                        sellAsset.split('_')[1]
+                          ? getCryptoRate(
+                              sellAsset
+                                .split('_')[1]
+                                .toLowerCase() as keyof typeof cryptoRates,
+                              sspConfig().fiatCurrency,
+                            )
+                          : 0,
+                      ),
+                    ),
+                  )}
+                </div>
+              )}
             </Col>
             <Col span={9} className="swap-box-row-crypto-selection">
               <Button
@@ -707,8 +756,9 @@ function Swap() {
             <Col span={24} className="swap-box-row-chain-info">
               <div className="swap-box-row-chain-info-container">
                 <Image
-                  height={16}
+                  height={14}
                   preview={false}
+                  style={{ marginBottom: 4 }}
                   src={blockchains[sellAsset.split('_')[0]].logo}
                 />
                 {blockchains[sellAsset.split('_')[0]].name}
@@ -760,18 +810,29 @@ function Swap() {
         <div className="swap-box margin-top-12">
           <Row gutter={[16, 16]} className="swap-box-row no-border-bottom">
             <Col span={24} className="swap-box-row-title">
-              <Popover
-                content={t('home:swap.estimated_amount')}
-                title={t('home:swap.estimated_amount_title')}
-                styles={{ body: { maxWidth: 300, marginLeft: 10 } }}
-              >
-                {t('home:swap.you_get')} ~ &nbsp;
-                {loading ? (
-                  <Spin indicator={<LoadingOutlined spin />} size="small" />
-                ) : (
-                  ''
-                )}
-              </Popover>
+              {selectedExchange.exchangeId?.slice(-3) !== 'fix' ? (
+                <Popover
+                  content={t('home:swap.estimated_amount')}
+                  title={t('home:swap.estimated_amount_title')}
+                  styles={{ body: { maxWidth: 300, marginLeft: 10 } }}
+                >
+                  {t('home:swap.you_get')} ~ &nbsp;
+                  {loading ? (
+                    <Spin indicator={<LoadingOutlined spin />} size="small" />
+                  ) : (
+                    ''
+                  )}
+                </Popover>
+              ) : (
+                <>
+                  {t('home:swap.you_get')} &nbsp;
+                  {loading ? (
+                    <Spin indicator={<LoadingOutlined spin />} size="small" />
+                  ) : (
+                    ''
+                  )}
+                </>
+              )}
             </Col>
             <Col span={15} className="swap-box-row-input">
               <InputNumber
@@ -783,6 +844,30 @@ function Swap() {
                 controls={false}
                 variant="borderless"
               />
+              {showAdvancedOptions && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    position: 'absolute',
+                    top: 55,
+                  }}
+                >
+                  {formatFiatWithSymbol(
+                    new BigNumber(Math.abs(+amountBuy)).multipliedBy(
+                      new BigNumber(
+                        buyAsset.split('_')[1]
+                          ? getCryptoRate(
+                              buyAsset
+                                .split('_')[1]
+                                .toLowerCase() as keyof typeof cryptoRates,
+                              sspConfig().fiatCurrency,
+                            )
+                          : 0,
+                      ),
+                    ),
+                  )}
+                </div>
+              )}
             </Col>
             <Col span={9} className="swap-box-row-crypto-selection">
               <Button
@@ -811,8 +896,9 @@ function Swap() {
             <Col span={24} className="swap-box-row-chain-info">
               <div className="swap-box-row-chain-info-container">
                 <Image
-                  height={16}
+                  height={14}
                   preview={false}
+                  style={{ marginBottom: 4 }}
                   src={blockchains[buyAsset.split('_')[0]].logo}
                 />
                 {blockchains[buyAsset.split('_')[0]].name}
@@ -821,7 +907,12 @@ function Swap() {
           </Row>
         </div>
         <div className="swap-box">
-          <Row gutter={[16, 16]} className="swap-box-row no-border-top sub-row">
+          <Row
+            gutter={[16, 16]}
+            className={`swap-box-row no-border-top sub-row ${
+              showAdvancedOptions ? 'no-border-bottom' : ''
+            }`}
+          >
             <Col span={6} className="swap-box-row-sub-title">
               {t('common:to')}
             </Col>
@@ -861,15 +952,75 @@ function Swap() {
             </Col>
           </Row>
         </div>
+        {showAdvancedOptions && (
+          <div className="swap-box">
+            <Row
+              gutter={[16, 16]}
+              className="swap-box-row no-border-top sub-row"
+            >
+              <Col span={6} className="swap-box-row-sub-title">
+                {t('home:swap.swapped_by')}
+              </Col>
+              <Col span={18}>
+                <Button
+                  size="small"
+                  type="text"
+                  className="swap-box-row-sub-selection"
+                  onClick={() =>
+                    displayMessage(
+                      'info',
+                      t('home:swap.select_swap_provider') +
+                        ' - ' +
+                        t('home:buy_sell_crypto.coming_soon'),
+                    )
+                  }
+                >
+                  {provider ? provider.name : t('common:loading')}{' '}
+                  {provider
+                    ? provider.type.charAt(0).toUpperCase() +
+                      provider.type.slice(1)
+                    : ''}
+                  {provider ? ` - ${t('home:swap.best_rate')}` : ''}
+                  <CaretDownOutlined />
+                </Button>
+              </Col>
+            </Row>
+          </div>
+        )}
         <div className="rate-value">
           {rate > 0 && loading === false ? (
-            <Popover
-              content={t('home:swap.floating_rate_fluctuates')}
-              title={t('home:swap.floating_rate_title')}
-              styles={{ body: { maxWidth: 300, marginLeft: 10 } }}
-            >
-              1 {sellAsset.split('_')[1]} = {rate} {buyAsset.split('_')[1]}
-            </Popover>
+            <>
+              {showAdvancedOptions ? (
+                <>
+                  <MinusCircleOutlined
+                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                  />
+                  &nbsp;
+                </>
+              ) : (
+                <>
+                  <PlusCircleOutlined
+                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                  />
+                  &nbsp;
+                </>
+              )}
+              <Popover
+                content={
+                  selectedExchange.exchangeId?.slice(-3) === 'fix'
+                    ? t('home:swap.fixed_rate_stable')
+                    : t('home:swap.floating_rate_fluctuates')
+                }
+                title={
+                  selectedExchange.exchangeId?.slice(-3) === 'fix'
+                    ? t('home:swap.fixed_rate_title')
+                    : t('home:swap.floating_rate_title')
+                }
+                styles={{ body: { maxWidth: 300, marginLeft: 10 } }}
+              >
+                1 {sellAsset.split('_')[1]} = {rate} {buyAsset.split('_')[1]}
+              </Popover>
+            </>
           ) : (
             <span>&nbsp;</span>
           )}
@@ -888,7 +1039,10 @@ function Swap() {
       <Space
         direction="vertical"
         size="middle"
-        style={{ paddingBottom: '43px', marginTop: '12px' }}
+        style={{
+          paddingBottom: showAdvancedOptions ? '63px' : '43px',
+          marginTop: '12px',
+        }}
       >
         <Button
           type="primary"
