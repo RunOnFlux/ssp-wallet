@@ -45,5 +45,12 @@
   "approve": "Schváliť",
   "reject": "Zamietnuť",
   "approve_request": "Schváliť požiadavku",
-  "reject_request": "Zamietnuť požiadavku"
+  "reject_request": "Zamietnuť požiadavku",
+  "continue": "Continue",
+  "contract": "Contract",
+  "network": "Network",
+  "decimals": "Decimals",
+  "to": "To",
+  "from": "From",
+  "change": "Change"
 }
