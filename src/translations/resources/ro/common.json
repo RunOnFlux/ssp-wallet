@@ -45,5 +45,12 @@
   "approve": "Aprobare",
   "reject": "Respinge",
   "approve_request": "Aprobare cerere",
-  "reject_request": "Respinge cererea"
+  "reject_request": "Respinge cererea",
+  "continue": "Continue",
+  "contract": "Contract",
+  "network": "Network",
+  "decimals": "Decimals",
+  "to": "To",
+  "from": "From",
+  "change": "Change"
 }
