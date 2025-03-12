@@ -39,5 +39,6 @@
   "fee_details": "手数料の詳細",
   "max_tx_fee": "最大取引手数料",
   "invalid_tx_fee": "無効な取引手数料",
-  "asset": "資産"
+  "asset": "資産",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
