@@ -93,7 +93,7 @@ function Swap() {
   const { t } = useTranslation(['send', 'common', 'home']);
   const [amountSell, setAmountSell] = useState(0.1);
   const [amountBuy, setAmountBuy] = useState(0);
-  const [sellAsset, setSellAsset] = useState('eth_ETH_');
+  const [sellAsset, setSellAsset] = useState('btc_BTC'); // always default to BTC -> USDT. If we want default to current chain, sellAmount would need to be adjusted as well
   const [buyAsset, setBuyAsset] = useState(
     'eth_USDT_0xdac17f958d2ee523a2206206994597c13d831ec7',
   );
