@@ -39,5 +39,6 @@
   "fee_details": "Detaily poplatku",
   "max_tx_fee": "Maximálny poplatok za transakciu",
   "invalid_tx_fee": "Neplatný poplatok za transakciu",
-  "asset": "Aktívum"
+  "asset": "Aktívum",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
