@@ -39,5 +39,6 @@
   "fee_details": "Detalles de la comisión",
   "max_tx_fee": "Comisión Máxima de Transacción",
   "invalid_tx_fee": "Comisión de Transacción no válida",
-  "asset": "Activo"
+  "asset": "Activo",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
