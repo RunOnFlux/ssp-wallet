@@ -89,13 +89,15 @@ function TokenBox(props: {
       >
         <Meta
           avatar={
-            <Badge
-              count={<Avatar src={blockchains[props.chain].logo} size={18} />}
-              size="small"
-              offset={[-2, 5]}
-            >
-              <Avatar src={props.tokenInfo.logo} size={30} />
-            </Badge>
+            <div style={{ marginTop: '12px' }}>
+              <Badge
+                count={<Avatar src={blockchains[props.chain].logo} size={18} />}
+                size="small"
+                offset={[-2, 5]}
+              >
+                <Avatar src={props.tokenInfo.logo} size={30} />
+              </Badge>
+            </div>
           }
           title={
             <>
@@ -128,14 +130,17 @@ function TokenBox(props: {
                   >
                     {props.tokenInfo.contract && (
                       <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                        Contract: {props.tokenInfo.contract}
+                        {t('common:contract')}
+                        {props.tokenInfo.contract}
                       </p>
                     )}
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Decimals: {props.tokenInfo.decimals}
+                      {t('common:decimals')}
+                      {props.tokenInfo.decimals}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      Network: {blockchains[props.chain].name}
+                      {t('common:network')}
+                      {blockchains[props.chain].name}
                     </p>
                     {props.tokenInfo.contract && (
                       <div className={'remove-button'}>

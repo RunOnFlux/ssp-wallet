@@ -41,8 +41,9 @@ By using SSP Wallet, you acknowledge and accept the risks associated with crypto
 
 #### Additional Terms
 By using SSP Wallet, you also agree to the following:  
-- [General Privacy Policy](https://runonflux.com/privacyPolicy)  
-- [Terms of Service](https://runonflux.com/termsandconditions)  
+- [Terms of Service](Terms_of_Service.md)
+- [RunOnFlux General Privacy Policy](https://runonflux.com/privacyPolicy)  
+- [RunOnFlux Terms of Service](https://runonflux.com/termsandconditions)  
 - [Not Being Evil](https://www.youtube.com/watch?v=GJVk_LfASxk&ab_channel=FluxLabs)
 
 This disclaimer is subject to updates. Users are advised to periodically review it for any changes. Please use SSP Wallet responsibly and exercise caution when managing your cryptocurrency.

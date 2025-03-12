@@ -26,8 +26,11 @@ function Receive(props: {
         title={t('home:receive.receive_chain_wallet', {
           chain: blockchainConfig.name,
           wallet:
-            (+walletInUse.split('-')[0] === 1 ? 'Change ' : 'Wallet ') +
-            (+walletInUse.split('-')[1] + 1),
+            (+walletInUse.split('-')[0] === 1
+              ? t('common:change')
+              : t('common:wallet')) +
+            ' ' +
+            (+walletInUse.split('-')[1] + 1).toString(),
         })}
         open={open}
         onOk={handleOk}

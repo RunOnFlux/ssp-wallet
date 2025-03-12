@@ -7,6 +7,7 @@ import Login from './pages/Login/Login.tsx';
 import Home from './pages/Home/Home.tsx';
 import Send from './pages/Send/Send.tsx';
 import SendEVM from './pages/SendEVM/SendEVM.tsx';
+import Swap from './pages/Swap/Swap.tsx';
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: '/sendevm',
     element: <SendEVM />,
+  },
+  {
+    path: '/swap',
+    element: <Swap />,
   },
   {
     path: '*',

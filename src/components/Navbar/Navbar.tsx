@@ -34,11 +34,11 @@ import {
 } from 'antd';
 import {
   LockOutlined,
-  SettingOutlined,
   PlusOutlined,
   MinusOutlined,
   NodeIndexOutlined,
   QuestionCircleOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import './Navbar.css';
@@ -59,6 +59,7 @@ import {
 } from '../../types';
 import { blockchains, Token } from '@storage/blockchains';
 import ManualSign from '../ManualSign/ManualSign.tsx';
+import SwapHistory from '../SwapHistory/SwapHistory';
 
 interface walletOption {
   value: string;
@@ -78,10 +79,18 @@ const balancesObject = {
 interface Props {
   refresh: () => void;
   hasRefresh: boolean;
+  hasSwapHistory?: boolean;
   allowChainSwitch?: boolean;
+  header?: string;
 }
 
-function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
+function Navbar({
+  refresh,
+  hasRefresh,
+  hasSwapHistory = false,
+  allowChainSwitch = true,
+  header,
+}: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
@@ -92,13 +101,17 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [openManualSign, setOpenManualSign] = useState(false);
   const [selectChainOpen, setSelectChainOpen] = useState(false);
+  const [openSwapHistory, setOpenSwapHistory] = useState(false);
   const [deletionToPerform, setDeletionToPerform] = useState('');
   const [defaultWallet, setWalletValue] = useState<walletOption>({
     value: walletInUse,
     label: t('home:navbar.chain_wallet', {
       chain: blockchainConfig.name,
       wallet:
-        (+walletInUse.split('-')[0] === 1 ? 'Change ' : 'Wallet ') +
+        (+walletInUse.split('-')[0] === 1
+          ? t('common:change')
+          : t('common:wallet')) +
+        ' ' +
         (+walletInUse.split('-')[1] + 1),
     }),
   });
@@ -118,8 +131,11 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
       label: t('home:navbar.chain_wallet', {
         chain: blockchainConfig.name,
         wallet:
-          (+walletInUse.split('-')[0] === 1 ? 'Change ' : 'Wallet ') +
-          (+walletInUse.split('-')[1] + 1),
+          (+walletInUse.split('-')[0] === 1
+            ? t('common:change')
+            : t('common:wallet')) +
+          ' ' +
+          (+walletInUse.split('-')[1] + 1).toString(),
       }),
     };
     setWalletValue(defValue);
@@ -130,9 +146,9 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
     Object.keys(wallets).forEach((wallet) => {
       const typeNumber = Number(wallet.split('-')[0]);
       const walletNumber = Number(wallet.split('-')[1]) + 1;
-      let walletName = 'Wallet ' + walletNumber;
+      let walletName = `${t('common:wallet')} ${walletNumber.toString()}`;
       if (typeNumber === 1) {
-        walletName = 'Change ' + walletNumber;
+        walletName = `${t('common:change')} ${walletNumber.toString()}`;
       }
       const wal = {
         value: wallet,
@@ -248,7 +264,7 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
       // check if that is our activeIndex, if yes. Switch wallet.
       if (pathToDelete === walletInUse) {
         // switch
-        const walletName = 'Wallet 1';
+        const walletName = t('common:wallet') + ' 1';
         const wal = {
           value: '0-0',
           label: t('home:navbar.chain_wallet', {
@@ -317,6 +333,9 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
     }
   };
 
+  const swapHistoryAction = (status: boolean) => {
+    setOpenSwapHistory(status);
+  };
   const sspIdentityAction = (status: boolean) => {
     setOpenManualSign(status);
   };
@@ -344,6 +363,9 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
     }
     setPasswordConfirmDialogVisible(false);
   };
+  const interactWithSwapHistory = () => {
+    setOpenSwapHistory(true);
+  };
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
     if (e.key === 'refresh') refresh();
@@ -358,6 +380,7 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
     }
     if (e.key === 'manualsign') setOpenManualSign(true);
     if (e.key === 'settings') setOpenSettingsDialogVisible(true);
+    if (e.key === 'history') interactWithSwapHistory();
   };
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -384,7 +407,7 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
   const menuItems: MenuProps['items'] = [
     {
       key: 'Menu',
-      icon: <SettingOutlined style={{ fontSize: '14px' }} />,
+      icon: <MenuOutlined style={{ fontSize: '14px' }} />,
       style: {
         border: 'none',
         width: '30px',
@@ -418,24 +441,31 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
               key: 'refresh',
             },
           ]
-        : [
-            {
-              label: t('home:navbar.addr_details'),
-              key: 'address',
-            },
-            {
-              label: t('home:navbar.ssp_details'),
-              key: 'sspwallet',
-            },
-            {
-              label: t('home:navbar.ssp_message_sign'),
-              key: 'manualsign',
-            },
-            {
-              label: t('home:settings.settings'),
-              key: 'settings',
-            },
-          ],
+        : hasSwapHistory
+          ? [
+              {
+                label: t('home:navbar.swap_history'),
+                key: 'history',
+              },
+            ]
+          : [
+              {
+                label: t('home:navbar.addr_details'),
+                key: 'address',
+              },
+              {
+                label: t('home:navbar.ssp_details'),
+                key: 'sspwallet',
+              },
+              {
+                label: t('home:navbar.ssp_message_sign'),
+                key: 'manualsign',
+              },
+              {
+                label: t('home:settings.settings'),
+                key: 'settings',
+              },
+            ],
     },
     {
       key: 'Lock',
@@ -467,98 +497,103 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
             />
           </Col>
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
-            <Select
-              labelInValue
-              value={defaultWallet}
-              style={{ width: 200 }}
-              onChange={handleChange}
-              options={walletItems}
-              variant={'borderless'}
-              size="large"
-              dropdownStyle={{ zIndex: 9 }}
-              dropdownRender={(menu) => (
-                <>
-                  <div
-                    style={{
-                      lineHeight: '25px',
-                      marginBottom: '10px',
-                      marginLeft: '10px',
-                    }}
-                  >
-                    <Image
-                      height={22}
-                      preview={false}
-                      src={blockchainConfig.logo}
-                      style={{ cursor: 'pointer' }}
-                    />
-                    <span
+            {header && <span>{header}</span>}
+            {!(header && hasSwapHistory) && (
+              <Select
+                labelInValue
+                value={defaultWallet}
+                style={{ width: 200 }}
+                onChange={handleChange}
+                options={walletItems}
+                variant={'borderless'}
+                size="large"
+                dropdownStyle={{ zIndex: 9 }}
+                dropdownRender={(menu) => (
+                  <>
+                    <div
                       style={{
-                        position: 'absolute',
-                        top: '5px',
-                        marginLeft: '8px',
-                        fontSize: '16px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        lineHeight: '25px',
+                        marginBottom: '10px',
+                        marginLeft: '10px',
                       }}
                     >
-                      {blockchainConfig.name}{' '}
-                      {blockchainConfig.name.includes(' ')
-                        ? ''
-                        : t('common:chain')}
-                    </span>
-                  </div>
-                  {menu}
-                  {allowChainSwitch && (
-                    <>
-                      <Divider style={{ margin: '8px 0' }} />
-                      <Button
-                        type="text"
-                        icon={<PlusOutlined />}
-                        onClick={addWallet}
-                        style={{ width: '100%', textAlign: 'left' }}
+                      <Image
+                        height={22}
+                        preview={false}
+                        src={blockchainConfig.logo}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '5px',
+                          marginLeft: '8px',
+                          fontSize: '16px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
                       >
-                        {t('home:navbar.generate_new_wallet')}
-                      </Button>
-                      {walletItems.length > 1 && (
-                        <Popconfirm
-                          title={t('home:navbar.remove_last_wallet')}
-                          description={
-                            <>{t('home:navbar.remove_last_wallet_desc')}</>
-                          }
-                          overlayStyle={{ maxWidth: 360, margin: 10 }}
-                          okText={t('home:navbar.remove')}
-                          cancelText={t('common:cancel')}
-                          onConfirm={() => {
-                            removeAddress();
-                          }}
-                          icon={
-                            <QuestionCircleOutlined style={{ color: 'blue' }} />
-                          }
+                        {blockchainConfig.name}{' '}
+                        {blockchainConfig.name.includes(' ')
+                          ? ''
+                          : t('common:chain')}
+                      </span>
+                    </div>
+                    {menu}
+                    {allowChainSwitch && (
+                      <>
+                        <Divider style={{ margin: '8px 0' }} />
+                        <Button
+                          type="text"
+                          icon={<PlusOutlined />}
+                          onClick={addWallet}
+                          style={{ width: '100%', textAlign: 'left' }}
                         >
-                          <Button
-                            type="text"
-                            icon={<MinusOutlined />}
-                            style={{ width: '100%', textAlign: 'left' }}
+                          {t('home:navbar.generate_new_wallet')}
+                        </Button>
+                        {walletItems.length > 1 && (
+                          <Popconfirm
+                            title={t('home:navbar.remove_last_wallet')}
+                            description={
+                              <>{t('home:navbar.remove_last_wallet_desc')}</>
+                            }
+                            overlayStyle={{ maxWidth: 360, margin: 10 }}
+                            okText={t('home:navbar.remove')}
+                            cancelText={t('common:cancel')}
+                            onConfirm={() => {
+                              removeAddress();
+                            }}
+                            icon={
+                              <QuestionCircleOutlined
+                                style={{ color: 'blue' }}
+                              />
+                            }
                           >
-                            {t('home:navbar.remove_last_wallet')}
-                          </Button>
-                        </Popconfirm>
-                      )}
-                      <Divider style={{ margin: '8px 0' }} />
-                      <Button
-                        type="text"
-                        style={{ width: '100%', textAlign: 'left' }}
-                        icon={<NodeIndexOutlined />}
-                        onClick={() => selectChain()}
-                      >
-                        {t('home:navbar.switch_chain')}
-                      </Button>
-                    </>
-                  )}
-                </>
-              )}
-            />
+                            <Button
+                              type="text"
+                              icon={<MinusOutlined />}
+                              style={{ width: '100%', textAlign: 'left' }}
+                            >
+                              {t('home:navbar.remove_last_wallet')}
+                            </Button>
+                          </Popconfirm>
+                        )}
+                        <Divider style={{ margin: '8px 0' }} />
+                        <Button
+                          type="text"
+                          style={{ width: '100%', textAlign: 'left' }}
+                          icon={<NodeIndexOutlined />}
+                          onClick={() => selectChain()}
+                        >
+                          {t('home:navbar.switch_chain')}
+                        </Button>
+                      </>
+                    )}
+                  </>
+                )}
+              />
+            )}
           </Col>
           <Col span={4}>
             <Menu
@@ -599,6 +634,7 @@ function Navbar({ refresh, hasRefresh, allowChainSwitch = true }: Props) {
         openAction={settingsDialogAction}
       />
       <ChainSelect open={selectChainOpen} openAction={selectChainAction} />
+      <SwapHistory open={openSwapHistory} openAction={swapHistoryAction} />
       <AutoLogout />
     </>
   );

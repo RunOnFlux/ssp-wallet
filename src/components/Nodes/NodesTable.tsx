@@ -336,6 +336,7 @@ function NodesTable(props: {
         bordered={false}
         loading={false}
         dataSource={sortedNodesByName}
+        style={{ width: '100%' }}
         expandable={{
           showExpandColumn: false,
           expandedRowRender: (record) => (

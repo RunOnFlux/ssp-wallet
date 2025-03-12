@@ -1,0 +1,27 @@
+.swap-box-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.swap-box-sell-amount {
+  font-size: 16px;
+  font-weight: 600;
+  float: left;
+  padding: 2px;
+  padding-left: 7px;
+}
+
+.swap-box-buy-amount {
+  font-size: 16px;
+  font-weight: 600;
+  float: right;
+  padding: 2px;
+}
+
+.swap-box-timestamp-status {
+  display: flex;
+  justify-content: space-between;
+}

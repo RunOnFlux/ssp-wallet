@@ -126,6 +126,7 @@ function TransactionsTable(props: {
         rowKey="txid"
         bordered={false}
         loading={false}
+        style={{ width: '100%' }}
         dataSource={props.transactions}
         expandable={{
           showExpandColumn: false,

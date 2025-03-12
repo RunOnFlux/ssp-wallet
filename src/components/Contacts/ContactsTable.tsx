@@ -123,6 +123,7 @@ function ContactsTable() {
         bordered={false}
         loading={false}
         dataSource={contactsByName}
+        style={{ width: '100%' }}
         expandable={{
           showExpandColumn: false,
           expandedRowRender: (record) => (

@@ -9,6 +9,7 @@ import { SspConnectProvider } from './contexts/sspConnectContext';
 import FiatCurrencyController from './components/FiatCurrencyController/FiatCurrencyController.tsx';
 import NetworkFeeController from './components/NetworkFeeController/NetworkFeeController.tsx';
 import ServicesAvailabilityController from './components/ServicesAvailabilityController/ServicesAvailabilityController.tsx';
+import ABEController from './components/ABEController/ABEController.tsx';
 import './translations';
 import './index.css';
 
@@ -39,6 +40,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <FiatCurrencyController />
           <NetworkFeeController />
           <ServicesAvailabilityController />
+          <ABEController />
         </SspConnectProvider>
       </SocketProvider>
     </Provider>
