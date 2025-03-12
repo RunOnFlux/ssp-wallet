@@ -45,5 +45,12 @@
   "approve": "Zatwierdź",
   "reject": "Odrzuć",
   "approve_request": "Zatwierdź żądanie",
-  "reject_request": "Odrzuć żądanie"
+  "reject_request": "Odrzuć żądanie",
+  "continue": "Continue",
+  "contract": "Contract",
+  "network": "Network",
+  "decimals": "Decimals",
+  "to": "To",
+  "from": "From",
+  "change": "Change"
 }
