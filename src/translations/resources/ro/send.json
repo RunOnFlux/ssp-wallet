@@ -39,5 +39,6 @@
   "fee_details": "Detalii taxă",
   "max_tx_fee": "Taxă maximă de tranzacție",
   "invalid_tx_fee": "Taxă de tranzacție invalidă",
-  "asset": "Activ"
+  "asset": "Activ",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
