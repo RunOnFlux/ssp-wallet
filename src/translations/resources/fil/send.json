@@ -39,5 +39,6 @@
   "fee_details": "Mga Detalye ng Bayad",
   "max_tx_fee": "Max na Bayarin sa Transaksyon",
   "invalid_tx_fee": "Di-wastong Bayarin sa Transaksyon",
-  "asset": "Asset"
+  "asset": "Asset",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
