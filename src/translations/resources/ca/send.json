@@ -39,5 +39,6 @@
   "fee_details": "Detalls de la taxa",
   "max_tx_fee": "Taxa màxima de transacció",
   "invalid_tx_fee": "Taxa de transacció no vàlida",
-  "asset": "Actiu"
+  "asset": "Actiu",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
