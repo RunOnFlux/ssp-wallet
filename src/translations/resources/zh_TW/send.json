@@ -39,5 +39,6 @@
   "fee_details": "手續費詳情",
   "max_tx_fee": "最大交易手續費",
   "invalid_tx_fee": "交易手續費無效",
-  "asset": "資產"
+  "asset": "資產",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

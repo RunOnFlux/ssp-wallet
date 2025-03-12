@@ -39,5 +39,6 @@
   "fee_details": "Detalji Naknade",
   "max_tx_fee": "Maksimalna naknada za transakciju",
   "invalid_tx_fee": "Nevažeća naknada za transakciju",
-  "asset": "Imovina"
+  "asset": "Imovina",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

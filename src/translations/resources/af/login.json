@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Ongeldige wagwoord. Probeer asseblief weer.",
+  "err_invalid_pw_2": "Ongeldige wagwoord. Probeer asseblief weer.",
+  "err_lx": "Kode {{code}}: Beursie-data ontbreek. Herstel asseblief jou beursie.",
+  "welcome_back": "Welkom terug!",
+  "to_dec_cloud": "Na jou gedesentraliseerde Wolk",
+  "unlock_with_pw": "Ontsluit met Wagwoord",
+  "enter_pw": "Voer Wagwoord In",
+  "unlock_wallet": "Ontsluit Beursie",
+  "forgot_pw": "Wagwoord Vergeet?",
+  "restore": "Herstel"
 }

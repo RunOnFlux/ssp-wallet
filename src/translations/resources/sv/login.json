@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "to_dec_cloud": "To your decentralized Cloud",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Ogiltigt lösenord. Vänligen försök igen.",
+  "err_invalid_pw_2": "Ogiltigt lösenord. Vänligen försök igen.",
+  "err_lx": "Kod {{code}}: Plånboksdata saknas. Vänligen återställ din plånbok.",
+  "welcome_back": "Välkommen tillbaka!",
+  "to_dec_cloud": "Till din decentraliserade moln",
+  "unlock_with_pw": "Lås upp med lösenord",
+  "enter_pw": "Ange lösenord",
+  "unlock_wallet": "Lås upp plånbok",
+  "forgot_pw": "Glömt lösenord?",
+  "restore": "Återställ"
 }

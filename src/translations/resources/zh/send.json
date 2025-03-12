@@ -39,5 +39,6 @@
   "fee_details": "手续费详情",
   "max_tx_fee": "最大交易手续费",
   "invalid_tx_fee": "无效的交易手续费",
-  "asset": "资产"
+  "asset": "资产",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

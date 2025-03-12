@@ -39,5 +39,6 @@
   "fee_details": "Các chi tiết Phí",
   "max_tx_fee": "Phí giao dịch tối đa",
   "invalid_tx_fee": "Phí giao dịch không khả dụng",
-  "asset": "Tài sản"
+  "asset": "Tài sản",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

@@ -39,5 +39,6 @@
   "fee_details": "Podrobnosti pristojbine",
   "max_tx_fee": "Maksimalna transakcijska pristojbina",
   "invalid_tx_fee": "Neveljavna transakcijska pristojbina",
-  "asset": "Sredstvo"
+  "asset": "Sredstvo",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
