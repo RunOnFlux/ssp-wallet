@@ -39,5 +39,6 @@
   "fee_details": "Vergoedingsdetails",
   "max_tx_fee": "Maximale transactievergoeding",
   "invalid_tx_fee": "Ongeldige transactievergoeding",
-  "asset": "Activa"
+  "asset": "Activa",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
