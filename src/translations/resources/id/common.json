@@ -45,5 +45,12 @@
   "approve": "Menyetujui",
   "reject": "Tolak",
   "approve_request": "Setujui Permintaan",
-  "reject_request": "Tolak Permintaan"
+  "reject_request": "Tolak Permintaan",
+  "continue": "Continue",
+  "contract": "Contract",
+  "network": "Network",
+  "decimals": "Decimals",
+  "to": "To",
+  "from": "From",
+  "change": "Change"
 }
