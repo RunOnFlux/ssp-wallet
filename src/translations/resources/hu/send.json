@@ -39,5 +39,6 @@
   "fee_details": "Díj részletei",
   "max_tx_fee": "Maximum Tranzakciós díj",
   "invalid_tx_fee": "Érvénytelen tranzakciós díj",
-  "asset": "Eszköz"
+  "asset": "Eszköz",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
