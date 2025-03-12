@@ -39,5 +39,6 @@
   "fee_details": "Informations sur les frais",
   "max_tx_fee": "Frais de transaction max",
   "invalid_tx_fee": "Frais de transaction non valide",
-  "asset": "Actif"
+  "asset": "Actif",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
