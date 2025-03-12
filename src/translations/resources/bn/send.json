@@ -39,5 +39,6 @@
   "fee_details": "ফি বিবরণ",
   "max_tx_fee": "সর্বাধিক লেনদেন ফি",
   "invalid_tx_fee": "অবৈধ লেনদেন ফি",
-  "asset": "সম্পদ"
+  "asset": "সম্পদ",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
