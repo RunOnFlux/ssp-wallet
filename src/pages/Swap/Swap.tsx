@@ -616,6 +616,7 @@ function Swap() {
       if (selectedExchange.rateId) {
         data.rateId = selectedExchange.rateId;
       }
+      // especially on fixed rate, our current selection must be pretty recent otherwise rateIds might expire causing failure. // @todo constant rate polling, refreshment of options with up to date data?
       const swap = await createSwap(data, sspwkid);
       if (swap.status !== 'success') {
         displayMessage('error', t('home:swap.error_creating_swap'));
