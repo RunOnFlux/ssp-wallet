@@ -41,6 +41,7 @@ import {
   swapResponseData,
   tokenBalanceEVM,
   transaction,
+  selectedExchangeType,
 } from '../../types';
 import AddressBox from './AddressBox.tsx';
 import { NoticeType } from 'antd/es/message/interface';
@@ -68,17 +69,7 @@ import { getFingerprint } from '../../lib/fingerprint.ts';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { formatFiatWithSymbol } from '../../lib/currency.ts';
 import { sspConfig } from '@storage/ssp';
-
-interface selectedExchangeType {
-  exchangeId?: string;
-  minSellAmount?: string;
-  maxSellAmount?: string;
-  rateId?: string | null;
-  rate?: string;
-  precision?: string;
-  sellAmount?: string;
-  buyAmount?: string;
-}
+import ProviderBox from './ProviderBox.tsx';
 
 interface navigationObject {
   receiver: string;
@@ -125,6 +116,11 @@ function Swap() {
   const [selectedExchange, setSelectedExchange] = useState<
     selectedExchangeType | swapResponseData
   >({});
+  const [possibleExchangeProviders, setPossibleExchangeProviders] = useState<
+    selectedExchangeType[] | swapResponseData[]
+  >([]);
+  const [exchangeProviderModalOpen, setExchangeProviderModalOpen] =
+    useState(false);
   const [userAddresses, setUserAddresses] = useState<
     Record<keyof blockchains, generatedWallets>
   >({});
@@ -495,6 +491,7 @@ function Swap() {
         setRate(0);
         setLoading(false);
         setSelectedExchange({});
+        setPossibleExchangeProviders([]);
         return;
       }
       setLoading(true);
@@ -526,14 +523,15 @@ function Swap() {
             setRate(parseFloat(highestBuyAmount.rate));
             setLoading(false);
             setSelectedExchange(highestBuyAmount);
+            setPossibleExchangeProviders(pairDetails.data.exchanges);
           }
         } else {
-          // todo error
           console.log('error');
           setAmountBuy(0);
           setRate(0);
           setLoading(false);
           setSelectedExchange({});
+          setPossibleExchangeProviders([]);
         }
       } else {
         console.log(pairDetails.data?.message || pairDetails.data);
@@ -541,7 +539,7 @@ function Swap() {
         setRate(0);
         setLoading(false);
         setSelectedExchange({});
-        // show som error todo
+        setPossibleExchangeProviders([]);
       }
       console.log(pairDetails);
     } catch (error) {
@@ -550,7 +548,7 @@ function Swap() {
       setRate(0);
       setLoading(false);
       setSelectedExchange({});
-      // show som error todo
+      setPossibleExchangeProviders([]);
     }
   };
 
@@ -560,9 +558,22 @@ function Swap() {
       setAmountBuy(0);
       setAmountSell(0);
       setRate(0);
+      setPossibleExchangeProviders([]);
+      setSelectedExchange({});
       return;
     }
     setAmountSell(value);
+  };
+
+  const onChangeExchangeProvider = (value: string) => {
+    const newProvider = possibleExchangeProviders.find(
+      (provider) => provider.exchangeId === value,
+    );
+    if (newProvider) {
+      setSelectedExchange(newProvider);
+      setAmountBuy(parseFloat(newProvider.buyAmount ?? '0'));
+      setRate(parseFloat(newProvider.rate ?? '0'));
+    }
   };
 
   const proceed = async () => {
@@ -656,6 +667,10 @@ function Swap() {
 
   const handleCancelSendingWallet = () => {
     setSendingWalletModalOpen(false);
+  };
+
+  const handleCancelExchangeProvider = () => {
+    setExchangeProviderModalOpen(false);
   };
 
   const getCryptoRate = (
@@ -966,21 +981,24 @@ function Swap() {
                   size="small"
                   type="text"
                   className="swap-box-row-sub-selection"
-                  onClick={() =>
-                    displayMessage(
-                      'info',
-                      t('home:swap.select_swap_provider') +
-                        ' - ' +
-                        t('home:buy_sell_crypto.coming_soon'),
-                    )
-                  }
+                  onClick={() => setExchangeProviderModalOpen(true)}
                 >
                   {provider ? provider.name : t('common:loading')}{' '}
                   {provider
                     ? provider.type.charAt(0).toUpperCase() +
                       provider.type.slice(1)
                     : ''}
-                  {provider ? ` - ${t('home:swap.best_rate')}` : ''}
+                  {provider
+                    ? possibleExchangeProviders &&
+                      possibleExchangeProviders.every(
+                        (p) =>
+                          !p.buyAmount ||
+                          parseFloat(selectedExchange.buyAmount ?? '0') >=
+                            parseFloat(p.buyAmount),
+                      )
+                      ? ` - ${t('home:swap.best_rate')}`
+                      : ` - ${t('home:swap.user_choice')}`
+                    : ''}
                   <CaretDownOutlined />
                 </Button>
               </Col>
@@ -1266,6 +1284,53 @@ function Swap() {
               block
               size="small"
               onClick={handleCancelReceivingWallet}
+            >
+              {t('common:close')}
+            </Button>
+          </Space>
+        </Space>
+      </Modal>
+      <Modal
+        title={t('home:swap.select_swap_provider')}
+        open={exchangeProviderModalOpen}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={handleCancelExchangeProvider}
+        footer={[]}
+      >
+        <Space
+          direction="vertical"
+          size="middle"
+          style={{ marginBottom: 16, marginTop: 16 }}
+        >
+          <div>
+            {possibleExchangeProviders
+              .sort((a, b) => {
+                const aAmount = parseFloat(a.buyAmount ?? '0');
+                const bAmount = parseFloat(b.buyAmount ?? '0');
+                return bAmount - aAmount;
+              })
+              .map((provider) => (
+                <div
+                  onClick={() => {
+                    onChangeExchangeProvider(provider.exchangeId ?? '');
+                    handleCancelExchangeProvider();
+                  }}
+                  key={provider.exchangeId}
+                >
+                  <ProviderBox
+                    provider={provider}
+                    buySymbol={buyAsset.split('_')[1]}
+                    sellSymbol={sellAsset.split('_')[1]}
+                  />
+                </div>
+              ))}
+          </div>
+          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
+            <Button
+              type="link"
+              block
+              size="small"
+              onClick={handleCancelExchangeProvider}
             >
               {t('common:close')}
             </Button>

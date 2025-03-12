@@ -756,6 +756,17 @@ export interface exchangeProvidersResponse {
   data: exchangeProvider[];
 }
 
+export interface selectedExchangeType {
+  exchangeId?: string;
+  minSellAmount?: string;
+  maxSellAmount?: string;
+  rateId?: string | null;
+  rate?: string;
+  precision?: string;
+  sellAmount?: string;
+  buyAmount?: string;
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;

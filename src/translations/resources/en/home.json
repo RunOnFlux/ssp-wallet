@@ -335,7 +335,7 @@
     "fixed_rate_stable": "The actual market rate at which a trade transaction is executed will be the same as the rate shown at the time your trading order was submitted. This means that the final value of your trade will be the same as initially indicated.",
     "proceeding_agree_tos": "Proceeding agrees to ToS",
     "rate_changed": "Rate has changed, please review your amount.",
-    "error_creating_swap": "Error creating swap. Please try again.",
+    "error_creating_swap": "Error creating swap. Please review your amount and try again.",
     "error_fetching_swap_history": "Error fetching swap history. Please try again.",
     "pending": "Pending",
     "completed": "Completed",
@@ -362,6 +362,7 @@
     "no_swap_history": "No Swap History",
     "swapped_by": "Swapped by",
     "best_rate": "Best Rate",
-    "select_swap_provider": "Select Swap Provider"
+    "select_swap_provider": "Select Swap Provider",
+    "user_choice": "User Choice"
   }
 }
