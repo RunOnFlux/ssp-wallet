@@ -39,5 +39,6 @@
   "fee_details": "Szczegóły opłaty",
   "max_tx_fee": "Maksymalna opłata transakcyjna",
   "invalid_tx_fee": "Nieprawidłowa opłata transakcyjna",
-  "asset": "Aktywo"
+  "asset": "Aktywo",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }
