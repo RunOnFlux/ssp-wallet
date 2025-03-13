@@ -25,3 +25,11 @@ export { default as pt } from './pt/_index'; // Portuguese
 export { default as uk } from './uk/_index'; // Ukrainian
 export { default as ms } from './ms/_index'; // Malay
 export { default as th } from './th/_index'; // Thai
+export { default as af } from './af/_index'; // Afrikaans
+export { default as ca } from './ca/_index'; // Catalan
+export { default as nl } from './nl/_index'; // Dutch
+export { default as pl } from './pl/_index'; // Polish
+export { default as ro } from './ro/_index'; // Romanian
+export { default as sk } from './sk/_index'; // Slovak
+export { default as no } from './no/_index'; // Norwegian
+export { default as sv } from './sv/_index'; // Swedish
