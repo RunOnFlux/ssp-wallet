@@ -360,7 +360,7 @@
     "swap_id": "ID Směny",
     "rate": "Kurz",
     "no_swap_history": "Žádná historie směn",
-    "swapped_by": "Poskytovatel směny",
+    "swapped_by": "Zprostředkovatel",
     "best_rate": "Nejlepší Kurz",
     "select_swap_provider": "Vybrat Poskytovatele Směny",
     "user_choice": "Volba Uživatele"
