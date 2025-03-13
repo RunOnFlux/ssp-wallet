@@ -46,11 +46,11 @@
   "reject": "Rebutja",
   "approve_request": "Aprova la sol·licitud",
   "reject_request": "Rebutja la sol·licitud",
-  "continue": "Continue",
-  "contract": "Contract",
-  "network": "Network",
+  "continue": "Continuar",
+  "contract": "Contracte",
+  "network": "Xarxa",
   "decimals": "Decimals",
-  "to": "To",
-  "from": "From",
-  "change": "Change"
+  "to": "A",
+  "from": "De",
+  "change": "Canviar"
 }
