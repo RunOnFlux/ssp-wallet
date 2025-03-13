@@ -40,5 +40,5 @@
   "max_tx_fee": "Biaya Transaksi Maks",
   "invalid_tx_fee": "Biaya Transaksi Tidak Valid",
   "asset": "Aset",
-  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
+  "send_swap": "Kirim dan Tukar dengan {{buyAmount}} {{buyAsset}}"
 }

@@ -46,11 +46,11 @@
   "reject": "Tolak",
   "approve_request": "Setujui Permintaan",
   "reject_request": "Tolak Permintaan",
-  "continue": "Continue",
-  "contract": "Contract",
-  "network": "Network",
-  "decimals": "Decimals",
-  "to": "To",
-  "from": "From",
-  "change": "Change"
+  "continue": "Lanjutkan",
+  "contract": "Kontrak",
+  "network": "Jaringan",
+  "decimals": "Desimal",
+  "to": "Untuk",
+  "from": "Dari",
+  "change": "Tukar"
 }

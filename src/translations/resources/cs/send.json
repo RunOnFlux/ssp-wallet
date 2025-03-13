@@ -40,5 +40,5 @@
   "max_tx_fee": "Max Poplatek Transakce",
   "invalid_tx_fee": "Neplatný Poplatek Transakce",
   "asset": "Aktivum",
-  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
+  "send_swap": "Odeslat a Směnit za {{buyAmount}} {{buyAsset}}"
 }
