@@ -1,7 +1,9 @@
+const ext = browser || chrome;
+
 async function request(details) {
   try {
     // eslint-disable-next-line no-undef
-    const response = await chrome.runtime.sendMessage(details);
+    const response = await ext.runtime.sendMessage(details);
     // console.log(response);
     return response;
   } catch (err) {
