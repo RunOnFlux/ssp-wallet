@@ -46,11 +46,11 @@
   "reject": "Verwerp",
   "approve_request": "Keur Versoek Goed",
   "reject_request": "Verwerp Versoek",
-  "continue": "Continue",
-  "contract": "Contract",
-  "network": "Network",
-  "decimals": "Decimals",
-  "to": "To",
-  "from": "From",
-  "change": "Change"
+  "continue": "Gaan voort",
+  "contract": "Kontrak",
+  "network": "Netwerk",
+  "decimals": "Desimale",
+  "to": "Na",
+  "from": "Van",
+  "change": "Verander"
 }
