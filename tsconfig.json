@@ -24,6 +24,7 @@
     "types": [
       "chrome",
       "node",
+      "jest",
     ],
     "checkJs": false,
     "baseUrl": "./",
@@ -40,6 +41,7 @@
     "src",
     "public/scripts",
     "tests",
+    "*.mjs"
   ],
   "references": [
     {

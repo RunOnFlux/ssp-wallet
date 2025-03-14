@@ -1,32 +1,31 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "esModuleInterop": true,
     "allowJs": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "moduleDetection": "force",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "types": [
       "node",
-      "mocha",
+      "jest",
       "vite",
       "chrome"
     ],
     "baseUrl": "./",
     "paths": {
       "@storage/*": ["./src/storage/*"],
-      "@assets/*": ["/src/assets/*"],
-    },
+      "@assets/*": ["./src/assets/*"]
+    }
   },
   "include": [
     "src",
-    "tests",
+    "tests"
   ],
   "exclude": [
     "node_modules",
     "package.json",
-    "logs",
-  ],
+    "logs"
+  ]
 }

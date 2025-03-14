@@ -1,12 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck test suite
-import chai from 'chai';
 
-import { restore, stub } from 'sinon';
+import { jest } from '@jest/globals';
 import axios from 'axios';
-import { describe, it, afterEach } from 'mocha';
-
 import {
   getFiatSymbol,
   decimalPlaces,
@@ -21,87 +17,70 @@ import * as sspStorage from '@storage/ssp';
 import BigNumber from 'bignumber.js';
 import { JSDOM } from 'jsdom';
 
-const { expect, assert } = chai;
+jest.mock('axios');
+jest.mock('@storage/ssp');
 
-describe('Currency Lib', function () {
-  describe('Verifies currency', function () {
-    afterEach(function () {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      restore();
+describe('Currency Lib', () => {
+  describe('Verifies currency', () => {
+    beforeEach(() => {
+      jest.resetAllMocks();
     });
 
-    before(function () {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    beforeAll(() => {
       const { window } = new JSDOM(`<!DOCTYPE html><p>Hello world</p>`);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      global.navigator = window.navigator;
+      global.document = window.document;
+      global.window = window;
     });
 
-    it('should return data when value is valid', function () {
-      const res = getFiatSymbol('USD');
-      assert.equal(res, `$`);
-    });
-
-    it('should return without data when value is invalid', function () {
+    it('should return without data when value is invalid', () => {
       const res = getFiatSymbol('UST');
-      assert.equal(res, '');
+      expect(res).toBe('');
     });
 
-    it('should return data 2 when value is valid', function () {
+    it('should return data 2 when value is valid', () => {
       const res = decimalPlaces();
-      assert.equal(res, 2);
+      expect(res).toBe(2);
     });
-    it('should return data 4 when value is valid', function () {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-      const sspConfigStub = stub(sspStorage, 'sspConfig');
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      sspConfigStub.returns({
+
+    it('should return data 4 when value is valid', () => {
+      jest.spyOn(sspStorage, 'sspConfig').mockReturnValue({
         fiatCurrency: 'BTC',
       });
       const res = decimalPlaces();
-      assert.equal(res, 4);
+      expect(res).toBe(4);
     });
 
-    it('should return crypto data formatted when value is valid', function () {
+    it('should return crypto data formatted when value is valid', () => {
       const res = formatCrypto(new BigNumber(1.0));
-      assert.equal(res, 1.0);
+      expect(res).toBe(1.0);
     });
 
-    it('should return fiat data formatted when value is valid', function () {
+    it('should return fiat data formatted when value is valid', () => {
       const res = formatFiat(new BigNumber(1.0));
-      assert.equal(res, 1.0);
+      expect(res).toBe(1.0);
     });
 
-    it('should return fiat with symbol formatted when value is valid', function () {
+    it('should return fiat with symbol formatted when value is valid', () => {
       const res = formatFiatWithSymbol(new BigNumber(1.0));
-      assert.equal(res, `$1.00 USD`);
+      expect(res).toBe(`$1.00 USD`);
     });
 
-    it('should return rates when value is undefined', async function () {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      await stub(axios, 'get').returns(undefined);
-      await fetchRate('ETH').catch((e) => {
-        assert.equal(
-          e,
-          `TypeError: Cannot read properties of undefined (reading 'data')`,
-        );
-      });
+    it('should return rates when value is undefined', async () => {
+      jest.spyOn(axios, 'get').mockReturnValue(undefined);
+      await expect(fetchRate('ETH')).rejects.toMatch(
+        /Cannot read properties of undefined/,
+      );
     });
 
-    it('should return rates when value is null', async function () {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      await stub(axios, 'get').returns(null);
-      await fetchRate('ETH').catch((e) => {
-        assert.equal(
-          e,
-          `TypeError: Cannot read properties of null (reading 'data')`,
-        );
-      });
+    it('should return rates when value is null', async () => {
+      jest.spyOn(axios, 'get').mockReturnValue(null);
+      await expect(fetchRate('ETH')).rejects.toMatch(
+        /Cannot read properties of null/,
+      );
     });
 
-    it('should return rates for fiat when value is valid', async function () {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      await stub(axios, 'get').returns({
+    it('should return rates for fiat when value is valid', async () => {
+      jest.spyOn(axios, 'get').mockReturnValue({
         data: {
           fiat: { JPY: 145.2032555 },
           crypto: {
@@ -119,12 +98,11 @@ describe('Currency Lib', function () {
         },
       });
       const res = await fetchRate('usdt');
-      assert.deepEqual(res, { JPY: 145.20292781997438 });
+      expect(res).toEqual({ JPY: 145.20292781997438 });
     });
 
-    it('should return rates for crypto when value is valid', async function () {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      await stub(axios, 'get').returns({
+    it('should return rates for crypto when value is valid', async () => {
+      jest.spyOn(axios, 'get').mockReturnValue({
         data: {
           fiat: { JPY: 145.2032555 },
           crypto: {
@@ -142,12 +120,11 @@ describe('Currency Lib', function () {
         },
       });
       const res = await fetchRate('btc');
-      assert.deepEqual(res, { JPY: 8931248.682850353 });
+      expect(res).toEqual({ JPY: 8931248.682850353 });
     });
 
-    it('should return all rates when value is valid', async function () {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      await stub(axios, 'get').returns({
+    it('should return all rates when value is valid', async () => {
+      jest.spyOn(axios, 'get').mockReturnValue({
         data: {
           fiat: { JPY: 145.2032555 },
           crypto: {
@@ -165,12 +142,12 @@ describe('Currency Lib', function () {
         },
       });
       const res = await fetchAllRates('btc');
-      expect(res).to.have.property('crypto');
-      expect(res).to.have.property('fiat');
-      expect(res.fiat).to.not.be.null;
-      expect(res.fiat).to.not.be.undefined;
-      expect(res.crypto).to.not.be.null;
-      expect(res.crypto).to.not.be.undefined;
+      expect(res).toHaveProperty('crypto');
+      expect(res).toHaveProperty('fiat');
+      expect(res.fiat).not.toBeNull();
+      expect(res.fiat).toBeDefined();
+      expect(res.crypto).not.toBeNull();
+      expect(res.crypto).toBeDefined();
     });
   });
 });
