@@ -21,16 +21,12 @@
       "all_frames": true
     }
   ],
-  "permissions": [
-    "storage",
-    "unlimitedStorage",
-    "scripting"
-  ],
+  "permissions": ["storage", "unlimitedStorage", "scripting"],
   "content_security_policy": {
     "extension_pages": "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src *; script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src https://buy.onramper.com; sandbox allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
   },
   "host_permissions": ["file://*/*", "http://*/*", "https://*/*"],
-  "minimum_chrome_version": "110", 
+  "minimum_chrome_version": "110",
   "browser_specific_settings": {
     "gecko": {
       "id": "extension@sspwallet.io",

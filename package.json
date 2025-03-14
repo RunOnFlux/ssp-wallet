@@ -7,6 +7,10 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc && vite build",
+    "postbuild": "node scripts/build-manifests.cjs",
+    "build:chrome": "npm run build && node scripts/build-manifests.cjs chrome",
+    "build:firefox": "npm run build && node scripts/build-manifests.cjs firefox",
+    "build:all": "npm run build && node scripts/build-manifests.cjs",
     "test": "nyc --reporter=lcov ts-mocha -p tsconfig.test.json -r tsconfig-paths/register -r ignore-styles tests/**/*.spec.ts",
     "lint": "eslint ./src ./public",
     "lint:fix": "eslint ./src ./public --fix",
@@ -74,6 +78,7 @@
     "@typescript-eslint/eslint-plugin": "8.24.1",
     "@typescript-eslint/parser": "8.24.1",
     "@vitejs/plugin-react-swc": "3.8.0",
+    "archiver": "7.0.1",
     "chai": "4.5.0",
     "eslint": "9.20.1",
     "eslint-config-prettier": "10.0.1",
