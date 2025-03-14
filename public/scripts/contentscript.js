@@ -16,8 +16,7 @@ window.addEventListener(
     // console.log(event)
     const result = await request(event.detail);
     // console.log(result);
-    const eventB = new CustomEvent('fromContentScript', { detail: result });
-    window.dispatchEvent(eventB);
+    window.postMessage({ type: "fromContentScript", detail: result }, "*");
   },
   false,
 );

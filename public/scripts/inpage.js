@@ -8,10 +8,11 @@ async function request(method, params) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const response = await new Promise((resolve, reject) => {
     window.addEventListener(
-      'fromContentScript',
-      function (event) {
-        // console.log(event);
-        resolve(event.detail);
+      'message',
+      function (eventReceived) {
+        if (eventReceived.data.type === "fromContentScript") {
+          resolve(eventReceived.data.detail);
+        }
       },
       false,
     );
