@@ -85,6 +85,14 @@ function Home() {
       void (async function () {
         const generatedWallets: generatedWallets =
           (await localForage.getItem('wallets-' + activeChain)) ?? {};
+        // if this is identity chain and we have data in localforage of an address check, if matches keep localforage, if not clear it
+        if (activeChain === identityChain && walletInUse === '0-0') {
+          if (generatedWallets['0-0'] !== addrInfo.address) {
+            // clear localforage
+            console.log('clearing localforage');
+            await localForage.clear();
+          }
+        }
         generatedWallets[walletInUse] = addrInfo.address;
         await localForage.setItem('wallets-' + activeChain, generatedWallets);
         // balances, transactions are refreshed automatically
