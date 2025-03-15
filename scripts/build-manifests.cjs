@@ -33,7 +33,7 @@ function createZipArchive(browser, version) {
         fs.mkdirSync(zipDir, { recursive: true });
       }
       
-      const outputPath = path.join(zipDir, `ssp-wallet-${browser}-${version}.zip`);
+      const outputPath = path.join(zipDir, `ssp-wallet-${browser}-v${version}.zip`);
       const output = fs.createWriteStream(outputPath);
       const archive = archiver('zip', {
         zlib: { level: 9 } // Maximum compression
