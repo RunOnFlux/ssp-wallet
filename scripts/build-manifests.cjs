@@ -99,8 +99,12 @@ function createZipArchive(browser, version) {
           );
           
           console.log('Creating Firefox manifest...');
-          // Create Firefox manifest
+          // Create Firefox manifest with special handling for background property
           const firefoxManifest = deepMerge(baseManifest, browserOverrides.firefox);
+          // Remove service_worker from Firefox background
+          if (firefoxManifest.background && firefoxManifest.background.service_worker) {
+            delete firefoxManifest.background.service_worker;
+          }
           fs.writeFileSync(
             path.join(tempDir, 'manifest.json'),
             JSON.stringify(firefoxManifest, null, 2)
