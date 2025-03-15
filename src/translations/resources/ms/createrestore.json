@@ -60,9 +60,9 @@
   "copy_part_x": "Salin Bahagian {{part}}",
   "copied": "Disalin ke papan keratan!",
   "finished": "Selesai!",
-  "strong_fingerprint_encryption": "Strong Fingerprint Encryption Updated",
-  "strong_fingerprint_encryption_info": "SSP Wallet uses strong, device-specific fingerprint encryption to securely protect your sensitive data.",
-  "strong_encryption_change_detected": "SSP Wallet detected a change in your device fingerprint, requiring a wallet restore using your seed phrase.",
-  "strong_encryption_change_detected_info_2": "Fingerprint changes can occur due to hardware modifications, system or driver updates, browser updates, localization settings, connected peripherals, or other system changes.",
-  "strong_encryption_change_detected_info_3": "To continue using SSP Wallet securely, revert to your previous system settings or restore your wallet with your seed phrase."
+  "strong_fingerprint_encryption": "Penyulitan Cap Jari Kuat Dikemas Kini",
+  "strong_fingerprint_encryption_info": "Dompet SSP menggunakan penyulitan cap jari yang kuat dan khusus untuk peranti bagi melindungi data sensitif anda dengan selamat.",
+  "strong_encryption_change_detected": "Dompet SSP mengesan perubahan dalam cap jari peranti anda, memerlukan pemulihan dompet menggunakan frasa benih anda.",
+  "strong_encryption_change_detected_info_2": "Perubahan cap jari boleh berlaku disebabkan oleh pengubahsuaian perkakasan, kemas kini sistem atau pemacu, kemas kini pelayar, tetapan lokal, peranti luaran yang disambungkan, atau perubahan sistem lain.",
+  "strong_encryption_change_detected_info_3": "Untuk terus menggunakan Dompet SSP dengan selamat, kembalikan tetapan sistem anda yang sebelumnya atau pulihkan dompet anda dengan frasa benih anda."
 }
