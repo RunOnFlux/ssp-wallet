@@ -2,7 +2,7 @@
   "name": "ssp-wallet",
   "description": "Secure. Simple. Powerful.",
   "private": true,
-  "version": "1.16.0",
+  "version": "1.17.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -99,7 +99,7 @@
     "tsx": "4.19.3",
     "typescript": "5.8.2",
     "typescript-eslint": "8.26.1",
-    "vite": "6.2.1"
+    "vite": "6.2.2"
   },
   "engines": {
     "node": ">=20"

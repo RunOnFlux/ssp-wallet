@@ -44,9 +44,9 @@ async function getAllWindows() {
 function getPopupIn(windows) {
   return windows
     ? windows.find((win) => {
-        // Returns notification popup
-        return win && win.type === 'popup' && win.id === popupId;
-      })
+      // Returns notification popup
+      return win && win.type === 'popup' && win.id === popupId;
+    })
     : null;
 }
 
