@@ -401,7 +401,7 @@ function PaymentRequest(props: {
     } catch (error) {
       console.log(error);
       openAction({
-        status: t('common:error'),
+        status: 'ERROR', // do not translate
         data: t('home:payment_request.tx_rejected'),
       });
     }

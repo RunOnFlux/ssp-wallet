@@ -93,7 +93,7 @@ function SspConnect() {
         void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
-            status: t('common:error'),
+            status: 'ERROR', // do not translate
             result: t('common:request_rejected'),
           },
         });
@@ -124,7 +124,7 @@ function SspConnect() {
         void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
-            status: t('common:error'),
+            status: 'ERROR', // do not translate
             result: t('common:request_rejected'),
           },
         });

@@ -138,7 +138,7 @@ export const SspConnectProvider = ({
           void browser.runtime.sendMessage({
             origin: 'ssp',
             data: {
-              status: t('common:error'),
+              status: 'ERROR', // do not translate
               result:
                 t('common:request_rejected') +
                 ': ' +
@@ -165,7 +165,7 @@ export const SspConnectProvider = ({
             void browser.runtime.sendMessage({
               origin: 'ssp',
               data: {
-                status: t('common:error'),
+                status: 'ERROR', // do not translate
                 result: 'REQUEST REJECTED: Invalid chain',
               },
             });
@@ -188,7 +188,7 @@ export const SspConnectProvider = ({
                   void browser.runtime.sendMessage({
                     origin: 'ssp',
                     data: {
-                      status: t('common:error'),
+                      status: 'ERROR', // do not translate
                       result:
                         t('common:request_rejected') +
                         ': ' +
@@ -214,7 +214,7 @@ export const SspConnectProvider = ({
             void browser.runtime.sendMessage({
               origin: 'ssp',
               data: {
-                status: t('common:error'),
+                status: 'ERROR', // do not translate
                 result:
                   t('common:request_rejected') +
                   ': ' +
@@ -244,7 +244,7 @@ export const SspConnectProvider = ({
           void browser.runtime.sendMessage({
             origin: 'ssp',
             data: {
-              status: t('common:error'),
+              status: 'ERROR', // do not translate
               result:
                 t('common:request_rejected') +
                 ': ' +

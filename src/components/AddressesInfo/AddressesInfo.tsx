@@ -57,7 +57,7 @@ function AddressesInfo({ open, chain, openAction }: Props) {
       if (!chain) {
         if (openAction) {
           openAction({
-            status: t('common:error'),
+            status: 'ERROR', // do not translate
             data: t('home:tokensInfo.chain_not_specified'),
           });
         }
@@ -67,7 +67,7 @@ function AddressesInfo({ open, chain, openAction }: Props) {
       if (!chainInfo) {
         if (openAction) {
           openAction({
-            status: t('common:error'),
+            status: 'ERROR', // do not translate
             data: t('home:tokensInfo.chain_not_supported'),
           });
         }
@@ -75,7 +75,7 @@ function AddressesInfo({ open, chain, openAction }: Props) {
       }
       if (openAction) {
         openAction({
-          status: t('common:success'),
+          status: 'SUCCESS', // do not translate
           addresses: approvedAddresses,
         });
       }
@@ -83,7 +83,7 @@ function AddressesInfo({ open, chain, openAction }: Props) {
       console.log(error);
       if (openAction) {
         openAction({
-          status: t('common:error'),
+          status: 'ERROR', // do not translate
           data: t('home:addressesInfo.addresses_requests_info_error'),
         });
       }

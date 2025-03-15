@@ -84,7 +84,7 @@ function SignMessage({
             setMessageSignature(signature);
             if (openAction) {
               openAction({
-                status: t('common:success'),
+                status: 'SUCCESS', // do not translate
                 signature: signature,
                 address: externalIdentity.address,
                 message: message,
@@ -105,7 +105,7 @@ function SignMessage({
       console.log(error);
       if (openAction) {
         openAction({
-          status: t('common:error'),
+          status: 'ERROR', // do not translate
           data: t('home:signMessage.err_sign_message'),
         });
       }

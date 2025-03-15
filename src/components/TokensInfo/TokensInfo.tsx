@@ -31,7 +31,7 @@ function TokensInfo({ open, chain, openAction }: Props) {
       if (!chain) {
         if (openAction) {
           openAction({
-            status: t('common:error'),
+            status: 'ERROR', // do not translate
             data: t('home:tokensInfo.chain_not_specified'),
           });
         }
@@ -42,7 +42,7 @@ function TokensInfo({ open, chain, openAction }: Props) {
       if (!chainInfo) {
         if (openAction) {
           openAction({
-            status: t('common:error'),
+            status: 'ERROR', // do not translate
             data: t('home:tokensInfo.chain_not_supported'),
           });
         }
@@ -52,7 +52,7 @@ function TokensInfo({ open, chain, openAction }: Props) {
       if (!tokensSupported) {
         if (openAction) {
           openAction({
-            status: t('common:error'),
+            status: 'ERROR', // do not translate
             data: t('home:tokensInfo.no_tokens_supported'),
           });
         }
@@ -74,7 +74,7 @@ function TokensInfo({ open, chain, openAction }: Props) {
       console.log(tokensInfo);
       if (openAction) {
         openAction({
-          status: t('common:success'),
+          status: 'SUCCESS', // do not translate
           tokens: tokensInfo,
         });
       }
@@ -82,7 +82,7 @@ function TokensInfo({ open, chain, openAction }: Props) {
       console.log(error);
       if (openAction) {
         openAction({
-          status: t('common:error'),
+          status: 'ERROR', // do not translate
           data: t('home:tokensInfo.tokens_requests_info_error'),
         });
       }

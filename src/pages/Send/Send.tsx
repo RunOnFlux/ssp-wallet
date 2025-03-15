@@ -305,7 +305,7 @@ function Send() {
       setTimeout(() => {
         if (state.paymentAction) {
           payRequestAction({
-            status: t('common:success'),
+            status: 'SUCCESS', // do not translate
             data: t('home:payment_request.transaction_sent'),
             txid,
           });
@@ -753,7 +753,7 @@ function Send() {
         void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
-            status: t('common:error'),
+            status: 'ERROR', // do not translate
             result: t('common:request_rejected'),
           },
         });

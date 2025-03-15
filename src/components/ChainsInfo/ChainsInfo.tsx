@@ -56,7 +56,7 @@ function ChainsInfo({ open, userOnly, openAction }: Props) {
       console.log(allBlockchainsInfo);
       if (openAction) {
         openAction({
-          status: t('common:success'),
+          status: 'SUCCESS', // do not translate
           chains: userOnly ? userChainsInfo : allBlockchainsInfo,
         });
       }
@@ -64,7 +64,7 @@ function ChainsInfo({ open, userOnly, openAction }: Props) {
       console.log(error);
       if (openAction) {
         openAction({
-          status: t('common:error'),
+          status: 'ERROR', // do not translate
           data: t('home:chainsInfo.chain_requests_info_error'),
         });
       }
