@@ -299,6 +299,8 @@ function Restore() {
         if (!wallets) {
           // otherwise we are restoring. Later we check if restored address matches, if not we delete, if yes we keep
           await localForage.clear();
+        } else {
+          await localForage.setItem('activeChain', identityChain);
         }
         if (chrome?.storage?.session) {
           await chrome.storage.session.clear();

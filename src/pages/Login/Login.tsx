@@ -127,9 +127,11 @@ function Login() {
           dispatch(setActiveChain(aC));
         } else {
           dispatch(setActiveChain(identityChain));
+          await localForage.setItem('activeChain', identityChain);
         }
       } else {
         dispatch(setActiveChain(identityChain));
+        await localForage.setItem('activeChain', identityChain);
       }
       // set language
       const language = await localForage.getItem('language');
@@ -242,9 +244,11 @@ function Login() {
             dispatch(setActiveChain(aC));
           } else {
             dispatch(setActiveChain(identityChain));
+            await localForage.setItem('activeChain', identityChain);
           }
         } else {
           dispatch(setActiveChain(identityChain));
+          await localForage.setItem('activeChain', identityChain);
         }
         decryptWallet();
       }
@@ -275,6 +279,13 @@ function Login() {
       )}-${blockchainConfig.id}`,
     ); // key xpub
     if (!xpubEncrypted || !xpubEncryptedIdentity) {
+      console.log(xpubEncrypted);
+      console.log(xpubEncryptedIdentity);
+      console.log(
+        `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+          blockchainConfig.scriptType,
+        )}-${blockchainConfig.id}`,
+      );
       displayMessage('error', t('login:err_lx', { code: 'L3' }));
       setIsLoading(false);
       return;
