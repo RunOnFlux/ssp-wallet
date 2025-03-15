@@ -46,11 +46,11 @@
   "reject": "Odrzuć",
   "approve_request": "Zatwierdź żądanie",
   "reject_request": "Odrzuć żądanie",
-  "continue": "Continue",
-  "contract": "Contract",
-  "network": "Network",
-  "decimals": "Decimals",
-  "to": "To",
-  "from": "From",
-  "change": "Change"
+  "continue": "Kontynuuj",
+  "contract": "Kontrakt",
+  "network": "Sieć",
+  "decimals": "Miejsca dziesiętne",
+  "to": "Do",
+  "from": "Od",
+  "change": "Zmień"
 }

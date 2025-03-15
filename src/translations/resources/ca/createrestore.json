@@ -19,9 +19,9 @@
   "pls_conf_pwd": "Si us plau, confirma la teva contrasenya!",
   "i_agree": "Estic d'acord amb",
   "ssp_wallet_disclaimer": "Exempció de responsabilitat del moneder SSP",
-  "tos": "Terms of Service",
-  "privacy_policy": "Privacy Policy",
-  "aml_policy": "AML/KYC Policy",
+  "tos": "Termes del servei",
+  "privacy_policy": "Política de privacitat",
+  "aml_policy": "Política AML/KYC",
   "not_evil": "no ser dolents",
   "import_wallet": "Importa el moneder",
   "wallet_seed_info": "La llavor del moneder s'utilitza per generar totes les adreces. Qualsevol persona amb accés a la llavor del moneder té control parcial sobre el moneder.",
@@ -59,5 +59,10 @@
   "copy_sensitive_data": "Copiar {{sensitive_data}}",
   "copy_part_x": "Copiar la part {{part}}",
   "copied": "Copiat al porta-retalls!",
-  "finished": "Acabat!"
+  "finished": "Acabat!",
+  "strong_fingerprint_encryption": "Strong Fingerprint Encryption Updated",
+  "strong_fingerprint_encryption_info": "SSP Wallet uses strong, device-specific fingerprint encryption to securely protect your sensitive data.",
+  "strong_encryption_change_detected": "SSP Wallet detected a change in your device fingerprint, requiring a wallet restore using your seed phrase.",
+  "strong_encryption_change_detected_info_2": "Fingerprint changes can occur due to hardware modifications, system or driver updates, browser updates, localization settings, connected peripherals, or other system changes.",
+  "strong_encryption_change_detected_info_3": "To continue using SSP Wallet securely, revert to your previous system settings or restore your wallet with your seed phrase."
 }

@@ -46,11 +46,11 @@
   "reject": "Afwijzen",
   "approve_request": "Verzoek goedkeuren",
   "reject_request": "Verzoek afwijzen",
-  "continue": "Continue",
+  "continue": "Doorgaan",
   "contract": "Contract",
-  "network": "Network",
-  "decimals": "Decimals",
-  "to": "To",
-  "from": "From",
-  "change": "Change"
+  "network": "Netwerk",
+  "decimals": "Decimalen",
+  "to": "Naar",
+  "from": "Van",
+  "change": "Wijzigen"
 }

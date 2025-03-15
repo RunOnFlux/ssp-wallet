@@ -40,5 +40,5 @@
   "max_tx_fee": "Avgiftsdetaljer",
   "invalid_tx_fee": "Ogiltig transaktionsavgift",
   "asset": "Tillgång",
-  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
+  "send_swap": "Skicka och byt för {{buyAmount}} {{buyAsset}}"
 }

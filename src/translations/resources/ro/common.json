@@ -46,11 +46,11 @@
   "reject": "Respinge",
   "approve_request": "Aprobare cerere",
   "reject_request": "Respinge cererea",
-  "continue": "Continue",
+  "continue": "Continuă",
   "contract": "Contract",
-  "network": "Network",
-  "decimals": "Decimals",
-  "to": "To",
-  "from": "From",
-  "change": "Change"
+  "network": "Rețea",
+  "decimals": "Zecimale",
+  "to": "Către",
+  "from": "De la",
+  "change": "Schimbă"
 }
