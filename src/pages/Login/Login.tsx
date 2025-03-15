@@ -117,7 +117,19 @@ function Login() {
         blockchains[activatedChain]
       ) {
         const aC: keyof cryptos = activatedChain as keyof cryptos;
-        dispatch(setActiveChain(aC));
+        // only set if we can read xpubEncrypted from secure storage
+        const xpubEncrypted = secureLocalStorage.getItem(
+          `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}-${blockchainConfig.id}`,
+        );
+        if (xpubEncrypted) {
+          dispatch(setActiveChain(aC));
+        } else {
+          dispatch(setActiveChain(identityChain));
+        }
+      } else {
+        dispatch(setActiveChain(identityChain));
       }
       // set language
       const language = await localForage.getItem('language');
@@ -220,7 +232,19 @@ function Login() {
           blockchains[activatedChain]
         ) {
           const aC: keyof cryptos = activatedChain as keyof cryptos;
-          dispatch(setActiveChain(aC));
+          // only set if we can read xpubEncrypted from secure storage
+          const xpubEncrypted = secureLocalStorage.getItem(
+            `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+              blockchainConfig.scriptType,
+            )}-${blockchainConfig.id}`,
+          );
+          if (xpubEncrypted) {
+            dispatch(setActiveChain(aC));
+          } else {
+            dispatch(setActiveChain(identityChain));
+          }
+        } else {
+          dispatch(setActiveChain(identityChain));
         }
         decryptWallet();
       }
