@@ -39,5 +39,6 @@
   "fee_details": "Деталі комісії",
   "max_tx_fee": "Максимальна комісія за транзакцію",
   "invalid_tx_fee": "Недійсна комісія за транзакцію",
-  "asset": "Актив"
+  "asset": "Актив",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

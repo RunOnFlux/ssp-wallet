@@ -39,5 +39,6 @@
   "fee_details": "Maksutiedot",
   "max_tx_fee": "Suurin siirtomaksu",
   "invalid_tx_fee": "Virheellinen siirtomaksu",
-  "asset": "Omaisuus"
+  "asset": "Omaisuus",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

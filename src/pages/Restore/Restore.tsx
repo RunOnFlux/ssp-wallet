@@ -295,8 +295,14 @@ function Restore() {
     // first clean all data from localForge and secureLocalStorage
     secureLocalStorage.clear();
     localForage
-      .clear()
-      .then(async () => {
+      .getItem(`wallets-${identityChain}`)
+      .then(async (wallets) => {
+        if (!wallets) {
+          // otherwise we are restoring. Later we check if restored address matches, if not we delete, if yes we keep
+          await localForage.clear();
+        } else {
+          await localForage.setItem('activeChain', identityChain);
+        }
         if (browser?.storage?.session) {
           await browser.storage.session.clear();
         }

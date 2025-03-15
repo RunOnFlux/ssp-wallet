@@ -146,7 +146,8 @@
     "send": "Odeslat",
     "receive": "Přijmout",
     "buy": "Koupit",
-    "sell": "Prodat"
+    "sell": "Prodat",
+    "swap": "Směnit"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Potvrďte Transakci na SSP Klíči",
@@ -172,7 +173,8 @@
     "remove_last_wallet_desc": "Tato akce odebere vaši poslední vygenerovanou peněženku. Kdykoliv později můžete vygenerovat tu samou peněženku.",
     "switch_chain": "Změnit Chain",
     "max_wallets": "42. Odpověď na otázku celého života, vesmíru a tak nějak čehokoliv. Dosáhli jste maximální počtu peněženek.",
-    "ssp_message_sign": "Podepisování Zpráv"
+    "ssp_message_sign": "Podepisování Zpráv",
+    "swap_history": "Historie Směn"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Heslo není platné. Zkuste prosím později.",
@@ -215,7 +217,7 @@
   "payment_request": {
     "payment_request": "Platební Žádost",
     "pay_for": "Žádost o platbu",
-    "on_chain": "on {{chain}} chain",
+    "on_chain": "na {{chain}} řetězci",
     "to": "pro",
     "received": "obdržena",
     "attached_message": "Připojená zpráva: {{message}}",
@@ -231,34 +233,34 @@
     "sign": "Podepsat",
     "message": "Zpráva",
     "signature": "Podpis",
-    "err_sign_message": "Error signing message."
+    "err_sign_message": "Chyba při podepisování zprávy."
   },
   "sspConnect": {
     "invalid_chain": "Neplatný chain.",
     "invalid_method": "Neplatná metoda.",
-    "invalid_request": "Invalid or malformed request.",
-    "unsupported_contract": "Unsupported contract. Import token contract first."
+    "invalid_request": "Neplatný nebo chybný požadavek.",
+    "unsupported_contract": "Nepodporovaný kontrakt. Nejdříve importujte kontrakt tokenu."
   },
   "chainsInfo": {
-    "chain_requests": "Chains Information Request",
-    "chain_requests_info": "A request to get information about all integrated chains in SSP was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. No personal data is shared.",
-    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronised was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
-    "chain_requests_info_error": "Error getting chains information."
+    "chain_requests": "Žádost o informace o řetězcích",
+    "chain_requests_info": "Byl přijat požadavek na získání informací o všech integrovaných řetězcích v SSP. Budou sdíleny následující údaje každého řetězce: id, název, symbol, desetinná místa a id řetězce. Žádné osobní údaje nejsou sdíleny.",
+    "chain_requests_info_user": "Byl přijat požadavek na získání informací o řetězcích, které vaše SSP Peněženka synchronizovala. Budou sdíleny následující údaje každého řetězce: id, název, symbol, desetinná místa a řetězová Id. I když nejsou žádné osobní údaje sdíleny, tento požadavek může být použit k získání informací o tom, jaké řetězce používáte.",
+    "chain_requests_info_error": "Chyba při získávání informací o řetězcích."
   },
   "tokensInfo": {
-    "tokens_requests": "Tokens Information Request",
-    "tokens_requests_info": "A request to get information about tokens for {{chain}} chain was received. Following data of each token will be shared: contract, name, symbol, decimals. No personal data is shared.",
-    "tokens_requests_info_error": "Error getting tokens information.",
-    "chain_not_supported": "Chain not supported.",
-    "no_tokens_supported": "No tokens supported.",
-    "chain_not_specified": "Chain not specified."
+    "tokens_requests": "Žádost o informace o tokenech",
+    "tokens_requests_info": "Byl přijat požadavek na získání informací o tokenech pro řetězec {{chain}} . Budou sdíleny následující údaje každého tokenu: kontrakt, název, symbol, desetinná čísla. Žádné osobní údaje nejsou sdíleny.",
+    "tokens_requests_info_error": "Chyba při získávání informací o tokenech.",
+    "chain_not_supported": "Řetězec není podporován.",
+    "no_tokens_supported": "Nejsou podporovány žádné tokeny.",
+    "chain_not_specified": "Nespecifikovaný řetěz."
   },
   "addressesInfo": {
-    "addresses_requests": "Addresses Information Request",
-    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Excersice caution as your addresses will be shared with the requester.",
-    "addresses_requests_info_error": "Error getting addresses information.",
-    "no_addresses": "Chain not synchronised. No addresses found.",
-    "select_addresses": "Select Addresses to Share"
+    "addresses_requests": "Požadavek na informace o adresách",
+    "addresses_requests_info": "Byl přijat požadavek na získání seznamu adres řetězce {{chain}} . Tento požadavek bude sdílet vybrané adresy. Buďte opatrní, protože vaše adresy budou sdíleny s žadatelem.",
+    "addresses_requests_info_error": "Chyba při získávání informací o adresách.",
+    "no_addresses": "Řetězec není synchronizován. Nebyly nalezeny žádné adresy.",
+    "select_addresses": "Vyberte adresy ke sdílení"
   },
   "fusion": {
     "pa_reward": "Odměny Souběžných Aktiv",
@@ -314,5 +316,53 @@
     "consent_info_2": "Rozumím rizikům a přeji si pokračovat.",
     "not_available_later": "Nákup a prodej kryptoměn je momentálně nedostupný. Zkuste prosím později.",
     "coming_soon": "Již Brzy!"
+  },
+  "swap": {
+    "swap_crypto": "Směnit Krypto",
+    "search_asset": "Vyhledat aktiva",
+    "you_send": "Vy Pošlete",
+    "you_get": "Vy Obdržíte",
+    "chain_sync_required": "Nejprve je nutná synchronizace řetězce",
+    "select_receiving_wallet": "Zvolte Přijímající Peněženku",
+    "select_sending_wallet": "Zvolte Odesílací Peněženku",
+    "select_buy_asset": "Vyberte Aktivum pro Nákup",
+    "select_sell_asset": "Vyberte Aktivum pro Prodej",
+    "estimated_amount_title": "Předpokládaná Částka",
+    "estimated_amount": "Kvůli volatilitě trhu s kryptoměnami můžete obdržet více či méně mincí než původně očekávalo.",
+    "floating_rate_title": "Pohyblivý Kurz",
+    "fixed_rate_title": "Pevný Kurz",
+    "floating_rate_fluctuates": "Skutečný tržní kurz, za který je obchod proveden, se může lišit od kurzu zobrazeného v době, kdy byl Váš obchodní příkaz odeslán. To znamená, že konečná hodnota Vašeho obchodu může být jiná, než je uvedeno původně.",
+    "fixed_rate_stable": "Skutečný tržní kurz, za který je obchod proveden, bude stejný jako kurz zobrazený v době, kdy byl Váš obchodní příkaz odeslán. To znamená, že konečná hodnota Vašeho obchodu bude stejná jako původně uvedena.",
+    "proceeding_agree_tos": "Pokračováním souhlasím s OP",
+    "rate_changed": "Kurz se změnil, zkontrolujte prosím svou částku.",
+    "error_creating_swap": "Chyba při vytváření směny. Mohlo dojít ke změně kuryu, zkontrolujte prosím svou částku a zkuste to znovu.",
+    "error_fetching_swap_history": "Chyba při načítání historie směn. Zkuste prosím později.",
+    "pending": "Čekající",
+    "completed": "Dokončeno",
+    "new": "Nová",
+    "waiting": "Čekání",
+    "confirming": "Potvrzování",
+    "sending": "Odesílání",
+    "finished": "Dokončeno",
+    "failed": "Selhání",
+    "refunded": "Vráceno",
+    "hold": "Podženo",
+    "expired": "Vypršelo",
+    "unknown": "Neznámý",
+    "provider": "Zprostředkovatel",
+    "created_at": "Vytvořeno",
+    "sell_address": "Adresa Prodeje",
+    "buy_address": "Adresa Nákupu",
+    "sell_txid": "Prodávající TXID",
+    "buy_txid": "Kupující TXID",
+    "refund_txid": "Vracející TXID",
+    "track_swap": "Sledovat Směnu",
+    "swap_id": "ID Směny",
+    "rate": "Kurz",
+    "no_swap_history": "Žádná historie směn",
+    "swapped_by": "Zprostředkovatel",
+    "best_rate": "Nejlepší Kurz",
+    "select_swap_provider": "Vybrat Poskytovatele Směny",
+    "user_choice": "Volba Uživatele"
   }
 }

@@ -39,5 +39,6 @@
   "fee_details": "수수료 세부 정보",
   "max_tx_fee": "최대 거래 수수료",
   "invalid_tx_fee": "잘못된 거래 수수료입니다.",
-  "asset": "자산"
+  "asset": "자산",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

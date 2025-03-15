@@ -39,5 +39,6 @@
   "fee_details": "शुल्क विवरण",
   "max_tx_fee": "अधिकतम ट्रांजैक्शन शुल्क",
   "invalid_tx_fee": "अमान्य ट्रांजैक्शन शुल्क",
-  "asset": "एसेट"
+  "asset": "एसेट",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

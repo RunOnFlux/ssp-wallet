@@ -54,11 +54,15 @@ import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
 import { setContacts } from '../../store';
 
-import { transaction, utxo, tokenBalanceEVM } from '../../types';
+import {
+  transaction,
+  utxo,
+  tokenBalanceEVM,
+  swapResponseData,
+} from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './SendEVM.css';
-
 interface contactOption {
   label: string;
   index?: string;
@@ -88,6 +92,7 @@ interface sendForm {
   utxos: utxo[]; // RBF mandatory utxos - use all of them or one?
   contract: string;
   paymentAction?: boolean;
+  swap?: swapResponseData;
 }
 
 interface balancesObj {
@@ -224,9 +229,9 @@ function SendEVM() {
     Object.keys(wallets).forEach((wallet) => {
       const typeNumber = Number(wallet.split('-')[0]);
       const walletNumber = Number(wallet.split('-')[1]) + 1;
-      let walletName = 'Wallet ' + walletNumber;
+      let walletName = `${t('common:wallet')} ${walletNumber.toString()}`;
       if (typeNumber === 1) {
-        walletName = 'Change ' + walletNumber;
+        walletName = `${t('common:change')} ${walletNumber.toString()}`;
       }
       const wal = {
         value: wallets[wallet].address,
@@ -916,7 +921,12 @@ function SendEVM() {
   return (
     <>
       {contextHolder}
-      <Navbar refresh={refresh} hasRefresh={false} allowChainSwitch={false} />
+      <Navbar
+        refresh={refresh}
+        hasRefresh={false}
+        allowChainSwitch={false}
+        header={state.swap ? t('home:swap.swap_crypto') : ''}
+      />
       <Divider />
       <Form
         name="sendForm"
@@ -925,7 +935,10 @@ function SendEVM() {
         autoComplete="off"
         layout="vertical"
         itemRef="txFeeRef"
-        style={{ paddingBottom: '43px' }}
+        style={{
+          paddingBottom: '43px',
+          marginTop: state.swap ? '24px' : '0',
+        }}
       >
         <Form.Item name="asset" label={t('send:asset')}>
           <Select
@@ -940,6 +953,7 @@ function SendEVM() {
               setTxToken(value);
             }}
             options={tokenItems}
+            disabled={!!state.swap}
             dropdownRender={(menu) => <>{menu}</>}
           />
         </Form.Item>
@@ -961,6 +975,7 @@ function SendEVM() {
                 setTxReceiver(e.target.value),
                   form.setFieldValue('receiver', e.target.value);
               }}
+              disabled={!!state.swap}
             />
             <Select
               size="large"
@@ -974,6 +989,7 @@ function SendEVM() {
                 setTxReceiver(value), form.setFieldValue('receiver', value);
               }}
               options={contactsItems}
+              disabled={!!state.swap}
               dropdownRender={(menu) => <>{menu}</>}
             />
           </Space.Compact>
@@ -999,6 +1015,7 @@ function SendEVM() {
                 .find((t) => t.contract === txToken)?.symbol ??
               blockchainConfig.symbol
             }
+            disabled={!!state.swap}
           />
         </Form.Item>
         <Button
@@ -1010,10 +1027,11 @@ function SendEVM() {
             marginRight: 3,
             fontSize: 12,
             color: '#4096ff',
-            cursor: 'pointer',
+            cursor: state.swap ? 'not-allowed' : 'pointer',
             zIndex: 2,
           }}
           onClick={() => setUseMaximum(true)}
+          disabled={!!state.swap}
         >
           {t('send:max')}:{' '}
           {new BigNumber(spendableBalance)
@@ -1158,8 +1176,17 @@ function SendEVM() {
               }}
               icon={<QuestionCircleOutlined style={{ color: 'green' }} />}
             >
-              <Button type="primary" size="large">
-                {t('send:send')}
+              <Button
+                type="primary"
+                size="large"
+                style={{ maxWidth: '380px', overflow: 'scroll' }}
+              >
+                {state.swap
+                  ? t('send:send_swap', {
+                      buyAsset: state.swap.buyAsset,
+                      buyAmount: new BigNumber(state.swap.buyAmount).toFixed(),
+                    })
+                  : t('send:send')}
               </Button>
             </Popconfirm>
             <Button type="link" block size="small" onClick={cancelSend}>

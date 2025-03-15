@@ -146,3 +146,25 @@ By using SSP Wallet, you agree to the terms outlined in the [SSP Disclaimer](htt
 
 Join us in building a secure, simple, and powerful wallet for the crypto community!
 
+---
+
+## 🔒 Security Audits  
+
+Our security is a top priority. All critical components of the SSP ecosystem have undergone rigorous security audits by [Halborn](https://halborn.com/), ensuring the highest standards of protection.  
+
+- **SSP Wallet, SSP Key, and SSP Relay** were thoroughly audited, with the final report completed in **March 2025**.  
+- **Shnorr Multisig Account Abstraction Smart Contracts and SDK** underwent a comprehensive audit, finalized in **February 2025**.  
+
+### 📜 Audit Reports  
+
+📄 **SSP Wallet, SSP Key, SSP Relay Audit**  
+- **[Halborn Audit Report – SSP Wallet, Key, Relay](https://github.com/RunOnFlux/ssp-wallet/blob/master/SSP_Security_Audit_HALBORN_2025.pdf)** (GitHub)  
+- **[Halborn Public Report – SSP Wallet, Key, Relay](https://www.halborn.com/audits/influx-technologies/ssp-wallet-relay-and-key)** (Halborn)  
+
+📄 **Smart Contracts Audit**  
+- **[Halborn Audit Report – Smart Contracts](https://github.com/RunOnFlux/ssp-wallet/blob/master/Account_Abstraction_Schnorr_MultiSig_SmartContracts_SecAudit_HALBORN_2025.pdf)** (GitHub)  
+- **[Halborn Public Report – Smart Contracts](https://www.halborn.com/audits/influx-technologies/account-abstraction-schnorr-multisig)** (Halborn)  
+
+📄 **SDK Audit**  
+- **[Halborn Audit Report – SDK](https://github.com/RunOnFlux/ssp-wallet/blob/master/Account_Abstraction_Schnorr_MultiSig_SDK_SecAudit_HALBORN_2025.pdf)** (GitHub)  
+- **[Halborn Public Report – SDK](https://www.halborn.com/audits/influx-technologies/account-abstraction-schnorr-signatures-sdk)** (Halborn)  

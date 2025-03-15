@@ -39,5 +39,6 @@
   "fee_details": "கட்டண விவரங்கள்",
   "max_tx_fee": "அதிகபட்ச பரிவர்த்தனை கட்டணம்",
   "invalid_tx_fee": "தவறான பரிவர்த்தனை கட்டணம்",
-  "asset": "சொத்து"
+  "asset": "சொத்து",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

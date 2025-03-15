@@ -39,5 +39,6 @@
   "fee_details": "Fee Details",
   "max_tx_fee": "Max Transaction Fee",
   "invalid_tx_fee": "Invalid Transaction Fee",
-  "asset": "Asset"
+  "asset": "Asset",
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
 }

@@ -146,7 +146,8 @@
     "send": "Kirim",
     "receive": "Terima",
     "buy": "Beli",
-    "sell": "Jual"
+    "sell": "Jual",
+    "swap": "Tukar"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Konfirmasi Transaksi pada Kunci SSP",
@@ -172,7 +173,8 @@
     "remove_last_wallet_desc": "Tindakan ini akan menghapus dompet Anda yang terakhir dibuat.",
     "switch_chain": "Beralih Rantai",
     "max_wallets": "42. Jawaban atas pertanyaan utama tentang kehidupan, alam semesta, dan segalanya.",
-    "ssp_message_sign": "Tandatangani Pesan"
+    "ssp_message_sign": "Tandatangani Pesan",
+    "swap_history": "Riwayat Penukaran"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Kata sandi tidak valid.",
@@ -215,7 +217,7 @@
   "payment_request": {
     "payment_request": "Permintaan pembayaran",
     "pay_for": "Permintaan pembayaran untuk",
-    "on_chain": "on {{chain}} chain",
+    "on_chain": "pada rantai {{chain}}",
     "to": "ke",
     "received": "diterima",
     "attached_message": "Pesan terlampir: {{message}}",
@@ -231,34 +233,34 @@
     "sign": "Tanda Tangani",
     "message": "Pesan",
     "signature": "Tanda tangan",
-    "err_sign_message": "Error signing message."
+    "err_sign_message": "Pesan kesalahan saat menandatangani."
   },
   "sspConnect": {
     "invalid_chain": "Rantai tidak valid.",
     "invalid_method": "Metode tidak valid.",
-    "invalid_request": "Invalid or malformed request.",
-    "unsupported_contract": "Unsupported contract. Import token contract first."
+    "invalid_request": "Permintaan tidak valid atau formatnya salah.",
+    "unsupported_contract": "Kontrak yang tidak didukung. Impor kontrak token terlebih dahulu."
   },
   "chainsInfo": {
-    "chain_requests": "Chains Information Request",
-    "chain_requests_info": "A request to get information about all integrated chains in SSP was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. No personal data is shared.",
-    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronised was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
-    "chain_requests_info_error": "Error getting chains information."
+    "chain_requests": "Permintaan Informasi Rantai",
+    "chain_requests_info": "Permintaan untuk mendapatkan informasi tentang semua rantai yang terintegrasi di SSP telah diterima. Data berikut dari setiap rantai akan dibagikan: id, nama, simbol, desimal, dan chainId. Tidak ada data pribadi yang dibagikan.",
+    "chain_requests_info_user": "Permintaan untuk mendapatkan informasi tentang rantai yang telah disinkronkan Dompet SSP milik Anda telah diterima. Data berikut dari setiap rantai akan dibagikan: id, nama, simbol, desimal, dan chainId. Meskipun tidak ada data pribadi yang dibagikan, permintaan ini dapat digunakan untuk mendapatkan informasi tentang jaringan apa yang Anda gunakan.",
+    "chain_requests_info_error": "Terjadi kesalahan saat mendapatkan informasi rantai."
   },
   "tokensInfo": {
-    "tokens_requests": "Tokens Information Request",
-    "tokens_requests_info": "A request to get information about tokens for {{chain}} chain was received. Following data of each token will be shared: contract, name, symbol, decimals. No personal data is shared.",
-    "tokens_requests_info_error": "Error getting tokens information.",
-    "chain_not_supported": "Chain not supported.",
-    "no_tokens_supported": "No tokens supported.",
-    "chain_not_specified": "Chain not specified."
+    "tokens_requests": "Permintaan Informasi Token",
+    "tokens_requests_info": "Permintaan untuk mendapatkan informasi tentang token untuk rantai {{chain}} telah diterima. Data berikut dari setiap token akan dibagikan: kontrak, nama, simbol, desimal. Tidak ada data pribadi yang dibagikan.",
+    "tokens_requests_info_error": "Terjadi kesalahan saat mendapatkan informasi token.",
+    "chain_not_supported": "Rantai tidak didukung.",
+    "no_tokens_supported": "Tidak ada token yang didukung.",
+    "chain_not_specified": "Rantai tidak ditentukan."
   },
   "addressesInfo": {
-    "addresses_requests": "Addresses Information Request",
-    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Excersice caution as your addresses will be shared with the requester.",
-    "addresses_requests_info_error": "Error getting addresses information.",
-    "no_addresses": "Chain not synchronised. No addresses found.",
-    "select_addresses": "Select Addresses to Share"
+    "addresses_requests": "Alamat Permintaan Informasi",
+    "addresses_requests_info": "Permintaan untuk mendapatkan daftar alamat untuk rantai {{chain}} telah diterima. Permintaan ini akan membagikan alamat pilihan Anda. Berhati-hatilah karena alamat Anda akan dibagikan kepada pemohon.",
+    "addresses_requests_info_error": "Terjadi kesalahan saat mendapatkan informasi alamat.",
+    "no_addresses": "Rantai tidak disinkronkan. Tidak ada alamat yang ditemukan.",
+    "select_addresses": "Pilih Alamat untuk Dibagikan"
   },
   "fusion": {
     "pa_reward": "Hadiah Aset Paralel",
@@ -314,5 +316,53 @@
     "consent_info_2": "Saya mengakui risiko yang terkait dan ingin melanjutkan.",
     "not_available_later": "Transaksi Cryptocurrency saat ini tidak tersedia. Silakan coba lagi nanti.",
     "coming_soon": "Segera Hadir!"
+  },
+  "swap": {
+    "swap_crypto": "Tukar Crypto",
+    "search_asset": "Cari Asset",
+    "you_send": "Anda Mengirim",
+    "you_get": "Anda Mendapatkan",
+    "chain_sync_required": "Diperlukan sinkronisasi rantai terlebih dahulu",
+    "select_receiving_wallet": "Pilih Dompet Penerima",
+    "select_sending_wallet": "Pilih Dompet Pengirim",
+    "select_buy_asset": "Pilih Aset untuk Dibeli",
+    "select_sell_asset": "Pilih Aset untuk Dijual",
+    "estimated_amount_title": "Jumlah yang Diperkirakan",
+    "estimated_amount": "Karena sifat pasar mata uang kripto yang fluktuatif, Anda mungkin menerima lebih banyak atau lebih sedikit koin dari yang diharapkan pada awalnya.",
+    "floating_rate_title": "Nilai Tukar Mengambang",
+    "fixed_rate_title": "Nilai Tukar Tetap",
+    "floating_rate_fluctuates": "Nilai tukar pasar aktual yang digunakan untuk mengeksekusi transaksi perdagangan mungkin berbeda dari nilai tukar yang ditunjukkan pada saat perintah perdagangan milik Anda diajukan. Ini berarti nilai akhir perdagangan milik Anda mungkin berbeda dari yang ditunjukkan pada awalnya.",
+    "fixed_rate_stable": "Nilai tukar pasar aktual yang digunakan untuk mengeksekusi transaksi perdagangan akan sama dengan nilai tukar yang ditunjukkan pada saat order perdagangan Anda diajukan. Ini berarti nilai akhir perdagangan Anda akan sama seperti yang ditunjukkan pada awalnya.",
+    "proceeding_agree_tos": "Prosesnya sesuai dengan ToS",
+    "rate_changed": "Tarif telah berubah, harap tinjau jumlah milik Anda.",
+    "error_creating_swap": "Terjadi kesalahan saat membuat penukaran. Nilai tukar mungkin telah berubah, harap tinjau jumlah milik Anda dan coba lagi.",
+    "error_fetching_swap_history": "Terjadi kesalahan saat mengambil riwayat penukaran. Silakan coba lagi.",
+    "pending": "Tertunda",
+    "completed": "Telah Selesai",
+    "new": "Baru",
+    "waiting": "Menunggu",
+    "confirming": "Mengkonfirmasi",
+    "sending": "Mengirim",
+    "finished": "Diselesaikan",
+    "failed": "Gagal",
+    "refunded": "Dikembalikan",
+    "hold": "Tahan",
+    "expired": "Kadaluarsa",
+    "unknown": "Tidak Dikenal",
+    "provider": "Penyedia",
+    "created_at": "Dibuat pada tanggal",
+    "sell_address": "Jual Alamat",
+    "buy_address": "Beli Alamat",
+    "sell_txid": "Jual TXID",
+    "buy_txid": "Beli TXID",
+    "refund_txid": "Pengembalian dana TXID",
+    "track_swap": "Lacak Penukaran",
+    "swap_id": "ID Penukaran",
+    "rate": "Nilai Tukar",
+    "no_swap_history": "Tidak Ada Riwayat Penukaran",
+    "swapped_by": "Ditukar dengan",
+    "best_rate": "Nilai Tukar Terbaik",
+    "select_swap_provider": "Pilih Penyedia Penukaran",
+    "user_choice": "Pilihan Pengguna"
   }
 }

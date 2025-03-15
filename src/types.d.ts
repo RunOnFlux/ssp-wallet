@@ -607,6 +607,166 @@ export interface chainState {
   importedTokens?: Token[]; // EVM
 }
 
+export interface abeAsset {
+  idzelcore: string;
+  name: string;
+  ticker: string;
+  chain: number;
+  contract?: string;
+  idchangenowfloat?: string;
+  idchangenowfix?: string;
+  idchangenowfloatlimit?: string[] | null;
+  idchangenowfixlimit?: string[] | null;
+  idchangelloyfloat?: string;
+  idchangellyfix?: string;
+  idchangellyfloatlimit?: string[] | null;
+  idchangellyfixlimit?: string[] | null;
+  idsimpleswapfloat?: string;
+  idsimpleswapfix?: string;
+  idsimpleswapfloatlimit?: string[] | null;
+  idsimpleswapfixlimit?: string[] | null;
+  idchangeherofloat?: string;
+  idchangeherofix?: string;
+  idchangeherofloatlimit?: string[] | null;
+  idchangeherofixlimit?: string[] | null;
+  idxoswapfloat?: string;
+  idxoswapfloatlimit?: string[] | null;
+}
+
+export interface abeAssetResponse {
+  status: string;
+  data: abeAsset[];
+}
+
+export interface zelcoreAsset {
+  idzelcore: string;
+  name: string;
+  ticker: string;
+  chain: string;
+  contract?: string;
+  decimals: number | null;
+}
+
+export interface zelcoreAssetResponse {
+  status: string;
+  data: zelcoreAsset[];
+}
+
+export interface pairDetailsResponse {
+  status: string;
+  data: {
+    sellAsset: number;
+    buyAsset: number;
+    exchanges: {
+      exchangeId: string;
+      sellAsset: string;
+      buyAsset: string;
+      rate: string;
+      precision: string;
+      destNetworkFee: string;
+      sellAmount: string;
+      buyAmount: string;
+      rateId: string | null;
+      minSellAmount: string;
+      maxSellAmount: string;
+    }[];
+    message?: string;
+  };
+}
+
+export interface createSwapData {
+  exchangeId: string;
+  sellAsset: string;
+  buyAsset: string;
+  sellAmount: string;
+  buyAddress: string;
+  refundAddress: string;
+  rateId?: string | null;
+  refundAddressExtraId?: string | null;
+  buyAddressExtraId?: string | null;
+}
+
+export interface swapResponseData {
+  exchangeId: string;
+  swapId: string;
+  sellAsset: string;
+  buyAsset: string;
+  sellAmount: string;
+  buyAmount: string;
+  rate: string;
+  rateId: string | null;
+  kycRequired: boolean;
+  depositAddress: string;
+  depositExtraId: string | null;
+  buyAddressExtraId: string | null;
+  refundAddressExtraId: string | null;
+  status: string;
+  createdAt: number;
+  validTill: number;
+}
+export interface createSwapResponse {
+  status: string;
+  data: swapResponseData;
+}
+
+export interface swapHistoryOrder {
+  exchangeId: string;
+  swapId: string;
+  sellAsset: string;
+  buyAsset: string;
+  sellAmount: string;
+  buyAmount: string;
+  rate: string;
+  rateId: string | null;
+  kycRequired: boolean;
+  buyAddress: string;
+  refundAddress: string;
+  buyAddressExtraId: string | null;
+  refundAddressExtraId: string | null;
+  status: string;
+  createdAt: number;
+  sellTxid: string | null;
+  buyTxid: string | null;
+  refundTxid: string | null;
+  zelid: string | null;
+  exchangeSellAssetId: string;
+  exchangeBuyAssetId: string;
+}
+
+export interface swapHistoryResponse {
+  status: string;
+  data: swapHistoryOrder[];
+}
+
+export interface exchangeProvider {
+  exchangeId: exchangeId;
+  name: string;
+  type: string;
+  website: string;
+  endpoint: string;
+  terms: string;
+  privacy: string;
+  kyc: string;
+  track: string;
+  logo: string;
+}
+
+export interface exchangeProvidersResponse {
+  status: string;
+  data: exchangeProvider[];
+}
+
+export interface selectedExchangeType {
+  exchangeId?: string;
+  minSellAmount?: string;
+  maxSellAmount?: string;
+  rateId?: string | null;
+  rate?: string;
+  precision?: string;
+  sellAmount?: string;
+  buyAmount?: string;
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;
@@ -620,4 +780,6 @@ declare global {
   var refreshIntervalNodes: string | number | NodeJS.Timeout | undefined;
   // eslint-disable-next-line no-var
   var refreshIntervalServices: string | number | NodeJS.Timeout | undefined;
+  // eslint-disable-next-line no-var
+  var refreshIntervalABE: string | number | NodeJS.Timeout | undefined;
 }

@@ -17,6 +17,7 @@ import { NoticeType } from 'antd/es/message/interface';
 
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { contact, tokenBalanceEVM } from '../../types';
+import StrongEncryptionChange from '../../components/StrongEncryptionChange/StrongEncryptionChange';
 
 import {
   setActiveChain,
@@ -84,6 +85,7 @@ function Login() {
   const { activeChain, identityChain } = useAppSelector(
     (state) => state.sspState,
   );
+  const [strongEncryptionChange, setStrongEncryptionChange] = useState(false);
   const blockchainConfig = blockchains[activeChain];
   const blockchainConfigIdentity = blockchains[identityChain];
   const browser = window.chrome || window.browser;
@@ -92,7 +94,6 @@ function Login() {
     return () => {
       // reset state
       setPassword('');
-      console.log('reset state');
     };
   }, []); // Empty dependency array ensures this effect runs only on mount/unmount
 
@@ -117,7 +118,21 @@ function Login() {
         blockchains[activatedChain]
       ) {
         const aC: keyof cryptos = activatedChain as keyof cryptos;
-        dispatch(setActiveChain(aC));
+        // only set if we can read xpubEncrypted from secure storage
+        const xpubEncrypted = secureLocalStorage.getItem(
+          `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+            blockchainConfig.scriptType,
+          )}-${blockchainConfig.id}`,
+        );
+        if (xpubEncrypted) {
+          dispatch(setActiveChain(aC));
+        } else {
+          dispatch(setActiveChain(identityChain));
+          await localForage.setItem('activeChain', identityChain);
+        }
+      } else {
+        dispatch(setActiveChain(identityChain));
+        await localForage.setItem('activeChain', identityChain);
       }
       // set language
       const language = await localForage.getItem('language');
@@ -126,6 +141,11 @@ function Login() {
       }
       // check if existing user
       const accPresent = secureLocalStorage.getItem('walletSeed');
+      // if it is null but we have activeChain set in localforage show popup warning
+      if (!accPresent && activatedChain) {
+        setStrongEncryptionChange(true);
+        return;
+      }
       // no wallet seed present
       if (!accPresent) {
         navigate('/welcome');
@@ -215,7 +235,21 @@ function Login() {
           blockchains[activatedChain]
         ) {
           const aC: keyof cryptos = activatedChain as keyof cryptos;
-          dispatch(setActiveChain(aC));
+          // only set if we can read xpubEncrypted from secure storage
+          const xpubEncrypted = secureLocalStorage.getItem(
+            `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+              blockchainConfig.scriptType,
+            )}-${blockchainConfig.id}`,
+          );
+          if (xpubEncrypted) {
+            dispatch(setActiveChain(aC));
+          } else {
+            dispatch(setActiveChain(identityChain));
+            await localForage.setItem('activeChain', identityChain);
+          }
+        } else {
+          dispatch(setActiveChain(identityChain));
+          await localForage.setItem('activeChain', identityChain);
         }
         decryptWallet();
       }
@@ -246,6 +280,13 @@ function Login() {
       )}-${blockchainConfig.id}`,
     ); // key xpub
     if (!xpubEncrypted || !xpubEncryptedIdentity) {
+      console.log(xpubEncrypted);
+      console.log(xpubEncryptedIdentity);
+      console.log(
+        `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+          blockchainConfig.scriptType,
+        )}-${blockchainConfig.id}`,
+      );
       displayMessage('error', t('login:err_lx', { code: 'L3' }));
       setIsLoading(false);
       return;
@@ -267,21 +308,6 @@ function Login() {
             setXpubWallet(activeChain, xpub);
             console.log(xpubIdentity);
             setXpubWalletIdentity(xpubIdentity);
-            if (typeof xpub2Encrypted === 'string') {
-              const xpub2 = await passworderDecrypt(password, xpub2Encrypted);
-              if (typeof xpub2 === 'string') {
-                setXpubKey(activeChain, xpub2);
-              }
-            }
-            if (typeof xpub2EncryptedIdentity === 'string') {
-              const xpub2Identity = await passworderDecrypt(
-                password,
-                xpub2EncryptedIdentity,
-              );
-              if (typeof xpub2Identity === 'string') {
-                setXpubKeyIdentity(xpub2Identity);
-              }
-            }
             const fingerprint: string = getFingerprint();
             const pwBlob = await passworderEncrypt(fingerprint, password);
             if (browser?.storage?.session) {
@@ -303,6 +329,25 @@ function Login() {
             dispatch(
               setSspWalletExternalIdentity(generatedSspWalletExternalIdentity),
             );
+            if (typeof xpub2Encrypted === 'string') {
+              const xpub2 = await passworderDecrypt(password, xpub2Encrypted);
+              if (typeof xpub2 === 'string') {
+                setXpubKey(activeChain, xpub2);
+              }
+            }
+            if (typeof xpub2EncryptedIdentity === 'string') {
+              const xpub2Identity = await passworderDecrypt(
+                password,
+                xpub2EncryptedIdentity,
+              );
+              if (typeof xpub2Identity === 'string') {
+                setXpubKeyIdentity(xpub2Identity);
+              } else {
+                // check if we have xpub2, if not, navigate to home immediately as there we run a check if to keep localforage or clear it
+                navigate('/home');
+                return;
+              }
+            }
             // restore stored wallets
             const generatedWallets: generatedWallets =
               (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
@@ -390,6 +435,11 @@ function Login() {
     }
   };
 
+  const stronEncryptionChangeAction = (status: boolean) => {
+    setStrongEncryptionChange(status);
+    navigate('/welcome');
+  };
+
   return (
     <>
       {contextHolder}
@@ -441,6 +491,10 @@ function Login() {
           </Button>
         </div>
       )}
+      <StrongEncryptionChange
+        open={strongEncryptionChange}
+        openAction={stronEncryptionChangeAction}
+      />
       <PoweredByFlux isClickeable={true} />
       <div style={{ position: 'absolute', top: 5, right: 5 }}>
         <LanguageSelector label={false} />

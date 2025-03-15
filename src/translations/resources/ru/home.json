@@ -146,7 +146,8 @@
     "send": "Отправить",
     "receive": "Получить",
     "buy": "Buy",
-    "sell": "Sell"
+    "sell": "Sell",
+    "swap": "Swap"
   },
   "confirmTxKey": {
     "confirm_tx_key": "Подтвердить транзакцию на SSP Ключе",
@@ -172,7 +173,8 @@
     "remove_last_wallet_desc": "Это действие удалит ваш последний сгенерированный кошелек. Вы можете создать новый кошелек в любое время.",
     "switch_chain": "Переключить Цепочку",
     "max_wallets": "42. Ответ на главный вопрос жизни, вселенной и всего такого. Вы достигли максимального числа кошельков.",
-    "ssp_message_sign": "Подписание Сообщений"
+    "ssp_message_sign": "Подписание Сообщений",
+    "swap_history": "Swap History"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Пароль недействителен. Попробуйте снова.",
@@ -314,5 +316,53 @@
     "consent_info_2": "I acknowledge the associated risks and wish to proceed.",
     "not_available_later": "Cryptocurrency transactions are currently unavailable. Please try again later.",
     "coming_soon": "Coming Soon!"
+  },
+  "swap": {
+    "swap_crypto": "Swap Crypto",
+    "search_asset": "Search Asset",
+    "you_send": "You Send",
+    "you_get": "You Get",
+    "chain_sync_required": "Chain synchronisation required first",
+    "select_receiving_wallet": "Select Receiving Wallet",
+    "select_sending_wallet": "Select Sending Wallet",
+    "select_buy_asset": "Select Asset to Buy",
+    "select_sell_asset": "Select Asset to Sell",
+    "estimated_amount_title": "Estimated Amount",
+    "estimated_amount": "Due to the volatile nature of the cryptocurrency market, you may receive more or fewer coins than initially expected.",
+    "floating_rate_title": "Floating Rate",
+    "fixed_rate_title": "Fixed Rate",
+    "floating_rate_fluctuates": "The actual market rate at which a trade transaction is executed might differ from the rate shown at the time your trading order was submitted. This means that the final value of your trade could be different than initially indicated.",
+    "fixed_rate_stable": "The actual market rate at which a trade transaction is executed will be the same as the rate shown at the time your trading order was submitted. This means that the final value of your trade will be the same as initially indicated.",
+    "proceeding_agree_tos": "Proceeding agrees to ToS",
+    "rate_changed": "Rate has changed, please review your amount.",
+    "error_creating_swap": "Error creating swap. Rate might have changed, please review your amount and try again.",
+    "error_fetching_swap_history": "Error fetching swap history. Please try again.",
+    "pending": "Pending",
+    "completed": "Completed",
+    "new": "New",
+    "waiting": "Waiting",
+    "confirming": "Confirming",
+    "sending": "Sending",
+    "finished": "Finished",
+    "failed": "Failed",
+    "refunded": "Refunded",
+    "hold": "Hold",
+    "expired": "Expired",
+    "unknown": "Unknown",
+    "provider": "Provider",
+    "created_at": "Created At",
+    "sell_address": "Sell Address",
+    "buy_address": "Buy Address",
+    "sell_txid": "Sell TXID",
+    "buy_txid": "Buy TXID",
+    "refund_txid": "Refund TXID",
+    "track_swap": "Track Swap",
+    "swap_id": "Swap ID",
+    "rate": "Rate",
+    "no_swap_history": "No Swap History",
+    "swapped_by": "Swapped by",
+    "best_rate": "Best Rate",
+    "select_swap_provider": "Select Swap Provider",
+    "user_choice": "User Choice"
   }
 }
