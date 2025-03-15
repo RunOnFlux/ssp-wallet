@@ -60,9 +60,9 @@
   "copy_part_x": "Zkopírovat část {{part}}",
   "copied": "Zkopírováno do schránky!",
   "finished": "Hotovo!",
-  "strong_fingerprint_encryption": "Strong Fingerprint Encryption Updated",
-  "strong_fingerprint_encryption_info": "SSP Wallet uses strong, device-specific fingerprint encryption to securely protect your sensitive data.",
-  "strong_encryption_change_detected": "SSP Wallet detected a change in your device fingerprint, requiring a wallet restore using your seed phrase.",
-  "strong_encryption_change_detected_info_2": "Fingerprint changes can occur due to hardware modifications, system or driver updates, browser updates, localization settings, connected peripherals, or other system changes.",
-  "strong_encryption_change_detected_info_3": "To continue using SSP Wallet securely, revert to your previous system settings or restore your wallet with your seed phrase."
+  "strong_fingerprint_encryption": "Silné Šifrování Otisku Aktualizováno",
+  "strong_fingerprint_encryption_info": "SSP Peněženka používá silné šifrování otisku zařízení specifické pro vaše zařízení k zabezpečení ochrany citlivých dat.",
+  "strong_encryption_change_detected": "SSP Peněženka zjistila změnu otisku zařízení což vyžaduje obnovu vaší peněženky pomocí seed fráze.",
+  "strong_encryption_change_detected_info_2": "Otisk zařízení se může změnit například při změně hardwaru, aktualizací systému, prohlížeče či ovladačů, změnou lokalizace, připojením dalších zařízení či monitorů nebo změnou nastavení systému či prohlížeče.",
+  "strong_encryption_change_detected_info_3": "Pro bezpečné používání SSP Peněženky se prosím vraťte k předchozímu nastavení systému nebo obnovte peněženku vaší seed frází peněženky."
 }
