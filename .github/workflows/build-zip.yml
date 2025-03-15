@@ -3,9 +3,10 @@ name: Build And Upload Extension Zip
 on:
   push:
     branches: [master]
-    tags:        
+    tags:
       - v1.*
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -25,10 +26,20 @@ jobs:
       #     path: node_modules
       #     key: ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}
 
-      - run: yarn install
+      - name: Install dependencies
+        run: yarn install
 
-      - run: yarn build
+      - name: Build extensions
+        run: yarn build:all
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Chrome extension
+        uses: actions/upload-artifact@v4
         with:
-          path: dist/*
+          name: chrome-extension
+          path: dist-zip/ssp-wallet-chrome-*.zip
+
+      - name: Upload Firefox extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-extension
+          path: dist-zip/ssp-wallet-firefox-*.zip

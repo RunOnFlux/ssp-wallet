@@ -1,7 +1,9 @@
+const ext = browser || chrome;
+
 async function request(details) {
   try {
     // eslint-disable-next-line no-undef
-    const response = await chrome.runtime.sendMessage(details);
+    const response = await ext.runtime.sendMessage(details);
     // console.log(response);
     return response;
   } catch (err) {
@@ -16,8 +18,7 @@ window.addEventListener(
     // console.log(event)
     const result = await request(event.detail);
     // console.log(result);
-    const eventB = new CustomEvent('fromContentScript', { detail: result });
-    window.dispatchEvent(eventB);
+    window.postMessage({ type: "fromContentScript", detail: result }, "*");
   },
   false,
 );

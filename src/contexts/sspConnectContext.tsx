@@ -57,6 +57,7 @@ export const SspConnectProvider = ({
   const [chain, setChain] = useState('');
   const [contract, setContract] = useState('');
   const { t } = useTranslation(['home', 'common']);
+  const browser = window.chrome || window.browser;
 
   const sanitizeRequest = (request: bgRequest) => {
     // sanitize request
@@ -119,9 +120,9 @@ export const SspConnectProvider = ({
   };
 
   useEffect(() => {
-    if (chrome?.runtime?.onMessage) {
+    if (browser?.runtime?.onMessage) {
       // this will move to separate lib file
-      chrome.runtime.onMessage.addListener((originalRequest: bgRequest) => {
+      browser.runtime.onMessage.addListener((originalRequest: bgRequest) => {
         console.log(originalRequest);
         // sanitize request
         if (
@@ -134,7 +135,7 @@ export const SspConnectProvider = ({
         }
         const request = sanitizeRequest(originalRequest);
         if (!request) {
-          void chrome.runtime.sendMessage({
+          void browser.runtime.sendMessage({
             origin: 'ssp',
             data: {
               status: t('common:error'),
@@ -161,7 +162,7 @@ export const SspConnectProvider = ({
             setMessage(request.data.params.message || '');
           } else {
             console.log('Invalid chain' + request.data.params.chain);
-            void chrome.runtime.sendMessage({
+            void browser.runtime.sendMessage({
               origin: 'ssp',
               data: {
                 status: t('common:error'),
@@ -210,7 +211,7 @@ export const SspConnectProvider = ({
             }
           } else {
             console.log('Invalid chain' + request.data.params.chain);
-            void chrome.runtime.sendMessage({
+            void browser.runtime.sendMessage({
               origin: 'ssp',
               data: {
                 status: t('common:error'),
@@ -240,7 +241,7 @@ export const SspConnectProvider = ({
           setChain(request.data.params.chain || '');
         } else {
           console.log('Invalid method' + request.data.method);
-          void chrome.runtime.sendMessage({
+          void browser.runtime.sendMessage({
             origin: 'ssp',
             data: {
               status: t('common:error'),

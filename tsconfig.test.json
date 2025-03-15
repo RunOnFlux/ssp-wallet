@@ -12,7 +12,8 @@
       "node",
       "mocha",
       "vite",
-      "chrome"
+      "chrome",
+      "firefox-webext-browser"
     ],
     "baseUrl": "./",
     "paths": {

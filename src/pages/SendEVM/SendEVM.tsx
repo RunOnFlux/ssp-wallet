@@ -166,6 +166,7 @@ function SendEVM() {
   const { contacts } = useAppSelector((state) => state.contacts);
 
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+  const browser = window.chrome || window.browser;
 
   useEffect(() => {
     try {
@@ -874,11 +875,11 @@ function SendEVM() {
 
   const payRequestAction = (data: paymentData | null) => {
     console.log(data);
-    if (chrome?.runtime?.sendMessage) {
+    if (browser?.runtime?.sendMessage) {
       // we do not use sendResponse, instead we are sending new message
       if (!data) {
         // reject message
-        void chrome.runtime.sendMessage({
+        void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
             status: t('common:error'),
@@ -886,13 +887,13 @@ function SendEVM() {
           },
         });
       } else {
-        void chrome.runtime.sendMessage({
+        void browser.runtime.sendMessage({
           origin: 'ssp',
           data,
         });
       }
     } else {
-      console.log('no chrome.runtime.sendMessage');
+      console.log('no browser or chrome runtime.sendMessage');
     }
   };
 

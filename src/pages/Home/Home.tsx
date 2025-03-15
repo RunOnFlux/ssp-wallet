@@ -52,6 +52,8 @@ function Home() {
     (state) => state[activeChain],
   );
   const [messageApi, contextHolder] = message.useMessage();
+  const browser = window.chrome || window.browser;
+
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
@@ -168,9 +170,9 @@ function Home() {
     if (status === false) {
       // logout
       void (async function () {
-        if (chrome?.storage?.session) {
+        if (browser?.storage?.session) {
           try {
-            await chrome.storage.session.clear();
+            await browser.storage.session.clear();
           } catch (error) {
             console.log(error);
           }

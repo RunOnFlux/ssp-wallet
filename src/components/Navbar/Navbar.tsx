@@ -123,6 +123,7 @@ function Navbar({
       content,
     });
   };
+  const browser = window.chrome || window.browser;
 
   useEffect(() => {
     console.log('chain change');
@@ -386,9 +387,9 @@ function Navbar({
   const dispatch = useAppDispatch();
   const logout = () => {
     void (async function () {
-      if (chrome?.storage?.session) {
+      if (browser?.storage?.session) {
         try {
-          await chrome.storage.session.clear();
+          await browser.storage.session.clear();
         } catch (error) {
           console.log(error);
         }
