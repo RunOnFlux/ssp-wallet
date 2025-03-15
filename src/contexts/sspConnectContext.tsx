@@ -185,7 +185,7 @@ export const SspConnectProvider = ({
                   console.log(
                     'Invalid contract' + request.data.params.contract,
                   );
-                  void chrome.runtime.sendMessage({
+                  void browser.runtime.sendMessage({
                     origin: 'ssp',
                     data: {
                       status: t('common:error'),

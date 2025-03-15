@@ -1,4 +1,4 @@
-const ext = browser || chrome;
+const ext = chrome || browser;
 
 async function request(details) {
   try {
