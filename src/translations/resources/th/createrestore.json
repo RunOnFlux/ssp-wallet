@@ -60,9 +60,9 @@
   "copy_part_x": "คัดลอกส่วนที่ {{part}}",
   "copied": "คัดลอกไปยังคลิปบอร์ดแล้ว!",
   "finished": "เสร็จสิ้น!",
-  "strong_fingerprint_encryption": "Strong Fingerprint Encryption Updated",
-  "strong_fingerprint_encryption_info": "SSP Wallet uses strong, device-specific fingerprint encryption to securely protect your sensitive data.",
-  "strong_encryption_change_detected": "SSP Wallet detected a change in your device fingerprint, requiring a wallet restore using your seed phrase.",
-  "strong_encryption_change_detected_info_2": "Fingerprint changes can occur due to hardware modifications, system or driver updates, browser updates, localization settings, connected peripherals, or other system changes.",
-  "strong_encryption_change_detected_info_3": "To continue using SSP Wallet securely, revert to your previous system settings or restore your wallet with your seed phrase."
+  "strong_fingerprint_encryption": "อัปเดตการเข้ารหัสลายนิ้วมือที่แข็งแกร่งแล้ว",
+  "strong_fingerprint_encryption_info": "กระเป๋า SSP ใช้การเข้ารหัสลายนิ้วมือที่แข็งแกร่งและเฉพาะอุปกรณ์เพื่อปกป้องข้อมูลที่ละเอียดอ่อนของคุณอย่างปลอดภัย",
+  "strong_encryption_change_detected": "กระเป๋า SSP ตรวจพบการเปลี่ยนแปลงของลายนิ้วมืออุปกรณ์ของคุณ จำเป็นต้องกู้คืนกระเป๋าโดยใช้คำสำคัญของคุณ",
+  "strong_encryption_change_detected_info_2": "การเปลี่ยนแปลงของลายนิ้วมืออาจเกิดขึ้นจากการเปลี่ยนแปลงฮาร์ดแวร์, การอัปเดตระบบหรือไดรเวอร์, การอัปเดตเบราว์เซอร์, การตั้งค่าภูมิภาค, อุปกรณ์ต่อพ่วงที่เชื่อมต่อ หรือการเปลี่ยนแปลงอื่นๆ ในระบบ",
+  "strong_encryption_change_detected_info_3": "เพื่อใช้กระเป๋า SSP อย่างปลอดภัยต่อไป โปรดกลับไปใช้การตั้งค่าระบบก่อนหน้านี้หรือกู้คืนกระเป๋าของคุณโดยใช้คำสำคัญ"
 }

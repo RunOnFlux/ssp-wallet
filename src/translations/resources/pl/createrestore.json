@@ -60,9 +60,9 @@
   "copy_part_x": "Skopiuj część {{part}}",
   "copied": "Skopiowano do schowka!",
   "finished": "Zakończono!",
-  "strong_fingerprint_encryption": "Strong Fingerprint Encryption Updated",
-  "strong_fingerprint_encryption_info": "SSP Wallet uses strong, device-specific fingerprint encryption to securely protect your sensitive data.",
-  "strong_encryption_change_detected": "SSP Wallet detected a change in your device fingerprint, requiring a wallet restore using your seed phrase.",
-  "strong_encryption_change_detected_info_2": "Fingerprint changes can occur due to hardware modifications, system or driver updates, browser updates, localization settings, connected peripherals, or other system changes.",
-  "strong_encryption_change_detected_info_3": "To continue using SSP Wallet securely, revert to your previous system settings or restore your wallet with your seed phrase."
+  "strong_fingerprint_encryption": "Zaktualizowano silne szyfrowanie odcisku palca",
+  "strong_fingerprint_encryption_info": "SSP Wallet wykorzystuje silne, unikalne dla urządzenia szyfrowanie odcisku palca, aby bezpiecznie chronić Twoje dane wrażliwe.",
+  "strong_encryption_change_detected": "SSP Wallet wykrył zmianę w odcisku palca Twojego urządzenia, co wymaga przywrócenia portfela za pomocą frazy seed.",
+  "strong_encryption_change_detected_info_2": "Zmiany odcisku palca mogą wystąpić z powodu modyfikacji sprzętu, aktualizacji systemu lub sterowników, aktualizacji przeglądarki, ustawień lokalizacyjnych, podłączonych urządzeń peryferyjnych lub innych zmian systemowych.",
+  "strong_encryption_change_detected_info_3": "Aby nadal bezpiecznie korzystać z SSP Wallet, przywróć poprzednie ustawienia systemowe lub przywróć portfel za pomocą frazy seed."
 }
