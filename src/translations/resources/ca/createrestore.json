@@ -60,9 +60,9 @@
   "copy_part_x": "Copiar la part {{part}}",
   "copied": "Copiat al porta-retalls!",
   "finished": "Acabat!",
-  "strong_fingerprint_encryption": "Strong Fingerprint Encryption Updated",
-  "strong_fingerprint_encryption_info": "SSP Wallet uses strong, device-specific fingerprint encryption to securely protect your sensitive data.",
-  "strong_encryption_change_detected": "SSP Wallet detected a change in your device fingerprint, requiring a wallet restore using your seed phrase.",
-  "strong_encryption_change_detected_info_2": "Fingerprint changes can occur due to hardware modifications, system or driver updates, browser updates, localization settings, connected peripherals, or other system changes.",
-  "strong_encryption_change_detected_info_3": "To continue using SSP Wallet securely, revert to your previous system settings or restore your wallet with your seed phrase."
+  "strong_fingerprint_encryption": "Xifratge d’empremta digital fort actualitzat",
+  "strong_fingerprint_encryption_info": "SSP Wallet utilitza un xifratge d’empremta digital fort i específic del dispositiu per protegir de manera segura les teves dades sensibles.",
+  "strong_encryption_change_detected": "SSP Wallet ha detectat un canvi en l’empremta digital del teu dispositiu, cosa que requereix una restauració de la cartera mitjançant la teva frase de recuperació.",
+  "strong_encryption_change_detected_info_2": "Els canvis en l’empremta digital poden produir-se a causa de modificacions de maquinari, actualitzacions del sistema o dels controladors, actualitzacions del navegador, configuracions de localització, perifèrics connectats o altres canvis en el sistema.",
+  "strong_encryption_change_detected_info_3": "Per continuar utilitzant SSP Wallet de manera segura, reverteix la configuració prèvia del sistema o restaura la teva cartera amb la teva frase de recuperació."
 }

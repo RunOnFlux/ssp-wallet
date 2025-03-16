@@ -60,9 +60,9 @@
   "copy_part_x": "Kopiera del {{part}}",
   "copied": "Kopierat till urklipp!",
   "finished": "Klar!",
-  "strong_fingerprint_encryption": "Strong Fingerprint Encryption Updated",
-  "strong_fingerprint_encryption_info": "SSP Wallet uses strong, device-specific fingerprint encryption to securely protect your sensitive data.",
-  "strong_encryption_change_detected": "SSP Wallet detected a change in your device fingerprint, requiring a wallet restore using your seed phrase.",
-  "strong_encryption_change_detected_info_2": "Fingerprint changes can occur due to hardware modifications, system or driver updates, browser updates, localization settings, connected peripherals, or other system changes.",
-  "strong_encryption_change_detected_info_3": "To continue using SSP Wallet securely, revert to your previous system settings or restore your wallet with your seed phrase."
+  "strong_fingerprint_encryption": "Stark fingeravtryckskryptering uppdaterad",
+  "strong_fingerprint_encryption_info": "SSP Wallet använder stark, enhetsspecifik fingeravtryckskryptering för att säkert skydda din känsliga data.",
+  "strong_encryption_change_detected": "SSP Wallet upptäckte en förändring i ditt enhetsfingeravtryck, vilket kräver en plånboksåterställning med din seed phrase.",
+  "strong_encryption_change_detected_info_2": "Förändringar i fingeravtrycket kan ske på grund av hårdvarumodifikationer, system- eller drivrutinsuppdateringar, webbläsaruppdateringar, lokaliseringsinställningar, anslutna kringutrustningar eller andra systemändringar.",
+  "strong_encryption_change_detected_info_3": "För att fortsätta använda SSP Wallet säkert, återställ dina tidigare systeminställningar eller återställ din plånbok med din seed phrase."
 }

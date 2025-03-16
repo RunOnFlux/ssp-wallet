@@ -60,9 +60,9 @@
   "copy_part_x": "Copiază partea {{part}}",
   "copied": "Copiat în clipboard!",
   "finished": "Finalizat!",
-  "strong_fingerprint_encryption": "Strong Fingerprint Encryption Updated",
-  "strong_fingerprint_encryption_info": "SSP Wallet uses strong, device-specific fingerprint encryption to securely protect your sensitive data.",
-  "strong_encryption_change_detected": "SSP Wallet detected a change in your device fingerprint, requiring a wallet restore using your seed phrase.",
-  "strong_encryption_change_detected_info_2": "Fingerprint changes can occur due to hardware modifications, system or driver updates, browser updates, localization settings, connected peripherals, or other system changes.",
-  "strong_encryption_change_detected_info_3": "To continue using SSP Wallet securely, revert to your previous system settings or restore your wallet with your seed phrase."
+  "strong_fingerprint_encryption": "Criptare Puternică a Amprentei Actualizată",
+  "strong_fingerprint_encryption_info": "SSP Wallet utilizează o criptare puternică a amprentei, specifică dispozitivului, pentru a proteja în siguranță datele tale sensibile.",
+  "strong_encryption_change_detected": "SSP Wallet a detectat o modificare a amprentei dispozitivului tău, necesitând restaurarea portofelului folosind fraza de recuperare.",
+  "strong_encryption_change_detected_info_2": "Modificările amprentei pot apărea din cauza modificărilor hardware, actualizărilor de sistem sau drivere, actualizărilor browserului, setărilor de localizare, perifericelor conectate sau altor modificări ale sistemului.",
+  "strong_encryption_change_detected_info_3": "Pentru a continua să folosești SSP Wallet în siguranță, revino la setările anterioare ale sistemului sau restaurează portofelul cu fraza ta de recuperare."
 }

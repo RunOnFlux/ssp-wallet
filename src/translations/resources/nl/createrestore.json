@@ -60,9 +60,9 @@
   "copy_part_x": "Kopieer deel {{part}}",
   "copied": "Gekopieerd naar klembord!",
   "finished": "Voltooid!",
-  "strong_fingerprint_encryption": "Strong Fingerprint Encryption Updated",
-  "strong_fingerprint_encryption_info": "SSP Wallet uses strong, device-specific fingerprint encryption to securely protect your sensitive data.",
-  "strong_encryption_change_detected": "SSP Wallet detected a change in your device fingerprint, requiring a wallet restore using your seed phrase.",
-  "strong_encryption_change_detected_info_2": "Fingerprint changes can occur due to hardware modifications, system or driver updates, browser updates, localization settings, connected peripherals, or other system changes.",
-  "strong_encryption_change_detected_info_3": "To continue using SSP Wallet securely, revert to your previous system settings or restore your wallet with your seed phrase."
+  "strong_fingerprint_encryption": "Sterke vingerafdrukversleuteling bijgewerkt",
+  "strong_fingerprint_encryption_info": "SSP Wallet gebruikt sterke, apparaatspecifieke vingerafdrukversleuteling om je gevoelige gegevens veilig te beschermen.",
+  "strong_encryption_change_detected": "SSP Wallet heeft een wijziging in je apparaatvingerafdruk gedetecteerd, waardoor je je wallet moet herstellen met je herstelzin.",
+  "strong_encryption_change_detected_info_2": "Wijzigingen in de vingerafdruk kunnen optreden door hardware-aanpassingen, systeem- of stuurprogramma-updates, browserupdates, taalinstellingen, aangesloten randapparatuur of andere systeemwijzigingen.",
+  "strong_encryption_change_detected_info_3": "Om SSP Wallet veilig te blijven gebruiken, herstel je vorige systeeminstellingen of herstel je wallet met je herstelzin."
 }
