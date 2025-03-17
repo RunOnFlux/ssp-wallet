@@ -25,6 +25,7 @@ export default [
         ...globals.browser,
         ...globals.node,
         ...globals.es2020,
+        ...globals.jest,
       },
     },
     plugins: {

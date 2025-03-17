@@ -24,7 +24,8 @@
     "types": [
       "chrome",
       "node",
-      "firefox-webext-browser"
+      "firefox-webext-browser",
+      "jest"
     ],
     "checkJs": false,
     "baseUrl": "./",
@@ -35,16 +36,14 @@
       "@assets/*": [
         "./src/assets/*"
       ],
-    }
+    },
+    "composite": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src",
     "public/scripts",
     "tests",
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
+    "vite.config.ts"
   ]
 }
