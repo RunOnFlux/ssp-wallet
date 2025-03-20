@@ -141,8 +141,11 @@ function Login() {
       }
       // check if existing user
       const accPresent = secureLocalStorage.getItem('walletSeed');
+      const identityChainBlockHeight = await localForage.getItem(
+        `blockheight-${identityChain}`,
+      );
       // if it is null but we have activeChain set in localforage show popup warning
-      if (!accPresent && activatedChain) {
+      if (!accPresent && identityChainBlockHeight) {
         setStrongEncryptionChange(true);
         return;
       }
