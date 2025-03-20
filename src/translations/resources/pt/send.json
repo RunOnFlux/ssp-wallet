@@ -40,5 +40,5 @@
   "max_tx_fee": "Taxa Máxima de Transação",
   "invalid_tx_fee": "Taxa de Transação Inválida",
   "asset": "Ativo",
-  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
+  "send_swap": "Enviar e trocar por {{buyAmount}}{{buyAsset}}"
 }
