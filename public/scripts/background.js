@@ -7,13 +7,13 @@
  * https://bugs.chromium.org/p/chromium/issues/detail?id=634381
  */
 
-const browser = window.chrome || window.browser;
+const ext = chrome || browser;
 let awaitingSendResponse;
 let popupId;
 
 const registerInPageContentScript = async () => {
   try {
-    await browser.scripting.registerContentScripts([
+    await ext.scripting.registerContentScripts([
       {
         id: 'sspinpage',
         matches: ['file://*/*', 'http://*/*', 'https://*/*'],
@@ -37,7 +37,7 @@ const registerInPageContentScript = async () => {
 void registerInPageContentScript();
 
 async function getAllWindows() {
-  const windows = await browser.windows.getAll();
+  const windows = await ext.windows.getAll();
   return windows;
 }
 
@@ -56,10 +56,10 @@ async function getPopup() {
 }
 
 async function focusWindow(windowId, options = { focused: true }) {
-  await browser.windows.update(windowId, options);
+  await ext.windows.update(windowId, options);
 }
 
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log(request);
   if (request.origin !== 'ssp') {
     return;
@@ -71,7 +71,7 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.origin === 'ssp' || request.origin === 'ssp-background') {
     return;
   }
@@ -83,7 +83,7 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // console.log(sender);
     let top = 80;
     let left = 10;
-    const lastFocused = await browser.windows.getLastFocused();
+    const lastFocused = await ext.windows.getLastFocused();
     if (lastFocused) {
       top = lastFocused.top + 80;
       left = Math.max(lastFocused.left + (lastFocused.width - 420 - 10), 10);
@@ -99,18 +99,18 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
       timeout = 200;
     } else {
       const options = {
-        url: browser.runtime.getURL('index.html'),
+        url: ext.runtime.getURL('index.html'),
         type: 'popup',
         top,
         left,
         width: 420,
         height: 620,
       };
-      const newPopup = await browser.windows.create(options);
+      const newPopup = await ext.windows.create(options);
       popupId = newPopup.id;
     }
     setTimeout(() => {
-      void browser.runtime.sendMessage({
+      void ext.runtime.sendMessage({
         // send new message to poup. We do not await a response. Instead we listen for a new message from popup
         origin: 'ssp-background',
         data: request,
