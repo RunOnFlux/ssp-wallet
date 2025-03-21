@@ -69,6 +69,9 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else {
     sendResponse('Something went wrong.');
   }
+  if (popupId) {
+    ext.windows.remove(popupId);
+  }
 });
 
 ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -88,7 +91,7 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
       top = lastFocused.top + 80;
       left = Math.max(lastFocused.left + (lastFocused.width - 420 - 10), 10);
     }
-    const popup = await getPopup(popupId);
+    const popup = await getPopup();
     let timeout = 1000;
     if (popup) {
       const options = {
