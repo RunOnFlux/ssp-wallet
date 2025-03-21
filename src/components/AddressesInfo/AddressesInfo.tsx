@@ -15,7 +15,7 @@ interface addressesInfoData {
 interface Props {
   open: boolean;
   chain: string;
-  openAction?: (data: addressesInfoData | null) => void;
+  openAction: (data: addressesInfoData | null) => void;
 }
 
 function AddressesInfo({ open, chain, openAction }: Props) {
@@ -55,38 +55,35 @@ function AddressesInfo({ open, chain, openAction }: Props) {
   const handleOk = () => {
     try {
       if (!chain) {
-        if (openAction) {
-          openAction({
-            status: 'ERROR', // do not translate
-            data: t('home:tokensInfo.chain_not_specified'),
-          });
-        }
+        openAction({
+          status: 'ERROR', // do not translate
+          data: t('home:tokensInfo.chain_not_specified'),
+        });
+        setApprovedAddresses([]);
         return;
       }
       const chainInfo = blockchains[chain];
       if (!chainInfo) {
-        if (openAction) {
-          openAction({
-            status: 'ERROR', // do not translate
-            data: t('home:tokensInfo.chain_not_supported'),
-          });
-        }
-        return;
-      }
-      if (openAction) {
-        openAction({
-          status: 'SUCCESS', // do not translate
-          addresses: approvedAddresses,
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      if (openAction) {
         openAction({
           status: 'ERROR', // do not translate
-          data: t('home:addressesInfo.addresses_requests_info_error'),
+          data: t('home:tokensInfo.chain_not_supported'),
         });
+        setApprovedAddresses([]);
+        return;
       }
+      openAction({
+        status: 'SUCCESS', // do not translate
+        addresses: approvedAddresses,
+      });
+
+      setApprovedAddresses([]);
+    } catch (error) {
+      console.log(error);
+      openAction({
+        status: 'ERROR', // do not translate
+        data: t('home:addressesInfo.addresses_requests_info_error'),
+      });
+      setApprovedAddresses([]);
     }
   };
 
@@ -95,9 +92,8 @@ function AddressesInfo({ open, chain, openAction }: Props) {
   };
 
   const handleCancel = () => {
-    if (openAction) {
-      openAction(null);
-    }
+    openAction(null);
+    setApprovedAddresses([]);
   };
 
   return (
@@ -128,6 +124,7 @@ function AddressesInfo({ open, chain, openAction }: Props) {
             placeholder={t('home:addressesInfo.select_addresses')}
             defaultValue={[]}
             onChange={handleApprovedAddressesChange}
+            value={approvedAddresses}
             options={options}
           />
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
