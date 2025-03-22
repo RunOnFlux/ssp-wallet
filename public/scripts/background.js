@@ -91,27 +91,16 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
       top = lastFocused.top + 80;
       left = Math.max(lastFocused.left + (lastFocused.width - 420 - 10), 10);
     }
-    const popup = await getPopup();
-    let timeout = 1000;
-    if (popup) {
-      const options = {
-        focused: true,
-      };
-      // bring focus to existing chrome popup
-      await focusWindow(popup.id, options);
-      timeout = 200;
-    } else {
-      const options = {
-        url: ext.runtime.getURL('index.html'),
-        type: 'popup',
-        top,
-        left,
-        width: 420,
-        height: 620,
-      };
-      const newPopup = await ext.windows.create(options);
-      popupId = newPopup.id;
-    }
+    const options = {
+      url: ext.runtime.getURL('index.html'),
+      type: 'popup',
+      top,
+      left,
+      width: 420,
+      height: 620,
+    };
+    const newPopup = await ext.windows.create(options);
+    popupId = newPopup.id;
     setTimeout(() => {
       void ext.runtime.sendMessage({
         // send new message to poup. We do not await a response. Instead we listen for a new message from popup
@@ -132,7 +121,7 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
         //   }
         // }
       });
-    }, timeout);
+    }, 1000);
   })();
   // Important! Return true to indicate you want to send a response asynchronously
   return true;
