@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Primește în {{chain}} {{wallet}}",
     "wallet_address": "Adresă portofel",
-    "wallet_address_desc": "Aceasta este adresa portofelului tău. O poți partaja cu oricine pentru a primi fonduri."
+    "wallet_address_desc": "Aceasta este adresa portofelului tău. O poți partaja cu oricine pentru a primi fonduri.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Trimite",
