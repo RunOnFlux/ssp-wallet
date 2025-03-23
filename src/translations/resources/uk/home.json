@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Отримати на {{chain}} {{wallet}}",
     "wallet_address": "Адреса гаманця",
-    "wallet_address_desc": "Це ваша адреса гаманця. Ви можете поділитися цією адресою з будь-ким для отримання коштів."
+    "wallet_address_desc": "Це ваша адреса гаманця. Ви можете поділитися цією адресою з будь-ким для отримання коштів.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Відправити",
