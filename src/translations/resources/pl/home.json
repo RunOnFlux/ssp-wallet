@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Odbierz na {{chain}} {{wallet}}",
     "wallet_address": "Adres portfela",
-    "wallet_address_desc": "To jest Twój adres portfela. Możesz udostępnić go dowolnej osobie, aby otrzymać środki."
+    "wallet_address_desc": "To jest Twój adres portfela. Możesz udostępnić go dowolnej osobie, aby otrzymać środki.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Wyślij",
