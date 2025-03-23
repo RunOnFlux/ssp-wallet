@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "{{chain}} {{wallet}} पर प्राप्त करें",
     "wallet_address": "वॉलेट पता",
-    "wallet_address_desc": "यह आपका वॉलेट पता है। आप धन प्राप्त करने के लिए इस पते को किसी के साथ भी शेयर कर सकते हैं।"
+    "wallet_address_desc": "यह आपका वॉलेट पता है। आप धन प्राप्त करने के लिए इस पते को किसी के साथ भी शेयर कर सकते हैं।",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "भेजें",
