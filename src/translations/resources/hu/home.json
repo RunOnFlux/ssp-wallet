@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Fogadás a(z) {{chain}} {{wallet}}-ra",
     "wallet_address": "Tárcacím",
-    "wallet_address_desc": "Ez a pénztárcacímed. Megoszthatod ezt a címet bárkivel, hogy pénzeszközöket fogadj."
+    "wallet_address_desc": "Ez a pénztárcacímed. Megoszthatod ezt a címet bárkivel, hogy pénzeszközöket fogadj.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Küldés",
