@@ -57,6 +57,14 @@ function Receive(props: {
           >
             <Text>{wallets[walletInUse].address}</Text>
           </Paragraph>
+          <Paragraph className="copyableAddress">
+            <Text>
+              {t('home:receive.warning_chain_only', {
+                chain_name: blockchainConfig.name,
+                chain_symbol: blockchainConfig.symbol,
+              })}
+            </Text>
+          </Paragraph>
         </Space>
       </Modal>
     </>
