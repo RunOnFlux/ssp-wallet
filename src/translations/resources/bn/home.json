@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "{{chain}} {{wallet}}-এ গ্রহণ করুন",
     "wallet_address": "ওয়ালেট ঠিকানা",
-    "wallet_address_desc": "এটি আপনার ওয়ালেট ঠিকানা. আপনি এটি যেকোনো ব্যক্তির সাথে শেয়ার করে তহবিল গ্রহণ করতে পারেন."
+    "wallet_address_desc": "এটি আপনার ওয়ালেট ঠিকানা. আপনি এটি যেকোনো ব্যক্তির সাথে শেয়ার করে তহবিল গ্রহণ করতে পারেন.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "গ্রহণ করুন",
