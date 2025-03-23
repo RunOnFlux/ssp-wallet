@@ -13,6 +13,8 @@ import btcSignetLogo from '../assets/btcSignet.svg';
 import fluxTestnetLogo from '../assets/fluxTestnet.svg';
 import sepoliaLogo from '../assets/teth.svg';
 import ethLogo from '../assets/eth.svg';
+import polLogo from '../assets/pol.svg';
+import amoyLogo from '../assets/tpol.svg';
 
 const flux = {
   id: 'flux',
@@ -364,6 +366,65 @@ const eth = {
   onramperNetwork: 'ethereum',
 };
 
+const amoy = {
+  id: 'amoy',
+  libid: 'amoy',
+  name: 'Testnet Polygon Amoy',
+  symbol: 'TEST-POL',
+  logo: amoyLogo,
+  slip: 1,
+  decimals: 18,
+  node: backends().amoy.node,
+  api: backends().amoy.api,
+  bip32: {
+    // not specified, use default
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh', // not specified, use default
+  chainType: 'evm',
+  chainId: '80002',
+  backend: 'alchemy',
+  accountSalt: 'aasalt', // ssp uses this salt for smart accounts
+  factorySalt: 'aafactorysalt', // factory uses this salt
+  factoryAddress: '0x3974821943e9cA3549744D910999332eE387Fda4',
+  entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  baseFee: 120, // 120 gwei
+  priorityFee: 5, // 5 gwei
+  gasLimit: 750000, // 750k gas
+  tokens: tokens.amoy(),
+};
+
+const polygon = {
+  id: 'polygon',
+  libid: 'polygonAmoy',
+  name: 'Polygon',
+  symbol: 'POL',
+  logo: polLogo,
+  slip: 966,
+  decimals: 18,
+  node: backends().polygon.node,
+  api: backends().polygon.api,
+  bip32: {
+    // not specified, use default
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh', // not specified, use default
+  chainType: 'evm',
+  chainId: '137',
+  backend: 'alchemy',
+  accountSalt: 'aasalt', // ssp uses this salt for smart accounts
+  factorySalt: 'aafactorysalt', // factory uses this salt
+  factoryAddress: '0x3974821943e9cA3549744D910999332eE387Fda4',
+  entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  baseFee: 50, // 50 gwei
+  priorityFee: 5, // 5 gwei
+  gasLimit: 750000, // 750k gas
+  tokens: tokens.polygon(),
+  onramperNetwork: 'polygon',
+};
+
 export const blockchains = {
   btc,
   flux,
@@ -371,10 +432,12 @@ export const blockchains = {
   doge,
   ltc,
   bch,
+  polygon,
   rvn,
   zec,
   btcTestnet,
   btcSignet,
   fluxTestnet,
   sepolia,
+  amoy,
 };

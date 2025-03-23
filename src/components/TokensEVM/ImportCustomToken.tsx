@@ -64,9 +64,13 @@ function ImportCustomToken(props: {
       return;
     }
 
-    let logo = 'src/assets/etht.svg'; // TODO logo
+    let logo = 'src/assets/etht.svg';
     if (props.chain == 'sepolia') {
-      logo = 'src/assets/teth.svg';
+      logo = 'src/assets/ethsepoliat.svg';
+    } else if (props.chain == 'amoy') {
+      logo = 'src/assets/polamoyt.svg';
+    } else if (props.chain == 'polygon') {
+      logo = 'src/assets/polt.svg';
     }
 
     if (!data.name || !data.symbol) {

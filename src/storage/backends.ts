@@ -65,6 +65,16 @@ const assetBackends: backends = {
     api: 'api.ethereum-mainnet.runonflux.io/api',
     explorer: 'etherscan.io',
   },
+  amoy: {
+    node: 'node.polygon-amoy.runonflux.io',
+    api: 'api.polygon-amoy.runonflux.io/api',
+    explorer: 'amoy.polygonscan.com',
+  },
+  polygon: {
+    node: 'node.polygon-mainnet.runonflux.io',
+    api: 'api.polygon-mainnet.runonflux.io/api',
+    explorer: 'polygonscan.com',
+  },
 };
 
 export function backends() {

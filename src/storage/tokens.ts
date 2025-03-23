@@ -101,6 +101,7 @@ import idLogo from '../assets/id.svg';
 import maskLogo from '../assets/mask.svg';
 import tracLogo from '../assets/trac.svg';
 import rplLogo from '../assets/rpl.svg';
+import amoyLogo from '../assets/tpol.svg';
 
 function sepolia() {
   const tokens = [
@@ -842,7 +843,35 @@ function eth() {
   return tokens;
 }
 
+function amoy() {
+  const tokens = [
+    {
+      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
+      name: 'Testnet Polygon Amoy',
+      symbol: 'TEST-POL',
+      decimals: 18,
+      logo: amoyLogo,
+    },
+  ];
+  return tokens;
+}
+
+function polygon() {
+  const tokens = [
+    {
+      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
+      name: 'Polygon',
+      symbol: 'POL',
+      decimals: 18,
+      logo: polLogo,
+    },
+  ];
+  return tokens;
+}
+
 export const tokens = {
   eth,
   sepolia,
+  amoy,
+  polygon,
 };
