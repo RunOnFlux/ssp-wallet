@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Motta til {{chain}} {{wallet}}",
     "wallet_address": "Lommebokadresse",
-    "wallet_address_desc": "Dette er lommebokadressen din. Du kan dele denne adressen med hvem som helst for å motta midler."
+    "wallet_address_desc": "Dette er lommebokadressen din. Du kan dele denne adressen med hvem som helst for å motta midler.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Send",
