@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "{{chain}} {{wallet}} への受信",
     "wallet_address": "ウォレットアドレス",
-    "wallet_address_desc": "これはあなたのウォレットアドレスです. このアドレスを誰とでも共有して、資金を受け取ることができます."
+    "wallet_address_desc": "これはあなたのウォレットアドレスです. このアドレスを誰とでも共有して、資金を受け取ることができます.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "送信",
