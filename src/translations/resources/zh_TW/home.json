@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "接收至 {{chain}} {{wallet}}",
     "wallet_address": "錢包地址",
-    "wallet_address_desc": "這是您的錢包地址.您可以將此地址分享給任何人以接收資金."
+    "wallet_address_desc": "這是您的錢包地址.您可以將此地址分享給任何人以接收資金.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "發送",
