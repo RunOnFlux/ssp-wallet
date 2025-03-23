@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Obdržet do {{chain}} {{wallet}}",
     "wallet_address": "Adresa Peněženky",
-    "wallet_address_desc": "Tohle je vaše adresa peněženky. Můžete ji sdílet s kýmkoliv pro obdržení prostředků."
+    "wallet_address_desc": "Tohle je vaše adresa peněženky. Můžete ji sdílet s kýmkoliv pro obdržení prostředků.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Odeslat",
