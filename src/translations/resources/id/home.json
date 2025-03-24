@@ -141,7 +141,7 @@
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
     "wallet_address": "Alamat Dompet",
     "wallet_address_desc": "Ini adalah alamat dompet Anda.",
-    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
+    "warning_chain_only": "PERINGATAN: Alamat ini hanya khusus untuk blockchain {{chain_name}} ({{chain_symbol}}). Hanya setorkan aset pada rantai {{chain_name}} ({{chain_symbol}}) ke alamat ini. Menyetor dari rantai lain akan mengakibatkan hilangnya dana!"
   },
   "navigation": {
     "send": "Kirim",
