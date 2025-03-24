@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Получено в {{chain}}{{wallet}}",
     "wallet_address": "Адрес на портфейла",
-    "wallet_address_desc": "Това е адресът на вашия портфейл. Можете да споделяте този адрес с всеки, за да получавате средства."
+    "wallet_address_desc": "Това е адресът на вашия портфейл. Можете да споделяте този адрес с всеки, за да получавате средства.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Изпрати",

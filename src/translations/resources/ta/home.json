@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "பெறுகைக்கு {{chain}} {{wallet}}",
     "wallet_address": "வாலட் முகவரி",
-    "wallet_address_desc": "இது உங்கள் வாலட் முகவரி. நீங்கள் நிதிகளைப் பெற இந்த முகவரியை யாருடன் வேண்டுமானாலும் பகிரலாம்."
+    "wallet_address_desc": "இது உங்கள் வாலட் முகவரி. நீங்கள் நிதிகளைப் பெற இந்த முகவரியை யாருடன் வேண்டுமானாலும் பகிரலாம்.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "அனுப்பு",

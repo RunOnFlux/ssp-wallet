@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Ontvangen op {{chain}} {{wallet}}",
     "wallet_address": "Wallet-adres",
-    "wallet_address_desc": "Dit is je wallet-adres. Je kunt dit adres met iedereen delen om fondsen te ontvangen."
+    "wallet_address_desc": "Dit is je wallet-adres. Je kunt dit adres met iedereen delen om fondsen te ontvangen.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Verzenden",

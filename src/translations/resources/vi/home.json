@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Nhận đến {{chain}} {{wallet}}",
     "wallet_address": "Địa chỉ Ví",
-    "wallet_address_desc": "Đây là địa chỉ ví của bạn. Bạn có thể chia sẻ địa chỉ này đến bất kỳ ai để nhận tài sản."
+    "wallet_address_desc": "Đây là địa chỉ ví của bạn. Bạn có thể chia sẻ địa chỉ này đến bất kỳ ai để nhận tài sản.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Gửi",

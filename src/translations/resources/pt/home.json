@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Receber em {{chain}}{{wallet}}",
     "wallet_address": "Endereço da carteira",
-    "wallet_address_desc": "Este é o endereço da sua carteira. Pode partilhar este endereço com qualquer pessoa para receber os fundos."
+    "wallet_address_desc": "Este é o endereço da sua carteira. Pode partilhar este endereço com qualquer pessoa para receber os fundos.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Enviar",

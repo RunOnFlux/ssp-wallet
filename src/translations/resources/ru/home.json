@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Получить на {{chain}} {{wallet}}",
     "wallet_address": "Адрес кошелька",
-    "wallet_address_desc": "Это ваш адрес кошелька. Вы можете поделиться этим адресом с любым человеком для получения средств."
+    "wallet_address_desc": "Это ваш адрес кошелька. Вы можете поделиться этим адресом с любым человеком для получения средств.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Отправить",

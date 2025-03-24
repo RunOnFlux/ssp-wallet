@@ -140,7 +140,8 @@
   "receive": {
     "receive_chain_wallet": "Vastaanota {{chain}} {{wallet}}",
     "wallet_address": "Lompakon Osoite",
-    "wallet_address_desc": "Tämä on lompakkosi osoite. Voit jakaa tämän osoitteen kenen tahansa kanssa vastaanottaaksesi varoja."
+    "wallet_address_desc": "Tämä on lompakkosi osoite. Voit jakaa tämän osoitteen kenen tahansa kanssa vastaanottaaksesi varoja.",
+    "warning_chain_only": "WARNING: This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!"
   },
   "navigation": {
     "send": "Lähetä",
