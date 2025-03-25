@@ -37,6 +37,8 @@ const chains = {
   btcSignet: chainSliceBase('btcSignet'),
   sepolia: chainSliceBaseTokens('sepolia'),
   eth: chainSliceBaseTokens('eth'),
+  amoy: chainSliceBaseTokens('amoy'),
+  polygon: chainSliceBaseTokens('polygon'),
 };
 // ********** Import chains **********
 
@@ -437,7 +439,12 @@ export function setTokenBalances(
   wallet: string,
   data: tokenBalanceEVM[],
 ) {
-  if (chain === 'sepolia' || chain === 'eth') {
+  if (
+    chain === 'sepolia' ||
+    chain === 'eth' ||
+    chain === 'amoy' ||
+    chain === 'polygon'
+  ) {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setTokenBalances({ wallet, data }));
   }
@@ -447,13 +454,23 @@ export function setActivatedTokens(
   wallet: string,
   data: string[],
 ) {
-  if (chain === 'sepolia' || chain === 'eth') {
+  if (
+    chain === 'sepolia' ||
+    chain === 'eth' ||
+    chain === 'amoy' ||
+    chain === 'polygon'
+  ) {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setActivatedTokens({ wallet, data }));
   }
 }
 export function setImportedTokens(chain: keyof cryptos, data: Token[]) {
-  if (chain === 'sepolia' || chain === 'eth') {
+  if (
+    chain === 'sepolia' ||
+    chain === 'eth' ||
+    chain === 'amoy' ||
+    chain === 'polygon'
+  ) {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setImportedTokens(data));
   }
