@@ -368,7 +368,7 @@ const eth = {
 
 const amoy = {
   id: 'amoy',
-  libid: 'amoy',
+  libid: 'polygonAmoy',
   name: 'Testnet Polygon Amoy',
   symbol: 'TEST-POL',
   logo: amoyLogo,
@@ -397,7 +397,7 @@ const amoy = {
 
 const polygon = {
   id: 'polygon',
-  libid: 'polygonAmoy',
+  libid: 'polygon',
   name: 'Polygon',
   symbol: 'POL',
   logo: polLogo,

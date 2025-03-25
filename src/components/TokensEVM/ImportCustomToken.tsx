@@ -78,9 +78,8 @@ function ImportCustomToken(props: {
       return;
     }
 
-    if (!data.logo) {
-      // todo should we always use our custom logo? Or the one provided??
-      logo = data.logo!;
+    if (data.logo) {
+      logo = data.logo;
     }
 
     const tokenToImport = {
