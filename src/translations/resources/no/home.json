@@ -259,6 +259,7 @@
   "addressesInfo": {
     "addresses_requests": "Forespørsel om adresseinformasjon",
     "addresses_requests_info": "En forespørsel om en liste over adresser for {{chain}}-kjeden ble mottatt. Denne forespørselen vil dele dine valgte adresser. Vær forsiktig, da adressene dine vil bli delt med forespørreren.",
+    "addresses_requests_info_all": "A request to get a list of addresses for all synchronised blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Excersice caution as your addresses will be shared with the requester.",
     "addresses_requests_info_error": "Feil ved henting av adresseinformasjon.",
     "no_addresses": "Kjede ikke synkronisert. Ingen adresser funnet.",
     "select_addresses": "Velg adresser å dele"
