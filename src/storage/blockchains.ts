@@ -96,8 +96,8 @@ const rvn = {
   },
   backend: 'blockbook',
   dustLimit: 546, // min utxo amount
-  minFeePerByte: 4, // min fee per byte
-  feePerByte: 4, // fee per byte
+  minFeePerByte: 1000, // min fee per byte
+  feePerByte: 1050, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
   rbf: true,
