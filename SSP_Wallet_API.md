@@ -159,3 +159,28 @@ window.ssp.request('user_addresses', {
   console.log(response);
 });
 ```
+
+
+#### 7. User Addresses All Chains
+
+- **Method:** `'user_chains_addresses_all'`
+- **Description:** Requests SSP to get the list of addresses for a all chains. User can select what addresses are shared for what chain. Also provides information about particular chain
+
+- **Response:**
+  - `status` (string): Indicates success or error.
+  - `result?` (string): Explanation of error (if any).
+  - `data?` (string): Explanation of success (if any).
+  - `chains?` (array of objects): List of user approved chains with addresses
+    - `id` (string): Chain ID.
+    - `name` (string): Chain name.
+    - `symbol` (string): Chain symbol.
+    - `decimals` (number): Chain decimals.
+    - `chainId?` (string): Chain ID (for EVM chains) of the chain.
+    - `addresses` (array of strings): List of user addresses
+
+#### Example:
+```javascript
+window.ssp.request('user_chains_addresses_all').then(response => {
+  console.log(response);
+});
+```

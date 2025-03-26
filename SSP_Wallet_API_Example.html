@@ -41,6 +41,9 @@
     <button id="button9">
       Test obtaining addresses information for ETH chain
     </button>
+    <button id="button10">
+      Test obtaining information about all user addresses and synced chains
+    </button>
     <script>
       // Event listeners for buttons
       document.getElementById('button1').addEventListener('click', () =>
@@ -122,6 +125,11 @@
                 console.log(response);
               });
           }),
+      );
+      document.getElementById('button10').addEventListener('click', () =>
+        window.ssp.request('user_chains_addresses_all').then((response) => {
+          console.log(response);
+        }),
       );
     </script>
   </body>

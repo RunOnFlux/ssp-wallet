@@ -224,7 +224,8 @@ export const SspConnectProvider = ({
           }
         } else if (
           request.data.method === 'chains_info' ||
-          request.data.method === 'user_chains_info'
+          request.data.method === 'user_chains_info' ||
+          request.data.method === 'user_chains_addresses_all'
         ) {
           console.log(request.data.method);
           // show dialog asking for approval to get information about all integarted chains in ssp

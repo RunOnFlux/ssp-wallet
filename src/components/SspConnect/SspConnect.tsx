@@ -5,6 +5,7 @@ import PaymentRequest from '../../components/PaymentRequest/PaymentRequest';
 import ChainsInfo from '../../components/ChainsInfo/ChainsInfo';
 import TokensInfo from '../../components/TokensInfo/TokensInfo';
 import AddressesInfo from '../../components/AddressesInfo/AddressesInfo';
+import AllAddressesInfo from '../../components/AllAddressesInfo/AllAddressesInfo';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
 
@@ -32,7 +33,7 @@ function SspConnect() {
     contract: sspConnectContract,
     clearRequest,
   } = useSspConnect();
-  const { t } = useTranslation(['common']);
+  const { t } = useTranslation(['common', 'home']);
   const [openSignMessage, setOpenSignMessage] = useState(false);
   const [openPayRequest, setOpenPayRequest] = useState(false);
   const [address, setAddress] = useState('');
@@ -45,6 +46,7 @@ function SspConnect() {
   const [userOnlyChains, setUserOnlyChains] = useState(false);
   const [openTokensInfo, setOpenTokensInfo] = useState(false);
   const [openAddressesInfo, setOpenAddressesInfo] = useState(false);
+  const [openAllAddressesInfo, setOpenAllAddressesInfo] = useState(false);
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -78,6 +80,17 @@ function SspConnect() {
       } else if (sspConnectType === 'user_addresses') {
         // show poup that someone is asking to get all addresses for a chain
         setOpenAddressesInfo(true);
+      } else if (sspConnectType === 'user_chains_addresses_all') {
+        // show poup that someone is asking to get all addresses for all chains
+        setOpenAllAddressesInfo(true);
+      } else {
+        generalAction({
+          status: 'ERROR', // do not translate
+          data:
+            t('common:request_rejected') +
+            ': ' +
+            t('home:sspConnect.invalid_method'),
+        });
       }
       console.log('sspConnectType');
       console.log(sspConnectType);
@@ -110,6 +123,7 @@ function SspConnect() {
     setOpenChainsInfo(false);
     setOpenTokensInfo(false);
     setOpenAddressesInfo(false);
+    setOpenAllAddressesInfo(false);
   };
   const payRequestAction = (data: paymentData | null | 'continue') => {
     console.log(data);
@@ -170,6 +184,10 @@ function SspConnect() {
         open={openAddressesInfo}
         openAction={generalAction}
         chain={chain as keyof cryptos}
+      />
+      <AllAddressesInfo
+        open={openAllAddressesInfo}
+        openAction={generalAction}
       />
     </>
   );
