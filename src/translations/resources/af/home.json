@@ -259,6 +259,7 @@
   "addressesInfo": {
     "addresses_requests": "Versoek om Adres Inligting",
     "addresses_requests_info": "'n Versoek om die lys van adresse vir {{chain}} ketting te kry, is ontvang. Hierdie versoek sal jou geselekteerde adresse deel. Wees versigtig aangesien jou adresse met die versoeker gedeel sal word.",
+    "addresses_requests_info_all": "A request to get a list of addresses for all synchronised blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Excersice caution as your addresses will be shared with the requester.",
     "addresses_requests_info_error": "Fout tydens die verkryging van adresinligting.",
     "no_addresses": "Ketting nie gesinkroniseer nie. Geen adresse gevind nie.",
     "select_addresses": "Kies Adresse om te Deel"
