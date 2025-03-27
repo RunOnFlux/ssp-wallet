@@ -259,7 +259,7 @@
   "addressesInfo": {
     "addresses_requests": "Požadavek na informace o adresách",
     "addresses_requests_info": "Byl přijat požadavek na získání seznamu adres řetězce {{chain}} . Tento požadavek bude sdílet vybrané adresy. Buďte opatrní, protože vaše adresy budou sdíleny s žadatelem.",
-    "addresses_requests_info_all": "A request to get a list of addresses for all synchronised blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Excersice caution as your addresses will be shared with the requester.",
+    "addresses_requests_info_all": "Byl přijat požadavek na získání adres ode všech vašich synchronizovaných blockchainů. Tato akce bude sdílet vaše vybrané adresy spolu s informacemi ohledně blockchainu jakožto id, jméno, symbol, desetinná čísla a číslo chainu. Buďte opatrní, protože vaše adresy budou sdíleny s žadatelem.",
     "addresses_requests_info_error": "Chyba při získávání informací o adresách.",
     "no_addresses": "Řetězec není synchronizován. Nebyly nalezeny žádné adresy.",
     "select_addresses": "Vyberte adresy ke sdílení"
