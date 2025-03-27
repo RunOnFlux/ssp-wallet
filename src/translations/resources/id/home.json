@@ -259,6 +259,7 @@
   "addressesInfo": {
     "addresses_requests": "Alamat Permintaan Informasi",
     "addresses_requests_info": "Permintaan untuk mendapatkan daftar alamat untuk rantai {{chain}} telah diterima. Permintaan ini akan membagikan alamat pilihan Anda. Berhati-hatilah karena alamat Anda akan dibagikan kepada pemohon.",
+    "addresses_requests_info_all": "Permintaan untuk mendapatkan daftar alamat untuk semua blockchain yang disinkronkan telah diterima. Permintaan ini akan membagikan alamat yang Anda pilih serta informasi rantai seperti id, nama, simbol, desimal, dan chainId. mohon Berhati-hatilah karena alamat Anda akan dibagikan dengan para peminta.",
     "addresses_requests_info_error": "Terjadi kesalahan saat mendapatkan informasi alamat.",
     "no_addresses": "Rantai tidak disinkronkan. Tidak ada alamat yang ditemukan.",
     "select_addresses": "Pilih Alamat untuk Dibagikan"

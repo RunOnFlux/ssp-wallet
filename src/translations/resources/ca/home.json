@@ -259,6 +259,7 @@
   "addressesInfo": {
     "addresses_requests": "Sol·licitud d'informació sobre adreces",
     "addresses_requests_info": "S'ha rebut una sol·licitud per obtenir la llista d'adreces per a la cadena {{chain}}. Aquesta sol·licitud compartirà les adreces seleccionades. Exerciu precaució, ja que les teves adreces seran compartides amb el sol·licitant.",
+    "addresses_requests_info_all": "A request to get a list of addresses for all synchronised blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Excersice caution as your addresses will be shared with the requester.",
     "addresses_requests_info_error": "Error obtenint informació sobre les adreces.",
     "no_addresses": "Cadena no sincronitzada. No s'han trobat adreces.",
     "select_addresses": "Seleccionar adreces per compartir"

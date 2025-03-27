@@ -259,6 +259,7 @@
   "addressesInfo": {
     "addresses_requests": "Permintaan Maklumat Alamat",
     "addresses_requests_info": "Permintaan untuk mendapatkan senarai alamat bagi rangkaian {{chain}} telah diterima. Permintaan ini akan berkongsi alamat yang anda pilih. Berhati-hati kerana alamat anda akan dikongsi dengan peminta.",
+    "addresses_requests_info_all": "A request to get a list of addresses for all synchronised blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Excersice caution as your addresses will be shared with the requester.",
     "addresses_requests_info_error": "Ralat mendapatkan maklumat alamat.",
     "no_addresses": "Rangkaian tidak disegerakkan. Tiada alamat ditemui.",
     "select_addresses": "Pilih Alamat untuk Dikongsi"
