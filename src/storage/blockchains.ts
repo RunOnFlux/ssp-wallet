@@ -515,7 +515,7 @@ const avax = {
   priorityFee: 1, // 5 gwei
   gasLimit: 750000, // 750k gas
   tokens: tokens.avax(),
-  onramperNetwork: 'avax',
+  onramperNetwork: 'avaxc',
 };
 
 export const blockchains = {
