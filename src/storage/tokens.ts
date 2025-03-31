@@ -102,6 +102,9 @@ import maskLogo from '../assets/mask.svg';
 import tracLogo from '../assets/trac.svg';
 import rplLogo from '../assets/rpl.svg';
 import amoyLogo from '../assets/tpol.svg';
+import baseLogo from '../assets/base.svg';
+import bscLogo from '../assets/bsc.svg';
+import avaxLogo from '../assets/avax.svg';
 
 function sepolia() {
   const tokens = [
@@ -932,9 +935,100 @@ function polygon() {
   return tokens;
 }
 
+function base() {
+  const tokens = [
+    {
+      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
+      name: 'Base',
+      symbol: 'ETH',
+      decimals: 18,
+      logo: baseLogo,
+    },
+    {
+      contract: '0xb008bdcf9cdff9da684a190941dc3dca8c2cdd44',
+      name: 'Flux',
+      symbol: 'FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    },
+    {
+      contract: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 6,
+      logo: usdcLogo,
+    },
+  ];
+  return tokens;
+}
+
+function avax() {
+  const tokens = [
+    {
+      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
+      name: 'Avalanche C-Chain',
+      symbol: 'AVAX',
+      decimals: 18,
+      logo: avaxLogo,
+    },
+    {
+      contract: '0xc4B06F17ECcB2215a5DBf042C672101Fc20daF55',
+      name: 'Flux',
+      symbol: 'FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    },
+    {
+      contract: '0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7',
+      name: 'Tether',
+      symbol: 'USDT',
+      decimals: 6,
+      logo: usdtLogo,
+    },
+  ];
+  return tokens;
+}
+
+function bsc() {
+  const tokens = [
+    {
+      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
+      name: 'Binance Smart Chain',
+      symbol: 'BNB',
+      decimals: 18,
+      logo: bscLogo,
+    },
+    {
+      contract: '0xaff9084f2374585879e8b434c399e29e80cce635',
+      name: 'Flux',
+      symbol: 'FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    },
+    {
+      contract: '0x55d398326f99059ff775485246999027b3197955',
+      name: 'Tether',
+      symbol: 'USDT',
+      decimals: 18,
+      logo: usdtLogo,
+    },
+    {
+      contract: '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 18,
+      logo: usdcLogo,
+    },
+  ];
+  return tokens;
+}
+
 export const tokens = {
   eth,
   sepolia,
   amoy,
   polygon,
+  base,
+  avax,
+  bsc,
 };

@@ -39,6 +39,9 @@ const chains = {
   eth: chainSliceBaseTokens('eth'),
   amoy: chainSliceBaseTokens('amoy'),
   polygon: chainSliceBaseTokens('polygon'),
+  base: chainSliceBaseTokens('base'),
+  bsc: chainSliceBaseTokens('bsc'),
+  avax: chainSliceBaseTokens('avax'),
 };
 // ********** Import chains **********
 
@@ -443,7 +446,10 @@ export function setTokenBalances(
     chain === 'sepolia' ||
     chain === 'eth' ||
     chain === 'amoy' ||
-    chain === 'polygon'
+    chain === 'polygon' ||
+    chain === 'base' ||
+    chain === 'bsc' ||
+    chain === 'avax'
   ) {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setTokenBalances({ wallet, data }));
@@ -458,7 +464,10 @@ export function setActivatedTokens(
     chain === 'sepolia' ||
     chain === 'eth' ||
     chain === 'amoy' ||
-    chain === 'polygon'
+    chain === 'polygon' ||
+    chain === 'base' ||
+    chain === 'bsc' ||
+    chain === 'avax'
   ) {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setActivatedTokens({ wallet, data }));
@@ -469,7 +478,10 @@ export function setImportedTokens(chain: keyof cryptos, data: Token[]) {
     chain === 'sepolia' ||
     chain === 'eth' ||
     chain === 'amoy' ||
-    chain === 'polygon'
+    chain === 'polygon' ||
+    chain === 'base' ||
+    chain === 'bsc' ||
+    chain === 'avax'
   ) {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setImportedTokens(data));

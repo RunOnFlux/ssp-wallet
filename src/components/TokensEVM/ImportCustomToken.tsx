@@ -71,6 +71,12 @@ function ImportCustomToken(props: {
       logo = 'src/assets/polamoyt.svg';
     } else if (props.chain == 'polygon') {
       logo = 'src/assets/polt.svg';
+    } else if (props.chain == 'base') {
+      logo = 'src/assets/base.svg';
+    } else if (props.chain == 'bsc') {
+      logo = 'src/assets/bsc.svg';
+    } else if (props.chain == 'avax') {
+      logo = 'src/assets/avax.svg';
     }
 
     if (!data.name || !data.symbol) {

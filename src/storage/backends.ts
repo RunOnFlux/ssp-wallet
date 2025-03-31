@@ -75,6 +75,21 @@ const assetBackends: backends = {
     api: 'api.polygon-mainnet.runonflux.io/api',
     explorer: 'polygonscan.com',
   },
+  base: {
+    node: 'node.base-mainnet.runonflux.io',
+    api: 'api.base-mainnet.runonflux.io/api',
+    explorer: 'basescan.org',
+  },
+  avax: {
+    node: 'node.avax-mainnet.runonflux.io',
+    api: 'api.avax-mainnet.runonflux.io/api',
+    explorer: 'snowtrace.io',
+  },
+  bsc: {
+    node: 'node.bsc-mainnet.runonflux.io',
+    api: 'api.bsc-mainnet.runonflux.io/api',
+    explorer: 'bscscan.com',
+  },
 };
 
 export function backends() {

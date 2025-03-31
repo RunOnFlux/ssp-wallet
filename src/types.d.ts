@@ -479,6 +479,9 @@ export interface cryptos {
   eth: number;
   amoy: number;
   polygon: number;
+  base: number;
+  bsc: number;
+  avax: number;
 }
 
 export interface externalIdentity {

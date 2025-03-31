@@ -472,7 +472,15 @@ function Swap() {
         navigationObject.contract = sellAsset.split('_')[2];
       }
       // if chain is eth navigate to SendEVM else navigate to Send
-      if (sellAsset.split('_')[0] === 'eth') {
+      if (
+        sellAsset.split('_')[0] === 'eth' ||
+        sellAsset.split('_')[0] === 'sepolia' ||
+        sellAsset.split('_')[0] === 'amoy' ||
+        sellAsset.split('_')[0] === 'polygon' ||
+        sellAsset.split('_')[0] === 'base' ||
+        sellAsset.split('_')[0] === 'bsc' ||
+        sellAsset.split('_')[0] === 'avax'
+      ) {
         navigate('/sendEvm', { state: navigationObject });
       } else {
         navigate('/send', { state: navigationObject });
