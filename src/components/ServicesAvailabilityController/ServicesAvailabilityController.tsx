@@ -22,11 +22,6 @@ function ServicesAvailability() {
       },
       10 * 60 * 1000,
     );
-    return () => {
-      if (globalThis.refreshIntervalServices) {
-        clearInterval(globalThis.refreshIntervalServices);
-      }
-    };
   });
 
   const obtainServicesAvailability = () => {

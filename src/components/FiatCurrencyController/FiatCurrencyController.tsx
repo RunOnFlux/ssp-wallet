@@ -20,13 +20,8 @@ function FiatCurrency() {
       () => {
         obtainRates();
       },
-      10 * 60 * 1000,
+      5 * 60 * 1000,
     );
-    return () => {
-      if (globalThis.refreshIntervalRates) {
-        clearInterval(globalThis.refreshIntervalRates);
-      }
-    };
   });
 
   const obtainRates = () => {

@@ -33,11 +33,6 @@ function ABEController() {
       },
       15 * 60 * 1000,
     );
-    return () => {
-      if (globalThis.refreshIntervalABE) {
-        clearInterval(globalThis.refreshIntervalABE);
-      }
-    };
   });
 
   const obtainABE = async () => {

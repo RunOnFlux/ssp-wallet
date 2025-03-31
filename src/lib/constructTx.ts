@@ -889,7 +889,7 @@ export async function estimateGas(
     id: new Date().getTime(),
     jsonrpc: '2.0',
     method: 'eth_getTransactionCount',
-    params: [sender],
+    params: [sender, 'latest'],
   };
   const response = await axios.post<eth_evm>(url, data);
   console.log(response.data);

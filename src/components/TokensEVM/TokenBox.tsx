@@ -130,17 +130,14 @@ function TokenBox(props: {
                   >
                     {props.tokenInfo.contract && (
                       <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                        {t('common:contract')}
-                        {props.tokenInfo.contract}
+                        {t('common:contract')}: {props.tokenInfo.contract}
                       </p>
                     )}
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('common:decimals')}
-                      {props.tokenInfo.decimals}
+                      {t('common:decimals')}: {props.tokenInfo.decimals}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('common:network')}
-                      {blockchains[props.chain].name}
+                      {t('common:network')}: {blockchains[props.chain].name}
                     </p>
                     {props.tokenInfo.contract && (
                       <div className={'remove-button'}>

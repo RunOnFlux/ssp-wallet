@@ -19,11 +19,6 @@ function NetworkFee() {
     globalThis.refreshIntervalNetworkFee = setInterval(() => {
       obtainNetworkFees();
     }, 15 * 1000);
-    return () => {
-      if (globalThis.refreshIntervalNetworkFee) {
-        clearInterval(globalThis.refreshIntervalNetworkFee);
-      }
-    };
   });
 
   const obtainNetworkFees = () => {
