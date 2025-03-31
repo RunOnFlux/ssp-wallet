@@ -64,20 +64,7 @@ function ImportCustomToken(props: {
       return;
     }
 
-    let logo = 'src/assets/etht.svg';
-    if (props.chain == 'sepolia') {
-      logo = 'src/assets/ethsepoliat.svg';
-    } else if (props.chain == 'amoy') {
-      logo = 'src/assets/polamoyt.svg';
-    } else if (props.chain == 'polygon') {
-      logo = 'src/assets/polt.svg';
-    } else if (props.chain == 'base') {
-      logo = 'src/assets/base.svg';
-    } else if (props.chain == 'bsc') {
-      logo = 'src/assets/bsc.svg';
-    } else if (props.chain == 'avax') {
-      logo = 'src/assets/avax.svg';
-    }
+    let logo = 'src/assets/customToken.svg';
 
     if (!data.name || !data.symbol) {
       displayMessage('error', t('home:tokens.invalid_token_contract'));

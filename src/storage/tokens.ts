@@ -1,4 +1,4 @@
-import sepoliaLogo from '../assets/teth.svg';
+import sepoliaLogo from '../assets/ethTestnet.svg';
 import fluxLogo from '../assets/flux.svg';
 import ethLogo from '../assets/eth.svg';
 import usdtLogo from '../assets/usdt.svg';
@@ -101,7 +101,7 @@ import idLogo from '../assets/id.svg';
 import maskLogo from '../assets/mask.svg';
 import tracLogo from '../assets/trac.svg';
 import rplLogo from '../assets/rpl.svg';
-import amoyLogo from '../assets/tpol.svg';
+import amoyLogo from '../assets/polTestnet.svg';
 import baseLogo from '../assets/base.svg';
 import bscLogo from '../assets/bsc.svg';
 import avaxLogo from '../assets/avax.svg';
@@ -993,7 +993,7 @@ function bsc() {
   const tokens = [
     {
       contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
-      name: 'Binance Smart Chain',
+      name: 'BNB',
       symbol: 'BNB',
       decimals: 18,
       logo: bscLogo,

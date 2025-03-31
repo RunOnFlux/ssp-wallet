@@ -1,13 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 22.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="BnB" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 245 245" style="enable-background:new 0 0 245 245;" xml:space="preserve">
-<style type="text/css">
-	.st0{fill:#F3BA2F;}
-	.st1{fill:#FFFFFF;}
-</style>
-<path id="Main_copy_14" class="st0" d="M0,122.5C0,190,55,245,122.5,245S245,190,245,122.5S190,0,122.5,0S0,55,0,122.5z"/>
-<path id="BnB-2" class="st1" d="M76.9,93.8l45.3-45.3l45.3,45.3l-16.6,16.8l-28.7-28.7l-28.8,28.7L76.9,93.8z M105.4,122.2
-	l16.8-16.7l16.9,16.7l-16.9,16.9L105.4,122.2z M64.9,105.5l16.7,16.7l-16.7,16.9l-16.4-16.9L64.9,105.5z M162.6,122.2l17.1-16.7
-	l16.3,16.7l-16.3,16.9L162.6,122.2z M150.9,134l16.6,16.7L122.2,196l-45.3-45.3L93.5,134l28.8,28.8L150.9,134z"/>
-</svg>
+<?xml version="1.0" encoding="UTF-8"?><svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><defs><style>.cls-1{fill:#fff;fill-rule:evenodd;}.cls-2{fill:#f0b90b;}</style></defs><path class="cls-2" d="M128,64c0,35.35-28.65,64-64,64S0,99.35,0,64,28.65,0,64,0s64,28.65,64,64Z"/><polygon class="cls-1" points="64 21.16 41.46 34.29 49.74 39.13 64 30.86 78.26 39.13 86.54 34.29 64 21.16"/><polygon class="cls-1" points="78.26 45.99 86.54 50.84 86.54 60.53 72.29 68.81 72.29 85.36 64 90.2 55.71 85.36 55.71 68.81 41.46 60.53 41.46 50.84 49.74 45.99 64 54.26 78.26 45.99"/><polygon class="cls-1" points="78.26 72.23 86.54 67.38 86.54 77.08 78.26 81.93 78.26 72.23"/><polygon class="cls-1" points="78.17 88.78 92.43 80.51 92.43 63.96 100.72 59.11 100.72 85.36 78.17 98.48 78.17 88.78"/><polygon class="cls-1" points="92.43 47.41 84.14 42.56 92.43 37.71 100.72 42.56 100.72 52.26 92.43 57.1 92.43 47.41"/><polygon class="cls-1" points="55.71 101.99 55.71 92.29 64 97.14 72.29 92.29 72.29 101.99 64 106.84 55.71 101.99"/><polygon class="cls-1" points="49.74 81.93 41.46 77.08 41.46 67.38 49.74 72.23 49.74 81.93"/><polygon class="cls-1" points="64 47.41 55.71 42.56 64 37.71 72.29 42.56 64 47.41"/><polygon class="cls-1" points="43.86 42.56 35.57 47.41 35.57 57.1 27.28 52.26 27.28 42.56 35.57 37.71 43.86 42.56"/><polygon class="cls-1" points="27.28 59.11 35.57 63.96 35.57 80.51 49.83 88.78 49.83 98.48 27.28 85.36 27.28 59.11"/></svg>
