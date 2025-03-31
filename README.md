@@ -105,7 +105,7 @@ SSP Wallet has a comprehensive documentation available at with many guides, FAQs
 
 Integrated, Supported Blockchains, Assets - Coins, Tokens in SSP Wallet are available at:  
 [SSP Assets](https://docs.google.com/spreadsheets/d/1GUqGeV4hCwjKlxazY1vPY52owrEqXQ1UTchOKfkyS7c). 
-SSP Supports custom ERC20 token imports on Ethereum, Polygon network.
+SSP Supports custom ERC20 token imports on Ethereum, Polygon, BSC, Avax, Base network.
 
 ---
 
