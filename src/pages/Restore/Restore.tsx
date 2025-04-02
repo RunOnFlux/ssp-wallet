@@ -418,26 +418,28 @@ function Restore() {
             arrow={false}
             styles={{ body: { marginBottom: -30, maxWidth: 300 } }}
           >
-            <Form.Item
-              label={t('cr:set_password')}
-              name="password"
-              rules={[
-                {
-                  required: true,
-                  message: t('cr:input_password'),
-                },
-              ]}
-            >
-              <Input.Password
-                size="large"
-                placeholder={t('cr:set_password')}
-                prefix={<LockOutlined />}
-                iconRender={(visible) =>
-                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-                }
-                className="password-input"
-              />
-            </Form.Item>
+            <div>
+              <Form.Item
+                label={t('cr:set_password')}
+                name="password"
+                rules={[
+                  {
+                    required: true,
+                    message: t('cr:input_password'),
+                  },
+                ]}
+              >
+                <Input.Password
+                  size="large"
+                  placeholder={t('cr:set_password')}
+                  prefix={<LockOutlined />}
+                  iconRender={(visible) =>
+                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                  }
+                  className="password-input"
+                />
+              </Form.Item>
+            </div>
           </Popover>
 
           <Form.Item
