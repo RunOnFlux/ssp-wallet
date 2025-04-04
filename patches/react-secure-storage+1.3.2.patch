@@ -1,0 +1,40 @@
+diff --git a/node_modules/react-secure-storage/dist/fingerprint.lib.js b/node_modules/react-secure-storage/dist/fingerprint.lib.js
+index fb5dbd7..6acd6ef 100644
+--- a/node_modules/react-secure-storage/dist/fingerprint.lib.js
++++ b/node_modules/react-secure-storage/dist/fingerprint.lib.js
+@@ -77,7 +77,15 @@ var ClientJS = /*#__PURE__*/function () {
+       if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.COOKIE)) {
+         key += this.isCookie() + bar;
+       }
++      var canvasPrint = localStorage.getItem("canvas");
++      if (canvasPrint) {
++        key += canvasPrint;
++      } else {
++        var _canvasPrint = this.getCanvasPrint();
+ 
++        localStorage.setItem("canvas", _canvasPrint);
++        key += _canvasPrint;
++      }
+       if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.CANVAS)) {
+         key += this.getCanvasPrint();
+       }
+diff --git a/node_modules/react-secure-storage/src/lib/fingerprint.lib.ts b/node_modules/react-secure-storage/src/lib/fingerprint.lib.ts
+index 8877bfb..e4ab40e 100644
+--- a/node_modules/react-secure-storage/src/lib/fingerprint.lib.ts
++++ b/node_modules/react-secure-storage/src/lib/fingerprint.lib.ts
+@@ -46,6 +46,15 @@ const ClientJS = class {
+     if (!disabledKeys.includes(FINGERPRINT_KEYS.COOKIE)) {
+       key += this.isCookie() + bar;
+     }
++    // always add canvas, make it persistent for convenience as of system updates
++    const canvasPrint = localStorage.getItem("canvas");
++    if (canvasPrint) {
++      key += canvasPrint
++    } else {
++      const canvasPrint = this.getCanvasPrint();
++      localStorage.setItem("canvas", canvasPrint);
++      key += canvasPrint;
++    }
+     if (!disabledKeys.includes(FINGERPRINT_KEYS.CANVAS)) {
+       key += this.getCanvasPrint();
+     }

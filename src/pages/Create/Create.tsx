@@ -212,6 +212,7 @@ function Create() {
       .then(async (blob) => {
         secureLocalStorage.clear();
         await localForage.clear();
+        localStorage.clear();
         if (browser?.storage?.session) {
           await browser.storage.session.clear();
         }

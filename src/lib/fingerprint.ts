@@ -1,4 +1,5 @@
 import crypto, { randomBytes } from 'crypto';
+import secureLocalStorage from 'react-secure-storage';
 
 export function getFingerprint(extraText = ''): string {
   const {
@@ -14,6 +15,11 @@ export function getFingerprint(extraText = ''): string {
   const touchSupport = 'ontouchstart' in window;
 
   function getCanvasPrint() {
+    // make it persistent for convenience as of system updates
+    const storedCanvasPrint = secureLocalStorage.getItem(`canvas-${extraText}`);
+    if (storedCanvasPrint) {
+      return storedCanvasPrint;
+    }
     // create a canvas element
     const canvas = document.createElement('canvas');
 
@@ -46,7 +52,9 @@ export function getFingerprint(extraText = ''): string {
       ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
       ctx.fillText(txt, 4, 17);
     }
-    return canvas.toDataURL();
+    const canvasPrint = canvas.toDataURL();
+    secureLocalStorage.setItem(`canvas-${extraText}`, canvasPrint);
+    return canvasPrint;
   }
   const canvas = getCanvasPrint();
 
