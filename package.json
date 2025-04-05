@@ -2,7 +2,7 @@
   "name": "ssp-wallet",
   "description": "Secure. Simple. Powerful.",
   "private": true,
-  "version": "1.19.0",
+  "version": "1.20.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
@@ -65,25 +65,25 @@
     "viem": "2.24.2"
   },
   "devDependencies": {
-    "@eslint/js": "9.23.0",
+    "@eslint/js": "9.24.0",
     "@types/bchaddrjs": "0.4.3",
     "@types/chai": "4.3.20",
     "@types/chrome": "0.0.313",
     "@types/firefox-webext-browser": "120.0.4",
     "@types/mocha": "10.0.10",
-    "@types/node": "22.13.14",
-    "@types/react": "19.0.12",
-    "@types/react-dom": "19.0.4",
+    "@types/node": "22.14.0",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.1",
     "@types/react-redux": "7.1.34",
-    "@typescript-eslint/eslint-plugin": "8.28.0",
-    "@typescript-eslint/parser": "8.28.0",
+    "@typescript-eslint/eslint-plugin": "8.29.0",
+    "@typescript-eslint/parser": "8.29.0",
     "@vitejs/plugin-react-swc": "3.8.1",
     "archiver": "7.0.1",
     "chai": "4.5.0",
-    "eslint": "9.23.0",
+    "eslint": "9.24.0",
     "eslint-config-prettier": "10.1.1",
-    "eslint-plugin-prettier": "5.2.5",
-    "eslint-plugin-react": "7.37.4",
+    "eslint-plugin-prettier": "5.2.6",
+    "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.19",
     "globals": "15.14.0",
@@ -97,11 +97,11 @@
     "ts-mocha": "10.0.0",
     "tsconfig-paths": "4.2.0",
     "tsx": "4.19.3",
-    "typescript": "5.8.2",
-    "typescript-eslint": "8.28.0",
-    "vite": "6.2.2"
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.29.0",
+    "vite": "6.2.5"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }
