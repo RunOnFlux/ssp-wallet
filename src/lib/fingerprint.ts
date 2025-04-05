@@ -15,8 +15,12 @@ export function getFingerprint(extraText = ''): string {
   const touchSupport = 'ontouchstart' in window;
 
   function getCanvasPrint() {
+    const id = crypto
+      .createHash('sha256')
+      .update(`canvas-${extraText}`)
+      .digest('hex');
     // make it persistent for convenience as of system updates
-    const storedCanvasPrint = secureLocalStorage.getItem(`canvas-${extraText}`);
+    const storedCanvasPrint = secureLocalStorage.getItem(`c-${id}`);
     if (storedCanvasPrint) {
       return storedCanvasPrint;
     }
@@ -53,7 +57,7 @@ export function getFingerprint(extraText = ''): string {
       ctx.fillText(txt, 4, 17);
     }
     const canvasPrint = canvas.toDataURL();
-    secureLocalStorage.setItem(`canvas-${extraText}`, canvasPrint);
+    secureLocalStorage.setItem(`c-${id}`, canvasPrint);
     return canvasPrint;
   }
   const canvas = getCanvasPrint();
