@@ -199,7 +199,7 @@
     "sync_info_content": "SSP-lommeboken kan ikke brukes uten SSP-nøkkelen. Dette vil logge deg ut av SSP-lommeboken.",
     "dual_factor_key": "To-faktor SSP-nøkkel",
     "sync_info_1": "SSP-lommeboken er en tofaktor signaturlommebok. Du må laste ned SSP-nøkkelen på mobilenheten din for å få tilgang til lommeboken din.",
-    "sync_info_2": "Skann følgende QR-kode for å synkronisere SSP-lommeboken din med SSP-nøkkelen din.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Problemer med synkronisering? Manuell inndata",
     "dual_factor_key_chain": "To-faktor SSP-nøkkel for {{chain}}",
     "input_xpub": "Skriv inn SSP-nøkkel {{chain}} utvidet offentlig nøkkel {{path}} her",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Vennligst skriv inn SSP-nøkkel XPUB for {{chain}}-kjeden. SSP-nøkkel XPUB er forskjellig fra SSP-lommebok XPUB.",
     "cancel_sync_q_chain": "Avbryt SSP-nøkkel-synkronisering for {{chain}}?",
     "sync_info_content_chain": "SSP-lommeboken for kjeden {{chain}} kan ikke brukes uten SSP-nøkkelen. Dette vil bytte tilbake til Bitcoin-kjeden",
-    "sync_info_2_chain": "Skann følgende QR-kode for å synkronisere SSP-lommeboken din for kjeden {{chain}} med SSP-nøkkelen din."
+    "sync_info_2_chain": "Skann følgende QR-kode for å synkronisere SSP-lommeboken din for kjeden {{chain}} med SSP-nøkkelen din.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Velg kjede",
