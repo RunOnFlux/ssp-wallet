@@ -199,7 +199,7 @@
     "sync_info_content": "SSPキーなしではSSPウォレットは使用できません。これによりSSPウォレットからログアウトします.",
     "dual_factor_key": "二要素認証SSPキー",
     "sync_info_1": "SSPウォレットは二重署名ウォレットです。ウォレットにアクセスするには、モバイル端末にSSPキーをダウンロードする必要があります.",
-    "sync_info_2": "以下のQRコードをスキャンして、SSPウォレットをSSPキーと同期してください.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "同期に問題がありますか? 手動入力",
     "dual_factor_key_chain": "{{chain}}用二要素認証SSPキー",
     "input_xpub": "ここにSSPキー{{chain}}拡張公開鍵{{path}}を入力してください",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "{{chain}}チェーンのSSPキーXPUBを入力してください。SSPキーXPUBはSSPウォレットXPUBとは異なります.",
     "cancel_sync_q_chain": "{{chain}}のSSPキー同期をキャンセルしますか?",
     "sync_info_content_chain": "{{chain}}チェーンのSSPウォレットはSSPキーなしでは使用できません。これによりビットコインチェーンに戻ります.",
-    "sync_info_2_chain": "以下のQRコードをスキャンして、{{chain}}チェーン用のSSPウォレットをSSPキーと同期してください."
+    "sync_info_2_chain": "以下のQRコードをスキャンして、{{chain}}チェーン用のSSPウォレットをSSPキーと同期してください.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "チェーンを選択",
