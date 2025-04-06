@@ -199,7 +199,7 @@
     "sync_info_content": "SSP Wallet, SSP Key ছাড়া ব্যবহার করা যাবে না. এটি আপনাকে SSP Wallet থেকে লগ আউট করবে.",
     "dual_factor_key": "ডুয়াল ফ্যাক্টর SSP Key",
     "sync_info_1": "SSP Wallet একটি ডুয়াল সিগনেচার ওয়ালেট। আপনার ওয়ালেট অ্যাক্সেস করতে আপনাকে আপনার মোবাইল ডিভাইসে SSP Key ডাউনলোড করতে হবে.",
-    "sync_info_2": "আপনার SSP Wallet কে SSP Key এর সাথে সিঙ্ক করতে নিম্নলিখিত QR কোডটি স্ক্যান করুন.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "সিঙ্ক করার সময় সমস্যা? ম্যানুয়াল ইনপুট",
     "dual_factor_key_chain": "{{chain}} এর জন্য ডুয়াল ফ্যাক্টর SSP Key",
     "input_xpub": "এখানে SSP Key {{chain}} Extended Public Key {{path}} ইনপুট করুন",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "দয়া করে {{chain}} চেইনের SSP Key XPUB ইনপুট করুন. SSP Key XPUB, SSP Wallet XPUB থেকে ভিন্ন.",
     "cancel_sync_q_chain": "{{chain}} এর জন্য SSP Key সিঙ্ক্রোনাইজেশন বাতিল করবেন?",
     "sync_info_content_chain": "{{chain}} চেইনের জন্য SSP Wallet, SSP Key ছাড়া ব্যবহার করা যাবে না. এটি আবার Bitcoin চেইনে ফিরে যাবে",
-    "sync_info_2_chain": "নিম্নলিখিত QR কোডটি স্ক্যান করুন আপনার {{chain}} চেইনের SSP Wallet কে আপনার SSP Key এর সাথে সিঙ্ক করতে."
+    "sync_info_2_chain": "নিম্নলিখিত QR কোডটি স্ক্যান করুন আপনার {{chain}} চেইনের SSP Wallet কে আপনার SSP Key এর সাথে সিঙ্ক করতে.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "চেইন নির্বাচন করুন",
