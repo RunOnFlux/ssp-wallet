@@ -199,7 +199,7 @@
     "sync_info_content": "ไม่สามารถใช้ SSP Wallet โดยไม่ใช้ SSP Key ได้ ระบบจะทำการออกจาก SSP Wallet ของคุณ",
     "dual_factor_key": "SSP Key แบบสองขั้นตอน",
     "sync_info_1": "SSP Wallet เป็นกระเป๋าที่มีลายเซ็นสองขั้นตอน คุณจะต้องดาวน์โหลด SSP Key บนอุปกรณ์มือถือของคุณเพื่อเข้าถึงกระเป๋าเงินของคุณ",
-    "sync_info_2": "สแกน QR โค้ดต่อไปนี้เพื่อซิงค์ SSP Wallet ของคุณกับ SSP Key",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "มีปัญหาการซิงค์หรือไม่? ป้อนข้อมูลด้วยตนเอง",
     "dual_factor_key_chain": "SSP Key แบบสองขั้นตอนสำหรับ {{chain}}",
     "input_xpub": "ป้อน SSP Key {{chain}} Extended Public Key {{path}} ที่นี่",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "กรุณาป้อน SSP Key XPUB ของ {{chain}} chain SSP Key XPUB จะแตกต่างจาก SSP Wallet XPUB",
     "cancel_sync_q_chain": "ยกเลิกการซิงค์ SSP Key สำหรับ {{chain}} หรือไม่?",
     "sync_info_content_chain": "ไม่สามารถใช้ SSP Wallet สำหรับ {{chain}} โดยไม่มี SSP Key ได้ ระบบจะเปลี่ยนกลับไปยัง Bitcoin Chain",
-    "sync_info_2_chain": "สแกน QR โค้ดต่อไปนี้เพื่อซิงค์ SSP Wallet ของคุณสำหรับ {{chain}} กับ SSP Key"
+    "sync_info_2_chain": "สแกน QR โค้ดต่อไปนี้เพื่อซิงค์ SSP Wallet ของคุณสำหรับ {{chain}} กับ SSP Key",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "เลือก Chain",
