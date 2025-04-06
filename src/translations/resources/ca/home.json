@@ -199,7 +199,7 @@
     "sync_info_content": "La cartera SSP no es pot utilitzar sense la clau SSP. Això t'accedirà fora de la cartera SSP.",
     "dual_factor_key": "Clau SSP de doble factor",
     "sync_info_1": "La cartera SSP és una cartera de doble signatura. Necessitaràs descarregar la clau SSP al teu dispositiu mòbil per accedir a la teva cartera.",
-    "sync_info_2": "Escaneja el següent codi QR per sincronitzar la teva cartera SSP amb la teva clau SSP.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Problemes de sincronització? Entrada manual",
     "dual_factor_key_chain": "Clau SSP de doble factor per {{chain}}",
     "input_xpub": "Ntrodueix la clau pública estesa de la clau SSP {{chain}} {{path}} aquí",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Si us plau, introdueix el SSP Key XPUB de la cadena {{chain}}. El SSP Key XPUB és diferent de l'SSP Wallet XPUB.",
     "cancel_sync_q_chain": "Cancel·lar la sincronització de la clau SSP per {{chain}}?",
     "sync_info_content_chain": "La cartera SSP per a la cadena {{chain}} no es pot utilitzar sense la clau SSP. Això tornarà a la cadena Bitcoin",
-    "sync_info_2_chain": "Escaneja el següent codi QR per sincronitzar la teva cartera SSP per a la cadena {{chain}} amb la teva clau SSP."
+    "sync_info_2_chain": "Escaneja el següent codi QR per sincronitzar la teva cartera SSP per a la cadena {{chain}} amb la teva clau SSP.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Seleccionar cadena",
