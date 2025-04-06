@@ -199,7 +199,7 @@
     "sync_info_content": "SSP гаманець не можна використовувати без SSP-ключа. Це призведе до виходу з SSP гаманця.",
     "dual_factor_key": "Подвійний факторний ключ SSP",
     "sync_info_1": "SSP Wallet є подвійним гаманцем Wallet. Вам потрібно буде завантажити SSP ключ на вашому мобільному пристрої для доступу до вашого гаманця.",
-    "sync_info_2": "Відскануйте наступний QR-код, щоб синхронізувати ваш SSP гаманець з вашим SSP ключем.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Виникли проблеми з синхронізацією? Введення вручну",
     "dual_factor_key_chain": "Подвійний фактор SSP ключа для {{chain}}",
     "input_xpub": "Введіть SSP ключ {{chain}} розширений публічний ключ {{path}} тут",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Будь ласка, введіть ключ SSP XPUB ланцюжку {{chain}}. SSP ключ XPUB відрізняється від SSP Wallet XPUB.",
     "cancel_sync_q_chain": "Скасувати синхронізацію SSP ключів для {{chain}}?",
     "sync_info_content_chain": "SSP гаманець для ланцюжку {{chain}} не можна використовувати без SSP ключа. Це перемкнеться на Bitcoin Chain",
-    "sync_info_2_chain": "Відскануйте наступний QR-код, щоб синхронізувати SSP гаманець для ланцюжку {{chain}} з вашим SSP-ключем."
+    "sync_info_2_chain": "Відскануйте наступний QR-код, щоб синхронізувати SSP гаманець для ланцюжку {{chain}} з вашим SSP-ключем.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Оберіть мережу",
