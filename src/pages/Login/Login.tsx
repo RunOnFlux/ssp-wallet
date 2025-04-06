@@ -76,7 +76,7 @@ type lastActivity = Record<string, number>;
 const tenMins = 10 * 60 * 1000;
 
 function Login() {
-  const { t, i18n } = useTranslation(['login']);
+  const { t, i18n } = useTranslation(['login', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -456,7 +456,7 @@ function Login() {
             style={{ paddingTop: 70 }}
           />
           <h2>{t('login:welcome_back')}</h2>
-          <h3>{t('login:to_dec_cloud')}</h3>
+          <h3>{t('login:to_secure_wallet')}</h3>
           <br />
           <br />
           <Form
