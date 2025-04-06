@@ -199,7 +199,7 @@
     "sync_info_content": "Dompet SSP tidak dapat digunakan tanpa Kunci SSP.",
     "dual_factor_key": "Kunci SSP Faktor Ganda",
     "sync_info_1": "Dompet SSP adalah Dompet Tanda Tangan Ganda.",
-    "sync_info_2": "Pindai kode QR berikut untuk menyinkronkan Dompet SSP Anda dengan Kunci SSP Anda.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Masalah sinkronisasi?",
     "dual_factor_key_chain": "Kunci SSP Faktor Ganda untuk {{chain}}",
     "input_xpub": "Masukkan Kunci SSP {{chain}} Kunci Publik yang Diperluas {{path}} Di Sini",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Silakan masukan SSP Key XPUB {{chain}} rantai.",
     "cancel_sync_q_chain": "Batalkan Sinkronisasi Kunci SSP untuk {{chain}}?",
     "sync_info_content_chain": "Dompet SSP untuk rantai {{chain}} tidak dapat digunakan tanpa Kunci SSP.",
-    "sync_info_2_chain": "Pindai kode QR berikut untuk menyinkronkan Dompet SSP Anda untuk rantai {{chain}} dengan Kunci SSP Anda."
+    "sync_info_2_chain": "Pindai kode QR berikut untuk menyinkronkan Dompet SSP Anda untuk rantai {{chain}} dengan Kunci SSP Anda.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Pilih Rantai",
