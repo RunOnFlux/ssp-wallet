@@ -199,7 +199,7 @@
     "sync_info_content": "SSP Wallet nemožno používať bez SSP Key. Toto vás odhlási z SSP Wallet.",
     "dual_factor_key": "Dual Factor SSP Key",
     "sync_info_1": "SSP Wallet je peňaženka s dvojitým podpisom. Na prístup do peňaženky si budete musieť stiahnuť SSP Key do svojho mobilného zariadenia.",
-    "sync_info_2": "Naskenujte nasledujúci QR kód na synchronizáciu vášho SSP Wallet so SSP Key.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Problémy so synchronizáciou? Manuálne zadanie",
     "dual_factor_key_chain": "Dual Factor SSP Key pre {{chain}}",
     "input_xpub": "Zadajte SSP Key {{chain}} Extended Public Key {{path}} sem",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Zadajte SSP Key XPUB pre reťazec {{chain}}. SSP Key XPUB je odlišný od SSP Wallet XPUB.",
     "cancel_sync_q_chain": "Zrušiť synchronizáciu SSP Key pre {{chain}}?",
     "sync_info_content_chain": "SSP Wallet pre reťazec {{chain}} nemožno používať bez SSP Key. Toto sa vráti na reťazec Bitcoin",
-    "sync_info_2_chain": "Naskenujte nasledujúci QR kód na synchronizáciu vášho SSP Wallet pre reťazec {{chain}} so SSP Key."
+    "sync_info_2_chain": "Naskenujte nasledujúci QR kód na synchronizáciu vášho SSP Wallet pre reťazec {{chain}} so SSP Key.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Vyberte reťazec",
