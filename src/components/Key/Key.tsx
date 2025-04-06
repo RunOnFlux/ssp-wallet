@@ -43,6 +43,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
     useAppSelector((state) => state.sspState);
   const dispatch = useAppDispatch();
   const { xpubKey, xpubWallet } = useAppSelector((state) => state[activeChain]);
+  const [isSSPKeyDownloadOpen, setIsSSPKeyDownloadOpen] = useState(false);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[activeChain];
@@ -356,8 +357,59 @@ function Key(props: { synchronised: (status: boolean) => void }) {
             />
           </>
         )}
+        {isIdentityChain && (
+          <>
+            <br />
+            <br />
+            <Button
+              type="link"
+              block
+              size="large"
+              onClick={() => setIsSSPKeyDownloadOpen(true)}
+            >
+              {t('home:key.ssp_key_download_here')}
+            </Button>
+          </>
+        )}
         <br />
         <br />
+      </Modal>
+      <Modal
+        title={t('home:key.setup_ssp_key')}
+        open={isSSPKeyDownloadOpen}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={() => setIsSSPKeyDownloadOpen(false)}
+        footer={
+          <Button type="primary" onClick={() => setIsSSPKeyDownloadOpen(false)}>
+            {t('home:key.ssp_key_ready')}
+          </Button>
+        }
+      >
+        <p>
+          <b>{t('home:key.ssp_key_2fa')}</b>
+        </p>
+        <p>{t('home:key.ssp_key_download')}</p>
+        <Space direction="vertical" size="small">
+          <QRCode
+            errorLevel="H"
+            value="https://sspwallet.io/download/ssp-key"
+            icon="/ssp-logo-black.svg"
+            size={256}
+            style={{ margin: '0 auto' }}
+          />
+          <Paragraph
+            copyable={{
+              text: 'https://sspwallet.io/download/ssp-key',
+            }}
+            className="copyableAddress"
+          >
+            <Text>https://sspwallet.io/download/ssp-key</Text>
+          </Paragraph>
+        </Space>
+        <p>{t('home:key.ssp_key_download_2')}</p>
+        <p>
+          <b>{t('home:key.ssp_key_download_3')}</b>
+        </p>
       </Modal>
     </>
   );
