@@ -199,7 +199,7 @@
     "sync_info_content": "Ví SSP không thể được sử dụng mà không có Khóa SSP. Điều này sẽ đăng xuất bạn ra khỏi Ví SSP.",
     "dual_factor_key": "Khóa SSP xác thực hai yếu tố",
     "sync_info_1": "Ví SSP là một ví đặc trưng đôi. Bạn sẽ cần tải về Khóa SSP trên thiết bị di động để truy cập được vào ví của bạn.",
-    "sync_info_2": "Quét mã QR sau đây để đồng bộ Ví SSP của bạn với Khóa SSP của bạn.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Gặp vấn đề với việc đồng bộ? Hãy nhập thủ công",
     "dual_factor_key_chain": "Khóa SSP xác thực hai yếu tố cho {{chain}}",
     "input_xpub": "Hãy nhập Khóa SSP {{chain}} Khóa công cộng mở rộng {{path}} ở đây",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Hãy vui lòng nhập Khóa XPUB SSP của chuỗi khối {{chain}}. Khóa XPUB SSP thì khác biệt so với Ví XPUB SSP.",
     "cancel_sync_q_chain": "Hủy bỏ đồng bộ Khóa SSP cho {{chain}}?",
     "sync_info_content_chain": "Ví SSP cho chuỗi khối {{chain}} không thể được sử dụng nếu không có Khóa SSP. Điều này sẽ chuyển lại về chuỗi khối Bitcoin",
-    "sync_info_2_chain": "Quét mã QR sau đây để đồng bộ Ví SSP của bạn cho chuỗi khối {{chain}} với Khóa SSP của bạn."
+    "sync_info_2_chain": "Quét mã QR sau đây để đồng bộ Ví SSP của bạn cho chuỗi khối {{chain}} với Khóa SSP của bạn.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Lựa chọn chuỗi khối",
