@@ -199,7 +199,7 @@
     "sync_info_content": "SSP-lompakkoa ei voi käyttää ilman SSP-avainta. Tämä kirjaa sinut ulos SSP-lompakosta.",
     "dual_factor_key": "Kaksoisvarmistus SSP-avain",
     "sync_info_1": "SSP-lompakko on kaksinkertaisen allekirjoituksen lompakko. Sinun täytyy ladata SSP-avain mobiililaitteeseesi päästäksesi lompakkoosi.",
-    "sync_info_2": "Skannaa seuraava QR-koodi synkronoidaksesi SSP-lompakkosi SSP-avaimesi kanssa.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Ongelmia synkronoinnissa? Manuaalinen syöttö",
     "dual_factor_key_chain": "Kaksoisvarmistus SSP-avain {{chain}}:lle",
     "input_xpub": "Syötä SSP-avain {{chain}} Laajennettu julkinen avain {{path}} tänne",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Syötä SSP-avaimen XPUB {{chain}} lohkoketjulle. SSP-avaimen XPUB on eri kuin SSP-lompakon XPUB.",
     "cancel_sync_q_chain": "Peruutetaanko SSP-avaimen synkronointi {{chain}}:lle?",
     "sync_info_content_chain": "SSP-lompakkoa {{chain}} lohkoketjulle ei voida käyttää ilman SSP-avainta. Tämä vaihtaa takaisin Bitcoin-lohkoketjuun",
-    "sync_info_2_chain": "Skannaa seuraava QR-koodi synkronoidaksesi SSP-lompakkosi {{chain}} lohkoketjulle SSP-avaimesi kanssa."
+    "sync_info_2_chain": "Skannaa seuraava QR-koodi synkronoidaksesi SSP-lompakkosi {{chain}} lohkoketjulle SSP-avaimesi kanssa.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Valitse lohkoketju",
