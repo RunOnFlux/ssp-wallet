@@ -4,6 +4,7 @@
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "¡Bienvenido de nuevo!",
   "to_dec_cloud": "A su nube descentralizada",
+  "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "Desbloquear con Contraseña",
   "enter_pw": "Introducir Contraseña",
   "unlock_wallet": "Desbloquear Cartera",
