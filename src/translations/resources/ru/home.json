@@ -199,7 +199,7 @@
     "sync_info_content": "SSP Кошелек не может быть использован без SSP Ключа. Это выведет вас из SSP Кошелька.",
     "dual_factor_key": "Двухфакторный SSP Ключ",
     "sync_info_1": "SSP Кошелек — это кошелек с двойной подписью. Вам нужно загрузить SSP Ключ на ваше мобильное устройство, чтобы получить доступ к кошельку.",
-    "sync_info_2": "Отсканируйте следующий QR-код для синхронизации вашего SSP Кошелька с SSP Ключом.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Проблемы с синхронизацией? Введите данные вручную.",
     "dual_factor_key_chain": "Двухфакторный SSP Ключ для {{chain}}",
     "input_xpub": "Введите SSP Ключ {{chain}} Расширенный Публичный Ключ {{path}} здесь",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Пожалуйста, введите SSP Ключ XPUB для цепочки {{chain}}. SSP Ключ XPUB отличается от SSP Кошелька XPUB.",
     "cancel_sync_q_chain": "Отменить синхронизацию SSP Ключа для {{chain}}?",
     "sync_info_content_chain": "SSP Кошелек для цепочки {{chain}} не может быть использован без SSP Ключа. Это переключит вас обратно на цепочку Bitcoin.",
-    "sync_info_2_chain": "Отсканируйте следующий QR-код для синхронизации вашего SSP Кошелька для цепочки {{chain}} с SSP Ключом."
+    "sync_info_2_chain": "Отсканируйте следующий QR-код для синхронизации вашего SSP Кошелька для цепочки {{chain}} с SSP Ключом.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Выбрать Цепочку",
