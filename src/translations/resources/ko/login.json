@@ -4,6 +4,7 @@
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "다시 오신 것을 환영합니다!",
   "to_dec_cloud": "탈중앙화 클라우드로",
+  "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "비밀번호로 잠금 해제",
   "enter_pw": "비밀번호 입력",
   "unlock_wallet": "지갑 잠금 해제",
