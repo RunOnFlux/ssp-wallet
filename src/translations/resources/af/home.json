@@ -199,7 +199,7 @@
     "sync_info_content": "SSP Beursie kan nie gebruik word sonder SSP Sleutel nie. Dit sal jou uitlog uit SSP Beursie.",
     "dual_factor_key": "Dubbele Faktor SSP Sleutel",
     "sync_info_1": "SSP Beursie is 'n Dubbele Handtekening Beursie. Jy sal SSP Sleutel op jou mobiele toestel moet aflaai om toegang tot jou beursie te kry.",
-    "sync_info_2": "Skandeer die volgende QR kode om jou SSP Beursie met jou SSP Sleutel te sinkroniseer.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Probleme met sinkroniseer? Handmatige Invoer",
     "dual_factor_key_chain": "Dubbele Faktor SSP Sleutel vir {{chain}}",
     "input_xpub": "Voer SSP Sleutel {{chain}} Uitgebreide Publieke Sleutel {{path}} hier in",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Voer asseblief SSP Sleutel XPUB van {{chain}} ketting in. SSP Sleutel XPUB is anders as SSP Beursie XPUB.",
     "cancel_sync_q_chain": "Kanselleer SSP Sleutel Sinkronisasie vir {{chain}}?",
     "sync_info_content_chain": "SSP Beursie vir ketting {{chain}} kan nie gebruik word sonder SSP Sleutel nie. Dit sal terugskakel na Bitcoin Ketting",
-    "sync_info_2_chain": "Skandeer die volgende QR kode om jou SSP Beursie vir ketting {{chain}} met jou SSP Sleutel te sinkroniseer."
+    "sync_info_2_chain": "Skandeer die volgende QR kode om jou SSP Beursie vir ketting {{chain}} met jou SSP Sleutel te sinkroniseer.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Kies Ketting",
