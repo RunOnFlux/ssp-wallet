@@ -199,7 +199,7 @@
     "sync_info_content": "沒有 SSP 密鑰，SSP 錢包無法使用.這將使您登出 SSP 錢包.",
     "dual_factor_key": "雙因子 SSP 密鑰",
     "sync_info_1": "SSP 錢包是一個雙簽名錢包.您需要在行動設備上下載 SSP 密鑰以訪問您的錢包.",
-    "sync_info_2": "掃描以下 QR 碼以將您的 SSP 錢包與 SSP 密鑰同步.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "同步有問題？手動輸入",
     "dual_factor_key_chain": "適用於 {{chain}} 的雙因子 SSP 密鑰",
     "input_xpub": "在此輸入 SSP 密鑰 {{chain}} 擴展公鑰 {{path}}",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "請輸入 {{chain}} 鏈的 SSP 密鑰 XPUB。SSP 密鑰 XPUB 與 SSP 錢包 XPUB 不同.",
     "cancel_sync_q_chain": "取消 {{chain}} 的 SSP 密鑰同步？",
     "sync_info_content_chain": "{{chain}} 鏈的 SSP 錢包無法在沒有 SSP 密鑰的情況下使用.這將切換回比特幣鏈.",
-    "sync_info_2_chain": "掃描以下 QR 碼以將您的 SSP 錢包與 {{chain}} 鏈的 SSP 密鑰同步."
+    "sync_info_2_chain": "掃描以下 QR 碼以將您的 SSP 錢包與 {{chain}} 鏈的 SSP 密鑰同步.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "選擇鏈",
