@@ -4,6 +4,7 @@
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "歡迎回來！",
   "to_dec_cloud": "進入您的去中心化雲端",
+  "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "使用密碼解鎖",
   "enter_pw": "輸入密碼",
   "unlock_wallet": "解鎖錢包",
