@@ -6174,10 +6174,10 @@ varuint-bitcoin@^1.0.1, varuint-bitcoin@^1.0.4:
   dependencies:
     safe-buffer "^5.1.1"
 
-viem@2.24.2, viem@2.8.6:
-  version "2.24.2"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.24.2.tgz#68aac43c35e8d73587bbdab2c547579dd60ebb80"
-  integrity sha512-lUGoTHhMYlR4ktQiOrbTPmYvrMn3jKUdn2PSmB9QLICxnsQJxMkSCeGRoJFq7hi7K6PCMQgAyLMR/9J1key5cg==
+viem@2.26.0, viem@2.8.6:
+  version "2.26.0"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.26.0.tgz#e46aa05212875d4f306449b3bd594e97303abdde"
+  integrity sha512-Osht20EySRAcfMhCGAJaWuaREXM7y9vDloLvUTXuAfFq7JNGM5+o1wsE4LXw1KpRBrBliIAJjM+c2wMtMEvlCQ==
   dependencies:
     "@noble/curves" "1.8.1"
     "@noble/hashes" "1.7.1"
