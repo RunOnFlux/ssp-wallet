@@ -199,7 +199,7 @@
     "sync_info_content": "Carteira SSP não pode ser usada sem chave SSP. Vai sair da carteira SSP.",
     "dual_factor_key": "Chave SSP dois fatores",
     "sync_info_1": "A carteira SSP tem dupla assinatura. Tem de baixar a chave SSP no seu aparelho para aceder à carteira.",
-    "sync_info_2": "Faça scan do QR code seguinte para sincronizar a sua carteira SSP com a chave SSP.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Problemas a sincronizar? Introdução manual",
     "dual_factor_key_chain": "Chave SSP dois fatores para {{chain}}",
     "input_xpub": "Introduzir chave SSP {{chain}} chave pública estendida {{path}} aqui",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Insira a chave SSP XPUB da cadeia {{chain}}. A chave SSP XPUB é diferente da carteira SSP XPUB.",
     "cancel_sync_q_chain": "Cancelar sincronização da chave SSP para {{chain}}?",
     "sync_info_content_chain": "Chave da carteira para chain {{chain}} não pode ser usada sem a chave SSP. Vai mudar novamente para Bitcoin Chain",
-    "sync_info_2_chain": "Faça scan do QR code seguinte para sincronizar a sua carteira SSP para a chain {{chain}} com a sua chave SSP."
+    "sync_info_2_chain": "Faça scan do QR code seguinte para sincronizar a sua carteira SSP para a chain {{chain}} com a sua chave SSP.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Escolher chain",

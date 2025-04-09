@@ -199,7 +199,7 @@
     "sync_info_content": "SSP கீ இல்லாமல் SSP வாலட்டை பயன்படுத்த முடியாது. இது SSP வாலட்டில் உங்களை லாக் அவுட் செய்யும்.",
     "dual_factor_key": "இரட்டை காரிய SSP கீ",
     "sync_info_1": "\"SSP வாலட் என்பது இரட்டை கையொப்ப வாலட் ஆகும். உங்கள் வாலட்டிற்கு அணுகும்பதற்காக SSP கீயை உங்கள் மொபைல் சாதனத்தில் பதிவிறக்க வேண்டும்.",
-    "sync_info_2": "உங்கள் SSP வாலட்டை உங்கள் SSP கீயுடன் ஒத்திசைக்க கீழே உள்ள QR குறியீட்டை ஸ்கேன் செய்யவும்.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "ஒத்திசைவு செய்யச் சிக்கல்கள்? கைமுறை உள்ளீடு",
     "dual_factor_key_chain": "{{chain}} க்கான இரட்டை காரிய SSP கீ",
     "input_xpub": "இங்கே SSP கீ {{chain}} விரிவான பொது விசை {{path}} உள்ளிடவும்",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "தயவுசெய்து {{chain}} செயினின் SSP கீ XPUB ஐ உள்ளிடவும். SSP கீ XPUB என்பது SSP வாலட் XPUB க்கு வேறுபட்டது.",
     "cancel_sync_q_chain": "{{chain}} க்கான SSP கீ ஒத்திசைவை ரத்து செய்யவா?",
     "sync_info_content_chain": "{{chain}} செயினுக்கான SSP வாலட்டை SSP கீ இல்லாமல் பயன்படுத்த முடியாது. இது Bitcoin செயினுக்கு திரும்ப மாற்றப்படும்",
-    "sync_info_2_chain": "{{chain}} செயினுக்கான SSP வாலட்டை உங்கள் SSP கீயுடன் ஒத்திசைக்க கீழே உள்ள QR குறியீட்டை ஸ்கேன் செய்யவும்."
+    "sync_info_2_chain": "{{chain}} செயினுக்கான SSP வாலட்டை உங்கள் SSP கீயுடன் ஒத்திசைக்க கீழே உள்ள QR குறியீட்டை ஸ்கேன் செய்யவும்.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "செயினை தேர்வு செய்யவும்",

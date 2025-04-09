@@ -4,6 +4,7 @@
   "err_lx": "কোড {{code}}: ওয়ালেট ডেটা অনুপস্থিত. দয়া করে আপনার ওয়ালেট পুনরুদ্ধার করুন.",
   "welcome_back": "স্বাগতম ফিরে!",
   "to_dec_cloud": "আপনার বিকেন্দ্রীকৃত ক্লাউডে",
+  "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "পাসওয়ার্ড দিয়ে আনলক করুন",
   "enter_pw": "পাসওয়ার্ড প্রবেশ করুন",
   "unlock_wallet": "ওয়ালেট আনলক করুন",

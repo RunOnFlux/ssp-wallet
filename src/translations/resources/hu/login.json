@@ -4,6 +4,7 @@
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Üdv újra itt!",
   "to_dec_cloud": "A decentralizált felhőhöz",
+  "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "Feloldás jelszóval",
   "enter_pw": "Jelszó megadása",
   "unlock_wallet": "Tárca feloldása",

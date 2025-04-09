@@ -199,7 +199,7 @@
     "sync_info_content": "Az SSP pénztárca nem használható SSP kulcs nélkül. Ez kijelentkezteti Önt az SSP pénztárcából.",
     "dual_factor_key": "Kétfaktoros SSP kulcs",
     "sync_info_1": "Az SSP pénztárca két aláírásos pénztárca. A pénztárca eléréséhez le kell töltenie az SSP kulcsot a mobil eszközére.",
-    "sync_info_2": "Szkennelje be az alábbi QR kódot, az SSP pénztárca szinkronizálásához SSP kulccsal.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Probléma a szinkronizálással? Manuális bevitel",
     "dual_factor_key_chain": "Kétfaktoros SSP kulcs a {{chain}} számára",
     "input_xpub": "Itt adja meg az SSP kulcsot {{chain}} és az Extended Public Key {{path}}-t",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Kérjük, adja meg az SSP kulcs XPUB-ját a {{chain}} lánchoz. Az SSP kulcs XPUB különbözik az SSP pénztárca XPUB-jától.",
     "cancel_sync_q_chain": "Megszakítja az SSP kulcs szinkronizálását a {{chain}} számára?",
     "sync_info_content_chain": "Az SSP pénztárca a {{chain}} lánchoz nem használható SSP kulcs nélkül. Ez a művelet a Bitcoin láncra való visszaváltást eredményezi",
-    "sync_info_2_chain": "Szkennelje be az alábbi QR kódot, hogy szinkronizálja az SSP pénztárcáját a {{chain}} lánchoz az SSP kulcsával."
+    "sync_info_2_chain": "Szkennelje be az alábbi QR kódot, hogy szinkronizálja az SSP pénztárcáját a {{chain}} lánchoz az SSP kulcsával.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Lánc kiválasztása",

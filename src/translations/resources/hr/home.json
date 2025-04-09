@@ -199,7 +199,7 @@
     "sync_info_content": "SSP Novčanik se ne može koristiti bez SSP Key. Ovo će vas izlogovati iz SSP Wallet.",
     "dual_factor_key": "Dual Factor SSP Key",
     "sync_info_1": "SSP Wallet je novčanik s dualnim potpisom. Trebat ćete preuzeti SSP Key na svoj mobilni uređaj kako biste pristupili svom novčaniku.",
-    "sync_info_2": "Scanirajte sljedeći QR kod kako biste sinkronizirali svoj SSP Novčanik s vašim SSP Key.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Problemi s sinkronizacijom? Ručni unos",
     "dual_factor_key_chain": "Dual Factor SSP Key za {{chain}}",
     "input_xpub": "Unesite SSP Key {{chain}} Prošireni javni ključ {{path}} ovdje",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Molimo unesite SSP Key XPUB za {{chain}} lanac. SSP Key XPUB je različit od SSP Novčanik XPUB.",
     "cancel_sync_q_chain": "Želite li otkazati SSP Key Sinkronizaciju za {{chain}}?",
     "sync_info_content_chain": "SSP Wallet za chain {{chain}} ne može se koristiti bez SSP Key. Ovo će vas prebaciti natrag na Bitcoin Chain",
-    "sync_info_2_chain": "Skenirajte sljedeći QR kod kako biste sinkronizirali svoj SSP Novčanik za Chain {{chain}} s vašim SSP Key."
+    "sync_info_2_chain": "Skenirajte sljedeći QR kod kako biste sinkronizirali svoj SSP Novčanik za Chain {{chain}} s vašim SSP Key.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Odaberite Chain",

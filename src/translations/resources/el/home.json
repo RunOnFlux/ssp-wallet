@@ -199,7 +199,7 @@
     "sync_info_content": "Το πορτοφόλι SSP δεν μπορεί να χρησιμοποιηθεί χωρίς SSP κλειδί. Αυτό θα σας αποσυνδέσει από το πορτοφόλι SSP.",
     "dual_factor_key": "Διπλός Παράγοντας κλειδιού SSP",
     "sync_info_1": "Το πορτοφόλι SSP είναι ένα πορτοφόλι διπλής υπογραφής. Θα χρειαστεί να κατεβάσετε το κλειδί SSP στην κινητή συσκευή σας για να αποκτήσετε πρόσβαση στο πορτοφόλι σας.",
-    "sync_info_2": "Σαρώστε τον ακόλουθο κωδικό QR για να συγχρονίσετε το πορτοφόλι σας SSP με το κλειδί SSP.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Προβλήματα συγχρονισμού; Χειροκίνητη Εισαγωγή.",
     "dual_factor_key_chain": "Διπλός Παράγοντας κλειδιού SSP για το {{chain}}",
     "input_xpub": "Εισάγετε το κλειδί SSP {{chain}} και το Εκτεταμένο Δημόσιο Κλειδί {{path}} εδώ.",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Παρακαλώ εισάγετε SSP κλειδί XPUB της {{chain}} αλυσίδας. Το κλειδί SSP XPUB είναι διαφορετικό από το πορτοφόλι SSP XPUB.",
     "cancel_sync_q_chain": "Ακύρωση συγχρονισμού SSP Key για το {{chain}};",
     "sync_info_content_chain": "Το πορτοφόλι SSP για την αλυσίδα {{chain}} δεν μπορεί να χρησιμοποιηθεί χωρίς κλειδί SSP. Αυτό θα επιστρέψει στην αλυσίδα Bitcoin",
-    "sync_info_2_chain": "Σαρώστε τον ακόλουθο κωδικό QR για να συγχρονίσετε το πορτοφόλι SSP σας για την αλυσίδα {{chain}} με το κλειδί SSP."
+    "sync_info_2_chain": "Σαρώστε τον ακόλουθο κωδικό QR για να συγχρονίσετε το πορτοφόλι SSP σας για την αλυσίδα {{chain}} με το κλειδί SSP.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Επιλογή Αλυσίδας",

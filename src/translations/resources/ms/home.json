@@ -199,7 +199,7 @@
     "sync_info_content": "SSP Wallet tidak boleh digunakan tanpa SSP Key. Ini akan log keluar anda dari SSP Wallet.",
     "dual_factor_key": "SSP Key Faktor Dwi",
     "sync_info_1": "SSP Wallet adalah Dompet Tandatangan Dwi. Anda perlu memuat turun SSP Key pada peranti mudah alih anda untuk mengakses dompet anda.",
-    "sync_info_2": "Imbas kod QR berikut untuk menyegerakkan SSP Wallet anda dengan SSP Key anda.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Masalah penyegerakan? Input Manual",
     "dual_factor_key_chain": "SSP Key Faktor Dwi untuk {{chain}}",
     "input_xpub": "Masukkan SSP Key {{chain}} Kunci Awam Diperluas {{path}} di sini",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Sila masukkan SSP Key XPUB bagi rantai {{chain}}. SSP Key XPUB berbeza dengan SSP Wallet XPUB.",
     "cancel_sync_q_chain": "Batalkan Penyegerakan SSP Key untuk {{chain}}?",
     "sync_info_content_chain": "SSP Wallet untuk rantai {{chain}} tidak boleh digunakan tanpa SSP Key. Ini akan beralih kembali ke Bitcoin Chain",
-    "sync_info_2_chain": "Imbas kod QR berikut untuk menyegerakkan SSP Wallet anda untuk rantai {{chain}} dengan SSP Key anda."
+    "sync_info_2_chain": "Imbas kod QR berikut untuk menyegerakkan SSP Wallet anda untuk rantai {{chain}} dengan SSP Key anda.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Pilih Rantai",

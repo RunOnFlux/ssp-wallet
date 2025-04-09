@@ -199,7 +199,7 @@
     "sync_info_content": "एस. एस. पी. वॉलेट का उपयोग एस. एस. पी. कुंजी के बिना नहीं किया जा सकता। यह आपको एस. एस. पी. वॉलेट से लॉग आउट कर देगा।",
     "dual_factor_key": "ड्यूल फैक्टर एस. एस. पी. कुंजी",
     "sync_info_1": "एस. एस. पी. वॉलेट एक डुअल सिग्नेचर वॉलेट है। अपने वॉलेट तक पहुंचने के लिए आपको अपने मोबाइल डिवाइस पर एस. एस. पी. कुंजी डाउनलोड करनी होगी।",
-    "sync_info_2": "अपने एस. एस. पी. वॉलेट को अपने SSP कुंजी के साथ सिंक करने के लिए निम्नलिखित क्यूआर कोड को स्कैन करें।",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "सिंक करने में समस्याएँ? मैन्युअल इनपुट करें",
     "dual_factor_key_chain": "{{चेन}} के लिए ड्यूल फैक्टर एस. एस. पी. कुंजी",
     "input_xpub": "यहां एस. एस. पी. कुंजी {{chain}} विस्तारित पब्लिक कुंजी {{path}} दर्ज करें",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "कृपया {{chain}} चेन की एस. एस. पी. कुंजी एक्सपब दर्ज करें। एस. एस. पी. कुंजी एक्सपब, एस. एस. पी. वॉलेट एक्सपब से अलग है।",
     "cancel_sync_q_chain": "{{chain}} के लिए एस. एस. पी. कुंजी सिंक रद्द करें?",
     "sync_info_content_chain": "चेन {{chain}} के लिए एस. एस. पी. वॉलेट का इस्तेमाल एस. एस. पी. कुंजी के बिना नहीं किया जा सकता। यह बिटकॉइन चेन पर वापस स्विच हो जाएगा।",
-    "sync_info_2_chain": "अपने एस. एस. पी. वॉलेट को चेन {{chain}} के लिए एस. एस. पी. कुंजी से सिंक करने के लिए निम्नलिखित क्यूआर कोड को स्कैन करें।"
+    "sync_info_2_chain": "अपने एस. एस. पी. वॉलेट को चेन {{chain}} के लिए एस. एस. पी. कुंजी से सिंक करने के लिए निम्नलिखित क्यूआर कोड को स्कैन करें।",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "चेन चुनें",

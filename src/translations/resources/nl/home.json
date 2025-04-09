@@ -199,7 +199,7 @@
     "sync_info_content": "SSP Wallet kan niet worden gebruikt zonder SSP Key. Dit zal je uitloggen uit SSP Wallet.",
     "dual_factor_key": "Dubbele factor SSP Key",
     "sync_info_1": "SSP Wallet is een portemonnee met dubbele handtekening. Je moet SSP Key op je mobiele apparaat downloaden om toegang te krijgen tot je wallet.",
-    "sync_info_2": "Scan de volgende QR-code om je SSP Wallet met je SSP Key te synchroniseren.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Problemen met synchroniseren? Handmatige invoer",
     "dual_factor_key_chain": "Dubbele factor SSP Key voor {{chain}}",
     "input_xpub": "Voer hier SSP Key {{chain}} Extended Public Key {{path}} in",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Voer SSP Key XPUB van de {{chain}}-keten in. SSP Key XPUB is anders dan SSP Wallet XPUB.",
     "cancel_sync_q_chain": "SSP Key-synchronisatie voor {{chain}} annuleren?",
     "sync_info_content_chain": "SSP Wallet voor de {{chain}}-keten kan niet worden gebruikt zonder SSP Key. Dit zal terugschakelen naar de Bitcoin-keten",
-    "sync_info_2_chain": "Scan de volgende QR-code om je SSP Wallet voor de {{chain}}-keten met je SSP Key te synchroniseren."
+    "sync_info_2_chain": "Scan de volgende QR-code om je SSP Wallet voor de {{chain}}-keten met je SSP Key te synchroniseren.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Selecteer keten",

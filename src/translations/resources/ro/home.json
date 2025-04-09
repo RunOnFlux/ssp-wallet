@@ -199,7 +199,7 @@
     "sync_info_content": "SSP Wallet nu poate fi utilizat fără SSP Key. Aceasta va duce la deconectarea din SSP Wallet.",
     "dual_factor_key": "SSP Key cu autentificare duală",
     "sync_info_1": "SSP Wallet este un portofel cu semnătură duală. Va trebui să descarci SSP Key pe dispozitivul tău mobil pentru a accesa portofelul.",
-    "sync_info_2": "Scanează codul QR de mai jos pentru a sincroniza SSP Wallet cu SSP Key.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Probleme la sincronizare? Introducere manuală",
     "dual_factor_key_chain": "SSP Key cu autentificare duală pentru {{chain}}",
     "input_xpub": "Introdu aici SSP Key {{chain}} Extended Public Key {{path}}",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Te rugăm să introduci XPUB-ul SSP Key al lanțului {{chain}}. XPUB-ul SSP Key este diferit de XPUB-ul SSP Wallet.",
     "cancel_sync_q_chain": "Anulezi sincronizarea SSP Key pentru {{chain}}?",
     "sync_info_content_chain": "SSP Wallet pentru lanțul {{chain}} nu poate fi utilizat fără SSP Key. Aceasta va reveni la lanțul Bitcoin",
-    "sync_info_2_chain": "Scanează codul QR de mai jos pentru a sincroniza SSP Wallet pentru lanțul {{chain}} cu SSP Key."
+    "sync_info_2_chain": "Scanează codul QR de mai jos pentru a sincroniza SSP Wallet pentru lanțul {{chain}} cu SSP Key.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Selectează lanțul",

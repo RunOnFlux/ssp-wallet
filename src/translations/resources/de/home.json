@@ -199,7 +199,7 @@
     "sync_info_content": "Die SSP Wallet kann ohne SSP Schlüssel nicht verwendet werden. Dadurch werden Sie in der SSP Wallet abgemeldet.",
     "dual_factor_key": "Zwei-Faktor SSP Schlüssel",
     "sync_info_1": "Die SSP Wallet ist eine Wallet mit Zwei-Faktor-Authentisierung. Sie müssen den SSP-Schlüssel auf Ihr mobiles Gerät herunterladen, um auf Ihre Wallet zugreifen zu können.",
-    "sync_info_2": "Scannen Sie den folgenden QR-Code, um Ihr SSP Wallet mit Ihrem SSP Schlüssel zu synchronisieren.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "Probleme bei der Synchronisierung? Manuelle Eingabe",
     "dual_factor_key_chain": "Zwei-Faktor SSP Schlüssel für {{chain}}",
     "input_xpub": "SSP Schlüssel {{chain}} erweiterten öffentlichen Schlüssel {{path}} hier eingeben",
@@ -208,7 +208,14 @@
     "err_sync_1_chain": "Bitte privaten Schlüssel für SSP Schlüssel der {{chain}} Blockchain eingeben. Der private Schlüssel für SSP Schlüssel ist unterschiedlich zum privaten Schlüssel für die SSP Wallet.",
     "cancel_sync_q_chain": "SSP Schlüssel Sync für {{chain}} abbrechen?",
     "sync_info_content_chain": "SSP Wallet für die {{chain}} Blockchain kann ohne den SSP Schlüssel nicht benutzt werden. Es wird zurück auf die Bitcoin Blockchain gewechselt",
-    "sync_info_2_chain": "Scannen Sie den folgenden QR-Code, um Ihre SSP Wallet für die {{chain}} Blockchain mit Ihrem SSP Schlüssel zu synchronisieren."
+    "sync_info_2_chain": "Scannen Sie den folgenden QR-Code, um Ihre SSP Wallet für die {{chain}} Blockchain mit Ihrem SSP Schlüssel zu synchronisieren.",
+    "setup_ssp_key": "Setup SSP Key",
+    "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
+    "ssp_key_ready": "My SSP Key is ready!",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Blockchain auswählen",
