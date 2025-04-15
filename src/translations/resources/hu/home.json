@@ -215,7 +215,7 @@
     "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
     "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
     "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
-    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronize Key\" to continue with the SSP Key setup."
+    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronise Key!\" to continue with the SSP Key setup."
   },
   "chainSelect": {
     "select_chain": "Lánc kiválasztása",
