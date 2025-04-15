@@ -215,7 +215,7 @@
     "ssp_key_2fa": "SSP Key adalah 2FA untuk Dompet SSP milik Anda",
     "ssp_key_download": "Unduh dan sinkronkan Kunci SSP milik Anda dengan Dompet SSP milik Anda dengan memindai kode QR di bawah ini menggunakan Kamera atau pembaca kode QR milik Anda.",
     "ssp_key_download_2": "Kunci SSP memiliki frasa awal pemulihan Kunci SSP tersendiri. Ini adalah frasa awal yang berbeda dari Dompet SSP milik Anda.",
-    "ssp_key_download_3": "Setelah Anda mengunduh Kunci SSP, klik \"Sinkronkan Kunci\" untuk melanjutkan pengaturan Kunci SSP."
+    "ssp_key_download_3": "Setelah Anda mengunduh Kunci SSP, klik \"Sinkronkan Kunci!\" untuk melanjutkan pengaturan Kunci SSP."
   },
   "chainSelect": {
     "select_chain": "Pilih Rantai",
