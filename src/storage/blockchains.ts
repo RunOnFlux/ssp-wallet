@@ -47,6 +47,7 @@ const flux = {
   maxTxSize: 1800000, // 1,800,000 vbytes
   rbf: false,
   txExpiryHeight: 30, // 30 blocks, 1 hour
+  onramperNetwork: 'flux',
 };
 
 const fluxTestnet = {
