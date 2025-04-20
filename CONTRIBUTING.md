@@ -52,6 +52,12 @@ Help us build new features, fix bugs, or improve existing code by submitting a p
    ```bash
    yarn dev
    ```
+5. Build for production:
+   ```bash
+   yarn build:all
+   ```
+  - dist-zip folder now contains a packed zip build for chrome and firefox
+  - dist folder is unpacked ready to be from chrome
 
 Refer to the [Documentation](https://docs.sspwallet.io/) for more details.
 

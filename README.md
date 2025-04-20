@@ -134,7 +134,11 @@ By using SSP Wallet, you agree to the terms outlined in the [SSP Disclaimer](htt
 
 - **Built With:** React 19, TypeScript, Vite
 - **Node Version:** 22+
+- **Install Dependencies:** `yarn`
 - **Run Development Mode:** `yarn dev`
+- **Build and Pack for production:** `yarn build:all`
+  - dist-zip folder now contains a packed zip build for chrome and firefox
+  - dist folder is unpacked ready to be from chrome
 
 ### Key Development Features:
 1. **Modular Codebase:**
