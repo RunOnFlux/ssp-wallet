@@ -1,0 +1,12 @@
+- SSP is fully security audited and open sourced at https://github.com/RunOnFlux/ssp-wallet
+- Full documentation is available: https://docs.sspwallet.io/
+- A written and video guide on how to setup SSP correctly is available on website: https://sspwallet.io/guide
+
+Developer Information
+- Built With: React 19, TypeScript, Vite
+- Node Version: 22+
+- Install Dependencies: yarn
+- Run Development Mode: yarn dev
+- Build and Pack for production: yarn build:all
+  > dist-zip folder now contains a packed zip build for chrome and firefox
+  > dist folder is unpacked ready to be from chrome
