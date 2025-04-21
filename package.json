@@ -30,7 +30,7 @@
     "@ant-design/v5-patch-for-react-19": "1.0.3",
     "@metamask/browser-passworder": "6.0.0",
     "@noble/hashes": "1.7.1",
-    "@reduxjs/toolkit": "2.6.1",
+    "@reduxjs/toolkit": "2.7.0",
     "@runonflux/aa-schnorr-multisig-sdk": "1.2.1",
     "@runonflux/flux-sdk": "1.0.3",
     "@runonflux/utxo-lib": "1.0.1",
