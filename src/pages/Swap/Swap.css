@@ -103,3 +103,14 @@
   font-size: 12px;
   margin-top: 4px;
 }
+
+.swap-switch-container {
+  position: absolute;
+  top: -2px;
+  right: 0px;
+}
+
+.swap-switch-button {
+  width: 25px;
+  height: 25px;
+}

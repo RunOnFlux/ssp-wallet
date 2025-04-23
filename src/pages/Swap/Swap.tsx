@@ -18,6 +18,7 @@ import {
   LoadingOutlined,
   PlusCircleOutlined,
   MinusCircleOutlined,
+  SwapOutlined,
 } from '@ant-design/icons';
 import Navbar from '../../components/Navbar/Navbar.tsx';
 import { useTranslation } from 'react-i18next';
@@ -110,6 +111,7 @@ function Swap() {
   const [buyAssetAddress, setBuyAssetAddress] = useState('0-0');
   const [loadingSwap, setLoadingSwap] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [triggerSwapDirection, setTriggerSwapDirection] = useState(false);
   const { abeMapping, sellAssets, buyAssets } = useAppSelector(
     (state) => state.abe,
   );
@@ -158,8 +160,10 @@ function Swap() {
   };
 
   useEffect(() => {
-    fetchPairDetails();
-  }, [amountSell, sellAsset, buyAsset]);
+    if (!triggerSwapDirection) {
+      fetchPairDetails();
+    }
+  }, [amountSell, sellAsset, buyAsset, triggerSwapDirection]);
 
   useEffect(() => {
     if (alreadyMounted.current) return;
@@ -691,6 +695,18 @@ function Swap() {
     return cr * fi;
   };
 
+  const changeDirection = () => {
+    setTriggerSwapDirection(true);
+    setTimeout(() => {
+      setAmountSell(amountBuy);
+      setSellAsset(buyAsset);
+      setBuyAsset(sellAsset);
+      setTimeout(() => {
+        setTriggerSwapDirection(false);
+      }, 10);
+    }, 10);
+  };
+
   return (
     <>
       {contextHolder}
@@ -834,6 +850,14 @@ function Swap() {
         <div className="swap-box margin-top-12">
           <Row gutter={[16, 16]} className="swap-box-row no-border-bottom">
             <Col span={24} className="swap-box-row-title">
+              <div className="swap-switch-container">
+                <Button
+                  className="swap-switch-button"
+                  onClick={() => changeDirection()}
+                >
+                  <SwapOutlined rotate={90} />
+                </Button>
+              </div>
               {selectedExchange.exchangeId?.slice(-3) !== 'fix' ? (
                 <Popover
                   content={t('home:swap.estimated_amount')}
