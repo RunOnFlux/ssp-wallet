@@ -71,9 +71,7 @@ function ABEController() {
       // this map shall be expanded if new chain is added to ssp
       const sspMapping: { [key: string]: string } = {};
       const abeToSspMapping: { [key: string]: string } = {};
-      let chainKeys = Object.keys(blockchains);
-      // remove flux as of provider bug
-      chainKeys = chainKeys.filter((chain) => chain !== 'flux');
+      const chainKeys = Object.keys(blockchains);
       chainKeys.forEach((chain) => {
         if (blockchains[chain].tokens) {
           blockchains[chain].tokens.forEach((token) => {
