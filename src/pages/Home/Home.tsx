@@ -93,7 +93,6 @@ function Home() {
             // clear localforage
             console.log('clearing localforage');
             await localForage.clear();
-            localStorage.clear();
           }
         }
         generatedWallets[walletInUse] = addrInfo.address;

@@ -210,9 +210,9 @@ function Create() {
     }
     passworderEncrypt(password, new TextDecoder().decode(mnemonicPhrase))
       .then(async (blob) => {
+        localStorage.clear();
         secureLocalStorage.clear();
         await localForage.clear();
-        localStorage.clear();
         if (browser?.storage?.session) {
           await browser.storage.session.clear();
         }
