@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirmez la transaction sur la clé SSP",
-    "info_1": "Pour confirmer la transaction sur votre clé SSP, ouvrez votre clé SSP sur votre téléphone portable et confirmez l'action. Vous pouvez appuyer pour actualiser ou scanner le code QR suivant.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Pour confirmer la transaction sur votre clé SSP, ouvrez votre clé SSP sur votre téléphone portable et confirmez l'action. Vous pouvez appuyer pour actualiser ou utiliser une entrée manuelle."
   },
   "confirmPublicNoncesKey": {
