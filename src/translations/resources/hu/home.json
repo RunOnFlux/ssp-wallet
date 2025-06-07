@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Fogadja el a tranzakciót az SSP kulcson",
-    "info_1": "Az SSP kulcsodon történő tranzakció megerősítéséhez nyisd meg az SSP kulcsot a mobiltelefonodon, és erősítsd meg a műveletet. Érintsd meg a frissítés gombot, vagy olvasd be a következő QR-kódot.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Az SSP kulcsodon történő tranzakció megerősítéséhez nyisd meg az SSP kulcsot a mobiltelefonodon, és erősítsd meg a műveletet. Érintsd meg a frissítés gombot, vagy használd a kézi bevitel lehetőségét."
   },
   "confirmPublicNoncesKey": {
