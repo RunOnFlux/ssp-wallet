@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "ยืนยันธุรกรรมบน SSP Key",
-    "info_1": "ในการยืนยันธุรกรรมบน SSP Key ของคุณ เปิด SSP Key บนโทรศัพท์มือถือของคุณแล้วยืนยันการกระทำ คุณสามารถแตะเพื่อรีเฟรชหรือสแกน QR โค้ดต่อไปนี้",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "ในการยืนยันธุรกรรมบน SSP Key ของคุณ เปิด SSP Key บนโทรศัพท์มือถือของคุณแล้วยืนยันการกระทำ คุณสามารถแตะเพื่อรีเฟรชหรือใช้การกรอกข้อมูลด้วยมือ"
   },
   "confirmPublicNoncesKey": {
