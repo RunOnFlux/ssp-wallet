@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Επιβεβαίωση συναλλαγής στο κλειδί SSP",
-    "info_1": "Για να επιβεβαιώσετε τη συναλλαγή στο κλειδί SSP σας, ανοίξτε το κλειδί SSP στο κινητό μας τηλέφωνο και επιβεβαιώστε την ενέργεια. Μπορείτε να πατήσετε για να ανανεώσετε ή να σαρώσετε τον ακόλουθο κωδικό QR.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Για να επιβεβαιώσετε τη συναλλαγή στο κλειδί SSP σας, ανοίξτε το κλειδί SSP στο κινητό σας τηλέφωνο και επιβεβαιώστε την ενέργεια. Μπορείτε να πατήσετε για ανανέωση ή χρήση χειροκίνητης εισαγωγής."
   },
   "confirmPublicNoncesKey": {
