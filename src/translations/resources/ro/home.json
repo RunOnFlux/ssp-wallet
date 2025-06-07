@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirmă tranzacția pe Cheia SSP",
-    "info_1": "Pentru a confirma tranzacția pe Cheia SSP, deschide Cheia SSP pe telefonul mobil și confirmă acțiunea. Poți atinge pentru a reîmprospăta sau poți scana codul QR de mai jos.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Pentru a confirma tranzacția pe Cheia SSP, deschide Cheia SSP pe telefonul mobil și confirmă acțiunea. Poți atinge pentru a reîmprospăta sau poți introduce manual."
   },
   "confirmPublicNoncesKey": {
