@@ -275,7 +275,7 @@ function SwapBox(props: {
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
                       {t('home:swap.provider')}: {provider.name}{' '}
                       {provider.type.charAt(0).toUpperCase() +
-                        swap.exchangeId.slice(-5).slice(1)}
+                        provider.type.slice(1)}
                     </p>
                     <p style={{ margin: 0, wordBreak: 'break-all' }}>
                       {t('home:swap.sell_address')}:{' '}
