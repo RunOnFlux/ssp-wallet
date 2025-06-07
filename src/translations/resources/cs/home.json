@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Potvrďte Transakci na SSP Klíči",
-    "info_1": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo naskenovat následující QR Kód.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo použít ruční zadání."
   },
   "confirmPublicNoncesKey": {

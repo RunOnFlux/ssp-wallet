@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "SSP 키에서 트랜잭션 확인",
-    "info_1": "SSP 키에서 트랜잭션을 확인하려면 휴대폰에서 SSP 키를 열고 작업을 확인하세요. 새로 고침하거나 다음 QR 코드를 스캔할 수 있습니다.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "SSP 키에서 트랜잭션을 확인하려면 휴대폰에서 SSP 키를 열고 작업을 확인하세요. 새로 고침하거나 수동 입력을 사용할 수 있습니다."
   },
   "confirmPublicNoncesKey": {

@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Sahkan Transaksi pada SSP Key",
-    "info_1": "Untuk mengesahkan transaksi pada SSP Key anda, buka SSP Key anda pada telefon bimbit dan sahkan tindakan tersebut. Anda boleh ketik untuk menyegar semula atau imbas kod QR berikut.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Untuk mengesahkan transaksi pada SSP Key anda, buka SSP Key anda pada telefon bimbit dan sahkan tindakan tersebut. Anda boleh ketik untuk menyegar semula atau gunakan input manual."
   },
   "confirmPublicNoncesKey": {

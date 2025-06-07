@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "SSP কী-তে লেনদেন নিশ্চিত করুন",
-    "info_1": "আপনার SSP কী-তে লেনদেন নিশ্চিত করতে, আপনার SSP কী আমাদের মোবাইল ফোনে খুলুন এবং কার্যটি নিশ্চিত করুন. আপনি রিফ্রেশ করতে ট্যাপ করতে পারেন অথবা নিম্নলিখিত QR কোডটি স্ক্যান করতে পারেন.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "আপনার SSP কী-তে লেনদেন নিশ্চিত করতে, আপনার SSP কী আপনার মোবাইল ফোনে খুলুন এবং কার্যটি নিশ্চিত করুন. আপনি রিফ্রেশ করতে ট্যাপ করতে পারেন অথবা ম্যানুয়াল ইনপুট ব্যবহার করতে পারেন."
   },
   "confirmPublicNoncesKey": {

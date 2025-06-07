@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Kumpirmahin ang Transaksyon sa SSP Key",
-    "info_1": "Upang kumpirmahin ang transaksyon sa iyong SSP Key, buksan ang iyong SSP Key sa aming mobile phone at kumpirmahin ang aksyon. Maaari mong i-tap para i-refresh o i-scan ang sumusunod na QR code.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Upang kumpirmahin ang transaksyon sa iyong SSP Key, buksan ang iyong SSP Key sa iyong mobile phone at kumpirmahin ang pagkilos. Maaari kang mag-tap para i-refresh o gumamit ng manu-manong input."
   },
   "confirmPublicNoncesKey": {

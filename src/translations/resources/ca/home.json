@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Confirma la transacció a la clau SSP",
-    "info_1": "Per confirmar la transacció a la teva clau SSP, obre la teva clau SSP al teu telèfon mòbil i confirma l'acció. Pots tocar per actualitzar o escanejar el següent codi QR.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Per confirmar la transacció a la teva clau SSP, obre la teva clau SSP al teu telèfon mòbil i confirma l'acció. Pots tocar per actualitzar o utilitzar una entrada manual."
   },
   "confirmPublicNoncesKey": {

@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "在SSP密钥上确认交易",
-    "info_1": "要在您的SSP密钥上确认交易，请在手机上打开SSP密钥并确认操作.您可以点击刷新或扫描以下二维码.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "要在您的SSP密钥上确认交易，请在手机上打开SSP密钥并确认操作.您可以点击刷新或手动输入."
   },
   "confirmPublicNoncesKey": {

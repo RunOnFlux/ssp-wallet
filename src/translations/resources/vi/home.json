@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Xác nhận giao dịch trên Khóa SSP",
-    "info_1": "Để xác nhận giao dịch trên Khóa SSP của bạn, hãy mở Khóa SSP trên điện thoại và xác nhận hành động này. Bạn có thể nhấn để làm mới lại hoặc quét mã QR sau đây.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Để xác nhận giao dịch trên Khóa SSP của bạn, hãy mở Khóa SSP trên điện thoại và xác nhận hành động này. Bạn có thể nhấn để làm mới lại hoặc nhập vào thủ công."
   },
   "confirmPublicNoncesKey": {

@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "SSP முக்கியத்தில் பரிவர்த்தனை உறுதிப்படுத்தவும்",
-    "info_1": "உங்கள் SSP முக்கியத்தில் பரிவர்த்தனையை உறுதிப்படுத்த, உங்கள் SSP முக்கியத்தை மொபைல் போனில் திறந்து, செயல்திறன் உறுதிப்படுத்தவும். கீழே உள்ள QR குறியீட்டை ஸ்கேன் செய்யலாம் அல்லது புதுப்பிக்கக் கிளிக் செய்யலாம்.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "உங்கள் SSP முக்கியத்தில் பரிவர்த்தனையை உறுதிப்படுத்த, உங்கள் SSP முக்கியத்தை மொபைல் போனில் திறந்து, செயல்திறன் உறுதிப்படுத்தவும். புதுப்பிக்கக் கிளிக் செய்யலாம் அல்லது கைமுறை உள்ளீட்டைப் பயன்படுத்தலாம்."
   },
   "confirmPublicNoncesKey": {
