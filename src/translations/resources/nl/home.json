@@ -152,7 +152,7 @@
   },
   "confirmTxKey": {
     "confirm_tx_key": "Bevestig transactie op SSP-sleutel",
-    "info_1": "Om de transactie op je SSP-sleutel te bevestigen, open je SSP-sleutel op je mobiele telefoon en bevestig je de actie. Je kunt tikken om te vernieuwen of de volgende QR-code scannen.",
+    "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "Om de transactie op je SSP-sleutel te bevestigen, open je SSP-sleutel op je mobiele telefoon en bevestig je de actie. Je kunt tikken om te vernieuwen of handmatig invoeren."
   },
   "confirmPublicNoncesKey": {
