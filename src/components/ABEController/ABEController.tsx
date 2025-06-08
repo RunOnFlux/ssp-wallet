@@ -134,7 +134,8 @@ function ABEController() {
           asset.idchangellyfloatlimit === null ||
           asset.idsimpleswapfixlimit === null ||
           asset.idsimpleswapfloatlimit === null ||
-          asset.idxoswapfloatlimit === null
+          asset.idxoswapfloatlimit === null ||
+          asset.idfusionfixlimit === null
         ) {
           assetsPossibleToBeBought = allBuyAssets;
         } else {
@@ -165,6 +166,9 @@ function ABEController() {
           if (asset.idxoswapfloatlimit) {
             assetsPossibleToBeBought.push(...asset.idxoswapfloatlimit);
           }
+          if (asset.idfusionfixlimit) {
+            assetsPossibleToBeBought.push(...asset.idfusionfixlimit);
+          }
         }
         assetsPossibleToBeBought = [...new Set(assetsPossibleToBeBought)];
         const convertedAssetsPossibleToBeBought = assetsPossibleToBeBought.map(
@@ -190,7 +194,8 @@ function ABEController() {
           asset.idchangellyfloatlimit === null ||
           asset.idsimpleswapfixlimit === null ||
           asset.idsimpleswapfloatlimit === null ||
-          asset.idxoswapfloatlimit === null
+          asset.idxoswapfloatlimit === null ||
+          asset.idfusionfixlimit === null
         ) {
           assetsPossibleToBeSold = allSellAssets;
         } else {
@@ -220,6 +225,9 @@ function ABEController() {
           }
           if (asset.idxoswapfloatlimit) {
             assetsPossibleToBeSold.push(...asset.idxoswapfloatlimit);
+          }
+          if (asset.idfusionfixlimit) {
+            assetsPossibleToBeSold.push(...asset.idfusionfixlimit);
           }
         }
         assetsPossibleToBeSold = [...new Set(assetsPossibleToBeSold)];

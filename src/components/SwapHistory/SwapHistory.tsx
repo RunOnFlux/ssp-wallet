@@ -46,7 +46,7 @@ function SwapHistory(props: {
       // we should also fetch provider details
       // console.log(swapHistory);
       console.log(sspwid);
-      setSwapHistory(obtainedSwapHistory);
+      setSwapHistory(obtainedSwapHistory.reverse());
       console.log(swapHistory);
     } catch (error) {
       console.log(error);

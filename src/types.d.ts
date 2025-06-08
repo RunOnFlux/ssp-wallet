@@ -636,6 +636,8 @@ export interface abeAsset {
   idchangeherofixlimit?: string[] | null;
   idxoswapfloat?: string;
   idxoswapfloatlimit?: string[] | null;
+  idfusionfix?: string;
+  idfusionfixlimit?: string[] | null;
 }
 
 export interface abeAssetResponse {
