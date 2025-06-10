@@ -807,192 +807,68 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
 
   // SSP WALLET SPECIFIC IMPLEMENTATIONS
 
-  // Personal sign with callback for UI
-  const handlePersonalSign = async (
-    params: [string, string],
-  ): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      // Fallback implementation
-      handlePersonalSignInternal(params, resolve, reject);
-    });
-  };
-
-  const handlePersonalSignInternal = async (
-    params: [string, string],
+  // Unified signing function for both personal_sign and eth_sign
+  const handleUnifiedSigning = async (
+    message: string,
+    address: string,
     resolve: (signature: string) => void,
     reject: (error: Error) => void,
   ): Promise<void> => {
     try {
-      const [message, signerAddress] = params;
-
       // Use the correct extended private keys provided by the user
-      const SSP_WALLET_XPRIV = 'xprvREDACTED';
-      const SSP_KEY_XPRIV = 'xprvREDACTED';
+      const SSP_WALLET_XPRIV = 'xprivREDACTED';
+      const SSP_KEY_XPRIV = 'xprivREDACTED';
 
-      // CRITICAL: Decode hex-encoded messages from WalletConnect
-      let decodedMessage: string;
-      let isHexEncoded = false;
-
-      if (message.startsWith('0x')) {
-        try {
-          // Convert hex to UTF-8 string
-          decodedMessage = ethers.toUtf8String(message);
-          isHexEncoded = true;
-          console.log('🔍 Hex-encoded message detected and decoded:', {
-            original: message,
-            decoded: decodedMessage,
-            hexLength: message.length,
-            textLength: decodedMessage.length,
-          });
-        } catch (decodeError) {
-          // If hex decoding fails, treat as plain text
-          console.log(
-            '⚠️ Failed to decode hex message, treating as plain text:',
-            decodeError,
-          );
-          decodedMessage = message;
-          isHexEncoded = false;
-        }
-      } else {
-        // Plain text message
-        decodedMessage = message;
-        isHexEncoded = false;
-      }
-
-      console.log('🔐 SSP Personal Sign Request (Etherscan Compatible):', {
-        originalMessage: message,
-        decodedMessage: decodedMessage,
-        isHexEncoded: isHexEncoded,
-        signer: signerAddress,
-        messageLength: decodedMessage.length,
+      console.log('🔐 SSP Signing Request:', {
+        message: message,
+        signer: address,
+        messageLength: message.length,
         chain: activeChain,
       });
 
-      // Generate the Schnorr MultiSig address for current chain using SSP wallet methods
-      try {
-        const schnorrResult = generateSchnorrMultisigAddressFromXpriv(
-          SSP_WALLET_XPRIV,
-          SSP_KEY_XPRIV,
-          activeChain,
-          0,
-          0,
-        );
+      // Generate the Schnorr MultiSig address for current chain
+      const schnorrResult = generateSchnorrMultisigAddressFromXpriv(
+        SSP_WALLET_XPRIV,
+        SSP_KEY_XPRIV,
+        activeChain,
+        0,
+        0,
+      );
 
-        console.log('🔐 Schnorr MultiSig Address Generated:', {
-          address: schnorrResult.address,
-          expectedAddress: '0x9b171134A9386149Ed030F499d5e318272eB9589',
-          matches:
-            schnorrResult.address.toLowerCase() ===
-            '0x9b171134A9386149Ed030F499d5e318272eB9589'.toLowerCase(),
-        });
+      console.log('🔐 Schnorr MultiSig Address Generated:', {
+        address: schnorrResult.address,
+        expectedAddress: '0x9b171134A9386149Ed030F499d5e318272eB9589',
+        matches:
+          schnorrResult.address.toLowerCase() ===
+          '0x9b171134A9386149Ed030F499d5e318272eB9589'.toLowerCase(),
+      });
 
-        // Show signing in progress to user
-        displayMessage(
-          'loading',
-          'Creating Etherscan-compatible signature...',
-          3000,
-        );
+      // Show signing in progress to user
+      displayMessage('loading', 'Creating signature...', 3000);
 
-        // EXACT SOLUTION FROM WORKING TEST: Create EIP-191 compatible signature
-        // BUT use the DECODED message for proper length calculation
-        console.log(
-          '🎯 Creating EIP-191 compatible signature (exact test solution)...',
-        );
+      // Create the signature using the provided message
+      const signature = await signMessageWithSchnorrMultisig(
+        message,
+        schnorrResult.walletKeypair,
+        schnorrResult.keyKeypair,
+        activeChain,
+        schnorrResult.address,
+      );
 
-        const prefix = '\x19Ethereum Signed Message:\n';
-        const eip191Message =
-          prefix + decodedMessage.length.toString() + decodedMessage;
+      console.log('🔐 Signature created:', {
+        signature:
+          signature.substring(0, 40) +
+          '...' +
+          signature.substring(signature.length - 20),
+        length: signature.length,
+        multisigAddress: schnorrResult.address,
+      });
 
-        console.log('📋 EIP-191 formatted message:', {
-          originalWCMessage: message,
-          decodedMessage: decodedMessage,
-          eip191Formatted: JSON.stringify(eip191Message),
-          note: 'Using decoded message for proper EIP-191 format!',
-        });
-
-        // Create the signature using the exact method from the working test
-        const signature = await signMessageWithSchnorrMultisig(
-          eip191Message, // Sign the EIP-191 formatted message with DECODED text
-          schnorrResult.walletKeypair,
-          schnorrResult.keyKeypair,
-          activeChain,
-          schnorrResult.address,
-        );
-
-        console.log('🔐 Etherscan-compatible signature created:', {
-          signature:
-            signature.substring(0, 40) +
-            '...' +
-            signature.substring(signature.length - 20),
-          length: signature.length,
-          multisigAddress: schnorrResult.address,
-          note: 'This signature works with both contract and Etherscan!',
-        });
-
-        // Verify the signature works (same as test)
-        try {
-          const contractHash = ethers.solidityPackedKeccak256(
-            ['string'],
-            [eip191Message],
-          );
-          const etherscanHash = ethers.hashMessage(decodedMessage); // Use decoded message for Etherscan hash
-
-          console.log('🔍 Hash verification:', {
-            ourHash: contractHash,
-            etherscanHash: etherscanHash,
-            matches: contractHash === etherscanHash,
-            note: 'Hash compatibility confirmed with decoded message!',
-          });
-
-          // Test with contract to ensure it works
-          const isValid = await verifySignatureOnChain(
-            eip191Message,
-            signature,
-            schnorrResult.address,
-            activeChain,
-          );
-
-          console.log(
-            `🧪 Contract verification: ${isValid ? '✅ VALID' : '❌ INVALID'}`,
-          );
-
-          if (isValid) {
-            displayMessage(
-              'success',
-              'Signature created and verified! Works with both contract and Etherscan.',
-            );
-          } else {
-            displayMessage(
-              'warning',
-              'Signature created but contract verification failed.',
-            );
-          }
-        } catch (verificationError) {
-          console.warn(
-            '⚠️ Verification failed, but signature should still work:',
-            verificationError,
-          );
-          displayMessage(
-            'success',
-            'Signature created! (Verification skipped due to network issues)',
-          );
-        }
-
-        // Return the signature immediately (exactly like the working test)
-        console.log(
-          '✅ SSP Etherscan-compatible signature completed successfully',
-        );
-        resolve(signature);
-      } catch (addressError) {
-        console.error('🔐 Error generating Schnorr address:', addressError);
-        reject(
-          addressError instanceof Error
-            ? addressError
-            : new Error('Address generation failed'),
-        );
-      }
+      // Return the signature
+      console.log('✅ SSP signing completed successfully');
+      resolve(signature);
     } catch (error) {
-      console.error('🔐 Personal sign error:', error);
+      console.error('🔐 Signing error:', error);
       displayMessage('error', 'Failed to sign message');
       reject(
         error instanceof Error ? error : new Error('Unknown error occurred'),
@@ -1000,9 +876,57 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     }
   };
 
+  // Personal sign with EIP-191 prefix
+  const handlePersonalSign = async (
+    params: [string, string],
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const [message, address] = params;
+
+      // Decode hex-encoded messages for personal_sign
+      let decodedMessage: string;
+      if (message.startsWith('0x')) {
+        try {
+          decodedMessage = ethers.toUtf8String(message);
+          console.log('🔍 Hex-encoded message decoded:', {
+            original: message,
+            decoded: decodedMessage,
+          });
+        } catch {
+          console.log('⚠️ Failed to decode hex message, using as plain text');
+          decodedMessage = message;
+        }
+      } else {
+        decodedMessage = message;
+      }
+
+      // Add EIP-191 prefix for personal_sign
+      const prefix = '\x19Ethereum Signed Message:\n';
+      const eip191Message =
+        prefix + decodedMessage.length.toString() + decodedMessage;
+
+      console.log('📋 EIP-191 formatted message:', {
+        originalMessage: message,
+        decodedMessage: decodedMessage,
+        eip191Message: JSON.stringify(eip191Message),
+      });
+
+      handleUnifiedSigning(eip191Message, address, resolve, reject);
+    });
+  };
+
+  // Eth sign with raw message (no prefix)
   const handleEthSign = async (params: [string, string]): Promise<string> => {
-    // Similar to personal_sign but for eth_sign method
-    return handlePersonalSign([params[1], params[0]]);
+    return new Promise((resolve, reject) => {
+      const [address, message] = params; // Note: different parameter order
+
+      console.log('📋 Raw message signing (eth_sign):', {
+        message: message,
+        warning: 'NO EIP-191 prefix!',
+      });
+
+      handleUnifiedSigning(message, address, resolve, reject);
+    });
   };
 
   const handleSignTypedData = async (
