@@ -115,7 +115,8 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
 
       chainInfos.push({
         chainId,
-        chainName: sspChain?.name || `Chain ${chainId}`,
+        chainName:
+          sspChain?.name || t('home:walletconnect.unknown_chain', { chainId }),
         isSupported: !!sspChain,
         isRequired,
         isSynced,
@@ -271,6 +272,15 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
       <div style={{ marginBottom: 12 }}>
         <strong>{t('home:walletconnect.url')}:</strong> {proposer.metadata.url}
       </div>
+
+      {/* Important info about chain-specific addresses */}
+      <Alert
+        message={t('home:walletconnect.chain_unique_addresses')}
+        description={t('home:walletconnect.chain_unique_addresses_desc')}
+        type="info"
+        style={{ marginBottom: 16 }}
+        showIcon
+      />
 
       <Divider />
 
@@ -446,18 +456,13 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
         </div>
       )}
 
-      <div
-        style={{
-          backgroundColor: '#f6f8fa',
-          padding: '12px',
-          borderRadius: '4px',
-          marginTop: '16px',
-        }}
-      >
-        <div style={{ fontSize: '12px', color: '#666' }}>
-          {t('home:walletconnect.connection_warning')}
-        </div>
-      </div>
+      <Alert
+        message={t('home:walletconnect.security_warning')}
+        description={t('home:walletconnect.connection_warning')}
+        type="warning"
+        style={{ marginTop: 16 }}
+        showIcon
+      />
     </Modal>
   );
 };

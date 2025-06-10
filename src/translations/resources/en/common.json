@@ -59,18 +59,5 @@
   "swap": "Swap",
   "or": "or",
   "walletconnect": "WalletConnect",
-  "walletconnect_init_error": "Failed to initialize WalletConnect",
-  "walletconnect_session_disconnected": "WalletConnect session disconnected",
-  "walletconnect_session_extended": "WalletConnect session extended",
-  "walletconnect_pairing_successful": "WalletConnect pairing successful",
-  "walletconnect_pairing_error": "WalletConnect pairing failed",
-  "walletconnect_session_approved": "Session approved successfully",
-  "walletconnect_approval_error": "Failed to approve session",
-  "walletconnect_session_rejected": "Session rejected",
-  "walletconnect_rejection_error": "Failed to reject session",
-  "walletconnect_disconnect_error": "Failed to disconnect session",
-  "walletconnect_request_approved": "Request approved successfully",
-  "walletconnect_request_error": "Failed to process request",
-  "walletconnect_request_rejected": "Request rejected",
   "scanning": "Scanning"
 }
