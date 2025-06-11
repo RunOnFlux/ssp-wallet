@@ -21,13 +21,24 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { setActiveChain } from '../store';
 import { ethers } from 'ethers';
-import { HDKey } from '@scure/bip32';
 import {
-  generateMultisigAddressEVM,
-  generateAddressKeypairEVM,
+  deriveEVMPublicKey,
+  generateAddressKeypair,
+  getScriptType,
 } from '../lib/wallet';
-import { keyPair } from '../types';
-import * as aaSchnorrMultisig from '@runonflux/aa-schnorr-multisig-sdk';
+import { getFingerprint } from '../lib/fingerprint';
+import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
+import secureLocalStorage from 'react-secure-storage';
+import axios from 'axios';
+import { sspConfig } from '@storage/ssp';
+import { signMessageWithSchnorrMultisig } from '../lib/evmSigning';
+import { useSocket } from '../hooks/useSocket';
+import { NoticeType } from 'antd/es/message/interface';
+
+interface publicNonces {
+  kPublic: string;
+  kTwoPublic: string;
+}
 
 /**
  * ENHANCED SSP WALLET CONNECT CONTEXT
@@ -170,16 +181,41 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   children,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
-  const { t } = useTranslation(['common', 'home']);
+  const { t } = useTranslation(['common', 'home', 'send']);
   const dispatch = useAppDispatch();
   const { sspWalletKeyInternalIdentity, activeChain } = useAppSelector(
     (state) => ({
       ...state.sspState,
     }),
   );
+  const { xpubKey, wallets } = useAppSelector((state) => state[activeChain]);
+  const blockchainConfig = blockchains[activeChain];
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+
+  // Add socket hook for handling SSP relay responses
+  const {
+    publicNonces,
+    publicNoncesRejected,
+    clearPublicNonces,
+    clearPublicNoncesRejected,
+  } = useSocket();
+
+  // State for handling public nonces requests
+  const [pendingSigningRequests, setPendingSigningRequests] = useState<
+    Record<
+      string,
+      {
+        resolve: (signature: string) => void;
+        reject: (error: Error) => void;
+        message: string;
+        address: string;
+        hideLoading: () => void;
+      }
+    >
+  >({});
 
   const displayMessage = (
-    type: 'success' | 'error' | 'info' | 'warning' | 'loading',
+    type: NoticeType,
     content: string,
     duration?: number,
   ) => {
@@ -189,7 +225,6 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     void messageApi.open({
       type,
       content,
-      duration: duration || 3000, // Default 3 seconds if no duration specified
     });
   };
 
@@ -835,7 +870,152 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     }
   };
 
+  const postAction = (
+    action: string,
+    payload: string,
+    chain: string,
+    path: string,
+    wkIdentity: string,
+  ) => {
+    const data = {
+      action,
+      payload,
+      chain,
+      path,
+      wkIdentity,
+    };
+    axios
+      .post(`https://${sspConfig().relay}/v1/action`, data)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
   // SSP WALLET SPECIFIC IMPLEMENTATIONS
+
+  // Handle public nonces responses from SSP key
+  useEffect(() => {
+    if (publicNonces) {
+      console.log('🔗 WalletConnect: Received public nonces from SSP key');
+      // Save nonces to storage for future use
+      const sspKeyPublicNonces = JSON.parse(publicNonces) as publicNonces[];
+      void (async function () {
+        try {
+          await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
+          console.log('🔗 WalletConnect: Public nonces saved to storage');
+        } catch (error) {
+          console.error('Error saving public nonces:', error);
+        }
+      })();
+      clearPublicNonces?.();
+    }
+  }, [publicNonces, clearPublicNonces]);
+
+  useEffect(() => {
+    if (publicNoncesRejected) {
+      console.log('🔗 WalletConnect: Public nonces rejected by SSP key');
+      // Reject all pending signing requests
+      Object.values(pendingSigningRequests).forEach(
+        ({ reject, hideLoading }) => {
+          hideLoading();
+          reject(new Error(t('send:err_public_nonces')));
+        },
+      );
+      setPendingSigningRequests({});
+      clearPublicNoncesRejected?.();
+      displayMessage('error', t('send:err_public_nonces'));
+    }
+  }, [publicNoncesRejected, clearPublicNoncesRejected, pendingSigningRequests]);
+
+  // Add socket handling for signing responses from SSP relay
+  // This would require extending the SocketContext to handle 'signresponse' events
+  useEffect(() => {
+    // Note: This assumes the socket context would be extended to handle signing responses
+    // For now, we'll use the existing transaction handling pattern
+    // In a complete implementation, you would add 'signresponse' event handling to SocketContext
+    console.log(
+      '🔗 WalletConnect: Socket handlers ready for signing responses',
+    );
+  }, []);
+
+  // Helper function to request public nonces from SSP key (extracted from SendEVM)
+  const requestPublicNoncesFromSSP = async (): Promise<publicNonces> => {
+    return new Promise((resolve, reject) => {
+      void (async function () {
+        try {
+          // Check if we have stored nonces first
+          const sspKeyPublicNonces: publicNonces[] =
+            (await localForage.getItem('sspKeyPublicNonces')) ?? [];
+
+          if (sspKeyPublicNonces.length > 0) {
+            console.log('🔗 WalletConnect: Using stored public nonces');
+            // Choose random nonce
+            const pos = Math.floor(Math.random() * sspKeyPublicNonces.length);
+            const publicNoncesSSP = sspKeyPublicNonces[pos];
+            // Remove used nonce from storage
+            sspKeyPublicNonces.splice(pos, 1);
+            await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
+            resolve(publicNoncesSSP);
+            return;
+          }
+
+          console.log(
+            '🔗 WalletConnect: No stored nonces, requesting from SSP key',
+          );
+
+          // Request nonces from SSP relay
+          postAction(
+            'publicnoncesrequest',
+            '[]',
+            activeChain,
+            '',
+            sspWalletKeyInternalIdentity,
+          );
+
+          // Set up timeout
+          const timeout = setTimeout(() => {
+            reject(new Error(t('send:err_public_nonces')));
+          }, 30000); // 30 second timeout
+
+          // Wait for nonces via socket
+          const checkForNonces = () => {
+            void (async function () {
+              try {
+                const updatedNonces: publicNonces[] =
+                  (await localForage.getItem('sspKeyPublicNonces')) ?? [];
+
+                if (updatedNonces.length > 0) {
+                  clearTimeout(timeout);
+                  const pos = Math.floor(Math.random() * updatedNonces.length);
+                  const publicNoncesSSP = updatedNonces[pos];
+                  updatedNonces.splice(pos, 1);
+                  await localForage.setItem(
+                    'sspKeyPublicNonces',
+                    updatedNonces,
+                  );
+                  resolve(publicNoncesSSP);
+                } else {
+                  // Check again after 1 second
+                  setTimeout(checkForNonces, 1000);
+                }
+              } catch (error) {
+                clearTimeout(timeout);
+                reject(
+                  error instanceof Error ? error : new Error(String(error)),
+                );
+              }
+            })();
+          };
+
+          checkForNonces();
+        } catch (error) {
+          reject(error instanceof Error ? error : new Error(String(error)));
+        }
+      })();
+    });
+  };
 
   // Unified signing function for both personal_sign and eth_sign
   const handleUnifiedSigning = async (
@@ -844,74 +1024,192 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     resolve: (signature: string) => void,
     reject: (error: Error) => void,
   ): Promise<void> => {
+    const hideLoading = displayMessage(
+      'loading',
+      t('home:walletconnect.creating_signature'),
+      0,
+    );
+
     try {
-      // Use the correct extended private keys provided by the user
-      const SSP_WALLET_XPRIV = 'xprvREDACTED';
-      const SSP_KEY_XPRIV = 'xprvREDACTED';
+      // find which one of our wallets is matching address
+      const walletKeys = Object.keys(wallets);
+      const walletInUse = walletKeys.find(
+        (key) => wallets[key].address === address,
+      );
 
-      console.log('🔐 SSP Signing Request:', {
-        message: message,
-        signer: address,
-        messageLength: message.length,
-        chain: activeChain,
-      });
+      if (!walletInUse) {
+        throw new Error(
+          'Signing request received for different chain. Switch to the correct chain and try again',
+        );
+      }
 
-      // Generate the Schnorr MultiSig address for current chain
-      const schnorrResult = generateSchnorrMultisigAddressFromXpriv(
-        SSP_WALLET_XPRIV,
-        SSP_KEY_XPRIV,
+      // Get our password to decrypt xpriv from secure storage
+      const fingerprint: string = getFingerprint();
+      let password = await passworderDecrypt(fingerprint, passwordBlob);
+      if (typeof password !== 'string') {
+        throw new Error(t('send:err_pwd_not_valid'));
+      }
+
+      const xprivBlob = secureLocalStorage.getItem(
+        `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
+          blockchainConfig.scriptType,
+        )}-${blockchainConfig.id}`,
+      );
+      if (typeof xprivBlob !== 'string') {
+        throw new Error(t('send:err_invalid_xpriv'));
+      }
+
+      let xprivChain = await passworderDecrypt(password, xprivBlob);
+      // reassign password to null as it is no longer needed
+      password = null;
+      if (typeof xprivChain !== 'string') {
+        throw new Error(t('send:err_invalid_xpriv_decrypt'));
+      }
+
+      const wInUse = walletInUse;
+      const splittedDerPath = wInUse.split('-');
+      const typeIndex = Number(splittedDerPath[0]) as 0 | 1;
+      const addressIndex = Number(splittedDerPath[1]);
+      const keyPair = generateAddressKeypair(
+        xprivChain,
+        typeIndex,
+        addressIndex,
         activeChain,
-        0,
-        0,
       );
+      // reassign xprivChain to null as it is no longer needed
+      xprivChain = null;
 
-      console.log('🔐 Schnorr MultiSig Address Generated:', {
-        address: schnorrResult.address,
-        expectedAddress: '0x9b171134A9386149Ed030F499d5e318272eB9589',
-        matches:
-          schnorrResult.address.toLowerCase() ===
-          '0x9b171134A9386149Ed030F499d5e318272eB9589'.toLowerCase(),
-      });
+      const publicKey2HEX = deriveEVMPublicKey(
+        xpubKey,
+        typeIndex,
+        addressIndex,
+        activeChain,
+      ); // ssp key
 
-      // Show signing in progress to user with proper cleanup
-      const hideLoading = messageApi.loading(
-        t('home:walletconnect.creating_signature'),
-        0,
-      );
+      console.log('🔗 WalletConnect: Getting public nonces from SSP key');
 
       try {
-        // Create the signature using the provided message
-        const signature = await signMessageWithSchnorrMultisig(
-          message,
-          schnorrResult.walletKeypair,
-          schnorrResult.keyKeypair,
-          activeChain,
-          schnorrResult.address,
+        // Get public nonces from SSP key
+
+        const publicNoncesSSP = await requestPublicNoncesFromSSP();
+
+        console.log(
+          '🔗 WalletConnect: Received public nonces, creating signature',
         );
 
-        // Hide loading message
-        hideLoading();
+        // Create the local signature part using Schnorr multisig
+        const result = signMessageWithSchnorrMultisig(
+          message,
+          keyPair,
+          publicKey2HEX,
+          publicNoncesSSP,
+        );
 
-        console.log('🔐 Signature created:', {
-          signature:
-            signature.substring(0, 40) +
-            '...' +
-            signature.substring(signature.length - 20),
-          length: signature.length,
-          multisigAddress: schnorrResult.address,
+        console.log('🔗 WalletConnect: Local signature created:', {
+          hasSignature: !!result.sigOne,
+          hasChallenge: !!result.challenge,
+          pubNoncesOne: !!result.pubNoncesOne,
+          pubNoncesTwo: !!result.pubNoncesTwo,
         });
 
-        // Return the signature
-        console.log('✅ SSP signing completed successfully');
-        resolve(signature);
-      } catch (signingError) {
-        // Make sure to hide loading message on signing error
-        hideLoading();
-        throw signingError;
+        // Generate unique request ID
+        const requestId = `signing_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+
+        // Send the signature challenge to SSP relay for completion
+        const signingRequest = {
+          sigOne: result.sigOne,
+          challenge: result.challenge,
+          pubNoncesOne: result.pubNoncesOne, // this is wallet
+          pubNoncesTwo: result.pubNoncesTwo, // this is key
+          data: message,
+          chain: activeChain,
+          walletInUse: walletInUse,
+          requestId: requestId,
+        };
+
+        console.log('🔗 WalletConnect: Signing request:', signingRequest);
+
+        // Store the request for response handling
+        setPendingSigningRequests((prev) => ({
+          ...prev,
+          [requestId]: {
+            resolve,
+            reject,
+            message,
+            address,
+            hideLoading: () => {
+              if (hideLoading) {
+                hideLoading();
+              }
+            },
+          },
+        }));
+
+        console.log('🔗 WalletConnect: Sending signature request to SSP relay');
+
+        // Send the signing request to SSP relay
+        postAction(
+          'evmsigningrequest',
+          JSON.stringify(signingRequest),
+          activeChain,
+          wInUse,
+          sspWalletKeyInternalIdentity,
+        );
+
+        // Set up timeout for the request
+        setTimeout(() => {
+          if (pendingSigningRequests[requestId]) {
+            if (hideLoading) {
+              hideLoading();
+            }
+            reject(new Error(t('home:walletconnect.signing_failed')));
+            setPendingSigningRequests((prev) => {
+              const updated = { ...prev };
+              delete updated[requestId];
+              return updated;
+            });
+          }
+        }, 120000); // 2 minute timeout
+      } catch (noncesError) {
+        if (
+          noncesError instanceof Error &&
+          noncesError.message.includes('public_nonces')
+        ) {
+          // Special handling for public nonces errors
+          if (hideLoading) {
+            hideLoading();
+          }
+          displayMessage('info', t('send:err_public_nonces'));
+
+          // Store the signing request to retry after nonces are received
+          const requestId = `nonces_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+          setPendingSigningRequests((prev) => ({
+            ...prev,
+            [requestId]: {
+              resolve: (signature: string) => {
+                resolve(signature);
+              },
+              reject: (error: Error) => {
+                reject(error);
+              },
+              message,
+              address,
+              hideLoading: () => {}, // Already handled above
+            },
+          }));
+        } else {
+          throw noncesError;
+        }
       }
     } catch (error) {
-      console.error('🔐 Signing error:', error);
-      displayMessage('error', t('home:walletconnect.signing_failed'));
+      console.error('🔐 WalletConnect Signing error:', error);
+      if (hideLoading) {
+        hideLoading();
+      }
+      displayMessage(
+        'error',
+        (error as Error).message || t('home:walletconnect.signing_failed'),
+      );
       reject(
         error instanceof Error ? error : new Error('Unknown error occurred'),
       );
@@ -1547,352 +1845,4 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       {children}
     </WalletConnectContext.Provider>
   );
-};
-
-// ENHANCED SCHNORR MULTISIG: Generate Schnorr MultiSig Address using SSP wallet methods
-// This function creates a 2-of-2 multisig address from extended private keys
-// with proper key derivation and address generation
-const generateSchnorrMultisigAddressFromXpriv = (
-  xprivWallet: string,
-  xprivKey: string,
-  chain: keyof cryptos,
-  typeIndex: 0 | 1 = 0,
-  addressIndex = 0,
-): { address: string; walletKeypair: keyPair; keyKeypair: keyPair } => {
-  try {
-    console.log('🔐 Generating Enhanced Schnorr MultiSig Address:', {
-      chain,
-      typeIndex,
-      addressIndex,
-    });
-
-    // Convert xpriv to xpub using HDKey for secure key derivation
-    const walletHDKey = HDKey.fromExtendedKey(xprivWallet);
-    const keyHDKey = HDKey.fromExtendedKey(xprivKey);
-
-    const xpubWallet = walletHDKey.toJSON().xpub;
-    const xpubKey = keyHDKey.toJSON().xpub;
-
-    console.log('🔐 Derived xpub keys securely:', {
-      xpubWallet: xpubWallet.substring(0, 20) + '...',
-      xpubKey: xpubKey.substring(0, 20) + '...',
-    });
-
-    // Generate the multisig address using SSP wallet method
-    const multisigResult = generateMultisigAddressEVM(
-      xpubWallet,
-      xpubKey,
-      typeIndex,
-      addressIndex,
-      chain,
-    );
-
-    // Generate keypairs for signing operations
-    const walletKeypair = generateAddressKeypairEVM(
-      xprivWallet,
-      typeIndex,
-      addressIndex,
-      chain,
-    );
-    const keyKeypair = generateAddressKeypairEVM(
-      xprivKey,
-      typeIndex,
-      addressIndex,
-      chain,
-    );
-
-    console.log('🔐 Generated secure keypairs for signing');
-
-    return {
-      address: multisigResult.address,
-      walletKeypair,
-      keyKeypair,
-    };
-  } catch (error) {
-    console.error(
-      '🔐 Error generating Enhanced Schnorr multisig address:',
-      error,
-    );
-    throw error;
-  }
-};
-
-// ENHANCED SCHNORR MULTISIG: Sign message using Schnorr MultiSig (2-of-2)
-// with EIP-191 compatibility for Etherscan verification
-const signMessageWithSchnorrMultisig = async (
-  messageToSign: string,
-  walletKeypair: keyPair,
-  keyKeypair: keyPair,
-  chain: keyof cryptos,
-  address: string,
-): Promise<string> => {
-  console.log('🔐 Starting Enhanced Schnorr MultiSig message signing...');
-
-  try {
-    console.log('🔐 Signing EIP-191 formatted message:', {
-      message: messageToSign,
-      messageLength: messageToSign.length,
-      note: 'Creating Etherscan-compatible signature',
-    });
-
-    // Create Schnorr signers from private keys using the SDK
-    const signerOne =
-      aaSchnorrMultisig.helpers.SchnorrHelpers.createSchnorrSigner(
-        walletKeypair.privKey as `0x${string}`,
-      );
-    const signerTwo =
-      aaSchnorrMultisig.helpers.SchnorrHelpers.createSchnorrSigner(
-        keyKeypair.privKey as `0x${string}`,
-      );
-
-    // CRITICAL: Generate fresh nonces for each signing operation
-    // This is essential for security - nonces must NEVER be reused
-    signerOne.generatePubNonces();
-    signerTwo.generatePubNonces();
-
-    console.log('🔐 Created Schnorr signers with fresh nonces');
-
-    // Verify signers are properly initialized by checking their keys
-    const pubKeyOne = signerOne.getPubKey();
-    const pubKeyTwo = signerTwo.getPubKey();
-
-    if (!pubKeyOne || !pubKeyTwo) {
-      throw new Error(
-        'Failed to initialize Schnorr signers - invalid public keys',
-      );
-    }
-
-    console.log('🔐 Verified signer initialization with public keys');
-
-    const publicKeys = [pubKeyOne, pubKeyTwo];
-
-    // Generate fresh public nonces
-    const pubNoncesOne = signerOne.getPubNonces();
-    const pubNoncesTwo = signerTwo.getPubNonces();
-
-    if (!pubNoncesOne || !pubNoncesTwo) {
-      throw new Error('Failed to generate public nonces for signing');
-    }
-
-    const publicNonces = [pubNoncesOne, pubNoncesTwo];
-    console.log('🔐 Generated fresh public nonces successfully');
-
-    // Get combined public key using Schnorrkel static method
-    const combinedPublicKey =
-      aaSchnorrMultisig.signers.Schnorrkel.getCombinedPublicKey(publicKeys);
-
-    console.log('🔐 Generated combined public key');
-
-    // Sign the EIP-191 formatted message (this works with Etherscan!)
-    const { signature: sigOne, challenge } = signerOne.signMultiSigMsg(
-      messageToSign,
-      publicKeys,
-      publicNonces,
-    );
-    const { signature: sigTwo } = signerTwo.signMultiSigMsg(
-      messageToSign,
-      publicKeys,
-      publicNonces,
-    );
-
-    console.log('🔐 Created signatures for both signers');
-
-    // Sum the signatures
-    const sSummed = aaSchnorrMultisig.signers.Schnorrkel.sumSigs([
-      sigOne,
-      sigTwo,
-    ]);
-
-    console.log('🔐 Signatures summed successfully');
-
-    // Extract px and parity from combined public key for signature encoding
-    const px = ethers.hexlify(combinedPublicKey.buffer.subarray(1, 33));
-    const parity = combinedPublicKey.buffer[0] - 2 + 27;
-
-    console.log('🔐 Extracted px and parity:', { px, parity });
-
-    // Encode signature using ABI coder
-    const abiCoder = new ethers.AbiCoder();
-    const sigData = abiCoder.encode(
-      ['bytes32', 'bytes32', 'bytes32', 'uint8'],
-      [
-        px,
-        ethers.hexlify(challenge.buffer),
-        ethers.hexlify(sSummed.buffer),
-        parity,
-      ],
-    );
-
-    console.log('🔐 EIP-191 signature generated:', {
-      sigData,
-      length: sigData.length,
-      forUse: 'Etherscan and contract verification',
-    });
-
-    // Verify the signature works with the contract
-    const isValid = await verifySignatureOnChain(
-      messageToSign,
-      sigData,
-      address,
-      chain,
-    );
-
-    console.log('🔍 Signature verification result:', isValid);
-
-    if (isValid) {
-      console.log('✅ Enhanced EIP-191 Schnorr MultiSig signing completed!');
-      console.log(
-        '📝 This signature works with both SSP contracts and Etherscan',
-      );
-    } else {
-      console.warn('⚠️ Signature verification failed');
-    }
-
-    return sigData;
-  } catch (error) {
-    console.error('🔐 Error in Enhanced Schnorr MultiSig signing:', error);
-
-    // Check if this is the specific nonce error
-    if (error instanceof Error && error.message.includes('kPublic')) {
-      throw new Error(
-        'Schnorr nonce initialization failed. This is likely due to improper nonce management. Please ensure fresh signers are created for each signing operation.',
-      );
-    }
-
-    throw error;
-  }
-};
-
-// ENHANCED ON-CHAIN VERIFICATION: Verify signature against deployed contract using ERC1271
-// This function includes comprehensive error handling and graceful fallbacks
-// for development scenarios where contracts may not be deployed
-const verifySignatureOnChain = async (
-  originalMessage: string,
-  sigData: string,
-  contractAddress: string,
-  chain: keyof cryptos,
-): Promise<boolean> => {
-  try {
-    console.log('🔍 Starting enhanced on-chain signature verification...', {
-      contractAddress,
-      message: originalMessage,
-      sigDataLength: sigData.length,
-    });
-
-    // Get active chain's RPC provider
-    const rpcUrl = `https://${blockchains[chain].node}`;
-    const provider = new ethers.JsonRpcProvider(rpcUrl);
-
-    // ENHANCED: First check if there's any code at the contract address
-    // This prevents unnecessary calls to non-existent contracts
-    const code = await provider.getCode(contractAddress);
-    if (code === '0x') {
-      console.warn('⚠️ No contract deployed at address:', contractAddress);
-      console.warn('🔍 Skipping on-chain verification - contract not deployed');
-      console.warn(
-        '📝 Note: For production use, deploy the multisig contract first',
-      );
-      return true; // Return true for demo purposes when contract isn't deployed
-    }
-
-    console.log('✅ Contract found at address:', contractAddress);
-
-    // ERC1271 contract ABI (only isValidSignature method needed)
-    const contractABI = [
-      'function isValidSignature(bytes32 hash, bytes signature) external view returns (bytes4)',
-    ];
-
-    // Connect to the deployed contract
-    const contract = new ethers.Contract(
-      contractAddress,
-      contractABI,
-      provider,
-    );
-
-    // For EIP-191 compatibility, we need to hash the message that was actually signed
-    // The message was the EIP-191 formatted string, so we hash it directly
-    const msgHash = ethers.solidityPackedKeccak256(
-      ['string'],
-      [originalMessage],
-    );
-
-    console.log('🔍 Calling contract.isValidSignature:', {
-      msgHash,
-      sigData,
-      contract: contractAddress,
-      originalMessage,
-      note: 'Using EIP-191 formatted message hash',
-    });
-
-    // ENHANCED: Call isValidSignature method with comprehensive error handling
-    let result: string;
-    try {
-      result = (await contract.isValidSignature(msgHash, sigData)) as string;
-    } catch (contractError) {
-      console.error('🔍 Contract call failed:', contractError);
-
-      // Check if this is a specific contract method error
-      if (contractError instanceof Error) {
-        if (contractError.message.includes('could not decode result data')) {
-          console.warn(
-            '⚠️ Contract call returned empty data - method may not exist or reverted',
-          );
-          console.warn(
-            '🔍 This often means the contract is not a valid ERC1271 implementation',
-          );
-          return false;
-        }
-
-        if (contractError.message.includes('execution reverted')) {
-          console.warn(
-            '⚠️ Contract execution reverted - signature may be invalid',
-          );
-          return false;
-        }
-      }
-
-      throw contractError;
-    }
-
-    // ERC1271 magic value for valid signature
-    const ERC1271_MAGICVALUE_BYTES32 = '0x1626ba7e';
-
-    console.log('🔍 Contract response:', {
-      result,
-      expected: ERC1271_MAGICVALUE_BYTES32,
-      isValid: result === ERC1271_MAGICVALUE_BYTES32,
-    });
-
-    // Verify the result matches the ERC1271 magic value
-    const isValid = result === ERC1271_MAGICVALUE_BYTES32;
-
-    if (isValid) {
-      console.log('✅ ERC1271 signature verification successful!');
-    } else {
-      console.error('❌ ERC1271 signature verification failed:', {
-        received: result,
-        expected: ERC1271_MAGICVALUE_BYTES32,
-      });
-    }
-
-    return isValid;
-  } catch (error) {
-    console.error('🔍 Enhanced on-chain verification error:', error);
-
-    // ENHANCED: For demo purposes, if verification fails due to infrastructure issues,
-    // we'll warn but not fail the entire signing process
-    if (error instanceof Error) {
-      if (error.message.includes('could not decode result data')) {
-        console.warn(
-          '⚠️ Skipping on-chain verification due to contract deployment issues',
-        );
-        console.warn(
-          '📝 Note: In production, ensure the multisig contract is properly deployed',
-        );
-        return true; // Return true for demo when contract isn't properly deployed
-      }
-    }
-
-    return false;
-  }
 };

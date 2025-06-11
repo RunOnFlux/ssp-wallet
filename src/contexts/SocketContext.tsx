@@ -10,10 +10,31 @@ interface SocketContextType {
   chain: string;
   publicNonces: string;
   publicNoncesRejected: string;
+  walletConnectResponse: WalletConnectSocketResponse | null;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
   clearPublicNonces?: () => void;
   clearPublicNoncesRejected?: () => void;
+  clearWalletConnectResponse?: () => void;
+  sendWalletConnectRequest?: (request: WalletConnectSocketRequest) => void;
+}
+
+interface WalletConnectSocketRequest {
+  id: string;
+  method: string;
+  params: unknown[];
+  metadata?: {
+    dappName: string;
+    dappUrl: string;
+  };
+  chain: string;
+}
+
+interface WalletConnectSocketResponse {
+  requestId: string;
+  approved: boolean;
+  result?: unknown;
+  error?: string;
 }
 
 interface serverResponse {
@@ -31,6 +52,7 @@ const defaultValue: SocketContextType = {
   chain: '',
   publicNonces: '',
   publicNoncesRejected: '',
+  walletConnectResponse: null,
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultValue);
@@ -46,6 +68,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [publicNonces, setPublicNonces] = useState('');
   const [publicNoncesRejected, setPublicNoncesRejected] = useState('');
   const [socketIdentiy, setSocketIdentity] = useState('');
+  const [walletConnectResponse, setWalletConnectResponse] =
+    useState<WalletConnectSocketResponse | null>(null);
 
   useEffect(() => {
     console.log('socket init');
@@ -99,6 +123,15 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       setPublicNoncesRejected('publicnoncesrejected');
     });
 
+    // WalletConnect socket events
+    newSocket.on(
+      'walletconnect_response',
+      (response: WalletConnectSocketResponse) => {
+        console.log('[WalletConnect Socket] Response received:', response);
+        setWalletConnectResponse(response);
+      },
+    );
+
     setSocket(newSocket);
     return () => {
       newSocket.close();
@@ -121,6 +154,32 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     setPublicNoncesRejected('');
   };
 
+  const clearWalletConnectResponse = () => {
+    setWalletConnectResponse(null);
+  };
+
+  const sendWalletConnectRequest = (request: WalletConnectSocketRequest) => {
+    if (!socket) {
+      console.error('[WalletConnect Socket] Socket not connected');
+      return;
+    }
+
+    console.log('[WalletConnect Socket] Sending request:', request);
+
+    const action = {
+      id: request.id,
+      action: 'PERSONAL_SIGN', // Map method to action type
+      wkIdentity,
+      method: request.method,
+      params: request.params,
+      metadata: request.metadata,
+      chain: request.chain,
+      timestamp: new Date(),
+    };
+
+    socket.emit('walletconnect', action);
+  };
+
   return (
     <SocketContext.Provider
       value={{
@@ -130,10 +189,13 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         chain,
         publicNonces,
         publicNoncesRejected,
+        walletConnectResponse,
         clearTxid,
         clearTxRejected,
         clearPublicNonces,
         clearPublicNoncesRejected,
+        clearWalletConnectResponse,
+        sendWalletConnectRequest,
       }}
     >
       {children}

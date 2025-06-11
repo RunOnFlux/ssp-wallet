@@ -1,7 +1,8 @@
 import React from 'react';
-import { Modal, Typography, Divider, Card, Alert } from 'antd';
+import { Modal, Typography, Divider, Card, Alert, QRCode, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
+import { useAppSelector } from '../../../hooks';
 import { SessionRequest } from '../types/modalTypes';
 
 const { Text, Paragraph } = Typography;
@@ -18,6 +19,8 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
   onReject,
 }) => {
   const { t } = useTranslation(['home', 'common']);
+  const { activeChain } = useAppSelector((state) => state.sspState);
+  const { walletInUse } = useAppSelector((state) => state[activeChain]);
 
   if (!request) return null;
 
@@ -52,6 +55,22 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
       decodedMessage = null;
     }
   }
+
+  // Create request data following SSP ConfirmTxKey pattern: chain:wallet:data
+  const walletConnectData = JSON.stringify({
+    type: 'walletconnect',
+    id: request.id,
+    method,
+    params: requestParams,
+    dapp: {
+      name: request.verifyContext?.verified?.origin || 'Unknown dApp',
+      url: request.verifyContext?.verified?.validation || '',
+    },
+    timestamp: Date.now(),
+  });
+
+  // Follow exact ConfirmTxKey pattern: chain:wallet:data
+  const qrString = `${activeChain}:${walletInUse}:${walletConnectData}`;
 
   const handleApprove = async () => {
     try {
@@ -153,6 +172,36 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
         showIcon
         style={{ marginBottom: 16, fontSize: '12px' }}
       />
+
+      {/* QR Code Section - Following SSP Pattern */}
+      <Space
+        direction="vertical"
+        size="large"
+        style={{ width: '100%', textAlign: 'center' }}
+      >
+        <Text type="secondary">{t('home:confirmTxKey.info_1')}</Text>
+
+        <QRCode
+          errorLevel="M"
+          value={qrString}
+          icon="/ssp-logo-black.svg"
+          size={280}
+          style={{ margin: '0 auto' }}
+        />
+
+        <Paragraph
+          copyable={{ text: qrString }}
+          className="copyableAddress"
+          style={{
+            fontSize: 11,
+            fontFamily: 'monospace',
+            wordBreak: 'break-all',
+            marginBottom: 0,
+          }}
+        >
+          <Text>{qrString.substring(0, 80)}...</Text>
+        </Paragraph>
+      </Space>
 
       <Text type="secondary" italic>
         {t('home:walletconnect.ssp_key_confirmation_needed')}
