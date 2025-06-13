@@ -478,9 +478,13 @@
     "creating_signature": "Creating signature...",
     "broadcasting_transaction": "Broadcasting transaction...",
     "readable_message": "Readable Message:",
-    "technical_hex_encoded": "Technical (Hex-encoded):",
-    "raw_message": "Raw Message:",
-    "adds_eip191_prefix": "(adds EIP-191 prefix automatically)",
-    "signs_raw_message": "(signs raw message without prefix)"
+    "technical_hex_encoded": "Hex-encoded message:",
+    "raw_message": "Raw message:",
+    "adds_eip191_prefix": "Adds EIP-191 prefix for security",
+    "signs_raw_message": "Signs raw message data",
+    "step_1_approve_wallet": "Step 1: Approve on SSP Wallet to proceed with signing",
+    "scan_with_ssp_key": "Scan with SSP Key",
+    "eip191_prefix_added": "EIP-191 prefix is automatically added.",
+    "step_1_approve_wallet_info": "Step 1: Approve on SSP Wallet. After this, approval on your SSP Key is required."
   }
 }

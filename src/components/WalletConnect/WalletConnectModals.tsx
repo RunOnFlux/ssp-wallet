@@ -10,6 +10,7 @@ const WalletConnectModals: React.FC = () => {
   const {
     pendingProposal,
     pendingRequestModal,
+    currentSigningRequest,
     approveSession,
     rejectSession,
     approveRequest,
@@ -63,6 +64,7 @@ const WalletConnectModals: React.FC = () => {
         request={pendingRequestModal}
         onApprove={approveRequest}
         onReject={rejectRequest}
+        externalSigningRequest={currentSigningRequest}
       />
 
       {/* Typed Data Sign Modal */}

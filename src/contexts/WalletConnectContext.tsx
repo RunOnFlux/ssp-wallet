@@ -144,6 +144,7 @@ interface WalletConnectContextType {
   isConnecting: boolean;
   pendingRequestModal: SessionRequest | null;
   pendingProposal: SessionProposal | null;
+  currentSigningRequest: Record<string, unknown> | null;
   pair: (uri: string) => Promise<void>;
   disconnectSession: (topic: string) => Promise<void>;
   approveSession: (
@@ -198,6 +199,10 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     publicNoncesRejected,
     clearPublicNonces,
     clearPublicNoncesRejected,
+    evmSigned,
+    evmSigningRejected,
+    clearEvmSigned,
+    clearEvmSigningRejected,
   } = useSocket();
 
   // State for handling public nonces requests
@@ -242,6 +247,11 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   const [pendingProposal, setPendingProposal] =
     useState<SessionProposal | null>(null);
   const [queuedRequests, setQueuedRequests] = useState<SessionRequest[]>([]);
+  // Add state to track current signing request for modals
+  const [currentSigningRequest, setCurrentSigningRequest] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
 
   useEffect(() => {
     console.log('🔗 WalletConnect: walletKit state changed:', {
@@ -849,6 +859,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       timestamp: new Date().toISOString(),
     });
 
+    // Clear the current signing request when rejecting
+    setCurrentSigningRequest(null);
+
     try {
       const response = formatJsonRpcError(id, 'User rejected the request');
       await walletKitRef.current?.respondSessionRequest({ topic, response });
@@ -895,50 +908,110 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   };
   // SSP WALLET SPECIFIC IMPLEMENTATIONS
 
-  // Handle public nonces responses from SSP key
+  // Handle public nonces received from SSP Key
   useEffect(() => {
     if (publicNonces) {
-      console.log('🔗 WalletConnect: Received public nonces from SSP key');
-      // Save nonces to storage for future use
-      const sspKeyPublicNonces = JSON.parse(publicNonces) as publicNonces[];
-      void (async function () {
-        try {
-          await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
-          console.log('🔗 WalletConnect: Public nonces saved to storage');
-        } catch (error) {
-          console.error('Error saving public nonces:', error);
-        }
-      })();
+      console.log('🔗 WalletConnect: Public nonces received from SSP Key');
       clearPublicNonces?.();
     }
   }, [publicNonces, clearPublicNonces]);
 
+  // Handle public nonces rejection
   useEffect(() => {
     if (publicNoncesRejected) {
-      console.log('🔗 WalletConnect: Public nonces rejected by SSP key');
-      // Reject all pending signing requests
-      Object.values(pendingSigningRequests).forEach(
-        ({ reject, hideLoading }) => {
-          hideLoading();
-          reject(new Error(t('send:err_public_nonces')));
-        },
-      );
-      setPendingSigningRequests({});
-      clearPublicNoncesRejected?.();
+      console.log('🔗 WalletConnect: Public nonces rejected by SSP Key');
       displayMessage('error', t('send:err_public_nonces'));
+      clearPublicNoncesRejected?.();
     }
-  }, [publicNoncesRejected, clearPublicNoncesRejected, pendingSigningRequests]);
+  }, [publicNoncesRejected, clearPublicNoncesRejected, displayMessage, t]);
 
-  // Add socket handling for signing responses from SSP relay
-  // This would require extending the SocketContext to handle 'signresponse' events
+  // Handle EVM signing completion from SSP Key
   useEffect(() => {
-    // Note: This assumes the socket context would be extended to handle signing responses
-    // For now, we'll use the existing transaction handling pattern
-    // In a complete implementation, you would add 'signresponse' event handling to SocketContext
-    console.log(
-      '🔗 WalletConnect: Socket handlers ready for signing responses',
-    );
-  }, []);
+    if (evmSigned) {
+      console.log(
+        '🔗 WalletConnect: EVM signing completed by SSP Key:',
+        evmSigned,
+      );
+
+      try {
+        const signedData = JSON.parse(evmSigned) as {
+          signature: string;
+          requestId: string;
+        };
+        const { signature, requestId } = signedData;
+
+        // Find and resolve the corresponding pending request
+        const pendingRequest = pendingSigningRequests[requestId];
+        if (pendingRequest) {
+          console.log(
+            '🔗 WalletConnect: Resolving pending signing request:',
+            requestId,
+          );
+
+          pendingRequest.hideLoading();
+          pendingRequest.resolve(signature);
+          displayMessage('success', t('home:walletconnect.request_approved'));
+
+          // Clean up the pending request
+          setPendingSigningRequests((prev) => {
+            const updated = { ...prev };
+            delete updated[requestId];
+            return updated;
+          });
+        } else {
+          console.warn(
+            '🔗 WalletConnect: No pending request found for:',
+            requestId,
+          );
+        }
+      } catch (error) {
+        console.error(
+          '🔗 WalletConnect: Error processing evmSigned response:',
+          error,
+        );
+        displayMessage('error', t('home:walletconnect.signing_failed'));
+      }
+
+      clearEvmSigned?.();
+    }
+  }, [
+    evmSigned,
+    clearEvmSigned,
+    pendingSigningRequests,
+    setPendingSigningRequests,
+    displayMessage,
+    t,
+  ]);
+
+  // Handle EVM signing rejection from SSP Key
+  useEffect(() => {
+    if (evmSigningRejected) {
+      console.log('🔗 WalletConnect: EVM signing rejected by SSP Key');
+
+      // Reject all pending signing requests (since we don't have specific requestId for rejections)
+      Object.entries(pendingSigningRequests).forEach(([requestId, request]) => {
+        console.log(
+          '🔗 WalletConnect: Rejecting pending signing request:',
+          requestId,
+        );
+        request.hideLoading();
+        request.reject(new Error(t('home:walletconnect.session_rejected')));
+      });
+
+      // Clear all pending requests
+      setPendingSigningRequests({});
+      displayMessage('info', t('home:walletconnect.session_rejected'));
+
+      clearEvmSigningRejected?.();
+    }
+  }, [
+    evmSigningRejected,
+    clearEvmSigningRejected,
+    pendingSigningRequests,
+    setPendingSigningRequests,
+    displayMessage,
+    t,
+  ]);
 
   // Helper function to request public nonces from SSP key (extracted from SendEVM)
   const requestPublicNoncesFromSSP = async (): Promise<publicNonces> => {
@@ -1034,7 +1107,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       // find which one of our wallets is matching address
       const walletKeys = Object.keys(wallets);
       const walletInUse = walletKeys.find(
-        (key) => wallets[key].address === address,
+        (key) => wallets[key].address.toLowerCase() === address.toLowerCase(),
       );
 
       if (!walletInUse) {
@@ -1128,6 +1201,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         };
 
         console.log('🔗 WalletConnect: Signing request:', signingRequest);
+
+        // Update the current signing request for modals
+        setCurrentSigningRequest(signingRequest);
 
         // Store the request for response handling
         setPendingSigningRequests((prev) => ({
@@ -1820,6 +1896,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     isConnecting,
     pendingRequestModal,
     pendingProposal,
+    currentSigningRequest,
     pair,
     disconnectSession,
     approveSession,

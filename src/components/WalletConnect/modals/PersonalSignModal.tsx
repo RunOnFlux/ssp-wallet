@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Typography, Divider, Card, Alert, QRCode, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
-import { useAppSelector } from '../../../hooks';
 import { SessionRequest } from '../types/modalTypes';
 
 const { Text, Paragraph } = Typography;
@@ -11,16 +10,26 @@ interface PersonalSignModalProps {
   request: SessionRequest | null;
   onApprove: (request: SessionRequest) => Promise<void>;
   onReject: (request: SessionRequest) => Promise<void>;
+  externalSigningRequest?: Record<string, unknown> | null;
 }
 
 const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
   request,
   onApprove,
   onReject,
+  externalSigningRequest,
 }) => {
   const { t } = useTranslation(['home', 'common']);
-  const { activeChain } = useAppSelector((state) => state.sspState);
-  const { walletInUse } = useAppSelector((state) => state[activeChain]);
+  const [step, setStep] = useState<'approval' | 'qr'>('approval');
+  const [isApproving, setIsApproving] = useState(false);
+
+  // Reset to step 1 whenever a new request comes in
+  useEffect(() => {
+    if (request) {
+      setStep('approval');
+      setIsApproving(false);
+    }
+  }, [request?.id]); // Reset when request ID changes
 
   if (!request) return null;
 
@@ -56,27 +65,23 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
     }
   }
 
-  // Create request data following SSP ConfirmTxKey pattern: chain:wallet:data
-  const walletConnectData = JSON.stringify({
-    type: 'walletconnect',
-    id: request.id,
-    method,
-    params: requestParams,
-    dapp: {
-      name: request.verifyContext?.verified?.origin || 'Unknown dApp',
-      url: request.verifyContext?.verified?.validation || '',
-    },
-    timestamp: Date.now(),
-  });
+  // Step 2 QR string - should contain the actual signingRequest object
+  const qrString = externalSigningRequest
+    ? `evmsigningrequest${JSON.stringify(externalSigningRequest)}`
+    : '';
 
-  // Follow exact ConfirmTxKey pattern: chain:wallet:data
-  const qrString = `${activeChain}:${walletInUse}:${walletConnectData}`;
-
-  const handleApprove = async () => {
-    try {
-      await onApprove(request);
-    } catch (error) {
-      console.error('Error approving sign request:', error);
+  const handleApprove = () => {
+    if (step === 'approval') {
+      setIsApproving(true);
+      try {
+        // The parent/context will provide externalSigningRequest after this call
+        onApprove(request);
+        setStep('qr');
+      } catch (error) {
+        console.error('Error initiating sign request:', error);
+      } finally {
+        setIsApproving(false);
+      }
     }
   };
 
@@ -88,124 +93,167 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
     }
   };
 
-  return (
-    <Modal
-      title={t('home:walletconnect.sign_message_request')}
-      open={true}
-      onOk={handleApprove}
-      onCancel={handleReject}
-      okText={t('home:walletconnect.approve')}
-      cancelText={t('home:walletconnect.reject')}
-      width={600}
-    >
-      <Paragraph>{t('home:walletconnect.dapp_requests_signature')}</Paragraph>
-
-      {/* Address Section */}
-      <Card
-        size="small"
-        title={t('home:walletconnect.address')}
-        style={{ marginBottom: 16 }}
-      >
-        <div style={{ textAlign: 'center' }}>
-          <Text code copyable style={{ fontSize: '16px', fontWeight: 'bold' }}>
-            {address}
-          </Text>
-        </div>
-      </Card>
-
-      {/* Message Section */}
-      <Card
-        size="small"
-        title={t('home:walletconnect.message')}
-        style={{ marginBottom: 16 }}
-      >
-        {/* Show decoded message if available */}
-        {isHexEncoded && decodedMessage ? (
-          <>
-            <Alert
-              description={
-                <div style={{ textAlign: 'center' }}>
-                  <Text
-                    style={{
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {decodedMessage}
-                  </Text>
-                </div>
-              }
-              type="success"
-              style={{ marginBottom: 12 }}
-            />
-            <Divider />
-          </>
-        ) : null}
-
-        {/* Original message */}
-        <Text type="secondary">
-          {isHexEncoded
-            ? t('home:walletconnect.technical_hex_encoded')
-            : t('home:walletconnect.raw_message')}
-        </Text>
-        <div style={{ marginTop: 8, textAlign: 'center' }}>
-          <Text
-            code
-            copyable
-            style={{ fontSize: '12px', wordBreak: 'break-all' }}
-          >
-            {messageToSign}
-          </Text>
-        </div>
-      </Card>
-
-      {/* Method Info */}
-      <Alert
-        message={`Method: ${method}`}
-        description={
-          method === 'personal_sign'
-            ? t('home:walletconnect.adds_eip191_prefix')
-            : t('home:walletconnect.signs_raw_message')
+  // First step: Approval dialog
+  if (step === 'approval') {
+    return (
+      <Modal
+        title={
+          <div style={{ textAlign: 'center', width: '100%' }}>
+            {t('home:walletconnect.sign_message_request')}
+          </div>
         }
-        type="info"
-        showIcon
-        style={{ marginBottom: 16, fontSize: '12px' }}
-      />
-
-      {/* QR Code Section - Following SSP Pattern */}
-      <Space
-        direction="vertical"
-        size="large"
-        style={{ width: '100%', textAlign: 'center' }}
+        open={true}
+        onOk={handleApprove}
+        onCancel={handleReject}
+        okText={t('home:walletconnect.approve')}
+        cancelText={t('home:walletconnect.reject')}
+        confirmLoading={isApproving}
+        width={600}
       >
-        <Text type="secondary">{t('home:confirmTxKey.info_1')}</Text>
+        <Paragraph>{t('home:walletconnect.dapp_requests_signature')}</Paragraph>
 
-        <QRCode
-          errorLevel="M"
-          value={qrString}
-          icon="/ssp-logo-black.svg"
-          size={280}
-          style={{ margin: '0 auto' }}
+        {/* Address Section */}
+        <Card
+          size="small"
+          title={t('home:walletconnect.address')}
+          style={{ marginBottom: 16 }}
+        >
+          <div style={{ textAlign: 'center' }}>
+            <Text
+              code
+              copyable
+              style={{ fontSize: '16px', fontWeight: 'bold' }}
+            >
+              {address}
+            </Text>
+          </div>
+        </Card>
+
+        {/* Message Section */}
+        <Card
+          size="small"
+          title={t('home:walletconnect.message')}
+          style={{ marginBottom: 16 }}
+        >
+          {/* Show decoded message if available */}
+          {isHexEncoded && decodedMessage ? (
+            <>
+              <Alert
+                description={
+                  <div style={{ textAlign: 'center' }}>
+                    <Text
+                      style={{
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {decodedMessage}
+                    </Text>
+                  </div>
+                }
+                type="success"
+                style={{ marginBottom: 12 }}
+              />
+              <Divider />
+            </>
+          ) : null}
+
+          {/* Original message */}
+          <Text type="secondary">
+            {isHexEncoded
+              ? t('home:walletconnect.technical_hex_encoded')
+              : t('home:walletconnect.raw_message')}
+          </Text>
+          <div style={{ marginTop: 8, textAlign: 'center' }}>
+            <Text
+              code
+              copyable
+              style={{ fontSize: '12px', wordBreak: 'break-all' }}
+            >
+              {messageToSign}
+            </Text>
+          </div>
+        </Card>
+
+        {/* Method Info */}
+        <Alert
+          message={`Method: ${method}`}
+          description={
+            method === 'personal_sign'
+              ? t('home:walletconnect.eip191_prefix_added')
+              : t('home:walletconnect.signs_raw_message')
+          }
+          type="info"
+          showIcon
+          style={{ marginBottom: 16, fontSize: '12px' }}
         />
 
-        <Paragraph
-          copyable={{ text: qrString }}
-          className="copyableAddress"
-          style={{
-            fontSize: 11,
-            fontFamily: 'monospace',
-            wordBreak: 'break-all',
-            marginBottom: 0,
-          }}
-        >
-          <Text>{qrString.substring(0, 80)}...</Text>
-        </Paragraph>
-      </Space>
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <Text type="secondary">
+            {t('home:walletconnect.step_1_approve_wallet_info')}
+          </Text>
+        </div>
+      </Modal>
+    );
+  }
 
-      <Text type="secondary" italic>
-        {t('home:walletconnect.ssp_key_confirmation_needed')}
-      </Text>
+  // Second step: QR code dialog
+  return (
+    <Modal
+      title={
+        <div style={{ textAlign: 'center', width: '100%' }}>
+          {t('home:walletconnect.scan_with_ssp_key')}
+        </div>
+      }
+      open={true}
+      onCancel={handleReject}
+      footer={null}
+      width={600}
+    >
+      <div style={{ textAlign: 'center' }}>
+        <Paragraph>{t('home:confirmTxKey.info_1')}</Paragraph>
+
+        <Space
+          direction="vertical"
+          size="large"
+          style={{ width: '100%', marginBottom: 20 }}
+        >
+          {qrString && (
+            <QRCode
+              errorLevel="M"
+              value={qrString}
+              icon="/ssp-logo-black.svg"
+              size={280}
+              style={{ margin: '0 auto' }}
+            />
+          )}
+
+          {qrString && (
+            <Paragraph
+              copyable={{ text: qrString }}
+              className="copyableAddress"
+              style={{
+                fontSize: 11,
+                fontFamily: 'monospace',
+                wordBreak: 'break-all',
+                marginBottom: 0,
+                textAlign: 'left',
+              }}
+            >
+              <Text>{qrString}</Text>
+            </Paragraph>
+          )}
+
+          {!qrString && (
+            <Text type="secondary">Waiting for signing request data...</Text>
+          )}
+        </Space>
+
+        <Text type="secondary" italic>
+          {t('home:walletconnect.ssp_key_confirmation_needed')}
+        </Text>
+      </div>
     </Modal>
   );
 };

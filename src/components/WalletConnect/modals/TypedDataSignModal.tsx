@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, QRCode, Space, Typography, Card, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
@@ -20,6 +20,8 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { walletInUse } = useAppSelector((state) => state[activeChain]);
+  const [step, setStep] = useState<'approval' | 'qr'>('approval');
+  const [isApproving, setIsApproving] = useState(false);
 
   if (!request) return null;
 
@@ -51,11 +53,22 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
   // Follow exact ConfirmTxKey pattern: chain:wallet:data
   const qrString = `${activeChain}:${walletInUse}:${walletConnectData}`;
 
-  const handleApprove = async () => {
-    try {
-      await onApprove(request);
-    } catch (error) {
-      console.error('Error approving typed data:', error);
+  const handleApprove = () => {
+    if (step === 'approval') {
+      // First step: Move to QR code step
+      setIsApproving(true);
+      try {
+        // Initiate the signing process but don't wait for completion
+        onApprove(request);
+        setStep('qr');
+      } catch (error) {
+        console.error('Error initiating typed data signing:', error);
+      } finally {
+        setIsApproving(false);
+      }
+    } else {
+      // Second step: Just close the modal (signing was already initiated)
+      // The signing process handles the rest via the unified signing flow
     }
   };
 
@@ -67,94 +80,127 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
     }
   };
 
-  return (
-    <Modal
-      title={t('home:walletconnect.sign_typed_data_request')}
-      open={true}
-      onOk={handleApprove}
-      onCancel={handleReject}
-      okText={t('home:walletconnect.approve')}
-      cancelText={t('home:walletconnect.reject')}
-      width={600}
-    >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Text>
-          {t('home:walletconnect.dapp_requests_typed_data_signature')}
-        </Text>
+  // First step: Approval dialog
+  if (step === 'approval') {
+    return (
+      <Modal
+        title={t('home:walletconnect.sign_typed_data_request')}
+        open={true}
+        onOk={handleApprove}
+        onCancel={handleReject}
+        okText={t('home:walletconnect.approve')}
+        cancelText={t('home:walletconnect.reject')}
+        confirmLoading={isApproving}
+        width={600}
+      >
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Text>
+            {t('home:walletconnect.dapp_requests_typed_data_signature')}
+          </Text>
 
-        {/* Address Section */}
-        <Card
-          size="small"
-          title={t('home:walletconnect.address')}
-          style={{ marginBottom: 16 }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <Text
-              code
-              copyable
-              style={{ fontSize: '16px', fontWeight: 'bold' }}
+          {/* Address Section */}
+          <Card
+            size="small"
+            title={t('home:walletconnect.address')}
+            style={{ marginBottom: 16 }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <Text
+                code
+                copyable
+                style={{ fontSize: '16px', fontWeight: 'bold' }}
+              >
+                {address}
+              </Text>
+            </div>
+          </Card>
+
+          {/* TypedData Section */}
+          <Card
+            size="small"
+            title={t('home:walletconnect.data')}
+            style={{ marginBottom: 16 }}
+          >
+            <Alert
+              description={
+                <div style={{ textAlign: 'center' }}>
+                  <Text
+                    style={{
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Structured EIP-712 Data
+                  </Text>
+                </div>
+              }
+              type="success"
+              style={{ marginBottom: 12 }}
+            />
+
+            <Text type="secondary">Technical Data (EIP-712):</Text>
+            <div
+              style={{
+                marginTop: 8,
+                maxHeight: '200px',
+                overflow: 'auto',
+                background: '#f5f5f5',
+                padding: '10px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontFamily: 'monospace',
+              }}
             >
-              {address}
-            </Text>
-          </div>
-        </Card>
+              <Text copyable={{ text: JSON.stringify(typedData, null, 2) }}>
+                {JSON.stringify(typedData, null, 2)}
+              </Text>
+            </div>
+          </Card>
 
-        {/* TypedData Section */}
-        <Card
-          size="small"
-          title={t('home:walletconnect.data')}
-          style={{ marginBottom: 16 }}
-        >
+          {/* Method Info */}
           <Alert
-            description={
-              <div style={{ textAlign: 'center' }}>
-                <Text
-                  style={{
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Structured EIP-712 Data
-                </Text>
-              </div>
-            }
-            type="success"
-            style={{ marginBottom: 12 }}
+            message={`Method: ${method}`}
+            description="EIP-712 structured data signature"
+            type="info"
+            showIcon
+            style={{ marginBottom: 16, fontSize: '12px' }}
           />
 
-          <Text type="secondary">Technical Data (EIP-712):</Text>
-          <div
-            style={{
-              marginTop: 8,
-              maxHeight: '200px',
-              overflow: 'auto',
-              background: '#f5f5f5',
-              padding: '10px',
-              borderRadius: '4px',
-              fontSize: '12px',
-              fontFamily: 'monospace',
-            }}
-          >
-            <Text copyable={{ text: JSON.stringify(typedData, null, 2) }}>
-              {JSON.stringify(typedData, null, 2)}
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <Text type="secondary">
+              {t('home:walletconnect.step_1_approve_wallet')}
             </Text>
           </div>
-        </Card>
+        </Space>
+      </Modal>
+    );
+  }
 
-        {/* QR Code Section - Following SSP Pattern */}
-        <div style={{ textAlign: 'center' }}>
-          <Text type="secondary">{t('home:confirmTxKey.info_1')}</Text>
+  // Second step: QR code dialog
+  return (
+    <Modal
+      title={t('home:walletconnect.scan_with_ssp_key')}
+      open={true}
+      onCancel={handleReject}
+      footer={null}
+      width={600}
+    >
+      <div style={{ textAlign: 'center' }}>
+        <Paragraph>{t('home:confirmTxKey.info_1')}</Paragraph>
 
-          <div style={{ margin: '16px 0' }}>
-            <QRCode
-              errorLevel="M"
-              value={qrString}
-              icon="/ssp-logo-black.svg"
-              size={280}
-              style={{ margin: '0 auto' }}
-            />
-          </div>
+        <Space
+          direction="vertical"
+          size="large"
+          style={{ width: '100%', marginBottom: 20 }}
+        >
+          <QRCode
+            errorLevel="M"
+            value={qrString}
+            icon="/ssp-logo-black.svg"
+            size={280}
+            style={{ margin: '0 auto' }}
+          />
 
           <Paragraph
             copyable={{ text: qrString }}
@@ -164,27 +210,17 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
               fontFamily: 'monospace',
               wordBreak: 'break-all',
               marginBottom: 0,
+              textAlign: 'left',
             }}
           >
-            <Text>{qrString.substring(0, 80)}...</Text>
+            <Text>{qrString}</Text>
           </Paragraph>
-        </div>
+        </Space>
 
-        {/* Method Info */}
-        <Alert
-          message={`Method: ${method}`}
-          description="EIP-712 structured data signature"
-          type="info"
-          showIcon
-          style={{ marginBottom: 16, fontSize: '12px' }}
-        />
-
-        <div style={{ textAlign: 'center' }}>
-          <Text type="secondary" italic>
-            {t('home:walletconnect.ssp_key_confirmation_needed')}
-          </Text>
-        </div>
-      </Space>
+        <Text type="secondary" italic>
+          {t('home:walletconnect.ssp_key_confirmation_needed')}
+        </Text>
+      </div>
     </Modal>
   );
 };

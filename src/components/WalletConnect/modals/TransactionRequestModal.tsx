@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, QRCode, Space, Typography, Card, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
@@ -22,6 +22,8 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { walletInUse } = useAppSelector((state) => state[activeChain]);
+  const [step, setStep] = useState<'approval' | 'qr'>('approval');
+  const [isApproving, setIsApproving] = useState(false);
 
   if (!request || request.params.request.method !== 'eth_sendTransaction') {
     return null;
@@ -111,11 +113,22 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
     );
   };
 
-  const handleApprove = async () => {
-    try {
-      await onApprove(request);
-    } catch (error) {
-      console.error('Error approving transaction:', error);
+  const handleApprove = () => {
+    if (step === 'approval') {
+      // First step: Move to QR code step
+      setIsApproving(true);
+      try {
+        // Initiate the transaction process but don't wait for completion
+        onApprove(request);
+        setStep('qr');
+      } catch (error) {
+        console.error('Error initiating transaction:', error);
+      } finally {
+        setIsApproving(false);
+      }
+    } else {
+      // Second step: Just close the modal (transaction was already initiated)
+      // The transaction process handles the rest via the unified signing flow
     }
   };
 
@@ -127,71 +140,104 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
     }
   };
 
+  // First step: Approval dialog
+  if (step === 'approval') {
+    return (
+      <Modal
+        title={t('home:walletconnect.transaction_request')}
+        open={true}
+        onOk={handleApprove}
+        onCancel={handleReject}
+        okText={t('home:walletconnect.approve')}
+        cancelText={t('home:walletconnect.reject')}
+        confirmLoading={isApproving}
+        width={600}
+      >
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Text>{t('home:walletconnect.dapp_requests_transaction')}</Text>
+
+          {/* Transaction Details */}
+          <Card
+            size="small"
+            title={t('home:walletconnect.transaction_request')}
+            style={{ marginBottom: 16 }}
+          >
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <div>
+                <Text strong>{t('home:walletconnect.to')}: </Text>
+                <Text code copyable>
+                  {transaction.to || t('common:address')}
+                </Text>
+              </div>
+
+              <div>
+                <Text strong>{t('home:walletconnect.value')}: </Text>
+                <Text>
+                  {formatCurrencyValue(transaction.value || '0', activeChain)}
+                </Text>
+              </div>
+
+              <div>
+                <Text strong>{t('home:walletconnect.gas')}: </Text>
+                <Text>
+                  {formatGasValue(transaction.gas, transaction.gasLimit)}
+                </Text>
+              </div>
+
+              {transaction.data && transaction.data !== '0x' && (
+                <div>
+                  <Text strong>{t('home:walletconnect.data')}: </Text>
+                  <div style={{ marginTop: '4px' }}>
+                    {formatTransactionData(transaction.data)}
+                  </div>
+                </div>
+              )}
+            </Space>
+          </Card>
+
+          {/* Method Info */}
+          <Alert
+            message="Method: eth_sendTransaction"
+            description="Execute transaction on blockchain"
+            type="info"
+            showIcon
+            style={{ marginBottom: 16, fontSize: '12px' }}
+          />
+
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <Text type="secondary">
+              {t('home:walletconnect.step_1_approve_wallet')}
+            </Text>
+          </div>
+        </Space>
+      </Modal>
+    );
+  }
+
+  // Second step: QR code dialog
   return (
     <Modal
-      title={t('home:walletconnect.transaction_request')}
+      title={t('home:walletconnect.scan_with_ssp_key')}
       open={true}
-      onOk={handleApprove}
       onCancel={handleReject}
-      okText={t('home:walletconnect.approve')}
-      cancelText={t('home:walletconnect.reject')}
+      footer={null}
       width={600}
     >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Text>{t('home:walletconnect.dapp_requests_transaction')}</Text>
+      <div style={{ textAlign: 'center' }}>
+        <Paragraph>{t('home:confirmTxKey.info_1')}</Paragraph>
 
-        {/* Transaction Details */}
-        <Card
-          size="small"
-          title={t('home:walletconnect.transaction_request')}
-          style={{ marginBottom: 16 }}
+        <Space
+          direction="vertical"
+          size="large"
+          style={{ width: '100%', marginBottom: 20 }}
         >
-          <Space direction="vertical" size="small" style={{ width: '100%' }}>
-            <div>
-              <Text strong>{t('home:walletconnect.to')}: </Text>
-              <Text code copyable>
-                {transaction.to || t('common:address')}
-              </Text>
-            </div>
-
-            <div>
-              <Text strong>{t('home:walletconnect.value')}: </Text>
-              <Text>
-                {formatCurrencyValue(transaction.value || '0', activeChain)}
-              </Text>
-            </div>
-
-            <div>
-              <Text strong>{t('home:walletconnect.gas')}: </Text>
-              <Text>
-                {formatGasValue(transaction.gas, transaction.gasLimit)}
-              </Text>
-            </div>
-
-            {transaction.data && transaction.data !== '0x' && (
-              <div>
-                <Text strong>{t('home:walletconnect.data')}: </Text>
-                <div style={{ marginTop: '4px' }}>
-                  {formatTransactionData(transaction.data)}
-                </div>
-              </div>
-            )}
-          </Space>
-        </Card>
-
-        {/* QR Code Section - Following SSP Pattern */}
-        <div style={{ textAlign: 'center' }}>
-          <Text type="secondary">{t('home:confirmTxKey.info_1')}</Text>
-
-          <div style={{ margin: '16px 0' }}>
-            <QRCode
-              errorLevel="M"
-              value={qrString}
-              icon="/ssp-logo-black.svg"
-              size={280}
-              style={{ margin: '0 auto' }}
-            />
-          </div>
+          <QRCode
+            errorLevel="M"
+            value={qrString}
+            icon="/ssp-logo-black.svg"
+            size={280}
+            style={{ margin: '0 auto' }}
+          />
 
           <Paragraph
             copyable={{ text: qrString }}
@@ -201,27 +247,17 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
               fontFamily: 'monospace',
               wordBreak: 'break-all',
               marginBottom: 0,
+              textAlign: 'left',
             }}
           >
-            <Text>{qrString.substring(0, 80)}...</Text>
+            <Text>{qrString}</Text>
           </Paragraph>
-        </div>
+        </Space>
 
-        {/* Method Info */}
-        <Alert
-          message="Method: eth_sendTransaction"
-          description="Execute transaction on blockchain"
-          type="info"
-          showIcon
-          style={{ marginBottom: 16, fontSize: '12px' }}
-        />
-
-        <div style={{ textAlign: 'center' }}>
-          <Text type="secondary" italic>
-            {t('home:walletconnect.ssp_key_confirmation_needed')}
-          </Text>
-        </div>
-      </Space>
+        <Text type="secondary" italic>
+          {t('home:walletconnect.ssp_key_confirmation_needed')}
+        </Text>
+      </div>
     </Modal>
   );
 };

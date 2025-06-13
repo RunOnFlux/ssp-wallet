@@ -11,11 +11,15 @@ interface SocketContextType {
   publicNonces: string;
   publicNoncesRejected: string;
   walletConnectResponse: WalletConnectSocketResponse | null;
+  evmSigned: string;
+  evmSigningRejected: string;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
   clearPublicNonces?: () => void;
   clearPublicNoncesRejected?: () => void;
   clearWalletConnectResponse?: () => void;
+  clearEvmSigned?: () => void;
+  clearEvmSigningRejected?: () => void;
   sendWalletConnectRequest?: (request: WalletConnectSocketRequest) => void;
 }
 
@@ -53,6 +57,8 @@ const defaultValue: SocketContextType = {
   publicNonces: '',
   publicNoncesRejected: '',
   walletConnectResponse: null,
+  evmSigned: '',
+  evmSigningRejected: '',
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultValue);
@@ -70,6 +76,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socketIdentiy, setSocketIdentity] = useState('');
   const [walletConnectResponse, setWalletConnectResponse] =
     useState<WalletConnectSocketResponse | null>(null);
+  const [evmSigned, setEvmSigned] = useState('');
+  const [evmSigningRejected, setEvmSigningRejected] = useState('');
 
   useEffect(() => {
     console.log('socket init');
@@ -123,6 +131,18 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       setPublicNoncesRejected('publicnoncesrejected');
     });
 
+    newSocket.on('evmsigned', (signed: serverResponse) => {
+      console.log('EVM signing completed');
+      console.log(signed);
+      setEvmSigned(signed.payload);
+    });
+
+    newSocket.on('evmsigningrejected', (rejected: serverResponse) => {
+      console.log('EVM signing rejected');
+      console.log(rejected);
+      setEvmSigningRejected('evmsigningrejected');
+    });
+
     // WalletConnect socket events
     newSocket.on(
       'walletconnect_response',
@@ -158,6 +178,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     setWalletConnectResponse(null);
   };
 
+  const clearEvmSigned = () => {
+    setEvmSigned('');
+  };
+
+  const clearEvmSigningRejected = () => {
+    setEvmSigningRejected('');
+  };
+
   const sendWalletConnectRequest = (request: WalletConnectSocketRequest) => {
     if (!socket) {
       console.error('[WalletConnect Socket] Socket not connected');
@@ -190,11 +218,15 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         publicNonces,
         publicNoncesRejected,
         walletConnectResponse,
+        evmSigned,
+        evmSigningRejected,
         clearTxid,
         clearTxRejected,
         clearPublicNonces,
         clearPublicNoncesRejected,
         clearWalletConnectResponse,
+        clearEvmSigned,
+        clearEvmSigningRejected,
         sendWalletConnectRequest,
       }}
     >
