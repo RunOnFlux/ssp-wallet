@@ -1,4 +1,4 @@
-import { QRCode, Typography, Button, Space, Modal } from 'antd';
+import { QRCode, Typography, Button, Space, Modal, Alert, Divider } from 'antd';
 const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
 import { useTranslation } from 'react-i18next';
@@ -41,31 +41,50 @@ function Receive(props: {
             {t('common:ok')}
           </Button>,
         ]}
+        width={600}
       >
-        <h3>{t('home:receive.wallet_address')}:</h3>
-        <Space direction="vertical" size="large" style={{ marginBottom: 15 }}>
-          <QRCode
-            errorLevel="H"
-            value={wallets[walletInUse].address}
-            icon="/ssp-logo-black.svg"
-            size={256}
-            style={{ margin: '0 auto' }}
-          />
-          <Paragraph
-            copyable={{ text: wallets[walletInUse].address }}
-            className="copyableAddress"
-          >
-            <Text>{wallets[walletInUse].address}</Text>
-          </Paragraph>
-          <Paragraph className="copyableAddress">
-            <Text>
-              {t('home:receive.warning_chain_only', {
-                chain_name: blockchainConfig.name,
-                chain_symbol: blockchainConfig.symbol,
-              })}
-            </Text>
-          </Paragraph>
-        </Space>
+        {/* IMPORTANT WARNING */}
+        <Alert
+          message={t('home:receive.warning_chain_only', {
+            chain_name: blockchainConfig.name,
+            chain_symbol: blockchainConfig.symbol,
+          })}
+          type="warning"
+          showIcon
+          style={{ marginBottom: 20, textAlign: 'left' }}
+        />
+
+        <div style={{ textAlign: 'center' }}>
+          <h3>{t('home:receive.wallet_address')}:</h3>
+          <Space direction="vertical" size="large" style={{ marginBottom: 20 }}>
+            <QRCode
+              errorLevel="H"
+              value={wallets[walletInUse].address}
+              icon="/ssp-logo-black.svg"
+              size={256}
+              style={{ margin: '0 auto' }}
+            />
+            <Paragraph
+              copyable={{ text: wallets[walletInUse].address }}
+              className="copyableAddress"
+              style={{ textAlign: 'center' }}
+            >
+              <Text strong>{wallets[walletInUse].address}</Text>
+            </Paragraph>
+
+            <Divider style={{ margin: '0' }} />
+
+            {/* NETWORK INFO */}
+            <div style={{ textAlign: 'left', width: '100%' }}>
+              <Text type="secondary">
+                {t('home:receive.address_info_block', {
+                  chain_name: blockchainConfig.name,
+                  chain_symbol: blockchainConfig.symbol,
+                })}
+              </Text>
+            </div>
+          </Space>
+        </div>
       </Modal>
     </>
   );

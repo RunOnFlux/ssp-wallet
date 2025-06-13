@@ -1,7 +1,8 @@
 import '@ant-design/v5-patch-for-react-19';
 import { useState } from 'react';
 import { RouterProvider } from 'react-router';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, App as AntApp } from 'antd';
+import WalletConnectModals from './components/WalletConnect/WalletConnectModals';
 import router from './router';
 
 function App() {
@@ -26,7 +27,10 @@ function App() {
         algorithm: themeStyle === 'dark' ? darkAlgorithm : defaultAlgorithm,
       }}
     >
-      <RouterProvider router={router} />
+      <AntApp>
+        <WalletConnectModals />
+        <RouterProvider router={router} />
+      </AntApp>
     </ConfigProvider>
   );
 }
