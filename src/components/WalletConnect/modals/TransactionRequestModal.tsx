@@ -39,7 +39,9 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
     method: request.params.request.method,
     params: requestParams,
     dapp: {
-      name: request.verifyContext?.verified?.origin || 'Unknown dApp',
+      name:
+        request.verifyContext?.verified?.origin ||
+        t('home:walletconnect.unknown_dapp'),
       url: request.verifyContext?.verified?.validation || '',
     },
     timestamp: Date.now(),
@@ -197,8 +199,8 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
 
           {/* Method Info */}
           <Alert
-            message="Method: eth_sendTransaction"
-            description="Execute transaction on blockchain"
+            message={`${t('home:walletconnect.method_prefix')} eth_sendTransaction`}
+            description={t('home:walletconnect.execute_transaction_blockchain')}
             type="info"
             showIcon
             style={{ marginBottom: 16, fontSize: '12px' }}

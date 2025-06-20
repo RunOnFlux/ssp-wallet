@@ -224,12 +224,26 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     content: string,
     duration?: number,
   ) => {
-    if (type === 'loading') {
-      return messageApi.loading(content, duration || 0);
+    // Clear any existing loading messages of the same type to prevent overlaps
+    if (type === 'loading' && activeLoadingMessagesRef.current.has(content)) {
+      return () => {}; // Return empty function if message already exists
     }
+
+    if (type === 'loading') {
+      activeLoadingMessagesRef.current.add(content);
+      const hideMessage = messageApi.loading(content, duration || 0);
+
+      // Return a function that clears the message and removes it from active set
+      return () => {
+        hideMessage();
+        activeLoadingMessagesRef.current.delete(content);
+      };
+    }
+
     void messageApi.open({
       type,
       content,
+      duration: duration || (type === 'error' ? 5000 : 3000), // Error messages stay longer
     });
   };
 
@@ -252,6 +266,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     string,
     unknown
   > | null>(null);
+  // Track active loading messages to prevent overlaps
+  const activeLoadingMessagesRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     console.log('🔗 WalletConnect: walletKit state changed:', {
@@ -1540,26 +1556,57 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     }
   };
 
-  // Chain switching with callback for UI
+  // Chain switching with proper WalletConnect event emission
   const handleSwitchChain = async (
     params: [SwitchChainRequest],
   ): Promise<null> => {
     return new Promise((resolve, reject) => {
-      // Fallback implementation
       handleSwitchChainInternal(params, resolve, reject);
     });
   };
 
-  const handleSwitchChainInternal = (
+  const handleSwitchChainInternal = async (
     params: [SwitchChainRequest],
     resolve: (value: null) => void,
     reject: (error: Error) => void,
-  ): void => {
+  ): Promise<void> => {
     try {
       const [{ chainId }] = params;
 
-      // Parse chainId (remove 0x prefix if present)
-      const targetChainId = parseInt(chainId, 16);
+      console.log('🔗 WalletConnect: Chain switch request received:', {
+        requestedChainId: chainId,
+        currentChain: activeChain,
+        currentChainId: blockchains[activeChain].chainId,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Validate chainId format
+      if (!chainId || typeof chainId !== 'string') {
+        throw new Error(
+          t('home:walletconnect.unsupported_chain_id', {
+            chainId: chainId || 'undefined',
+          }),
+        );
+      }
+
+      // Parse chainId (handle both hex and decimal formats)
+      let targetChainId: number;
+      try {
+        if (chainId.startsWith('0x')) {
+          targetChainId = parseInt(chainId, 16);
+        } else {
+          targetChainId = parseInt(chainId, 10);
+        }
+
+        if (isNaN(targetChainId) || targetChainId <= 0) {
+          throw new Error(t('home:walletconnect.invalid_chain_id_format'));
+        }
+      } catch {
+        console.error('🔗 WalletConnect: Invalid chain ID format:', chainId);
+        throw new Error(
+          t('home:walletconnect.unsupported_chain_id', { chainId }),
+        );
+      }
 
       // Find the SSP chain that matches this chainId
       const targetChain = Object.entries(blockchains).find(
@@ -1569,37 +1616,179 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       );
 
       if (!targetChain) {
+        console.error('🔗 WalletConnect: Unsupported chain requested:', {
+          requestedChainId: targetChainId,
+          availableChains: Object.entries(blockchains)
+            .filter(([, config]) => config.chainType === 'evm')
+            .map(([key, config]) => ({
+              key,
+              name: config.name,
+              chainId: config.chainId,
+            })),
+        });
+
         throw new Error(
-          t('home:walletconnect.unsupported_chain_id', { chainId }),
+          t('home:walletconnect.unsupported_chain_id', {
+            chainId: `${targetChainId} (0x${targetChainId.toString(16)})`,
+          }),
         );
       }
 
       const [chainKey] = targetChain;
       const currentChain = blockchains[activeChain];
 
-      // Show detailed warning about address uniqueness when switching chains
-      console.log('🔗 WalletConnect: Chain switching with address warning:', {
-        fromChain: currentChain.name,
-        toChain: targetChain[1].name,
-        fromChainId: currentChain.chainId,
-        toChainId: targetChain[1].chainId,
+      // Check if we're already on the requested chain
+      if (parseInt(currentChain.chainId!) === targetChainId) {
+        console.log('🔗 WalletConnect: Already on requested chain:', {
+          chainName: currentChain.name,
+          chainId: currentChain.chainId,
+        });
+
+        displayMessage(
+          'info',
+          t('home:walletconnect.already_on_chain', {
+            chain: currentChain.name,
+          }),
+        );
+
+        resolve(null);
+        return;
+      }
+
+      // ✅ Check if target chain is synced with SSP Key
+      const targetChainAccounts = await getAccountsForChain(targetChainId);
+      const isTargetChainSynced = targetChainAccounts.length > 0;
+
+      if (!isTargetChainSynced) {
+        console.error(
+          '🔗 WalletConnect: Target chain not synced with SSP Key:',
+          {
+            targetChain: targetChain[1].name,
+            targetChainId,
+            chainKey,
+            availableAccounts: targetChainAccounts.length,
+          },
+        );
+
+        const errorMessage = t('home:walletconnect.chain_not_synced', {
+          chainName: targetChain[1].name,
+        });
+
+        displayMessage('error', errorMessage);
+
+        // Show additional help message about syncing
+        setTimeout(() => {
+          displayMessage(
+            'info',
+            t('home:walletconnect.chain_sync_required', {
+              chainName: targetChain[1].name,
+            }),
+            8000,
+          );
+        }, 2000);
+
+        throw new Error(errorMessage);
+      }
+
+      console.log('🔗 WalletConnect: Switching chains:', {
+        fromChain: {
+          name: currentChain.name,
+          chainId: currentChain.chainId,
+          key: activeChain,
+        },
+        toChain: {
+          name: targetChain[1].name,
+          chainId: targetChain[1].chainId,
+          key: chainKey,
+        },
+        targetChainSynced: isTargetChainSynced,
+        targetChainAccounts: targetChainAccounts.length,
         warning: 'Different addresses per chain - fund loss risk if confused!',
       });
 
-      // Switch active chain in SSP Wallet
+      // Get accounts for current chain to show in notification
+      const currentChainAccounts = await getAccountsForChain(
+        parseInt(currentChain.chainId!),
+      );
+
+      // Switch active chain in SSP Wallet state
       dispatch(setActiveChain(chainKey as keyof cryptos));
 
-      // Emit chainChanged event to all sessions with detailed warnings
-      Object.keys(activeSessions).forEach((topic) => {
-        console.log(
-          `🔗 Chain changed from ${currentChain.name} to ${targetChain[1].name} for session ${topic}`,
-        );
-        console.log(
-          `💡 Note: ${currentChain.name} and ${targetChain[1].name} use different addresses`,
-        );
+      // Get new chain info after switch
+      const newChainId = `0x${targetChainId.toString(16)}`;
+      const newAccounts = targetChainAccounts.map(
+        (addr) => `eip155:${targetChainId}:${addr}`,
+      );
+
+      console.log('🔗 WalletConnect: Chain switched, emitting events:', {
+        newChainId,
+        newAccountsCount: newAccounts.length,
+        newAccounts: newAccounts.slice(0, 3), // Log first 3 for debugging
       });
 
-      // Show success message with warning
+      // Emit chainChanged and accountsChanged events to all active sessions
+      if (walletKitRef.current) {
+        const sessions = walletKitRef.current.getActiveSessions();
+
+        for (const [topic, session] of Object.entries(sessions)) {
+          try {
+            // Check if this session supports the target chain
+            const sessionChains = session.namespaces.eip155?.chains || [];
+            const supportsTargetChain = sessionChains.some(
+              (chain) => parseInt(chain.split(':')[1]) === targetChainId,
+            );
+
+            if (!supportsTargetChain) {
+              console.warn(
+                `🔗 WalletConnect: Session ${topic} doesn't support chain ${targetChainId}`,
+                {
+                  sessionChains,
+                  dAppName: session.peer.metadata.name,
+                },
+              );
+              continue;
+            }
+
+            // Emit chainChanged event
+            await walletKitRef.current.emitSessionEvent({
+              topic,
+              event: {
+                name: 'chainChanged',
+                data: newChainId,
+              },
+              chainId: `eip155:${targetChainId}`,
+            });
+
+            // Emit accountsChanged event
+            await walletKitRef.current.emitSessionEvent({
+              topic,
+              event: {
+                name: 'accountsChanged',
+                data: targetChainAccounts, // Send plain addresses, not CAIP-10 format
+              },
+              chainId: `eip155:${targetChainId}`,
+            });
+
+            console.log(
+              `🔗 WalletConnect: Events emitted for session ${topic}:`,
+              {
+                dAppName: session.peer.metadata.name,
+                chainChanged: newChainId,
+                accountsChanged: targetChainAccounts.length,
+                sessionSupportsChain: supportsTargetChain,
+              },
+            );
+          } catch (eventError) {
+            console.error(
+              `🔗 WalletConnect: Failed to emit events for session ${topic}:`,
+              eventError,
+            );
+            // Continue with other sessions even if one fails
+          }
+        }
+      }
+
+      // Show success message with detailed chain information
       displayMessage(
         'success',
         t('home:walletconnect.chain_switched', {
@@ -1607,17 +1796,49 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         }),
       );
 
-      // Show additional info about network addresses
+      // Show important warning about network-specific addresses
       setTimeout(() => {
         displayMessage(
-          'info',
-          t('home:walletconnect.chain_unique_addresses_desc'),
-          5000, // Show for 5 seconds
+          'warning',
+          t('home:walletconnect.address_loss_warning', {
+            chainName: targetChain[1].name,
+          }),
+          6000, // Show for 6 seconds
         );
       }, 2000);
 
+      // Additional info about address differences
+      if (currentChainAccounts.length > 0 && targetChainAccounts.length > 0) {
+        setTimeout(() => {
+          displayMessage(
+            'info',
+            t('home:walletconnect.chain_unique_addresses_desc'),
+            5000,
+          );
+        }, 4000);
+      }
+
+      console.log('🔗 WalletConnect: Chain switch completed successfully:', {
+        newActiveChain: chainKey,
+        newChainId: targetChain[1].chainId,
+        newChainName: targetChain[1].name,
+        accountsAvailable: targetChainAccounts.length,
+      });
+
       resolve(null);
     } catch (error) {
+      console.error('🔗 WalletConnect: Chain switch failed:', {
+        error: error instanceof Error ? error.message : String(error),
+        requestedChain: params[0]?.chainId,
+        currentChain: activeChain,
+        timestamp: new Date().toISOString(),
+      });
+
+      displayMessage(
+        'error',
+        error instanceof Error ? error.message : 'Chain switch failed',
+      );
+
       reject(
         error instanceof Error ? error : new Error('Unknown error occurred'),
       );
@@ -1653,7 +1874,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   // Pair with dApp using URI
   const pair = async (uri: string): Promise<void> => {
     if (!walletKitRef.current) {
-      throw new Error('WalletConnect not initialized');
+      throw new Error(t('home:walletconnect.walletconnect_not_initialized'));
     }
 
     setIsConnecting(true);
@@ -1683,7 +1904,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     selectedAccounts?: Record<number, string[]>,
   ): Promise<SessionStruct> => {
     if (!walletKitRef.current) {
-      throw new Error('WalletConnect not initialized');
+      throw new Error(t('home:walletconnect.walletconnect_not_initialized'));
     }
 
     try {
@@ -1845,7 +2066,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   // Reject session proposal
   const rejectSession = async (proposal: SessionProposal): Promise<void> => {
     if (!walletKitRef.current) {
-      throw new Error('WalletConnect not initialized');
+      throw new Error(t('home:walletconnect.walletconnect_not_initialized'));
     }
 
     try {
@@ -1866,7 +2087,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   // Disconnect session
   const disconnectSession = async (topic: string): Promise<void> => {
     if (!walletKitRef.current) {
-      throw new Error('WalletConnect not initialized');
+      throw new Error(t('home:walletconnect.walletconnect_not_initialized'));
     }
 
     try {

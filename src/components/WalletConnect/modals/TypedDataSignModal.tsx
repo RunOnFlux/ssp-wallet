@@ -44,7 +44,9 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
     method,
     params: requestParams,
     dapp: {
-      name: request.verifyContext?.verified?.origin || 'Unknown dApp',
+      name:
+        request.verifyContext?.verified?.origin ||
+        t('home:walletconnect.unknown_dapp'),
       url: request.verifyContext?.verified?.validation || '',
     },
     timestamp: Date.now(),
@@ -131,7 +133,7 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
                       fontWeight: 'bold',
                     }}
                   >
-                    Structured EIP-712 Data
+                    {t('home:walletconnect.structured_eip712_data')}
                   </Text>
                 </div>
               }
@@ -139,7 +141,9 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
               style={{ marginBottom: 12 }}
             />
 
-            <Text type="secondary">Technical Data (EIP-712):</Text>
+            <Text type="secondary">
+              {t('home:walletconnect.technical_data_eip712')}
+            </Text>
             <div
               style={{
                 marginTop: 8,
@@ -160,8 +164,10 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
 
           {/* Method Info */}
           <Alert
-            message={`Method: ${method}`}
-            description="EIP-712 structured data signature"
+            message={`${t('home:walletconnect.method_prefix')} ${method}`}
+            description={t(
+              'home:walletconnect.eip712_structured_data_signature',
+            )}
             type="info"
             showIcon
             style={{ marginBottom: 16, fontSize: '12px' }}

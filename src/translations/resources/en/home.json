@@ -485,6 +485,17 @@
     "step_1_approve_wallet": "Step 1: Approve on SSP Wallet to proceed with signing",
     "scan_with_ssp_key": "Scan with SSP Key",
     "eip191_prefix_added": "EIP-191 prefix is automatically added.",
-    "step_1_approve_wallet_info": "Step 1: Approve on SSP Wallet. After this, approval on your SSP Key is required."
+    "step_1_approve_wallet_info": "Step 1: Approve on SSP Wallet. After this, approval on your SSP Key is required.",
+    "execute_transaction_blockchain": "Execute transaction on blockchain",
+    "eip712_structured_data_signature": "EIP-712 structured data signature",
+    "structured_eip712_data": "Structured EIP-712 Data",
+    "technical_data_eip712": "Technical Data (EIP-712):",
+    "unknown_dapp": "Unknown dApp",
+    "method_prefix": "Method:",
+    "already_on_chain": "Already on {{chain}} network",
+    "chain_not_synced": "{{chainName}} is not synced with your SSP Key",
+    "chain_sync_required": "Please sync {{chainName}} with your SSP Key before switching to this network",
+    "invalid_chain_id_format": "Invalid chain ID format",
+    "walletconnect_not_initialized": "WalletConnect not initialized"
   }
 }
