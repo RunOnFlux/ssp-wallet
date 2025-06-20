@@ -79,6 +79,10 @@ export default defineConfig({
       REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS:
         'UserAgent|Plugins|TimeZone|Canvas',
       SECURE_LOCAL_STORAGE_DISABLED_KEYS: 'UserAgent|Plugins|TimeZone|Canvas',
+      // WalletConnect Project ID - Get from https://cloud.reown.com/
+      REACT_APP_WALLETCONNECT_PROJECT_ID: JSON.stringify(
+        process.env.REACT_APP_WALLETCONNECT_PROJECT_ID || '0fddbe43cb0cca6b6e0fcf9b5f4f0ff6'
+      ),
     },
   },
   optimizeDeps: {
