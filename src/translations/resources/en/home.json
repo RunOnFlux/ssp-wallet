@@ -496,6 +496,11 @@
     "chain_not_synced": "{{chainName}} is not synced with your SSP Key",
     "chain_sync_required": "Please sync {{chainName}} with your SSP Key before switching to this network",
     "invalid_chain_id_format": "Invalid chain ID format",
-    "walletconnect_not_initialized": "WalletConnect not initialized"
+    "walletconnect_not_initialized": "WalletConnect not initialized",
+    "addressDeployed": "Address is deployed and ready for use",
+    "addressNotDeployed": "Address not deployed - limited functionality with dApps",
+    "addressChecking": "Checking deployment status...",
+    "account_abstraction_deployment_info": "Account Abstraction Deployment",
+    "account_abstraction_deployment_desc": "Smart contract addresses require deployment (first transaction) for EIP-1271 signature verification. Non-deployed addresses may have limited dApp compatibility."
   }
 }

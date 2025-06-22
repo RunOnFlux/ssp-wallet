@@ -1,9 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Checkbox, List, Card, Typography, Divider, Alert } from 'antd';
+import {
+  Modal,
+  Checkbox,
+  List,
+  Card,
+  Typography,
+  Divider,
+  Alert,
+  Spin,
+  Tooltip,
+} from 'antd';
+import {
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { SessionProposal } from '../types/modalTypes';
 import localForage from 'localforage';
+import { isEVMContractDeployed } from '../../../lib/constructTx';
+import { cryptos } from '../../../types';
 
 const { Text, Title } = Typography;
 
@@ -26,6 +42,82 @@ interface ConnectionRequestModalProps {
   ) => Promise<unknown>;
   onReject: (proposal: SessionProposal) => Promise<void>;
 }
+
+interface AddressDeploymentStatusProps {
+  address: string;
+  chain: keyof cryptos;
+}
+
+const AddressDeploymentStatus: React.FC<AddressDeploymentStatusProps> = ({
+  address,
+  chain,
+}) => {
+  const { t } = useTranslation(['home']);
+  const [status, setStatus] = useState<'loading' | 'deployed' | 'not-deployed'>(
+    'loading',
+  );
+
+  useEffect(() => {
+    const checkDeployment = async () => {
+      try {
+        const isDeployed = await isEVMContractDeployed(address, chain);
+        setStatus(isDeployed ? 'deployed' : 'not-deployed');
+      } catch (error) {
+        console.error('Error checking deployment:', error);
+        setStatus('not-deployed');
+      }
+    };
+
+    checkDeployment();
+  }, [address, chain]);
+
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'loading':
+        return (
+          <Tooltip
+            title={t('home:walletconnect.addressChecking')}
+            mouseEnterDelay={0}
+            mouseLeaveDelay={0}
+          >
+            <Spin
+              size="small"
+              className="loading-spinner"
+              style={{ fontSize: '12px' }}
+            />
+          </Tooltip>
+        );
+      case 'deployed':
+        return (
+          <Tooltip
+            title={t('home:walletconnect.addressDeployed')}
+            mouseEnterDelay={0}
+            mouseLeaveDelay={0}
+          >
+            <CheckCircleOutlined
+              className="deployed-icon"
+              style={{ color: '#52c41a', fontSize: '14px' }}
+            />
+          </Tooltip>
+        );
+      case 'not-deployed':
+        return (
+          <Tooltip
+            title={t('home:walletconnect.addressNotDeployed')}
+            mouseEnterDelay={0}
+            mouseLeaveDelay={0}
+          >
+            <ExclamationCircleOutlined
+              className="not-deployed-icon"
+              style={{ color: '#faad14', fontSize: '14px' }}
+            />
+          </Tooltip>
+        );
+    }
+  };
+
+  return <span className="address-deployment-status">{getStatusIcon()}</span>;
+};
 
 const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
   proposal,
@@ -282,6 +374,17 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
         showIcon
       />
 
+      {/* Account Abstraction deployment info */}
+      <Alert
+        message={t('home:walletconnect.account_abstraction_deployment_info')}
+        description={t(
+          'home:walletconnect.account_abstraction_deployment_desc',
+        )}
+        type="warning"
+        style={{ marginBottom: 16 }}
+        showIcon
+      />
+
       <Divider />
 
       {/* Show warnings for unsupported or unsynced chains */}
@@ -433,15 +536,31 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
                                   )
                                 }
                               >
-                                <Text
+                                <span
                                   style={{
-                                    fontFamily: 'monospace',
-                                    fontSize: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
                                   }}
                                 >
-                                  {account.substring(0, 6)}...
-                                  {account.substring(account.length - 4)}
-                                </Text>
+                                  <Text
+                                    style={{
+                                      fontFamily: 'monospace',
+                                      fontSize: '12px',
+                                    }}
+                                  >
+                                    {account.substring(0, 6)}...
+                                    {account.substring(account.length - 4)}
+                                  </Text>
+                                  {chainInfo.sspChainKey && (
+                                    <AddressDeploymentStatus
+                                      address={account}
+                                      chain={
+                                        chainInfo.sspChainKey as keyof cryptos
+                                      }
+                                    />
+                                  )}
+                                </span>
                               </Checkbox>
                             </div>
                           ))}

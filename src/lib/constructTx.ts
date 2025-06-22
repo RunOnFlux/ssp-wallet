@@ -1097,3 +1097,44 @@ export async function constructAndSignEVMTransaction(
     throw error;
   }
 }
+
+// Check single address deployment status
+export async function isEVMContractDeployed(
+  address: string,
+  chain: keyof cryptos,
+): Promise<boolean> {
+  try {
+    const backendConfig = backends()[chain];
+    const url = `https://${backendConfig.node}`;
+
+    const data = {
+      id: new Date().getTime(),
+      jsonrpc: '2.0',
+      method: 'eth_getTransactionCount',
+      params: [address, 'latest'],
+    };
+
+    console.log(`Checking deployment for ${address}...`);
+    const response = await axios.post<eth_evm>(url, data);
+
+    // Check if we got a valid response with result field
+    if (
+      !response.data ||
+      response.data.result === undefined ||
+      response.data.result === null
+    ) {
+      console.log(
+        `Address ${address}: Invalid RPC response, assuming not deployed`,
+      );
+      return false;
+    }
+
+    const nonce = response.data.result;
+    const isDeployed = nonce !== '0x0';
+    console.log(`Address ${address}: nonce=${nonce}, isDeployed=${isDeployed}`);
+    return isDeployed;
+  } catch (error) {
+    console.error(`Error checking deployment for ${address}:`, error);
+    return false; // Assume not deployed on error
+  }
+}
