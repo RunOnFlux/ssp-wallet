@@ -5,6 +5,7 @@ import { useAppSelector } from '../../../hooks';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../../../types';
 import { SessionRequest, EthereumTransaction } from '../types/modalTypes';
+import { useWalletConnect } from '../../../contexts/WalletConnectContext';
 
 const { Text, Paragraph } = Typography;
 
@@ -20,6 +21,7 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
   onReject,
 }) => {
   const { t } = useTranslation(['home', 'common']);
+  const { chainSwitchInfo } = useWalletConnect();
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { walletInUse } = useAppSelector((state) => state[activeChain]);
   const [step, setStep] = useState<'approval' | 'qr'>('approval');
@@ -196,6 +198,28 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
               )}
             </Space>
           </Card>
+
+          {/* Chain Switch Warning */}
+          {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
+            <Alert
+              message="Chain Switch Required"
+              description={
+                <div>
+                  <Text>
+                    {`This transaction will switch to ${chainSwitchInfo.targetChain.chainName} chain.`}
+                  </Text>
+                  <br />
+                  <Text type="secondary">
+                    The address exists on a different chain than currently
+                    active.
+                  </Text>
+                </div>
+              }
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
 
           {/* Method Info */}
           <Alert

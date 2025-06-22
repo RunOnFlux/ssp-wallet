@@ -3,6 +3,7 @@ import { Modal, Typography, Divider, Card, Alert, QRCode, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
 import { SessionRequest } from '../types/modalTypes';
+import { useWalletConnect } from '../../../contexts/WalletConnectContext';
 
 const { Text, Paragraph } = Typography;
 
@@ -20,6 +21,7 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
   externalSigningRequest,
 }) => {
   const { t } = useTranslation(['home', 'common']);
+  const { chainSwitchInfo } = useWalletConnect();
   const [step, setStep] = useState<'approval' | 'qr'>('approval');
   const [isApproving, setIsApproving] = useState(false);
 
@@ -175,6 +177,27 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
             </Text>
           </div>
         </Card>
+
+        {/* Chain Switch Warning */}
+        {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
+          <Alert
+            message="Chain Switch Required"
+            description={
+              <div>
+                <Text>
+                  {`This signing request will switch to ${chainSwitchInfo.targetChain.chainName} chain.`}
+                </Text>
+                <br />
+                <Text type="secondary">
+                  The address exists on a different chain than currently active.
+                </Text>
+              </div>
+            }
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        )}
 
         {/* Method Info */}
         <Alert

@@ -3,6 +3,7 @@ import { Modal, QRCode, Space, Typography, Card, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
 import { SessionRequest } from '../types/modalTypes';
+import { useWalletConnect } from '../../../contexts/WalletConnectContext';
 
 const { Text, Paragraph } = Typography;
 
@@ -18,6 +19,7 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
   onReject,
 }) => {
   const { t } = useTranslation(['home', 'common']);
+  const { chainSwitchInfo } = useWalletConnect();
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { walletInUse } = useAppSelector((state) => state[activeChain]);
   const [step, setStep] = useState<'approval' | 'qr'>('approval');
@@ -116,6 +118,28 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
               </Text>
             </div>
           </Card>
+
+          {/* Chain Switch Warning */}
+          {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
+            <Alert
+              message="Chain Switch Required"
+              description={
+                <div>
+                  <Text>
+                    {`This signing request will switch to ${chainSwitchInfo.targetChain.chainName} chain.`}
+                  </Text>
+                  <br />
+                  <Text type="secondary">
+                    The address exists on a different chain than currently
+                    active.
+                  </Text>
+                </div>
+              }
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
 
           {/* TypedData Section */}
           <Card

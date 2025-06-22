@@ -1,10 +1,10 @@
 import React from 'react';
 import { Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useAppDispatch } from '../../../hooks';
+import { useAppSelector } from '../../../hooks';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../../../types';
-import { setActiveChain } from '../../../store';
+import { switchToChain } from '../../../lib/chainSwitching';
 import { SessionRequest, SwitchChainRequest } from '../types/modalTypes';
 
 interface ChainSwitchModalProps {
@@ -19,7 +19,7 @@ const ChainSwitchModal: React.FC<ChainSwitchModalProps> = ({
   onReject,
 }) => {
   const { t } = useTranslation(['home', 'common']);
-  const dispatch = useAppDispatch();
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
   if (
     !request ||
@@ -51,10 +51,10 @@ const ChainSwitchModal: React.FC<ChainSwitchModalProps> = ({
 
   const [chainKey] = targetChain;
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     try {
-      // Switch active chain in SSP Wallet
-      dispatch(setActiveChain(chainKey as keyof cryptos));
+      // Use the new chain switching utility
+      await switchToChain(chainKey as keyof cryptos, passwordBlob);
       void onApprove(request);
     } catch (error) {
       console.error('Error switching chain:', error);

@@ -28,7 +28,7 @@ interface RelayApiResponse {
 
 /**
  * Simplified WalletConnect relay service using SSP Relay's action API
- * 
+ *
  * Uses the TESTED working action API format that already supports WalletConnect
  */
 export class WalletConnectRelayService {
@@ -90,7 +90,10 @@ export class WalletConnectRelayService {
         requestData,
       );
 
-      console.log('[WalletConnect Relay] Request sent successfully:', response.data);
+      console.log(
+        '[WalletConnect Relay] Request sent successfully:',
+        response.data,
+      );
 
       // Start polling for response
       return this.pollForResponse(requestId, wkIdentity);
@@ -121,9 +124,14 @@ export class WalletConnectRelayService {
           `${this.baseUrl}/v1/action/${wkIdentity}`,
         );
 
-        if (response.data && response.data.action === 'walletconnect_response') {
+        if (
+          response.data &&
+          response.data.action === 'walletconnect_response'
+        ) {
           try {
-            const responsePayload = JSON.parse(response.data.payload) as {
+            const responsePayload = JSON.parse(
+              response.data.payload as string,
+            ) as {
               requestId?: string;
               approved?: boolean;
               result?: string;
@@ -132,7 +140,10 @@ export class WalletConnectRelayService {
 
             // Check if this response is for our request
             if (responsePayload.requestId === requestId) {
-              console.log('[WalletConnect Relay] Response received:', responsePayload);
+              console.log(
+                '[WalletConnect Relay] Response received:',
+                responsePayload,
+              );
               return {
                 approved: responsePayload.approved || false,
                 result: responsePayload.result,

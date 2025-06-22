@@ -13,13 +13,12 @@ import {
   formatJsonRpcResult,
   formatJsonRpcError,
 } from '@walletconnect/jsonrpc-utils';
-import { useAppSelector, useAppDispatch } from '../hooks';
+import { useAppSelector } from '../hooks';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../types';
 import localForage from 'localforage';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { setActiveChain } from '../store';
 import { ethers } from 'ethers';
 import {
   deriveEVMPublicKey,
@@ -34,6 +33,8 @@ import { sspConfig } from '@storage/ssp';
 import { signMessageWithSchnorrMultisig } from '../lib/evmSigning';
 import { useSocket } from '../hooks/useSocket';
 import { NoticeType } from 'antd/es/message/interface';
+import { switchToChain } from '../lib/chainSwitching';
+import { store } from '../store';
 
 interface publicNonces {
   kPublic: string;
@@ -145,6 +146,14 @@ interface WalletConnectContextType {
   pendingRequestModal: SessionRequest | null;
   pendingProposal: SessionProposal | null;
   currentSigningRequest: Record<string, unknown> | null;
+  chainSwitchInfo: {
+    required: boolean;
+    targetChain?: {
+      chainKey: keyof cryptos;
+      chainId: number;
+      chainName: string;
+    };
+  } | null;
   pair: (uri: string) => Promise<void>;
   disconnectSession: (topic: string) => Promise<void>;
   approveSession: (
@@ -183,14 +192,12 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
   const { t } = useTranslation(['common', 'home', 'send']);
-  const dispatch = useAppDispatch();
   const { sspWalletKeyInternalIdentity, activeChain } = useAppSelector(
     (state) => ({
       ...state.sspState,
     }),
   );
-  const { xpubKey, wallets } = useAppSelector((state) => state[activeChain]);
-  const blockchainConfig = blockchains[activeChain];
+
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
   // Add socket hook for handling SSP relay responses
@@ -243,7 +250,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     void messageApi.open({
       type,
       content,
-      duration: duration || (type === 'error' ? 5000 : 3000), // Error messages stay longer
+      duration: duration ? duration : type === 'error' ? 5 : 4, // Ensure all messages have duration
     });
   };
 
@@ -266,6 +273,15 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     string,
     unknown
   > | null>(null);
+  // Add state to track chain switch requirements for modals
+  const [chainSwitchInfo, setChainSwitchInfo] = useState<{
+    required: boolean;
+    targetChain?: {
+      chainKey: keyof cryptos;
+      chainId: number;
+      chainName: string;
+    };
+  } | null>(null);
   // Track active loading messages to prevent overlaps
   const activeLoadingMessagesRef = useRef<Set<string>>(new Set());
 
@@ -366,6 +382,116 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     } catch (error) {
       console.error(`Error getting accounts for chain ${chainId}:`, error);
       return [];
+    }
+  };
+
+  // Find which chain an address belongs to
+  const findChainForAddress = async (
+    address: string,
+  ): Promise<{
+    chainKey: keyof cryptos;
+    chainId: number;
+    chainName: string;
+  } | null> => {
+    const evmChains = getEvmChains();
+
+    for (const chain of evmChains) {
+      const accounts = await getAccountsForChain(chain.chainId);
+      if (accounts.some((acc) => acc.toLowerCase() === address.toLowerCase())) {
+        return {
+          chainKey: chain.id,
+          chainId: chain.chainId,
+          chainName: chain.name,
+        };
+      }
+    }
+
+    return null;
+  };
+
+  // Check if a chain switch will be required for the given request
+  const checkChainSwitchRequirement = async (
+    event: SessionRequest,
+  ): Promise<void> => {
+    const { request } = event.params;
+    const { method } = request;
+
+    // Extract address from different request types
+    let address: string | null = null;
+
+    if (method === 'personal_sign') {
+      const [, addr] = request.params as [string, string];
+      address = addr;
+    } else if (method === 'eth_sign') {
+      const [addr] = request.params as [string, string];
+      address = addr;
+    } else if (
+      [
+        'eth_signTypedData',
+        'eth_signTypedData_v3',
+        'eth_signTypedData_v4',
+      ].includes(method)
+    ) {
+      const [addr] = request.params as [string, unknown];
+      address = addr;
+    } else if (
+      ['eth_sendTransaction', 'eth_signTransaction'].includes(method)
+    ) {
+      const [transaction] = request.params as [EthereumTransaction];
+      address = transaction.from || null;
+    }
+
+    if (!address) {
+      setChainSwitchInfo(null);
+      return;
+    }
+
+    // Check if address exists in current chain using fresh state
+    const freshState = store.getState();
+    const currentActiveChain = freshState.sspState.activeChain;
+    const currentWallets = freshState[currentActiveChain].wallets || {};
+
+    const walletKeys = Object.keys(currentWallets);
+    const walletInUse = walletKeys.find(
+      (key) =>
+        currentWallets[key].address.toLowerCase() === address.toLowerCase(),
+    );
+
+    console.log('🔗 WalletConnect: checkChainSwitchRequirement analysis:', {
+      requestedAddress: address,
+      currentActiveChain,
+      walletsInCurrentChain: walletKeys.length,
+      addressFoundInCurrentChain: !!walletInUse,
+      currentWalletAddresses: walletKeys.map(
+        (key) => currentWallets[key].address,
+      ),
+    });
+
+    if (walletInUse) {
+      // Address found in current chain, no switch required
+      setChainSwitchInfo({ required: false });
+    } else {
+      // Address not found, check other chains
+      const targetChainInfo = await findChainForAddress(address);
+
+      if (targetChainInfo) {
+        console.log('🔗 WalletConnect: Chain switch will be required:', {
+          currentChain: currentActiveChain,
+          targetChain: targetChainInfo.chainKey,
+          targetChainName: targetChainInfo.chainName,
+        });
+
+        setChainSwitchInfo({
+          required: true,
+          targetChain: targetChainInfo,
+        });
+      } else {
+        console.log(
+          '🔗 WalletConnect: Address not found in any chain:',
+          address,
+        );
+        setChainSwitchInfo(null);
+      }
     }
   };
 
@@ -611,7 +737,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       timestamp: new Date().toISOString(),
     });
 
-    // For sensitive operations, show user confirmation modal
+    // For sensitive operations, check if chain switch is required and show user confirmation modal
     if (
       [
         'personal_sign',
@@ -627,6 +753,10 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         '🔗 WalletConnect: Showing user confirmation modal for sensitive operation:',
         method,
       );
+
+      // Check if chain switch will be required
+      await checkChainSwitchRequirement(event);
+
       setPendingRequestModal(event);
       return;
     }
@@ -774,6 +904,94 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     });
 
     try {
+      // Check if chain switch is required at approval time (fresh check)
+      let targetChainInfo: {
+        chainKey: keyof cryptos;
+        chainId: number;
+        chainName: string;
+      } | null = null;
+
+      // Extract address from the request
+      let address: string | null = null;
+      if (method === 'personal_sign') {
+        const [, addr] = requestParams as [string, string];
+        address = addr;
+      } else if (method === 'eth_sign') {
+        const [addr] = requestParams as [string, string];
+        address = addr;
+      } else if (
+        [
+          'eth_signTypedData',
+          'eth_signTypedData_v3',
+          'eth_signTypedData_v4',
+        ].includes(method)
+      ) {
+        const [addr] = requestParams as [string, unknown];
+        address = addr;
+      } else if (
+        ['eth_sendTransaction', 'eth_signTransaction'].includes(method)
+      ) {
+        const [transaction] = requestParams as [EthereumTransaction];
+        address = transaction.from || null;
+      }
+
+      if (address) {
+        // Get current state
+        const currentState = store.getState();
+        const currentActiveChain = currentState.sspState.activeChain;
+        const currentWallets = currentState[currentActiveChain].wallets || {};
+
+        // Check if address exists in current chain
+        const walletKeys = Object.keys(currentWallets);
+        const addressExistsInCurrentChain = walletKeys.some(
+          (key) =>
+            currentWallets[key].address.toLowerCase() === address.toLowerCase(),
+        );
+
+        if (!addressExistsInCurrentChain) {
+          // Address not found, check other chains
+          console.log(
+            '🔗 WalletConnect: Address not found in current chain, searching other chains:',
+            {
+              requestedAddress: address,
+              currentChain: currentActiveChain,
+              walletsInCurrentChain: walletKeys.length,
+              currentWalletAddresses: walletKeys.map(
+                (key) => currentWallets[key].address,
+              ),
+            },
+          );
+
+          targetChainInfo = await findChainForAddress(address);
+
+          if (targetChainInfo) {
+            console.log(
+              '🔗 WalletConnect: Chain switch required for signing:',
+              {
+                currentChain: currentActiveChain,
+                targetChain: targetChainInfo.chainKey,
+                address: address,
+              },
+            );
+
+            await switchToChain(targetChainInfo.chainKey, passwordBlob);
+
+            // Show success message
+            displayMessage(
+              'success',
+              `Switched to ${targetChainInfo.chainName} chain for signing`,
+            );
+
+            // Wait a moment for Redux state to propagate
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            console.log(
+              '🔗 WalletConnect: Chain switch completed, proceeding with signing',
+            );
+          }
+        }
+      }
+
       let result: unknown;
 
       switch (method) {
@@ -827,6 +1045,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       const response = formatJsonRpcResult(id, result);
       await walletKitRef.current?.respondSessionRequest({ topic, response });
       setPendingRequestModal(null);
+      setChainSwitchInfo(null); // Clear chain switch info after successful approval
+      setCurrentSigningRequest(null); // Clear signing request data after successful completion
       console.log(
         '🔗 WalletConnect: Successfully approved and responded to request:',
         {
@@ -857,7 +1077,20 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       const response = formatJsonRpcError(id, errorMessage);
       await walletKitRef.current?.respondSessionRequest({ topic, response });
       setPendingRequestModal(null);
-      displayMessage('error', t('home:walletconnect.request_approval_failed'));
+      setCurrentSigningRequest(null); // Clear signing request data on error
+      setChainSwitchInfo(null); // Clear chain switch info on error
+
+      // Don't show error message if user intentionally rejected the request
+      if (error instanceof Error && error.message === 'USER_REJECTED_REQUEST') {
+        console.log(
+          '🔗 WalletConnect: User rejected request during approval process',
+        );
+      } else {
+        displayMessage(
+          'error',
+          t('home:walletconnect.request_approval_failed'),
+        );
+      }
     }
   };
 
@@ -875,8 +1108,23 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       timestamp: new Date().toISOString(),
     });
 
-    // Clear the current signing request when rejecting
+    // Clear the current signing request and chain switch info when rejecting
     setCurrentSigningRequest(null);
+    setChainSwitchInfo(null);
+
+    // Clean up any pending signing requests and their loading messages
+    Object.entries(pendingSigningRequests).forEach(
+      ([requestId, pendingRequest]) => {
+        console.log(
+          '🔗 WalletConnect: Cleaning up pending signing request:',
+          requestId,
+        );
+        pendingRequest.hideLoading();
+        // Use a specific error type to distinguish user rejection from other errors
+        pendingRequest.reject(new Error('USER_REJECTED_REQUEST'));
+      },
+    );
+    setPendingSigningRequests({});
 
     try {
       const response = formatJsonRpcError(id, 'User rejected the request');
@@ -966,7 +1214,6 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
 
           pendingRequest.hideLoading();
           pendingRequest.resolve(signature);
-          displayMessage('success', t('home:walletconnect.request_approved'));
 
           // Clean up the pending request
           setPendingSigningRequests((prev) => {
@@ -974,6 +1221,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
             delete updated[requestId];
             return updated;
           });
+
+          // Clear current signing request data when signing completes
+          setCurrentSigningRequest(null);
         } else {
           console.warn(
             '🔗 WalletConnect: No pending request found for:',
@@ -995,8 +1245,6 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     clearEvmSigned,
     pendingSigningRequests,
     setPendingSigningRequests,
-    displayMessage,
-    t,
   ]);
 
   // Handle EVM signing rejection from SSP Key
@@ -1016,6 +1264,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
 
       // Clear all pending requests
       setPendingSigningRequests({});
+      // Clear current signing request data when signing is rejected
+      setCurrentSigningRequest(null);
       displayMessage('info', t('home:walletconnect.session_rejected'));
 
       clearEvmSigningRejected?.();
@@ -1025,12 +1275,12 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     clearEvmSigningRejected,
     pendingSigningRequests,
     setPendingSigningRequests,
-    displayMessage,
-    t,
   ]);
 
   // Helper function to request public nonces from SSP key (extracted from SendEVM)
-  const requestPublicNoncesFromSSP = async (): Promise<publicNonces> => {
+  const requestPublicNoncesFromSSP = async (
+    chainKey: keyof cryptos,
+  ): Promise<publicNonces> => {
     return new Promise((resolve, reject) => {
       void (async function () {
         try {
@@ -1058,7 +1308,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           postAction(
             'publicnoncesrequest',
             '[]',
-            activeChain,
+            chainKey,
             '',
             sspWalletKeyInternalIdentity,
           );
@@ -1120,15 +1370,30 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     );
 
     try {
-      // find which one of our wallets is matching address
-      const walletKeys = Object.keys(wallets);
+      // Get fresh wallet data from current active chain (in case chain was switched)
+      const freshState = store.getState();
+      const currentActiveChain = freshState.sspState.activeChain;
+      const currentWallets = freshState[currentActiveChain].wallets || {};
+
+      console.log('🔗 WalletConnect: handleUnifiedSigning state check:', {
+        requestedAddress: address,
+        currentActiveChain,
+        walletsInCurrentChain: Object.keys(currentWallets).length,
+        walletAddresses: Object.values(currentWallets).map((w) => w.address),
+        timestamp: new Date().toISOString(),
+      });
+
+      // find which one of our wallets is matching address in current chain
+      const walletKeys = Object.keys(currentWallets);
       const walletInUse = walletKeys.find(
-        (key) => wallets[key].address.toLowerCase() === address.toLowerCase(),
+        (key) =>
+          currentWallets[key].address.toLowerCase() === address.toLowerCase(),
       );
 
+      // If wallet not found in current chain, it means chain switch should have happened already
       if (!walletInUse) {
         throw new Error(
-          'Signing request received for different chain. Switch to the correct chain and try again',
+          'Address not found in current chain. Chain switch should have been performed before signing.',
         );
       }
 
@@ -1139,10 +1404,11 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         throw new Error(t('send:err_pwd_not_valid'));
       }
 
+      const currentBlockchainConfig = blockchains[currentActiveChain];
       const xprivBlob = secureLocalStorage.getItem(
-        `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
-          blockchainConfig.scriptType,
-        )}-${blockchainConfig.id}`,
+        `xpriv-48-${currentBlockchainConfig.slip}-0-${getScriptType(
+          currentBlockchainConfig.scriptType,
+        )}-${currentBlockchainConfig.id}`,
       );
       if (typeof xprivBlob !== 'string') {
         throw new Error(t('send:err_invalid_xpriv'));
@@ -1163,16 +1429,17 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         xprivChain,
         typeIndex,
         addressIndex,
-        activeChain,
+        currentActiveChain,
       );
       // reassign xprivChain to null as it is no longer needed
       xprivChain = null;
 
+      const currentXpubKey = freshState[currentActiveChain].xpubKey;
       const publicKey2HEX = deriveEVMPublicKey(
-        xpubKey,
+        currentXpubKey,
         typeIndex,
         addressIndex,
-        activeChain,
+        currentActiveChain,
       ); // ssp key
 
       console.log('🔗 WalletConnect: Getting public nonces from SSP key');
@@ -1180,7 +1447,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       try {
         // Get public nonces from SSP key
 
-        const publicNoncesSSP = await requestPublicNoncesFromSSP();
+        const publicNoncesSSP =
+          await requestPublicNoncesFromSSP(currentActiveChain);
 
         console.log(
           '🔗 WalletConnect: Received public nonces, creating signature',
@@ -1211,7 +1479,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           pubNoncesOne: result.pubNoncesOne, // this is wallet
           pubNoncesTwo: result.pubNoncesTwo, // this is key
           data: message,
-          chain: activeChain,
+          chain: currentActiveChain,
           walletInUse: walletInUse,
           requestId: requestId,
         };
@@ -1243,7 +1511,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         postAction(
           'evmsigningrequest',
           JSON.stringify(signingRequest),
-          activeChain,
+          currentActiveChain,
           wInUse,
           sspWalletKeyInternalIdentity,
         );
@@ -1711,8 +1979,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         parseInt(currentChain.chainId!),
       );
 
-      // Switch active chain in SSP Wallet state
-      dispatch(setActiveChain(chainKey as keyof cryptos));
+      // Switch active chain using the complete chain switching utility
+      await switchToChain(chainKey as keyof cryptos, passwordBlob);
 
       // Get new chain info after switch
       const newChainId = `0x${targetChainId.toString(16)}`;
@@ -2118,6 +2386,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     pendingRequestModal,
     pendingProposal,
     currentSigningRequest,
+    chainSwitchInfo,
     pair,
     disconnectSession,
     approveSession,

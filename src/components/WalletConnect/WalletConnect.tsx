@@ -37,10 +37,13 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
   const displayMessage = (
     type: 'success' | 'error' | 'info' | 'warning',
     content: string,
+    duration?: number,
   ) => {
     void messageApi.open({
       type,
       content,
+      duration:
+        duration !== undefined ? duration : type === 'error' ? 5000 : 4000,
     });
   };
 
