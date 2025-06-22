@@ -315,6 +315,8 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
       await onReject(proposal);
     } catch (error) {
       console.error('Error rejecting session:', error);
+      // Don't re-throw - the modal should close anyway since rejectSession
+      // handles cleanup internally, even when rejection fails
     }
   };
 

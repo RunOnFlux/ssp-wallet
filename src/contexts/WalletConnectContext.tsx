@@ -2347,8 +2347,28 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       displayMessage('info', t('home:walletconnect.session_rejected'));
     } catch (error) {
       console.error('Error rejecting session:', error);
-      displayMessage('error', t('home:walletconnect.session_rejection_failed'));
-      throw error;
+
+      // Always clean up the UI state, even if rejection failed
+      setPendingProposal(null);
+
+      // Check if error is due to expired/deleted session
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (
+        errorMessage.includes('recently deleted') ||
+        errorMessage.includes('expired')
+      ) {
+        console.log(
+          'Session already expired/deleted, dismissing modal silently',
+        );
+        displayMessage('info', t('home:walletconnect.session_rejected'));
+      } else {
+        displayMessage(
+          'error',
+          t('home:walletconnect.session_rejection_failed'),
+        );
+        throw error;
+      }
     }
   };
 
