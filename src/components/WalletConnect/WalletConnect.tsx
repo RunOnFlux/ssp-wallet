@@ -42,8 +42,7 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
     void messageApi.open({
       type,
       content,
-      duration:
-        duration !== undefined ? duration : type === 'error' ? 5000 : 4000,
+      duration: duration ? duration : type === 'error' ? 5 : 4,
     });
   };
 
