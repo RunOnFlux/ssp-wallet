@@ -926,6 +926,7 @@ export async function constructAndSignEVMTransaction(
   maxTotalGas: string,
   token?: `0x${string}` | '',
   importedTokens: Token[] = [],
+  customData?: string, // For WalletConnect and custom contract calls
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
@@ -1054,12 +1055,18 @@ export async function constructAndSignEVMTransaction(
       });
       console.log(uoStruct);
     } else {
+      // Handle custom data for contract calls (like WalletConnect)
+      const txData = (customData || '0x') as `0x${string}`;
+      const txValue = customData
+        ? BigInt(0)
+        : parseUnits(amount, blockchainConfig.decimals);
+
       uoStruct = await smartAccountClient.buildUserOperation({
         account: multiSigSmartAccount,
         uo: {
-          data: '0x',
+          data: txData,
           target: receiver,
-          value: parseUnits(amount, blockchainConfig.decimals),
+          value: txValue,
         },
       });
     }

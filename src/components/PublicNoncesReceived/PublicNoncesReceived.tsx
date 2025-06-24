@@ -23,6 +23,7 @@ function PublicNoncesReceived(props: {
         style={{ textAlign: 'center', top: 60 }}
         onCancel={handleOk}
         footer={[]}
+        zIndex={1100}
       >
         <Space
           direction="vertical"

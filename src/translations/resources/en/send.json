@@ -40,5 +40,14 @@
   "max_tx_fee": "Max Transaction Fee",
   "invalid_tx_fee": "Invalid Transaction Fee",
   "asset": "Asset",
-  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}"
+  "send_swap": "Send and Swap for {{buyAmount}} {{buyAsset}}",
+  "transaction_data": "Transaction Data",
+  "input_transaction_data": "Input transaction data (hex format, optional)",
+  "transaction_data_placeholder": "0x... (leave empty for simple transfers)",
+  "advanced_options": "Advanced Options",
+  "contract_interaction": "Contract Interaction",
+  "data_from_dapp": "(Data from dApp)",
+  "err_invalid_hex_data": "Transaction data must be in valid hex format (0x...)",
+  "warn_data_only_eth": "Transaction data is only available for {{symbol}} transfers.",
+  "warn_token_transfer_override": "This appears to be a token transfer. The amount and receiver may be encoded in the transaction data."
 }

@@ -35,6 +35,26 @@ import { useSocket } from '../hooks/useSocket';
 import { NoticeType } from 'antd/es/message/interface';
 import { switchToChain } from '../lib/chainSwitching';
 import { store } from '../store';
+import BigNumber from 'bignumber.js';
+
+// Extend window interface for WalletConnect transaction tracking
+declare global {
+  interface Window {
+    walletConnectTxMap?: Map<
+      string,
+      {
+        resolve: (hash: string) => void;
+        reject: (error: Error) => void;
+        originalTransaction: EthereumTransaction;
+        timestamp: number;
+      }
+    >;
+    walletConnectNavigate?: (
+      path: string,
+      options?: { state?: unknown },
+    ) => void;
+  }
+}
 
 interface publicNonces {
   kPublic: string;
@@ -154,6 +174,13 @@ interface WalletConnectContextType {
       chainName: string;
     };
   } | null;
+  // Public nonces dialog states
+  openConfirmPublicNonces: boolean;
+  openPublicNoncesRejected: boolean;
+  openPublicNoncesReceived: boolean;
+  confirmPublicNoncesAction: (status: boolean) => void;
+  publicNoncesRejectedAction: (status: boolean) => void;
+  publicNoncesReceivedAction: (status: boolean) => void;
   pair: (uri: string) => Promise<void>;
   disconnectSession: (topic: string) => Promise<void>;
   approveSession: (
@@ -167,6 +194,10 @@ interface WalletConnectContextType {
   rejectRequest: (request: SessionRequest) => Promise<void>;
   contextHolder: React.ReactElement;
   debugInitialize: () => Promise<void>;
+  handleWalletConnectTxCompletion: (txid: string) => void;
+  setWalletConnectNavigation: (
+    navigate: (path: string, options?: { state?: unknown }) => void,
+  ) => void;
 }
 
 const WalletConnectContext = createContext<WalletConnectContextType | null>(
@@ -254,6 +285,42 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     });
   };
 
+  // Utility function to extract error message consistently
+  const getErrorMessage = (error: unknown): string => {
+    return error instanceof Error
+      ? error.message
+      : t('home:walletconnect.unknown_error');
+  };
+
+  // Utility function to extract address from request parameters
+  const extractAddressFromRequest = (
+    method: string,
+    requestParams: unknown[],
+  ): string | null => {
+    if (method === 'personal_sign') {
+      const [, addr] = requestParams as [string, string];
+      return addr;
+    } else if (method === 'eth_sign') {
+      const [addr] = requestParams as [string, string];
+      return addr;
+    } else if (
+      [
+        'eth_signTypedData',
+        'eth_signTypedData_v3',
+        'eth_signTypedData_v4',
+      ].includes(method)
+    ) {
+      const [addr] = requestParams as [string, unknown];
+      return addr;
+    } else if (
+      ['eth_sendTransaction', 'eth_signTransaction'].includes(method)
+    ) {
+      const [transaction] = requestParams as [EthereumTransaction];
+      return transaction.from || null;
+    }
+    return null;
+  };
+
   const [walletKit, setWalletKit] = useState<InstanceType<
     typeof WalletKit
   > | null>(null);
@@ -284,6 +351,122 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   } | null>(null);
   // Track active loading messages to prevent overlaps
   const activeLoadingMessagesRef = useRef<Set<string>>(new Set());
+
+  // Public nonces dialog states - same as SendEVM
+  const [openConfirmPublicNonces, setOpenConfirmPublicNonces] = useState(false);
+  const [openPublicNoncesRejected, setOpenPublicNoncesRejected] =
+    useState(false);
+  const [openPublicNoncesReceived, setOpenPublicNoncesReceived] =
+    useState(false);
+
+  // Public nonces dialog action functions - same pattern as SendEVM
+  const confirmPublicNoncesAction = (status: boolean) => {
+    setOpenConfirmPublicNonces(status);
+  };
+
+  const publicNoncesRejectedAction = (status: boolean) => {
+    setOpenPublicNoncesRejected(status);
+  };
+
+  const publicNoncesReceivedAction = (status: boolean) => {
+    setOpenPublicNoncesReceived(status);
+  };
+
+  // Handle incoming public nonces from socket
+  useEffect(() => {
+    if (publicNonces) {
+      console.log('🔗 WalletConnect: Received public nonces from socket');
+
+      // Save to storage
+      const sspKeyPublicNonces = JSON.parse(publicNonces) as publicNonces[];
+      void (async function () {
+        try {
+          await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
+          console.log('🔗 WalletConnect: Public nonces saved to storage');
+
+          // Close the confirm dialog and show success dialog - same as SendEVM
+          setOpenConfirmPublicNonces(false);
+          setOpenPublicNoncesReceived(true);
+
+          // Retry any pending signing requests waiting for nonces
+          Object.entries(pendingSigningRequests).forEach(
+            ([requestId, request]) => {
+              if (
+                requestId.startsWith('signing_') &&
+                request.message &&
+                request.address
+              ) {
+                console.log(
+                  '🔗 WalletConnect: Retrying signing request with new nonces:',
+                  requestId,
+                );
+
+                // Retry the signing operation
+                handleUnifiedSigning(
+                  request.message,
+                  request.address,
+                  request.resolve,
+                  request.reject,
+                  true, // isRetry flag to prevent showing loading message again
+                  request.hideLoading, // Pass original hideLoading function
+                ).catch((error) => {
+                  console.error(
+                    '🔗 WalletConnect: Failed to retry signing after nonces received:',
+                    error,
+                  );
+                  request.reject(
+                    error instanceof Error ? error : new Error(String(error)),
+                  );
+                });
+              }
+            },
+          );
+        } catch (error) {
+          console.error('🔗 WalletConnect: Error saving public nonces:', error);
+        }
+      })();
+
+      clearPublicNonces?.();
+    }
+  }, [publicNonces]);
+
+  // Handle public nonces rejection from socket
+  useEffect(() => {
+    if (publicNoncesRejected) {
+      console.log('🔗 WalletConnect: Public nonces rejected by SSP Key');
+
+      // Close the confirm public nonces dialog
+      setOpenConfirmPublicNonces(false);
+
+      // Show the public nonces rejection dialog
+      setOpenPublicNoncesRejected(true);
+
+      // Reject all pending signing requests that are waiting for nonces
+      Object.entries(pendingSigningRequests).forEach(([requestId, request]) => {
+        console.log(
+          '🔗 WalletConnect: Rejecting pending signing request due to public nonces rejection:',
+          requestId,
+        );
+        request.hideLoading();
+        request.reject(new Error(t('home:walletconnect.request_rejected')));
+      });
+
+      // Clear all pending requests
+      setPendingSigningRequests({});
+      setCurrentSigningRequest(null);
+
+      // Show message that the WalletConnect request was rejected due to public nonces rejection
+      displayMessage('info', t('home:walletconnect.request_rejected'));
+
+      clearPublicNoncesRejected?.();
+    }
+  }, [
+    publicNoncesRejected,
+    clearPublicNoncesRejected,
+    pendingSigningRequests,
+    setPendingSigningRequests,
+    t,
+  ]);
 
   useEffect(() => {
     console.log('🔗 WalletConnect: walletKit state changed:', {
@@ -844,7 +1027,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
             '🔗 WalletConnect: Unsupported method requested:',
             method,
           );
-          throw new Error(`Unsupported method: ${method}`);
+          throw new Error(
+            t('home:walletconnect.unsupported_method', { method }),
+          );
       }
 
       const response = formatJsonRpcResult(id, result);
@@ -859,11 +1044,10 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       console.error('🔗 WalletConnect: Error handling session request:', {
         requestId: id,
         method,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
         timestamp: new Date().toISOString(),
       });
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = getErrorMessage(error);
 
       const response = formatJsonRpcError(id, errorMessage);
       await walletKitRef.current?.respondSessionRequest({ topic, response });
@@ -912,28 +1096,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       } | null = null;
 
       // Extract address from the request
-      let address: string | null = null;
-      if (method === 'personal_sign') {
-        const [, addr] = requestParams as [string, string];
-        address = addr;
-      } else if (method === 'eth_sign') {
-        const [addr] = requestParams as [string, string];
-        address = addr;
-      } else if (
-        [
-          'eth_signTypedData',
-          'eth_signTypedData_v3',
-          'eth_signTypedData_v4',
-        ].includes(method)
-      ) {
-        const [addr] = requestParams as [string, unknown];
-        address = addr;
-      } else if (
-        ['eth_sendTransaction', 'eth_signTransaction'].includes(method)
-      ) {
-        const [transaction] = requestParams as [EthereumTransaction];
-        address = transaction.from || null;
-      }
+      const address = extractAddressFromRequest(method, requestParams);
 
       if (address) {
         // Get current state
@@ -1039,7 +1202,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
             '🔗 WalletConnect: Unsupported method in approval:',
             method,
           );
-          throw new Error(`Unsupported method: ${method}`);
+          throw new Error(
+            t('home:walletconnect.unsupported_method', { method }),
+          );
       }
 
       const response = formatJsonRpcResult(id, result);
@@ -1071,8 +1236,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         error: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString(),
       });
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = getErrorMessage(error);
 
       const response = formatJsonRpcError(id, errorMessage);
       await walletKitRef.current?.respondSessionRequest({ topic, response });
@@ -1081,7 +1245,12 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       setChainSwitchInfo(null); // Clear chain switch info on error
 
       // Don't show error message if user intentionally rejected the request
-      if (error instanceof Error && error.message === 'USER_REJECTED_REQUEST') {
+      const rejectedByUserMessage = t('home:walletconnect.request_rejected');
+      if (
+        error instanceof Error &&
+        (error.message === 'USER_REJECTED_REQUEST' ||
+          error.message.includes(rejectedByUserMessage))
+      ) {
         console.log(
           '🔗 WalletConnect: User rejected request during approval process',
         );
@@ -1180,15 +1349,6 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     }
   }, [publicNonces, clearPublicNonces]);
 
-  // Handle public nonces rejection
-  useEffect(() => {
-    if (publicNoncesRejected) {
-      console.log('🔗 WalletConnect: Public nonces rejected by SSP Key');
-      displayMessage('error', t('send:err_public_nonces'));
-      clearPublicNoncesRejected?.();
-    }
-  }, [publicNoncesRejected, clearPublicNoncesRejected, displayMessage, t]);
-
   // Handle EVM signing completion from SSP Key
   useEffect(() => {
     if (evmSigned) {
@@ -1259,14 +1419,14 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           requestId,
         );
         request.hideLoading();
-        request.reject(new Error(t('home:walletconnect.session_rejected')));
+        request.reject(new Error(t('home:walletconnect.request_rejected')));
       });
 
       // Clear all pending requests
       setPendingSigningRequests({});
       // Clear current signing request data when signing is rejected
       setCurrentSigningRequest(null);
-      displayMessage('info', t('home:walletconnect.session_rejected'));
+      displayMessage('info', t('home:walletconnect.request_rejected'));
 
       clearEvmSigningRejected?.();
     }
@@ -1280,80 +1440,58 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   // Helper function to request public nonces from SSP key (extracted from SendEVM)
   const requestPublicNoncesFromSSP = async (
     chainKey: keyof cryptos,
+    message: string,
+    address: string,
+    resolve: (signature: string) => void,
+    reject: (error: Error) => void,
+    hideLoading: () => void,
   ): Promise<publicNonces> => {
-    return new Promise((resolve, reject) => {
-      void (async function () {
-        try {
-          // Check if we have stored nonces first
-          const sspKeyPublicNonces: publicNonces[] =
-            (await localForage.getItem('sspKeyPublicNonces')) ?? [];
+    // Check if we have stored nonces first
+    const sspKeyPublicNonces: publicNonces[] =
+      (await localForage.getItem('sspKeyPublicNonces')) ?? [];
 
-          if (sspKeyPublicNonces.length > 0) {
-            console.log('🔗 WalletConnect: Using stored public nonces');
-            // Choose random nonce
-            const pos = Math.floor(Math.random() * sspKeyPublicNonces.length);
-            const publicNoncesSSP = sspKeyPublicNonces[pos];
-            // Remove used nonce from storage
-            sspKeyPublicNonces.splice(pos, 1);
-            await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
-            resolve(publicNoncesSSP);
-            return;
-          }
+    if (sspKeyPublicNonces.length > 0) {
+      console.log('🔗 WalletConnect: Using stored public nonces');
+      // Choose random nonce
+      const pos = Math.floor(Math.random() * sspKeyPublicNonces.length);
+      const publicNoncesSSP = sspKeyPublicNonces[pos];
+      // Remove used nonce from storage
+      sspKeyPublicNonces.splice(pos, 1);
+      await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
+      return publicNoncesSSP;
+    }
 
-          console.log(
-            '🔗 WalletConnect: No stored nonces, requesting from SSP key',
-          );
+    console.log('🔗 WalletConnect: No stored nonces, requesting from SSP key');
 
-          // Request nonces from SSP relay
-          postAction(
-            'publicnoncesrequest',
-            '[]',
-            chainKey,
-            '',
-            sspWalletKeyInternalIdentity,
-          );
+    // Show the dialog - same as SendEVM
+    setOpenConfirmPublicNonces(true);
 
-          // Set up timeout
-          const timeout = setTimeout(() => {
-            reject(new Error(t('send:err_public_nonces')));
-          }, 30000); // 30 second timeout
+    // Create a unique request ID to track this signing request
+    const requestId = `signing_${Date.now()}_${Math.random().toString(36).substring(2)}`;
 
-          // Wait for nonces via socket
-          const checkForNonces = () => {
-            void (async function () {
-              try {
-                const updatedNonces: publicNonces[] =
-                  (await localForage.getItem('sspKeyPublicNonces')) ?? [];
+    // Store this signing request so it can be retried when nonces arrive
+    setPendingSigningRequests((prev) => ({
+      ...prev,
+      [requestId]: {
+        resolve,
+        reject,
+        message,
+        address,
+        hideLoading,
+      },
+    }));
 
-                if (updatedNonces.length > 0) {
-                  clearTimeout(timeout);
-                  const pos = Math.floor(Math.random() * updatedNonces.length);
-                  const publicNoncesSSP = updatedNonces[pos];
-                  updatedNonces.splice(pos, 1);
-                  await localForage.setItem(
-                    'sspKeyPublicNonces',
-                    updatedNonces,
-                  );
-                  resolve(publicNoncesSSP);
-                } else {
-                  // Check again after 1 second
-                  setTimeout(checkForNonces, 1000);
-                }
-              } catch (error) {
-                clearTimeout(timeout);
-                reject(
-                  error instanceof Error ? error : new Error(String(error)),
-                );
-              }
-            })();
-          };
+    // Request nonces from SSP relay - response will come via socket
+    postAction(
+      'publicnoncesrequest',
+      '[]',
+      chainKey,
+      '',
+      sspWalletKeyInternalIdentity,
+    );
 
-          checkForNonces();
-        } catch (error) {
-          reject(error instanceof Error ? error : new Error(String(error)));
-        }
-      })();
-    });
+    // Throw special error that won't be propagated to WalletConnect
+    throw new Error('WAITING_FOR_NONCES');
   };
 
   // Unified signing function for both personal_sign and eth_sign
@@ -1362,12 +1500,20 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     address: string,
     resolve: (signature: string) => void,
     reject: (error: Error) => void,
+    isRetry = false,
+    retryHideLoading?: () => void,
   ): Promise<void> => {
-    const hideLoading = displayMessage(
-      'loading',
-      t('home:walletconnect.creating_signature'),
-      0,
-    );
+    // Use provided hideLoading for retries, or create new one for initial requests
+    const hideLoading =
+      isRetry && retryHideLoading
+        ? retryHideLoading
+        : isRetry
+          ? () => {}
+          : displayMessage(
+              'loading',
+              t('home:walletconnect.creating_signature'),
+              0,
+            );
 
     try {
       // Get fresh wallet data from current active chain (in case chain was switched)
@@ -1393,7 +1539,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       // If wallet not found in current chain, it means chain switch should have happened already
       if (!walletInUse) {
         throw new Error(
-          'Address not found in current chain. Chain switch should have been performed before signing.',
+          t('home:walletconnect.address_not_found_current_chain'),
         );
       }
 
@@ -1447,8 +1593,14 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       try {
         // Get public nonces from SSP key
 
-        const publicNoncesSSP =
-          await requestPublicNoncesFromSSP(currentActiveChain);
+        const publicNoncesSSP = await requestPublicNoncesFromSSP(
+          currentActiveChain,
+          message,
+          address,
+          resolve,
+          reject,
+          hideLoading || (() => {}),
+        );
 
         console.log(
           '🔗 WalletConnect: Received public nonces, creating signature',
@@ -1533,30 +1685,14 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       } catch (noncesError) {
         if (
           noncesError instanceof Error &&
-          noncesError.message.includes('public_nonces')
+          noncesError.message === 'WAITING_FOR_NONCES'
         ) {
-          // Special handling for public nonces errors
-          if (hideLoading) {
-            hideLoading();
-          }
-          displayMessage('info', t('send:err_public_nonces'));
-
-          // Store the signing request to retry after nonces are received
-          const requestId = `nonces_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-          setPendingSigningRequests((prev) => ({
-            ...prev,
-            [requestId]: {
-              resolve: (signature: string) => {
-                resolve(signature);
-              },
-              reject: (error: Error) => {
-                reject(error);
-              },
-              message,
-              address,
-              hideLoading: () => {}, // Already handled above
-            },
-          }));
+          // Special case: request is stored and waiting for nonces via socket
+          // Don't propagate this error, the request will be retried when nonces arrive
+          console.log(
+            '🔗 WalletConnect: Signing request stored, waiting for nonces',
+          );
+          return;
         } else {
           throw noncesError;
         }
@@ -1571,7 +1707,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         (error as Error).message || t('home:walletconnect.signing_failed'),
       );
       reject(
-        error instanceof Error ? error : new Error('Unknown error occurred'),
+        error instanceof Error
+          ? error
+          : new Error(t('home:walletconnect.unknown_error')),
       );
     }
   };
@@ -1673,73 +1811,196 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         data: transaction.data?.substring(0, 20) + '...',
         gas: transaction.gas || transaction.gasLimit,
         gasPrice: transaction.gasPrice,
+        nonce: transaction.nonce,
       });
 
-      // Create transaction string for signing (similar to message signing)
-      const txString = JSON.stringify({
-        to: transaction.to,
-        from: transaction.from,
-        value: transaction.value || '0x0',
-        data: transaction.data || '0x',
-        gas: transaction.gas || transaction.gasLimit || '0x5208',
-        gasPrice: transaction.gasPrice || '0x3b9aca00', // 1 gwei default
-        nonce: transaction.nonce || '0x0',
+      // Get fresh wallet data from current active chain (in case chain was switched)
+      const freshState = store.getState();
+      const currentActiveChain = freshState.sspState.activeChain;
+      const currentWallets = freshState[currentActiveChain].wallets || {};
+
+      console.log('🔗 WalletConnect: handleSendTransaction state check:', {
+        requestedAddress: transaction.from,
+        currentActiveChain,
+        walletsInCurrentChain: Object.keys(currentWallets).length,
+        walletAddresses: Object.values(currentWallets).map((w) => w.address),
+        timestamp: new Date().toISOString(),
       });
 
-      console.log('🔐 Signing transaction with Schnorr multisig:', {
-        txString: txString.substring(0, 100) + '...',
-        length: txString.length,
-      });
+      // Find which wallet matches the from address in current chain
+      const walletKeys = Object.keys(currentWallets);
+      const walletInUse = walletKeys.find(
+        (key) =>
+          currentWallets[key].address.toLowerCase() ===
+          transaction.from?.toLowerCase(),
+      );
 
-      // Use unified signing approach
-      const signature = await new Promise<string>((signResolve, signReject) => {
-        handleUnifiedSigning(
-          txString,
-          transaction.from || '',
-          signResolve,
-          signReject,
+      // If wallet not found in current chain, it means chain switch should have happened already
+      if (!walletInUse) {
+        throw new Error(t('home:walletconnect.address_not_found_transaction'));
+      }
+
+      const blockchainConfig = blockchains[currentActiveChain];
+      const { networkFees } = freshState.networkFees;
+
+      // Parse transaction parameters with proper hex handling
+      const parseHexValue = (
+        value: string | undefined,
+        defaultValue: string,
+      ): string => {
+        if (!value) return defaultValue;
+        if (value.startsWith('0x')) {
+          return parseInt(value, 16).toString();
+        }
+        return value;
+      };
+
+      // Convert wei value to ether
+      const parseWeiToEther = (weiValue: string | undefined): string => {
+        if (!weiValue || weiValue === '0x0' || weiValue === '0') return '0';
+        const weiString = weiValue.startsWith('0x')
+          ? parseInt(weiValue, 16).toString()
+          : weiValue;
+        const etherValue = new BigNumber(weiString).dividedBy(
+          new BigNumber(10).pow(18),
         );
+        return etherValue.toFixed();
+      };
+
+      // Parse gas values
+      const requestedGasLimit = parseHexValue(
+        transaction.gas || transaction.gasLimit,
+        '0',
+      );
+      const requestedGasPrice = parseHexValue(transaction.gasPrice, '0');
+
+      // Get automatic values from network fees and blockchain config
+      const automaticBaseGas =
+        networkFees[currentActiveChain]?.base || blockchainConfig.baseFee;
+      const automaticPriorityGas =
+        networkFees[currentActiveChain]?.priority ||
+        blockchainConfig.priorityFee;
+      const automaticGasLimit = blockchainConfig.gasLimit;
+
+      // Convert gwei to wei for comparison with gasPrice
+      const automaticTotalGasPrice = new BigNumber(
+        automaticBaseGas + automaticPriorityGas,
+      )
+        .multipliedBy(new BigNumber(10).pow(9))
+        .toFixed();
+
+      // Use the higher values between requested and automatic
+      const finalGasLimit = Math.max(
+        parseInt(requestedGasLimit) || 0,
+        automaticGasLimit,
+      ).toString();
+
+      // For gas price, use automatic values if they're higher or if none provided
+      let finalBaseGasPrice: string;
+      let finalPriorityGasPrice: string;
+
+      if (
+        requestedGasPrice &&
+        parseInt(requestedGasPrice) > parseInt(automaticTotalGasPrice)
+      ) {
+        // Split the total gas price between base and priority (70% base, 30% priority)
+        const totalGwei = new BigNumber(requestedGasPrice).dividedBy(
+          new BigNumber(10).pow(9),
+        );
+        finalBaseGasPrice = totalGwei.multipliedBy(0.7).toFixed();
+        finalPriorityGasPrice = totalGwei.multipliedBy(0.3).toFixed();
+      } else {
+        finalBaseGasPrice = automaticBaseGas.toString();
+        finalPriorityGasPrice = automaticPriorityGas.toString();
+      }
+
+      // Parse the amount (value) from wei to ether
+      const amount = parseWeiToEther(transaction.value);
+
+      // Determine if this is a token transfer by checking data field
+      let isTokenTransfer = false;
+      let tokenContract = '';
+      if (
+        transaction.data &&
+        transaction.data !== '0x' &&
+        transaction.data.length > 10
+      ) {
+        // Check if it's an ERC20 transfer (starts with 0xa9059cbb which is transfer function selector)
+        if (transaction.data.startsWith('0xa9059cbb')) {
+          isTokenTransfer = true;
+          tokenContract = transaction.to || '';
+        }
+      }
+
+      console.log('🔗 WalletConnect: Parsed transaction parameters:', {
+        amount,
+        gasLimit: finalGasLimit,
+        baseGasPrice: finalBaseGasPrice,
+        priorityGasPrice: finalPriorityGasPrice,
+        isTokenTransfer,
+        tokenContract,
+        data: transaction.data?.substring(0, 100) + '...',
       });
 
-      console.log('✅ Transaction signed successfully:', {
-        signature: signature.substring(0, 20) + '...',
-        length: signature.length,
-      });
+      // Store resolve/reject functions for when transaction completes
+      const walletConnectTxData = {
+        resolve,
+        reject,
+        originalTransaction: transaction,
+        timestamp: Date.now(),
+      };
 
-      // Mock transaction broadcasting (for testing)
-      const hideBroadcastLoading = messageApi.loading(
+      // Store in a map for retrieval when txid comes back from SSP
+      if (!window.walletConnectTxMap) {
+        window.walletConnectTxMap = new Map();
+      }
+      const txRequestId = `wc_${Date.now()}_${Math.random()}`;
+      window.walletConnectTxMap.set(txRequestId, walletConnectTxData);
+
+      // Navigate to SendEVM with the parsed parameters
+      const navigationState = {
+        receiver: transaction.to || '',
+        amount: amount,
+        contract: isTokenTransfer ? tokenContract : '', // Empty for native currency
+        baseGasPrice: finalBaseGasPrice,
+        priorityGasPrice: finalPriorityGasPrice,
+        totalGasLimit: finalGasLimit,
+        data: transaction.data || '0x',
+        walletConnectTxId: txRequestId, // For tracking this WC transaction
+        walletConnectMode: true, // Flag to indicate this came from WalletConnect
+      };
+
+      console.log(
+        '🚀 WalletConnect: Navigating to SendEVM with state:',
+        navigationState,
+      );
+
+      // Use React Router navigation
+      const navigate = window.walletConnectNavigate;
+      if (navigate) {
+        navigate('/sendevm', { state: navigationState });
+      } else {
+        console.error('❌ Navigation function not available');
+        throw new Error(t('home:walletconnect.navigation_failed'));
+      }
+
+      // Show loading message
+      displayMessage(
+        'info',
         t('home:walletconnect.broadcasting_transaction'),
         0,
       );
 
-      try {
-        // Generate a mock transaction hash
-        const mockTxHash =
-          '0x' +
-          Array.from({ length: 64 }, () =>
-            Math.floor(Math.random() * 16).toString(16),
-          ).join('');
-
-        setTimeout(() => {
-          // Hide the broadcasting loading message
-          hideBroadcastLoading();
-          console.log('🚀 Mock transaction broadcast successful:', mockTxHash);
-          displayMessage(
-            'success',
-            t('home:walletconnect.transaction_sent_success'),
-          );
-          resolve(mockTxHash);
-        }, 2000);
-      } catch (broadcastError) {
-        // Make sure to hide loading message on broadcast error
-        hideBroadcastLoading();
-        throw broadcastError;
-      }
+      // Don't resolve immediately - wait for transaction to be sent via SSP
+      // The resolve will be called when we receive the txid from socket
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure state is set
     } catch (error) {
       console.error('❌ Send transaction error:', error);
       displayMessage('error', t('home:walletconnect.transaction_send_failed'));
       reject(
-        error instanceof Error ? error : new Error('Unknown error occurred'),
+        error instanceof Error
+          ? error
+          : new Error(t('home:walletconnect.unknown_error')),
       );
     }
   };
@@ -1819,7 +2080,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       console.error('❌ Sign transaction error:', error);
       displayMessage('error', t('home:walletconnect.transaction_sign_failed'));
       reject(
-        error instanceof Error ? error : new Error('Unknown error occurred'),
+        error instanceof Error
+          ? error
+          : new Error(t('home:walletconnect.unknown_error')),
       );
     }
   };
@@ -1831,6 +2094,42 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     return new Promise((resolve, reject) => {
       handleSwitchChainInternal(params, resolve, reject);
     });
+  };
+
+  // Handle WalletConnect transaction completion when txid is received from SSP
+  const handleWalletConnectTxCompletion = (txid: string) => {
+    console.log('🔗 WalletConnect: Received txid from SSP:', txid);
+
+    if (!window.walletConnectTxMap) {
+      console.warn('🔗 WalletConnect: No pending transactions found');
+      return;
+    }
+
+    // Find the pending transaction that matches this txid
+    for (const [requestId, txData] of window.walletConnectTxMap.entries()) {
+      // For now, resolve the most recent transaction
+      // In a production environment, you'd match by address or other criteria
+      try {
+        txData.resolve(txid);
+        window.walletConnectTxMap.delete(requestId);
+        console.log('✅ WalletConnect: Transaction resolved with txid:', txid);
+
+        displayMessage(
+          'success',
+          t('home:walletconnect.transaction_sent_success'),
+        );
+        break;
+      } catch (error) {
+        console.error('❌ WalletConnect: Error resolving transaction:', error);
+      }
+    }
+  };
+
+  // Set navigation function for WalletConnect
+  const setWalletConnectNavigation = (
+    navigate: (path: string, options?: { state?: unknown }) => void,
+  ) => {
+    window.walletConnectNavigate = navigate;
   };
 
   const handleSwitchChainInternal = async (
@@ -2108,7 +2407,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       );
 
       reject(
-        error instanceof Error ? error : new Error('Unknown error occurred'),
+        error instanceof Error
+          ? error
+          : new Error(t('home:walletconnect.unknown_error')),
       );
     }
   };
@@ -2407,6 +2708,13 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     pendingProposal,
     currentSigningRequest,
     chainSwitchInfo,
+    // Public nonces dialog states
+    openConfirmPublicNonces,
+    openPublicNoncesRejected,
+    openPublicNoncesReceived,
+    confirmPublicNoncesAction,
+    publicNoncesRejectedAction,
+    publicNoncesReceivedAction,
     pair,
     disconnectSession,
     approveSession,
@@ -2424,6 +2732,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       // This will trigger the useEffect
       return Promise.resolve();
     },
+    handleWalletConnectTxCompletion,
+    setWalletConnectNavigation,
   };
 
   return (

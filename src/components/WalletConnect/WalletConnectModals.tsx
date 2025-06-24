@@ -5,12 +5,21 @@ import PersonalSignModal from './modals/PersonalSignModal';
 import TypedDataSignModal from './modals/TypedDataSignModal';
 import TransactionRequestModal from './modals/TransactionRequestModal';
 import ChainSwitchModal from './modals/ChainSwitchModal';
+import ConfirmPublicNoncesKey from '../ConfirmPublicNoncesKey/ConfirmPublicNoncesKey';
+import PublicNoncesRejected from '../PublicNoncesRejected/PublicNoncesRejected';
+import PublicNoncesReceived from '../PublicNoncesReceived/PublicNoncesReceived';
 
 const WalletConnectModals: React.FC = () => {
   const {
     pendingProposal,
     pendingRequestModal,
     currentSigningRequest,
+    openConfirmPublicNonces,
+    openPublicNoncesRejected,
+    openPublicNoncesReceived,
+    confirmPublicNoncesAction,
+    publicNoncesRejectedAction,
+    publicNoncesReceivedAction,
     approveSession,
     rejectSession,
     approveRequest,
@@ -86,6 +95,20 @@ const WalletConnectModals: React.FC = () => {
         request={pendingRequestModal}
         onApprove={approveRequest}
         onReject={rejectRequest}
+      />
+
+      {/* Public Nonces Dialogs - same as SendEVM */}
+      <ConfirmPublicNoncesKey
+        open={openConfirmPublicNonces}
+        openAction={confirmPublicNoncesAction}
+      />
+      <PublicNoncesRejected
+        open={openPublicNoncesRejected}
+        openAction={publicNoncesRejectedAction}
+      />
+      <PublicNoncesReceived
+        open={openPublicNoncesReceived}
+        openAction={publicNoncesReceivedAction}
       />
     </>
   );

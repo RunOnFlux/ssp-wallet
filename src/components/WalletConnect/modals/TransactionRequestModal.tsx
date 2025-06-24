@@ -1,11 +1,25 @@
 import React, { useState } from 'react';
-import { Modal, QRCode, Space, Typography, Card, Alert } from 'antd';
+import {
+  Modal,
+  QRCode,
+  Space,
+  Typography,
+  Card,
+  Alert,
+  Collapse,
+  Tag,
+  Divider,
+} from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../../../types';
 import { SessionRequest, EthereumTransaction } from '../types/modalTypes';
 import { useWalletConnect } from '../../../contexts/WalletConnectContext';
+import {
+  ExclamationCircleOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
 
 const { Text, Paragraph } = Typography;
 
@@ -81,6 +95,92 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
     }
   };
 
+  // Helper function to decode transaction data
+  const decodeTransactionData = (
+    data: string,
+  ): {
+    functionName: string;
+    signature: string;
+    isRecognized: boolean;
+    warning?: string;
+  } => {
+    if (!data || data === '0x') {
+      return {
+        functionName: t('home:walletconnect_tx_modal.simple_transfer'),
+        signature: '',
+        isRecognized: true,
+      };
+    }
+
+    // Common function signatures
+    const functionSignatures: Record<
+      string,
+      { name: string; warning?: string }
+    > = {
+      '0xa9059cbb': {
+        name: t('home:walletconnect_tx_modal.erc20_transfer'),
+        warning: t('home:walletconnect_tx_modal.erc20_transfer_warning'),
+      },
+      '0x23b872dd': {
+        name: t('home:walletconnect_tx_modal.erc20_transfer_from'),
+        warning: t('home:walletconnect_tx_modal.erc20_transfer_from_warning'),
+      },
+      '0x095ea7b3': {
+        name: t('home:walletconnect_tx_modal.erc20_approve'),
+        warning: t('home:walletconnect_tx_modal.erc20_approve_warning'),
+      },
+      '0x40c10f19': { name: t('home:walletconnect_tx_modal.erc20_mint') },
+      '0x42842e0e': {
+        name: t('home:walletconnect_tx_modal.nft_safe_transfer'),
+      },
+      '0xa22cb465': {
+        name: t('home:walletconnect_tx_modal.nft_set_approval_for_all'),
+        warning: t('home:walletconnect_tx_modal.nft_approval_warning'),
+      },
+      '0x70a08231': { name: t('home:walletconnect_tx_modal.erc20_balance_of') },
+      '0x18160ddd': {
+        name: t('home:walletconnect_tx_modal.erc20_total_supply'),
+      },
+      '0x06fdde03': { name: t('home:walletconnect_tx_modal.erc20_name') },
+      '0x95d89b41': { name: t('home:walletconnect_tx_modal.erc20_symbol') },
+      '0x313ce567': { name: t('home:walletconnect_tx_modal.erc20_decimals') },
+      '0x5c975abb': { name: t('home:walletconnect_tx_modal.pause') },
+      '0x3f4ba83a': { name: t('home:walletconnect_tx_modal.unpause') },
+    };
+
+    const signature = data.substring(0, 10);
+    const functionInfo = functionSignatures[signature];
+
+    if (functionInfo) {
+      return {
+        functionName: functionInfo.name,
+        signature,
+        isRecognized: true,
+        warning: functionInfo.warning,
+      };
+    }
+
+    return {
+      functionName: t('home:walletconnect_tx_modal.unknown_contract_function'),
+      signature,
+      isRecognized: false,
+      warning: t('home:walletconnect_tx_modal.unknown_function_warning'),
+    };
+  };
+
+  // Helper function to get dApp information
+  const getDAppInfo = () => {
+    const dappName =
+      request?.verifyContext?.verified?.origin ||
+      request?.params?.chainId ||
+      t('home:walletconnect.unknown_dapp');
+
+    const dappUrl = request?.verifyContext?.verified?.validation || '';
+    const isVerified = !!request?.verifyContext?.verified?.isScam === false;
+
+    return { dappName, dappUrl, isVerified };
+  };
+
   // Helper function to format transaction data nicely
   const formatTransactionData = (data: string): React.ReactNode => {
     if (!data || data === '0x') {
@@ -146,6 +246,9 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
 
   // First step: Approval dialog
   if (step === 'approval') {
+    const decodedData = decodeTransactionData(transaction.data || '');
+    const dappInfo = getDAppInfo();
+
     return (
       <Modal
         title={t('home:walletconnect.transaction_request')}
@@ -155,10 +258,79 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
         okText={t('home:walletconnect.approve')}
         cancelText={t('home:walletconnect.reject')}
         confirmLoading={isApproving}
-        width={600}
+        width={700}
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          {/* dApp Information */}
+          <Card size="small" style={{ marginBottom: 16 }}>
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <Text strong>
+                  {t('home:walletconnect_tx_modal.dapp_label')}:
+                </Text>
+                <Tag color={dappInfo.isVerified ? 'green' : 'orange'}>
+                  {dappInfo.dappName}
+                </Tag>
+                {dappInfo.isVerified ? (
+                  <InfoCircleOutlined style={{ color: '#52c41a' }} />
+                ) : (
+                  <ExclamationCircleOutlined style={{ color: '#faad14' }} />
+                )}
+              </div>
+              {dappInfo.dappUrl && (
+                <div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    {dappInfo.dappUrl}
+                  </Text>
+                </div>
+              )}
+            </Space>
+          </Card>
+
           <Text>{t('home:walletconnect.dapp_requests_transaction')}</Text>
+
+          {/* Function Information */}
+          {transaction.data && transaction.data !== '0x' && (
+            <Card
+              size="small"
+              style={{
+                marginBottom: 16,
+                border: decodedData.warning ? '1px solid #faad14' : undefined,
+              }}
+            >
+              <Space
+                direction="vertical"
+                size="small"
+                style={{ width: '100%' }}
+              >
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <Text strong>
+                    {t('home:walletconnect_tx_modal.function_label_with_colon')}
+                  </Text>
+                  <Tag color={decodedData.isRecognized ? 'blue' : 'red'}>
+                    {decodedData.functionName}
+                  </Tag>
+                  {decodedData.signature && (
+                    <Text code style={{ fontSize: '11px' }}>
+                      {decodedData.signature}
+                    </Text>
+                  )}
+                </div>
+                {decodedData.warning && (
+                  <Alert
+                    message={decodedData.warning}
+                    type="warning"
+                    showIcon
+                    style={{ fontSize: '12px' }}
+                  />
+                )}
+              </Space>
+            </Card>
+          )}
 
           {/* Transaction Details */}
           <Card
@@ -189,12 +361,30 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
               </div>
 
               {transaction.data && transaction.data !== '0x' && (
-                <div>
-                  <Text strong>{t('home:walletconnect.data')}: </Text>
-                  <div style={{ marginTop: '4px' }}>
-                    {formatTransactionData(transaction.data)}
-                  </div>
-                </div>
+                <Collapse
+                  size="small"
+                  items={[
+                    {
+                      key: '1',
+                      label: t(
+                        'home:walletconnect_tx_modal.raw_transaction_data',
+                      ),
+                      children: (
+                        <div>
+                          <Text strong>
+                            {t('home:walletconnect_tx_modal.data_length')}:{' '}
+                          </Text>
+                          <Text>
+                            {transaction.data.length}{' '}
+                            {t('home:walletconnect_tx_modal.characters')}
+                          </Text>
+                          <Divider style={{ margin: '8px 0' }} />
+                          {formatTransactionData(transaction.data)}
+                        </div>
+                      ),
+                    },
+                  ]}
+                />
               )}
             </Space>
           </Card>
@@ -202,16 +392,17 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
           {/* Chain Switch Warning */}
           {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
             <Alert
-              message="Chain Switch Required"
+              message={t('home:walletconnect_tx_modal.chain_switch_required')}
               description={
                 <div>
                   <Text>
-                    {`This transaction will switch to ${chainSwitchInfo.targetChain.chainName} chain.`}
+                    {t('home:walletconnect_tx_modal.chain_switch_desc', {
+                      chainName: chainSwitchInfo.targetChain.chainName,
+                    })}
                   </Text>
                   <br />
                   <Text type="secondary">
-                    The address exists on a different chain than currently
-                    active.
+                    {t('home:walletconnect_tx_modal.address_different_chain')}
                   </Text>
                 </div>
               }
