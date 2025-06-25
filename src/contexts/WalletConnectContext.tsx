@@ -1796,11 +1796,11 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     });
   };
 
-  const handleSendTransactionInternal = async (
+  const handleSendTransactionInternal = (
     params: [EthereumTransaction],
     resolve: (hash: string) => void,
     reject: (error: Error) => void,
-  ): Promise<void> => {
+  ): void => {
     try {
       const [transaction] = params;
 
@@ -1979,21 +1979,43 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       const navigate = window.walletConnectNavigate;
       if (navigate) {
         navigate('/sendevm', { state: navigationState });
+
+        // Close the modal and show success message
+        displayMessage('success', 'Redirected to Send EVM page');
+
+        // For WalletConnect, we need to resolve with a temporary hash
+        // The actual transaction will be sent from SendEVM page
+        // WalletConnect expects a transaction hash, so we'll provide a placeholder
+        // that gets replaced when the real transaction is sent
+        const tempTxId = `pending_${Date.now()}`;
+
+        // Store this request so we can resolve it when the real transaction is sent
+        if (!window.walletConnectTxMap) {
+          window.walletConnectTxMap = new Map();
+        }
+        window.walletConnectTxMap.set(
+          currentSigningRequest?.id?.toString() || tempTxId,
+          {
+            resolve,
+            reject,
+            originalTransaction: transaction,
+            timestamp: Date.now(),
+          },
+        );
+
+        // Don't resolve here - let SendEVM handle the actual transaction sending
+        // The resolve will be called when we receive the txid from socket via handleWalletConnectTxCompletion
+        // But we need to resolve with a temporary hash so the modal closes
+        resolve(tempTxId);
+        return;
       } else {
         console.error('❌ Navigation function not available');
-        throw new Error(t('home:walletconnect.navigation_failed'));
+        displayMessage(
+          'error',
+          'Please go to Send EVM page and try again. Navigation not available from current page.',
+        );
+        throw new Error('Navigation not available');
       }
-
-      // Show loading message
-      displayMessage(
-        'info',
-        t('home:walletconnect.broadcasting_transaction'),
-        0,
-      );
-
-      // Don't resolve immediately - wait for transaction to be sent via SSP
-      // The resolve will be called when we receive the txid from socket
-      await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure state is set
     } catch (error) {
       console.error('❌ Send transaction error:', error);
       displayMessage('error', t('home:walletconnect.transaction_send_failed'));

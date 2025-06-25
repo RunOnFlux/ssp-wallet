@@ -180,13 +180,7 @@ function SendEVM() {
 
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const browser = window.chrome || window.browser;
-  const { handleWalletConnectTxCompletion, setWalletConnectNavigation } =
-    useWalletConnect();
-
-  // Set up navigation for WalletConnect
-  useEffect(() => {
-    setWalletConnectNavigation(navigate);
-  }, [navigate, setWalletConnectNavigation]);
+  const { handleWalletConnectTxCompletion } = useWalletConnect();
 
   // Handle WalletConnect parameters from navigation state
   useEffect(() => {
@@ -194,6 +188,9 @@ function SendEVM() {
       console.log(
         '🔗 SendEVM: WalletConnect mode detected, setting parameters',
       );
+
+      // Set the WalletConnect mode flag in form values
+      form.setFieldValue('walletConnectMode', true);
 
       // Apply gas settings if provided
       if (state.baseGasPrice) {
@@ -270,15 +267,9 @@ function SendEVM() {
     }
     setTxFee(totalFeeETH);
     form.setFieldValue('fee', totalFeeETH);
-    try {
-      console.log(networkFees);
-    } catch (error) {
-      console.log(error);
-    }
   });
 
   useEffect(() => {
-    console.log('token change');
     getSpendableBalance();
   }, [txToken]);
 
@@ -372,7 +363,6 @@ function SendEVM() {
     const tokens = allTokens.filter((token) =>
       activatedTokens.includes(token.contract),
     );
-    console.log('construct tokens for sending');
     const tokenItems: tokenOption[] = [];
     tokens.forEach((token) => {
       const option = {
@@ -436,7 +426,7 @@ function SendEVM() {
       const maxSpendable = new BigNumber(spendableBalance).dividedBy(
         10 ** blockchainConfig.decimals,
       );
-      console.log(maxSpendable);
+
       if (totalAmount.isGreaterThan(maxSpendable)) {
         // mark amount in red box as bad inpout
         setValidateStatusAmount('error');
@@ -713,7 +703,7 @@ function SendEVM() {
   const calculateTxFee = () => {
     // here how much gas our transaction will use by maximum?
     // here we set the overall gas limit and calculate the ETH value
-    console.log('CALC tx fee');
+
     const totalGas = new BigNumber(totalGasLimit); // get better estimation
     const totalGasPrice = new BigNumber(baseGasPrice)
       .plus(priorityGasPrice)
@@ -754,15 +744,25 @@ function SendEVM() {
   };
 
   const onFinish = (values: sendForm) => {
-    console.log(values);
+    console.log('🔗 SendEVM onFinish values:', values);
+    console.log('🔗 SendEVM walletConnectMode:', values.walletConnectMode);
+    console.log('🔗 SendEVM amount:', values.amount, 'parsed:', +values.amount);
+
     if (values.receiver.length < 8 || !values.receiver.startsWith('0x')) {
       displayMessage('error', t('send:err_invalid_receiver'));
       return;
     }
-    if (!values.amount || +values.amount <= 0 || isNaN(+values.amount)) {
+    // For WalletConnect transactions, allow 0 value (smart contract interactions)
+    // For regular transactions, require amount > 0
+    if (!values.amount || isNaN(+values.amount)) {
       displayMessage('error', t('send:err_invalid_amount'));
       return;
     }
+    if (!values.walletConnectMode && +values.amount <= 0) {
+      displayMessage('error', t('send:err_invalid_amount'));
+      return;
+    }
+
     if (!values.fee || +values.fee < 0 || isNaN(+values.fee)) {
       displayMessage('error', t('send:err_invalid_fee'));
       return;
@@ -1034,6 +1034,11 @@ function SendEVM() {
           marginTop: state.swap ? '24px' : '0',
         }}
       >
+        {/* Hidden field for WalletConnect mode flag */}
+        <Form.Item name="walletConnectMode" style={{ display: 'none' }}>
+          <Input type="hidden" />
+        </Form.Item>
+
         <Form.Item name="asset" label={t('send:asset')}>
           <Select
             size="large"
@@ -1123,11 +1128,16 @@ function SendEVM() {
             marginRight: 3,
             fontSize: 12,
             color: '#4096ff',
-            cursor: state.swap ? 'not-allowed' : 'pointer',
+            cursor:
+              !!state.swap || !!(state?.walletConnectMode && state?.amount)
+                ? 'not-allowed'
+                : 'pointer',
             zIndex: 2,
           }}
           onClick={() => setUseMaximum(true)}
-          disabled={!!state.swap}
+          disabled={
+            !!state.swap || !!(state?.walletConnectMode && state?.amount)
+          }
         >
           {t('send:max')}:{' '}
           {new BigNumber(spendableBalance)
