@@ -547,6 +547,8 @@
     "function_label_with_colon": "Function:",
     "chain_switch_required": "Chain Switch Required",
     "chain_switch_desc": "This transaction will switch to {{chainName}} chain.",
-    "address_different_chain": "The address exists on a different chain than currently active."
+    "address_different_chain": "The address exists on a different chain than currently active.",
+    "complete_transaction": "Complete Transaction",
+    "data_field_only": "Data Field Only"
   }
 }

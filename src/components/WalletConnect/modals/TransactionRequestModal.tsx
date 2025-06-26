@@ -57,9 +57,29 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
     chainKey: keyof cryptos,
   ): string => {
     const symbol = getChainCurrencySymbol(chainKey);
-    const numValue = parseFloat(value);
-    if (isNaN(numValue)) return `0 ${symbol}`;
-    return `${numValue} ${symbol}`;
+
+    if (!value || value === '0x' || value === '0x0') {
+      return `0 ${symbol}`;
+    }
+
+    try {
+      // Parse the hex value (Wei) and convert to Ether
+      let weiValue: bigint;
+      if (value.startsWith('0x')) {
+        weiValue = BigInt(value);
+      } else {
+        weiValue = BigInt(value);
+      }
+
+      // Convert Wei to Ether (divide by 10^18)
+      const etherValue = Number(weiValue) / Math.pow(10, 18);
+
+      // Simple formatting - let JavaScript handle the display
+      return `${etherValue} ${symbol}`;
+    } catch (error) {
+      console.error('Error parsing transaction value:', value, error);
+      return `${value} ${symbol} (raw)`;
+    }
   };
 
   // Helper function to format gas value nicely
@@ -159,42 +179,6 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
     const isVerified = !!request?.verifyContext?.verified?.isScam === false;
 
     return { dappName, dappUrl, isVerified };
-  };
-
-  // Helper function to format transaction data nicely
-  const formatTransactionData = (data: string): React.ReactNode => {
-    if (!data || data === '0x') {
-      return (
-        <span style={{ fontStyle: 'italic', color: '#999' }}>
-          {t('home:walletconnect.no_data')}
-        </span>
-      );
-    }
-
-    // If data is too long, show first and last parts with ellipsis
-    if (data.length > 100) {
-      return (
-        <div style={{ fontFamily: 'monospace', fontSize: '12px' }}>
-          <div>{data.substring(0, 50)}</div>
-          <div style={{ textAlign: 'center', color: '#999', margin: '4px 0' }}>
-            ...
-          </div>
-          <div>{data.substring(data.length - 50)}</div>
-        </div>
-      );
-    }
-
-    return (
-      <div
-        style={{
-          fontFamily: 'monospace',
-          fontSize: '12px',
-          wordBreak: 'break-all',
-        }}
-      >
-        {data}
-      </div>
-    );
   };
 
   const handleApprove = async () => {
@@ -366,32 +350,64 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
               </Text>
             </div>
 
-            {transaction.data && transaction.data !== '0x' && (
-              <Collapse
-                size="small"
-                items={[
-                  {
-                    key: '1',
-                    label: t(
-                      'home:walletconnect_tx_modal.raw_transaction_data',
-                    ),
-                    children: (
-                      <div>
-                        <Text strong>
-                          {t('home:walletconnect_tx_modal.data_length')}:{' '}
-                        </Text>
-                        <Text>
-                          {transaction.data.length}{' '}
-                          {t('home:walletconnect_tx_modal.characters')}
-                        </Text>
-                        <Divider style={{ margin: '8px 0' }} />
-                        {formatTransactionData(transaction.data)}
-                      </div>
-                    ),
-                  },
-                ]}
-              />
-            )}
+            <Collapse
+              size="small"
+              items={[
+                {
+                  key: '1',
+                  label: t('home:walletconnect_tx_modal.raw_transaction_data'),
+                  children: (
+                    <div>
+                      <Text strong>
+                        {t('home:walletconnect_tx_modal.complete_transaction')}:
+                      </Text>
+                      <Typography.Paragraph
+                        code
+                        copyable={{
+                          text: JSON.stringify(transaction, null, 2),
+                        }}
+                        style={{
+                          maxHeight: '300px',
+                          overflowY: 'auto',
+                          marginTop: '8px',
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {JSON.stringify(transaction, null, 2)}
+                      </Typography.Paragraph>
+
+                      {transaction.data && transaction.data !== '0x' && (
+                        <>
+                          <Divider style={{ margin: '12px 0 8px 0' }} />
+                          <Text strong>
+                            {t('home:walletconnect_tx_modal.data_field_only')}:
+                          </Text>
+                          <div style={{ marginTop: '4px' }}>
+                            <Text type="secondary" style={{ fontSize: '11px' }}>
+                              {t('home:walletconnect_tx_modal.data_length')}:{' '}
+                              {transaction.data.length}{' '}
+                              {t('home:walletconnect_tx_modal.characters')}
+                            </Text>
+                          </div>
+                          <Typography.Paragraph
+                            code
+                            copyable={{ text: transaction.data }}
+                            style={{
+                              maxHeight: '200px',
+                              overflowY: 'auto',
+                              marginTop: '4px',
+                              wordBreak: 'break-all',
+                            }}
+                          >
+                            {transaction.data}
+                          </Typography.Paragraph>
+                        </>
+                      )}
+                    </div>
+                  ),
+                },
+              ]}
+            />
           </Space>
         </Card>
 
