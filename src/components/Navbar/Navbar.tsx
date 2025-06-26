@@ -144,6 +144,23 @@ function Navbar({
     setWalletValue(defValue);
   }, [activeChain]);
 
+  // Update wallet selector when walletInUse changes (e.g., through WalletConnect)
+  useEffect(() => {
+    const defValue = {
+      value: walletInUse,
+      label: t('home:navbar.chain_wallet', {
+        chain: blockchainConfig.name,
+        wallet:
+          (+walletInUse.split('-')[0] === 1
+            ? t('common:change')
+            : t('common:wallet')) +
+          ' ' +
+          (+walletInUse.split('-')[1] + 1).toString(),
+      }),
+    };
+    setWalletValue(defValue);
+  }, [walletInUse, blockchainConfig.name, t]);
+
   useEffect(() => {
     const wItems: walletOption[] = [];
     Object.keys(wallets).forEach((wallet) => {

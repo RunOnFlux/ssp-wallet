@@ -34,7 +34,7 @@ import { signMessageWithSchnorrMultisig } from '../lib/evmSigning';
 import { useSocket } from '../hooks/useSocket';
 import { NoticeType } from 'antd/es/message/interface';
 import { switchToChain } from '../lib/chainSwitching';
-import { store } from '../store';
+import { store, setWalletInUse } from '../store';
 import BigNumber from 'bignumber.js';
 
 // Extend window interface for WalletConnect transaction tracking
@@ -47,6 +47,10 @@ declare global {
         reject: (error: Error) => void;
         originalTransaction: EthereumTransaction;
         timestamp: number;
+        walletConnectRequest?: {
+          topic: string;
+          id: number;
+        };
       }
     >;
     walletConnectNavigate?: (
@@ -194,7 +198,8 @@ interface WalletConnectContextType {
   rejectRequest: (request: SessionRequest) => Promise<void>;
   contextHolder: React.ReactElement;
   debugInitialize: () => Promise<void>;
-  handleWalletConnectTxCompletion: (txid: string) => void;
+  handleWalletConnectTxCompletion: (txid: string) => Promise<void>;
+  handleWalletConnectTxRejection: (error?: string) => Promise<void>;
   setWalletConnectNavigation: (
     navigate: (path: string, options?: { state?: unknown }) => void,
   ) => void;
@@ -1104,14 +1109,42 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         const currentActiveChain = currentState.sspState.activeChain;
         const currentWallets = currentState[currentActiveChain].wallets || {};
 
-        // Check if address exists in current chain
+        // Find which wallet matches the from address in current chain
         const walletKeys = Object.keys(currentWallets);
-        const addressExistsInCurrentChain = walletKeys.some(
+        const currentWalletKey = walletKeys.find(
           (key) =>
             currentWallets[key].address.toLowerCase() === address.toLowerCase(),
         );
 
-        if (!addressExistsInCurrentChain) {
+        if (currentWalletKey) {
+          // Address exists in current chain, check if we need to switch wallet
+          const currentWalletInUse =
+            currentState[currentActiveChain].walletInUse;
+          if (currentWalletInUse !== currentWalletKey) {
+            console.log(
+              '🔗 WalletConnect: Switching to correct wallet within current chain:',
+              {
+                currentWallet: currentWalletInUse,
+                targetWallet: currentWalletKey,
+                targetAddress: address,
+                chain: currentActiveChain,
+              },
+            );
+
+            // Switch to the correct wallet and save to storage
+            setWalletInUse(currentActiveChain, currentWalletKey);
+            await localForage.setItem(
+              `walletInUse-${currentActiveChain}`,
+              currentWalletKey,
+            );
+
+            console.log('🔗 WalletConnect: Wallet switch completed:', {
+              activeChain: currentActiveChain,
+              activeWallet: currentWalletKey,
+              activeAddress: currentWallets[currentWalletKey].address,
+            });
+          }
+        } else {
           // Address not found, check other chains
           console.log(
             '🔗 WalletConnect: Address not found in current chain, searching other chains:',
@@ -1153,6 +1186,39 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
             );
           }
         }
+
+        // After potential chain switch, verify the correct wallet is active
+        const finalState = store.getState();
+        const finalActiveChain = finalState.sspState.activeChain;
+        const finalWallets = finalState[finalActiveChain].wallets || {};
+        const finalWalletKeys = Object.keys(finalWallets);
+        const targetWallet = finalWalletKeys.find(
+          (key) =>
+            finalWallets[key].address.toLowerCase() === address.toLowerCase(),
+        );
+
+        if (targetWallet) {
+          const currentWalletInUse = finalState[finalActiveChain].walletInUse;
+          if (currentWalletInUse !== targetWallet) {
+            // This should not happen if our logic above worked correctly, but just in case
+            setWalletInUse(finalActiveChain, targetWallet);
+            await localForage.setItem(
+              `walletInUse-${finalActiveChain}`,
+              targetWallet,
+            );
+          }
+        } else {
+          console.error(
+            '🔗 WalletConnect: Address still not found after chain/wallet switch:',
+            {
+              requestedAddress: address,
+              activeChain: finalActiveChain,
+              availableAddresses: finalWalletKeys.map(
+                (key) => finalWallets[key].address,
+              ),
+            },
+          );
+        }
       }
 
       let result: unknown;
@@ -1183,10 +1249,27 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           console.log(
             '🔗 WalletConnect: Processing transaction sending approval',
           );
-          result = await handleSendTransaction(
-            requestParams as [EthereumTransaction],
-          );
-          break;
+          // For eth_sendTransaction, we don't wait for result since it navigates to SendEVM
+          // Close the modal immediately after successful navigation
+          try {
+            handleSendTransaction(requestParams as [EthereumTransaction], {
+              topic,
+              id,
+            });
+            console.log(
+              '🔗 WalletConnect: Transaction approval initiated, closing modal',
+            );
+            // Close the modal immediately after navigation
+            setPendingRequestModal(null);
+            setChainSwitchInfo(null);
+            return; // Exit early - don't respond to WalletConnect yet (will happen on tx completion)
+          } catch (error) {
+            console.error(
+              '🔗 WalletConnect: Error initiating transaction:',
+              error,
+            );
+            throw error; // Let the catch block handle this error
+          }
 
         case 'eth_signTransaction':
           console.log(
@@ -1790,9 +1873,15 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   // Transaction signing/sending with unified approach (no relay dependency)
   const handleSendTransaction = async (
     params: [EthereumTransaction],
+    walletConnectRequest?: { topic: string; id: number },
   ): Promise<string> => {
     return new Promise((resolve, reject) => {
-      handleSendTransactionInternal(params, resolve, reject);
+      handleSendTransactionInternal(
+        params,
+        resolve,
+        reject,
+        walletConnectRequest,
+      );
     });
   };
 
@@ -1800,6 +1889,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     params: [EthereumTransaction],
     resolve: (hash: string) => void,
     reject: (error: Error) => void,
+    walletConnectRequest?: { topic: string; id: number },
   ): void => {
     try {
       const [transaction] = params;
@@ -1943,19 +2033,11 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       });
 
       // Store resolve/reject functions for when transaction completes
-      const walletConnectTxData = {
-        resolve,
-        reject,
-        originalTransaction: transaction,
-        timestamp: Date.now(),
-      };
-
       // Store in a map for retrieval when txid comes back from SSP
       if (!window.walletConnectTxMap) {
         window.walletConnectTxMap = new Map();
       }
       const txRequestId = `wc_${Date.now()}_${Math.random()}`;
-      window.walletConnectTxMap.set(txRequestId, walletConnectTxData);
 
       // Navigate to SendEVM with the parsed parameters
       const navigationState = {
@@ -1983,30 +2065,25 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         // Close the modal and show success message
         displayMessage('success', 'Redirected to Send EVM page');
 
-        // For WalletConnect, we need to resolve with a temporary hash
-        // The actual transaction will be sent from SendEVM page
-        // WalletConnect expects a transaction hash, so we'll provide a placeholder
-        // that gets replaced when the real transaction is sent
-        const tempTxId = `pending_${Date.now()}`;
+        // Store the transaction request data using the txRequestId as the key
+        // DO NOT resolve the WalletConnect request here - wait for actual transaction completion
+        window.walletConnectTxMap.set(txRequestId, {
+          resolve,
+          reject,
+          originalTransaction: transaction,
+          timestamp: Date.now(),
+          walletConnectRequest,
+        });
 
-        // Store this request so we can resolve it when the real transaction is sent
-        if (!window.walletConnectTxMap) {
-          window.walletConnectTxMap = new Map();
-        }
-        window.walletConnectTxMap.set(
-          currentSigningRequest?.id?.toString() || tempTxId,
-          {
-            resolve,
-            reject,
-            originalTransaction: transaction,
-            timestamp: Date.now(),
-          },
-        );
+        console.log('🔗 WalletConnect: Stored pending transaction request:', {
+          txRequestId,
+          to: transaction.to,
+          value: transaction.value,
+          pendingRequests: window.walletConnectTxMap.size,
+        });
 
-        // Don't resolve here - let SendEVM handle the actual transaction sending
-        // The resolve will be called when we receive the txid from socket via handleWalletConnectTxCompletion
-        // But we need to resolve with a temporary hash so the modal closes
-        resolve(tempTxId);
+        // The resolve will be called later when we receive the real txid from socket
+        // via handleWalletConnectTxCompletion - DO NOT resolve here
         return;
       } else {
         console.error('❌ Navigation function not available');
@@ -2119,30 +2196,139 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   };
 
   // Handle WalletConnect transaction completion when txid is received from SSP
-  const handleWalletConnectTxCompletion = (txid: string) => {
+  const handleWalletConnectTxCompletion = async (
+    txid: string,
+  ): Promise<void> => {
     console.log('🔗 WalletConnect: Received txid from SSP:', txid);
 
-    if (!window.walletConnectTxMap) {
-      console.warn('🔗 WalletConnect: No pending transactions found');
+    if (!window.walletConnectTxMap || !walletKitRef.current) {
+      console.warn(
+        '🔗 WalletConnect: No pending transactions or WalletKit not available',
+      );
       return;
     }
 
-    // Find the pending transaction that matches this txid
-    for (const [requestId, txData] of window.walletConnectTxMap.entries()) {
-      // For now, resolve the most recent transaction
-      // In a production environment, you'd match by address or other criteria
+    console.log('🔗 WalletConnect: Pending requests:', {
+      count: window.walletConnectTxMap.size,
+      requestIds: Array.from(window.walletConnectTxMap.keys()),
+    });
+
+    // Resolve the most recent transaction (FIFO approach)
+    // In a single-user environment, this should be safe
+    const firstEntry = window.walletConnectTxMap.entries().next();
+
+    if (!firstEntry.done && firstEntry.value) {
+      const [requestId, txData] = firstEntry.value;
       try {
+        // Send WalletConnect response with the real transaction hash
+        if (txData.walletConnectRequest) {
+          const response = formatJsonRpcResult(
+            txData.walletConnectRequest.id,
+            txid,
+          );
+          await walletKitRef.current.respondSessionRequest({
+            topic: txData.walletConnectRequest.topic,
+            response,
+          });
+          console.log('🔗 WalletConnect: Sent response to dApp:', {
+            topic: txData.walletConnectRequest.topic,
+            id: txData.walletConnectRequest.id,
+            txid,
+          });
+        }
+
+        // Also resolve the internal Promise for backward compatibility
         txData.resolve(txid);
         window.walletConnectTxMap.delete(requestId);
-        console.log('✅ WalletConnect: Transaction resolved with txid:', txid);
+
+        console.log('✅ WalletConnect: Transaction resolved with txid:', {
+          requestId,
+          txid,
+          remainingRequests: window.walletConnectTxMap.size,
+        });
+
+        // Close the modal and clear request state
+        setPendingRequestModal(null);
+        setCurrentSigningRequest(null);
+        setChainSwitchInfo(null);
 
         displayMessage(
           'success',
           t('home:walletconnect.transaction_sent_success'),
         );
-        break;
       } catch (error) {
         console.error('❌ WalletConnect: Error resolving transaction:', error);
+        // If WalletConnect response fails, still resolve the internal Promise
+        txData.resolve(txid);
+        window.walletConnectTxMap.delete(requestId);
+      }
+    } else {
+      console.warn('🔗 WalletConnect: No pending requests to resolve');
+    }
+  };
+
+  // Handle WalletConnect transaction rejection when transaction is rejected on SSP
+  const handleWalletConnectTxRejection = async (
+    error?: string,
+  ): Promise<void> => {
+    console.log('🔗 WalletConnect: Transaction rejected on SSP:', error);
+
+    if (!window.walletConnectTxMap || !walletKitRef.current) {
+      console.warn(
+        '🔗 WalletConnect: No pending transactions or WalletKit not available',
+      );
+      return;
+    }
+
+    // Reject all pending transactions (or find a specific one based on criteria)
+    for (const [requestId, txData] of window.walletConnectTxMap.entries()) {
+      try {
+        const rejectionError = new Error(error || t('common:request_rejected'));
+
+        // Send WalletConnect error response to dApp
+        if (txData.walletConnectRequest) {
+          const response = formatJsonRpcError(
+            txData.walletConnectRequest.id,
+            rejectionError.message,
+          );
+          await walletKitRef.current.respondSessionRequest({
+            topic: txData.walletConnectRequest.topic,
+            response,
+          });
+          console.log('🔗 WalletConnect: Sent rejection response to dApp:', {
+            topic: txData.walletConnectRequest.topic,
+            id: txData.walletConnectRequest.id,
+            error: rejectionError.message,
+          });
+        }
+
+        // Also reject the internal Promise for backward compatibility
+        txData.reject(rejectionError);
+        window.walletConnectTxMap.delete(requestId);
+        console.log(
+          '❌ WalletConnect: Transaction rejected with error:',
+          error,
+        );
+
+        // Close the modal and clear request state
+        setPendingRequestModal(null);
+        setCurrentSigningRequest(null);
+        setChainSwitchInfo(null);
+
+        displayMessage('info', t('common:request_rejected'));
+        break;
+      } catch (rejectionError) {
+        console.error(
+          '❌ WalletConnect: Error rejecting transaction:',
+          rejectionError,
+        );
+        // If WalletConnect response fails, still reject the internal Promise
+        txData.reject(
+          rejectionError instanceof Error
+            ? rejectionError
+            : new Error('Transaction rejection failed'),
+        );
+        window.walletConnectTxMap.delete(requestId);
       }
     }
   };
@@ -2755,6 +2941,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       return Promise.resolve();
     },
     handleWalletConnectTxCompletion,
+    handleWalletConnectTxRejection,
     setWalletConnectNavigation,
   };
 

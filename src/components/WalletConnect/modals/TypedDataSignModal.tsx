@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
 import { SessionRequest } from '../types/modalTypes';
 import { useWalletConnect } from '../../../contexts/WalletConnectContext';
+import { blockchains } from '@storage/blockchains';
 
 const { Text, Paragraph } = Typography;
 
@@ -55,7 +56,11 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
   });
 
   // Follow exact ConfirmTxKey pattern: chain:wallet:data
-  const qrString = `${activeChain}:${walletInUse}:${walletConnectData}`;
+  const qrString = `${
+    chainSwitchInfo?.required && chainSwitchInfo.targetChain
+      ? chainSwitchInfo.targetChain.chainKey
+      : activeChain
+  }:${walletInUse}:${walletConnectData}`;
 
   const handleApprove = () => {
     if (step === 'approval') {
@@ -116,22 +121,34 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
               >
                 {address}
               </Text>
+              <div style={{ marginTop: 8 }}>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  {chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                    ? t('home:walletconnect.on_network', {
+                        networkName: chainSwitchInfo.targetChain.chainName,
+                      })
+                    : t('home:walletconnect.on_network', {
+                        networkName: blockchains[activeChain].name,
+                      })}
+                </Text>
+              </div>
             </div>
           </Card>
 
           {/* Chain Switch Warning */}
           {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
             <Alert
-              message="Chain Switch Required"
+              message={t('home:walletconnect.chain_switch_required')}
               description={
                 <div>
                   <Text>
-                    {`This signing request will switch to ${chainSwitchInfo.targetChain.chainName} chain.`}
+                    {t('home:walletconnect.signing_chain_switch_desc', {
+                      chainName: chainSwitchInfo.targetChain.chainName,
+                    })}
                   </Text>
                   <br />
                   <Text type="secondary">
-                    The address exists on a different chain than currently
-                    active.
+                    {t('home:walletconnect.address_different_chain')}
                   </Text>
                 </div>
               }

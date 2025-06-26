@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
 import { SessionRequest } from '../types/modalTypes';
 import { useWalletConnect } from '../../../contexts/WalletConnectContext';
+import { useAppSelector } from '../../../hooks';
+import { blockchains } from '@storage/blockchains';
 
 const { Text, Paragraph } = Typography;
 
@@ -22,6 +24,7 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
 }) => {
   const { t } = useTranslation(['home', 'common']);
   const { chainSwitchInfo } = useWalletConnect();
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const [step, setStep] = useState<'approval' | 'qr'>('approval');
   const [isApproving, setIsApproving] = useState(false);
 
@@ -128,6 +131,17 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
             >
               {address}
             </Text>
+            <div style={{ marginTop: 8 }}>
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                {chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                  ? t('home:walletconnect.on_network', {
+                      networkName: chainSwitchInfo.targetChain.chainName,
+                    })
+                  : t('home:walletconnect.on_network', {
+                      networkName: blockchains[activeChain].name,
+                    })}
+              </Text>
+            </div>
           </div>
         </Card>
 
@@ -181,15 +195,17 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
         {/* Chain Switch Warning */}
         {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
           <Alert
-            message="Chain Switch Required"
+            message={t('home:walletconnect.chain_switch_required')}
             description={
               <div>
                 <Text>
-                  {`This signing request will switch to ${chainSwitchInfo.targetChain.chainName} chain.`}
+                  {t('home:walletconnect.signing_chain_switch_desc', {
+                    chainName: chainSwitchInfo.targetChain.chainName,
+                  })}
                 </Text>
                 <br />
                 <Text type="secondary">
-                  The address exists on a different chain than currently active.
+                  {t('home:walletconnect.address_different_chain')}
                 </Text>
               </div>
             }
@@ -269,7 +285,9 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
           )}
 
           {!qrString && (
-            <Text type="secondary">Waiting for signing request data...</Text>
+            <Text type="secondary">
+              {t('home:walletconnect.waiting_signing_request_data')}
+            </Text>
           )}
         </Space>
 

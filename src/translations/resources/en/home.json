@@ -506,7 +506,12 @@
     "address_not_found_transaction": "Address not found in current chain. Chain switch should have been performed before transaction.",
     "unsupported_method": "Unsupported method: {{method}}",
     "unknown_error": "Unknown error occurred",
-    "navigation_failed": "Unable to navigate to transaction screen"
+    "navigation_failed": "Unable to navigate to transaction screen",
+    "chain_switch_required": "Chain Switch Required",
+    "signing_chain_switch_desc": "This signing request will switch to {{chainName}} chain.",
+    "address_different_chain": "The address exists on a different chain than currently active.",
+    "on_network": "On {{networkName}} network",
+    "waiting_signing_request_data": "Waiting for signing request data..."
   },
   "walletconnect_tx_modal": {
     "simple_transfer": "Simple Transfer",

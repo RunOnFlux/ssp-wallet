@@ -323,6 +323,24 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
         >
           <Space direction="vertical" size="small" style={{ width: '100%' }}>
             <div>
+              <Text strong>{t('common:from')}: </Text>
+              <Text code copyable>
+                {transaction.from || t('common:address')}
+              </Text>
+              <div style={{ marginTop: 4 }}>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  {chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                    ? t('home:walletconnect.on_network', {
+                        networkName: chainSwitchInfo.targetChain.chainName,
+                      })
+                    : t('home:walletconnect.on_network', {
+                        networkName: blockchains[activeChain].name,
+                      })}
+                </Text>
+              </div>
+            </div>
+
+            <div>
               <Text strong>{t('home:walletconnect.to')}: </Text>
               <Text code copyable>
                 {transaction.to || t('common:address')}
@@ -332,7 +350,12 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
             <div>
               <Text strong>{t('home:walletconnect.value')}: </Text>
               <Text>
-                {formatCurrencyValue(transaction.value || '0', activeChain)}
+                {formatCurrencyValue(
+                  transaction.value || '0',
+                  chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                    ? chainSwitchInfo.targetChain.chainKey
+                    : activeChain,
+                )}
               </Text>
             </div>
 

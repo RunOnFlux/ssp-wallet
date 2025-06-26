@@ -180,7 +180,8 @@ function SendEVM() {
 
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const browser = window.chrome || window.browser;
-  const { handleWalletConnectTxCompletion } = useWalletConnect();
+  const { handleWalletConnectTxCompletion, handleWalletConnectTxRejection } =
+    useWalletConnect();
 
   // Handle WalletConnect parameters from navigation state
   useEffect(() => {
@@ -536,6 +537,17 @@ function SendEVM() {
         if (state.paymentAction) {
           payRequestAction(null);
         }
+
+        // Handle WalletConnect rejection if in WalletConnect mode
+        if (state.walletConnectMode && state.walletConnectTxId) {
+          console.log(
+            '🔗 SendEVM: WalletConnect transaction rejected on SSP key',
+          );
+          handleWalletConnectTxRejection(
+            'Transaction rejected by SSP key device',
+          );
+        }
+
         setOpenTxRejected(true);
       });
       if (txSentInterval) {
@@ -549,6 +561,16 @@ function SendEVM() {
     if (publicNoncesRejected) {
       setOpenConfirmPublicNonces(false);
       setTimeout(() => {
+        // Handle WalletConnect rejection if public nonces are rejected
+        if (state.walletConnectMode && state.walletConnectTxId) {
+          console.log(
+            '🔗 SendEVM: WalletConnect transaction failed - public nonces rejected',
+          );
+          handleWalletConnectTxRejection(
+            'Public nonces rejected by SSP key device',
+          );
+        }
+
         setOpenPublicNoncesRejected(true);
       });
       clearPublicNoncesRejected?.();
@@ -970,6 +992,13 @@ function SendEVM() {
     if (state.paymentAction) {
       payRequestAction(null);
     }
+
+    // Handle WalletConnect rejection if user cancels transaction
+    if (state.walletConnectMode && state.walletConnectTxId) {
+      console.log('🔗 SendEVM: User cancelled WalletConnect transaction');
+      handleWalletConnectTxRejection('Transaction cancelled by user');
+    }
+
     navigate('/home');
   };
 
