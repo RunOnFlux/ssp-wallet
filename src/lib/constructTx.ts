@@ -1057,9 +1057,8 @@ export async function constructAndSignEVMTransaction(
     } else {
       // Handle custom data for contract calls (like WalletConnect)
       const txData = (customData || '0x') as `0x${string}`;
-      const txValue = customData
-        ? BigInt(0)
-        : parseUnits(amount, blockchainConfig.decimals);
+      // Parse the amount properly - use ETH value if provided, otherwise 0
+      const txValue = parseUnits(amount, blockchainConfig.decimals);
 
       uoStruct = await smartAccountClient.buildUserOperation({
         account: multiSigSmartAccount,
