@@ -468,7 +468,6 @@
     "request_processing_failed": "Request processing failed",
     "session_establishment_failed": "Session establishment failed",
     "session_rejection_failed": "Failed to reject session",
-    "transaction_sent_success": "Transaction sent successfully!",
     "transaction_signed_success": "Transaction signed successfully!",
     "signing_failed": "Failed to sign message",
     "transaction_send_failed": "Failed to send transaction",
@@ -511,7 +510,9 @@
     "signing_chain_switch_desc": "This signing request will switch to {{chainName}} chain.",
     "address_different_chain": "The address exists on a different chain than currently active.",
     "on_network": "On {{networkName}} network",
-    "waiting_signing_request_data": "Waiting for signing request data..."
+    "waiting_signing_request_data": "Waiting for signing request data...",
+    "redirected_to_send_page": "Redirected to send page",
+    "walletconnect_transaction_approved": "Transaction approved and sent successfully!"
   },
   "walletconnect_tx_modal": {
     "simple_transfer": "Simple Transfer",

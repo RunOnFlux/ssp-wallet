@@ -2063,7 +2063,10 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         navigate('/sendevm', { state: navigationState });
 
         // Close the modal and show success message
-        displayMessage('success', 'Redirected to Send EVM page');
+        displayMessage(
+          'success',
+          t('home:walletconnect.redirected_to_send_page'),
+        );
 
         // Store the transaction request data using the txRequestId as the key
         // DO NOT resolve the WalletConnect request here - wait for actual transaction completion
@@ -2254,7 +2257,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
 
         displayMessage(
           'success',
-          t('home:walletconnect.transaction_sent_success'),
+          t('home:walletconnect.walletconnect_transaction_approved'),
         );
       } catch (error) {
         console.error('❌ WalletConnect: Error resolving transaction:', error);
