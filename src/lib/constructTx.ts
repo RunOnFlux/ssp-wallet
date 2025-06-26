@@ -971,6 +971,13 @@ export async function constructAndSignEVMTransaction(
     let preVerificationGas = Math.ceil((token ? 65235 : 64277) * 1.4);
     let callGasLimit = Math.ceil((token ? 63544 : 63544) * 1.4);
     const suggestedVerLimit = Math.ceil((token ? 393861 : 393421) * 1.4);
+
+    // @TODO test Increase gas limits for complex DeFi operations
+    // if (customData && customData !== '0x' && customData.length > 100) {
+    //   // This is likely a complex DeFi transaction, increase gas estimates
+    //   preVerificationGas = Math.ceil(preVerificationGas * 1.5); // +50%
+    //   callGasLimit = Math.ceil(callGasLimit * 2.0); // +100% for complex contract calls
+    // }
     // if we have more than suggestedVerLimit split it 1, 1, 2
     const difference =
       Number(maxTotalGas) -
@@ -998,13 +1005,16 @@ export async function constructAndSignEVMTransaction(
       .multipliedBy(10 ** 9)
       .toFixed(0);
 
+    // Calculate total max fee per gas (base + priority)
+    const maxFeePerGas = new BigNumber(baseGas).plus(priorityGas).toFixed(0);
+
     const CLIENT_OPT = {
       feeOptions: {
         maxPriorityFeePerGas: {
           max: BigInt(priorityGas),
           min: BigInt(priorityGas),
         },
-        maxFeePerGas: { max: BigInt(baseGas), min: BigInt(baseGas) },
+        maxFeePerGas: { max: BigInt(maxFeePerGas), min: BigInt(maxFeePerGas) },
         preVerificationGas: {
           multiplier: 1.3,
           max: BigInt(preVerificationGas),
