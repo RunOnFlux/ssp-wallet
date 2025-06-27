@@ -399,7 +399,6 @@
     "suggest_transactions": "Suggest transactions to approve",
     "networks": "Networks",
     "sessions": "Sessions",
-    "connection_initiated": "Connection initiated successfully",
     "connection_failed": "Failed to connect to dApp",
     "session_disconnected": "Session disconnected",
     "disconnect_failed": "Failed to disconnect session",

@@ -392,7 +392,7 @@ function SendEVM() {
     refreshAutomaticFee();
     getSpendableBalance();
     void getTotalGasLimit();
-  }, [networkFees, walletInUse, activeChain, manualFee, txToken]);
+  }, [networkFees, walletInUse, activeChain, manualFee, txToken, txData]);
 
   useEffect(() => {
     form.setFieldValue('base_gas_price', baseGasPrice);
@@ -718,7 +718,7 @@ function SendEVM() {
 
   const getTotalGasLimit = async () => {
     const token = txToken;
-    const gasLimit = await estimateGas(activeChain, sender, token);
+    const gasLimit = await estimateGas(activeChain, sender, token, txData);
     setTotalGasLimit(gasLimit);
   };
 

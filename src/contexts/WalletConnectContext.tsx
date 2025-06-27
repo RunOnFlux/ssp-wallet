@@ -2983,7 +2983,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       console.log('Attempting to pair with URI:', uri);
       await walletKitRef.current.pair({ uri });
       console.log('Pairing successful');
-      displayMessage('success', t('home:walletconnect.pairing_successful'));
+      displayMessage('info', t('home:walletconnect.initializing'));
     } catch (error: unknown) {
       console.error('Pairing error:', error);
       const errorMessage =

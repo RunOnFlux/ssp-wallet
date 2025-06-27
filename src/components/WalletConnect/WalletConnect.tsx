@@ -67,7 +67,6 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
         return;
       }
       setUri('');
-      displayMessage('success', t('home:walletconnect.connection_initiated'));
       setActiveTab('sessions');
     } catch (error: unknown) {
       console.error('WalletConnect connection error:', error);
