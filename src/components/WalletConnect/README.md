@@ -368,6 +368,11 @@ const FEATURES = {
 
 ## 🐛 **Known Issues & Solutions**
 
+### **Account Abstraction Incompatibility: `eth_signTransaction`**
+**Issue**: `eth_signTransaction` method is not compatible with Account Abstraction wallets  
+**Cause**: UserOperations cannot be converted to valid RLP-encoded transactions that dApps expect  
+**Solution**: Method immediately rejects with clear error message directing dApps to use `eth_sendTransaction` instead
+
 ### **Premature Transaction ID Display**
 **Issue**: Transaction IDs are sometimes shown before SSP Key approval  
 **Cause**: WebSocket receives transaction hash immediately after construction, before approval  

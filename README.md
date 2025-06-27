@@ -253,7 +253,6 @@ Our security is a top priority. All critical components of the SSP ecosystem hav
 - ✅ `eth_sign` - Full compatibility maintained
 - ✅ `eth_signTypedData` (v3, v4) - EIP-712 compliance
 - ✅ `eth_sendTransaction` - Transaction execution with multisig
-- ✅ `eth_signTransaction` - Transaction signing capabilities
 - ✅ `eth_accounts` / `eth_requestAccounts` - Enhanced account selection
 - ✅ `wallet_switchEthereumChain` - Seamless network switching
 - ✅ `wallet_addEthereumChain` - Network addition support

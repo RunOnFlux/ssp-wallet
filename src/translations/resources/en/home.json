@@ -511,7 +511,9 @@
     "on_network": "On {{networkName}} network",
     "waiting_signing_request_data": "Waiting for signing request data...",
     "redirected_to_send_page": "Redirected to send page",
-    "walletconnect_transaction_approved": "Transaction approved and sent successfully!"
+    "walletconnect_transaction_approved": "Transaction approved and sent successfully!",
+    "eth_sign_transaction_not_supported": "eth_signTransaction is not supported by Account Abstraction wallets. Please use eth_sendTransaction instead.",
+    "eth_sign_transaction_error": "eth_signTransaction is not supported by Account Abstraction wallets. Account Abstraction wallets use UserOperations instead of traditional transactions. Please use eth_sendTransaction to execute the transaction directly."
   },
   "walletconnect_tx_modal": {
     "simple_transfer": "Simple Transfer",
