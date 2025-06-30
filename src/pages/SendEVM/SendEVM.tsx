@@ -47,12 +47,16 @@ import {
   fetchAddressBalance,
   fetchAddressTokenBalances,
 } from '../../lib/balances.ts';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import {
+  QuestionCircleOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
 import { setContacts } from '../../store';
+import { useWalletConnect } from '../../contexts/WalletConnectContext';
 
 import {
   transaction,
@@ -93,6 +97,12 @@ interface sendForm {
   contract: string;
   paymentAction?: boolean;
   swap?: swapResponseData;
+  baseGasPrice?: string;
+  priorityGasPrice?: string;
+  totalGasLimit?: string;
+  data?: string;
+  walletConnectTxId?: string;
+  walletConnectMode?: boolean;
 }
 
 interface balancesObj {
@@ -146,6 +156,9 @@ function SendEVM() {
   const [txToken, setTxToken] = useState('');
   const blockchainConfig = blockchains[activeChain];
   const [txFee, setTxFee] = useState('0');
+  const [txData, setTxData] = useState('');
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [showFeeDetails, setShowFeeDetails] = useState(false);
   const [baseGasPrice, setBaseGasPrice] = useState(
     blockchainConfig.baseFee.toString(),
   );
@@ -167,6 +180,44 @@ function SendEVM() {
 
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const browser = window.chrome || window.browser;
+  const { handleWalletConnectTxCompletion, handleWalletConnectTxRejection } =
+    useWalletConnect();
+
+  // Handle WalletConnect parameters from navigation state
+  useEffect(() => {
+    if (state?.walletConnectMode) {
+      console.log(
+        '🔗 SendEVM: WalletConnect mode detected, setting parameters',
+      );
+
+      // Set the WalletConnect mode flag in form values
+      form.setFieldValue('walletConnectMode', true);
+
+      // Apply gas settings if provided
+      if (state.baseGasPrice) {
+        setBaseGasPrice(state.baseGasPrice);
+        form.setFieldValue('base_gas_price', state.baseGasPrice);
+      }
+
+      if (state.priorityGasPrice) {
+        setPriorityGasPrice(state.priorityGasPrice);
+        form.setFieldValue('priority_gas_price', state.priorityGasPrice);
+      }
+
+      if (state.totalGasLimit) {
+        setTotalGasLimit(state.totalGasLimit);
+        form.setFieldValue('total_gas_limit', state.totalGasLimit);
+      }
+
+      // Calculate fee with the new values
+      calculateTxFee();
+    }
+  }, [
+    state?.walletConnectMode,
+    state?.baseGasPrice,
+    state?.priorityGasPrice,
+    state?.totalGasLimit,
+  ]);
 
   useEffect(() => {
     try {
@@ -178,10 +229,15 @@ function SendEVM() {
         setTxReceiver(state.receiver);
         form.setFieldValue('receiver', state.receiver);
       }
+      if (state.data) {
+        setTxData(state.data);
+        form.setFieldValue('data', state.data);
+        setShowAdvancedOptions(true); // Show advanced options if data is provided
+      }
     } catch (error) {
       console.log(error);
     }
-  }, [state.receiver, state.amount]);
+  }, [state.receiver, state.amount, state.data]);
 
   useEffect(() => {
     if (alreadyMounted.current) return;
@@ -212,15 +268,9 @@ function SendEVM() {
     }
     setTxFee(totalFeeETH);
     form.setFieldValue('fee', totalFeeETH);
-    try {
-      console.log(networkFees);
-    } catch (error) {
-      console.log(error);
-    }
   });
 
   useEffect(() => {
-    console.log('token change');
     getSpendableBalance();
   }, [txToken]);
 
@@ -314,7 +364,6 @@ function SendEVM() {
     const tokens = allTokens.filter((token) =>
       activatedTokens.includes(token.contract),
     );
-    console.log('construct tokens for sending');
     const tokenItems: tokenOption[] = [];
     tokens.forEach((token) => {
       const option = {
@@ -343,7 +392,7 @@ function SendEVM() {
     refreshAutomaticFee();
     getSpendableBalance();
     void getTotalGasLimit();
-  }, [networkFees, walletInUse, activeChain, manualFee, txToken]);
+  }, [networkFees, walletInUse, activeChain, manualFee, txToken, txData]);
 
   useEffect(() => {
     form.setFieldValue('base_gas_price', baseGasPrice);
@@ -378,7 +427,7 @@ function SendEVM() {
       const maxSpendable = new BigNumber(spendableBalance).dividedBy(
         10 ** blockchainConfig.decimals,
       );
-      console.log(maxSpendable);
+
       if (totalAmount.isGreaterThan(maxSpendable)) {
         // mark amount in red box as bad inpout
         setValidateStatusAmount('error');
@@ -446,6 +495,16 @@ function SendEVM() {
     if (socketTxid) {
       setTxid(socketTxid);
       clearTxid?.();
+
+      // Handle WalletConnect completion if in WalletConnect mode
+      if (state.walletConnectMode && state.walletConnectTxId) {
+        console.log(
+          '🔗 SendEVM: WalletConnect transaction completed, txid:',
+          socketTxid,
+        );
+        handleWalletConnectTxCompletion(socketTxid);
+      }
+
       // stop interval
       if (txSentInterval) {
         clearInterval(txSentInterval);
@@ -478,6 +537,17 @@ function SendEVM() {
         if (state.paymentAction) {
           payRequestAction(null);
         }
+
+        // Handle WalletConnect rejection if in WalletConnect mode
+        if (state.walletConnectMode && state.walletConnectTxId) {
+          console.log(
+            '🔗 SendEVM: WalletConnect transaction rejected on SSP key',
+          );
+          handleWalletConnectTxRejection(
+            'Transaction rejected by SSP key device',
+          );
+        }
+
         setOpenTxRejected(true);
       });
       if (txSentInterval) {
@@ -491,6 +561,16 @@ function SendEVM() {
     if (publicNoncesRejected) {
       setOpenConfirmPublicNonces(false);
       setTimeout(() => {
+        // Handle WalletConnect rejection if public nonces are rejected
+        if (state.walletConnectMode && state.walletConnectTxId) {
+          console.log(
+            '🔗 SendEVM: WalletConnect transaction failed - public nonces rejected',
+          );
+          handleWalletConnectTxRejection(
+            'Public nonces rejected by SSP key device',
+          );
+        }
+
         setOpenPublicNoncesRejected(true);
       });
       clearPublicNoncesRejected?.();
@@ -638,14 +718,14 @@ function SendEVM() {
 
   const getTotalGasLimit = async () => {
     const token = txToken;
-    const gasLimit = await estimateGas(activeChain, sender, token);
+    const gasLimit = await estimateGas(activeChain, sender, token, txData);
     setTotalGasLimit(gasLimit);
   };
 
   const calculateTxFee = () => {
     // here how much gas our transaction will use by maximum?
     // here we set the overall gas limit and calculate the ETH value
-    console.log('CALC tx fee');
+
     const totalGas = new BigNumber(totalGasLimit); // get better estimation
     const totalGasPrice = new BigNumber(baseGasPrice)
       .plus(priorityGasPrice)
@@ -686,15 +766,25 @@ function SendEVM() {
   };
 
   const onFinish = (values: sendForm) => {
-    console.log(values);
+    console.log('🔗 SendEVM onFinish values:', values);
+    console.log('🔗 SendEVM walletConnectMode:', values.walletConnectMode);
+    console.log('🔗 SendEVM amount:', values.amount, 'parsed:', +values.amount);
+
     if (values.receiver.length < 8 || !values.receiver.startsWith('0x')) {
       displayMessage('error', t('send:err_invalid_receiver'));
       return;
     }
-    if (!values.amount || +values.amount <= 0 || isNaN(+values.amount)) {
+    // For WalletConnect transactions, allow 0 value (smart contract interactions)
+    // For regular transactions, require amount > 0
+    if (!values.amount || isNaN(+values.amount)) {
       displayMessage('error', t('send:err_invalid_amount'));
       return;
     }
+    if (!values.walletConnectMode && +values.amount <= 0) {
+      displayMessage('error', t('send:err_invalid_amount'));
+      return;
+    }
+
     if (!values.fee || +values.fee < 0 || isNaN(+values.fee)) {
       displayMessage('error', t('send:err_invalid_fee'));
       return;
@@ -772,6 +862,7 @@ function SendEVM() {
           totalGasLimit,
           txToken as `0x${string}` | '',
           importedTokens,
+          values.data, // Use form data instead of state.data
         )
           .then((signedTx) => {
             console.log(signedTx);
@@ -901,6 +992,13 @@ function SendEVM() {
     if (state.paymentAction) {
       payRequestAction(null);
     }
+
+    // Handle WalletConnect rejection if user cancels transaction
+    if (state.walletConnectMode && state.walletConnectTxId) {
+      console.log('🔗 SendEVM: User cancelled WalletConnect transaction');
+      handleWalletConnectTxRejection('Transaction cancelled by user');
+    }
+
     navigate('/home');
   };
 
@@ -916,6 +1014,31 @@ function SendEVM() {
     console.log(
       'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
     );
+  };
+
+  // Helper function to decode transaction data
+  const decodeTransactionData = (data: string): string => {
+    if (!data || data === '0x') return '';
+
+    // Common function signatures
+    const functionSignatures: Record<string, string> = {
+      '0xa9059cbb': 'ERC20 Transfer',
+      '0x23b872dd': 'ERC20 TransferFrom',
+      '0x095ea7b3': 'ERC20 Approve',
+      '0x40c10f19': 'ERC20 Mint',
+      '0x42842e0e': 'NFT Safe Transfer',
+      '0xa22cb465': 'NFT Set Approval For All',
+      '0x70a08231': 'ERC20 Balance Of',
+    };
+
+    const signature = data.substring(0, 10);
+    const functionName = functionSignatures[signature];
+
+    if (functionName) {
+      return `${functionName} (${signature})`;
+    }
+
+    return `Contract Call (${signature})`;
   };
 
   return (
@@ -940,6 +1063,11 @@ function SendEVM() {
           marginTop: state.swap ? '24px' : '0',
         }}
       >
+        {/* Hidden field for WalletConnect mode flag */}
+        <Form.Item name="walletConnectMode" style={{ display: 'none' }}>
+          <Input type="hidden" />
+        </Form.Item>
+
         <Form.Item name="asset" label={t('send:asset')}>
           <Select
             size="large"
@@ -975,7 +1103,7 @@ function SendEVM() {
                 setTxReceiver(e.target.value),
                   form.setFieldValue('receiver', e.target.value);
               }}
-              disabled={!!state.swap}
+              disabled={!!(state?.walletConnectMode && state?.receiver)}
             />
             <Select
               size="large"
@@ -989,7 +1117,7 @@ function SendEVM() {
                 setTxReceiver(value), form.setFieldValue('receiver', value);
               }}
               options={contactsItems}
-              disabled={!!state.swap}
+              disabled={!!(state?.walletConnectMode && state?.receiver)}
               dropdownRender={(menu) => <>{menu}</>}
             />
           </Space.Compact>
@@ -1015,7 +1143,9 @@ function SendEVM() {
                 .find((t) => t.contract === txToken)?.symbol ??
               blockchainConfig.symbol
             }
-            disabled={!!state.swap}
+            disabled={
+              !!state.swap || !!(state?.walletConnectMode && state?.amount)
+            }
           />
         </Form.Item>
         <Button
@@ -1027,11 +1157,16 @@ function SendEVM() {
             marginRight: 3,
             fontSize: 12,
             color: '#4096ff',
-            cursor: state.swap ? 'not-allowed' : 'pointer',
+            cursor:
+              !!state.swap || !!(state?.walletConnectMode && state?.amount)
+                ? 'not-allowed'
+                : 'pointer',
             zIndex: 2,
           }}
           onClick={() => setUseMaximum(true)}
-          disabled={!!state.swap}
+          disabled={
+            !!state.swap || !!(state?.walletConnectMode && state?.amount)
+          }
         >
           {t('send:max')}:{' '}
           {new BigNumber(spendableBalance)
@@ -1062,6 +1197,15 @@ function SendEVM() {
         <Collapse
           size="small"
           style={{ marginTop: '-20px', textAlign: 'left' }}
+          activeKey={[
+            ...(showAdvancedOptions || (state?.data && txData) ? ['2'] : []),
+            ...(showFeeDetails ? ['1'] : []),
+          ]}
+          onChange={(keys: string[] | string) => {
+            const keysArray = Array.isArray(keys) ? keys : [keys];
+            setShowAdvancedOptions(keysArray.includes('2'));
+            setShowFeeDetails(keysArray.includes('1'));
+          }}
           items={[
             {
               key: '1',
@@ -1096,7 +1240,7 @@ function SendEVM() {
                   >
                     <Input
                       size="large"
-                      value={baseGasPrice}
+                      value={priorityGasPrice}
                       placeholder={t('send:input_priority_gas_price')}
                       suffix="gwei"
                       onChange={(e) => setPriorityGasPrice(e.target.value)}
@@ -1112,37 +1256,153 @@ function SendEVM() {
                   >
                     <Input
                       size="large"
-                      value={baseGasPrice}
+                      value={totalGasLimit}
                       placeholder={t('send:input_gas_limit')}
                       suffix="gas"
                       onChange={(e) => setTotalGasLimit(e.target.value)}
                       disabled={!manualFee}
                     />
                   </Form.Item>
+                  <div style={{ textAlign: 'center', marginTop: '-10px' }}>
+                    <Button
+                      type="link"
+                      size="small"
+                      style={{
+                        fontSize: 12,
+                      }}
+                      onClick={() => {
+                        setManualFee(!manualFee);
+                      }}
+                    >
+                      {manualFee
+                        ? t('send:using_manual_fee')
+                        : t('send:using_automatic_fee')}
+                    </Button>
+                  </div>
+                </div>
+              ),
+            },
+            {
+              key: '2',
+              label: t('send:advanced_options'),
+              children: (
+                <div style={{ textAlign: 'left' }}>
+                  <Form.Item
+                    label={
+                      <span>
+                        {t('send:transaction_data')}
+                        {state.walletConnectMode && state.data && (
+                          <span
+                            style={{
+                              color: '#1890ff',
+                              fontSize: '12px',
+                              marginLeft: '8px',
+                            }}
+                          >
+                            {t('send:data_from_dapp')}
+                          </span>
+                        )}
+                      </span>
+                    }
+                    name="data"
+                    rules={[
+                      {
+                        validator: (_, value: string) => {
+                          if (!value || value === '') return Promise.resolve();
+                          if (
+                            !value.startsWith('0x') ||
+                            !/^0x[0-9a-fA-F]*$/.test(value)
+                          ) {
+                            return Promise.reject(
+                              new Error(t('send:err_invalid_hex_data')),
+                            );
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                    ]}
+                  >
+                    <Input.TextArea
+                      size="large"
+                      value={txData}
+                      placeholder={t('send:transaction_data_placeholder')}
+                      onChange={(e) => {
+                        setTxData(e.target.value);
+                        form.setFieldValue('data', e.target.value);
+                      }}
+                      disabled={
+                        Boolean(state?.walletConnectMode && state?.data) ||
+                        Boolean(
+                          txToken &&
+                            txToken !== blockchainConfig.tokens[0].contract,
+                        )
+                      }
+                      rows={3}
+                      style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                    />
+                  </Form.Item>
+                  {txData && (
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        color: '#666',
+                        marginTop: '-15px',
+                        marginBottom: '15px',
+                        textAlign: 'left',
+                      }}
+                    >
+                      {t('send:contract_interaction')}:{' '}
+                      {decodeTransactionData(txData)}
+                    </div>
+                  )}
+                  {txToken &&
+                    txToken !== blockchainConfig.tokens[0].contract && (
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          color: '#faad14',
+                          marginTop: '-10px',
+                          marginBottom: '15px',
+                          padding: '8px',
+                          backgroundColor: '#fffbe6',
+                          border: '1px solid #ffe58f',
+                          borderRadius: '4px',
+                          textAlign: 'left',
+                        }}
+                      >
+                        <ExclamationCircleOutlined
+                          style={{ marginRight: '4px' }}
+                        />
+                        {t('send:warn_data_only_eth', {
+                          symbol: blockchainConfig.symbol,
+                        })}
+                      </div>
+                    )}
+                  {txData && txData.startsWith('0xa9059cbb') && (
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        color: '#faad14',
+                        marginTop: '-10px',
+                        marginBottom: '15px',
+                        padding: '8px',
+                        backgroundColor: '#fffbe6',
+                        border: '1px solid #ffe58f',
+                        borderRadius: '4px',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <ExclamationCircleOutlined
+                        style={{ marginRight: '4px' }}
+                      />
+                      {t('send:warn_token_transfer_override')}
+                    </div>
+                  )}
                 </div>
               ),
             },
           ]}
         />
-        <Button
-          type="text"
-          size="small"
-          style={{
-            float: 'left',
-            marginLeft: 3,
-            fontSize: 12,
-            color: '#4096ff',
-            cursor: 'pointer',
-            zIndex: 2,
-          }}
-          onClick={() => {
-            setManualFee(!manualFee);
-          }}
-        >
-          {manualFee
-            ? t('send:using_manual_fee')
-            : t('send:using_automatic_fee')}
-        </Button>
 
         <Form.Item style={{ marginTop: 50 }}>
           <Space direction="vertical" size="middle">

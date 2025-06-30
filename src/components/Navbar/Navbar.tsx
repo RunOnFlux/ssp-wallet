@@ -48,6 +48,7 @@ import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
 import ChainSelect from '../ChainSelect/ChainSelect';
 import Settings from '../Settings/Settings';
 import AutoLogout from '../AutoLogout/AutoLogout';
+import WalletConnect from '../WalletConnect/WalletConnect';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
@@ -102,6 +103,7 @@ function Navbar({
   const [openManualSign, setOpenManualSign] = useState(false);
   const [selectChainOpen, setSelectChainOpen] = useState(false);
   const [openSwapHistory, setOpenSwapHistory] = useState(false);
+  const [openWalletConnect, setOpenWalletConnect] = useState(false);
   const [deletionToPerform, setDeletionToPerform] = useState('');
   const [defaultWallet, setWalletValue] = useState<walletOption>({
     value: walletInUse,
@@ -141,6 +143,23 @@ function Navbar({
     };
     setWalletValue(defValue);
   }, [activeChain]);
+
+  // Update wallet selector when walletInUse changes (e.g., through WalletConnect)
+  useEffect(() => {
+    const defValue = {
+      value: walletInUse,
+      label: t('home:navbar.chain_wallet', {
+        chain: blockchainConfig.name,
+        wallet:
+          (+walletInUse.split('-')[0] === 1
+            ? t('common:change')
+            : t('common:wallet')) +
+          ' ' +
+          (+walletInUse.split('-')[1] + 1).toString(),
+      }),
+    };
+    setWalletValue(defValue);
+  }, [walletInUse, blockchainConfig.name, t]);
 
   useEffect(() => {
     const wItems: walletOption[] = [];
@@ -337,6 +356,9 @@ function Navbar({
   const swapHistoryAction = (status: boolean) => {
     setOpenSwapHistory(status);
   };
+  const walletConnectAction = (status: boolean) => {
+    setOpenWalletConnect(status);
+  };
   const sspIdentityAction = (status: boolean) => {
     setOpenManualSign(status);
   };
@@ -371,6 +393,7 @@ function Navbar({
     console.log('click ', e);
     if (e.key === 'refresh') refresh();
     if (e.key === 'Lock') logout();
+    if (e.key === 'WalletConnect') setOpenWalletConnect(true);
     if (e.key === 'address') {
       setPasswordConfirmDialogVisible(true);
       setActionToPerform('address');
@@ -405,6 +428,9 @@ function Navbar({
   const selectChain = () => {
     setSelectChainOpen(true);
   };
+
+  const isEVM = blockchainConfig.chainType === 'evm';
+
   const menuItems: MenuProps['items'] = [
     {
       key: 'Menu',
@@ -421,6 +447,14 @@ function Navbar({
       },
       children: hasRefresh
         ? [
+            ...(isEVM
+              ? [
+                  {
+                    label: t('home:walletconnect.title'),
+                    key: 'WalletConnect',
+                  },
+                ]
+              : []),
             {
               label: t('home:navbar.addr_details'),
               key: 'address',
@@ -450,6 +484,14 @@ function Navbar({
               },
             ]
           : [
+              ...(isEVM
+                ? [
+                    {
+                      label: t('home:walletconnect.title'),
+                      key: 'WalletConnect',
+                    },
+                  ]
+                : []),
               {
                 label: t('home:navbar.addr_details'),
                 key: 'address',
@@ -636,6 +678,10 @@ function Navbar({
       />
       <ChainSelect open={selectChainOpen} openAction={selectChainAction} />
       <SwapHistory open={openSwapHistory} openAction={swapHistoryAction} />
+      <WalletConnect
+        open={openWalletConnect}
+        openAction={walletConnectAction}
+      />
       <AutoLogout />
     </>
   );
