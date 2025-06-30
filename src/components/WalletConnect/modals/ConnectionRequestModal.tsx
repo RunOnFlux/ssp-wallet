@@ -20,6 +20,7 @@ import { SessionProposal } from '../types/modalTypes';
 import localForage from 'localforage';
 import { isEVMContractDeployed } from '../../../lib/constructTx';
 import { cryptos } from '../../../types';
+import { useAppSelector } from '../../../hooks';
 
 const { Text, Title } = Typography;
 
@@ -31,6 +32,8 @@ interface ChainInfo {
   isSynced: boolean;
   accounts: string[];
   sspChainKey?: string;
+  isDefault?: boolean;
+  isOriginalUnsupported?: boolean;
 }
 
 interface ConnectionRequestModalProps {
@@ -125,12 +128,14 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
   onReject,
 }) => {
   const { t } = useTranslation(['home', 'common']);
+  const { activeChain } = useAppSelector((state) => state.sspState);
   const [requestedChains, setRequestedChains] = useState<ChainInfo[]>([]);
   const [selectedChains, setSelectedChains] = useState<number[]>([]);
   const [selectedAccounts, setSelectedAccounts] = useState<
     Record<number, string[]>
   >({});
   const [loading, setLoading] = useState(false);
+  const [isDefaultingToEthereum, setIsDefaultingToEthereum] = useState(false);
 
   // Get all EVM chains and their configurations
   const getEvmChains = () => {
@@ -175,18 +180,47 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
   // Parse chain information and determine support status
   const parseRequestedChains = async (): Promise<ChainInfo[]> => {
     const { required, optional } = getAllRequestedChains();
-    const allRequestedChains = [...new Set([...required, ...optional])];
+    const originalRequestedChains = [...new Set([...required, ...optional])];
     const evmChains = getEvmChains();
     const chainInfos: ChainInfo[] = [];
 
-    for (const chainString of allRequestedChains) {
+    // Check if no chains are requested or Chain ID 0 is requested
+    const hasNoChains = originalRequestedChains.length === 0;
+    const hasChainId0 = originalRequestedChains.some((chain) => {
+      const match = chain.match(/eip155:(\d+)/);
+      return match && parseInt(match[1]) === 0;
+    });
+
+    // Set state to show user we're defaulting to Ethereum
+    if (hasNoChains || hasChainId0) {
+      setIsDefaultingToEthereum(true);
+    } else {
+      setIsDefaultingToEthereum(false);
+    }
+
+    // Process original chains first (including Chain ID 0 to show as unsupported)
+    for (const chainString of originalRequestedChains) {
       const match = chainString.match(/eip155:(\d+)/);
       if (!match) continue;
 
       const chainId = parseInt(match[1]);
       const isRequired = required.some((req) => req === chainString);
 
-      // Find corresponding SSP chain
+      if (chainId === 0) {
+        // Add Chain ID 0 as unsupported
+        chainInfos.push({
+          chainId: 0,
+          chainName: 'Chain ID 0',
+          isSupported: false,
+          isRequired,
+          isSynced: false,
+          accounts: [],
+          isOriginalUnsupported: true,
+        });
+        continue;
+      }
+
+      // Find corresponding SSP chain for other chains
       const sspChain = evmChains.find((chain) => chain.chainId === chainId);
 
       let accounts: string[] = [];
@@ -215,6 +249,44 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
         accounts,
         sspChainKey: sspChain?.id,
       });
+    }
+
+    // If no chains or Chain ID 0 was requested, add Ethereum as default
+    if (hasNoChains || hasChainId0) {
+      const hasEthereum = chainInfos.some((chain) => chain.chainId === 1);
+
+      if (!hasEthereum) {
+        const ethereumChain = evmChains.find((chain) => chain.chainId === 1);
+        let accounts: string[] = [];
+        let isSynced = false;
+
+        if (ethereumChain) {
+          try {
+            const generatedWallets =
+              (await localForage.getItem(`wallets-${ethereumChain.id}`)) || {};
+            accounts = Object.values(
+              generatedWallets as Record<string, string>,
+            ).filter((address): address is string => Boolean(address));
+            isSynced = accounts.length > 0;
+          } catch (error) {
+            console.error(
+              `Error getting accounts for ${ethereumChain.id}:`,
+              error,
+            );
+          }
+        }
+
+        chainInfos.push({
+          chainId: 1,
+          chainName: ethereumChain?.name || 'Ethereum',
+          isSupported: !!ethereumChain,
+          isRequired: false, // Default chain is not required
+          isSynced,
+          accounts,
+          sspChainKey: ethereumChain?.id,
+          isDefault: true,
+        });
+      }
     }
 
     return chainInfos;
@@ -302,7 +374,42 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
 
     setLoading(true);
     try {
-      await onApprove(proposal, selectedChains, selectedAccounts);
+      // Check if we need to provide Chain ID 0 with Ethereum accounts
+      let finalSelectedChains = [...selectedChains];
+      let finalSelectedAccounts = { ...selectedAccounts };
+
+      if (isDefaultingToEthereum) {
+        const hasChainId0 = requestedChains.some(
+          (chain) => chain.chainId === 0,
+        );
+        const hasChainId1 = selectedChains.includes(1);
+
+        if (hasChainId0 && hasChainId1) {
+          // Add Chain ID 0 to the response with the same accounts as Ethereum
+          if (!finalSelectedChains.includes(0)) {
+            finalSelectedChains = [...finalSelectedChains, 0];
+          }
+          // Chain ID 0 gets the same accounts as Chain ID 1 (Ethereum)
+          finalSelectedAccounts = {
+            ...finalSelectedAccounts,
+            0: selectedAccounts[1] || [], // Use Ethereum accounts for Chain ID 0
+          };
+
+          console.log(
+            '🔗 WalletConnect: Providing both Chain ID 0 (requested) and Chain ID 1 (Ethereum) with same accounts:',
+            {
+              originalRequest: 0,
+              ethereumChain: 1,
+              finalSelectedChains,
+              chainId0Accounts: finalSelectedAccounts[0],
+              chainId1Accounts: finalSelectedAccounts[1],
+            },
+          );
+        }
+      }
+
+      // Include both Chain ID 0 and Chain ID 1 if defaulting, otherwise just selected chains
+      await onApprove(proposal, finalSelectedChains, finalSelectedAccounts);
     } catch (error) {
       console.error('Error approving session:', error);
     } finally {
@@ -387,6 +494,17 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
         showIcon
       />
 
+      {/* Show alert when defaulting to Ethereum */}
+      {isDefaultingToEthereum && (
+        <Alert
+          message={t('home:walletconnect.defaulting_to_ethereum')}
+          description={t('home:walletconnect.defaulting_to_ethereum_desc')}
+          type="info"
+          style={{ marginBottom: 16 }}
+          showIcon
+        />
+      )}
+
       <Divider />
 
       {/* Show warnings for unsupported or unsynced chains */}
@@ -432,25 +550,59 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
         />
       )}
 
+      {/* Chain Compatibility Warning - when user is on non-EVM chain but dApp requests EVM methods */}
+      {blockchains[activeChain].chainType !== 'evm' &&
+        requestedChains.some((chain) => chain.isSupported) && (
+          <Alert
+            message={t('home:walletconnect.chain_compatibility_notice')}
+            description={
+              <div>
+                <div style={{ marginBottom: 8 }}>
+                  {t('home:walletconnect.chain_compatibility_desc_1', {
+                    chainName: blockchains[activeChain].name,
+                  })}
+                </div>
+                <div>{t('home:walletconnect.chain_compatibility_desc_2')}</div>
+              </div>
+            }
+            type="info"
+            style={{ marginBottom: 16 }}
+            showIcon
+          />
+        )}
+
       <div style={{ marginBottom: 16 }}>
         <Title level={5}>{t('home:walletconnect.requested_chains')}:</Title>
         <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-          {requestedChains.map((chain) => (
-            <span key={chain.chainId} style={{ marginRight: 8 }}>
+          {requestedChains.map((chain, index) => (
+            <span key={chain.chainId}>
               {chain.chainName}
               {chain.isRequired && <span style={{ color: '#ff4d4f' }}> *</span>}
-              {!chain.isSupported && (
+              {chain.isOriginalUnsupported && (
                 <span style={{ color: '#faad14' }}>
                   {' '}
                   ({t('home:walletconnect.unsupported')})
                 </span>
               )}
-              {chain.isSupported && !chain.isSynced && (
+              {chain.isDefault && (
+                <span style={{ color: '#52c41a' }}>
+                  {' '}
+                  ({t('home:walletconnect.defaulting')})
+                </span>
+              )}
+              {!chain.isSupported && !chain.isOriginalUnsupported && (
+                <span style={{ color: '#faad14' }}>
+                  {' '}
+                  ({t('home:walletconnect.unsupported')})
+                </span>
+              )}
+              {chain.isSupported && !chain.isSynced && !chain.isDefault && (
                 <span style={{ color: '#1890ff' }}>
                   {' '}
                   ({t('home:walletconnect.unsynced')})
                 </span>
               )}
+              {index < requestedChains.length - 1 && ', '}
             </span>
           ))}
         </div>

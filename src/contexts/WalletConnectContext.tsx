@@ -308,13 +308,14 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     } else if (method === 'eth_sign') {
       const [addr] = requestParams as [string, string];
       return addr;
+    } else if (method === 'eth_signTypedData') {
+      // Original eth_signTypedData has different parameter order: [typedData, address]
+      const [, addr] = requestParams as [unknown, string];
+      return addr;
     } else if (
-      [
-        'eth_signTypedData',
-        'eth_signTypedData_v3',
-        'eth_signTypedData_v4',
-      ].includes(method)
+      ['eth_signTypedData_v3', 'eth_signTypedData_v4'].includes(method)
     ) {
+      // v3 and v4 have parameter order: [address, typedData]
       const [addr] = requestParams as [string, unknown];
       return addr;
     } else if (
@@ -613,13 +614,14 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     } else if (method === 'eth_sign') {
       const [addr] = request.params as [string, string];
       address = addr;
+    } else if (method === 'eth_signTypedData') {
+      // Original eth_signTypedData has different parameter order: [typedData, address]
+      const [, addr] = request.params as [unknown, string];
+      address = addr;
     } else if (
-      [
-        'eth_signTypedData',
-        'eth_signTypedData_v3',
-        'eth_signTypedData_v4',
-      ].includes(method)
+      ['eth_signTypedData_v3', 'eth_signTypedData_v4'].includes(method)
     ) {
+      // v3 and v4 have parameter order: [address, typedData]
       const [addr] = request.params as [string, unknown];
       address = addr;
     } else if (
@@ -1235,11 +1237,21 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           break;
 
         case 'eth_signTypedData':
+          console.log(
+            '🔗 WalletConnect: Processing typed data signing approval (base)',
+          );
+          // Original eth_signTypedData has parameter order: [typedData, address]
+          result = await handleSignTypedData(
+            requestParams as [unknown, string],
+          );
+          break;
+
         case 'eth_signTypedData_v3':
         case 'eth_signTypedData_v4':
           console.log(
-            '🔗 WalletConnect: Processing typed data signing approval',
+            '🔗 WalletConnect: Processing typed data signing approval (v3/v4)',
           );
+          // v3 and v4 have parameter order: [address, typedData]
           result = await handleSignTypedData(
             requestParams as [string, unknown],
           );
@@ -1851,10 +1863,20 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   };
 
   const handleSignTypedData = async (
-    params: [string, unknown],
+    params: [string, unknown] | [unknown, string],
   ): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const [address, typedData] = params;
+      let address: string;
+      let typedData: unknown;
+
+      // Handle different parameter orders for different eth_signTypedData versions
+      if (typeof params[0] === 'string') {
+        // v3/v4 format: [address, typedData]
+        [address, typedData] = params as [string, unknown];
+      } else {
+        // Original format: [typedData, address]
+        [typedData, address] = params as [unknown, string];
+      }
 
       // Convert typed data to string for signing (similar to personal_sign approach)
       const typedDataString = JSON.stringify(typedData);

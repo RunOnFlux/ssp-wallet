@@ -81,6 +81,7 @@ const WalletConnectModals: React.FC = () => {
         request={pendingRequestModal}
         onApprove={approveRequest}
         onReject={rejectRequest}
+        externalSigningRequest={currentSigningRequest}
       />
 
       {/* Transaction Request Modal */}

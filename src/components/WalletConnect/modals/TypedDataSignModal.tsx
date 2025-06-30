@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, QRCode, Space, Typography, Card, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
@@ -12,19 +12,28 @@ interface TypedDataSignModalProps {
   request: SessionRequest | null;
   onApprove: (request: SessionRequest) => Promise<void>;
   onReject: (request: SessionRequest) => Promise<void>;
+  externalSigningRequest?: Record<string, unknown> | null;
 }
 
 const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
   request,
   onApprove,
   onReject,
+  externalSigningRequest,
 }) => {
   const { t } = useTranslation(['home', 'common']);
   const { chainSwitchInfo } = useWalletConnect();
   const { activeChain } = useAppSelector((state) => state.sspState);
-  const { walletInUse } = useAppSelector((state) => state[activeChain]);
   const [step, setStep] = useState<'approval' | 'qr'>('approval');
   const [isApproving, setIsApproving] = useState(false);
+
+  // Reset to step 1 whenever a new request comes in
+  useEffect(() => {
+    if (request) {
+      setStep('approval');
+      setIsApproving(false);
+    }
+  }, [request?.id]); // Reset when request ID changes
 
   if (!request) return null;
 
@@ -37,37 +46,30 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
 
   if (!isTypedDataMethod) return null;
 
-  const requestParams = request.params.request.params as [string, unknown];
-  const [address, typedData] = requestParams;
+  const requestParams = request.params.request.params as unknown[];
 
-  // Create request data following SSP ConfirmTxKey pattern: chain:wallet:data
-  const walletConnectData = JSON.stringify({
-    type: 'walletconnect',
-    id: request.id,
-    method,
-    params: requestParams,
-    dapp: {
-      name:
-        request.verifyContext?.verified?.origin ||
-        t('home:walletconnect.unknown_dapp'),
-      url: request.verifyContext?.verified?.validation || '',
-    },
-    timestamp: Date.now(),
-  });
+  let address: string;
+  let typedData: unknown;
 
-  // Follow exact ConfirmTxKey pattern: chain:wallet:data
-  const qrString = `${
-    chainSwitchInfo?.required && chainSwitchInfo.targetChain
-      ? chainSwitchInfo.targetChain.chainKey
-      : activeChain
-  }:${walletInUse}:${walletConnectData}`;
+  // Handle different parameter orders for different eth_signTypedData versions
+  if (method === 'eth_signTypedData') {
+    // Original format: [typedData, address]
+    [typedData, address] = requestParams as [unknown, string];
+  } else {
+    // v3/v4 format: [address, typedData]
+    [address, typedData] = requestParams as [string, unknown];
+  }
+
+  // Step 2 QR string - should contain the actual signingRequest object
+  const qrString = externalSigningRequest
+    ? `evmsigningrequest${JSON.stringify(externalSigningRequest)}`
+    : '';
 
   const handleApprove = () => {
     if (step === 'approval') {
-      // First step: Move to QR code step
       setIsApproving(true);
       try {
-        // Initiate the signing process but don't wait for completion
+        // The parent/context will provide externalSigningRequest after this call
         onApprove(request);
         setStep('qr');
       } catch (error) {
@@ -75,9 +77,6 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
       } finally {
         setIsApproving(false);
       }
-    } else {
-      // Second step: Just close the modal (signing was already initiated)
-      // The signing process handles the rest via the unified signing flow
     }
   };
 
@@ -234,34 +233,49 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
       width={600}
     >
       <div style={{ textAlign: 'center' }}>
-        <Paragraph>{t('home:confirmTxKey.info_1')}</Paragraph>
+        {qrString && qrString.length < 1250 && (
+          <Paragraph>{t('home:confirmTxKey.info_1')}</Paragraph>
+        )}
+        {qrString && qrString.length >= 1250 && (
+          <Paragraph>{t('home:confirmTxKey.info_2')}</Paragraph>
+        )}
 
         <Space
           direction="vertical"
           size="large"
           style={{ width: '100%', marginBottom: 20 }}
         >
-          <QRCode
-            errorLevel="M"
-            value={qrString}
-            icon="/ssp-logo-black.svg"
-            size={280}
-            style={{ margin: '0 auto' }}
-          />
+          {qrString && qrString.length < 1250 && (
+            <QRCode
+              errorLevel="M"
+              value={qrString}
+              icon="/ssp-logo-black.svg"
+              size={280}
+              style={{ margin: '0 auto' }}
+            />
+          )}
 
-          <Paragraph
-            copyable={{ text: qrString }}
-            className="copyableAddress"
-            style={{
-              fontSize: 11,
-              fontFamily: 'monospace',
-              wordBreak: 'break-all',
-              marginBottom: 0,
-              textAlign: 'left',
-            }}
-          >
-            <Text>{qrString}</Text>
-          </Paragraph>
+          {qrString && (
+            <Paragraph
+              copyable={{ text: qrString }}
+              className="copyableAddress"
+              style={{
+                fontSize: 11,
+                fontFamily: 'monospace',
+                wordBreak: 'break-all',
+                marginBottom: 0,
+                textAlign: 'left',
+              }}
+            >
+              <Text>{qrString}</Text>
+            </Paragraph>
+          )}
+
+          {!qrString && (
+            <Text type="secondary">
+              {t('home:walletconnect.waiting_signing_request_data')}
+            </Text>
+          )}
         </Space>
 
         <Text type="secondary" italic>
