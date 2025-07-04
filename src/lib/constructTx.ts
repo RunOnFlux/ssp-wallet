@@ -812,69 +812,42 @@ export async function broadcastTx(
 
 const nonceCache = {} as Record<string, string>;
 
+interface GasEstimate {
+  preVerificationGas: string;
+  callGasLimit: string;
+  verificationGasLimit: string;
+}
+
 export async function estimateGas(
   chain: keyof cryptos,
   sender: string,
   token: string,
   customData?: string, // Add customData parameter to estimate dynamic gas
-): Promise<string> {
+): Promise<GasEstimate> {
   const backendConfig = backends()[chain];
   const url = `https://${backendConfig.node}`;
 
-  // @TODO we can run the user operation gas estimate before we construct the transaction to check if it has sufficient gas. But this needs to run with address having sufficient funds
+  // TODO: Implement real-time gas estimation using eth_estimateUserOperationGas
+  // Currently using hardcoded values based on historical Alchemy responses
 
-  // get address nonce. if 0, use gas limit of 347763  * 1.4
-  // if > =, use gas limit of 119098 * 1.4
+  /* Gas estimation values derived from Alchemy eth_estimateUserOperationGas responses:
+   *
+   * Account Creation (nonce = 0):
+   * - Native: preVerificationGas: 64277, callGasLimit: 63544, verificationGasLimit: 393421
+   * - Token: preVerificationGas: 65235, callGasLimit: 63544, verificationGasLimit: 393861
+   *
+   * Account Exists (nonce > 0):
+   * - Native: preVerificationGas: 62076, callGasLimit: 27138, verificationGasLimit: 81242
+   * - Token: preVerificationGas: 63000, callGasLimit: 55810, verificationGasLimit: 81492
+   *
+   * CRITICAL: Account existence dramatically affects gas costs!
+   * - verificationGasLimit drops from ~393k to ~81k (80% reduction!)
+   * - callGasLimit varies significantly for native transfers
+   *
+   * All values multiplied by 1.2x safety buffer for conservative estimation
+   */
 
-  // const data = {
-  //   id: new Date().getTime(),
-  //   jsonrpc: '2.0',
-  //   method: 'eth_estimateUserOperationGas',
-  //   params: [estimateUserOpData, blockchainConfig.entrypointAddress],
-  // };
-  // get account nonce
-  // account creation:
-
-  // result: {
-  //   preVerificationGas: '0xfb15', // 64277
-  //   callGasLimit: '0xf068', // 61544
-  //   verificationGasLimit: '0x600cd' 393421
-  // }
-  // = 64277+61544+393421 = 521242
-
-  // account exists:
-
-  // result: {
-  //   preVerificationGas: '0xf27c', 62076
-  //   callGasLimit: '0x6a02', 27138
-  //   verificationGasLimit: '0x13d5a' 81242
-  // }
-  // = 62076+27138+81242 = 170456
-  // // 2 scenarios coded
-  // 1st transfer with account creation if nonce is 0
-  // 2nd transfer if nonce is present, account present
-
-  //   erc20 account exists {
-  //   jsonrpc: '2.0',
-  //   id: 1720186600388,
-  //   result: {
-  //     preVerificationGas: '0xf618', 63000
-  //     callGasLimit: '0xda02', 55810
-  //     verificationGasLimit: '0x13e54' 81492
-  //   }
-  // } 63000+55810+81492 = 200302
-
-  // with init erc20 does not exists{
-  //   jsonrpc: '2.0',
-  //   id: 1720186774250,
-  //   result: {
-  //     preVerificationGas: '0xfed3', 65235
-  //     callGasLimit: '0xda02', 55810
-  //     verificationGasLimit: '0x60285' 393861
-  //   }
-  // } 65235+49430+393861 = 508526
-
-  // Get account nonce to determine if account exists
+  // Get account nonce to determine if account exists (for future real estimation)
   let accountNonce = nonceCache[sender];
   if (!accountNonce) {
     const data = {
@@ -889,54 +862,90 @@ export async function estimateGas(
     accountNonce = nonceCache[sender];
   }
 
-  // Base gas estimates (same as constructAndSignEVMTransaction)
-  let preVerificationGas = Math.ceil((token ? 65235 : 64277) * 1.4);
-  let callGasLimit = Math.ceil((token ? 63544 : 63544) * 1.4);
-  const suggestedVerLimit = Math.ceil((token ? 393861 : 393421) * 1.4);
+  // Determine if account exists based on nonce
+  const accountExists = accountNonce !== '0x0';
 
-  // 🚀 APPLY SAME DYNAMIC GAS SCALING AS constructAndSignEVMTransaction
+  // Select base gas estimates based on account existence and token type
+  let preVerificationGas: number;
+  let callGasLimit: number;
+  let verificationGasLimit: number;
+
+  if (accountExists) {
+    // Account already exists - much lower gas requirements
+    if (token) {
+      // ERC-20 transfer on existing account
+      preVerificationGas = Math.ceil(63000 * 1.2);
+      callGasLimit = Math.ceil(55810 * 1.2);
+      verificationGasLimit = Math.ceil(81492 * 1.2);
+    } else {
+      // Native transfer on existing account
+      preVerificationGas = Math.ceil(62076 * 1.2);
+      callGasLimit = Math.ceil(27138 * 1.2);
+      verificationGasLimit = Math.ceil(81242 * 1.2);
+    }
+  } else {
+    // Account creation required - higher gas requirements
+    if (token) {
+      // ERC-20 transfer with account creation
+      preVerificationGas = Math.ceil(65235 * 1.2);
+      callGasLimit = Math.ceil(63544 * 1.2);
+      verificationGasLimit = Math.ceil(393861 * 1.2);
+    } else {
+      // Native transfer with account creation
+      preVerificationGas = Math.ceil(64277 * 1.2);
+      callGasLimit = Math.ceil(63544 * 1.2);
+      verificationGasLimit = Math.ceil(393421 * 1.2);
+    }
+  }
+
+  console.log(
+    `💰 GAS BASE ESTIMATION (Account ${accountExists ? 'EXISTS' : 'CREATION'}):`,
+    {
+      accountNonce,
+      isToken: !!token,
+      preVerificationGas,
+      callGasLimit,
+      verificationGasLimit,
+      baseTotal: preVerificationGas + callGasLimit + verificationGasLimit,
+    },
+  );
+
+  // Dynamic gas scaling for complex DeFi operations
   if (customData && customData !== '0x') {
     const dataLength = customData.length;
-
-    if (customData.startsWith('0x3593564c')) {
-      // Uniswap Universal Router - requires aggressive gas scaling
-      console.log('💰 GAS ESTIMATE: Applying Uniswap Universal Router scaling');
-      preVerificationGas = Math.ceil(preVerificationGas * 1.8); // +80%
-      callGasLimit = Math.ceil(callGasLimit * 3.5); // +250%
-    } else if (dataLength > 1000) {
+    if (dataLength > 1000) {
       // Complex DeFi operations
       console.log('💰 GAS ESTIMATE: Applying complex DeFi scaling');
-      preVerificationGas = Math.ceil(preVerificationGas * 1.5); // +50%
+      // preVerificationGas = Math.ceil(preVerificationGas * 1.5); // +50%
       callGasLimit = Math.ceil(callGasLimit * 2.0); // +100%
     } else if (dataLength > 100) {
       // Moderate complexity
       console.log('💰 GAS ESTIMATE: Applying moderate complexity scaling');
-      preVerificationGas = Math.ceil(preVerificationGas * 1.2); // +20%
+      // preVerificationGas = Math.ceil(preVerificationGas * 1.2); // +20%
       callGasLimit = Math.ceil(callGasLimit * 1.5); // +50%
     }
   }
 
   // Calculate total gas requirement
   const totalGasRequired =
-    preVerificationGas + callGasLimit + suggestedVerLimit;
-
-  // Add 25% safety buffer (same as constructAndSignEVMTransaction)
-  const finalGasEstimate = Math.ceil(totalGasRequired * 1.25);
+    preVerificationGas + callGasLimit + verificationGasLimit;
 
   console.log('💰 GAS ESTIMATE BREAKDOWN:', {
-    accountExists: accountNonce !== '0x0',
+    accountExists: accountExists,
     isToken: !!token,
     hasCustomData: !!(customData && customData !== '0x'),
     preVerificationGas,
     callGasLimit,
-    suggestedVerLimit,
+    verificationGasLimit,
     totalRequired: totalGasRequired,
-    finalEstimate: finalGasEstimate,
     customDataLength: customData?.length || 0,
-    isUniswap: customData?.startsWith('0x3593564c') || false,
   });
 
-  return finalGasEstimate.toString();
+  return {
+    preVerificationGas: preVerificationGas.toString(),
+    callGasLimit: callGasLimit.toString(),
+    verificationGasLimit: verificationGasLimit.toString(),
+  };
 }
 
 interface publicNonces {
@@ -956,7 +965,10 @@ export async function constructAndSignEVMTransaction(
   publicNonces2: publicNonces, // ssp key public nonces
   baseGasPrice: string,
   priorityGasPrice: string,
-  maxTotalGas: string,
+  // Individual gas components - always required
+  preVerificationGas: string,
+  callGasLimit: string,
+  verificationGasLimit: string,
   token?: `0x${string}` | '',
   importedTokens: Token[] = [],
   customData?: string, // For WalletConnect and custom contract calls
@@ -1001,81 +1013,17 @@ export async function constructAndSignEVMTransaction(
         entryPoint: getEntryPoint(CHAIN),
       });
 
-    // Base gas limits for simple operations
-    let preVerificationGas = Math.ceil((token ? 65235 : 64277) * 1.4);
-    let callGasLimit = Math.ceil((token ? 63544 : 63544) * 1.4);
-    const suggestedVerLimit = Math.ceil((token ? 393861 : 393421) * 1.4);
+    // Use the provided gas values directly
+    const gasPreVerification = Number(preVerificationGas);
+    const gasCallLimit = Number(callGasLimit);
+    const gasVerificationLimit = Number(verificationGasLimit);
 
-    //  DYNAMIC GAS SCALING: fix for complex DeFi operations
-    // Why this works: Uniswap Universal Router requires significantly more gas than simple transfers
-    // - Simple transfer: ~89k gas
-    // - Uniswap multi-hop swap: ~300k+ gas
-    // - Complex routing with multiple pools: ~500k+ gas
-    if (customData && customData !== '0x') {
-      const dataLength = customData.length;
-
-      if (customData.startsWith('0x3593564c')) {
-        // Uniswap Universal Router - requires aggressive gas scaling
-        // Universal Router handles complex operations: multi-hop swaps,
-        // multiple pool interactions, callback execution, slippage checks
-        console.log('🦄 UNISWAP: Applying gas scaling for Universal Router');
-        preVerificationGas = Math.ceil(preVerificationGas * 1.8); // +80%
-        callGasLimit = Math.ceil(callGasLimit * 3.5); // +250% for complex routing
-      } else if (dataLength > 1000) {
-        // Other complex DeFi operations (Aave, Compound, etc.)
-        console.log('🔧 COMPLEX DeFi: Applying standard gas scaling');
-        preVerificationGas = Math.ceil(preVerificationGas * 1.5); // +50%
-        callGasLimit = Math.ceil(callGasLimit * 2.0); // +100%
-      } else if (dataLength > 100) {
-        // Moderate complexity (OpenSea, simple DEX)
-        preVerificationGas = Math.ceil(preVerificationGas * 1.2); // +20%
-        callGasLimit = Math.ceil(callGasLimit * 1.5); // +50%
-      }
-    }
-
-    // Auto-adjust total gas limit if required gas exceeds provided limit
-    const requiredTotalGas =
-      preVerificationGas + callGasLimit + suggestedVerLimit;
-    let adjustedMaxTotalGas = Number(maxTotalGas);
-
-    if (requiredTotalGas > adjustedMaxTotalGas) {
-      // Increase total gas limit with 25% safety buffer
-      adjustedMaxTotalGas = Math.ceil(requiredTotalGas * 1.25);
-      console.log('🚀 AUTO-ADJUSTING TOTAL GAS:', {
-        originalMaxTotalGas: maxTotalGas,
-        requiredTotalGas,
-        newMaxTotalGas: adjustedMaxTotalGas,
-        increase: `+${Math.round(
-          (adjustedMaxTotalGas / Number(maxTotalGas) - 1) * 100,
-        )}%`,
-      });
-    }
-
-    // Distribute remaining gas optimally
-    const difference =
-      adjustedMaxTotalGas -
-      (suggestedVerLimit + callGasLimit + preVerificationGas);
-    if (difference > 0) {
-      const differenceGroup = Math.ceil(difference / 4);
-      preVerificationGas += differenceGroup;
-      callGasLimit += differenceGroup;
-    }
-    preVerificationGas = Math.ceil(preVerificationGas);
-    callGasLimit = Math.ceil(callGasLimit);
-
-    const verificationGasLimit = Math.ceil(
-      adjustedMaxTotalGas - preVerificationGas - callGasLimit,
-    );
-
-    if (verificationGasLimit < 0) {
-      throw new Error(
-        `Insufficient gas limit. Required: ${
-          preVerificationGas +
-          callGasLimit +
-          Math.max(verificationGasLimit, 100000)
-        }, Got: ${adjustedMaxTotalGas}`,
-      );
-    }
+    console.log('💻 USING PROVIDED GAS VALUES:', {
+      preVerificationGas: gasPreVerification,
+      callGasLimit: gasCallLimit,
+      verificationGasLimit: gasVerificationLimit,
+      total: gasPreVerification + gasCallLimit + gasVerificationLimit,
+    });
 
     const priorityGas = new BigNumber(priorityGasPrice)
       .multipliedBy(10 ** 9)
@@ -1096,12 +1044,12 @@ export async function constructAndSignEVMTransaction(
         maxFeePerGas: { max: BigInt(maxFeePerGas), min: BigInt(maxFeePerGas) },
         preVerificationGas: {
           multiplier: 1.3,
-          max: BigInt(preVerificationGas),
+          max: BigInt(gasPreVerification),
         },
-        callGasLimit: { multiplier: 1.3, max: BigInt(callGasLimit) },
+        callGasLimit: { multiplier: 1.3, max: BigInt(gasCallLimit) },
         verificationGasLimit: {
           multiplier: 1.3,
-          max: BigInt(verificationGasLimit),
+          max: BigInt(gasVerificationLimit),
         },
       },
       txMaxRetries: 5,

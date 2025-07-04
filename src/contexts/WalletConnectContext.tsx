@@ -1992,7 +1992,6 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       const automaticPriorityGas =
         networkFees[currentActiveChain]?.priority ||
         blockchainConfig.priorityFee;
-      const automaticGasLimit = blockchainConfig.gasLimit;
 
       // Convert gwei to wei for comparison with gasPrice
       const automaticTotalGasPrice = new BigNumber(
@@ -2001,11 +2000,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         .multipliedBy(new BigNumber(10).pow(9))
         .toFixed();
 
-      // Use the higher values between requested and automatic
-      const finalGasLimit = Math.max(
-        parseInt(requestedGasLimit) || 0,
-        automaticGasLimit,
-      ).toString();
+      // Note: We no longer use finalGasLimit since dApp gas is treated as callGasLimit only
 
       // For gas price, use automatic values if they're higher or if none provided
       let finalBaseGasPrice: string;
@@ -2044,22 +2039,77 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         }
       }
 
-      console.log('🔗 WalletConnect: Parsed transaction parameters:', {
-        amount,
-        gasLimit: finalGasLimit,
-        baseGasPrice: finalBaseGasPrice,
-        priorityGasPrice: finalPriorityGasPrice,
-        isTokenTransfer,
-        tokenContract,
-        data: transaction.data?.substring(0, 100) + '...',
-      });
-
       // Store resolve/reject functions for when transaction completes
       // Store in a map for retrieval when txid comes back from SSP
       if (!window.walletConnectTxMap) {
         window.walletConnectTxMap = new Map();
       }
       const txRequestId = `wc_${Date.now()}_${Math.random()}`;
+
+      // ACCOUNT ABSTRACTION GAS HANDLING:
+      // CRITICAL: dApp gasLimit represents what they estimate for their CONTRACT EXECUTION
+      // It does NOT include AA overhead (preVerificationGas + verificationGasLimit)
+      // This is because dApps are typically not AA-aware and estimate like EOA transactions
+
+      const dAppCallGasLimit = parseInt(requestedGasLimit) || 0;
+
+      // Get SSP base gas estimates for AA components
+      const basePreVerificationGas = Math.ceil(
+        (isTokenTransfer ? 65235 : 64277) * 1.4,
+      );
+      const baseVerificationGasLimit = Math.ceil(
+        (isTokenTransfer ? 393861 : 393421) * 1.4,
+      );
+      const baseCallGasLimit = Math.ceil(
+        (isTokenTransfer ? 63544 : 63544) * 1.4,
+      );
+
+      // STRATEGY: Treat dApp gasLimit as callGasLimit only, add AA overhead on top
+      // This is how established AA wallets (like Alchemy) handle WalletConnect gas
+      const finalPreVerificationGas = basePreVerificationGas;
+      const finalVerificationGasLimit = baseVerificationGasLimit;
+
+      let finalCallGasLimit: number;
+      if (dAppCallGasLimit > 0) {
+        // Use dApp's estimate for the actual execution part
+        // They know their contract better than we do
+        finalCallGasLimit = Math.max(dAppCallGasLimit, baseCallGasLimit);
+
+        console.log(
+          '🔗 WalletConnect: Using dApp gas for contract execution:',
+          {
+            dAppEstimate: dAppCallGasLimit,
+            sspDefault: baseCallGasLimit,
+            finalCallGasLimit,
+            aaOverhead: finalPreVerificationGas + finalVerificationGasLimit,
+            totalGas:
+              finalCallGasLimit +
+              finalPreVerificationGas +
+              finalVerificationGasLimit,
+          },
+        );
+      } else {
+        // No dApp estimate - use SSP defaults
+        finalCallGasLimit = baseCallGasLimit;
+        console.log(
+          '🔗 WalletConnect: No dApp gas estimate, using SSP defaults',
+        );
+      }
+
+      console.log('🔗 WalletConnect: Parsed transaction parameters:', {
+        amount,
+        dAppGasLimit: requestedGasLimit,
+        baseGasPrice: finalBaseGasPrice,
+        priorityGasPrice: finalPriorityGasPrice,
+        isTokenTransfer,
+        tokenContract,
+        data: transaction.data?.substring(0, 100) + '...',
+        gasBreakdown: {
+          preVerificationGas: finalPreVerificationGas,
+          callGasLimit: finalCallGasLimit,
+          verificationGasLimit: finalVerificationGasLimit,
+        },
+      });
 
       // Navigate to SendEVM with the parsed parameters
       const navigationState = {
@@ -2068,7 +2118,10 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         contract: isTokenTransfer ? tokenContract : '', // Empty for native currency
         baseGasPrice: finalBaseGasPrice,
         priorityGasPrice: finalPriorityGasPrice,
-        totalGasLimit: finalGasLimit,
+        // Individual gas components - total will be calculated from these
+        preVerificationGas: finalPreVerificationGas.toString(),
+        callGasLimit: finalCallGasLimit.toString(),
+        verificationGasLimit: finalVerificationGasLimit.toString(),
         data: transaction.data || '0x',
         walletConnectTxId: txRequestId, // For tracking this WC transaction
         walletConnectMode: true, // Flag to indicate this came from WalletConnect
@@ -2114,7 +2167,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         console.error('❌ Navigation function not available');
         displayMessage(
           'error',
-          'Please go to Send EVM page and try again. Navigation not available from current page.',
+          t('home:walletconnect.navigation_not_available'),
         );
         throw new Error('Navigation not available');
       }

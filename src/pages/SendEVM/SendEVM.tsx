@@ -11,6 +11,9 @@ import {
   Popover,
   Select,
   Collapse,
+  Tooltip,
+  Alert,
+  theme,
 } from 'antd';
 import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
@@ -47,10 +50,7 @@ import {
   fetchAddressBalance,
   fetchAddressTokenBalances,
 } from '../../lib/balances.ts';
-import {
-  QuestionCircleOutlined,
-  ExclamationCircleOutlined,
-} from '@ant-design/icons';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
@@ -61,12 +61,13 @@ import { useWalletConnect } from '../../contexts/WalletConnectContext';
 import {
   transaction,
   utxo,
-  tokenBalanceEVM,
   swapResponseData,
+  tokenBalanceEVM,
 } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './SendEVM.css';
+
 interface contactOption {
   label: string;
   index?: string;
@@ -83,11 +84,6 @@ interface tokenOption {
   value: string;
 }
 
-interface publicNonces {
-  kPublic: string;
-  kTwoPublic: string;
-}
-
 interface sendForm {
   receiver: string;
   amount: string;
@@ -99,7 +95,10 @@ interface sendForm {
   swap?: swapResponseData;
   baseGasPrice?: string;
   priorityGasPrice?: string;
-  totalGasLimit?: string;
+  // Individual gas components (total is calculated from these)
+  preVerificationGas?: string;
+  callGasLimit?: string;
+  verificationGasLimit?: string;
   data?: string;
   walletConnectTxId?: string;
   walletConnectMode?: boolean;
@@ -110,9 +109,15 @@ interface balancesObj {
   unconfirmed: string;
 }
 
+interface publicNonces {
+  kPublic: string;
+  kTwoPublic: string;
+}
+
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
 
 function SendEVM() {
+  const { token } = theme.useToken();
   const dispatch = useAppDispatch();
   const location = useLocation();
   const state = location.state as sendForm;
@@ -165,9 +170,11 @@ function SendEVM() {
   const [priorityGasPrice, setPriorityGasPrice] = useState(
     blockchainConfig.priorityFee.toString(),
   );
-  const [totalGasLimit, setTotalGasLimit] = useState(
-    blockchainConfig.gasLimit.toString(),
-  );
+
+  // Individual gas component states for detailed breakdown
+  const [preVerificationGas, setPreVerificationGas] = useState('0');
+  const [callGasLimit, setCallGasLimit] = useState('0');
+  const [verificationGasLimit, setVerificationGasLimit] = useState('0');
   const [validateStatusAmount, setValidateStatusAmount] = useState<
     '' | 'success' | 'error' | 'warning' | 'validating' | undefined
   >('success');
@@ -204,20 +211,31 @@ function SendEVM() {
         form.setFieldValue('priority_gas_price', state.priorityGasPrice);
       }
 
-      if (state.totalGasLimit) {
-        setTotalGasLimit(state.totalGasLimit);
-        form.setFieldValue('total_gas_limit', state.totalGasLimit);
+      // Handle individual gas components from navigation state (e.g., WalletConnect)
+      if (
+        state.preVerificationGas &&
+        state.callGasLimit &&
+        state.verificationGasLimit
+      ) {
+        setPreVerificationGas(state.preVerificationGas);
+        setCallGasLimit(state.callGasLimit);
+        setVerificationGasLimit(state.verificationGasLimit);
+        form.setFieldValue('preverification_gas', state.preVerificationGas);
+        form.setFieldValue('call_gas_limit', state.callGasLimit);
+        form.setFieldValue(
+          'verification_gas_limit',
+          state.verificationGasLimit,
+        );
+        // Calculate total from components
+      } else {
+        // No individual components provided, estimate them
+        void getTotalGasLimit();
       }
 
       // Calculate fee with the new values
       calculateTxFee();
     }
-  }, [
-    state?.walletConnectMode,
-    state?.baseGasPrice,
-    state?.priorityGasPrice,
-    state?.totalGasLimit,
-  ]);
+  }, [state?.walletConnectMode, state?.baseGasPrice, state?.priorityGasPrice]);
 
   useEffect(() => {
     try {
@@ -244,7 +262,7 @@ function SendEVM() {
     alreadyMounted.current = true;
     setBaseGasPrice(networkFees[activeChain].base.toString());
     setPriorityGasPrice(networkFees[activeChain].priority!.toString());
-    setTotalGasLimit(blockchainConfig.gasLimit.toString());
+    // Initial gas breakdown will be calculated by getTotalGasLimit in useEffect
     form.setFieldValue(
       'base_gas_price',
       networkFees[activeChain].base.toString(),
@@ -253,7 +271,7 @@ function SendEVM() {
       'priority_gas_price',
       networkFees[activeChain].priority!.toString(),
     );
-    form.setFieldValue('total_gas_limit', blockchainConfig.gasLimit.toString());
+
     void getTotalGasLimit();
     const totalGas = new BigNumber(blockchainConfig.gasLimit.toString()); // get better estimation
     const totalGasPrice = new BigNumber(
@@ -397,9 +415,29 @@ function SendEVM() {
   useEffect(() => {
     form.setFieldValue('base_gas_price', baseGasPrice);
     form.setFieldValue('priority_gas_price', priorityGasPrice);
-    form.setFieldValue('total_gas_limit', totalGasLimit);
+    void getTotalGasLimit(); // Re-estimate gas when gas prices or transaction data change
     calculateTxFee();
-  }, [baseGasPrice, priorityGasPrice, totalGasLimit, manualFee]);
+  }, [baseGasPrice, priorityGasPrice, manualFee, txToken, txData]);
+
+  // Always recalculate when gas components change
+  useEffect(() => {
+    calculateTxFee();
+  }, [
+    preVerificationGas,
+    callGasLimit,
+    verificationGasLimit,
+    baseGasPrice,
+    priorityGasPrice,
+  ]);
+
+  // Helper function to get total gas from components
+  const getTotalGasFromComponents = () => {
+    return (
+      Number(preVerificationGas) +
+      Number(callGasLimit) +
+      Number(verificationGasLimit)
+    );
+  };
 
   useEffect(() => {
     if (txToken) {
@@ -622,7 +660,7 @@ function SendEVM() {
       // reset fee
       setBaseGasPrice(networkFees[activeChain].base.toString());
       setPriorityGasPrice(networkFees[activeChain].priority!.toString());
-      setTotalGasLimit(blockchainConfig.gasLimit.toString());
+      // Gas components will be recalculated by getTotalGasLimit
     }
   };
 
@@ -717,26 +755,78 @@ function SendEVM() {
   };
 
   const getTotalGasLimit = async () => {
-    const token = txToken;
-    const gasLimit = await estimateGas(activeChain, sender, token, txData);
-    setTotalGasLimit(gasLimit);
+    try {
+      const gasEstimate = await estimateGas(
+        activeChain,
+        sender,
+        txToken,
+        txData,
+      );
+
+      // Use the estimation results for AA overhead components
+      setPreVerificationGas(gasEstimate.preVerificationGas);
+      setVerificationGasLimit(gasEstimate.verificationGasLimit);
+
+      // For callGasLimit, use WalletConnect value if provided, otherwise use estimate
+      if (state?.walletConnectMode && state.callGasLimit) {
+        console.log(
+          `🔗 WalletConnect: Using dApp-provided callGasLimit: ${state.callGasLimit} (estimated: ${gasEstimate.callGasLimit})`,
+        );
+        setCallGasLimit(state.callGasLimit);
+        form.setFieldValue('call_gas_limit', state.callGasLimit);
+      } else {
+        setCallGasLimit(gasEstimate.callGasLimit);
+        form.setFieldValue('call_gas_limit', gasEstimate.callGasLimit);
+      }
+
+      // Update form fields for AA overhead components
+      form.setFieldValue('preverification_gas', gasEstimate.preVerificationGas);
+      form.setFieldValue(
+        'verification_gas_limit',
+        gasEstimate.verificationGasLimit,
+      );
+
+      console.log('💰 Gas estimation completed:', {
+        preVerificationGas: gasEstimate.preVerificationGas,
+        callGasLimit:
+          state?.walletConnectMode && state.callGasLimit
+            ? `${state.callGasLimit} (from WalletConnect)`
+            : gasEstimate.callGasLimit,
+        verificationGasLimit: gasEstimate.verificationGasLimit,
+      });
+    } catch (error) {
+      console.error('Gas estimation failed:', error);
+      // Fallback to default values if estimation fails
+      setPreVerificationGas('90000');
+
+      // Use WalletConnect callGasLimit if available, otherwise fallback
+      if (state?.walletConnectMode && state.callGasLimit) {
+        console.log(
+          `🔗 WalletConnect: Using dApp-provided callGasLimit despite estimation failure: ${state.callGasLimit}`,
+        );
+        setCallGasLimit(state.callGasLimit);
+      } else {
+        setCallGasLimit('89000');
+      }
+
+      setVerificationGasLimit('550000');
+    }
   };
 
   const calculateTxFee = () => {
-    // here how much gas our transaction will use by maximum?
-    // here we set the overall gas limit and calculate the ETH value
-
-    const totalGas = new BigNumber(totalGasLimit); // get better estimation
+    const totalGas = new BigNumber(getTotalGasFromComponents().toString());
     const totalGasPrice = new BigNumber(baseGasPrice)
       .plus(priorityGasPrice)
       .multipliedBy(10 ** 9);
     const totalFee = totalGas.multipliedBy(totalGasPrice);
     const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
+
     if (totalFeeETH === 'NaN') {
       setTxFee('---');
       form.setFieldValue('fee', '---');
       return;
     }
+
     setTxFee(totalFeeETH);
     form.setFieldValue('fee', totalFeeETH);
   };
@@ -828,9 +918,9 @@ function SendEVM() {
           addressIndex,
           activeChain,
         ); // ssp key
-        const sspKeyPublicNonces: publicNonces[] =
+        const sspKeyPublicNoncesStorage: publicNonces[] =
           (await localForage.getItem('sspKeyPublicNonces')) ?? []; // an array of [{kPublic, kTwoPublic}...]
-        if (!sspKeyPublicNonces.length) {
+        if (!sspKeyPublicNoncesStorage.length) {
           setOpenConfirmPublicNonces(true);
           // ask for the nonces
           postAction(
@@ -843,12 +933,17 @@ function SendEVM() {
           throw new Error(t('send:err_public_nonces'));
         }
         // choose random nonce
-        const pos = Math.floor(Math.random() * (sspKeyPublicNonces.length + 1));
-        const publicNoncesSSP = sspKeyPublicNonces[pos];
+        const pos = Math.floor(
+          Math.random() * (sspKeyPublicNoncesStorage.length + 1),
+        );
+        const publicNoncesSSP = sspKeyPublicNoncesStorage[pos];
         // delete the nonce from the array
-        sspKeyPublicNonces.splice(pos, 1);
+        sspKeyPublicNoncesStorage.splice(pos, 1);
         // save the array back to storage
-        await localForage.setItem('sspKeyPublicNonces', sspKeyPublicNonces);
+        await localForage.setItem(
+          'sspKeyPublicNonces',
+          sspKeyPublicNoncesStorage,
+        );
         const amount = new BigNumber(values.amount).toFixed();
         constructAndSignEVMTransaction(
           activeChain,
@@ -859,7 +954,9 @@ function SendEVM() {
           publicNoncesSSP,
           baseGasPrice,
           priorityGasPrice,
-          totalGasLimit,
+          preVerificationGas,
+          callGasLimit,
+          verificationGasLimit,
           txToken as `0x${string}` | '',
           importedTokens,
           values.data, // Use form data instead of state.data
@@ -1156,7 +1253,7 @@ function SendEVM() {
             float: 'right',
             marginRight: 3,
             fontSize: 12,
-            color: '#4096ff',
+            color: token.colorPrimary,
             cursor:
               !!state.swap || !!(state?.walletConnectMode && state?.amount)
                 ? 'not-allowed'
@@ -1212,8 +1309,21 @@ function SendEVM() {
               label: t('send:fee_details'),
               children: (
                 <div>
+                  {/* Gas Price Settings */}
                   <Form.Item
-                    label={t('send:base_gas_price')}
+                    label={
+                      <span>
+                        {t('send:base_gas_price')}
+                        <Tooltip title={t('send:base_gas_price_help')}>
+                          <QuestionCircleOutlined
+                            style={{
+                              marginLeft: 8,
+                              color: token.colorPrimary,
+                            }}
+                          />
+                        </Tooltip>
+                      </span>
+                    }
                     name="base_gas_price"
                     rules={[
                       { required: true, message: t('send:input_gas_price') },
@@ -1229,7 +1339,19 @@ function SendEVM() {
                     />
                   </Form.Item>
                   <Form.Item
-                    label={t('send:priority_gas_price')}
+                    label={
+                      <span>
+                        {t('send:priority_gas_price')}
+                        <Tooltip title={t('send:priority_gas_price_help')}>
+                          <QuestionCircleOutlined
+                            style={{
+                              marginLeft: 8,
+                              color: token.colorPrimary,
+                            }}
+                          />
+                        </Tooltip>
+                      </span>
+                    }
                     name="priority_gas_price"
                     rules={[
                       {
@@ -1247,22 +1369,162 @@ function SendEVM() {
                       disabled={!manualFee}
                     />
                   </Form.Item>
-                  <Form.Item
-                    label={t('send:total_gas_limit')}
-                    name="total_gas_limit"
-                    rules={[
-                      { required: true, message: t('send:input_gas_limit') },
-                    ]}
-                  >
-                    <Input
-                      size="large"
-                      value={totalGasLimit}
-                      placeholder={t('send:input_gas_limit')}
-                      suffix="gas"
-                      onChange={(e) => setTotalGasLimit(e.target.value)}
-                      disabled={!manualFee}
-                    />
-                  </Form.Item>
+
+                  {/* Gas Breakdown Section - Editable */}
+                  <Divider style={{ margin: '16px 0' }} />
+                  <div style={{ marginBottom: '16px' }}>
+                    <Form.Item
+                      label={
+                        <span>
+                          {t('send:preverification_gas')}
+                          <Tooltip title={t('send:preverification_gas_help')}>
+                            <QuestionCircleOutlined
+                              style={{
+                                marginLeft: 8,
+                                color: token.colorPrimary,
+                              }}
+                            />
+                          </Tooltip>
+                        </span>
+                      }
+                      name="preverification_gas"
+                      rules={[
+                        {
+                          required: true,
+                          message: t('send:input_preverification_gas'),
+                        },
+                      ]}
+                    >
+                      <Input
+                        size="large"
+                        value={preVerificationGas}
+                        placeholder={t('send:preverification_gas')}
+                        suffix="gas"
+                        onChange={(e) => {
+                          setPreVerificationGas(e.target.value);
+                        }}
+                        disabled={!manualFee}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label={
+                        <span>
+                          {t('send:verification_gas_limit')}
+                          <Tooltip
+                            title={t('send:verification_gas_limit_help')}
+                          >
+                            <QuestionCircleOutlined
+                              style={{
+                                marginLeft: 8,
+                                color: token.colorPrimary,
+                              }}
+                            />
+                          </Tooltip>
+                        </span>
+                      }
+                      name="verification_gas_limit"
+                      rules={[
+                        {
+                          required: true,
+                          message: t('send:input_verification_gas_limit'),
+                        },
+                      ]}
+                    >
+                      <Input
+                        size="large"
+                        value={verificationGasLimit}
+                        placeholder={t('send:verification_gas_limit')}
+                        suffix="gas"
+                        onChange={(e) => {
+                          setVerificationGasLimit(e.target.value);
+                        }}
+                        disabled={!manualFee}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      label={
+                        <span>
+                          {t('send:call_gas_limit')}
+                          <Tooltip title={t('send:call_gas_limit_help')}>
+                            <QuestionCircleOutlined
+                              style={{
+                                marginLeft: 8,
+                                color: token.colorPrimary,
+                              }}
+                            />
+                          </Tooltip>
+                        </span>
+                      }
+                      name="call_gas_limit"
+                      rules={[
+                        {
+                          required: true,
+                          message: t('send:input_call_gas_limit'),
+                        },
+                      ]}
+                    >
+                      <Input
+                        size="large"
+                        value={callGasLimit}
+                        placeholder={t('send:call_gas_limit')}
+                        suffix="gas"
+                        onChange={(e) => {
+                          setCallGasLimit(e.target.value);
+                        }}
+                        disabled={!manualFee}
+                      />
+                    </Form.Item>
+
+                    {/* Gas Summary Display */}
+                    <div
+                      style={{
+                        backgroundColor: token.colorFillQuaternary,
+                        padding: '12px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        marginBottom: '16px',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        <span>
+                          {t('send:total_gas_limit')}
+                          <Tooltip title={t('send:total_gas_help')}>
+                            <QuestionCircleOutlined
+                              style={{
+                                marginLeft: 8,
+                                color: token.colorPrimary,
+                              }}
+                            />
+                          </Tooltip>
+                        </span>
+                        <span style={{ fontFamily: 'monospace' }}>
+                          {(
+                            Number(preVerificationGas) +
+                            Number(callGasLimit) +
+                            Number(verificationGasLimit)
+                          ).toLocaleString()}{' '}
+                          gas
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          color: token.colorTextSecondary,
+                          marginTop: '4px',
+                        }}
+                      >
+                        {t('send:calculated_gas_limit_description')}
+                      </div>
+                    </div>
+                  </div>
                   <div style={{ textAlign: 'center', marginTop: '-10px' }}>
                     <Button
                       type="link"
@@ -1294,7 +1556,7 @@ function SendEVM() {
                         {state.walletConnectMode && state.data && (
                           <span
                             style={{
-                              color: '#1890ff',
+                              color: token.colorPrimary,
                               fontSize: '12px',
                               marginLeft: '8px',
                             }}
@@ -1345,7 +1607,7 @@ function SendEVM() {
                     <div
                       style={{
                         fontSize: '12px',
-                        color: '#666',
+                        color: token.colorTextSecondary,
                         marginTop: '-15px',
                         marginBottom: '15px',
                         textAlign: 'left',
@@ -1357,46 +1619,30 @@ function SendEVM() {
                   )}
                   {txToken &&
                     txToken !== blockchainConfig.tokens[0].contract && (
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: '#faad14',
-                          marginTop: '-10px',
-                          marginBottom: '15px',
-                          padding: '8px',
-                          backgroundColor: '#fffbe6',
-                          border: '1px solid #ffe58f',
-                          borderRadius: '4px',
-                          textAlign: 'left',
-                        }}
-                      >
-                        <ExclamationCircleOutlined
-                          style={{ marginRight: '4px' }}
-                        />
-                        {t('send:warn_data_only_eth', {
+                      <Alert
+                        message={t('send:warn_data_only_eth', {
                           symbol: blockchainConfig.symbol,
                         })}
-                      </div>
+                        type="warning"
+                        showIcon
+                        style={{
+                          marginTop: '-10px',
+                          marginBottom: '15px',
+                          fontSize: '12px',
+                        }}
+                      />
                     )}
                   {txData && txData.startsWith('0xa9059cbb') && (
-                    <div
+                    <Alert
+                      message={t('send:warn_token_transfer_override')}
+                      type="warning"
+                      showIcon
                       style={{
-                        fontSize: '12px',
-                        color: '#faad14',
                         marginTop: '-10px',
                         marginBottom: '15px',
-                        padding: '8px',
-                        backgroundColor: '#fffbe6',
-                        border: '1px solid #ffe58f',
-                        borderRadius: '4px',
-                        textAlign: 'left',
+                        fontSize: '12px',
                       }}
-                    >
-                      <ExclamationCircleOutlined
-                        style={{ marginRight: '4px' }}
-                      />
-                      {t('send:warn_token_transfer_override')}
-                    </div>
+                    />
                   )}
                 </div>
               ),
@@ -1410,11 +1656,13 @@ function SendEVM() {
               <div
                 style={{
                   fontSize: 12,
-                  color: 'grey',
+                  color: token.colorTextSecondary,
                 }}
               >
                 <Popover content={content} title={t('send:replace_by_fee_tx')}>
-                  <QuestionCircleOutlined style={{ color: 'blue' }} />{' '}
+                  <QuestionCircleOutlined
+                    style={{ color: token.colorPrimary }}
+                  />{' '}
                 </Popover>{' '}
                 {t('send:replace_by_fee_tx')}
               </div>
@@ -1434,7 +1682,9 @@ function SendEVM() {
               onConfirm={() => {
                 form.submit();
               }}
-              icon={<QuestionCircleOutlined style={{ color: 'green' }} />}
+              icon={
+                <QuestionCircleOutlined style={{ color: token.colorSuccess }} />
+              }
             >
               <Button
                 type="primary"
