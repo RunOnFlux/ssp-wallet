@@ -36,7 +36,7 @@ function Balances() {
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
-  const myNodes = wallets[walletInUse].nodes ?? [];
+  const myNodes = wallets[walletInUse].nodes || [];
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -132,7 +132,7 @@ function Balances() {
       fetchAddressTokenBalances(
         wallets[walletFetched].address,
         chainFetched,
-        wallets[walletInUse].activatedTokens ?? [], // fetch for activated tokens only
+        wallets[walletInUse].activatedTokens || [], // fetch for activated tokens only
       )
         .then(async (balancesTokens) => {
           console.log(balancesTokens);

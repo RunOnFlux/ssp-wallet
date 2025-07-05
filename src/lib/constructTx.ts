@@ -812,98 +812,140 @@ export async function broadcastTx(
 
 const nonceCache = {} as Record<string, string>;
 
+interface GasEstimate {
+  preVerificationGas: string;
+  callGasLimit: string;
+  verificationGasLimit: string;
+}
+
 export async function estimateGas(
   chain: keyof cryptos,
   sender: string,
   token: string,
-): Promise<string> {
+  customData?: string, // Add customData parameter to estimate dynamic gas
+): Promise<GasEstimate> {
   const backendConfig = backends()[chain];
   const url = `https://${backendConfig.node}`;
 
-  // @TODO we can run the user operation gas estimate before we construct the transaction to check if it has sufficient gas. But this needs to run with address having sufficient funds
+  // TODO: Implement real-time gas estimation using eth_estimateUserOperationGas
+  // Currently using hardcoded values based on historical Alchemy responses
 
-  // get address nonce. if 0, use gas limit of 347763  * 1.4
-  // if > =, use gas limit of 119098 * 1.4
+  /* Gas estimation values derived from Alchemy eth_estimateUserOperationGas responses:
+   *
+   * Account Creation (nonce = 0):
+   * - Native: preVerificationGas: 64277, callGasLimit: 63544, verificationGasLimit: 393421
+   * - Token: preVerificationGas: 65235, callGasLimit: 63544, verificationGasLimit: 393861
+   *
+   * Account Exists (nonce > 0):
+   * - Native: preVerificationGas: 62076, callGasLimit: 27138, verificationGasLimit: 81242
+   * - Token: preVerificationGas: 63000, callGasLimit: 55810, verificationGasLimit: 81492
+   *
+   * CRITICAL: Account existence dramatically affects gas costs!
+   * - verificationGasLimit drops from ~393k to ~81k (80% reduction!)
+   * - callGasLimit varies significantly for native transfers
+   *
+   * All values multiplied by 1.2x safety buffer for conservative estimation
+   */
 
-  // const data = {
-  //   id: new Date().getTime(),
-  //   jsonrpc: '2.0',
-  //   method: 'eth_estimateUserOperationGas',
-  //   params: [estimateUserOpData, blockchainConfig.entrypointAddress],
-  // };
-  // get account nonce
-  // account creation:
-
-  // result: {
-  //   preVerificationGas: '0xfb15', // 64277
-  //   callGasLimit: '0xf068', // 61544
-  //   verificationGasLimit: '0x600cd' 393421
-  // }
-  // = 64277+61544+393421 = 521242
-
-  // account exists:
-
-  // result: {
-  //   preVerificationGas: '0xf27c', 62076
-  //   callGasLimit: '0x6a02', 27138
-  //   verificationGasLimit: '0x13d5a' 81242
-  // }
-  // = 62076+27138+81242 = 170456
-  // // 2 scenarios coded
-  // 1st transfer with account creation if nonce is 0
-  // 2nd transfer if nonce is present, account present
-
-  //   erc20 account exists {
-  //   jsonrpc: '2.0',
-  //   id: 1720186600388,
-  //   result: {
-  //     preVerificationGas: '0xf618', 63000
-  //     callGasLimit: '0xda02', 55810
-  //     verificationGasLimit: '0x13e54' 81492
-  //   }
-  // } 63000+55810+81492 = 200302
-
-  // with init erc20 does not exists{
-  //   jsonrpc: '2.0',
-  //   id: 1720186774250,
-  //   result: {
-  //     preVerificationGas: '0xfed3', 65235
-  //     callGasLimit: '0xda02', 55810
-  //     verificationGasLimit: '0x60285' 393861
-  //   }
-  // } 65235+49430+393861 = 508526
-
-  if (nonceCache[sender]) {
-    if (nonceCache[sender] === '0x0') {
-      if (token) {
-        return (521242 * 1.4).toFixed();
-      }
-      return (521242 * 1.4).toFixed();
-    }
-    if (token) {
-      return (200302 * 1.4).toFixed();
-    }
-    return (170456 * 1.4).toFixed();
+  // Get account nonce to determine if account exists (for future real estimation)
+  let accountNonce = nonceCache[sender];
+  if (!accountNonce) {
+    const data = {
+      id: new Date().getTime(),
+      jsonrpc: '2.0',
+      method: 'eth_getTransactionCount',
+      params: [sender, 'latest'],
+    };
+    const response = await axios.post<eth_evm>(url, data);
+    console.log(response.data);
+    nonceCache[sender] = response.data.result;
+    accountNonce = nonceCache[sender];
   }
-  const data = {
-    id: new Date().getTime(),
-    jsonrpc: '2.0',
-    method: 'eth_getTransactionCount',
-    params: [sender, 'latest'],
+
+  // Determine if account exists based on nonce
+  const accountExists = accountNonce !== '0x0';
+
+  // Select base gas estimates based on account existence and token type
+  let preVerificationGas: number;
+  let callGasLimit: number;
+  let verificationGasLimit: number;
+
+  if (accountExists) {
+    // Account already exists - much lower gas requirements
+    if (token) {
+      // ERC-20 transfer on existing account
+      preVerificationGas = Math.ceil(63000 * 1.2);
+      callGasLimit = Math.ceil(55810 * 1.2);
+      verificationGasLimit = Math.ceil(81492 * 1.2);
+    } else {
+      // Native transfer on existing account
+      preVerificationGas = Math.ceil(62076 * 1.2);
+      callGasLimit = Math.ceil(27138 * 1.2);
+      verificationGasLimit = Math.ceil(81242 * 1.2);
+    }
+  } else {
+    // Account creation required - higher gas requirements
+    if (token) {
+      // ERC-20 transfer with account creation
+      preVerificationGas = Math.ceil(65235 * 1.2);
+      callGasLimit = Math.ceil(63544 * 1.2);
+      verificationGasLimit = Math.ceil(393861 * 1.2);
+    } else {
+      // Native transfer with account creation
+      preVerificationGas = Math.ceil(64277 * 1.2);
+      callGasLimit = Math.ceil(63544 * 1.2);
+      verificationGasLimit = Math.ceil(393421 * 1.2);
+    }
+  }
+
+  console.log(
+    `💰 GAS BASE ESTIMATION (Account ${accountExists ? 'EXISTS' : 'CREATION'}):`,
+    {
+      accountNonce,
+      isToken: !!token,
+      preVerificationGas,
+      callGasLimit,
+      verificationGasLimit,
+      baseTotal: preVerificationGas + callGasLimit + verificationGasLimit,
+    },
+  );
+
+  // Dynamic gas scaling for complex DeFi operations
+  if (customData && customData !== '0x') {
+    const dataLength = customData.length;
+    if (dataLength > 1000) {
+      // Complex DeFi operations
+      console.log('💰 GAS ESTIMATE: Applying complex DeFi scaling');
+      // preVerificationGas = Math.ceil(preVerificationGas * 1.5); // +50%
+      callGasLimit = Math.ceil(callGasLimit * 2.0); // +100%
+    } else if (dataLength > 100) {
+      // Moderate complexity
+      console.log('💰 GAS ESTIMATE: Applying moderate complexity scaling');
+      // preVerificationGas = Math.ceil(preVerificationGas * 1.2); // +20%
+      callGasLimit = Math.ceil(callGasLimit * 1.5); // +50%
+    }
+  }
+
+  // Calculate total gas requirement
+  const totalGasRequired =
+    preVerificationGas + callGasLimit + verificationGasLimit;
+
+  console.log('💰 GAS ESTIMATE BREAKDOWN:', {
+    accountExists: accountExists,
+    isToken: !!token,
+    hasCustomData: !!(customData && customData !== '0x'),
+    preVerificationGas,
+    callGasLimit,
+    verificationGasLimit,
+    totalRequired: totalGasRequired,
+    customDataLength: customData?.length || 0,
+  });
+
+  return {
+    preVerificationGas: preVerificationGas.toString(),
+    callGasLimit: callGasLimit.toString(),
+    verificationGasLimit: verificationGasLimit.toString(),
   };
-  const response = await axios.post<eth_evm>(url, data);
-  console.log(response.data);
-  nonceCache[sender] = response.data.result;
-  if (nonceCache[sender] === '0x0') {
-    if (token) {
-      return (523242 * 1.4).toFixed();
-    }
-    return (523242 * 1.4).toFixed();
-  }
-  if (token) {
-    return (203302 * 1.4).toFixed();
-  }
-  return (173456 * 1.4).toFixed();
 }
 
 interface publicNonces {
@@ -923,9 +965,13 @@ export async function constructAndSignEVMTransaction(
   publicNonces2: publicNonces, // ssp key public nonces
   baseGasPrice: string,
   priorityGasPrice: string,
-  maxTotalGas: string,
+  // Individual gas components - always required
+  preVerificationGas: string,
+  callGasLimit: string,
+  verificationGasLimit: string,
   token?: `0x${string}` | '',
   importedTokens: Token[] = [],
+  customData?: string, // For WalletConnect and custom contract calls
 ): Promise<string> {
   try {
     const blockchainConfig = blockchains[chain];
@@ -967,28 +1013,17 @@ export async function constructAndSignEVMTransaction(
         entryPoint: getEntryPoint(CHAIN),
       });
 
-    let preVerificationGas = Math.ceil((token ? 65235 : 64277) * 1.4);
-    let callGasLimit = Math.ceil((token ? 63544 : 63544) * 1.4);
-    const suggestedVerLimit = Math.ceil((token ? 393861 : 393421) * 1.4);
-    // if we have more than suggestedVerLimit split it 1, 1, 2
-    const difference =
-      Number(maxTotalGas) -
-      (suggestedVerLimit + callGasLimit + preVerificationGas);
-    if (difference > 0) {
-      const differenceGroup = Math.ceil(difference / 4);
-      preVerificationGas += differenceGroup;
-      callGasLimit += differenceGroup;
-    }
-    preVerificationGas = Math.ceil(preVerificationGas);
-    callGasLimit = Math.ceil(callGasLimit);
+    // Use the provided gas values directly
+    const gasPreVerification = Number(preVerificationGas);
+    const gasCallLimit = Number(callGasLimit);
+    const gasVerificationLimit = Number(verificationGasLimit);
 
-    const verificationGasLimit = Math.ceil(
-      Number(maxTotalGas) - preVerificationGas - callGasLimit,
-    );
-
-    if (verificationGasLimit < 0) {
-      throw new Error(`Please increase gas limit manually.`);
-    }
+    console.log('💻 USING PROVIDED GAS VALUES:', {
+      preVerificationGas: gasPreVerification,
+      callGasLimit: gasCallLimit,
+      verificationGasLimit: gasVerificationLimit,
+      total: gasPreVerification + gasCallLimit + gasVerificationLimit,
+    });
 
     const priorityGas = new BigNumber(priorityGasPrice)
       .multipliedBy(10 ** 9)
@@ -997,21 +1032,24 @@ export async function constructAndSignEVMTransaction(
       .multipliedBy(10 ** 9)
       .toFixed(0);
 
+    // Calculate total max fee per gas (base + priority)
+    const maxFeePerGas = new BigNumber(baseGas).plus(priorityGas).toFixed(0);
+
     const CLIENT_OPT = {
       feeOptions: {
         maxPriorityFeePerGas: {
           max: BigInt(priorityGas),
           min: BigInt(priorityGas),
         },
-        maxFeePerGas: { max: BigInt(baseGas), min: BigInt(baseGas) },
+        maxFeePerGas: { max: BigInt(maxFeePerGas), min: BigInt(maxFeePerGas) },
         preVerificationGas: {
           multiplier: 1.3,
-          max: BigInt(preVerificationGas),
+          max: BigInt(gasPreVerification),
         },
-        callGasLimit: { multiplier: 1.3, max: BigInt(callGasLimit) },
+        callGasLimit: { multiplier: 1.3, max: BigInt(gasCallLimit) },
         verificationGasLimit: {
           multiplier: 1.3,
-          max: BigInt(verificationGasLimit),
+          max: BigInt(gasVerificationLimit),
         },
       },
       txMaxRetries: 5,
@@ -1037,14 +1075,12 @@ export async function constructAndSignEVMTransaction(
       const tokenDecimals = tokenInfo.decimals;
       const erc20Decimals = tokenDecimals;
       const erc20Amount = parseUnits(amount, erc20Decimals);
-      console.log(erc20Amount);
       const uoCallData = encodeFunctionData({
         abi: erc20Abi,
         functionName: 'transfer',
         args: [receiver, erc20Amount],
       });
 
-      console.log(uoCallData);
       uoStruct = await smartAccountClient.buildUserOperation({
         account: multiSigSmartAccount,
         uo: {
@@ -1052,14 +1088,18 @@ export async function constructAndSignEVMTransaction(
           target: token, // token contract address
         },
       });
-      console.log(uoStruct);
     } else {
+      // Handle custom data for contract calls (like WalletConnect)
+      const txData = (customData || '0x') as `0x${string}`;
+      // Parse the amount properly - use ETH value if provided, otherwise 0
+      const txValue = parseUnits(amount, blockchainConfig.decimals);
+
       uoStruct = await smartAccountClient.buildUserOperation({
         account: multiSigSmartAccount,
         uo: {
-          data: '0x',
+          data: txData,
           target: receiver,
-          value: parseUnits(amount, blockchainConfig.decimals),
+          value: txValue,
         },
       });
     }
@@ -1069,6 +1109,7 @@ export async function constructAndSignEVMTransaction(
     const uoStructHash = multiSigSmartAccount
       .getEntryPoint()
       .getUserOperationHash(uoStructHexlified);
+
     const multiSigUserOp = new accountAbstraction.userOperation.MultiSigUserOp(
       publicKeys,
       [publicNonces1, publicNoncesKey],
@@ -1095,5 +1136,46 @@ export async function constructAndSignEVMTransaction(
   } catch (error) {
     console.log(error);
     throw error;
+  }
+}
+
+// Check single address deployment status
+export async function isEVMContractDeployed(
+  address: string,
+  chain: keyof cryptos,
+): Promise<boolean> {
+  try {
+    const backendConfig = backends()[chain];
+    const url = `https://${backendConfig.node}`;
+
+    const data = {
+      id: new Date().getTime(),
+      jsonrpc: '2.0',
+      method: 'eth_getTransactionCount',
+      params: [address, 'latest'],
+    };
+
+    console.log(`Checking deployment for ${address}...`);
+    const response = await axios.post<eth_evm>(url, data);
+
+    // Check if we got a valid response with result field
+    if (
+      !response.data ||
+      response.data.result === undefined ||
+      response.data.result === null
+    ) {
+      console.log(
+        `Address ${address}: Invalid RPC response, assuming not deployed`,
+      );
+      return false;
+    }
+
+    const nonce = response.data.result;
+    const isDeployed = nonce !== '0x0';
+    console.log(`Address ${address}: nonce=${nonce}, isDeployed=${isDeployed}`);
+    return isDeployed;
+  } catch (error) {
+    console.error(`Error checking deployment for ${address}:`, error);
+    return false; // Assume not deployed on error
   }
 }

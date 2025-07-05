@@ -167,7 +167,7 @@ function Transactions() {
       />
 
       <TransactionsTable
-        transactions={wallets[walletInUse]?.transactions ?? []}
+        transactions={wallets[walletInUse].transactions || []}
         blockheight={blockheight}
         fiatRate={fiatRate}
         address={wallets[walletInUse].address ?? ''}

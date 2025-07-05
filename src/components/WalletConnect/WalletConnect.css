@@ -1,0 +1,73 @@
+/* WalletConnect Modal - Minimal styling using Ant Design defaults */
+.walletconnect-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.walletconnect-tabs .ant-btn {
+  flex: 1;
+}
+
+.walletconnect-content {
+  min-height: 300px;
+}
+
+.walletconnect-form {
+  margin-bottom: 16px;
+}
+
+.walletconnect-form .ant-input {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+}
+
+.chain-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.chain-list .ant-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.empty-sessions {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+/* Address deployment status styles */
+.address-deployment-status {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.address-deployment-status .loading-spinner {
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+}
+
+.address-deployment-status .deployed-icon {
+  cursor: help;
+  transition: color 0.2s ease;
+}
+
+.address-deployment-status .deployed-icon:hover {
+  color: #389e0d !important;
+}
+
+.address-deployment-status .not-deployed-icon {
+  cursor: help;
+  transition: color 0.2s ease;
+}
+
+.address-deployment-status .not-deployed-icon:hover {
+  color: #d48806 !important;
+}

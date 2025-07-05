@@ -72,7 +72,7 @@ This design ensures that **both devices are required** to authorize any transact
 
 #### Session Management:
 - Encrypted passwords are stored temporarily in session storage, ensuring convenience without compromising security.
-- No sensitive data is ever retained in unencrypted form, even within the application’s runtime memory.
+- No sensitive data is ever retained in unencrypted form, even within the application's runtime memory.
 
 #### Non-Sensitive Data:
 - Information such as transaction history and balance data is stored using **LocalForge**, prioritizing performance without compromising sensitive details.
@@ -84,6 +84,20 @@ This design ensures that **both devices are required** to authorize any transact
   - SSP Relay Server only facilitates communication and cannot access private keys or sensitive data.
 - **Brute Force Protection:**
   - Physical possession of both devices and knowledge of passwords are required to compromise the wallet.
+
+---
+
+## WalletConnect Integration
+
+SSP Wallet supports **WalletConnect v2**, enabling seamless integration with thousands of decentralized applications (dApps) across multiple blockchain networks.
+
+### Key Features:
+- **Universal dApp Compatibility:** Connect to any WalletConnect-enabled dApp including DeFi protocols, NFT marketplaces, and trading platforms
+- **Multi-Chain Support:** Works with Ethereum, Polygon, BSC, Avalanche, Base, and other EVM-compatible networks
+- **Account Abstraction Support:** Native ERC-4337 Account Abstraction
+- **EIP-712 Message Signing:** Full support for typed structured data signing standard used by modern dApps
+- **Secure Transaction Signing:** All transactions still require both SSP Wallet and SSP Key for authorization
+- **Real-Time Communication:** Instant connection and transaction requests through secure WebSocket connections
 
 ---
 

@@ -6,6 +6,7 @@ import localForage from 'localforage';
 import App from './App';
 import { SocketProvider } from './contexts/SocketContext';
 import { SspConnectProvider } from './contexts/sspConnectContext';
+import { WalletConnectProvider } from './contexts/WalletConnectContext';
 import FiatCurrencyController from './components/FiatCurrencyController/FiatCurrencyController.tsx';
 import NetworkFeeController from './components/NetworkFeeController/NetworkFeeController.tsx';
 import ServicesAvailabilityController from './components/ServicesAvailabilityController/ServicesAvailabilityController.tsx';
@@ -36,11 +37,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
       <SocketProvider>
         <SspConnectProvider>
-          <App />
-          <FiatCurrencyController />
-          <NetworkFeeController />
-          <ServicesAvailabilityController />
-          <ABEController />
+          <WalletConnectProvider>
+            <App />
+            <FiatCurrencyController />
+            <NetworkFeeController />
+            <ServicesAvailabilityController />
+            <ABEController />
+          </WalletConnectProvider>
         </SspConnectProvider>
       </SocketProvider>
     </Provider>

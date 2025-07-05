@@ -36,12 +36,14 @@ import {
 import { useTranslation } from 'react-i18next';
 import { generatedWallets } from '../../types';
 import { blockchains } from '@storage/blockchains';
+import { useWalletConnect } from '../../contexts/WalletConnectContext';
 
 function Home() {
   const { t } = useTranslation(['home', 'common']);
   const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { setWalletConnectNavigation } = useWalletConnect();
   const [isLoading, setIsLoading] = useState(true);
   const { activeChain, identityChain } = useAppSelector(
     (state) => state.sspState,
@@ -165,6 +167,11 @@ function Home() {
     generateAddress();
     setIsLoading(false);
   }, [xpubKey, activeChain]);
+
+  // Set up navigation for WalletConnect when component mounts
+  useEffect(() => {
+    setWalletConnectNavigation(navigate);
+  }, [navigate, setWalletConnectNavigation]);
 
   const keySynchronised = (status: boolean) => {
     if (status === false) {

@@ -66,6 +66,8 @@ function Navigation() {
     (state) => state.servicesAvailability,
   );
   const blockchainConfig = blockchains[activeChain];
+  const isEVM = blockchainConfig.chainType === 'evm';
+
   return (
     <>
       <Space direction="horizontal" size="small" style={{ marginBottom: 10 }}>
@@ -75,10 +77,7 @@ function Navigation() {
           size={'middle'}
           style={{ minWidth: '105px' }}
           onClick={() =>
-            navigate(
-              blockchainConfig.chainType === 'evm' ? '/sendevm' : '/send',
-              { state: { receiver: '' } },
-            )
+            navigate(isEVM ? '/sendevm' : '/send', { state: { receiver: '' } })
           }
         >
           <span>{t('home:navigation.send')}</span>
