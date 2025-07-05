@@ -11,6 +11,8 @@
   "flux": "Flux",
   "powered_by": "Dipersembahkan oleh",
   "ok": "OK",
+  "yes": "Yes",
+  "no": "No",
   "help": "Bantu",
   "save": "Simpan",
   "confirm": "Konfirmasi",
@@ -52,5 +54,10 @@
   "decimals": "Desimal",
   "to": "Untuk",
   "from": "Dari",
-  "change": "Tukar"
+  "change": "Tukar",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }
