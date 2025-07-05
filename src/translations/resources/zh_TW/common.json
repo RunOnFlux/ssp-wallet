@@ -11,6 +11,8 @@
   "flux": "Flux",
   "powered_by": "技術支持：",
   "ok": "確定",
+  "yes": "Yes",
+  "no": "No",
   "help": "幫助",
   "save": "儲存",
   "confirm": "確認",
@@ -52,5 +54,10 @@
   "decimals": "Decimals",
   "to": "To",
   "from": "From",
-  "change": "Change"
+  "change": "Change",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }
