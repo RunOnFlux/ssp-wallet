@@ -11,6 +11,8 @@
   "flux": "Flux",
   "powered_by": "பயன்படுத்தப்பட்டது",
   "ok": "சரி",
+  "yes": "Yes",
+  "no": "No",
   "help": "உதவி",
   "save": "சேமிக்க",
   "confirm": "உறுதிப்படுத்தவும்",
@@ -52,5 +54,10 @@
   "decimals": "Decimals",
   "to": "To",
   "from": "From",
-  "change": "Change"
+  "change": "Change",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }

@@ -11,6 +11,8 @@
   "flux": "flux",
   "powered_by": "Được cung cấp sức mạnh bởi",
   "ok": "OK",
+  "yes": "Yes",
+  "no": "No",
   "help": "Trợ giúp",
   "save": "Sao lưu",
   "confirm": "Xác nhận",
@@ -52,5 +54,10 @@
   "decimals": "Decimals",
   "to": "To",
   "from": "From",
-  "change": "Change"
+  "change": "Change",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }

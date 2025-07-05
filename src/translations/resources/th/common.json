@@ -11,6 +11,8 @@
   "flux": "Flux",
   "powered_by": "ขับเคลื่อนโดย",
   "ok": "ตกลง",
+  "yes": "Yes",
+  "no": "No",
   "help": "ช่วยเหลือ",
   "save": "บันทึก",
   "confirm": "ยืนยัน",
@@ -52,5 +54,10 @@
   "decimals": "ทศนิยม",
   "to": "ถึง",
   "from": "จาก",
-  "change": "เปลี่ยนแปลง"
+  "change": "เปลี่ยนแปลง",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }

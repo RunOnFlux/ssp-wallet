@@ -11,6 +11,8 @@
   "flux": "Flux",
   "powered_by": "Drevet av",
   "ok": "OK",
+  "yes": "Yes",
+  "no": "No",
   "help": "Hjelp",
   "save": "Lagre",
   "confirm": "Bekreft",
@@ -52,5 +54,10 @@
   "decimals": "Desimaler",
   "to": "Til",
   "from": "Fra",
-  "change": "Endre"
+  "change": "Endre",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }
