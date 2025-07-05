@@ -102,7 +102,7 @@
     "sinon": "19.0.2",
     "ts-mocha": "10.0.0",
     "tsconfig-paths": "4.2.0",
-    "tsx": "4.19.4",
+    "tsx": "4.20.3",
     "typescript": "5.8.3",
     "typescript-eslint": "8.33.1",
     "vite": "6.3.5"
