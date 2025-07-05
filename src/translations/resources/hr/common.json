@@ -11,6 +11,8 @@
   "flux": "Flux",
   "powered_by": "Pokreće",
   "ok": "OK",
+  "yes": "Yes",
+  "no": "No",
   "help": "Pomoć",
   "save": "Spremi",
   "confirm": "Potvrdi",
@@ -52,5 +54,10 @@
   "decimals": "Decimals",
   "to": "To",
   "from": "From",
-  "change": "Change"
+  "change": "Change",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }
