@@ -59,7 +59,7 @@
   "preverification_gas_help": "Gas used by the bundler to process your transaction before it reaches the blockchain. Covers bundler fees, calldata costs, and account abstraction overhead that isn't metered by the blockchain.",
   "call_gas_limit_help": "Maximum gas allocated for executing your actual transaction or smart contract call. This is the main computation limit for your transaction's execution phase.",
   "verification_gas_limit_help": "Maximum gas allocated for validating your transaction signature and account permissions. This covers the validation phase of your account abstraction wallet.",
-  "total_gas_help": "Total maximum gas your transaction can consume. This is the sum of all three components above and represents your transaction's complete gas budget.",
-  "base_gas_price_help": "Base fee per gas unit required by the network. This is the minimum fee that gets burned according to EIP-1559.",
-  "priority_gas_price_help": "Priority fee (tip) per gas unit paid to validators/miners to prioritize your transaction. Higher tips result in faster inclusion."
+  "total_gas_help": "Total gas maksimum yang dapat dikonsumsi transaksi Anda. Ini adalah jumlah dari ketiga komponen di atas dan merupakan total anggaran gas transaksi Anda.",
+  "base_gas_price_help": "Biaya dasar per unit gas yang dibutuhkan oleh jaringan. Ini adalah biaya minimum yang terbakar menurut EIP-1559.",
+  "priority_gas_price_help": "Biaya prioritas (tip) per unit gas telah dibayarkan kepada validator/penambang untuk memprioritaskan transaksi Anda. Tip yang lebih tinggi menghasilkan penyertaan yang lebih cepat."
 }
