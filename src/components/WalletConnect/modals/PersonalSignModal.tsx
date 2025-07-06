@@ -113,125 +113,129 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
         okText={t('home:walletconnect.approve')}
         cancelText={t('home:walletconnect.reject')}
         confirmLoading={isApproving}
-        width={600}
+        style={{ textAlign: 'center', top: 60 }}
       >
-        <Paragraph>{t('home:walletconnect.dapp_requests_signature')}</Paragraph>
+        <div style={{ textAlign: 'left', marginTop: 24 }}>
+          <Paragraph>
+            {t('home:walletconnect.dapp_requests_signature')}
+          </Paragraph>
 
-        {/* Address Section */}
-        <Card
-          size="small"
-          title={t('home:walletconnect.address')}
-          style={{ marginBottom: 16 }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <Text
-              code
-              copyable
-              style={{ fontSize: '16px', fontWeight: 'bold' }}
-            >
-              {address}
-            </Text>
-            <div style={{ marginTop: 8 }}>
-              <Text type="secondary" style={{ fontSize: '12px' }}>
-                {chainSwitchInfo?.required && chainSwitchInfo.targetChain
-                  ? t('home:walletconnect.on_network', {
-                      networkName: chainSwitchInfo.targetChain.chainName,
-                    })
-                  : t('home:walletconnect.on_network', {
-                      networkName: blockchains[activeChain].name,
-                    })}
+          {/* Address Section */}
+          <Card
+            size="small"
+            title={t('home:walletconnect.address')}
+            style={{ marginBottom: 16 }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <Text
+                code
+                copyable
+                style={{ fontSize: '13px', fontWeight: 'bold' }}
+              >
+                {address}
               </Text>
-            </div>
-          </div>
-        </Card>
-
-        {/* Message Section */}
-        <Card
-          size="small"
-          title={t('home:walletconnect.message')}
-          style={{ marginBottom: 16 }}
-        >
-          {/* Show decoded message if available */}
-          {isHexEncoded && decodedMessage ? (
-            <>
-              <Alert
-                description={
-                  <div style={{ textAlign: 'center' }}>
-                    <Text
-                      style={{
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {decodedMessage}
-                    </Text>
-                  </div>
-                }
-                type="success"
-                style={{ marginBottom: 12 }}
-              />
-              <Divider />
-            </>
-          ) : null}
-
-          {/* Original message */}
-          <Text type="secondary">
-            {isHexEncoded
-              ? t('home:walletconnect.technical_hex_encoded')
-              : t('home:walletconnect.raw_message')}
-          </Text>
-          <div style={{ marginTop: 8, textAlign: 'center' }}>
-            <Text
-              code
-              copyable
-              style={{ fontSize: '12px', wordBreak: 'break-all' }}
-            >
-              {messageToSign}
-            </Text>
-          </div>
-        </Card>
-
-        {/* Chain Switch Warning */}
-        {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
-          <Alert
-            message={t('home:walletconnect.chain_switch_required')}
-            description={
-              <div>
-                <Text>
-                  {t('home:walletconnect.signing_chain_switch_desc', {
-                    chainName: chainSwitchInfo.targetChain.chainName,
-                  })}
-                </Text>
-                <br />
-                <Text type="secondary">
-                  {t('home:walletconnect.address_different_chain')}
+              <div style={{ marginTop: 8 }}>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  {chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                    ? t('home:walletconnect.on_network', {
+                        networkName: chainSwitchInfo.targetChain.chainName,
+                      })
+                    : t('home:walletconnect.on_network', {
+                        networkName: blockchains[activeChain].name,
+                      })}
                 </Text>
               </div>
-            }
-            type="warning"
-            showIcon
+            </div>
+          </Card>
+
+          {/* Message Section */}
+          <Card
+            size="small"
+            title={t('home:walletconnect.message')}
             style={{ marginBottom: 16 }}
+          >
+            {/* Show decoded message if available */}
+            {isHexEncoded && decodedMessage ? (
+              <>
+                <Alert
+                  description={
+                    <div style={{ textAlign: 'center' }}>
+                      <Text
+                        style={{
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {decodedMessage}
+                      </Text>
+                    </div>
+                  }
+                  type="success"
+                  style={{ marginBottom: 12 }}
+                />
+                <Divider />
+              </>
+            ) : null}
+
+            {/* Original message */}
+            <Text type="secondary">
+              {isHexEncoded
+                ? t('home:walletconnect.technical_hex_encoded')
+                : t('home:walletconnect.raw_message')}
+            </Text>
+            <div style={{ marginTop: 8, textAlign: 'center' }}>
+              <Text
+                code
+                copyable
+                style={{ fontSize: '12px', wordBreak: 'break-all' }}
+              >
+                {messageToSign}
+              </Text>
+            </div>
+          </Card>
+
+          {/* Chain Switch Warning */}
+          {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
+            <Alert
+              message={t('home:walletconnect.chain_switch_required')}
+              description={
+                <div>
+                  <Text>
+                    {t('home:walletconnect.signing_chain_switch_desc', {
+                      chainName: chainSwitchInfo.targetChain.chainName,
+                    })}
+                  </Text>
+                  <br />
+                  <Text type="secondary">
+                    {t('home:walletconnect.address_different_chain')}
+                  </Text>
+                </div>
+              }
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+
+          {/* Method Info */}
+          <Alert
+            message={`Method: ${method}`}
+            description={
+              method === 'personal_sign'
+                ? t('home:walletconnect.eip191_prefix_added')
+                : t('home:walletconnect.signs_raw_message')
+            }
+            type="info"
+            showIcon
+            style={{ marginBottom: 16, fontSize: '12px' }}
           />
-        )}
 
-        {/* Method Info */}
-        <Alert
-          message={`Method: ${method}`}
-          description={
-            method === 'personal_sign'
-              ? t('home:walletconnect.eip191_prefix_added')
-              : t('home:walletconnect.signs_raw_message')
-          }
-          type="info"
-          showIcon
-          style={{ marginBottom: 16, fontSize: '12px' }}
-        />
-
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
-          <Text type="secondary">
-            {t('home:walletconnect.step_1_approve_wallet_info')}
-          </Text>
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <Text type="secondary">
+              {t('home:walletconnect.step_1_approve_wallet_info')}
+            </Text>
+          </div>
         </div>
       </Modal>
     );
@@ -248,7 +252,7 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
       open={true}
       onCancel={handleReject}
       footer={null}
-      width={600}
+      style={{ textAlign: 'center', top: 60 }}
     >
       <div style={{ textAlign: 'center' }}>
         <Paragraph>{t('home:confirmTxKey.info_1')}</Paragraph>
@@ -256,7 +260,7 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
         <Space
           direction="vertical"
           size="large"
-          style={{ width: '100%', marginBottom: 20 }}
+          style={{ width: '100%', marginBottom: 20, textAlign: 'left' }}
         >
           {qrString && (
             <QRCode

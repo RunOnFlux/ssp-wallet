@@ -93,21 +93,22 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
   };
 
   const renderConnectTab = () => (
-    <div>
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <Title level={4}>{t('home:walletconnect.connect_dapp')}</Title>
+    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      <div style={{ textAlign: 'center' }}>
+        <Title level={4} style={{ marginTop: 8 }}>
+          {t('home:walletconnect.connect_dapp')}
+        </Title>
         <Text type="secondary">
           {t('home:walletconnect.connect_description')}
         </Text>
       </div>
 
-      <div className="walletconnect-form">
+      <Space direction="vertical" size="small" style={{ width: '100%' }}>
         <TextArea
           value={uri}
           onChange={(e) => setUri(e.target.value)}
           placeholder={t('home:walletconnect.paste_uri')}
           rows={4}
-          style={{ marginBottom: 16 }}
         />
         <Button
           type="primary"
@@ -121,9 +122,9 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
             ? t('home:walletconnect.connecting')
             : t('home:walletconnect.connect')}
         </Button>
-      </div>
+      </Space>
 
-      <div style={{ textAlign: 'center', marginTop: 24 }}>
+      <div style={{ textAlign: 'center' }}>
         <Text strong>{t('home:walletconnect.supported_chains')}</Text>
         <div className="chain-list">
           {Object.values(blockchains)
@@ -135,11 +136,11 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
             ))}
         </div>
       </div>
-    </div>
+    </Space>
   );
 
   const renderSessionsTab = () => (
-    <div>
+    <Space direction="vertical" size="large" style={{ width: '100%' }}>
       {Object.keys(activeSessions).length === 0 ? (
         <div className="empty-sessions">
           <LinkOutlined
@@ -190,7 +191,7 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
           )}
         />
       )}
-    </div>
+    </Space>
   );
 
   const tabItems = [
@@ -216,16 +217,18 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
       open={open}
       onCancel={() => openAction(false)}
       footer={null}
-      width={480}
+      style={{ textAlign: 'center', top: 60 }}
     >
       {contextHolder}
-      <Tabs
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        items={tabItems}
-        size="large"
-        centered
-      />
+      <div style={{ textAlign: 'left' }}>
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={tabItems}
+          size="large"
+          centered
+        />
+      </div>
     </Modal>
   );
 };

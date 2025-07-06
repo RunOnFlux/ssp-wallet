@@ -74,17 +74,20 @@ const ChainSwitchModal: React.FC<ChainSwitchModalProps> = ({
       onCancel={handleReject}
       okText={t('home:walletconnect.approve')}
       cancelText={t('home:walletconnect.reject')}
+      style={{ textAlign: 'center', top: 60 }}
     >
-      <p>{t('home:walletconnect.dapp_requests_chain_switch')}</p>
+      <div style={{ textAlign: 'left' }}>
+        <p>{t('home:walletconnect.dapp_requests_chain_switch')}</p>
 
-      <div style={{ marginBottom: '8px' }}>
-        <strong>{t('home:walletconnect.target_chain')}:</strong>{' '}
-        {targetChain[1].name}
+        <div style={{ marginBottom: '8px' }}>
+          <strong>{t('home:walletconnect.target_chain')}:</strong>{' '}
+          {targetChain[1].name}
+        </div>
+
+        <p style={{ color: '#faad14', marginTop: '12px' }}>
+          {t('home:walletconnect.switch_chain_warning')}
+        </p>
       </div>
-
-      <p style={{ color: '#faad14', marginTop: '12px' }}>
-        {t('home:walletconnect.switch_chain_warning')}
-      </p>
     </Modal>
   );
 };

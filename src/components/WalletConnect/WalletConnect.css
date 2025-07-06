@@ -1,18 +1,4 @@
 /* WalletConnect Modal - Minimal styling using Ant Design defaults */
-.walletconnect-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.walletconnect-tabs .ant-btn {
-  flex: 1;
-}
-
-.walletconnect-content {
-  min-height: 300px;
-}
-
 .walletconnect-form {
   margin-bottom: 16px;
 }

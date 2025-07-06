@@ -99,9 +99,13 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
         okText={t('home:walletconnect.approve')}
         cancelText={t('home:walletconnect.reject')}
         confirmLoading={isApproving}
-        width={600}
+        style={{ textAlign: 'center', top: 60 }}
       >
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space
+          direction="vertical"
+          size="large"
+          style={{ width: '100%', textAlign: 'left' }}
+        >
           <Text>
             {t('home:walletconnect.dapp_requests_typed_data_signature')}
           </Text>
@@ -116,7 +120,7 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
               <Text
                 code
                 copyable
-                style={{ fontSize: '16px', fontWeight: 'bold' }}
+                style={{ fontSize: '13px', fontWeight: 'bold' }}
               >
                 {address}
               </Text>
@@ -196,7 +200,10 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
                 fontFamily: 'monospace',
               }}
             >
-              <Text copyable={{ text: JSON.stringify(typedData, null, 2) }}>
+              <Text
+                copyable={{ text: JSON.stringify(typedData, null, 2) }}
+                style={{ fontSize: '12px' }}
+              >
                 {JSON.stringify(typedData, null, 2)}
               </Text>
             </div>
@@ -230,57 +237,59 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
       open={true}
       onCancel={handleReject}
       footer={null}
-      width={600}
+      style={{ textAlign: 'center', top: 60 }}
     >
-      <div style={{ textAlign: 'center' }}>
-        {qrString && qrString.length < 1250 && (
-          <Paragraph>{t('home:confirmTxKey.info_1')}</Paragraph>
-        )}
-        {qrString && qrString.length >= 1250 && (
-          <Paragraph>{t('home:confirmTxKey.info_2')}</Paragraph>
-        )}
-
-        <Space
-          direction="vertical"
-          size="large"
-          style={{ width: '100%', marginBottom: 20 }}
-        >
+      <div style={{ textAlign: 'left' }}>
+        <div style={{ textAlign: 'center' }}>
           {qrString && qrString.length < 1250 && (
-            <QRCode
-              errorLevel="M"
-              value={qrString}
-              icon="/ssp-logo-black.svg"
-              size={280}
-              style={{ margin: '0 auto' }}
-            />
+            <Paragraph>{t('home:confirmTxKey.info_1')}</Paragraph>
+          )}
+          {qrString && qrString.length >= 1250 && (
+            <Paragraph>{t('home:confirmTxKey.info_2')}</Paragraph>
           )}
 
-          {qrString && (
-            <Paragraph
-              copyable={{ text: qrString }}
-              className="copyableAddress"
-              style={{
-                fontSize: 11,
-                fontFamily: 'monospace',
-                wordBreak: 'break-all',
-                marginBottom: 0,
-                textAlign: 'left',
-              }}
-            >
-              <Text>{qrString}</Text>
-            </Paragraph>
-          )}
+          <Space
+            direction="vertical"
+            size="large"
+            style={{ width: '100%', marginBottom: 20 }}
+          >
+            {qrString && qrString.length < 1250 && (
+              <QRCode
+                errorLevel="M"
+                value={qrString}
+                icon="/ssp-logo-black.svg"
+                size={280}
+                style={{ margin: '0 auto' }}
+              />
+            )}
 
-          {!qrString && (
-            <Text type="secondary">
-              {t('home:walletconnect.waiting_signing_request_data')}
-            </Text>
-          )}
-        </Space>
+            {qrString && (
+              <Paragraph
+                copyable={{ text: qrString }}
+                className="copyableAddress"
+                style={{
+                  fontSize: 11,
+                  fontFamily: 'monospace',
+                  wordBreak: 'break-all',
+                  marginBottom: 0,
+                  textAlign: 'left',
+                }}
+              >
+                <Text>{qrString}</Text>
+              </Paragraph>
+            )}
 
-        <Text type="secondary" italic>
-          {t('home:walletconnect.ssp_key_confirmation_needed')}
-        </Text>
+            {!qrString && (
+              <Text type="secondary">
+                {t('home:walletconnect.waiting_signing_request_data')}
+              </Text>
+            )}
+          </Space>
+
+          <Text type="secondary" italic>
+            {t('home:walletconnect.ssp_key_confirmation_needed')}
+          </Text>
+        </div>
       </div>
     </Modal>
   );

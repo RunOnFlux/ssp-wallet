@@ -9,6 +9,7 @@ import {
   Alert,
   Spin,
   Tooltip,
+  Space,
 } from 'antd';
 import {
   CheckCircleOutlined,
@@ -446,7 +447,7 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
     <Modal
       title={t('home:walletconnect.connection_request')}
       open={true}
-      width={700}
+      style={{ textAlign: 'center', top: 60 }}
       onOk={handleApprove}
       onCancel={handleReject}
       okText={t('home:walletconnect.approve')}
@@ -456,286 +457,302 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
         disabled: selectedChains.length === 0 || !hasRequiredChains,
       }}
     >
-      <div style={{ marginBottom: 16 }}>
-        <strong>{t('home:walletconnect.dapp_wants_to_connect')}</strong>
-      </div>
+      <Space
+        direction="vertical"
+        size="small"
+        style={{ width: '100%', textAlign: 'left', marginTop: 24 }}
+      >
+        <Space direction="vertical" size="small" style={{ marginBottom: 8 }}>
+          <div>
+            <strong>{t('home:walletconnect.dapp_wants_to_connect')}</strong>
+          </div>
 
-      <div style={{ marginBottom: 12 }}>
-        <strong>{t('home:walletconnect.dapp_name')}:</strong>{' '}
-        {proposer.metadata.name}
-      </div>
+          <div>
+            <strong>{t('home:walletconnect.dapp_name')}:</strong>{' '}
+            {proposer.metadata.name}
+          </div>
 
-      <div style={{ marginBottom: 12 }}>
-        <strong>{t('home:walletconnect.description')}:</strong>{' '}
-        {proposer.metadata.description}
-      </div>
+          <div>
+            <strong>{t('home:walletconnect.description')}:</strong>{' '}
+            {proposer.metadata.description}
+          </div>
 
-      <div style={{ marginBottom: 12 }}>
-        <strong>{t('home:walletconnect.url')}:</strong> {proposer.metadata.url}
-      </div>
+          <div>
+            <strong>{t('home:walletconnect.url')}:</strong>{' '}
+            {proposer.metadata.url}
+          </div>
+        </Space>
 
-      {/* Important info about chain-specific addresses */}
-      <Alert
-        message={t('home:walletconnect.chain_unique_addresses')}
-        description={t('home:walletconnect.chain_unique_addresses_desc')}
-        type="info"
-        style={{ marginBottom: 16 }}
-        showIcon
-      />
-
-      {/* Account Abstraction deployment info */}
-      <Alert
-        message={t('home:walletconnect.account_abstraction_deployment_info')}
-        description={t(
-          'home:walletconnect.account_abstraction_deployment_desc',
-        )}
-        type="warning"
-        style={{ marginBottom: 16 }}
-        showIcon
-      />
-
-      {/* Show alert when defaulting to Ethereum */}
-      {isDefaultingToEthereum && (
+        {/* Important info about chain-specific addresses */}
         <Alert
-          message={t('home:walletconnect.defaulting_to_ethereum')}
-          description={t('home:walletconnect.defaulting_to_ethereum_desc')}
+          message={t('home:walletconnect.chain_unique_addresses')}
+          description={t('home:walletconnect.chain_unique_addresses_desc')}
           type="info"
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: 8 }}
           showIcon
         />
-      )}
 
-      <Divider />
-
-      {/* Show warnings for unsupported or unsynced chains */}
-      {unsupportedChains.length > 0 && (
+        {/* Account Abstraction deployment info */}
         <Alert
-          message={t('home:walletconnect.unsupported_chains_warning')}
-          description={
-            <div>
-              {t('home:walletconnect.unsupported_chains_list')}:{' '}
-              {unsupportedChains.map((c) => c.chainName).join(', ')}
-            </div>
-          }
+          message={t('home:walletconnect.account_abstraction_deployment_info')}
+          description={t(
+            'home:walletconnect.account_abstraction_deployment_desc',
+          )}
           type="warning"
-          style={{ marginBottom: 16 }}
+          style={{ marginBottom: 8 }}
           showIcon
         />
-      )}
 
-      {unsyncedChains.length > 0 && (
-        <Alert
-          message={t('home:walletconnect.unsynced_chains_warning')}
-          description={
-            <div>
-              <div>
-                {t('home:walletconnect.unsynced_chains_list')}:{' '}
-                {unsyncedChains.map((c) => c.chainName).join(', ')}
-              </div>
-            </div>
-          }
-          type="info"
-          style={{ marginBottom: 16 }}
-          showIcon
-        />
-      )}
-
-      {syncedChains.length === 0 && (
-        <Alert
-          message={t('home:walletconnect.no_compatible_chains')}
-          description={t('home:walletconnect.no_compatible_chains_desc')}
-          type="error"
-          style={{ marginBottom: 16 }}
-          showIcon
-        />
-      )}
-
-      {/* Chain Compatibility Warning - when user is on non-EVM chain but dApp requests EVM methods */}
-      {blockchains[activeChain].chainType !== 'evm' &&
-        requestedChains.some((chain) => chain.isSupported) && (
+        {/* Show alert when defaulting to Ethereum */}
+        {isDefaultingToEthereum && (
           <Alert
-            message={t('home:walletconnect.chain_compatibility_notice')}
-            description={
-              <div>
-                <div style={{ marginBottom: 8 }}>
-                  {t('home:walletconnect.chain_compatibility_desc_1', {
-                    chainName: blockchains[activeChain].name,
-                  })}
-                </div>
-                <div>{t('home:walletconnect.chain_compatibility_desc_2')}</div>
-              </div>
-            }
+            message={t('home:walletconnect.defaulting_to_ethereum')}
+            description={t('home:walletconnect.defaulting_to_ethereum_desc')}
             type="info"
-            style={{ marginBottom: 16 }}
+            style={{ marginBottom: 8 }}
             showIcon
           />
         )}
 
-      <div style={{ marginBottom: 16 }}>
-        <Title level={5}>{t('home:walletconnect.requested_chains')}:</Title>
-        <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-          {requestedChains.map((chain, index) => (
-            <span key={chain.chainId}>
-              {chain.chainName}
-              {chain.isRequired && <span style={{ color: '#ff4d4f' }}> *</span>}
-              {chain.isOriginalUnsupported && (
-                <span style={{ color: '#faad14' }}>
-                  {' '}
-                  ({t('home:walletconnect.unsupported')})
-                </span>
-              )}
-              {chain.isDefault && (
-                <span style={{ color: '#52c41a' }}>
-                  {' '}
-                  ({t('home:walletconnect.defaulting')})
-                </span>
-              )}
-              {!chain.isSupported && !chain.isOriginalUnsupported && (
-                <span style={{ color: '#faad14' }}>
-                  {' '}
-                  ({t('home:walletconnect.unsupported')})
-                </span>
-              )}
-              {chain.isSupported && !chain.isSynced && !chain.isDefault && (
-                <span style={{ color: '#1890ff' }}>
-                  {' '}
-                  ({t('home:walletconnect.unsynced')})
-                </span>
-              )}
-              {index < requestedChains.length - 1 && ', '}
-            </span>
-          ))}
-        </div>
-        {requestedChains.some((chain) => chain.isRequired) && (
-          <div style={{ fontSize: '11px', color: '#ff4d4f', marginTop: 8 }}>
-            <span style={{ color: '#ff4d4f' }}>*</span>{' '}
-            {t('home:walletconnect.required_explanation')}
-          </div>
+        <Divider />
+
+        {/* Show warnings for unsupported or unsynced chains */}
+        {unsupportedChains.length > 0 && (
+          <Alert
+            message={t('home:walletconnect.unsupported_chains_warning')}
+            description={
+              <div>
+                {t('home:walletconnect.unsupported_chains_list')}:{' '}
+                {unsupportedChains.map((c) => c.chainName).join(', ')}
+              </div>
+            }
+            type="warning"
+            style={{ marginBottom: 8 }}
+            showIcon
+          />
         )}
-      </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <Title level={5}>{t('home:walletconnect.permissions')}:</Title>
-        <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-          {[
-            ...Object.values(proposal.params.requiredNamespaces || {}),
-            ...Object.values(proposal.params.optionalNamespaces || {}),
-          ]
-            .flatMap((ns) => (ns as { methods?: string[] }).methods || [])
-            .filter((method, index, array) => array.indexOf(method) === index) // Remove duplicates
-            .join(', ')}
-        </div>
-      </div>
+        {unsyncedChains.length > 0 && (
+          <Alert
+            message={t('home:walletconnect.unsynced_chains_warning')}
+            description={
+              <div>
+                <div>
+                  {t('home:walletconnect.unsynced_chains_list')}:{' '}
+                  {unsyncedChains.map((c) => c.chainName).join(', ')}
+                </div>
+              </div>
+            }
+            type="info"
+            style={{ marginBottom: 8 }}
+            showIcon
+          />
+        )}
 
-      <Divider />
+        {syncedChains.length === 0 && (
+          <Alert
+            message={t('home:walletconnect.no_compatible_chains')}
+            description={t('home:walletconnect.no_compatible_chains_desc')}
+            type="error"
+            style={{ marginBottom: 8 }}
+            showIcon
+          />
+        )}
 
-      {syncedChains.length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <Title level={5}>
-            {t('home:walletconnect.select_chains_accounts')}:
-          </Title>
-
-          {!hasRequiredChains && requiredChainIds.length > 0 && (
+        {/* Chain Compatibility Warning - when user is on non-EVM chain but dApp requests EVM methods */}
+        {blockchains[activeChain].chainType !== 'evm' &&
+          requestedChains.some((chain) => chain.isSupported) && (
             <Alert
-              message={t('home:walletconnect.required_chains_warning')}
-              type="warning"
-              style={{ marginBottom: 16 }}
+              message={t('home:walletconnect.chain_compatibility_notice')}
+              description={
+                <div>
+                  <div style={{ marginBottom: 8 }}>
+                    {t('home:walletconnect.chain_compatibility_desc_1', {
+                      chainName: blockchains[activeChain].name,
+                    })}
+                  </div>
+                  <div>
+                    {t('home:walletconnect.chain_compatibility_desc_2')}
+                  </div>
+                </div>
+              }
+              type="info"
+              style={{ marginBottom: 8 }}
               showIcon
             />
           )}
 
-          <List
-            dataSource={syncedChains}
-            renderItem={(chainInfo) => {
-              const isSelected = selectedChains.includes(chainInfo.chainId);
+        <div style={{ marginBottom: 8 }}>
+          <Title level={5}>{t('home:walletconnect.requested_chains')}:</Title>
+          <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
+            {requestedChains.map((chain, index) => (
+              <span key={chain.chainId}>
+                {chain.chainName}
+                {chain.isRequired && (
+                  <span style={{ color: '#ff4d4f' }}> *</span>
+                )}
+                {chain.isOriginalUnsupported && (
+                  <span style={{ color: '#faad14' }}>
+                    {' '}
+                    ({t('home:walletconnect.unsupported')})
+                  </span>
+                )}
+                {chain.isDefault && (
+                  <span style={{ color: '#52c41a' }}>
+                    {' '}
+                    ({t('home:walletconnect.defaulting')})
+                  </span>
+                )}
+                {!chain.isSupported && !chain.isOriginalUnsupported && (
+                  <span style={{ color: '#faad14' }}>
+                    {' '}
+                    ({t('home:walletconnect.unsupported')})
+                  </span>
+                )}
+                {chain.isSupported && !chain.isSynced && !chain.isDefault && (
+                  <span style={{ color: '#1890ff' }}>
+                    {' '}
+                    ({t('home:walletconnect.unsynced')})
+                  </span>
+                )}
+                {index < requestedChains.length - 1 && ', '}
+              </span>
+            ))}
+          </div>
+          {requestedChains.some((chain) => chain.isRequired) && (
+            <div style={{ fontSize: '11px', color: '#ff4d4f', marginTop: 8 }}>
+              <span style={{ color: '#ff4d4f' }}>*</span>{' '}
+              {t('home:walletconnect.required_explanation')}
+            </div>
+          )}
+        </div>
 
-              return (
-                <List.Item style={{ padding: 0, marginBottom: 16 }}>
-                  <Card
-                    style={{ width: '100%' }}
-                    size="small"
-                    title={
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(e) =>
-                          handleChainToggle(chainInfo.chainId, e.target.checked)
-                        }
-                      >
-                        <span style={{ fontWeight: 'bold' }}>
-                          {chainInfo.chainName}
-                          {chainInfo.isRequired && (
-                            <span style={{ color: '#ff4d4f' }}> *</span>
-                          )}
-                        </span>
-                      </Checkbox>
-                    }
-                  >
-                    {isSelected && (
-                      <div>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                          {t('home:walletconnect.select_accounts')}:
-                        </Text>
-                        <div style={{ marginTop: 8 }}>
-                          {chainInfo.accounts.map((account) => (
-                            <div key={account} style={{ marginBottom: 4 }}>
-                              <Checkbox
-                                checked={(
-                                  selectedAccounts[chainInfo.chainId] || []
-                                ).includes(account)}
-                                onChange={(e) =>
-                                  handleAccountToggle(
-                                    chainInfo.chainId,
-                                    account,
-                                    e.target.checked,
-                                  )
-                                }
-                              >
-                                <span
-                                  style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                  }}
+        <div style={{ marginBottom: 8 }}>
+          <Title level={5}>{t('home:walletconnect.permissions')}:</Title>
+          <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
+            {[
+              ...Object.values(proposal.params.requiredNamespaces || {}),
+              ...Object.values(proposal.params.optionalNamespaces || {}),
+            ]
+              .flatMap((ns) => (ns as { methods?: string[] }).methods || [])
+              .filter((method, index, array) => array.indexOf(method) === index) // Remove duplicates
+              .join(', ')}
+          </div>
+        </div>
+
+        <Divider />
+
+        {syncedChains.length > 0 && (
+          <div style={{ marginBottom: 8 }}>
+            <Title level={5}>
+              {t('home:walletconnect.select_chains_accounts')}:
+            </Title>
+
+            {!hasRequiredChains && requiredChainIds.length > 0 && (
+              <Alert
+                message={t('home:walletconnect.required_chains_warning')}
+                type="warning"
+                style={{ marginBottom: 8 }}
+                showIcon
+              />
+            )}
+
+            <List
+              dataSource={syncedChains}
+              renderItem={(chainInfo) => {
+                const isSelected = selectedChains.includes(chainInfo.chainId);
+
+                return (
+                  <List.Item style={{ padding: 0, marginBottom: 8 }}>
+                    <Card
+                      style={{ width: '100%' }}
+                      size="small"
+                      title={
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={(e) =>
+                            handleChainToggle(
+                              chainInfo.chainId,
+                              e.target.checked,
+                            )
+                          }
+                        >
+                          <span style={{ fontWeight: 'bold' }}>
+                            {chainInfo.chainName}
+                            {chainInfo.isRequired && (
+                              <span style={{ color: '#ff4d4f' }}> *</span>
+                            )}
+                          </span>
+                        </Checkbox>
+                      }
+                    >
+                      {isSelected && (
+                        <div>
+                          <Text type="secondary" style={{ fontSize: '12px' }}>
+                            {t('home:walletconnect.select_accounts')}:
+                          </Text>
+                          <div style={{ marginTop: 8 }}>
+                            {chainInfo.accounts.map((account) => (
+                              <div key={account} style={{ marginBottom: 4 }}>
+                                <Checkbox
+                                  checked={(
+                                    selectedAccounts[chainInfo.chainId] || []
+                                  ).includes(account)}
+                                  onChange={(e) =>
+                                    handleAccountToggle(
+                                      chainInfo.chainId,
+                                      account,
+                                      e.target.checked,
+                                    )
+                                  }
                                 >
-                                  <Text
+                                  <span
                                     style={{
-                                      fontFamily: 'monospace',
-                                      fontSize: '12px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px',
                                     }}
                                   >
-                                    {account.substring(0, 6)}...
-                                    {account.substring(account.length - 4)}
-                                  </Text>
-                                  {chainInfo.sspChainKey && (
-                                    <AddressDeploymentStatus
-                                      address={account}
-                                      chain={
-                                        chainInfo.sspChainKey as keyof cryptos
-                                      }
-                                    />
-                                  )}
-                                </span>
-                              </Checkbox>
-                            </div>
-                          ))}
+                                    <Text
+                                      style={{
+                                        fontFamily: 'monospace',
+                                        fontSize: '12px',
+                                      }}
+                                    >
+                                      {account.substring(0, 6)}...
+                                      {account.substring(account.length - 4)}
+                                    </Text>
+                                    {chainInfo.sspChainKey && (
+                                      <AddressDeploymentStatus
+                                        address={account}
+                                        chain={
+                                          chainInfo.sspChainKey as keyof cryptos
+                                        }
+                                      />
+                                    )}
+                                  </span>
+                                </Checkbox>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </Card>
-                </List.Item>
-              );
-            }}
-          />
-        </div>
-      )}
+                      )}
+                    </Card>
+                  </List.Item>
+                );
+              }}
+            />
+          </div>
+        )}
 
-      <Alert
-        message={t('home:walletconnect.security_warning')}
-        description={t('home:walletconnect.connection_warning')}
-        type="warning"
-        style={{ marginTop: 16 }}
-        showIcon
-      />
+        <Alert
+          message={t('home:walletconnect.security_warning')}
+          description={t('home:walletconnect.connection_warning')}
+          type="warning"
+          style={{ marginTop: 16 }}
+          showIcon
+        />
+      </Space>
     </Modal>
   );
 };

@@ -233,12 +233,16 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
       okText={t('home:walletconnect.approve')}
       cancelText={t('home:walletconnect.reject')}
       confirmLoading={isApproving}
-      width={700}
+      style={{ textAlign: 'center', top: 60 }}
     >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      <Space
+        direction="vertical"
+        size="large"
+        style={{ textAlign: 'left', marginTop: 24 }}
+      >
         {/* dApp Information */}
-        <Card size="small" style={{ marginBottom: 16 }}>
-          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        <Card size="small">
+          <Space direction="vertical" size="small">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Text strong>{t('home:walletconnect_tx_modal.dapp_label')}:</Text>
               <Tag color={dappInfo.isVerified ? 'green' : 'orange'}>
@@ -267,7 +271,6 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
           <Card
             size="small"
             style={{
-              marginBottom: 16,
               border: decodedData.warning ? '1px solid #faad14' : undefined,
             }}
           >
@@ -278,15 +281,15 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
                 <Text strong>
                   {t('home:walletconnect_tx_modal.function_label_with_colon')}
                 </Text>
-                <Tag color={decodedData.isRecognized ? 'blue' : 'red'}>
-                  {decodedData.functionName}
-                </Tag>
                 {decodedData.signature && (
                   <Text code style={{ fontSize: '11px' }}>
                     {decodedData.signature}
                   </Text>
                 )}
               </div>
+              <Tag color={decodedData.isRecognized ? 'blue' : 'red'}>
+                {decodedData.functionName}
+              </Tag>
               {decodedData.warning && (
                 <Alert
                   message={decodedData.warning}
@@ -300,55 +303,63 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
         )}
 
         {/* Transaction Details */}
-        <Card
-          size="small"
-          title={t('home:walletconnect.transaction_request')}
-          style={{ marginBottom: 16 }}
-        >
+        <Card size="small" title={t('home:walletconnect.transaction_request')}>
           <Space direction="vertical" size="small" style={{ width: '100%' }}>
-            <div>
-              <Text strong>{t('common:from')}: </Text>
-              <Text code copyable>
-                {transaction.from || t('common:address')}
-              </Text>
-              <div style={{ marginTop: 4 }}>
-                <Text type="secondary" style={{ fontSize: '12px' }}>
-                  {chainSwitchInfo?.required && chainSwitchInfo.targetChain
-                    ? t('home:walletconnect.on_network', {
-                        networkName: chainSwitchInfo.targetChain.chainName,
-                      })
-                    : t('home:walletconnect.on_network', {
-                        networkName: blockchains[activeChain].name,
-                      })}
+            <Space direction="vertical" size="small">
+              <div>
+                <Text strong>{t('common:from')}: </Text>
+                <br />
+                <Text code copyable style={{ fontSize: '13px' }}>
+                  {transaction.from || t('common:address')}
                 </Text>
               </div>
-            </div>
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                {chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                  ? t('home:walletconnect.on_network', {
+                      networkName: chainSwitchInfo.targetChain.chainName,
+                    })
+                  : t('home:walletconnect.on_network', {
+                      networkName: blockchains[activeChain].name,
+                    })}
+              </Text>
+            </Space>
 
             <div>
               <Text strong>{t('home:walletconnect.to')}: </Text>
-              <Text code copyable>
+              <br />
+              <Text code copyable style={{ fontSize: '13px' }}>
                 {transaction.to || t('common:address')}
               </Text>
             </div>
 
-            <div>
-              <Text strong>{t('home:walletconnect.value')}: </Text>
-              <Text>
-                {formatCurrencyValue(
-                  transaction.value || '0',
-                  chainSwitchInfo?.required && chainSwitchInfo.targetChain
-                    ? chainSwitchInfo.targetChain.chainKey
-                    : activeChain,
-                )}
-              </Text>
-            </div>
+            <Space
+              direction="horizontal"
+              size="large"
+              style={{
+                width: '100%',
+                justifyContent: 'space-between',
+                marginTop: 24,
+              }}
+            >
+              <div>
+                <Text strong>{t('home:walletconnect.value')}: </Text>
+                <Text>
+                  {formatCurrencyValue(
+                    transaction.value || '0',
+                    chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                      ? chainSwitchInfo.targetChain.chainKey
+                      : activeChain,
+                  )}
+                </Text>
+              </div>
 
-            <div>
-              <Text strong>{t('home:walletconnect.gas')}: </Text>
-              <Text>
-                {formatGasValue(transaction.gas, transaction.gasLimit)}
-              </Text>
-            </div>
+              <div>
+                <Text strong>{t('home:walletconnect.gas')}: </Text>
+                <Text>
+                  {formatGasValue(transaction.gas, transaction.gasLimit)}
+                </Text>
+              </div>
+            </Space>
 
             <Collapse
               size="small"
@@ -371,6 +382,7 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
                           overflowY: 'auto',
                           marginTop: '8px',
                           whiteSpace: 'pre-wrap',
+                          fontSize: '12px',
                         }}
                       >
                         {JSON.stringify(transaction, null, 2)}
@@ -397,6 +409,7 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
                               overflowY: 'auto',
                               marginTop: '4px',
                               wordBreak: 'break-all',
+                              fontSize: '12px',
                             }}
                           >
                             {transaction.data}
@@ -430,7 +443,6 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
             }
             type="warning"
             showIcon
-            style={{ marginBottom: 16 }}
           />
         )}
 
@@ -440,10 +452,10 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
           description={t('home:walletconnect.execute_transaction_blockchain')}
           type="info"
           showIcon
-          style={{ marginBottom: 16, fontSize: '12px' }}
+          style={{ fontSize: '12px' }}
         />
 
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
+        <div style={{ textAlign: 'center' }}>
           <Text type="secondary">
             {t('home:walletconnect.step_1_approve_wallet')}
           </Text>
