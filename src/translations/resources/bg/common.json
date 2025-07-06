@@ -11,6 +11,8 @@
   "flux": "Флъкс",
   "powered_by": "Осъществено от/\nС подкрепата на",
   "ok": "ОК",
+  "yes": "Yes",
+  "no": "No",
   "help": "Помощ",
   "save": "Запази",
   "confirm": "Потвърди",
@@ -52,5 +54,10 @@
   "decimals": "Decimals",
   "to": "To",
   "from": "From",
-  "change": "Change"
+  "change": "Change",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }

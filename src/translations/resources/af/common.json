@@ -11,6 +11,8 @@
   "flux": "Flux",
   "powered_by": "Aangedryf deur",
   "ok": "OK",
+  "yes": "Yes",
+  "no": "No",
   "help": "Hulp",
   "save": "Stoor",
   "confirm": "Bevestig",
@@ -52,5 +54,10 @@
   "decimals": "Desimale",
   "to": "Na",
   "from": "Van",
-  "change": "Verander"
+  "change": "Verander",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }

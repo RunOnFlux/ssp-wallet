@@ -11,6 +11,8 @@
   "flux": "Flux",
   "powered_by": "দ্বারা চালিত",
   "ok": "ঠিক আছে",
+  "yes": "Yes",
+  "no": "No",
   "help": "সাহায্য",
   "save": "সংরক্ষণ করুন",
   "confirm": "নিশ্চিত করুন",
@@ -52,5 +54,10 @@
   "decimals": "Decimals",
   "to": "To",
   "from": "From",
-  "change": "Change"
+  "change": "Change",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }

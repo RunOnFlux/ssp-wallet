@@ -11,6 +11,8 @@
   "flux": "फ्लक्स",
   "powered_by": "पॉवरड बाय",
   "ok": "ओके",
+  "yes": "Yes",
+  "no": "No",
   "help": "हेल्प",
   "save": "सेव",
   "confirm": "कन्फर्म",
@@ -52,5 +54,10 @@
   "decimals": "Decimals",
   "to": "To",
   "from": "From",
-  "change": "Change"
+  "change": "Change",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }

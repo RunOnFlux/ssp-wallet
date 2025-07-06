@@ -11,6 +11,8 @@
   "flux": "Flux",
   "powered_by": "제공:",
   "ok": "확인",
+  "yes": "Yes",
+  "no": "No",
   "help": "도움말",
   "save": "저장",
   "confirm": "확인",
@@ -52,5 +54,10 @@
   "decimals": "Decimals",
   "to": "To",
   "from": "From",
-  "change": "Change"
+  "change": "Change",
+  "scan": "Scan",
+  "swap": "Swap",
+  "or": "or",
+  "walletconnect": "WalletConnect",
+  "scanning": "Scanning"
 }
