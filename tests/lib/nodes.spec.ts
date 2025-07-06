@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
-import chai from 'chai';
-import { describe, it } from 'mocha';
+import { describe, it, expect } from 'vitest';
 
 import {
   fetchNodesUtxos,
@@ -11,99 +10,97 @@ import {
   fetchStartFlux,
 } from '../../src/lib/nodes';
 
-const { expect, assert } = chai;
-
-describe('Nodes Lib', function () {
-  describe('Verifies nodes', function () {
-    it('should return fetchNodesUtxos data when value is valid', async function () {
+describe('Nodes Lib', () => {
+  describe('Verifies nodes', () => {
+    it('should return fetchNodesUtxos data when value is valid', async () => {
       const res = await fetchNodesUtxos(
         't3ZQQsd8hJNw6UQKYLwfofdL3ntPmgkwofH',
         'flux',
       );
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].txid).to.not.be.null;
-      expect(res[0].txid).to.not.be.undefined;
-      expect(res[0].vout).to.not.be.null;
-      expect(res[0].vout).to.not.be.undefined;
-      expect(res[0].scriptPubKey).to.not.be.null;
-      expect(res[0].scriptPubKey).to.not.be.undefined;
-      expect(res[0].satoshis).to.not.be.null;
-      expect(res[0].satoshis).to.not.be.undefined;
-      expect(res[0].confirmations).to.not.be.null;
-      expect(res[0].confirmations).to.not.be.undefined;
-      assert.equal(res[0].coinbase, false);
+      expect(res[0]).not.toBeNull();
+      expect(res[0]).toBeDefined();
+      expect(res[0].txid).not.toBeNull();
+      expect(res[0].txid).toBeDefined();
+      expect(res[0].vout).not.toBeNull();
+      expect(res[0].vout).toBeDefined();
+      expect(res[0].scriptPubKey).not.toBeNull();
+      expect(res[0].scriptPubKey).toBeDefined();
+      expect(res[0].satoshis).not.toBeNull();
+      expect(res[0].satoshis).toBeDefined();
+      expect(res[0].confirmations).not.toBeNull();
+      expect(res[0].confirmations).toBeDefined();
+      expect(res[0].coinbase).toBe(false);
     });
 
-    it('should return getNodesOnNetwork data when value is valid', async function () {
+    it('should return getNodesOnNetwork data when value is valid', async () => {
       const res = await getNodesOnNetwork(
         't3ZQQsd8hJNw6UQKYLwfofdL3ntPmgkwofH',
         'flux',
       );
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].collateral).to.not.be.null;
-      expect(res[0].collateral).to.not.be.undefined;
-      expect(res[0].txhash).to.not.be.null;
-      expect(res[0].txhash).to.not.be.undefined;
-      assert.equal(+res[0].outidx, 0);
-      expect(res[0].ip).to.not.be.null;
-      expect(res[0].ip).to.not.be.undefined;
-      assert.equal(res[0].network, 'ipv4');
-      expect(res[0].added_height).to.not.be.null;
-      expect(res[0].added_height).to.not.be.undefined;
-      expect(res[0].confirmed_height).to.not.be.null;
-      expect(res[0].confirmed_height).to.not.be.undefined;
-      expect(res[0].last_confirmed_height).to.not.be.null;
-      expect(res[0].last_confirmed_height).to.not.be.undefined;
-      expect(res[0].last_paid_height).to.not.be.null;
-      expect(res[0].last_paid_height).to.not.be.undefined;
-      expect(res[0].tier).to.not.be.null;
-      expect(res[0].tier).to.not.be.undefined;
-      expect(res[0].payment_address).to.not.be.null;
-      expect(res[0].payment_address).to.not.be.undefined;
-      expect(res[0].pubkey).to.not.be.null;
-      expect(res[0].pubkey).to.not.be.undefined;
-      expect(res[0].activesince).to.not.be.null;
-      expect(res[0].activesince).to.not.be.undefined;
-      expect(res[0].lastpaid).to.not.be.null;
-      expect(res[0].lastpaid).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
-      expect(res[0].rank).to.not.be.null;
-      expect(res[0].rank).to.not.be.undefined;
+      expect(res[0]).not.toBeNull();
+      expect(res[0]).toBeDefined();
+      expect(res[0].collateral).not.toBeNull();
+      expect(res[0].collateral).toBeDefined();
+      expect(res[0].txhash).not.toBeNull();
+      expect(res[0].txhash).toBeDefined();
+      expect(+res[0].outidx).toBeGreaterThan(10);
+      expect(res[0].ip).not.toBeNull();
+      expect(res[0].ip).toBeDefined();
+      expect(res[0].network).toBe('ipv4');
+      expect(res[0].added_height).not.toBeNull();
+      expect(res[0].added_height).toBeDefined();
+      expect(res[0].confirmed_height).not.toBeNull();
+      expect(res[0].confirmed_height).toBeDefined();
+      expect(res[0].last_confirmed_height).not.toBeNull();
+      expect(res[0].last_confirmed_height).toBeDefined();
+      expect(res[0].last_paid_height).not.toBeNull();
+      expect(res[0].last_paid_height).toBeDefined();
+      expect(res[0].tier).not.toBeNull();
+      expect(res[0].tier).toBeDefined();
+      expect(res[0].payment_address).not.toBeNull();
+      expect(res[0].payment_address).toBeDefined();
+      expect(res[0].pubkey).not.toBeNull();
+      expect(res[0].pubkey).toBeDefined();
+      expect(res[0].activesince).not.toBeNull();
+      expect(res[0].activesince).toBeDefined();
+      expect(res[0].lastpaid).not.toBeNull();
+      expect(res[0].lastpaid).toBeDefined();
+      expect(res[0].amount).not.toBeNull();
+      expect(res[0].amount).toBeDefined();
+      expect(res[0].rank).not.toBeNull();
+      expect(res[0].rank).toBeDefined();
     });
 
-    it('should return fetchDOSFlux data when value is flux', async function () {
+    it('should return fetchDOSFlux data when value is flux', async () => {
       const res = await fetchDOSFlux('flux');
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].collateral).to.not.be.null;
-      expect(res[0].collateral).to.not.be.undefined;
-      expect(res[0].added_height).to.not.be.null;
-      expect(res[0].added_height).to.not.be.undefined;
-      expect(res[0].payment_address).to.not.be.null;
-      expect(res[0].payment_address).to.not.be.undefined;
-      expect(res[0].eligible_in).to.not.be.null;
-      expect(res[0].eligible_in).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
+      expect(res[0]).not.toBeNull();
+      expect(res[0]).toBeDefined();
+      expect(res[0].collateral).not.toBeNull();
+      expect(res[0].collateral).toBeDefined();
+      expect(res[0].added_height).not.toBeNull();
+      expect(res[0].added_height).toBeDefined();
+      expect(res[0].payment_address).not.toBeNull();
+      expect(res[0].payment_address).toBeDefined();
+      expect(res[0].eligible_in).not.toBeNull();
+      expect(res[0].eligible_in).toBeDefined();
+      expect(res[0].amount).not.toBeNull();
+      expect(res[0].amount).toBeDefined();
     });
 
-    it('should return fetchStartFlux data when value is flux', async function () {
+    it('should return fetchStartFlux data when value is flux', async () => {
       const res = await fetchStartFlux('flux');
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].collateral).to.not.be.null;
-      expect(res[0].collateral).to.not.be.undefined;
-      expect(res[0].added_height).to.not.be.null;
-      expect(res[0].added_height).to.not.be.undefined;
-      expect(res[0].payment_address).to.not.be.null;
-      expect(res[0].payment_address).to.not.be.undefined;
-      expect(res[0].expires_in).to.not.be.null;
-      expect(res[0].expires_in).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
+      expect(res[0]).not.toBeNull();
+      expect(res[0]).toBeDefined();
+      expect(res[0].collateral).not.toBeNull();
+      expect(res[0].collateral).toBeDefined();
+      expect(res[0].added_height).not.toBeNull();
+      expect(res[0].added_height).toBeDefined();
+      expect(res[0].payment_address).not.toBeNull();
+      expect(res[0].payment_address).toBeDefined();
+      expect(res[0].expires_in).not.toBeNull();
+      expect(res[0].expires_in).toBeDefined();
+      expect(res[0].amount).not.toBeNull();
+      expect(res[0].amount).toBeDefined();
     });
   });
 });

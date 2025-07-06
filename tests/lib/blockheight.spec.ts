@@ -1,30 +1,27 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
-import chai from 'chai';
+import { describe, it, expect } from 'vitest';
 import { getBlockheight } from '../../src/lib/blockheight';
-import { describe, it } from 'mocha';
 
-const { expect } = chai;
-
-describe('Currency Lib', function () {
-  describe('Verifies currency', function () {
-    it('should return data when value is valid evm', async function () {
+describe('Currency Lib', () => {
+  describe('Verifies currency', () => {
+    it('should return data when value is valid evm', async () => {
       const res = await getBlockheight('eth');
-      expect(res).to.not.be.null;
-      expect(res).to.not.be.undefined;
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
     });
 
-    it('should return data when value is valid', async function () {
+    it('should return data when value is valid', async () => {
       const res = await getBlockheight('flux');
-      expect(res).to.not.be.null;
-      expect(res).to.not.be.undefined;
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
     });
 
-    it('should return data when value is valid blockbook', async function () {
+    it('should return data when value is valid blockbook', async () => {
       const res = await getBlockheight('bch');
-      expect(res).to.not.be.null;
-      expect(res).to.not.be.undefined;
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
     });
   });
 });

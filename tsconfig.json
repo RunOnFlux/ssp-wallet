@@ -24,7 +24,8 @@
     "types": [
       "chrome",
       "node",
-      "firefox-webext-browser"
+      "firefox-webext-browser",
+      "vitest/globals"
     ],
     "checkJs": false,
     "baseUrl": "./",
@@ -41,10 +42,16 @@
     "src",
     "public/scripts",
     "tests",
+    "vitest.config.ts"
   ],
   "references": [
     {
       "path": "./tsconfig.node.json"
     }
-  ]
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  }
 }

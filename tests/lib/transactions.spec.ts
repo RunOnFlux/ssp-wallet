@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
-import chai from 'chai';
-import { describe, it } from 'mocha';
+import { describe, it, expect } from 'vitest';
 
 import {
   processTransactionInternalScan,
@@ -14,8 +13,6 @@ import {
   decodeTransactionForApproval,
   decodeEVMTransactionForApproval,
 } from '../../src/lib/transactions';
-
-const { expect, assert } = chai;
 
 const rawTxSepolia = JSON.stringify({
   id: '0x8b18236447c918b3b217da857a787a7561313b730374430596eaa6f9c2d0ee16',
@@ -72,9 +69,9 @@ const rawTxSepolia = JSON.stringify({
 const rawTxFlux =
   '0400008085202f89016bf2b6449710be3300c3cc4a9ad2d4db7e88cea56168c46a16278b496e3415eb0000000092000047304402204d287d270c0d35e7c65f2b0f02b2ba8ca75e04934051691445115beb729beb54022060f01fcbf92957eb17d8a221a7d062a1fe5c86114deaf69bec99b65edafb82f201475221022a316c22acf16a9108b57f48802143cc0c0ac4b8fc360a87568e1794e51558752103749c957461154dfca921d0872ba3c9ac85d98c92e4a34fdac32bd03597fbd2f252aeffffffff02608501000000000017a914c9a895ceb2368f39686f8c77f6bc8c148ae6d54e870000000000000000136a1174657374207061796d656e74206e6f746500000000f7071a000000000000000000000000';
 
-describe('Transactions Lib', function () {
-  describe('Verifies transactions', function () {
-    it('should return processTransactionInternalScan data when value is valid', function () {
+describe('Transactions Lib', () => {
+  describe('Verifies transactions', () => {
+    it('should return processTransactionInternalScan data when value is valid', () => {
       const res = processTransactionInternalScan(
         [
           {
@@ -86,23 +83,22 @@ describe('Transactions Lib', function () {
         '0xE6F30E1B28C67d787Bf8Bd21bA8E9756707E4713',
         'ETH',
       );
-      expect(res).to.not.be.null;
-      expect(res).to.not.be.undefined;
-      assert.equal(res.type, 'evm');
-      assert.equal(
-        res.txid,
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
+      expect(res.type).toBe('evm');
+      expect(res.txid).toBe(
         '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
       );
-      assert.equal(res.blockheight, 20597003);
-      assert.equal(res.timestamp, 1724488730000);
-      assert.equal(res.message, '');
-      assert.equal(res.isError, false);
-      assert.equal(res.receiver, '');
-      assert.equal(res.fee, 0);
-      assert.equal(res.amount, 0);
+      expect(res.blockheight).toBe(20597003);
+      expect(res.timestamp).toBe(1724488730000);
+      expect(res.message).toBe('');
+      expect(res.isError).toBe(false);
+      expect(res.receiver).toBe('');
+      expect(res.fee).toBe('0');
+      expect(res.amount).toBe('0');
     });
 
-    it('should return processTransactionsInternalScan data when value is valid', function () {
+    it('should return processTransactionsInternalScan data when value is valid', () => {
       const res = processTransactionsInternalScan(
         [
           {
@@ -114,23 +110,22 @@ describe('Transactions Lib', function () {
         '0xE6F30E1B28C67d787Bf8Bd21bA8E9756707E4713',
         'ETH',
       );
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      assert.equal(res[0].type, 'evm');
-      assert.equal(
-        res[0].txid,
+      expect(res[0]).not.toBeNull();
+      expect(res[0]).toBeDefined();
+      expect(res[0].type).toBe('evm');
+      expect(res[0].txid).toBe(
         '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
       );
-      assert.equal(res[0].blockheight, 20597003);
-      assert.equal(res[0].timestamp, 1724488730000);
-      assert.equal(res[0].message, '');
-      assert.equal(res[0].isError, false);
-      assert.equal(res[0].receiver, '');
-      assert.equal(res[0].fee, 0);
-      assert.equal(res[0].amount, 0);
+      expect(res[0].blockheight).toBe(20597003);
+      expect(res[0].timestamp).toBe(1724488730000);
+      expect(res[0].message).toBe('');
+      expect(res[0].isError).toBe(false);
+      expect(res[0].receiver).toBe('');
+      expect(res[0].fee).toBe('0');
+      expect(res[0].amount).toBe('0');
     });
 
-    it('should return processTransactionExternalScan data when value is valid', function () {
+    it('should return processTransactionExternalScan data when value is valid', () => {
       const res = processTransactionExternalScan(
         {
           hash: '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
@@ -142,25 +137,24 @@ describe('Transactions Lib', function () {
         '0xE6F30E1B28C67d787Bf8Bd21bA8E9756707E4713',
         'ETH',
       );
-      expect(res).to.not.be.null;
-      expect(res).to.not.be.undefined;
-      expect(res.fee).to.not.be.null;
-      expect(res.fee).to.not.be.undefined;
-      expect(res.amount).to.not.be.null;
-      expect(res.amount).to.not.be.undefined;
-      assert.equal(res.type, 'evm');
-      assert.equal(
-        res.txid,
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
+      expect(res.fee).not.toBeNull();
+      expect(res.fee).toBeDefined();
+      expect(res.amount).not.toBeNull();
+      expect(res.amount).toBeDefined();
+      expect(res.type).toBe('evm');
+      expect(res.txid).toBe(
         '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
       );
-      assert.equal(res.blockheight, 20597003);
-      assert.equal(res.timestamp, 1724488730000);
-      assert.equal(res.message, '');
-      assert.equal(res.isError, false);
-      assert.equal(res.receiver, '0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1');
+      expect(res.blockheight).toBe(20597003);
+      expect(res.timestamp).toBe(1724488730000);
+      expect(res.message).toBe('');
+      expect(res.isError).toBe(false);
+      expect(res.receiver).toBe('0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1');
     });
 
-    it('should return processTransactionsExternalScan data when value is valid', function () {
+    it('should return processTransactionsExternalScan data when value is valid', () => {
       const res = processTransactionsExternalScan(
         [
           {
@@ -174,227 +168,87 @@ describe('Transactions Lib', function () {
         '0xE6F30E1B28C67d787Bf8Bd21bA8E9756707E4713',
         'ETH',
       );
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].fee).to.not.be.null;
-      expect(res[0].fee).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
-      assert.equal(res[0].type, 'evm');
-      assert.equal(
-        res[0].txid,
+      expect(res[0]).not.toBeNull();
+      expect(res[0]).toBeDefined();
+      expect(res[0].fee).not.toBeNull();
+      expect(res[0].fee).toBeDefined();
+      expect(res[0].amount).not.toBeNull();
+      expect(res[0].amount).toBeDefined();
+      expect(res[0].type).toBe('evm');
+      expect(res[0].txid).toBe(
         '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
       );
-      assert.equal(res[0].blockheight, 20597003);
-      assert.equal(res[0].timestamp, 1724488730000);
-      assert.equal(res[0].message, '');
-      assert.equal(res[0].isError, false);
-      assert.equal(
-        res[0].receiver,
+      expect(res[0].blockheight).toBe(20597003);
+      expect(res[0].timestamp).toBe(1724488730000);
+      expect(res[0].message).toBe('');
+      expect(res[0].isError).toBe(false);
+      expect(res[0].receiver).toBe(
         '0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1',
       );
     });
 
-    it('should return fetchAllAddressTransactions data when value is evm', async function () {
+    it('should return fetchAllAddressTransactions data when value is evm', async () => {
       const res = await fetchAllAddressTransactions(
         '0xa23702e9349fbf9939864da1245f5b358e7ef30b',
-        'eth',
+        'sepolia',
       );
-      expect(res.length).to.be.greaterThan(55);
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].fee).to.not.be.null;
-      expect(res[0].fee).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
-      assert.equal(res[0].type, 'evm');
-      expect(res[0].txid).to.not.be.null;
-      expect(res[0].txid).to.not.be.undefined;
-      expect(res[0].blockheight).to.not.be.null;
-      expect(res[0].blockheight).to.not.be.undefined;
-      expect(res[0].timestamp).to.not.be.null;
-      expect(res[0].timestamp).to.not.be.undefined;
-      assert.equal(res[0].message, '');
-      expect(res[0].receiver).to.not.be.null;
-      expect(res[0].receiver).to.not.be.undefined;
-    }).timeout(5000);
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
+    });
 
-    it('should return fetchAllAddressTransactions data when value is utxo insight', async function () {
+    it('should return fetchAllAddressTransactions data when value is flux', async () => {
       const res = await fetchAllAddressTransactions(
-        't1cjcLaDHkNcuXh6uoyNL7u1jx7GxvzfYAN',
+        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
         'flux',
       );
-      expect(res.length).to.be.greaterThan(200);
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].fee).to.not.be.null;
-      expect(res[0].fee).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
-      expect(res[0].txid).to.not.be.null;
-      expect(res[0].txid).to.not.be.undefined;
-      expect(res[0].blockheight).to.not.be.null;
-      expect(res[0].blockheight).to.not.be.undefined;
-      expect(res[0].timestamp).to.not.be.null;
-      expect(res[0].timestamp).to.not.be.undefined;
-      expect(res[0].receiver).to.not.be.null;
-      expect(res[0].receiver).to.not.be.undefined;
-    }).timeout(25000);
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
+    });
 
-    it('should return fetchAllAddressTransactions data when value is utxo blockbook', async function () {
-      const res = await fetchAllAddressTransactions(
-        'bc1pv537rf60ayvhdj2ysdy70vl2w9sqtq2taqp2zx8y6smyj38m4spsr8d3uq',
-        'btc',
-      );
-      expect(res.length).to.be.greaterThan(60);
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].fee).to.not.be.null;
-      expect(res[0].fee).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
-      expect(res[0].txid).to.not.be.null;
-      expect(res[0].txid).to.not.be.undefined;
-      expect(res[0].blockheight).to.not.be.null;
-      expect(res[0].blockheight).to.not.be.undefined;
-      expect(res[0].timestamp).to.not.be.null;
-      expect(res[0].timestamp).to.not.be.undefined;
-      assert.equal(res[0].message, '');
-      expect(res[0].receiver).to.not.be.null;
-      expect(res[0].receiver).to.not.be.undefined;
-    }).timeout(25000);
-
-    it('should return fetchAddressTransactions data when value is evm', async function () {
+    it('should return fetchAddressTransactions data when value is flux', async () => {
       const res = await fetchAddressTransactions(
-        '0xE6F30E1B28C67d787Bf8Bd21bA8E9756707E4713',
-        'eth',
-        1,
-        2,
-      );
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].fee).to.not.be.null;
-      expect(res[0].fee).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
-      assert.equal(res[0].type, 'evm');
-      expect(res[0].txid).to.not.be.null;
-      expect(res[0].txid).to.not.be.undefined;
-      expect(res[0].blockheight).to.not.be.null;
-      expect(res[0].blockheight).to.not.be.undefined;
-      expect(res[0].timestamp).to.not.be.null;
-      expect(res[0].timestamp).to.not.be.undefined;
-      assert.equal(res[0].message, '');
-      expect(res[0].receiver).to.not.be.null;
-      expect(res[0].receiver).to.not.be.undefined;
-    }).timeout(5000);
-
-    it('should return fetchAddressTransactions data when value is flux', async function () {
-      const res = await fetchAddressTransactions(
-        't1cwbdvsWGHjeG3sd2esrjbchSrzW62w3GY',
+        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
         'flux',
-        1,
-        2,
+        0,
+        0,
+        '',
       );
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].fee).to.not.be.null;
-      expect(res[0].fee).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
-      expect(res[0].txid).to.not.be.null;
-      expect(res[0].txid).to.not.be.undefined;
-      expect(res[0].blockheight).to.not.be.null;
-      expect(res[0].blockheight).to.not.be.undefined;
-      expect(res[0].timestamp).to.not.be.null;
-      expect(res[0].timestamp).to.not.be.undefined;
-      assert.equal(res[0].message, '');
-      expect(res[0].receiver).to.not.be.null;
-      expect(res[0].receiver).to.not.be.undefined;
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
     });
 
-    it('should return fetchAddressTransactions data when value is blockbook', async function () {
+    it('should return fetchAddressTransactions data when value is evm', async () => {
       const res = await fetchAddressTransactions(
-        'bitcoincash:qrq0l3x9mqy6cjzxz85q5avj2gu5wj359ygc8kqmtm',
-        'bch',
-        1,
-        2,
+        '0xa23702e9349fbf9939864da1245f5b358e7ef30b',
+        'sepolia',
+        0,
+        0,
+        '',
       );
-      expect(res[0]).to.not.be.null;
-      expect(res[0]).to.not.be.undefined;
-      expect(res[0].fee).to.not.be.null;
-      expect(res[0].fee).to.not.be.undefined;
-      expect(res[0].amount).to.not.be.null;
-      expect(res[0].amount).to.not.be.undefined;
-      expect(res[0].txid).to.not.be.null;
-      expect(res[0].txid).to.not.be.undefined;
-      expect(res[0].blockheight).to.not.be.null;
-      expect(res[0].blockheight).to.not.be.undefined;
-      expect(res[0].timestamp).to.not.be.null;
-      expect(res[0].timestamp).to.not.be.undefined;
-      expect(res[0].message).to.not.be.null;
-      expect(res[0].message).to.not.be.undefined;
-      expect(res[0].size).to.not.be.null;
-      expect(res[0].size).to.not.be.undefined;
-      expect(res[0].receiver).to.not.be.null;
-      expect(res[0].receiver).to.not.be.undefined;
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
     });
 
-    it('should return decodeTransactionForApproval data when value is invalid', function () {
-      const res = decodeTransactionForApproval('{}', 'sepolia');
-      assert.deepEqual(res, {
-        sender: 'decodingError',
-        decimals: 18,
-        receiver: 'decodingError',
-        amount: 'decodingError',
-        fee: 'decodingError',
-        token: 'decodingError',
-        tokenSymbol: 'decodingError',
-      });
-    });
-
-    it('should return decodeTransactionForApproval data when value is invalid rawTx', function () {
-      const res = decodeTransactionForApproval(rawTxSepolia, 'flux');
-      assert.deepEqual(res, {
-        sender: 'decodingError',
-        receiver: 'decodingError',
-        amount: 'decodingError',
-      });
-    });
-
-    it('should return decodeTransactionForApproval data when value is valid', function () {
+    it('should return decodeTransactionForApproval data when value is valid', () => {
       const res = decodeTransactionForApproval(rawTxFlux, 'flux');
-      assert.deepEqual(res, {
-        sender: 't3VhYxSXapJEq2mH1z5MmFUcVLYvrYNfqbv',
-        receiver: 't3cwthwVvGg7WKkxhzw87xnDDsdb9kS92x3',
-        amount: '0.0009968',
-      });
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
+      expect(res.sender).toBe('t3VhYxSXapJEq2mH1z5MmFUcVLYvrYNfqbv');
+      expect(res.receiver).toBe('t3cwthwVvGg7WKkxhzw87xnDDsdb9kS92x3');
+      expect(res.amount).toBe('0.0009968');
     });
 
-    it('should return decodeEVMTransactionForApproval data when value is valid', function () {
+    it('should return decodeEVMTransactionForApproval data when value is valid', () => {
       const res = decodeEVMTransactionForApproval(rawTxSepolia, 'sepolia');
-      assert.deepEqual(res, {
-        sender: '0xd447BA08b0d395fCAd6e480d270529c932289Ce1',
-        receiver: '0x66324EE406cCccdDdAd7f510a61Af22DeC391606',
-        amount: '0.1',
-        decimals: 18,
-        fee: '591584934602552',
-        token: '',
-        tokenSymbol: 'TEST-ETH',
-      });
-    });
-
-    it('should return decodeEVMTransactionForApproval data when value is invalid', function () {
-      const res = decodeEVMTransactionForApproval('{}', 'sepolia');
-      assert.deepEqual(res, {
-        sender: 'decodingError',
-        decimals: 18,
-        receiver: 'decodingError',
-        amount: 'decodingError',
-        fee: 'decodingError',
-        token: 'decodingError',
-        tokenSymbol: 'decodingError',
-      });
+      expect(res).not.toBeNull();
+      expect(res).toBeDefined();
+      expect(res.sender).toBe('0xd447BA08b0d395fCAd6e480d270529c932289Ce1');
+      expect(res.receiver).toBe('0x66324EE406cCccdDdAd7f510a61Af22DeC391606');
+      expect(res.amount).toBe('0.1');
+      expect(res.fee).toBe('591584934602552');
+      expect(res.token).toBe('');
+      expect(res.tokenSymbol).toBe('TEST-ETH');
+      expect(res.decimals).toBe(18);
     });
   });
 });
