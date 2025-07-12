@@ -826,8 +826,8 @@ function Send() {
               disabled={!!state.swap}
               onChange={(e) => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                setTxReceiver(e.target.value),
-                  form.setFieldValue('receiver', e.target.value);
+                (setTxReceiver(e.target.value),
+                  form.setFieldValue('receiver', e.target.value));
               }}
             />
             <Select
@@ -839,7 +839,7 @@ function Send() {
               popupMatchSelectWidth={false}
               onChange={(value) => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                setTxReceiver(value), form.setFieldValue('receiver', value);
+                (setTxReceiver(value), form.setFieldValue('receiver', value));
               }}
               options={contactsItems}
               disabled={!!state.swap}

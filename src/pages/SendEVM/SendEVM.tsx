@@ -1197,8 +1197,8 @@ function SendEVM() {
               placeholder={t('send:receiver_address')}
               onChange={(e) => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                setTxReceiver(e.target.value),
-                  form.setFieldValue('receiver', e.target.value);
+                (setTxReceiver(e.target.value),
+                  form.setFieldValue('receiver', e.target.value));
               }}
               disabled={!!(state?.walletConnectMode && state?.receiver)}
             />
@@ -1211,7 +1211,7 @@ function SendEVM() {
               popupMatchSelectWidth={false}
               onChange={(value) => {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                setTxReceiver(value), form.setFieldValue('receiver', value);
+                (setTxReceiver(value), form.setFieldValue('receiver', value));
               }}
               options={contactsItems}
               disabled={!!(state?.walletConnectMode && state?.receiver)}
