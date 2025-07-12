@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Добре дошли в SSP Портфейл",
   "description": "Портфейл с двоен подпис за децентрализирания свят.",
   "get_started": "Започни!",

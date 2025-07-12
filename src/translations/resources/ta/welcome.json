@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "SSP வாலட்டுக்கு வரவேற்கின்றேன்",
   "description": "விநியோகிக்கப்பட்ட உலகிற்கு இரு கையொப்ப வாலெட்.",
   "get_started": "தொடங்கவும்!",

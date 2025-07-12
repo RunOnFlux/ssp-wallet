@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Dobrodošli u SSP Wallet",
   "description": "Novčanik s dvostrukim potpisom za decentralizirani svijet.",
   "get_started": "Započni!",

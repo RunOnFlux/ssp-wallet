@@ -454,7 +454,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           requestId,
         );
         request.hideLoading();
-        request.reject(new Error(t('home:walletconnect.request_rejected')));
+        request.reject(new Error(t('common:request_rejected')));
       });
 
       // Clear all pending requests
@@ -462,7 +462,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       setCurrentSigningRequest(null);
 
       // Show message that the WalletConnect request was rejected due to public nonces rejection
-      displayMessage('info', t('home:walletconnect.request_rejected'));
+      displayMessage('info', t('common:request_rejected'));
 
       clearPublicNoncesRejected?.();
     }
@@ -1322,7 +1322,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       // Only show generic approval message for non-transaction methods
       // Transaction methods show their own specific success messages
       if (!['eth_sendTransaction', 'eth_signTransaction'].includes(method)) {
-        displayMessage('success', t('home:walletconnect.request_approved'));
+        displayMessage('success', t('common:request_approved'));
       }
     } catch (error: unknown) {
       console.error('🔗 WalletConnect: Error approving request:', {
@@ -1340,7 +1340,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       setChainSwitchInfo(null); // Clear chain switch info on error
 
       // Don't show error message if user intentionally rejected the request
-      const rejectedByUserMessage = t('home:walletconnect.request_rejected');
+      const rejectedByUserMessage = t('common:request_rejected');
       if (
         error instanceof Error &&
         (error.message === 'USER_REJECTED_REQUEST' ||
@@ -1399,7 +1399,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         method,
         timestamp: new Date().toISOString(),
       });
-      displayMessage('info', t('home:walletconnect.request_rejected'));
+      displayMessage('info', t('common:request_rejected'));
     } catch (error) {
       console.error('🔗 WalletConnect: Error rejecting request:', {
         requestId: id,
@@ -1514,14 +1514,14 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           requestId,
         );
         request.hideLoading();
-        request.reject(new Error(t('home:walletconnect.request_rejected')));
+        request.reject(new Error(t('common:request_rejected')));
       });
 
       // Clear all pending requests
       setPendingSigningRequests({});
       // Clear current signing request data when signing is rejected
       setCurrentSigningRequest(null);
-      displayMessage('info', t('home:walletconnect.request_rejected'));
+      displayMessage('info', t('common:request_rejected'));
 
       clearEvmSigningRejected?.();
     }

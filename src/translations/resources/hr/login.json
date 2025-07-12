@@ -3,7 +3,6 @@
   "err_invalid_pw_2": "Nije važeća lozinka. Pokušajte ponovo.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Dobrodošli natrag!",
-  "to_dec_cloud": "Vašoj decentraliziranoj oblačnoj usluzi",
   "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "Otključajte s lozinkom",
   "enter_pw": "Unesite lozinku",

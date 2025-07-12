@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "SSP 월렛에 오신 것을 환영합니다.",
   "description": "탈중앙화 세계를 위한 이중 서명 지갑.",
   "get_started": "시작하기!",

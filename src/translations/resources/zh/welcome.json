@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "欢迎使用 SSP 钱包",
   "description": "为去中心化世界设计的双签名钱包.",
   "get_started": "开始使用！",

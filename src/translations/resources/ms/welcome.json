@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Selamat datang ke SSP Wallet",
   "description": "Dompet tandatangan dua untuk dunia terdesentralisasi.",
   "get_started": "Mula Sekarang!",

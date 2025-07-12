@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Welkom by SSP Walle",
   "description": "Dubbelhandtekening-beursie vir die gedesentraliseerde wêreld.",
   "get_started": "Begin nou!",

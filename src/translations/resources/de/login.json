@@ -3,7 +3,6 @@
   "err_invalid_pw_2": "Kein gültiges Passwort. Bitte versuchen Sie es erneut.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "Willkommen zurück!",
-  "to_dec_cloud": "zu Ihrer dezentralen Cloud",
   "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "Mit Passwort entsperren",
   "enter_pw": "Passwort eingeben",

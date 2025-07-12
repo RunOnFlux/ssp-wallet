@@ -3,7 +3,6 @@
   "err_invalid_pw_2": "Kata sandi tidak valid. Silakan coba lagi.",
   "err_lx": "Kode {{code}}: Data dompet hilang. Silakan pulihkan dompet milik Anda.",
   "welcome_back": "Selamat Datang kembali!",
-  "to_dec_cloud": "Ke Cloud Anda yang terdesentralisasi",
   "to_secure_wallet": "Ke dalam dompet paling aman",
   "unlock_with_pw": "Buka kunci dengan Kata Sandi",
   "enter_pw": "Masukkan kata kunci",

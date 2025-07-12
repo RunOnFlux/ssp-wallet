@@ -3,7 +3,6 @@
   "err_invalid_pw_2": "Neveljavno geslo. Prosimo, poskusite znova.",
   "err_lx": "Koda {{code}}: Podatki o denarnici manjkajo. Prosimo, obnovite svojo denarnico.",
   "welcome_back": "Dobrodošli nazaj!",
-  "to_dec_cloud": "V vašo decentralizirano oblak",
   "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "Odklenite z geslom",
   "enter_pw": "Vnesite geslo",

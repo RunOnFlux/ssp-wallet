@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Bienvenido a la Cartera SSP",
   "description": "Cartera de doble firma para el mundo descentralizado.",
   "get_started": "¡Empezar!",

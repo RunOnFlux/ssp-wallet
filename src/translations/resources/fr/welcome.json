@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(commun:appName.moto)",
   "welcome_to": "Bienvenue dans le portefeuille SSP",
   "description": "Portefeuille à double signature pour le monde décentralisé.",
   "get_started": "Commençons !",

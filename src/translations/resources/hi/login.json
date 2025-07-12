@@ -3,7 +3,6 @@
   "err_invalid_pw_2": "पासवर्ड अमान्य है। कृपया पुनः प्रयास करें।",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "वेलकम बैक!",
-  "to_dec_cloud": "आपके डीसेंट्रलाइज्ड क्लाउड के लिए",
   "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "पासवर्ड से अनलॉक करें",
   "enter_pw": "पासवर्ड दर्ज करें",

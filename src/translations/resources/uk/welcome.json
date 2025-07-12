@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Ласкаво просимо до SSP Гаманця",
   "description": "Гаманець з подвійним підписом для децентралізованого світу.",
   "get_started": "Розпочати!",

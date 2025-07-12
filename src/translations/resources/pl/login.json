@@ -3,7 +3,6 @@
   "err_invalid_pw_2": "Niepoprawne hasło. Spróbuj ponownie.",
   "err_lx": "Kod {{code}}: Brak danych portfela. Proszę przywrócić portfel.",
   "welcome_back": "Witamy ponownie!",
-  "to_dec_cloud": "Do Twojej zdecentralizowanej chmury",
   "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "Odblokuj za pomocą hasła",
   "enter_pw": "Wprowadź hasło",

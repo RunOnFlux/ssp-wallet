@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Tervetuloa SSP Walletiin",
   "description": "Kaksinkertainen allekirjoituslompakko hajautetulle maailmalle.",
   "get_started": "Aloita!",

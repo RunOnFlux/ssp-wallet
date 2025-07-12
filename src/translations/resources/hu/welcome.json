@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Üdvözöljük az SSP Wallet-ben",
   "description": "A kétfaktoros azonosítású tárca a decentralizált világ számára.",
   "get_started": "Vágjunk bele!",

@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Καλώς ήρθατε στο πορτοφόλι SSP",
   "description": "Διπλή υπογραφή πορτοφολιού για τον αποκεντρωμένο κόσμο.",
   "get_started": "Ας Ξεκινήσουμε!",

@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Dobrodošli v SSP Denarnico",
   "description": "Denarnica z dvojno podpisovanjem za decentralizirani svet.",
   "get_started": "Začnite!",

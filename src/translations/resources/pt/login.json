@@ -3,7 +3,6 @@
   "err_invalid_pw_2": "Palavra-passe inválida. Por favor, tente novamente.",
   "err_lx": "Código {{code}}: Dados da carteira em falta. Por favor, restaure a sua carteira.",
   "welcome_back": "Bem-vindo de volta!",
-  "to_dec_cloud": "Para a sua Nuvem descentralizada",
   "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "Desbloquear com Palavra-passe",
   "enter_pw": "Introduzir Palavra-passe",

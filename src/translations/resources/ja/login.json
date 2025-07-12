@@ -3,7 +3,6 @@
   "err_invalid_pw_2": "パスワードが無効です。もう一度お試しください.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "お帰りなさい!",
-  "to_dec_cloud": "あなたの分散型クラウドへ",
   "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "パスワードで解除",
   "enter_pw": "パスワードを入力",

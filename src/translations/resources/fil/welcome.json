@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Maligayang pagdating sa SSP Wallet",
   "description": "Dual signature wallet para sa decentralized world.",
   "get_started": "Magsimula!",

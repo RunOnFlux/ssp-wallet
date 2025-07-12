@@ -3,7 +3,6 @@
   "err_invalid_pw_2": "தவறான கடவுச்சொல். தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
   "welcome_back": "மீண்டும் வரவேற்கின்றேன்!",
-  "to_dec_cloud": "உங்கள் விநியோகிக்கப்பட்ட கிளவுட்へ",
   "to_secure_wallet": "To the most secure wallet",
   "unlock_with_pw": "கடவுச்சொல் மூலம் அனுமதிக்கவும்",
   "enter_pw": "கடவுச்சொல் உள்ளிடவும்",

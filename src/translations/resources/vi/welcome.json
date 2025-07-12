@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Chào mừng đến Ví SSP",
   "description": "Ví đặc điểm đôi cho một thế giới phi tập trung.",
   "get_started": "Bắt đầu nào!",

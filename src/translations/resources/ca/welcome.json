@@ -1,6 +1,4 @@
 {
-  "title": "$t(common:appName.full)",
-  "subtitle": "$t(common:appName.moto)",
   "welcome_to": "Benvingut a SSP Wallet",
   "description": "Moneder de doble signatura per al món descentralitzat.",
   "get_started": "Comença!",
