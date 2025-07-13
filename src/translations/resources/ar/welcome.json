@@ -1,6 +1,6 @@
 {
-  "welcome_to": "Welcome to SSP Wallet",
-  "description": "Dual signature wallet for the decentralized world.",
-  "get_started": "Get Started!",
-  "restore_with_seed": "Restore with Seed"
+  "welcome_to": "أهلاً بك في محفظة SSP",
+  "description": "محفظة ذات توقيع مزدوج للعالم اللامركزي.",
+  "get_started": "ابدأ الآن!",
+  "restore_with_seed": "استعادة بالبذرة"
 }
