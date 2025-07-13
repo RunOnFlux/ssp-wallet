@@ -38,5 +38,17 @@
   "fee_details": "Fee Details",
   "max_tx_fee": "Max Transaction Fee",
   "invalid_tx_fee": "Invalid Transaction Fee",
-  "asset": "Asset"
+  "asset": "Asset",
+  "calculated_gas_limit_description": "Укупni гас се аутоматски израчунава као збир три компоненте изнад",
+  "preverification_gas": "Гас предпровере",
+  "call_gas_limit": "Лимит гаса позива",
+  "verification_gas_limit": "Лимит гаса провере",
+  "input_preverification_gas": "Унесите гас предпровере",
+  "input_call_gas_limit": "Унесите лимит гаса позива",
+  "input_verification_gas_limit": "Унесите лимит гаса провере",
+  "send_swap": "Пошаљи и замени за {{buyAmount}} {{buyAsset}}",
+  "transaction_data": "Подаци трансакције",
+  "transaction_data_placeholder": "0x... (оставити празно за једноставне трансфере)",
+  "advanced_options": "Напредне опције",
+  "contract_interaction": "Интеракција уговора"
 }

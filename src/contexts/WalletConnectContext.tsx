@@ -1322,7 +1322,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       // Only show generic approval message for non-transaction methods
       // Transaction methods show their own specific success messages
       if (!['eth_sendTransaction', 'eth_signTransaction'].includes(method)) {
-        displayMessage('success', t('common:request_approved'));
+        displayMessage('success', t('home:walletconnect.request_approved'));
       }
     } catch (error: unknown) {
       console.error('🔗 WalletConnect: Error approving request:', {
