@@ -35,13 +35,13 @@
   "loading": "로딩 중...",
   "approve": "승인",
   "reject": "거부",
-  "approve_request": "Approve Request",
-  "reject_request": "Reject Request",
+  "approve_request": "요청 승인",
+  "reject_request": "요청 거부",
   "continue": "계속",
   "contract": "계약",
   "network": "네트워크",
   "decimals": "소수점",
-  "to": "받는이",
-  "from": "보내는이",
-  "change": "거스름돈"
+  "to": "받는 사람",
+  "from": "보내는 사람",
+  "change": "잔돈"
 }
