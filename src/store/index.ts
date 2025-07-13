@@ -262,7 +262,7 @@ const networkFeesSlice = createSlice({
         if (!state.networkFees[element.coin as keyof cryptos]) {
           return;
         }
-        if (element.base) {
+        if (element.base || element.base === 0) {
           console.log(state.networkFees[element.coin as keyof cryptos]);
           state.networkFees[element.coin as keyof cryptos].base = element.base;
           state.networkFees[element.coin as keyof cryptos].priority =

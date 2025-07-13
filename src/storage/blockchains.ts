@@ -482,7 +482,7 @@ const bsc = {
   factorySalt: 'aafactorysalt', // factory uses this salt
   factoryAddress: '0x3974821943e9cA3549744D910999332eE387Fda4',
   entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-  baseFee: 3, // 50 gwei
+  baseFee: 0, // 50 gwei
   priorityFee: 1, // 5 gwei
   gasLimit: 750000, // 750k gas
   tokens: tokens.bsc(),
