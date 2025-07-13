@@ -1025,15 +1025,33 @@ export async function constructAndSignEVMTransaction(
       total: gasPreVerification + gasCallLimit + gasVerificationLimit,
     });
 
-    const priorityGas = new BigNumber(priorityGasPrice)
+    let priorityGas = new BigNumber(priorityGasPrice)
       .multipliedBy(10 ** 9)
       .toFixed(0);
     const baseGas = new BigNumber(baseGasPrice)
       .multipliedBy(10 ** 9)
       .toFixed(0);
 
+    console.log('💰 BASE GAS:', baseGas);
+    console.log('💰 PRIORITY GAS:', priorityGas);
+
     // Calculate total max fee per gas (base + priority)
-    const maxFeePerGas = new BigNumber(baseGas).plus(priorityGas).toFixed(0);
+    // Special handling for BSC: BSC has zero base fee, so maxFeePerGas must equal maxPriorityFeePerGas
+    let maxFeePerGas: string;
+    if (chain === 'bsc') {
+      // On BSC, base fee is always 0, so maxFeePerGas = maxPriorityFeePerGas
+      // Both values must be equal to the total desired gas price
+      const totalFee = new BigNumber(baseGas).plus(priorityGas).toFixed(0);
+      maxFeePerGas = totalFee;
+      // Update priorityGas to match maxFeePerGas for BSC
+      priorityGas = totalFee;
+    } else {
+      // Standard EIP-1559 for other chains
+      maxFeePerGas = new BigNumber(baseGas).plus(priorityGas).toFixed(0);
+    }
+
+    console.log('💰 MAX FEE PER GAS:', maxFeePerGas);
+    console.log('💰 PRIORITY GAS:', priorityGas);
 
     const CLIENT_OPT = {
       feeOptions: {
