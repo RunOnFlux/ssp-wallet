@@ -1,13 +1,14 @@
 {
-  "err_invalid_pw": "Not a valid password. Please try again.",
-  "err_invalid_pw_2": "Invalid password. Please try again.",
-  "err_l3": "Code L3: Wallet data missing. Please restore your wallet.",
-  "err_l2": "Code L2: Wallet data missing. Please restore your wallet.",
-  "err_l1": "Code L1: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Welcome back!",
-  "unlock_with_pw": "Unlock with Password",
-  "enter_pw": "Enter Password",
-  "unlock_wallet": "Unlock Wallet",
-  "forgot_pw": "Forgot Password?",
-  "restore": "Restore"
+  "err_invalid_pw": "Nije validna lozinka. Molimo pokušajte ponovo.",
+  "err_invalid_pw_2": "Neispravna lozinka. Molimo pokušajte ponovo.",
+  "err_l3": "Kod L3: Podaci novčanika nedostaju. Molimo vratite svoj novčanik.",
+  "err_l2": "Kod L2: Podaci novčanika nedostaju. Molimo vratite svoj novčanik.",
+  "err_l1": "Kod L1: Podaci novčanika nedostaju. Molimo vratite svoj novčanik.",
+  "welcome_back": "Dobrodošli nazad!",
+  "to_secure_wallet": "Do najbezbednijeg novčanika",
+  "unlock_with_pw": "Otključaj sa lozinkom",
+  "enter_pw": "Unesite lozinku",
+  "unlock_wallet": "Otključaj novčanik",
+  "forgot_pw": "Zaboravili ste lozinku?",
+  "restore": "Vrati"
 }

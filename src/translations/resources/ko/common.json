@@ -1,7 +1,7 @@
 {
   "appName": {
     "full": "SSP 지갑",
-    "moto": "안전. 간단. 강력."
+    "moto": "안전함. 간단함. 강력함."
   },
   "back": "뒤로",
   "cancel": "취소",
@@ -13,7 +13,7 @@
   "close": "닫기",
   "chain": "체인",
   "get": "가져오기",
-  "started": "시작!",
+  "started": "시작됨!",
   "import": "가져오기",
   "create": "생성",
   "wallet": "지갑",
@@ -35,13 +35,13 @@
   "loading": "로딩 중...",
   "approve": "승인",
   "reject": "거부",
-  "approve_request": "Approve Request",
-  "reject_request": "Reject Request",
+  "approve_request": "요청 승인",
+  "reject_request": "요청 거부",
   "continue": "계속",
   "contract": "계약",
   "network": "네트워크",
   "decimals": "소수점",
-  "to": "받는이",
-  "from": "보내는이",
-  "change": "거스름돈"
+  "to": "받는 사람",
+  "from": "보내는 사람",
+  "change": "잔돈"
 }

@@ -1,6 +1,6 @@
 {
-  "welcome_to": "Welcome to SSP Wallet",
-  "description": "Dual signature wallet for the decentralized world.",
-  "get_started": "Get Started!",
-  "restore_with_seed": "Restore with Seed"
+  "welcome_to": "Dobrodošli u SSP novčanik",
+  "description": "Novčanik sa dvostrukim potpisom za decentralizovani svet.",
+  "get_started": "Počnimo!",
+  "restore_with_seed": "Povrati sa seed-om"
 }
