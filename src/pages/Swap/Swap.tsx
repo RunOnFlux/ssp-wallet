@@ -1077,7 +1077,7 @@ function Swap() {
           )}
           <span style={{ float: 'right' }}>
             <a
-              href="https://github.com/RunOnFlux/ssp-wallet/blob/master/Terms_of_Service.md"
+              href="https://sspwallet.io/terms-of-service"
               target="_blank"
               rel="noreferrer"
               style={{ color: 'inherit', textDecoration: 'none' }}

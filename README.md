@@ -138,7 +138,7 @@ SSP Wallet supports multiple languages! Help us make it accessible to everyone b
 ---
 
 ## Disclaimer
-By using SSP Wallet, you agree to the terms outlined in the [SSP Disclaimer](https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md).
+By using SSP Wallet, you agree to the terms outlined in our [Terms of Service](https://sspwallet.io/terms-of-service) and [SSP Disclaimer](https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md).
 
 [![Crowdin](https://badges.crowdin.net/sspwallet/localized.svg)](https://crowdin.com/project/sspwallet)
 
