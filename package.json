@@ -42,7 +42,7 @@
     "@walletconnect/core": "2.21.4",
     "@walletconnect/jsonrpc-utils": "1.0.8",
     "@walletconnect/utils": "2.21.4",
-    "antd": "5.26.3",
+    "antd": "5.26.6",
     "assert": "2.1.0",
     "axios": "1.10.0",
     "bchaddrjs": "0.5.2",
