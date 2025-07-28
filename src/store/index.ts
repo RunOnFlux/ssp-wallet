@@ -399,10 +399,7 @@ export const {
   setExchangeProviders,
 } = abeSlice.actions;
 
-export const {
-  setTutorialState,
-  setTutorialStep,
-} = tutorialSlice.actions;
+export const { setTutorialState, setTutorialStep } = tutorialSlice.actions;
 
 export const {
   setSSPInitialState,
