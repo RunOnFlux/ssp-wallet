@@ -43,5 +43,8 @@
   "decimals": "Десетични",
   "to": "До",
   "from": "От",
-  "change": "Ресто"
+  "change": "Ресто",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "my_wallets": "My Wallets"
 }
