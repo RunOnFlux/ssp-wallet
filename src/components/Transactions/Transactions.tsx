@@ -159,7 +159,7 @@ function Transactions() {
   };
 
   return (
-    <div>
+    <div data-tutorial="transactions-table">
       <PendingTransactionsTable
         transactions={pendingTxs}
         fiatRate={fiatRate}

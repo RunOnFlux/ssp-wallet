@@ -51,6 +51,7 @@ import AutoLogout from '../AutoLogout/AutoLogout';
 import WalletConnect from '../WalletConnect/WalletConnect';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
+import TutorialTrigger from '../Tutorial/TutorialTrigger';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
 import {
   generatedWallets,
@@ -94,6 +95,7 @@ function Navbar({
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const [triggerTutorialWelcome, setTriggerTutorialWelcome] = useState(false);
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
     (state) => state[activeChain],
   );
@@ -404,6 +406,7 @@ function Navbar({
     }
     if (e.key === 'manualsign') setOpenManualSign(true);
     if (e.key === 'settings') setOpenSettingsDialogVisible(true);
+    if (e.key === 'tutorial') setTriggerTutorialWelcome(true);
     if (e.key === 'history') interactWithSwapHistory();
   };
   const navigate = useNavigate();
@@ -472,6 +475,10 @@ function Navbar({
               key: 'settings',
             },
             {
+              label: t('home:tutorial.tutorial_help'),
+              key: 'tutorial',
+            },
+            {
               label: t('home:navbar.refresh'),
               key: 'refresh',
             },
@@ -507,6 +514,10 @@ function Navbar({
               {
                 label: t('home:settings.settings'),
                 key: 'settings',
+              },
+              {
+                label: t('home:tutorial.tutorial_help'),
+                key: 'tutorial',
               },
             ],
     },
@@ -551,6 +562,7 @@ function Navbar({
                 variant={'borderless'}
                 size="large"
                 dropdownStyle={{ zIndex: 9 }}
+                data-tutorial="wallet-selector"
                 dropdownRender={(menu) => (
                   <>
                     <div
@@ -592,6 +604,7 @@ function Navbar({
                           icon={<PlusOutlined />}
                           onClick={addWallet}
                           style={{ width: '100%', textAlign: 'left' }}
+                          data-tutorial="add-wallet-button"
                         >
                           {t('home:navbar.generate_new_wallet')}
                         </Button>
@@ -617,6 +630,7 @@ function Navbar({
                               type="text"
                               icon={<MinusOutlined />}
                               style={{ width: '100%', textAlign: 'left' }}
+                              data-tutorial="remove-wallet-button"
                             >
                               {t('home:navbar.remove_last_wallet')}
                             </Button>
@@ -628,6 +642,7 @@ function Navbar({
                           style={{ width: '100%', textAlign: 'left' }}
                           icon={<NodeIndexOutlined />}
                           onClick={() => selectChain()}
+                          data-tutorial="chain-selector"
                         >
                           {t('home:navbar.switch_chain')}
                         </Button>
@@ -655,6 +670,7 @@ function Navbar({
                 paddingInline: 0,
                 marginInline: 0,
               }}
+              data-tutorial="extended-menu"
             />
           </Col>
         </Row>
@@ -682,6 +698,17 @@ function Navbar({
         open={openWalletConnect}
         openAction={walletConnectAction}
       />
+
+      {/* Use existing TutorialTrigger component for welcome screen */}
+      <TutorialTrigger
+        autoStart={false}
+        showWelcomePrompt={false}
+        isNewWallet={false}
+        walletSynced={false}
+        forceShowWelcome={triggerTutorialWelcome}
+        onWelcomeDismiss={() => setTriggerTutorialWelcome(false)}
+      />
+
       <AutoLogout />
     </>
   );

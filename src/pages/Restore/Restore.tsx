@@ -11,6 +11,7 @@ import {
   Popover,
   Popconfirm,
   Space,
+  App,
 } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
@@ -50,6 +51,7 @@ import localForage from 'localforage';
 import { getFingerprint, getRandomParams } from '../../lib/fingerprint';
 import { useAppSelector } from '../../hooks';
 import { blockchains } from '@storage/blockchains';
+import { resetTutorial } from '../../storage/ssp';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
@@ -66,6 +68,7 @@ const { TextArea } = Input;
 // we always use btc as default
 function Restore() {
   const { t } = useTranslation(['cr', 'common']);
+  const { modal } = App.useApp();
   const { identityChain } = useAppSelector((state) => state.sspState);
   const blockchainConfig = blockchains[identityChain];
   const { wallets } = useAppSelector((state) => state[identityChain]);
@@ -150,7 +153,8 @@ function Restore() {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = '10px Tahoma';
+        ctx.font =
+          '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
         ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
         new TextDecoder()
           .decode(mnemonic)
@@ -159,9 +163,11 @@ function Restore() {
             const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
             const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
             ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
-            ctx.font = '16px Tahoma'; // Larger font for the word
+            ctx.font =
+              '14px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
             ctx.fillText(mnemonicShow ? word : '*****', x + 20, y);
-            ctx.font = '10px Tahoma'; // Reset font for the next number
+            ctx.font =
+              '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Reset font for the next number
           });
       }
     }
@@ -178,7 +184,7 @@ function Restore() {
   };
 
   const warningWeakPassword = () => {
-    Modal.confirm({
+    modal.confirm({
       title: t('cr:weak_password'),
       icon: <ExclamationCircleFilled />,
       content: (
@@ -304,6 +310,8 @@ function Restore() {
         } else {
           await localForage.setItem('activeChain', identityChain);
         }
+        // Reset tutorial to ensure it shows for restored wallets
+        await resetTutorial();
         if (browser?.storage?.session) {
           await browser.storage.session.clear();
         }
@@ -463,11 +471,11 @@ function Restore() {
             <Checkbox>
               {t('cr:i_agree')}{' '}
               <a
-                href="https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md"
+                href="https://sspwallet.io/terms-of-service"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
-                {t('cr:ssp_wallet_disclaimer')}
+                {t('common:terms_of_service')}
               </a>
               .
             </Checkbox>

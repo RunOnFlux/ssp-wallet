@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { RouterProvider } from 'react-router';
 import { ConfigProvider, theme, App as AntApp } from 'antd';
 import WalletConnectModals from './components/WalletConnect/WalletConnectModals';
+import TutorialProvider from './components/Tutorial/TutorialProvider';
 import router from './router';
 
 function App() {
@@ -28,8 +29,10 @@ function App() {
       }}
     >
       <AntApp>
-        <WalletConnectModals />
-        <RouterProvider router={router} />
+        <TutorialProvider>
+          <WalletConnectModals />
+          <RouterProvider router={router} />
+        </TutorialProvider>
       </AntApp>
     </ConfigProvider>
   );

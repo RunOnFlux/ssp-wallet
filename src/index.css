@@ -45,6 +45,10 @@ body {
   margin-top: 5px; /* fix for modal footer button - if it does not fit on the same line, there is no gap between buttons */
 }
 
+.ant-app {
+  line-height: 1.1 !important; /* Override Ant Design's default line-height */
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

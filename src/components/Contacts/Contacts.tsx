@@ -17,7 +17,7 @@ function Contacts() {
   };
 
   return (
-    <div>
+    <div data-tutorial="contacts-table">
       <ContactsTable />
       <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }}>
         <Button type="primary" size="middle" onClick={() => addContact()}>

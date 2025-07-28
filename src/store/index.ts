@@ -57,7 +57,7 @@ interface sspState {
   sspWalletKeyInternalIdentity: string;
   sspWalletInternalIdentity: string;
   sspWalletExternalIdentity: string;
-  identityChain: 'btc';
+  identityChain: keyof cryptos;
   activeChain: keyof cryptos;
 }
 
@@ -114,11 +114,23 @@ interface abeState {
   abeMapping: { [key: string]: string };
 }
 
+interface tutorialState {
+  isActive: boolean;
+  tutorialType: string;
+  currentStep: number;
+}
+
 const initialAbeState: abeState = {
   sellAssets: {},
   buyAssets: {},
   abeMapping: {},
   exchangeProviders: [],
+};
+
+const initialTutorialState: tutorialState = {
+  isActive: false,
+  tutorialType: '',
+  currentStep: 0,
 };
 
 interface RatesState {
@@ -320,6 +332,28 @@ const abeSlice = createSlice({
   },
 });
 
+const tutorialSlice = createSlice({
+  name: 'tutorial',
+  initialState: initialTutorialState,
+  reducers: {
+    setTutorialState: (
+      state,
+      action: PayloadAction<{
+        isActive: boolean;
+        tutorialType: string;
+        currentStep: number;
+      }>,
+    ) => {
+      state.isActive = action.payload.isActive;
+      state.tutorialType = action.payload.tutorialType;
+      state.currentStep = action.payload.currentStep;
+    },
+    setTutorialStep: (state, action: PayloadAction<number>) => {
+      state.currentStep = action.payload;
+    },
+  },
+});
+
 const sspStateSlice = createSlice({
   name: 'sspState',
   initialState: initialSspState,
@@ -365,6 +399,8 @@ export const {
   setExchangeProviders,
 } = abeSlice.actions;
 
+export const { setTutorialState, setTutorialStep } = tutorialSlice.actions;
+
 export const {
   setSSPInitialState,
   setSspWalletKeyInternalIdentity,
@@ -381,6 +417,7 @@ const reducers = combineReducers({
   contacts: contactsSlice.reducer,
   servicesAvailability: servicesAvailabilitySlice.reducer,
   abe: abeSlice.reducer,
+  tutorial: tutorialSlice.reducer,
   // === IMPORT CHAINS ===
   ...chainKeys.reduce(
     (acc, key) => {

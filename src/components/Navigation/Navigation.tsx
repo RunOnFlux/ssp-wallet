@@ -79,6 +79,7 @@ function Navigation() {
           onClick={() =>
             navigate(isEVM ? '/sendevm' : '/send', { state: { receiver: '' } })
           }
+          data-tutorial="send-button"
         >
           <span>{t('home:navigation.send')}</span>
         </Button>
@@ -100,6 +101,7 @@ function Navigation() {
                 onClick={() => {
                   openBuyAction(true);
                 }}
+                data-tutorial="buy-sell-button"
               >
                 <span>
                   {t('home:navigation.buy')} / {t('home:navigation.sell')}
@@ -119,6 +121,7 @@ function Navigation() {
               onClick={() => {
                 navigate('/swap', { state: { buyAsset: activeChain } });
               }}
+              data-tutorial="swap-button"
             >
               <span>{t('home:navigation.swap')}</span>
             </Button>
@@ -132,6 +135,7 @@ function Navigation() {
           onClick={() => {
             receiveAction(true);
           }}
+          data-tutorial="receive-button"
         >
           <span>{t('home:navigation.receive')}</span>
         </Button>

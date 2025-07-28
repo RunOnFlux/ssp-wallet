@@ -9,7 +9,7 @@ function AddressContainer() {
   );
 
   return (
-    <>
+    <div data-tutorial="wallet-address">
       <Paragraph
         copyable={{ text: wallets[walletInUse].address }}
         className="copyableAddress"
@@ -21,7 +21,7 @@ function AddressContainer() {
           )}
         </Text>
       </Paragraph>
-    </>
+    </div>
   );
 }
 
