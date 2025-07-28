@@ -43,5 +43,8 @@
   "decimals": "Ondalık",
   "to": "Kime",
   "from": "Kimden",
-  "change": "Para üstü"
+  "change": "Para üstü",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "my_wallets": "My Wallets"
 }
