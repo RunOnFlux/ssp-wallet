@@ -43,5 +43,8 @@
   "decimals": "소수점",
   "to": "받는 사람",
   "from": "보내는 사람",
-  "change": "잔돈"
+  "change": "잔돈",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "my_wallets": "My Wallets"
 }
