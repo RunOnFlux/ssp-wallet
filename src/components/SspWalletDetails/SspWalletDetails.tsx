@@ -79,7 +79,8 @@ function SSPWalletDetails(props: {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = '10px Tahoma';
+        ctx.font =
+          '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
         ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
         new TextDecoder()
           .decode(seedPhrase)
@@ -88,9 +89,11 @@ function SSPWalletDetails(props: {
             const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
             const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
             ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
-            ctx.font = '16px Tahoma'; // Larger font for the word
+            ctx.font =
+              '14px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
             ctx.fillText(seedPhraseVisible ? word : '*****', x + 20, y);
-            ctx.font = '10px Tahoma'; // Reset font for the next number
+            ctx.font =
+              '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Reset font for the next number
           });
       }
     }
