@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { Button, Modal, Input, Space, message, Select } from 'antd';
+import {
+  Button,
+  Modal,
+  Input,
+  Space,
+  message,
+  Select,
+  Tooltip,
+  theme,
+} from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import {
@@ -16,6 +25,9 @@ import LanguageSelector from '../../components/LanguageSelector/LanguageSelector
 import { currency } from '../../types';
 import { supportedFiatValues, getFiatSymbol } from '../../lib/currency.ts';
 import { setFiatRates } from '../../store';
+import { QuestionCircleOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import ConfirmPublicNoncesKey from '../ConfirmPublicNoncesKey/ConfirmPublicNoncesKey';
 
 interface sspConfigType {
   relay?: string;
@@ -27,7 +39,9 @@ function Settings(props: {
   openAction: (status: boolean) => void;
 }) {
   const dispatch = useAppDispatch();
-  const { activeChain } = useAppSelector((state) => state.sspState);
+  const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
+    (state) => state.sspState,
+  );
   const { fiatRates } = useAppSelector((state) => state.fiatCryptoRates);
   const { t } = useTranslation(['home', 'common']);
   const NC = backends()[activeChain].node;
@@ -40,8 +54,10 @@ function Settings(props: {
   const [nodeConfig, setNodeConfig] = useState(NC);
   const [apiConfig, setApiConfig] = useState(API);
   const [explorerConfig, setExplorerConfig] = useState(EXPLORER);
+  const [publicNoncesModalOpen, setPublicNoncesModalOpen] = useState(false);
   const { open, openAction } = props;
   const [messageApi, contextHolder] = message.useMessage();
+  const { token } = theme.useToken();
   const blockchainConfig = blockchains[activeChain];
 
   const backendsOriginalConfig = backendsOriginal();
@@ -194,6 +210,42 @@ function Settings(props: {
     setExplorerConfig(backendsOriginalConfig[activeChain].explorer);
   };
 
+  const postAction = (
+    action: string,
+    payload: string,
+    chain: string,
+    path: string,
+    wkIdentity: string,
+  ) => {
+    const data = {
+      action,
+      payload,
+      chain,
+      path,
+      wkIdentity,
+    };
+    axios
+      .post(`https://${sspConfig().relay}/v1/action`, data)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const handlePublicNoncesSync = () => {
+    setPublicNoncesModalOpen(true);
+    // Request public nonces from SSP relay - response will come via socket
+    postAction(
+      'publicnoncesrequest',
+      '[]',
+      activeChain,
+      '',
+      sspWalletKeyInternalIdentity,
+    );
+  };
+
   const fiatOptions = () => {
     const fiatOptions = [];
     for (const fiat of supportedFiatValues) {
@@ -239,6 +291,29 @@ function Settings(props: {
         <Space direction="vertical" size="large">
           <Button type="default" block size="middle" onClick={handleNotOk}>
             <Link to={'/restore'}>{t('home:settings.change_pw_restore')}</Link>
+          </Button>
+        </Space>
+        <h3>
+          <span>
+            {t('home:settings.public_nonces_sync')}
+            <Tooltip title={t('home:settings.public_nonces_sync_help')}>
+              <QuestionCircleOutlined
+                style={{
+                  marginLeft: 8,
+                  color: token.colorPrimary,
+                }}
+              />
+            </Tooltip>
+          </span>
+        </h3>
+        <Space direction="vertical" size="large">
+          <Button
+            type="default"
+            block
+            size="middle"
+            onClick={handlePublicNoncesSync}
+          >
+            {t('home:settings.sync_public_nonces')}
           </Button>
         </Space>
         <br />
@@ -328,6 +403,10 @@ function Settings(props: {
           </Button>
         </Space>
       </Modal>
+      <ConfirmPublicNoncesKey
+        open={publicNoncesModalOpen}
+        openAction={setPublicNoncesModalOpen}
+      />
     </>
   );
 }

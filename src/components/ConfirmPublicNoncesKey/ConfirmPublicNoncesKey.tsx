@@ -70,6 +70,11 @@ function ConfirmPublicNoncesKey(props: {
     }
   };
 
+  const handleCancel = () => {
+    setKeyInput('');
+    openAction(false);
+  };
+
   return (
     <>
       {contextHolder}
@@ -78,7 +83,7 @@ function ConfirmPublicNoncesKey(props: {
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
-        onCancel={handleOk}
+        onCancel={handleCancel}
         footer={[]}
         zIndex={1100}
       >

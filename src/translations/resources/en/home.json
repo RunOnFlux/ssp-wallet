@@ -135,7 +135,10 @@
     "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Language",
     "fiat_currency": "Fiat Currency",
-    "use_system_language": "Use System Language"
+    "use_system_language": "Use System Language",
+    "public_nonces_sync": "Public Nonces",
+    "sync_public_nonces": "Sync Public Nonces",
+    "public_nonces_sync_help": "Public nonces are required for EVM transactions. This forces synchronisation of nonces from your SSP Key device to enable EVM transaction signing."
   },
   "receive": {
     "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
