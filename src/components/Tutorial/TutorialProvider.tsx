@@ -12,10 +12,7 @@ import { RootState } from '../../store';
 import { useAppSelector } from '../../hooks';
 import TutorialOverlay, { TutorialStep } from './TutorialOverlay';
 import { getTutorialSteps } from './tutorialSteps';
-import {
-  setTutorialState,
-  setTutorialStep,
-} from '../../store/index';
+import { setTutorialState, setTutorialStep } from '../../store/index';
 import { updateTutorialConfig, resetTutorial } from '../../storage/ssp';
 
 interface TutorialContextType {
@@ -46,6 +43,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
+  const { xpubKey: ethXpubKey } = useAppSelector((state) => state.eth);
   const [currentSteps, setCurrentSteps] = useState<TutorialStep[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
   const [expectedChain, setExpectedChain] = useState<string>('');
@@ -306,7 +304,8 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     if (
       tutorialState.isActive &&
       tutorialState.currentStep === 4 && // Step 5 (ethereum-sync-waiting) is index 4
-      activeChain === 'eth'
+      activeChain === 'eth' &&
+      ethXpubKey // Ensure Ethereum SSP Key is actually synced
     ) {
       const checkEthereumSync = () => {
         // Check if we're on the Ethereum overview with tokens section visible
@@ -353,6 +352,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     tutorialState.isActive,
     tutorialState.currentStep,
     activeChain,
+    ethXpubKey,
     nextStep,
   ]);
 
