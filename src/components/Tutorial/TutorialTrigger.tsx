@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useTutorial } from './TutorialProvider';
-import { sspConfig } from '../../storage/ssp';
+import { sspConfig, updateTutorialConfig } from '../../storage/ssp';
 
 const { Title, Text } = Typography;
 
@@ -53,7 +53,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
           // Wait a bit after sync completes to show tutorial
           setTimeout(() => {
             setShowWelcome(true);
-          }, 1500);
+          }, 1000);
         }
       } catch (error) {
         console.log('Error checking tutorial status:', error);
@@ -81,6 +81,24 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
   const handleDismissWelcome = () => {
     setShowWelcome(false);
     onWelcomeDismiss?.();
+  };
+
+  const handleSkipTutorial = async () => {
+    try {
+      // Permanently mark tutorial as cancelled so it won't show again
+      await updateTutorialConfig({
+        completed: false,
+        cancelled: true,
+        currentStep: 0,
+        tutorialType: 'onboarding',
+      });
+      setShowWelcome(false);
+      onWelcomeDismiss?.();
+    } catch (error) {
+      console.log('Error skipping tutorial:', error);
+      // Fallback to just dismiss
+      handleDismissWelcome();
+    }
   };
 
   const openExternalLink = (url: string) => {
@@ -232,13 +250,18 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                   </Space>
                 </div>
 
-                <Button
-                  type="text"
-                  onClick={handleDismissWelcome}
+                <Space
+                  direction="horizontal"
+                  size="large"
                   style={{ marginTop: '8px' }}
                 >
-                  {t('home:tutorial.maybe_later')}
-                </Button>
+                  <Button type="text" onClick={handleDismissWelcome}>
+                    {t('home:tutorial.maybe_later')}
+                  </Button>
+                  <Button type="text" onClick={handleSkipTutorial}>
+                    {t('home:tutorial.skip_tutorial')}
+                  </Button>
+                </Space>
               </Space>
             </Space>
           </Card>

@@ -156,19 +156,26 @@ function Home() {
       const config = sspConfig() as any;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const tutorial = config?.tutorial;
+
+      // Show tutorial for new users (no tutorial config) or users who haven't completed/cancelled it
       if (
-        tutorial &&
-        'completed' in tutorial &&
-        'currentStep' in tutorial &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        !tutorial.completed &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        tutorial.currentStep === 0
+        !tutorial || // New user with no tutorial config
+        (tutorial &&
+          'completed' in tutorial &&
+          'currentStep' in tutorial &&
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          !tutorial.completed &&
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          !tutorial.cancelled &&
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          tutorial.currentStep === 0)
       ) {
         setIsNewWallet(true);
       }
     } catch (error) {
       console.log('Error checking tutorial config:', error);
+      // If there's an error reading config, treat as new user
+      setIsNewWallet(true);
     }
 
     if (!xpubWallet) {
