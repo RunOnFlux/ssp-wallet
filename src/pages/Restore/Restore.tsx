@@ -51,6 +51,7 @@ import localForage from 'localforage';
 import { getFingerprint, getRandomParams } from '../../lib/fingerprint';
 import { useAppSelector } from '../../hooks';
 import { blockchains } from '@storage/blockchains';
+import { resetTutorial } from '../../storage/ssp';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
@@ -306,6 +307,8 @@ function Restore() {
         } else {
           await localForage.setItem('activeChain', identityChain);
         }
+        // Reset tutorial to ensure it shows for restored wallets
+        await resetTutorial();
         if (browser?.storage?.session) {
           await browser.storage.session.clear();
         }
