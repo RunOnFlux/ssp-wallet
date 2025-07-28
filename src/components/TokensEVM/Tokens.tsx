@@ -27,7 +27,12 @@ function Tokens() {
       <TokensTable />
       {openImportTokenDialog}
       <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }}>
-        <Button type="primary" size="middle" onClick={() => importToken()}>
+        <Button
+          type="primary"
+          size="middle"
+          onClick={() => importToken()}
+          data-tutorial="add-token-button"
+        >
           {t('home:tokens.import_token')}
         </Button>
       </Space>

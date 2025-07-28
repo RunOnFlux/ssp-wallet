@@ -775,18 +775,17 @@ export interface selectedExchangeType {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var refreshIntervalTransactions: string | number | NodeJS.Timeout | undefined;
-  // eslint-disable-next-line no-var
+
   var refreshIntervalBalances: string | number | NodeJS.Timeout | undefined;
-  // eslint-disable-next-line no-var
+
   var refreshIntervalRates: string | number | NodeJS.Timeout | undefined;
-  // eslint-disable-next-line no-var
+
   var refreshIntervalNetworkFee: string | number | NodeJS.Timeout | undefined;
-  // eslint-disable-next-line no-var
+
   var refreshIntervalNodes: string | number | NodeJS.Timeout | undefined;
-  // eslint-disable-next-line no-var
+
   var refreshIntervalServices: string | number | NodeJS.Timeout | undefined;
-  // eslint-disable-next-line no-var
+
   var refreshIntervalABE: string | number | NodeJS.Timeout | undefined;
 }

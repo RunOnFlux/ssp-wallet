@@ -211,7 +211,7 @@ function Send() {
       });
     }
     sendContacts.push({
-      label: 'My Wallets',
+      label: t('common:my_wallets'),
       options: wItems,
     });
     setContactsItems(sendContacts);
@@ -810,6 +810,7 @@ function Send() {
           paddingBottom: '43px',
           marginTop: state.swap ? '24px' : '0',
         }}
+        data-tutorial="send-form"
       >
         <Form.Item
           label={t('send:receiver_address')}

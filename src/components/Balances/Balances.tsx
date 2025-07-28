@@ -194,7 +194,10 @@ function Balances() {
 
   return (
     <>
-      <h3 style={{ marginTop: 0, marginBottom: 0 }}>
+      <h3
+        style={{ marginTop: 0, marginBottom: 0 }}
+        data-tutorial="balance-overview"
+      >
         {formatCrypto(totalBalance)} {blockchainConfig.symbol}
       </h3>
       {+lockedBalance > 0 && (

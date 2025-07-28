@@ -1,0 +1,154 @@
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.tutorial-highlight {
+  border: 2px solid #1890ff;
+  border-radius: 6px;
+  background-color: transparent;
+  animation: tutorial-pulse 3s infinite;
+  box-shadow: 0 0 0 1px rgba(24, 144, 255, 0.2);
+  pointer-events: none;
+}
+
+.tutorial-card {
+  position: fixed;
+  max-width: 400px;
+  min-width: 350px;
+  pointer-events: auto;
+  z-index: 10001;
+  animation: tutorial-appear 0.3s ease-out;
+  transition: box-shadow 0.2s ease;
+}
+
+.tutorial-card.closing {
+  opacity: 0;
+  transition: opacity 0.1s ease-out;
+}
+
+.tutorial-card.dragging {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.tutorial-card .ant-card-head {
+  cursor: move;
+  user-select: none;
+  padding: 8px 16px;
+  min-height: auto;
+}
+
+.tutorial-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.tutorial-drag-handle::before {
+  content: '⋮⋮';
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.tutorial-step-indicator {
+  font-size: 11px;
+  opacity: 0.7;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tutorial-content {
+  font-size: 13px;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.tutorial-click-hint {
+  font-size: 11px;
+  color: #faad14;
+  margin-top: 6px;
+  display: block;
+  font-style: italic;
+}
+
+.tutorial-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes tutorial-pulse {
+  0%, 100% {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 1px rgba(24, 144, 255, 0.2);
+    opacity: 1;
+  }
+  50% {
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.4);
+    opacity: 0.8;
+  }
+}
+
+@keyframes tutorial-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .tutorial-card {
+    max-width: 350px;
+    min-width: 280px;
+    touch-action: none;
+  }
+  
+  .tutorial-drag-handle::before {
+    content: '⋮⋮⋮';
+  }
+  
+  .tutorial-actions {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+}
+
+/* Disable non-Ethereum chains during select-ethereum tutorial step */
+.tutorial-step-select-ethereum [data-tutorial*="chain-item-"]:not([data-tutorial="chain-item-eth"]) {
+  opacity: 0.3;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.tutorial-step-select-ethereum [data-tutorial*="chain-item-"]:not([data-tutorial="chain-item-eth"]) .ant-image {
+  filter: grayscale(100%);
+}
+
+@media (max-width: 480px) {
+  .tutorial-card {
+    max-width: 320px;
+    min-width: 250px;
+  }
+  
+  .tutorial-content {
+    font-size: 12px;
+  }
+  
+  .tutorial-card .ant-card-head {
+    padding: 6px 12px;
+  }
+}

@@ -11,6 +11,7 @@ import {
   Popover,
   Popconfirm,
   Space,
+  App,
 } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
@@ -66,6 +67,7 @@ const { TextArea } = Input;
 // we always use btc as default
 function Restore() {
   const { t } = useTranslation(['cr', 'common']);
+  const { modal } = App.useApp();
   const { identityChain } = useAppSelector((state) => state.sspState);
   const blockchainConfig = blockchains[identityChain];
   const { wallets } = useAppSelector((state) => state[identityChain]);
@@ -178,7 +180,7 @@ function Restore() {
   };
 
   const warningWeakPassword = () => {
-    Modal.confirm({
+    modal.confirm({
       title: t('cr:weak_password'),
       icon: <ExclamationCircleFilled />,
       content: (
@@ -463,11 +465,11 @@ function Restore() {
             <Checkbox>
               {t('cr:i_agree')}{' '}
               <a
-                href="https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md"
+                href="https://sspwallet.io/terms-of-service"
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
-                {t('cr:ssp_wallet_disclaimer')}
+                {t('common:terms_of_service')}
               </a>
               .
             </Checkbox>

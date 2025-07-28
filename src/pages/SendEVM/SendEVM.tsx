@@ -343,7 +343,7 @@ function SendEVM() {
       });
     }
     sendContacts.push({
-      label: 'My Wallets',
+      label: t('common:my_wallets'),
       options: wItems,
     });
     setContactsItems(sendContacts);

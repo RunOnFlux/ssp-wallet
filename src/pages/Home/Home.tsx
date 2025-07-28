@@ -28,6 +28,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import AddressContainer from '../../components/AddressContainer/AddressContainer.tsx';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
+import TutorialTrigger from '../../components/Tutorial/TutorialTrigger.tsx';
 import {
   generateMultisigAddress,
   generateInternalIdentityAddress,
@@ -37,6 +38,7 @@ import { useTranslation } from 'react-i18next';
 import { generatedWallets } from '../../types';
 import { blockchains } from '@storage/blockchains';
 import { useWalletConnect } from '../../contexts/WalletConnectContext';
+import { sspConfig } from '@storage/ssp';
 
 function Home() {
   const { t } = useTranslation(['home', 'common']);
@@ -45,6 +47,8 @@ function Home() {
   const dispatch = useAppDispatch();
   const { setWalletConnectNavigation } = useWalletConnect();
   const [isLoading, setIsLoading] = useState(true);
+  const [isNewWallet, setIsNewWallet] = useState(false);
+  const [walletSynced, setWalletSynced] = useState(false);
   const { activeChain, identityChain } = useAppSelector(
     (state) => state.sspState,
   );
@@ -145,6 +149,28 @@ function Home() {
     // if user exists, navigate to login
     if (alreadyMounted.current) return;
     alreadyMounted.current = true;
+
+    // Check if this is a new wallet from create/restore based on tutorial state
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+      const config = sspConfig() as any;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const tutorial = config?.tutorial;
+      if (
+        tutorial &&
+        'completed' in tutorial &&
+        'currentStep' in tutorial &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        !tutorial.completed &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        tutorial.currentStep === 0
+      ) {
+        setIsNewWallet(true);
+      }
+    } catch (error) {
+      console.log('Error checking tutorial config:', error);
+    }
+
     if (!xpubWallet) {
       // we do not have it in redux, navigate to login
       navigate('/login');
@@ -166,6 +192,7 @@ function Home() {
     console.log('Key of Chain synchronised.');
     generateAddress();
     setIsLoading(false);
+    setWalletSynced(true);
   }, [xpubKey, activeChain]);
 
   // Set up navigation for WalletConnect when component mounts
@@ -203,8 +230,10 @@ function Home() {
           <Navbar refresh={refresh} hasRefresh={true} />
           <Divider />
           <Space direction="vertical">
-            <AddressContainer />
-            <Balances />
+            <div data-tutorial="wallet-overview">
+              <AddressContainer />
+              <Balances />
+            </div>
             <Navigation />
           </Space>
           {wallets?.[walletInUse]?.nodes && (
@@ -238,6 +267,7 @@ function Home() {
               size="small"
               centered
               tabBarStyle={{ marginBottom: 0 }}
+              data-tutorial="tokens-section"
               items={[
                 {
                   label: t('common:tokens'),
@@ -284,6 +314,7 @@ function Home() {
       <Key synchronised={keySynchronised} />
       <SspConnect />
       <PoweredByFlux />
+      <TutorialTrigger isNewWallet={isNewWallet} walletSynced={walletSynced} />
     </>
   );
 }

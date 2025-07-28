@@ -70,19 +70,22 @@ function ChainSelect(props: {
         <Row
           gutter={[16, 24]}
           style={{ paddingTop: '40px', paddingBottom: '40px' }}
+          data-tutorial="chain-list"
         >
           {blockchainKeys.map((chain) => (
             <Fragment key={chain}>
-              <Col className="gutter-row" span={12}>
-                <Col
-                  span={24}
-                  onClick={() => switchChain(chain as keyof cryptos)}
-                >
+              <Col
+                className="gutter-row"
+                span={12}
+                data-tutorial={chain === 'eth' ? 'chain-item-eth' : undefined}
+                onClick={() => switchChain(chain as keyof cryptos)}
+                style={{ cursor: 'pointer' }}
+              >
+                <Col span={24}>
                   <Image
                     height={40}
                     preview={false}
                     src={blockchains[chain].logo}
-                    style={{ cursor: 'pointer' }}
                   />
                 </Col>
                 <span style={{ fontSize: '16px', color: 'grey' }}>
