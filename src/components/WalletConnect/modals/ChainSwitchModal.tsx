@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal } from 'antd';
+import { Modal, App } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
 import { blockchains } from '@storage/blockchains';
@@ -19,6 +19,7 @@ const ChainSwitchModal: React.FC<ChainSwitchModalProps> = ({
   onReject,
 }) => {
   const { t } = useTranslation(['home', 'common']);
+  const { modal } = App.useApp();
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
   if (
@@ -41,7 +42,7 @@ const ChainSwitchModal: React.FC<ChainSwitchModalProps> = ({
   );
 
   if (!targetChain) {
-    Modal.error({
+    modal.error({
       title: t('home:walletconnect.unsupported_chain_id', { chainId }),
       content: t('home:walletconnect.unsupported_chain_id', { chainId }),
     });
