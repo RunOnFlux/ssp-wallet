@@ -15,7 +15,6 @@ import { getTutorialSteps } from './tutorialSteps';
 import {
   setTutorialState,
   setTutorialStep,
-  setTutorialCompleted,
 } from '../../store/index';
 import { updateTutorialConfig, resetTutorial } from '../../storage/ssp';
 
@@ -133,7 +132,6 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     dispatch(
       setTutorialState({ isActive: false, tutorialType: '', currentStep: 0 }),
     );
-    dispatch(setTutorialCompleted(tutorialState.tutorialType));
 
     await updateTutorialConfig({
       completed: true,
@@ -170,7 +168,6 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     dispatch(
       setTutorialState({ isActive: false, tutorialType: '', currentStep: 0 }),
     );
-    dispatch(setTutorialCompleted(tutorialState.tutorialType));
 
     await updateTutorialConfig({
       completed: true,

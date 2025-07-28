@@ -118,7 +118,6 @@ interface tutorialState {
   isActive: boolean;
   tutorialType: string;
   currentStep: number;
-  completedTutorials: string[];
 }
 
 const initialAbeState: abeState = {
@@ -132,7 +131,6 @@ const initialTutorialState: tutorialState = {
   isActive: false,
   tutorialType: '',
   currentStep: 0,
-  completedTutorials: [],
 };
 
 interface RatesState {
@@ -353,11 +351,6 @@ const tutorialSlice = createSlice({
     setTutorialStep: (state, action: PayloadAction<number>) => {
       state.currentStep = action.payload;
     },
-    setTutorialCompleted: (state, action: PayloadAction<string>) => {
-      if (!state.completedTutorials.includes(action.payload)) {
-        state.completedTutorials.push(action.payload);
-      }
-    },
   },
 });
 
@@ -409,7 +402,6 @@ export const {
 export const {
   setTutorialState,
   setTutorialStep,
-  setTutorialCompleted,
 } = tutorialSlice.actions;
 
 export const {
