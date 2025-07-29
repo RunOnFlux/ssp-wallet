@@ -3,5 +3,17 @@
   "description": "分散型世界のための二重署名ウォレット.",
   "get_started": "始めましょう!",
   "restore_with_seed": "シードで復元",
-  "watch_guide": "New to SSP? Watch guide"
+  "watch_guide": "New to SSP? Watch guide",
+  "help": {
+    "tooltip": "Help & Support",
+    "guide_desc": "Video tutorials and guides",
+    "website": "Visit Website",
+    "website_desc": "Learn more about SSP Wallet",
+    "support": "Get Support",
+    "support_desc": "Contact our support team",
+    "privacy": "Privacy Policy",
+    "privacy_desc": "How we protect your data",
+    "terms": "Terms of Service",
+    "terms_desc": "Terms and conditions"
+  }
 }
