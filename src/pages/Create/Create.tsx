@@ -47,6 +47,7 @@ import { blockchains } from '@storage/blockchains';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
+import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
 import { wordlist } from '@scure/bip39/wordlists/english';
 
 interface passwordForm {
@@ -740,6 +741,7 @@ function Create() {
       <PasswordForm />
       <BackupConfirmModal />
       <ConfirmWordsModal />
+      <FloatingHelp showGuide={true} />
       <PoweredByFlux />
     </>
   );

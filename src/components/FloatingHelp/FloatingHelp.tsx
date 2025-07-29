@@ -1,0 +1,137 @@
+import React, { useState } from 'react';
+import { FloatButton, Dropdown, Space, Typography } from 'antd';
+import {
+  QuestionCircleOutlined,
+  BookOutlined,
+  CustomerServiceOutlined,
+  GlobalOutlined,
+  FileTextOutlined,
+  SafetyOutlined,
+} from '@ant-design/icons';
+import type { MenuProps } from 'antd';
+import { useTranslation } from 'react-i18next';
+
+const { Text } = Typography;
+
+interface FloatingHelpProps {
+  showGuide?: boolean;
+}
+
+export const FloatingHelp: React.FC<FloatingHelpProps> = ({
+  showGuide = true,
+}) => {
+  const { t } = useTranslation(['welcome']);
+  const [open, setOpen] = useState(false);
+
+  const openExternalLink = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setOpen(false);
+  };
+
+  const items: MenuProps['items'] = [
+    ...(showGuide
+      ? [
+          {
+            key: 'guide',
+            label: (
+              <Space>
+                <BookOutlined style={{ color: '#52c41a' }} />
+                <div>
+                  <div>{t('welcome:watch_guide')}</div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    Video tutorials and guides
+                  </Text>
+                </div>
+              </Space>
+            ),
+            onClick: () => openExternalLink('https://sspwallet.io/guide'),
+          },
+        ]
+      : []),
+    {
+      key: 'website',
+      label: (
+        <Space>
+          <GlobalOutlined style={{ color: '#722ed1' }} />
+          <div>
+            <div>Visit Website</div>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              Learn more about SSP Wallet
+            </Text>
+          </div>
+        </Space>
+      ),
+      onClick: () => openExternalLink('https://sspwallet.io'),
+    },
+    {
+      key: 'support',
+      label: (
+        <Space>
+          <CustomerServiceOutlined style={{ color: '#fa8c16' }} />
+          <div>
+            <div>Get Support</div>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              Contact our support team
+            </Text>
+          </div>
+        </Space>
+      ),
+      onClick: () => openExternalLink('https://sspwallet.io/support'),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'privacy',
+      label: (
+        <Space>
+          <SafetyOutlined style={{ color: '#13c2c2' }} />
+          <div>
+            <div>Privacy Policy</div>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              How we protect your data
+            </Text>
+          </div>
+        </Space>
+      ),
+      onClick: () => openExternalLink('https://sspwallet.io/privacy-policy'),
+    },
+    {
+      key: 'terms',
+      label: (
+        <Space>
+          <FileTextOutlined style={{ color: '#eb2f96' }} />
+          <div>
+            <div>Terms of Service</div>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              Terms and conditions
+            </Text>
+          </div>
+        </Space>
+      ),
+      onClick: () => openExternalLink('https://sspwallet.io/terms-of-service'),
+    },
+  ];
+
+  return (
+    <Dropdown
+      menu={{ items }}
+      placement="bottomLeft"
+      trigger={['click']}
+      open={open}
+      onOpenChange={setOpen}
+      overlayStyle={{ minWidth: '250px' }}
+    >
+      <FloatButton
+        icon={<QuestionCircleOutlined />}
+        tooltip="Help & Support"
+        style={{
+          right: 6,
+          bottom: 48,
+        }}
+      />
+    </Dropdown>
+  );
+};
+
+export default FloatingHelp;
