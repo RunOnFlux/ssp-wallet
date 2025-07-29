@@ -2,5 +2,6 @@
   "welcome_to": "SSP Walletへようこそ",
   "description": "分散型世界のための二重署名ウォレット.",
   "get_started": "始めましょう!",
-  "restore_with_seed": "シードで復元"
+  "restore_with_seed": "シードで復元",
+  "watch_guide": "New to SSP? Watch guide"
 }
