@@ -2,5 +2,6 @@
   "welcome_to": "歡迎使用 SSP 錢包",
   "description": "為去中心化世界設計的雙簽名錢包.",
   "get_started": "開始使用！",
-  "restore_with_seed": "使用種子恢復"
+  "restore_with_seed": "使用種子恢復",
+  "watch_guide": "New to SSP? Watch guide"
 }
