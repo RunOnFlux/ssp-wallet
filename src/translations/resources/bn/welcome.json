@@ -3,5 +3,17 @@
   "description": "বিকেন্দ্রীকৃত বিশ্বের জন্য ডুয়াল সিগনেচার ওয়ালেট.",
   "get_started": "শুরু করুন!",
   "restore_with_seed": "সীড দিয়ে পুনরুদ্ধার করুন",
-  "watch_guide": "New to SSP? Watch guide"
+  "watch_guide": "New to SSP? Watch guide",
+  "help": {
+    "tooltip": "Help & Support",
+    "guide_desc": "Video tutorials and guides",
+    "website": "Visit Website",
+    "website_desc": "Learn more about SSP Wallet",
+    "support": "Get Support",
+    "support_desc": "Contact our support team",
+    "privacy": "Privacy Policy",
+    "privacy_desc": "How we protect your data",
+    "terms": "Terms of Service",
+    "terms_desc": "Terms and conditions"
+  }
 }
