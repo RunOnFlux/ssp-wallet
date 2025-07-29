@@ -2,5 +2,6 @@
   "welcome_to": "Dobrodošli v SSP Denarnico",
   "description": "Denarnica z dvojno podpisovanjem za decentralizirani svet.",
   "get_started": "Začnite!",
-  "restore_with_seed": "Obnovi z Seed frazo"
+  "restore_with_seed": "Obnovi z Seed frazo",
+  "watch_guide": "New to SSP? Watch guide"
 }
