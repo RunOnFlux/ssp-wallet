@@ -48,6 +48,7 @@ import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
 import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
+import PasswordStrengthMeter from '../../components/PasswordStrengthMeter/PasswordStrengthMeter.tsx';
 import { wordlist } from '@scure/bip39/wordlists/english';
 
 interface passwordForm {
@@ -281,6 +282,8 @@ function Create() {
   };
 
   const PasswordForm = () => {
+    const [localPasswordStrength, setLocalPasswordStrength] = useState('');
+
     return (
       <div style={{ paddingBottom: '43px' }}>
         <Headerbar headerTitle={t('cr:create_pw')} navigateTo="/welcome" />
@@ -311,15 +314,21 @@ function Create() {
                   },
                 ]}
               >
-                <Input.Password
-                  size="large"
-                  placeholder={t('cr:set_password')}
-                  prefix={<LockOutlined />}
-                  iconRender={(visible) =>
-                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-                  }
-                  className="password-input"
-                />
+                <div style={{ position: 'relative' }}>
+                  <Input.Password
+                    size="large"
+                    placeholder={t('cr:set_password')}
+                    prefix={<LockOutlined />}
+                    iconRender={(visible) =>
+                      visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                    }
+                    className="password-input"
+                    onChange={(e) => {
+                      setLocalPasswordStrength(e.target.value);
+                    }}
+                  />
+                  <PasswordStrengthMeter password={localPasswordStrength} />
+                </div>
               </Form.Item>
             </div>
           </Popover>

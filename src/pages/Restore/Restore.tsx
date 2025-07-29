@@ -55,6 +55,7 @@ import { resetTutorial } from '../../storage/ssp';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
+import PasswordStrengthMeter from '../../components/PasswordStrengthMeter/PasswordStrengthMeter.tsx';
 
 interface passwordForm {
   mnemonic: string;
@@ -438,15 +439,21 @@ function Restore() {
                   },
                 ]}
               >
-                <Input.Password
-                  size="large"
-                  placeholder={t('cr:set_password')}
-                  prefix={<LockOutlined />}
-                  iconRender={(visible) =>
-                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-                  }
-                  className="password-input"
-                />
+                <div style={{ position: 'relative' }}>
+                  <Input.Password
+                    size="large"
+                    placeholder={t('cr:set_password')}
+                    prefix={<LockOutlined />}
+                    iconRender={(visible) =>
+                      visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                    }
+                    className="password-input"
+                    onChange={(e) => {
+                      setTemporaryPassword(e.target.value);
+                    }}
+                  />
+                  <PasswordStrengthMeter password={temporaryPassword} />
+                </div>
               </Form.Item>
             </div>
           </Popover>
