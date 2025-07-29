@@ -2,5 +2,6 @@
   "welcome_to": "Velkommen til SSP Wallet",
   "description": "Lommebok med dobbelt signatur for den desentraliserte verden.",
   "get_started": "Kom i gang!",
-  "restore_with_seed": "Gjenopprett med frøsetning"
+  "restore_with_seed": "Gjenopprett med frøsetning",
+  "watch_guide": "New to SSP? Watch guide"
 }
