@@ -11,6 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTutorial } from './TutorialProvider';
 import { sspConfig, updateTutorialConfig } from '../../storage/ssp';
+import { version } from '../../../package.json';
 
 const { Title, Text } = Typography;
 
@@ -132,6 +133,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
               maxWidth: 500,
               width: '100%',
               textAlign: 'center',
+              position: 'relative',
             }}
             extra={
               <Button
@@ -253,7 +255,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                 <Space
                   direction="horizontal"
                   size="large"
-                  style={{ marginTop: '8px' }}
+                  style={{ marginTop: '16px' }}
                 >
                   <Button type="text" onClick={handleDismissWelcome}>
                     {t('home:tutorial.maybe_later')}
@@ -264,6 +266,24 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                 </Space>
               </Space>
             </Space>
+
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '8px',
+                left: '12px',
+              }}
+            >
+              <Text
+                type="secondary"
+                style={{
+                  fontSize: '10px',
+                  opacity: 0.6,
+                }}
+              >
+                v{version}
+              </Text>
+            </div>
           </Card>
         </div>
       )}

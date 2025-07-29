@@ -39,7 +39,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
                 <div>
                   <div>{t('welcome:watch_guide')}</div>
                   <Text type="secondary" style={{ fontSize: '12px' }}>
-                    Video tutorials and guides
+                    {t('welcome:help.guide_desc')}
                   </Text>
                 </div>
               </Space>
@@ -54,9 +54,9 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
         <Space>
           <GlobalOutlined style={{ color: '#722ed1' }} />
           <div>
-            <div>Visit Website</div>
+            <div>{t('welcome:help.website')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
-              Learn more about SSP Wallet
+              {t('welcome:help.website_desc')}
             </Text>
           </div>
         </Space>
@@ -69,9 +69,9 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
         <Space>
           <CustomerServiceOutlined style={{ color: '#fa8c16' }} />
           <div>
-            <div>Get Support</div>
+            <div>{t('welcome:help.support')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
-              Contact our support team
+              {t('welcome:help.support_desc')}
             </Text>
           </div>
         </Space>
@@ -87,9 +87,9 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
         <Space>
           <SafetyOutlined style={{ color: '#13c2c2' }} />
           <div>
-            <div>Privacy Policy</div>
+            <div>{t('welcome:help.privacy')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
-              How we protect your data
+              {t('welcome:help.privacy_desc')}
             </Text>
           </div>
         </Space>
@@ -102,9 +102,9 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
         <Space>
           <FileTextOutlined style={{ color: '#eb2f96' }} />
           <div>
-            <div>Terms of Service</div>
+            <div>{t('welcome:help.terms')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
-              Terms and conditions
+              {t('welcome:help.terms_desc')}
             </Text>
           </div>
         </Space>
@@ -124,7 +124,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
     >
       <FloatButton
         icon={<QuestionCircleOutlined />}
-        tooltip="Help & Support"
+        tooltip={t('welcome:help.tooltip')}
         style={{
           right: 6,
           bottom: 48,
