@@ -2,5 +2,6 @@
   "welcome_to": "Witamy w SSP Wallet",
   "description": "Portfel z podwójnym podpisem dla zdecentralizowanego świata.",
   "get_started": "Rozpocznij!",
-  "restore_with_seed": "Przywróć za pomocą seed"
+  "restore_with_seed": "Przywróć za pomocą seed",
+  "watch_guide": "New to SSP? Watch guide"
 }
