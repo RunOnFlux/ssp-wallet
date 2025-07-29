@@ -2,5 +2,6 @@
   "welcome_to": "Benvenuto nel Portafoglio SSP",
   "description": "Portafoglio a doppia autenticazione per il mondo decentralizzato.",
   "get_started": "Iniziamo!",
-  "restore_with_seed": "Ripristina con Frase Mnemonica"
+  "restore_with_seed": "Ripristina con Frase Mnemonica",
+  "watch_guide": "New to SSP? Watch guide"
 }
