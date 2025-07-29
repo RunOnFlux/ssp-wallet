@@ -2,5 +2,6 @@
   "welcome_to": "Üdvözöljük az SSP Wallet-ben",
   "description": "A kétfaktoros azonosítású tárca a decentralizált világ számára.",
   "get_started": "Vágjunk bele!",
-  "restore_with_seed": "Helyreállítás visszaállítási kulccsal"
+  "restore_with_seed": "Helyreállítás visszaállítási kulccsal",
+  "watch_guide": "New to SSP? Watch guide"
 }
