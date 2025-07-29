@@ -2,5 +2,6 @@
   "welcome_to": "Welkom bij SSP Wallet",
   "description": "Dubbele handtekening-wallet voor de gedecentraliseerde wereld.",
   "get_started": "Aan de slag!",
-  "restore_with_seed": "Herstellen met Seed"
+  "restore_with_seed": "Herstellen met Seed",
+  "watch_guide": "New to SSP? Watch guide"
 }
