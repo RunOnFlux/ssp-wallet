@@ -2,5 +2,6 @@
   "welcome_to": "Benvingut a SSP Wallet",
   "description": "Moneder de doble signatura per al món descentralitzat.",
   "get_started": "Comença!",
-  "restore_with_seed": "Restaura amb la Frase de Llavor"
+  "restore_with_seed": "Restaura amb la Frase de Llavor",
+  "watch_guide": "New to SSP? Watch guide"
 }
