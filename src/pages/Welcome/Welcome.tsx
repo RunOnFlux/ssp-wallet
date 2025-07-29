@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import './Welcome.css';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
+import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
 
 function Welcome() {
   const { t } = useTranslation(['welcome', 'common']);
@@ -53,9 +54,10 @@ function Welcome() {
         </div>
       )}
       <PoweredByFlux isClickeable={true} />
-      <div style={{ position: 'absolute', top: 5, right: 5 }}>
+      <div style={{ position: 'absolute', top: 6, right: 6 }}>
         <LanguageSelector label={false} />
       </div>
+      <FloatingHelp showGuide={true} />
     </>
   );
 }

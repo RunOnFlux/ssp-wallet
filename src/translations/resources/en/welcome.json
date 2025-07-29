@@ -2,5 +2,6 @@
   "welcome_to": "Welcome to SSP Wallet",
   "description": "Dual signature wallet for the decentralized world.",
   "get_started": "Get Started!",
-  "restore_with_seed": "Restore with Seed"
+  "restore_with_seed": "Restore with Seed",
+  "watch_guide": "New to SSP? Watch guide"
 }

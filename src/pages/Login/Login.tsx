@@ -52,6 +52,7 @@ import { blockchains, Token } from '@storage/blockchains';
 
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
+import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
 
 import { transaction, generatedWallets, cryptos, node } from '../../types';
 
@@ -499,9 +500,10 @@ function Login() {
         openAction={stronEncryptionChangeAction}
       />
       <PoweredByFlux isClickeable={true} />
-      <div style={{ position: 'absolute', top: 5, right: 5 }}>
+      <div style={{ position: 'absolute', top: 6, right: 6 }}>
         <LanguageSelector label={false} />
       </div>
+      <FloatingHelp showGuide={false} />
     </>
   );
 }
