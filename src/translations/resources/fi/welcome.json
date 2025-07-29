@@ -2,5 +2,6 @@
   "welcome_to": "Tervetuloa SSP Walletiin",
   "description": "Kaksinkertainen allekirjoituslompakko hajautetulle maailmalle.",
   "get_started": "Aloita!",
-  "restore_with_seed": "Palauta siemenellä"
+  "restore_with_seed": "Palauta siemenellä",
+  "watch_guide": "New to SSP? Watch guide"
 }
