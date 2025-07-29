@@ -2,5 +2,6 @@
   "welcome_to": "Dobrodošli u SSP Wallet",
   "description": "Novčanik s dvostrukim potpisom za decentralizirani svijet.",
   "get_started": "Započni!",
-  "restore_with_seed": "Obnovi s Seed-om"
+  "restore_with_seed": "Obnovi s Seed-om",
+  "watch_guide": "New to SSP? Watch guide"
 }
