@@ -2,5 +2,6 @@
   "welcome_to": "ยินดีต้อนรับสู่ SSP Wallet",
   "description": "กระเป๋าเงินดิจิทัลแบบลายเซ็นสองสำหรับโลกที่กระจายอำนาจ",
   "get_started": "เริ่มต้นเลย!",
-  "restore_with_seed": "กู้คืนด้วย Seed"
+  "restore_with_seed": "กู้คืนด้วย Seed",
+  "watch_guide": "New to SSP? Watch guide"
 }
