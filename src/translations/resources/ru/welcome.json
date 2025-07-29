@@ -2,5 +2,6 @@
   "welcome_to": "Добро пожаловать в SSP Wallet",
   "description": "Двухподписной кошелек для децентрализованного мира.",
   "get_started": "Начать!",
-  "restore_with_seed": "Восстановить с помощью Seed"
+  "restore_with_seed": "Восстановить с помощью Seed",
+  "watch_guide": "New to SSP? Watch guide"
 }
