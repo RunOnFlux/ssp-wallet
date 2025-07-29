@@ -2,5 +2,6 @@
   "welcome_to": "Velkommen til SSP Wallet",
   "description": "Dobbelt signatur wallet til den decentraliserede verden.",
   "get_started": "Kom i gang!",
-  "restore_with_seed": "Gendan med seed-frase"
+  "restore_with_seed": "Gendan med seed-frase",
+  "watch_guide": "New to SSP? Watch guide"
 }
