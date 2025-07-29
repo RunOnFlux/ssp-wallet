@@ -2,5 +2,6 @@
   "welcome_to": "Vitajte v SSP Wallet",
   "description": "Peňaženka s dvojitým podpisom pre decentralizovaný svet.",
   "get_started": "Začať!",
-  "restore_with_seed": "Obnoviť pomocou seedu"
+  "restore_with_seed": "Obnoviť pomocou seedu",
+  "watch_guide": "New to SSP? Watch guide"
 }
