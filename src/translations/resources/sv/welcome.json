@@ -2,5 +2,6 @@
   "welcome_to": "Välkommen till SSP-plånboken",
   "description": "Plånbok med dubbla signaturer för den decentraliserade världen.",
   "get_started": "Kom igång!",
-  "restore_with_seed": "Återställ med seed"
+  "restore_with_seed": "Återställ med seed",
+  "watch_guide": "New to SSP? Watch guide"
 }
