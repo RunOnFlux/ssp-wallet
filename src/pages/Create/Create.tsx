@@ -63,7 +63,6 @@ function Create() {
   const { modal } = App.useApp();
   const { identityChain } = useAppSelector((state) => state.sspState);
   const blockchainConfig = blockchains[identityChain];
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // use secure local storage for storing mnemonic 'walletSeed', 'xpriv-48-slip-0-0-coin', 'xpub-48-slip-0-0-coin' and '2-xpub-48-slip-0-0-coin' (2- as for second key) of together with encryption of browser-passworder
@@ -100,15 +99,13 @@ function Create() {
   }, []); // Empty dependency array ensures this effect runs only on mount/unmount
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
-    // generate seed
+    // check if wallet already exists on mount
     const accPresent = secureLocalStorage.getItem('walletSeed');
     if (accPresent) {
       navigate('/login');
       return;
     }
-  });
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   useEffect(() => {
     if (mnemonic.length) {

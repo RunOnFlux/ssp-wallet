@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Input, Image, Button, Form, message, Spin } from 'antd';
 import localForage from 'localforage';
@@ -78,7 +78,6 @@ const tenMins = 10 * 60 * 1000;
 
 function Login() {
   const { t, i18n } = useTranslation(['login', 'common']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [password, setPassword] = useState('');
@@ -99,6 +98,7 @@ function Login() {
   }, []); // Empty dependency array ensures this effect runs only on mount/unmount
 
   useEffect(() => {
+    // Clear any existing intervals to stop background refreshing during login
     if (globalThis.refreshIntervalBalances) {
       clearInterval(globalThis.refreshIntervalBalances);
     }
@@ -108,8 +108,7 @@ function Login() {
     if (globalThis.refreshIntervalNodes) {
       clearInterval(globalThis.refreshIntervalNodes);
     }
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
+
     void (async function () {
       // get activatedChain
       const activatedChain = await localForage.getItem('activeChain');
@@ -187,7 +186,7 @@ function Login() {
         setIsLoading(false);
       }
     })();
-  });
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {

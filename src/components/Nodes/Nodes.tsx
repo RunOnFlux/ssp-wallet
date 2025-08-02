@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { message } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import secureLocalStorage from 'react-secure-storage';
@@ -26,8 +26,6 @@ import PArewards from './PArewards.tsx';
 
 function Nodes() {
   const { t } = useTranslation(['home', 'common']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
-  const isInitialMount = useRef(true);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { wallets, walletInUse } = useAppSelector(
@@ -63,35 +61,28 @@ function Nodes() {
   }, []); // Empty dependency array ensures this effect runs only on mount/unmount
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
+    // Generate identity and refresh nodes when wallet or chain changes
     void generateIdentity();
     refreshNodes();
-    if (globalThis.refreshIntervalNodes) {
-      clearInterval(globalThis.refreshIntervalNodes);
-    }
-    if (wallets?.[walletInUse]?.nodes) {
-      globalThis.refreshIntervalNodes = setInterval(() => {
-        refreshNodes();
-      }, 45000);
-    }
-  });
 
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    void generateIdentity();
-    refreshNodes();
+    // Clear any existing interval
     if (globalThis.refreshIntervalNodes) {
       clearInterval(globalThis.refreshIntervalNodes);
     }
+
+    // Set up new interval if nodes exist
     if (wallets?.[walletInUse]?.nodes) {
       globalThis.refreshIntervalNodes = setInterval(() => {
         refreshNodes();
       }, 45000);
     }
+
+    // Cleanup function - runs on unmount and before next effect
+    return () => {
+      if (globalThis.refreshIntervalNodes) {
+        clearInterval(globalThis.refreshIntervalNodes);
+      }
+    };
   }, [walletInUse, activeChain]);
 
   const refreshNodes = () => {

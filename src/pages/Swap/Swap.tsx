@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Divider,
   InputNumber,
@@ -90,7 +90,6 @@ const balancesObject = {
 };
 
 function Swap() {
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { t } = useTranslation(['send', 'common', 'home']);
   const [amountSell, setAmountSell] = useState(0.1);
   const [amountBuy, setAmountBuy] = useState(0);
@@ -166,8 +165,6 @@ function Swap() {
   }, [amountSell, sellAsset, buyAsset, triggerSwapDirection]);
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     void (async () => {
       const userAddrs: Record<keyof blockchains, generatedWallets> = {};
       for (const chain of Object.keys(blockchains)) {
@@ -185,7 +182,7 @@ function Swap() {
       }
       setUserAddresses(userAddrs);
     })();
-  });
+  }, []);
 
   // chain switching mechanism. todo cleanup This extract and from chainSelect extract too
   useEffect(() => {

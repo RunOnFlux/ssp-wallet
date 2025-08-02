@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
 
@@ -19,10 +19,7 @@ import {
 
 function ABEController() {
   const dispatch = useAppDispatch();
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     obtainABE();
     if (globalThis.refreshIntervalABE) {
       clearInterval(globalThis.refreshIntervalABE);
@@ -33,7 +30,13 @@ function ABEController() {
       },
       15 * 60 * 1000,
     );
-  });
+
+    return () => {
+      if (globalThis.refreshIntervalABE) {
+        clearInterval(globalThis.refreshIntervalABE);
+      }
+    };
+  }, []);
 
   const obtainABE = async () => {
     try {

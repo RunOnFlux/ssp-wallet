@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
 import { useAppSelector } from '../../hooks';
@@ -29,8 +29,6 @@ const balancesObject = {
 
 function Balances() {
   const { t } = useTranslation(['home']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
-  const isInitialMount = useRef(true);
   const [fiatRate, setFiatRate] = useState(0);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse } = useAppSelector(
@@ -60,8 +58,6 @@ function Balances() {
   );
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     void (async function () {
       const wInUse = walletInUse;
       const chInUse = activeChain;
@@ -80,36 +76,11 @@ function Balances() {
     globalThis.refreshIntervalBalances = setInterval(() => {
       refresh();
     }, 20000);
-  });
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    refresh();
-    void (async function () {
-      const wInUse = walletInUse;
-      const chInUse = activeChain;
-      const balancesWallet: balancesObj =
-        (await localForage.getItem(`balances-${chInUse}-${wInUse}`)) ??
-        balancesObject;
-      if (balancesWallet) {
-        setBalance(chInUse, wInUse, balancesWallet.confirmed);
-        setUnconfirmedBalance(chInUse, wInUse, balancesWallet.unconfirmed);
-      }
-    })();
-    if (globalThis.refreshIntervalBalances) {
-      clearInterval(globalThis.refreshIntervalBalances);
-    }
-    globalThis.refreshIntervalBalances = setInterval(() => {
-      refresh();
-    }, 20000);
-  }, [walletInUse, activeChain, wallets[walletInUse].address]);
+  }, [activeChain, walletInUse]);
 
   useEffect(() => {
     getCryptoRate(activeChain, sspConfig().fiatCurrency);
-  }, [cryptoRates, fiatRates]);
+  }, [activeChain, cryptoRates, fiatRates]);
 
   const fetchBalance = () => {
     const chainFetched = activeChain;
