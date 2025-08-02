@@ -1,0 +1,15 @@
+# Docker ignore file for deterministic builds
+node_modules
+dist
+dist-zip
+.git
+.gitignore
+*.log
+*.md
+docs
+tests
+*.zip
+*.sha256
+.env*
+.DS_Store
+Thumbs.db

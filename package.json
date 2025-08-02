@@ -11,6 +11,7 @@
     "build:chrome": "npm run build && node scripts/build-manifests.cjs chrome",
     "build:firefox": "npm run build && node scripts/build-manifests.cjs firefox",
     "build:all": "npm run build && node scripts/build-manifests.cjs",
+    "build:deterministic": "bash scripts/deterministic-build.sh",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
