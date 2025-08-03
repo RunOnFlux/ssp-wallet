@@ -58,19 +58,17 @@ RUN cd dist-firefox && \
     find . -type f -exec touch -d @${SOURCE_DATE_EPOCH} {} + && \
     find . -type f | sort | zip -X -r ../ssp-wallet-firefox-deterministic.zip -@
 
-# Generate individual hashes and unified SHA256SUMS
-RUN sha256sum ssp-wallet-chrome-deterministic.zip > ssp-wallet-chrome-deterministic.zip.sha256 && \
-    sha256sum ssp-wallet-firefox-deterministic.zip > ssp-wallet-firefox-deterministic.zip.sha256 && \
-    echo "# SSP Wallet Deterministic Build Hashes" > SHA256SUMS && \
-    echo "# Generated: $(date -u -Iseconds)" >> SHA256SUMS && \
+# Generate unified SHA256SUMS directly
+RUN echo "# SSP Wallet Deterministic Build Hashes" > SHA256SUMS && \
+    echo "# Git Commit: $(git rev-parse HEAD)" >> SHA256SUMS && \
     echo "#" >> SHA256SUMS && \
-    cat ssp-wallet-chrome-deterministic.zip.sha256 >> SHA256SUMS && \
-    cat ssp-wallet-firefox-deterministic.zip.sha256 >> SHA256SUMS
+    echo "# These hashes can be verified with: sha256sum -c SHA256SUMS" >> SHA256SUMS && \
+    echo "#" >> SHA256SUMS && \
+    sha256sum ssp-wallet-chrome-deterministic.zip >> SHA256SUMS && \
+    sha256sum ssp-wallet-firefox-deterministic.zip >> SHA256SUMS
 
 # Output stage for extracting build artifacts
 FROM scratch AS export-stage
 COPY --from=0 /app/ssp-wallet-chrome-deterministic.zip /
-COPY --from=0 /app/ssp-wallet-chrome-deterministic.zip.sha256 /
 COPY --from=0 /app/ssp-wallet-firefox-deterministic.zip /
-COPY --from=0 /app/ssp-wallet-firefox-deterministic.zip.sha256 /
 COPY --from=0 /app/SHA256SUMS /
