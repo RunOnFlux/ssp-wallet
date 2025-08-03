@@ -31,27 +31,26 @@ RUN yarn install --frozen-lockfile --production=false --cache-folder /tmp/yarn-c
 # Copy source code
 COPY --chown=node:node . .
 
-# Build both Chrome and Firefox packages
-RUN npm run build:chrome && \
-    cp -r dist dist-chrome && \
-    npm run build:firefox && \
-    cp -r dist dist-firefox
+# Build application and create browser packages using existing build system
+RUN npm run build:all
+
+# Copy the generated zip files and extract them to deterministic build folders
+RUN unzip -q dist-zip/ssp-wallet-chrome-v*.zip -d dist-chrome && \
+    unzip -q dist-zip/ssp-wallet-firefox-v*.zip -d dist-firefox
 
 # Create deterministic Chrome zip
 RUN cd dist-chrome && \
-    find . -type f -exec touch -t 202501010000.00 {} \; && \
     find . -type f | sort | zip -X -r ../ssp-wallet-chrome-deterministic.zip -@
 
 # Create deterministic Firefox zip  
 RUN cd dist-firefox && \
-    find . -type f -exec touch -t 202501010000.00 {} \; && \
     find . -type f | sort | zip -X -r ../ssp-wallet-firefox-deterministic.zip -@
 
 # Generate individual hashes and unified SHA256SUMS
 RUN sha256sum ssp-wallet-chrome-deterministic.zip > ssp-wallet-chrome-deterministic.zip.sha256 && \
     sha256sum ssp-wallet-firefox-deterministic.zip > ssp-wallet-firefox-deterministic.zip.sha256 && \
     echo "# SSP Wallet Deterministic Build Hashes" > SHA256SUMS && \
-    echo "# Generated: $(date -u --iso-8601=seconds)" >> SHA256SUMS && \
+    echo "# Generated: $(date -u -Iseconds)" >> SHA256SUMS && \
     echo "#" >> SHA256SUMS && \
     cat ssp-wallet-chrome-deterministic.zip.sha256 >> SHA256SUMS && \
     cat ssp-wallet-firefox-deterministic.zip.sha256 >> SHA256SUMS
