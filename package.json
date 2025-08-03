@@ -2,7 +2,7 @@
   "name": "ssp-wallet",
   "description": "Secure. Simple. Powerful.",
   "private": true,
-  "version": "1.24.1",
+  "version": "1.25.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host",

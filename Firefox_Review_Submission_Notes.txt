@@ -17,14 +17,14 @@ To verify the submitted package matches source code exactly:
    cd ssp-wallet
 
 2. Checkout the exact version being reviewed:
-   git checkout v1.24.1
+   git checkout v1.25.0
 
 3. Build deterministically using Docker:
    npm run build:deterministic
 
 4. Verify Firefox package hash matches submission:
    # Get hash of built Firefox package
-   sha256sum ssp-wallet-firefox-v1.24.1.zip
+   sha256sum ssp-wallet-firefox-v1.25.0.zip
    
    # Compare with hash of submitted package
    # The hashes should be identical, proving the submitted package
