@@ -23,8 +23,8 @@ sha256sum -c SHA256SUMS
 
 ### What Gets Built
 
-- `ssp-wallet-chrome-v1.24.0.zip` - Chrome Web Store package
-- `ssp-wallet-firefox-v1.24.0.zip` - Firefox Add-ons package  
+- `ssp-wallet-chrome-v1.24.1.zip` - Chrome Web Store package
+- `ssp-wallet-firefox-v1.24.1.zip` - Firefox Add-ons package  
 - `SHA256SUMS` - Hash file for verification
 
 ### Build Environment
@@ -44,9 +44,9 @@ The deterministic build ensures:
 
 ### Package Differences
 
-- **Chrome:** Uses Manifest v3
-- **Firefox:** Uses Manifest v2  
-- **Content:** Identical application code, different manifests only
+- **Chrome:** Uses Manifest background service_worker
+- **Firefox:** Uses Manifest background scripts
+- **Content:** Identical application code, slightly different manifests only
 
 ## For Developers
 
@@ -55,8 +55,8 @@ The deterministic build ensures:
 npm run build:deterministic
 
 # Outputs in project root:
-# - ssp-wallet-chrome-v1.24.0.zip
-# - ssp-wallet-firefox-v1.24.0.zip  
+# - ssp-wallet-chrome-v1.24.1.zip
+# - ssp-wallet-firefox-v1.24.1.zip  
 # - SHA256SUMS
 ```
 
