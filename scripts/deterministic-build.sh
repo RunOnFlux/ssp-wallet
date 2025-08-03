@@ -48,7 +48,10 @@ build_deterministic() {
     fi
     
     log "Building with Docker for complete deterministic environment..."
-    docker build --memory=8g --target export-stage -o . .
+    
+    # Build with no cache to ensure completely fresh environment
+    docker build --no-cache --memory=8g --target export-stage -o . .
+
     
     # Verify both packages were created
     if [ ! -f "ssp-wallet-chrome-deterministic.zip" ] || [ ! -f "ssp-wallet-firefox-deterministic.zip" ]; then
