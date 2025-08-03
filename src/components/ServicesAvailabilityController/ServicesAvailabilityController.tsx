@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import { fetchServicesAvailability } from '../../lib/servicesController.ts';
 
@@ -8,10 +8,7 @@ import { useAppDispatch } from '../../hooks';
 
 function ServicesAvailability() {
   const dispatch = useAppDispatch();
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     obtainServicesAvailability();
     if (globalThis.refreshIntervalServices) {
       clearInterval(globalThis.refreshIntervalServices);
@@ -22,7 +19,7 @@ function ServicesAvailability() {
       },
       10 * 60 * 1000,
     );
-  });
+  }, []);
 
   const obtainServicesAvailability = () => {
     fetchServicesAvailability()

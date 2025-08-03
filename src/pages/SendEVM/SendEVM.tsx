@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
   Form,
@@ -132,7 +132,6 @@ function SendEVM() {
     clearPublicNonces,
     clearPublicNoncesRejected,
   } = useSocket();
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { t } = useTranslation(['send', 'common', 'home']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -258,8 +257,6 @@ function SendEVM() {
   }, [state.receiver, state.amount, state.data]);
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     setBaseGasPrice(networkFees[activeChain].base.toString());
     setPriorityGasPrice(networkFees[activeChain].priority!.toString());
     // Initial gas breakdown will be calculated by getTotalGasLimit in useEffect
@@ -286,7 +283,7 @@ function SendEVM() {
     }
     setTxFee(totalFeeETH);
     form.setFieldValue('fee', totalFeeETH);
-  });
+  }, []);
 
   useEffect(() => {
     getSpendableBalance();

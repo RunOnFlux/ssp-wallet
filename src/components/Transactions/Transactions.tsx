@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import localForage from 'localforage';
 import axios from 'axios';
 import { sspConfig } from '@storage/ssp';
@@ -13,8 +13,6 @@ import { decodeTransactionForApproval } from '../../lib/transactions.ts';
 import { actionSSPRelay, pendingTransaction, transaction } from '../../types';
 
 function Transactions() {
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
-  const isInitialMount = useRef(true);
   const { sspWalletKeyInternalIdentity, activeChain } = useAppSelector(
     (state) => state.sspState,
   );
@@ -29,8 +27,6 @@ function Transactions() {
   const [fiatRate, setFiatRate] = useState(0);
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     setPendingTxs([]);
     getPendingTx();
     void (async function () {
@@ -51,37 +47,11 @@ function Transactions() {
       getTransactions();
       getCryptoRate(activeChain, sspConfig().fiatCurrency);
     }, 20000);
-  });
+  }, [activeChain, walletInUse]);
 
   useEffect(() => {
     getCryptoRate(activeChain, sspConfig().fiatCurrency);
-  }, [cryptoRates, fiatRates]);
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    setPendingTxs([]);
-    getPendingTx();
-    void (async function () {
-      const wInUse = walletInUse;
-      const txsWallet: transaction[] =
-        (await localForage.getItem(`transactions-${activeChain}-${wInUse}`)) ??
-        [];
-      if (txsWallet) {
-        setTransactions(activeChain, wInUse, txsWallet);
-      }
-      getTransactions();
-    })();
-    if (globalThis.refreshIntervalTransactions) {
-      clearInterval(globalThis.refreshIntervalTransactions);
-    }
-    globalThis.refreshIntervalTransactions = setInterval(() => {
-      getTransactions();
-      getCryptoRate(activeChain, sspConfig().fiatCurrency);
-    }, 20000);
-  }, [walletInUse, activeChain, wallets[walletInUse].address]);
+  }, [activeChain, cryptoRates, fiatRates]);
 
   const getTransactions = () => {
     fetchTransactions();

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import {
   Form,
@@ -78,7 +78,6 @@ function Send() {
     chain: txChain,
     clearTxRejected,
   } = useSocket();
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const { t } = useTranslation(['send', 'common', 'home']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -147,8 +146,6 @@ function Send() {
   }, [state.message, state.receiver, state.amount]);
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     try {
       if (!state.amount && !state.receiver && !state.message) {
         console.log('TRIGGERED B');
@@ -158,7 +155,7 @@ function Send() {
     } catch (error) {
       console.log(error);
     }
-  });
+  }, []);
 
   useEffect(() => {
     const wItems: contactOption[] = [];

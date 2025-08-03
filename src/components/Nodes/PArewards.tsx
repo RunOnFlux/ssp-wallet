@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAppSelector } from '../../hooks';
 import { useTranslation } from 'react-i18next';
@@ -28,8 +28,6 @@ function PArewards(props: {
   collateralPubKey: string;
   sspwid: string;
 }) {
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
-  const isInitialMount = useRef(true);
   const [txid, setTxid] = useState('');
   const [claimeReceived, setClaimReceived] = useState(false);
   const [paRewardsAvailable, setPaRewardsAvailable] = useState(0);
@@ -45,20 +43,12 @@ function PArewards(props: {
   const blockchainConfig = blockchains[activeChain];
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
-    refreshPArewards();
-  });
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
+    // Reset rewards state when wallet/chain changes
     setPaRewardsAvailable(0);
     setPaRewardsFee(0);
+    // Fetch fresh rewards data
     refreshPArewards();
-  }, [walletInUse, activeChain]);
+  }, [walletInUse, activeChain, props.sspwid]);
 
   useEffect(() => {
     if (txid) {

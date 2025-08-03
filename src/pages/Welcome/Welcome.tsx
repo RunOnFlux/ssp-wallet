@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
 import secureLocalStorage from 'react-secure-storage';
 import { Button, Image, Space, Spin } from 'antd';
@@ -10,12 +10,9 @@ import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
 
 function Welcome() {
   const { t } = useTranslation(['welcome', 'common']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     // if user exists, navigate to login
     const accPresent = secureLocalStorage.getItem('walletSeed');
     if (accPresent) {
@@ -23,7 +20,7 @@ function Welcome() {
       return;
     }
     setIsLoading(false);
-  });
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   return (
     <>

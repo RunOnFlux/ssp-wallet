@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
@@ -42,7 +42,6 @@ import { sspConfig } from '@storage/ssp';
 
 function Home() {
   const { t } = useTranslation(['home', 'common']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { setWalletConnectNavigation } = useWalletConnect();
@@ -147,8 +146,6 @@ function Home() {
   useEffect(() => {
     // if not, show modal. onModal close check 2-xpub again
     // if user exists, navigate to login
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
 
     // Check if this is a new wallet from create/restore based on tutorial state
     try {
@@ -186,7 +183,7 @@ function Home() {
     if (xpubKey) {
       console.log('Key already synchronised.');
     }
-  });
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   useEffect(() => {
     if (!xpubKeyIdentity) return;

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import { useNavigate } from 'react-router';
 
@@ -22,10 +22,7 @@ function AutoLogout() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const browser = window.chrome || window.browser;
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     document.removeEventListener('click', refresh);
     document.addEventListener('click', refresh);
     // check if have some recent activity
@@ -53,7 +50,11 @@ function AutoLogout() {
         refresh();
       }
     })();
-  });
+
+    return () => {
+      document.removeEventListener('click', refresh);
+    };
+  }, []);
 
   const refresh = () => {
     void (async function () {

@@ -1,13 +1,12 @@
 import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import localForage from 'localforage';
 import * as resources from '../../translations/resources';
 
 function LanguageSelector(props: { label: boolean }) {
   const { i18n } = useTranslation();
   const { t } = useTranslation(['home', 'common']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
   console.log(i18n.languages);
   console.log(i18n);
@@ -23,8 +22,6 @@ function LanguageSelector(props: { label: boolean }) {
   };
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     void (async function () {
       // set language
       const language = await localForage.getItem('language');
@@ -32,7 +29,7 @@ function LanguageSelector(props: { label: boolean }) {
         setCurrentLanguage(language);
       }
     })();
-  });
+  }, []);
 
   return (
     <>

@@ -2,7 +2,7 @@ import { Card, Avatar, Flex, Button, Popconfirm, Badge } from 'antd';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 import { QuestionCircleOutlined } from '@ant-design/icons';
-import { MouseEvent, useEffect, useRef, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { Token, blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import { useAppSelector } from '../../hooks';
@@ -19,7 +19,6 @@ function TokenBox(props: {
   handleRemoveToken: (contract: string) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const alreadyMounted = useRef(false); // as of react strict mode, useEffect is triggered twice. This is a hack to prevent that without disabling strict mode
   const [fiatRate, setFiatRate] = useState(0);
   const [infoExpanded, setInfoExpanded] = useState(false);
   const { wallets, walletInUse } = useAppSelector(
@@ -58,13 +57,11 @@ function TokenBox(props: {
   };
 
   useEffect(() => {
-    if (alreadyMounted.current) return;
-    alreadyMounted.current = true;
     getCryptoRate(
       props.tokenInfo.symbol.toLowerCase() as keyof typeof cryptoRates, // we use lower cased symbol as key
       sspConfig().fiatCurrency,
     );
-  });
+  }, []); // Run once on mount - token never changes within component instance
 
   const getCryptoRate = (
     crypto: keyof typeof cryptoRates,
