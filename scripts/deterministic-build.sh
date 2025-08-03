@@ -48,7 +48,7 @@ build_deterministic() {
     fi
     
     log "Building with Docker for complete deterministic environment..."
-    docker build --target export-stage -o . .
+    docker build --memory=8g --target export-stage -o . .
     
     # Verify both packages were created
     if [ ! -f "ssp-wallet-chrome-deterministic.zip" ] || [ ! -f "ssp-wallet-firefox-deterministic.zip" ]; then
@@ -67,7 +67,6 @@ build_deterministic() {
     log "Creating unified SHA256SUMS file..."
     cat > SHA256SUMS << EOF
 # SSP Wallet ${version} - Deterministic Build Hashes
-# Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # Git Commit: $(git rev-parse HEAD)
 #
 # These hashes can be verified with: sha256sum -c SHA256SUMS

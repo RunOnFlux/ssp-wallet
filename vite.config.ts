@@ -60,10 +60,10 @@ export default defineConfig({
             'bignumber.js',
           ],
         },
-        // Ensure consistent chunk naming for extension
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
+        // Ensure consistent chunk naming for extension with fixed hash length
+        entryFileNames: 'assets/[name]-[hash:8].js',
+        chunkFileNames: 'assets/[name]-[hash:8].js',
+        assetFileNames: 'assets/[name]-[hash:8].[ext]',
       },
     },
     // Improve chunk loading by using dynamic imports

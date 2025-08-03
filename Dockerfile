@@ -10,6 +10,10 @@ ENV npm_config_audit=false
 ENV npm_config_optional=false
 ENV SOURCE_DATE_EPOCH=1735689600
 ENV TZ=UTC
+ENV LANG=C
+ENV LC_ALL=C
+ENV NODE_OPTIONS="--max-old-space-size=8192"
+ENV VITE_BUILD_TIMESTAMP=1735689600
 
 # Install zip utility for creating deterministic archives
 RUN apk add --no-cache zip
@@ -31,8 +35,14 @@ RUN yarn install --frozen-lockfile --production=false --cache-folder /tmp/yarn-c
 # Copy source code
 COPY --chown=node:node . .
 
+# Normalize all file timestamps to SOURCE_DATE_EPOCH for reproducibility  
+RUN find . -type f -not -path "./node_modules/*" -exec touch -d @${SOURCE_DATE_EPOCH} {} +
+
 # Build application and create browser packages using existing build system
 RUN npm run build:all
+
+# Normalize timestamps again after build
+RUN find dist dist-zip -type f -exec touch -d @${SOURCE_DATE_EPOCH} {} + 2>/dev/null || true
 
 # Copy the generated zip files and extract them to deterministic build folders
 RUN unzip -q dist-zip/ssp-wallet-chrome-v*.zip -d dist-chrome && \
@@ -40,10 +50,12 @@ RUN unzip -q dist-zip/ssp-wallet-chrome-v*.zip -d dist-chrome && \
 
 # Create deterministic Chrome zip
 RUN cd dist-chrome && \
+    find . -type f -exec touch -d @${SOURCE_DATE_EPOCH} {} + && \
     find . -type f | sort | zip -X -r ../ssp-wallet-chrome-deterministic.zip -@
 
 # Create deterministic Firefox zip  
 RUN cd dist-firefox && \
+    find . -type f -exec touch -d @${SOURCE_DATE_EPOCH} {} + && \
     find . -type f | sort | zip -X -r ../ssp-wallet-firefox-deterministic.zip -@
 
 # Generate individual hashes and unified SHA256SUMS
