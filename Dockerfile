@@ -62,8 +62,6 @@ RUN cd dist-firefox && \
 RUN echo "# SSP Wallet Deterministic Build Hashes" > SHA256SUMS && \
     echo "# Git Commit: $(git rev-parse HEAD)" >> SHA256SUMS && \
     echo "#" >> SHA256SUMS && \
-    echo "# These hashes can be verified with: sha256sum -c SHA256SUMS" >> SHA256SUMS && \
-    echo "#" >> SHA256SUMS && \
     sha256sum ssp-wallet-chrome-deterministic.zip >> SHA256SUMS && \
     sha256sum ssp-wallet-firefox-deterministic.zip >> SHA256SUMS
 

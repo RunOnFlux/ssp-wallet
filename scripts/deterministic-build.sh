@@ -72,8 +72,6 @@ build_deterministic() {
 # SSP Wallet ${version} - Deterministic Build Hashes
 # Git Commit: $(git rev-parse HEAD)
 #
-# These hashes can be verified with: sha256sum -c SHA256SUMS
-#
 $(sha256sum ssp-wallet-chrome-${version}.zip)
 $(sha256sum ssp-wallet-firefox-${version}.zip)
 EOF
