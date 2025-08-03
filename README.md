@@ -153,6 +153,10 @@ By using SSP Wallet, you agree to the terms outlined in our [Terms of Service](h
 - **Build and Pack for production:** `yarn build:all`
   - dist-zip folder now contains a packed zip build for chrome and firefox
   - dist folder is unpacked ready to be from chrome
+- **Deterministic Build:** `yarn build:deterministic`
+  - Creates reproducible builds using Docker for enhanced security
+  - Generates SHA256SUMS file with cryptographic hashes
+  - Produces identical binaries from same source code across different environments
 
 ### Key Development Features:
 1. **Modular Codebase:**

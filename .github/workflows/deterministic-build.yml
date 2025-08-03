@@ -44,8 +44,10 @@ jobs:
             ## Deterministic Build - ${{ steps.version.outputs.version }}
             
             This release contains deterministic builds for both Chrome and Firefox.
-            
-            **Verification:** `sha256sum -c SHA256SUMS`
+
+            **GPG Verification:** `gpg --verify SHA256SUMS.asc SHA256SUMS`
+
+            **Files Verification:** `sha256sum -c SHA256SUMS`
             
             **Reproduction:** `git checkout ${{ steps.version.outputs.version }} && npm run build:deterministic`
         env:
