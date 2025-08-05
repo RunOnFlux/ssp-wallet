@@ -87,6 +87,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     esbuildOptions: {
+      keepNames: true, // keep names is needed as of utxo-lib using typeforce, can't be mangled: `BigInteger`, `ECPair`, `Point`.
       // Node.js global to browser globalThis
       define: {
         global: 'globalThis',
@@ -94,6 +95,7 @@ export default defineConfig({
     },
   },
   esbuild: {
+    keepNames: true, // Preserve class and function names,
     // disable console and debugger in production
     drop: ['console', 'debugger'],
   },
