@@ -34,7 +34,7 @@
     "@metamask/browser-passworder": "6.0.0",
     "@noble/hashes": "1.8.0",
     "@reduxjs/toolkit": "2.8.2",
-    "@reown/walletkit": "1.2.8",
+    "@reown/walletkit": "1.2.10",
     "@runonflux/aa-schnorr-multisig-sdk": "1.2.1",
     "@runonflux/flux-sdk": "1.0.3",
     "@runonflux/utxo-lib": "1.0.1",
