@@ -42,7 +42,7 @@
     "@scure/bip39": "1.6.0",
     "@walletconnect/core": "2.21.5",
     "@walletconnect/jsonrpc-utils": "1.0.8",
-    "@walletconnect/utils": "2.21.5",
+    "@walletconnect/utils": "2.21.8",
     "antd": "5.26.6",
     "assert": "2.1.0",
     "axios": "1.11.0",
