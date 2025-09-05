@@ -142,6 +142,7 @@
   },
   "receive": {
     "receive_chain_wallet": "รับไปที่ {{chain}} {{wallet}}",
+    "receive_wallet": "Receive to {{wallet}}",
     "wallet_address": "ที่อยู่กระเป๋า",
     "wallet_address_desc": "นี่คือที่อยู่กระเป๋าของคุณ คุณสามารถแชร์ที่อยู่นี้กับใครก็ได้เพื่อรับเงิน",
     "warning_chain_only": "This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!",
