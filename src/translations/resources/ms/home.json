@@ -142,6 +142,7 @@
   },
   "receive": {
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
+    "receive_wallet": "Receive to {{wallet}}",
     "wallet_address": "Alamat Dompet",
     "wallet_address_desc": "Ini adalah alamat dompet anda. Anda boleh berkongsi alamat ini dengan sesiapa sahaja untuk menerima dana.",
     "warning_chain_only": "This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!",
