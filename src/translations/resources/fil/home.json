@@ -142,6 +142,7 @@
   },
   "receive": {
     "receive_chain_wallet": "Tumanggap sa {{chain}} {{wallet}}",
+    "receive_wallet": "Receive to {{wallet}}",
     "wallet_address": "Wallet Address",
     "wallet_address_desc": "Ito ang iyong wallet address. Maaari mong ibahagi ang address na ito sa sinuman upang makatanggap ng mga pondo.",
     "warning_chain_only": "This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!",
