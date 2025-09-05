@@ -142,6 +142,7 @@
   },
   "receive": {
     "receive_chain_wallet": "Ricevi su {{chain}} {{wallet}}",
+    "receive_wallet": "Receive to {{wallet}}",
     "wallet_address": "Indirizzo del portafoglio",
     "wallet_address_desc": "Questo è il tuo indirizzo di portafoglio. Puoi condividere questo indirizzo con chiunque per ricevere fondi.",
     "warning_chain_only": "This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!",
