@@ -142,6 +142,7 @@
   },
   "receive": {
     "receive_chain_wallet": "Ontvang na {{chain}} {{wallet}}",
+    "receive_wallet": "Receive to {{wallet}}",
     "wallet_address": "Beursie Adres",
     "wallet_address_desc": "Dit is jou beursie adres. Jy kan hierdie adres met enigiemand deel om fondse te ontvang.",
     "warning_chain_only": "This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!",
