@@ -142,6 +142,7 @@
   },
   "receive": {
     "receive_chain_wallet": "Primite na {{chain}} {{wallet}}",
+    "receive_wallet": "Receive to {{wallet}}",
     "wallet_address": "Adresa Novčanika",
     "wallet_address_desc": "Ovo je adresa vašeg novčanika. Ovu adresu možete podijeliti s bilo kim kako biste primili sredstva.",
     "warning_chain_only": "This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!",
