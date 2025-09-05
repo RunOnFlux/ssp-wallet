@@ -20,6 +20,7 @@ import {
   setActiveChain,
   store,
 } from '../store';
+import { loadWalletNamesForChain } from '../storage/walletNames';
 import { getFingerprint } from './fingerprint';
 import {
   decrypt as passworderDecrypt,
@@ -89,6 +90,14 @@ export async function switchToChain(
     // Update active chain in Redux and storage
     store.dispatch(setActiveChain(targetChain));
     await localForage.setItem('activeChain', targetChain);
+
+    // Load wallet names for the new chain
+    loadWalletNamesForChain(targetChain).catch((error) => {
+      console.error(
+        `Failed to load wallet names for chain ${targetChain}:`,
+        error,
+      );
+    });
 
     console.log(`✅ Chain Switching: Successfully switched to ${targetChain}`);
   } catch (error) {

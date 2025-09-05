@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { Card, Badge, Avatar, Flex } from 'antd';
 const { Meta } = Card;
 import BigNumber from 'bignumber.js';
-import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
 import './AddressBox.css';
 import { tokenBalanceEVM } from '../../types';
 import { formatCrypto } from '../../lib/currency';
+import { getDisplayName } from '../../storage/walletNames';
+import { cryptos } from '../../types';
 
 interface balancesObj {
   confirmed: string;
@@ -16,7 +17,6 @@ interface balancesObj {
 
 function AddressBox(props: { asset: string; wallet: string; address: string }) {
   const { asset, wallet, address } = props;
-  const { t } = useTranslation(['home', 'common']);
   const [balance, setBalance] = useState(new BigNumber(0));
 
   const blockchainConfig = blockchains[asset.split('_')[0]];
@@ -93,11 +93,7 @@ function AddressBox(props: { asset: string; wallet: string; address: string }) {
           title={
             <>
               <div style={{ float: 'left' }}>
-                {(+wallet.split('-')[0] === 1
-                  ? t('common:change')
-                  : t('common:wallet')) +
-                  ' ' +
-                  (+wallet.split('-')[1] + 1).toString()}
+                {getDisplayName(asset.split('_')[0] as keyof cryptos, wallet)}
               </div>
               <div style={{ float: 'right' }}>{formatCrypto(balance, 12)}</div>
             </>

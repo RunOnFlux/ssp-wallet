@@ -381,6 +381,35 @@ const sspStateSlice = createSlice({
   },
 });
 
+interface WalletNamesState {
+  chains: {
+    [chain: string]: {
+      [walletId: string]: string;
+    };
+  };
+}
+
+const initialWalletNamesState: WalletNamesState = {
+  chains: {},
+};
+
+const walletNamesSlice = createSlice({
+  name: 'walletNames',
+  initialState: initialWalletNamesState,
+  reducers: {
+    setWalletNamesForChain: (
+      state,
+      action: PayloadAction<{
+        chain: string;
+        names: { [walletId: string]: string };
+      }>,
+    ) => {
+      const { chain, names } = action.payload;
+      state.chains[chain] = names;
+    },
+  },
+});
+
 export const { setPasswordBlob, setPasswordBlobInitialState } =
   passwordBlobSlice.actions;
 
@@ -401,6 +430,8 @@ export const {
 
 export const { setTutorialState, setTutorialStep } = tutorialSlice.actions;
 
+export const { setWalletNamesForChain } = walletNamesSlice.actions;
+
 export const {
   setSSPInitialState,
   setSspWalletKeyInternalIdentity,
@@ -418,6 +449,7 @@ const reducers = combineReducers({
   servicesAvailability: servicesAvailabilitySlice.reducer,
   abe: abeSlice.reducer,
   tutorial: tutorialSlice.reducer,
+  walletNames: walletNamesSlice.reducer,
   // === IMPORT CHAINS ===
   ...chainKeys.reduce(
     (acc, key) => {
@@ -555,6 +587,12 @@ export function setChainInitialState(chain: keyof cryptos) {
 }
 export function removeWallet(chain: keyof cryptos, wallet: string) {
   store.dispatch(chains[chain].actions.removeWallet({ wallet }));
+  // Clean up wallet name
+  import('../storage/walletNames')
+    .then(({ removeWalletName }) => {
+      removeWalletName(chain, wallet).catch(console.error);
+    })
+    .catch(console.error);
 }
 export function setInitialStateForAllChains() {
   Object.keys(chains).forEach((chain: string) => {

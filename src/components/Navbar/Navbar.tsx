@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import { useAppDispatch } from '../../hooks';
@@ -62,10 +62,11 @@ import {
 import { blockchains, Token } from '@storage/blockchains';
 import ManualSign from '../ManualSign/ManualSign.tsx';
 import SwapHistory from '../SwapHistory/SwapHistory';
+import WalletName from '../WalletName/WalletName.tsx';
 
 interface walletOption {
   value: string;
-  label: string;
+  label: React.ReactNode;
 }
 
 interface balancesObj {
@@ -94,7 +95,12 @@ function Navbar({
   header,
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
+  const location = useLocation();
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const isSwapPage = location.pathname === '/swap';
+  const logoSrc = isSwapPage ? "/ssp-logo-black.svg" : blockchains[activeChain]?.logo;
+  const logoSize = isSwapPage ? 30 : 24;
+
   const [triggerTutorialWelcome, setTriggerTutorialWelcome] = useState(false);
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
     (state) => state[activeChain],
@@ -109,15 +115,13 @@ function Navbar({
   const [deletionToPerform, setDeletionToPerform] = useState('');
   const [defaultWallet, setWalletValue] = useState<walletOption>({
     value: walletInUse,
-    label: t('home:navbar.chain_wallet', {
-      chain: blockchainConfig.name,
-      wallet:
-        (+walletInUse.split('-')[0] === 1
-          ? t('common:change')
-          : t('common:wallet')) +
-        ' ' +
-        (+walletInUse.split('-')[1] + 1),
-    }),
+    label: (
+      <WalletName 
+        walletId={walletInUse} 
+        chain={activeChain} 
+        editable={false} 
+      />
+    ),
   });
   const [walletItems, setWalletItems] = useState<walletOption[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
@@ -133,15 +137,13 @@ function Navbar({
     console.log('chain change');
     const defValue = {
       value: walletInUse,
-      label: t('home:navbar.chain_wallet', {
-        chain: blockchainConfig.name,
-        wallet:
-          (+walletInUse.split('-')[0] === 1
-            ? t('common:change')
-            : t('common:wallet')) +
-          ' ' +
-          (+walletInUse.split('-')[1] + 1).toString(),
-      }),
+      label: (
+        <WalletName 
+          walletId={walletInUse} 
+          chain={activeChain} 
+          editable={false} 
+        />
+      ),
     };
     setWalletValue(defValue);
   }, [activeChain]);
@@ -150,34 +152,25 @@ function Navbar({
   useEffect(() => {
     const defValue = {
       value: walletInUse,
-      label: t('home:navbar.chain_wallet', {
-        chain: blockchainConfig.name,
-        wallet:
-          (+walletInUse.split('-')[0] === 1
-            ? t('common:change')
-            : t('common:wallet')) +
-          ' ' +
-          (+walletInUse.split('-')[1] + 1).toString(),
-      }),
+      label: (
+        <WalletName 
+          walletId={walletInUse} 
+          chain={activeChain} 
+          editable={false} 
+        />
+      ),
     };
     setWalletValue(defValue);
-  }, [walletInUse, blockchainConfig.name, t]);
+  }, [walletInUse, blockchainConfig.name, t, activeChain]);
 
   useEffect(() => {
     const wItems: walletOption[] = [];
     Object.keys(wallets).forEach((wallet) => {
-      const typeNumber = Number(wallet.split('-')[0]);
-      const walletNumber = Number(wallet.split('-')[1]) + 1;
-      let walletName = `${t('common:wallet')} ${walletNumber.toString()}`;
-      if (typeNumber === 1) {
-        walletName = `${t('common:change')} ${walletNumber.toString()}`;
-      }
       const wal = {
         value: wallet,
-        label: t('home:navbar.chain_wallet', {
-          chain: blockchainConfig.name,
-          wallet: walletName,
-        }),
+        label: (
+          <WalletName walletId={wallet} chain={activeChain} editable={true} />
+        ),
       };
       wItems.push(wal);
     });
@@ -286,13 +279,15 @@ function Navbar({
       // check if that is our activeIndex, if yes. Switch wallet.
       if (pathToDelete === walletInUse) {
         // switch
-        const walletName = t('common:wallet') + ' 1';
         const wal = {
           value: '0-0',
-          label: t('home:navbar.chain_wallet', {
-            chain: blockchainConfig.name,
-            wallet: walletName,
-          }),
+          label: (
+            <WalletName 
+              walletId="0-0" 
+              chain={activeChain} 
+              editable={false} 
+            />
+          ),
         };
         handleChange(wal);
       }
@@ -543,11 +538,11 @@ function Navbar({
         <Row justify="space-evenly">
           <Col span={4}>
             <Image
-              height={30}
+              height={logoSize}
               preview={false}
-              src="/ssp-logo-black.svg"
+              src={logoSrc}
               onClick={() => navigate('/home')}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: 'pointer', marginTop: isSwapPage ? '0px' : '6px' }}
             />
           </Col>
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>

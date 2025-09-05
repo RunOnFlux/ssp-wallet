@@ -41,6 +41,7 @@ import { setContacts } from '../../store';
 import { transaction, utxo, swapResponseData } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
+import { getDisplayName } from '../../storage/walletNames';
 import './Send.css';
 
 interface contactOption {
@@ -118,6 +119,11 @@ function Send() {
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
+  
+  // Get custom wallet names for all wallets
+  const walletNames = useAppSelector(
+    (state) => state.walletNames?.chains[activeChain] || {},
+  );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const browser = window.chrome || window.browser;
 
@@ -160,19 +166,18 @@ function Send() {
   useEffect(() => {
     const wItems: contactOption[] = [];
     Object.keys(wallets).forEach((wallet) => {
-      const typeNumber = Number(wallet.split('-')[0]);
-      const walletNumber = Number(wallet.split('-')[1]) + 1;
-      let walletName = `${t('common:wallet')} ${walletNumber.toString()}`;
-      if (typeNumber === 1) {
-        walletName = `${t('common:change')} ${walletNumber.toString()}`;
-      }
+      const customName = walletNames[wallet];
+      const walletName = getDisplayName(activeChain, wallet);
+      
       const wal = {
         value: wallets[wallet].address,
         index: wallet,
-        label: t('home:navbar.chain_wallet', {
-          chain: blockchainConfig.name,
-          wallet: walletName,
-        }),
+        label: customName
+          ? customName
+          : t('home:navbar.chain_wallet', {
+              chain: blockchainConfig.name,
+              wallet: walletName,
+            }),
       };
       wItems.push(wal);
     });

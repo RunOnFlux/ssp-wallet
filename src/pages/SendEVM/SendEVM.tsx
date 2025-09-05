@@ -66,6 +66,7 @@ import {
 } from '../../types';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
+import { getDisplayName } from '../../storage/walletNames';
 import './SendEVM.css';
 
 interface contactOption {
@@ -160,6 +161,11 @@ function SendEVM() {
   const [txToken, setTxToken] = useState('');
   const blockchainConfig = blockchains[activeChain];
   const [txFee, setTxFee] = useState('0');
+  
+  // Get custom wallet names for all wallets
+  const walletNames = useAppSelector(
+    (state) => state.walletNames?.chains[activeChain] || {},
+  );
   const [txData, setTxData] = useState('');
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [showFeeDetails, setShowFeeDetails] = useState(false);
@@ -276,7 +282,7 @@ function SendEVM() {
     ).plus(networkFees[activeChain].priority!.toString());
     const totalFee = totalGas.multipliedBy(totalGasPrice);
     const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
-    if (totalFeeETH === 'NaN') {
+    if (totalFee.isNaN() || !totalFeeETH) {
       setTxFee('---');
       form.setFieldValue('fee', '---');
       return;
@@ -292,19 +298,18 @@ function SendEVM() {
   useEffect(() => {
     const wItems: contactOption[] = [];
     Object.keys(wallets).forEach((wallet) => {
-      const typeNumber = Number(wallet.split('-')[0]);
-      const walletNumber = Number(wallet.split('-')[1]) + 1;
-      let walletName = `${t('common:wallet')} ${walletNumber.toString()}`;
-      if (typeNumber === 1) {
-        walletName = `${t('common:change')} ${walletNumber.toString()}`;
-      }
+      const customName = walletNames[wallet];
+      const walletName = getDisplayName(activeChain, wallet);
+      
       const wal = {
         value: wallets[wallet].address,
         index: wallet,
-        label: t('home:navbar.chain_wallet', {
-          chain: blockchainConfig.name,
-          wallet: walletName,
-        }),
+        label: customName
+          ? customName
+          : t('home:navbar.chain_wallet', {
+              chain: blockchainConfig.name,
+              wallet: walletName,
+            }),
       };
       wItems.push(wal);
     });
@@ -818,7 +823,7 @@ function SendEVM() {
     const totalFee = totalGas.multipliedBy(totalGasPrice);
     const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
 
-    if (totalFeeETH === 'NaN') {
+    if (totalFee.isNaN() || !totalFeeETH) {
       setTxFee('---');
       form.setFieldValue('fee', '---');
       return;

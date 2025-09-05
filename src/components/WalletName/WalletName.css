@@ -1,0 +1,96 @@
+.wallet-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+}
+
+.wallet-name-text {
+  font-family: inherit;
+  cursor: pointer;
+  user-select: none;
+  flex: 1;
+}
+
+.wallet-name-edit-icon {
+  color: #8c8c8c;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+  padding: 2px;
+  border-radius: 2px;
+}
+
+.wallet-name-edit-icon:hover {
+  color: #1890ff;
+  opacity: 1;
+  background-color: rgba(24, 144, 255, 0.1);
+}
+
+.wallet-name-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 250px;
+  min-width: 150px;
+}
+
+.wallet-name-edit .ant-input {
+  font-size: 13px;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.wallet-name-edit .ant-input:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.wallet-name-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.wallet-name-save {
+  color: #52c41a;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.wallet-name-save:hover {
+  color: #389e0d;
+  background-color: rgba(82, 196, 26, 0.1);
+}
+
+.wallet-name-cancel {
+  color: #ff4d4f;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.wallet-name-cancel:hover {
+  color: #cf1322;
+  background-color: rgba(255, 77, 79, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .wallet-name-edit {
+    max-width: 200px;
+    min-width: 120px;
+  }
+  
+  .wallet-name-edit .ant-input {
+    font-size: 12px;
+  }
+}

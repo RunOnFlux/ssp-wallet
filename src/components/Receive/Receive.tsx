@@ -3,6 +3,7 @@ const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
+import { getDisplayName } from '../../storage/walletNames';
 
 function Receive(props: {
   open: boolean;
@@ -15,6 +16,11 @@ function Receive(props: {
     (state) => state[activeChain],
   );
   const blockchainConfig = blockchains[activeChain];
+  
+  // Check if there's a custom wallet name
+  const customWalletName = useAppSelector(
+    (state) => state.walletNames?.chains[activeChain]?.[walletInUse],
+  );
 
   const handleOk = () => {
     openAction(false);
@@ -23,15 +29,14 @@ function Receive(props: {
   return (
     <>
       <Modal
-        title={t('home:receive.receive_chain_wallet', {
-          chain: blockchainConfig.name,
-          wallet:
-            (+walletInUse.split('-')[0] === 1
-              ? t('common:change')
-              : t('common:wallet')) +
-            ' ' +
-            (+walletInUse.split('-')[1] + 1).toString(),
-        })}
+        title={
+          customWalletName
+            ? t('home:receive.receive_wallet', { wallet: customWalletName })
+            : t('home:receive.receive_chain_wallet', {
+                chain: blockchainConfig.name,
+                wallet: getDisplayName(activeChain, walletInUse),
+              })
+        }
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}

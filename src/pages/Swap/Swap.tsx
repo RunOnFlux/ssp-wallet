@@ -45,6 +45,7 @@ import {
   selectedExchangeType,
 } from '../../types';
 import AddressBox from './AddressBox.tsx';
+import { getDisplayName } from '../../storage/walletNames';
 import { NoticeType } from 'antd/es/message/interface';
 import BigNumber from 'bignumber.js';
 import {
@@ -816,8 +817,11 @@ function Swap() {
                   className="swap-box-row-sub-selection"
                   onClick={() => setSendingWalletModalOpen(true)}
                 >
-                  {t('common:wallet')}{' '}
-                  {Number(sellAssetAddress.split('-')[1]) + 1}:{' '}
+                  {getDisplayName(
+                    sellAsset.split('_')[0] as keyof cryptos,
+                    sellAssetAddress,
+                  )}
+                  :{' '}
                   {userAddresses[sellAsset.split('_')[0]][
                     sellAssetAddress
                   ].substring(0, 8)}
@@ -969,8 +973,11 @@ function Swap() {
                   className="swap-box-row-sub-selection"
                   onClick={() => setReceivingWalletModalOpen(true)}
                 >
-                  {t('common:wallet')}{' '}
-                  {Number(buyAssetAddress.split('-')[1]) + 1}:{' '}
+                  {getDisplayName(
+                    buyAsset.split('_')[0] as keyof cryptos,
+                    buyAssetAddress,
+                  )}
+                  :{' '}
                   {userAddresses[buyAsset.split('_')[0]][
                     buyAssetAddress
                   ].substring(0, 8)}
