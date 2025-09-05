@@ -142,6 +142,7 @@
   },
   "receive": {
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
+    "receive_wallet": "Receive to {{wallet}}",
     "wallet_address": "Alamat Dompet",
     "wallet_address_desc": "Ini adalah alamat dompet Anda.",
     "warning_chain_only": "Alamat ini hanya untuk blockchain {{chain_name}} ({{chain_symbol}}). Hanya setorkan aset pada rantai {{chain_name}} ({{chain_symbol}}) ke alamat ini. Menyetorkan dari rantai lain akan mengakibatkan hilangnya dana!",
