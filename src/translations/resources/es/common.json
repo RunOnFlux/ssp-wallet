@@ -43,5 +43,9 @@
   "decimals": "Decimales",
   "to": "A",
   "from": "De",
-  "change": "Cambio"
+  "change": "Cambio",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "my_wallets": "My Wallets",
+  "rename_wallet": "Rename wallet"
 }
