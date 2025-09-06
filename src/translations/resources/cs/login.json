@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "To není správné heslo. Zkuste znovu.",
-  "err_invalid_pw_2": "Nesprávné heslo. Prosím zkuste znovu.",
-  "err_lx": "Kód {{code}}: Chybí údaje peněženky. Prosím obnovte peněženku.",
-  "welcome_back": "Vítejte zpět!",
-  "to_secure_wallet": "Do nejbezpečnější peněženky",
-  "unlock_with_pw": "Odemknout s Heslem",
-  "enter_pw": "Zadejte Heslo",
-  "unlock_wallet": "Odemknout Peněženku",
-  "forgot_pw": "Zapomenuté Heslo?",
-  "restore": "Obnovit"
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
+  "welcome_back": "Welcome back!",
+  "to_secure_wallet": "To the most secure wallet",
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
