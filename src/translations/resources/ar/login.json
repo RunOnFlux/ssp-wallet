@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "كلمة مرور غير صالحة. يرجى المحاولة مرة أخرى.",
-  "err_invalid_pw_2": "كلمة مرور غير صالحة. يرجى المحاولة مرة أخرى.",
-  "err_lx": "كود {{code}}: بيانات المحفظة مفقودة. يرجى استعادة محفظتك.",
-  "welcome_back": "أهلاً بعودتك!",
-  "to_secure_wallet": "إلى أكثر المحافظ أماناً",
-  "unlock_with_pw": "إلغاء القفل بكلمة المرور",
-  "enter_pw": "أدخل كلمة المرور",
-  "unlock_wallet": "إلغاء قفل المحفظة",
-  "forgot_pw": "نسيت كلمة المرور؟",
-  "restore": "استعادة"
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
+  "welcome_back": "Welcome back!",
+  "to_secure_wallet": "To the most secure wallet",
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
