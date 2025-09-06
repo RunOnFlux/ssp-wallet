@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Kata sandi tidak valid. Silakan coba lagi.",
-  "err_invalid_pw_2": "Kata sandi tidak valid. Silakan coba lagi.",
-  "err_lx": "Kode {{code}}: Data dompet hilang. Silakan pulihkan dompet milik Anda.",
-  "welcome_back": "Selamat Datang kembali!",
-  "to_secure_wallet": "Ke dalam dompet paling aman",
-  "unlock_with_pw": "Buka kunci dengan Kata Sandi",
-  "enter_pw": "Masukkan kata kunci",
-  "unlock_wallet": "Buka Kunci Dompet",
-  "forgot_pw": "Tidak ingat kata sandi?",
-  "restore": "Pulihkan"
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
+  "welcome_back": "Welcome back!",
+  "to_secure_wallet": "To the most secure wallet",
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
