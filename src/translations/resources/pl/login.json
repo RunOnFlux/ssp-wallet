@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Nieprawidłowe hasło. Spróbuj ponownie.",
-  "err_invalid_pw_2": "Niepoprawne hasło. Spróbuj ponownie.",
-  "err_lx": "Kod {{code}}: Brak danych portfela. Proszę przywrócić portfel.",
-  "welcome_back": "Witamy ponownie!",
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
+  "welcome_back": "Welcome back!",
   "to_secure_wallet": "To the most secure wallet",
-  "unlock_with_pw": "Odblokuj za pomocą hasła",
-  "enter_pw": "Wprowadź hasło",
-  "unlock_wallet": "Odblokuj portfel",
-  "forgot_pw": "Zapomniałeś hasła?",
-  "restore": "Przywróć"
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
