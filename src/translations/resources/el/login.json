@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Μη έγκυρος κωδικός πρόσβασης. Παρακαλώ δοκιμάστε ξανά.",
-  "err_invalid_pw_2": "Μη έγκυρος κωδικός πρόσβασης. Παρακαλώ δοκιμάστε ξανά.",
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Καλωσορίσατε και πάλι!",
+  "welcome_back": "Welcome back!",
   "to_secure_wallet": "To the most secure wallet",
-  "unlock_with_pw": "Ξεκλείδωμα με κωδικό πρόσβασης",
-  "enter_pw": "Εισαγάγετε κωδικό πρόσβασης",
-  "unlock_wallet": "Ξεκλείδωσε το πορτοφόλι",
-  "forgot_pw": "Ξεχάσατε τον κωδικό σας;",
-  "restore": "Επαναφορά"
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
