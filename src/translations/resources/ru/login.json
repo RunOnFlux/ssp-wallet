@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Неверный пароль. Пожалуйста, попробуйте снова.",
-  "err_invalid_pw_2": "Неверный пароль. Пожалуйста, попробуйте снова.",
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Добро пожаловать обратно!",
+  "welcome_back": "Welcome back!",
   "to_secure_wallet": "To the most secure wallet",
-  "unlock_with_pw": "Разблокировать с помощью пароля",
-  "enter_pw": "Введите пароль",
-  "unlock_wallet": "Разблокировать кошелек",
-  "forgot_pw": "Забыли пароль?",
-  "restore": "Восстановить"
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
