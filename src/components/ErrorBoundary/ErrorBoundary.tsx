@@ -86,14 +86,15 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
 
   const containerStyle = {
     padding: '16px',
-    height: '100vh',
+    minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center' as const,
-    justifyContent: 'center' as const,
+    justifyContent: 'flex-start' as const,
     maxWidth: '420px',
     margin: '0 auto',
-    overflow: 'hidden' as const
+    overflow: 'auto' as const,
+    paddingTop: '20px'
   };
 
   const cardStyle = {
@@ -124,6 +125,10 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
         icon={<ExceptionOutlined />}
         title={t('title')}
         subTitle={t('subtitle')}
+        style={{
+          paddingTop: '24px',
+          paddingBottom: '16px'
+        }}
         extra={
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
             <Button type="primary" icon={<RedoOutlined />} onClick={onRestart} block>
@@ -165,7 +170,7 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
       </Card>
 
       {(error || errorInfo) && (
-        <Collapse style={{ marginTop: '16px', width: '100%' }} size="small">
+        <Collapse style={{ marginTop: '16px', width: '100%', marginBottom: '24px' }} size="small">
           <Panel 
             header={
               <span>
