@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Ikke en gyldig adgangskode. Prøv venligst igen.",
-  "err_invalid_pw_2": "Ugyldig adgangskode. Prøv venligst igen.",
-  "err_lx": "Kode {{code}}: Wallet data mangler. Genskab venligst din wallet.",
-  "welcome_back": "Velkommen tilbage!",
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
+  "welcome_back": "Welcome back!",
   "to_secure_wallet": "To the most secure wallet",
-  "unlock_with_pw": "Lås op med adgangskode",
-  "enter_pw": "Angiv adgangskode",
-  "unlock_wallet": "Lås wallet op",
-  "forgot_pw": "Glemt adgangskode?",
-  "restore": "Gendan"
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
