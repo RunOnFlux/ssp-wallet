@@ -1,0 +1,21 @@
+{
+  "title": "Something went wrong",
+  "subtitle": "The application encountered an unexpected error. Don't worry, your data is safe.",
+  "restart_button": "Reload SSP Wallet",
+  "copy_button": "Copy Error Details",
+  "copy_success": "Error details copied to clipboard",
+  "help_title": "Help us improve SSP Wallet",
+  "report_via": "Report this error via:",
+  "support": "Support ticket at sspwallet.io",
+  "discord": "Discord community", 
+  "github": "GitHub issues",
+  "include_title": "Please include:",
+  "include_steps": "Steps to reproduce the error",
+  "include_context": "What you were doing when this happened",
+  "include_details": "Copied error details from above",
+  "technical_details": "Technical Details",
+  "error_type": "Error Type:",
+  "error_message": "Message:",
+  "stack_trace": "Stack Trace:",
+  "component_stack": "Component Stack:"
+}

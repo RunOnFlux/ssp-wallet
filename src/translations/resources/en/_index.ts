@@ -4,6 +4,7 @@ import cr from './createrestore.json';
 import login from './login.json';
 import home from './home.json';
 import send from './send.json';
+import errorBoundary from './errorBoundary.json';
 
 export default {
   common,
@@ -12,4 +13,5 @@ export default {
   login,
   home,
   send,
+  errorBoundary,
 };
