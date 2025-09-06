@@ -1,6 +1,19 @@
 {
-  "welcome_to": "SSP 월렛에 오신 것을 환영합니다.",
-  "description": "탈중앙화 세계를 위한 이중 서명 지갑.",
-  "get_started": "시작하기!",
-  "restore_with_seed": "시드로 복원"
+  "welcome_to": "Welcome to SSP Wallet",
+  "description": "Dual signature wallet for the decentralized world.",
+  "get_started": "Get Started!",
+  "restore_with_seed": "Restore with Seed",
+  "watch_guide": "New to SSP? Watch guide",
+  "help": {
+    "tooltip": "Help & Support",
+    "guide_desc": "Video tutorials and guides",
+    "website": "Visit Website",
+    "website_desc": "Learn more about SSP Wallet",
+    "support": "Get Support",
+    "support_desc": "Contact our support team",
+    "privacy": "Privacy Policy",
+    "privacy_desc": "How we protect your data",
+    "terms": "Terms of Service",
+    "terms_desc": "Terms and conditions"
+  }
 }
