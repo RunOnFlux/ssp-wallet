@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "বৈধ পাসওয়ার্ড নয়. দয়া করে আবার চেষ্টা করুন.",
-  "err_invalid_pw_2": "ভুল পাসওয়ার্ড. দয়া করে আবার চেষ্টা করুন.",
-  "err_lx": "কোড {{code}}: ওয়ালেট ডেটা অনুপস্থিত. দয়া করে আপনার ওয়ালেট পুনরুদ্ধার করুন.",
-  "welcome_back": "স্বাগতম ফিরে!",
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
+  "welcome_back": "Welcome back!",
   "to_secure_wallet": "To the most secure wallet",
-  "unlock_with_pw": "পাসওয়ার্ড দিয়ে আনলক করুন",
-  "enter_pw": "পাসওয়ার্ড প্রবেশ করুন",
-  "unlock_wallet": "ওয়ালেট আনলক করুন",
-  "forgot_pw": "পাসওয়ার্ড ভুলে গেছেন?",
-  "restore": "পুনরুদ্ধার করুন"
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
