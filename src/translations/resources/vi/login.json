@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "Không phải một mật khẩu hợp lệ. Hãy thử lại lần nữa.",
-  "err_invalid_pw_2": "Mật khẩu không hợp lệ. Hãy thử lại lần nữa.",
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "Chào mừng quay trở lại!",
+  "welcome_back": "Welcome back!",
   "to_secure_wallet": "To the most secure wallet",
-  "unlock_with_pw": "Mở khoá bằng mật khẩu",
-  "enter_pw": "Nhập mật khẩu",
-  "unlock_wallet": "Mở khóa ví",
-  "forgot_pw": "Quên mật khẩu?",
-  "restore": "Phục hồi"
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
