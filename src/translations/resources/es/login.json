@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "No es una contraseña válida. Por favor, inténtelo de nuevo.",
-  "err_invalid_pw_2": "Contraseña no válida. Por favor, inténtelo de nuevo.",
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "¡Bienvenido de nuevo!",
+  "welcome_back": "Welcome back!",
   "to_secure_wallet": "To the most secure wallet",
-  "unlock_with_pw": "Desbloquear con Contraseña",
-  "enter_pw": "Introducir Contraseña",
-  "unlock_wallet": "Desbloquear Cartera",
-  "forgot_pw": "¿Olvidó su contraseña?",
-  "restore": "Restaurar"
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
