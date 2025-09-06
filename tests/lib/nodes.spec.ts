@@ -43,7 +43,7 @@ describe('Nodes Lib', () => {
       expect(res[0].collateral).toBeDefined();
       expect(res[0].txhash).not.toBeNull();
       expect(res[0].txhash).toBeDefined();
-      expect(res[0].outidx).toBeGreaterThanOrEqual(0);
+      expect(+res[0].outidx).toBeGreaterThanOrEqual(0);
       expect(res[0].ip).not.toBeNull();
       expect(res[0].ip).toBeDefined();
       expect(res[0].network).toBe('ipv4');
