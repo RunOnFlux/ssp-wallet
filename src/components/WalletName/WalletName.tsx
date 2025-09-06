@@ -3,7 +3,7 @@ import { Input } from 'antd';
 import { EditOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
-import { getFullDisplayName, setWalletName } from '../../storage/walletNames';
+import { getDisplayName, setWalletName } from '../../storage/walletNames';
 import { cryptos } from '../../types';
 import './WalletName.css';
 
@@ -46,7 +46,7 @@ const WalletName = ({
   // Get display name with fallback logic
   const displayName = showFullAddress
     ? walletId
-    : customName || getFullDisplayName(chain, walletId);
+    : customName || getDisplayName(chain, walletId);
 
   const handleStartEdit = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -108,7 +108,7 @@ const WalletName = ({
           onClick={(e) => {
             e.stopPropagation();
           }}
-          placeholder={getFullDisplayName(chain, walletId)}
+          placeholder={getDisplayName(chain, walletId)}
           autoFocus
           style={{ flex: 1, minWidth: '120px' }}
           size="small"

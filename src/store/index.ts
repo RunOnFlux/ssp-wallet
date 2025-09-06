@@ -18,6 +18,7 @@ import {
 } from '../types';
 
 import { blockchains, Token } from '@storage/blockchains';
+import { removeWalletName } from '../storage/walletNames';
 
 // ********** Import chains **********
 import chainSliceBase from './chainSliceBase';
@@ -587,12 +588,7 @@ export function setChainInitialState(chain: keyof cryptos) {
 }
 export function removeWallet(chain: keyof cryptos, wallet: string) {
   store.dispatch(chains[chain].actions.removeWallet({ wallet }));
-  // Clean up wallet name
-  import('../storage/walletNames')
-    .then(({ removeWalletName }) => {
-      removeWalletName(chain, wallet).catch(console.error);
-    })
-    .catch(console.error);
+  removeWalletName(chain, wallet).catch(console.error);
 }
 export function setInitialStateForAllChains() {
   Object.keys(chains).forEach((chain: string) => {

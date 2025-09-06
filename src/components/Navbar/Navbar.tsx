@@ -63,6 +63,7 @@ import { blockchains, Token } from '@storage/blockchains';
 import ManualSign from '../ManualSign/ManualSign.tsx';
 import SwapHistory from '../SwapHistory/SwapHistory';
 import WalletName from '../WalletName/WalletName.tsx';
+import { removeWalletName } from '../../storage/walletNames';
 
 interface walletOption {
   value: string;
@@ -190,8 +191,8 @@ function Navbar({
   useEffect(() => {
     if (deletionToPerform && walletInUse && deletionToPerform !== walletInUse) {
       removeWallet(activeChain, deletionToPerform);
-      // get stored wallets
       void (async function () {
+        await removeWalletName(activeChain, deletionToPerform);
         const generatedWallets: generatedWallets =
           (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
         delete generatedWallets[deletionToPerform];

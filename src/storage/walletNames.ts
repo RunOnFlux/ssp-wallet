@@ -125,6 +125,7 @@ export function getDisplayName(chain: keyof cryptos, walletId: string): string {
   return generateDefaultWalletName(walletId);
 }
 
+// DEPRECATED, CAHIN Wallet X
 export function getFullDisplayName(
   chain: keyof cryptos,
   walletId: string,

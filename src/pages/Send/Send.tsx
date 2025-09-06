@@ -172,12 +172,7 @@ function Send() {
       const wal = {
         value: wallets[wallet].address,
         index: wallet,
-        label: customName
-          ? customName
-          : t('home:navbar.chain_wallet', {
-              chain: blockchainConfig.name,
-              wallet: walletName,
-            }),
+        label: customName || walletName,
       };
       wItems.push(wal);
     });

@@ -29,7 +29,7 @@ export async function fetchAddressBalance(
       };
       const response = await axios.post<evm_call>(url, data);
       const bal: balance = {
-        confirmed: new BigNumber(response.data.result).toFixed(),
+        confirmed: new BigNumber(response.data.result || '0').toFixed(),
         unconfirmed: '0',
         address: address,
       };
@@ -38,8 +38,8 @@ export async function fetchAddressBalance(
       const url = `https://${backendConfig.node}/api/v2/address/${address}?details=basic`;
       const response = await axios.get<balanceBlockbook>(url);
       const bal: balance = {
-        confirmed: response.data.balance,
-        unconfirmed: response.data.unconfirmedBalance,
+        confirmed: response.data.balance || '0',
+        unconfirmed: response.data.unconfirmedBalance || '0',
         address: response.data.address,
         totalTransactions: response.data.txs,
       };
@@ -48,9 +48,9 @@ export async function fetchAddressBalance(
       const url = `https://${backendConfig.node}/api/addr/${address}?noTxList=1`;
       const response = await axios.get<balanceInsight>(url);
       const bal: balance = {
-        confirmed: new BigNumber(response.data.balanceSat).toFixed(),
+        confirmed: new BigNumber(response.data.balanceSat || '0').toFixed(),
         unconfirmed: new BigNumber(
-          response.data.unconfirmedBalanceSat,
+          response.data.unconfirmedBalanceSat || '0',
         ).toFixed(),
         address: response.data.addrStr,
         totalTransactions: response.data.txApperances,
@@ -119,7 +119,7 @@ export async function fetchAddressTokenBalances(
     allBalances.forEach((bal) => {
       balancesEVM.push({
         contract: bal.contractAddress,
-        balance: new BigNumber(bal.tokenBalance).toFixed(),
+        balance: new BigNumber(bal.tokenBalance || '0').toFixed(),
       });
     });
 

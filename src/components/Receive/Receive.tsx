@@ -29,14 +29,9 @@ function Receive(props: {
   return (
     <>
       <Modal
-        title={
-          customWalletName
-            ? t('home:receive.receive_wallet', { wallet: customWalletName })
-            : t('home:receive.receive_chain_wallet', {
-                chain: blockchainConfig.name,
-                wallet: getDisplayName(activeChain, walletInUse),
-              })
-        }
+        title={t('home:receive.receive_wallet', {
+          wallet: customWalletName || getDisplayName(activeChain, walletInUse),
+        })}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
