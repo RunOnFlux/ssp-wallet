@@ -2,5 +2,18 @@
   "welcome_to": "Willkommen in der SSP Wallet",
   "description": "Die Doppelsignatur-Wallet für die dezentralisierte Welt.",
   "get_started": "Los geht's!",
-  "restore_with_seed": "Wiederherstellen mit Seed"
+  "restore_with_seed": "Wiederherstellen mit Seed",
+  "watch_guide": "New to SSP? Watch guide",
+  "help": {
+    "tooltip": "Help & Support",
+    "guide_desc": "Video tutorials and guides",
+    "website": "Visit Website",
+    "website_desc": "Learn more about SSP Wallet",
+    "support": "Get Support",
+    "support_desc": "Contact our support team",
+    "privacy": "Privacy Policy",
+    "privacy_desc": "How we protect your data",
+    "terms": "Terms of Service",
+    "terms_desc": "Terms and conditions"
+  }
 }
