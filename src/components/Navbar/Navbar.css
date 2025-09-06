@@ -10,3 +10,9 @@
   line-height: 30px !important;
   width: 35px !important;
 }
+
+.navbar-wallet-select .ant-select-selection-item {
+  padding-left: 16px !important; /* Add left space to balance the dropdown arrow on right */
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}

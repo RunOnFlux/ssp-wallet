@@ -559,6 +559,7 @@ function Navbar({
                 size="large"
                 dropdownStyle={{ zIndex: 9 }}
                 data-tutorial="wallet-selector"
+                className="navbar-wallet-select"
                 dropdownRender={(menu) => (
                   <>
                     <div

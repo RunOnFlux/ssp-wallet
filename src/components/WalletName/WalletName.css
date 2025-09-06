@@ -12,6 +12,9 @@
   cursor: pointer;
   user-select: none;
   flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 0; /* Allow flex item to shrink */
 }
 
 .wallet-name-edit-icon {
@@ -22,6 +25,7 @@
   opacity: 0.7;
   padding: 2px;
   border-radius: 2px;
+  flex-shrink: 0; /* Prevent icon from being squished */
 }
 
 .wallet-name-edit-icon:hover {
