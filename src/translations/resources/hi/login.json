@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "पासवर्ड मान्य नहीं है। कृपया पुनः प्रयास करें।",
-  "err_invalid_pw_2": "पासवर्ड अमान्य है। कृपया पुनः प्रयास करें।",
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "वेलकम बैक!",
+  "welcome_back": "Welcome back!",
   "to_secure_wallet": "To the most secure wallet",
-  "unlock_with_pw": "पासवर्ड से अनलॉक करें",
-  "enter_pw": "पासवर्ड दर्ज करें",
-  "unlock_wallet": "वॉलेट अनलॉक करें",
-  "forgot_pw": "फॉरगॉट पासवर्ड?",
-  "restore": "रीस्टोर"
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
