@@ -43,5 +43,9 @@
   "decimals": "小数点",
   "to": "宛先",
   "from": "差出人",
-  "change": "お釣り"
+  "change": "お釣り",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "my_wallets": "My Wallets",
+  "rename_wallet": "Rename wallet"
 }
