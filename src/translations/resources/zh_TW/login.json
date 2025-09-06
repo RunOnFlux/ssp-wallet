@@ -1,12 +1,12 @@
 {
-  "err_invalid_pw": "密碼無效.請再試一次.",
-  "err_invalid_pw_2": "密碼不正確.請再試一次",
+  "err_invalid_pw": "Not a valid password. Please try again.",
+  "err_invalid_pw_2": "Invalid password. Please try again.",
   "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet.",
-  "welcome_back": "歡迎回來！",
+  "welcome_back": "Welcome back!",
   "to_secure_wallet": "To the most secure wallet",
-  "unlock_with_pw": "使用密碼解鎖",
-  "enter_pw": "輸入密碼",
-  "unlock_wallet": "解鎖錢包",
-  "forgot_pw": "忘記密碼了嗎？",
-  "restore": "恢復"
+  "unlock_with_pw": "Unlock with Password",
+  "enter_pw": "Enter Password",
+  "unlock_wallet": "Unlock Wallet",
+  "forgot_pw": "Forgot Password?",
+  "restore": "Restore"
 }
