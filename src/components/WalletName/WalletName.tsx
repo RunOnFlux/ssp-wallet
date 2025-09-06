@@ -38,7 +38,7 @@ const WalletName = ({
   useEffect(() => {
     setShowEditIcon(false);
     if (editable) {
-      const timer = setTimeout(() => setShowEditIcon(true), 150);
+      const timer = setTimeout(() => setShowEditIcon(true), 0);
       return () => clearTimeout(timer);
     }
   }, [editable, chain, walletId]);
