@@ -135,10 +135,14 @@
     "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "Ngôn ngữ",
     "fiat_currency": "Tiền pháp định",
-    "use_system_language": "Use System Language"
+    "use_system_language": "Use System Language",
+    "public_nonces_sync": "Public Nonces",
+    "sync_public_nonces": "Sync Public Nonces",
+    "public_nonces_sync_help": "Public nonces are required for EVM transactions. This forces synchronisation of nonces from your SSP Key device to enable EVM transaction signing."
   },
   "receive": {
     "receive_chain_wallet": "Nhận đến {{chain}} {{wallet}}",
+    "receive_wallet": "Receive to {{wallet}}",
     "wallet_address": "Địa chỉ Ví",
     "wallet_address_desc": "Đây là địa chỉ ví của bạn. Bạn có thể chia sẻ địa chỉ này đến bất kỳ ai để nhận tài sản.",
     "warning_chain_only": "This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!",
@@ -558,5 +562,110 @@
     "address_different_chain": "The address exists on a different chain than currently active.",
     "complete_transaction": "Complete Transaction",
     "data_field_only": "Data Field Only"
+  },
+  "tutorial": {
+    "tutorial": "Tutorial",
+    "wallet_synchronized": "🎉 Wallet Synchronized!",
+    "wallet_synchronized_desc": "Your SSP Wallet is now ready! Would you like a quick tour to learn about all the features?",
+    "start_wallet_tour": "Start Wallet Tour",
+    "maybe_later": "Maybe later",
+    "skip_tutorial": "Skip Tutorial",
+    "previous": "Previous",
+    "next": "Next",
+    "complete": "Complete",
+    "step_of": "Step {{current}} of {{total}}",
+    "click_highlighted": "Click the highlighted element to continue",
+    "tutorial_help": "Tutorial & Help",
+    "start_tutorial": "Start Tutorial",
+    "reset_tutorial_progress": "Reset Tutorial Progress",
+    "tutorial_reset_success": "Tutorial has been reset. You can start it again from the help button.",
+    "tutorial_reset_error": "Failed to reset tutorial.",
+    "switch_to_bitcoin_first": "Please switch to Bitcoin blockchain first to start the tutorial. Use the chain selector at the top of the page.",
+    "err_tutorial_wallet_data": "Cannot start tutorial - wallet data not available. Please try again.",
+    "navigating_to_home": "Navigating to home page to start tutorial...",
+    "waiting_wallet_data": "Waiting for wallet data to load...",
+    "tutorial_cancelled": "Tutorial cancelled. You can restart it anytime using the help button.",
+    "tutorial_cancelled_wrong_chain": "Tutorial cancelled: You selected a different chain. The tutorial requires Ethereum to continue. You can restart it from the menu.",
+    "visit_website": "Visit Website",
+    "user_guide": "User Guide",
+    "support": "Support",
+    "contact": "Contact",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "steps": {
+      "welcome_overview": {
+        "title": "Welcome to SSP Wallet!",
+        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! Your wallet is now ready to use. Here you can see your wallet address and balance. Always verify that the wallet address displayed here matches the address shown on your SSP Key device."
+      },
+      "multi_chain_intro": {
+        "title": "Multiple Blockchain Support",
+        "content": "SSP Wallet supports multiple blockchains! This dropdown shows your current wallet and chain. Click on it to access chain switching options."
+      },
+      "find_switch_chain": {
+        "title": "Switch Chain Button",
+        "content": "Perfect! Now click on \"Switch Chain\" to open the blockchain selection where you can choose different networks."
+      },
+      "select_ethereum": {
+        "title": "Select Ethereum",
+        "content": "Great! The chain selection modal is open. Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
+      },
+      "ethereum_sync_waiting": {
+        "title": "Sync with SSP Key",
+        "content": "To begin synchronizing with the Ethereum blockchain, scan the QR code with your SSP Key. This will enable your wallet to interact with Ethereum, its tokens and dApps.",
+        "sync_hint": "The tutorial will continue automatically once sync is complete."
+      },
+      "ethereum_tokens": {
+        "title": "Welcome to Ethereum!",
+        "content": "You're now on Ethereum! This chain supports smart contracts and ERC-20 tokens. The Tokens section lets you manage your token portfolio - view, add, or search for popular tokens like USDT and USDC."
+      },
+      "add_token_demo": {
+        "title": "Adding Tokens",
+        "content": "Click here to add new tokens. You can search for popular tokens like USDT or add custom tokens by entering their contract address."
+      },
+      "receive_intro": {
+        "title": "Receiving Funds",
+        "content": "Click Receive to get your Ethereum address. This address can receive ETH and any ERC-20 tokens. You can copy the address or use the QR code."
+      },
+      "send_intro": {
+        "title": "Sending Funds",
+        "content": "The Send button opens the transaction interface where you can send cryptocurrency to other addresses. It includes fields for recipient, amount, and fees."
+      },
+      "swap_feature": {
+        "title": "Swap Feature",
+        "content": "Exchange one cryptocurrency for another instantly. Swap between different tokens or convert ETH to tokens."
+      },
+      "buy_sell_feature": {
+        "title": "Buy & Sell Crypto",
+        "content": "Purchase cryptocurrency with fiat currency or sell your crypto for cash. This integrates with trusted payment providers."
+      },
+      "activity_section": {
+        "title": "Transaction History",
+        "content": "The Activity section shows your complete transaction history. View sent, received, and pending transactions with full details."
+      },
+      "activity_explanation": {
+        "title": "Your Transactions",
+        "content": "Here you can see all your transactions - incoming, outgoing, and pending. Click any transaction for detailed information including fees and confirmations."
+      },
+      "contacts_section": {
+        "title": "Contacts Management",
+        "content": "The Contacts section lets you save frequently used addresses with custom names. This makes sending funds easier and safer."
+      },
+      "contacts_explanation": {
+        "title": "Your Address Book",
+        "content": "Save addresses you send to frequently. Each contact has a name and address, making transactions more convenient and reducing errors."
+      },
+      "extended_menu_intro": {
+        "title": "Advanced Menu Features",
+        "content": "This menu provides access to advanced features: WalletConnect for connecting to dApps, Address Details, SSP Wallet Details, Settings and more. The lock icon on the right securely logs you out."
+      },
+      "address_management": {
+        "title": "Wallets Management",
+        "content": "This dropdown manages multiple addresses per blockchain. You can create new addresses, switch between existing ones, or remove the last created address. Each address is independent with its own balance and transaction history."
+      },
+      "tutorial_complete": {
+        "title": "Tutorial Complete!",
+        "content": "Congratulations! You now know how to use all major features of SSP Wallet. Explore confidently and manage your crypto securely."
+      }
+    }
   }
 }
