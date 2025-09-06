@@ -43,5 +43,9 @@
   "decimals": "Десяткові",
   "to": "До",
   "from": "Від",
-  "change": "Решта"
+  "change": "Решта",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "my_wallets": "My Wallets",
+  "rename_wallet": "Rename wallet"
 }
