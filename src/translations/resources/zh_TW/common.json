@@ -43,5 +43,9 @@
   "decimals": "小數位",
   "to": "至",
   "from": "來自",
-  "change": "找零"
+  "change": "找零",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "my_wallets": "My Wallets",
+  "rename_wallet": "Rename wallet"
 }
