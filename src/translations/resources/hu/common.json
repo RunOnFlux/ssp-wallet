@@ -43,5 +43,9 @@
   "decimals": "Tizedesjegyek",
   "to": "Címzett",
   "from": "Feladó",
-  "change": "Visszajáró"
+  "change": "Visszajáró",
+  "privacy_policy": "Privacy Policy",
+  "terms_of_service": "Terms of Service",
+  "my_wallets": "My Wallets",
+  "rename_wallet": "Rename wallet"
 }
