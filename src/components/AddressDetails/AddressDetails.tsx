@@ -114,6 +114,11 @@ function AddressDetails(props: {
       });
   };
 
+  // Guard clause to prevent crash when wallet data is not available
+  if (!wallets || !walletInUse || !wallets[walletInUse]) {
+    return null;
+  }
+
   return (
     <>
       {contextHolder}

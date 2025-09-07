@@ -31,6 +31,7 @@ import {
   Button,
   message,
   Popconfirm,
+  Tooltip,
 } from 'antd';
 import {
   LockOutlined,
@@ -538,13 +539,22 @@ function Navbar({
       <div className="navbar">
         <Row justify="space-evenly">
           <Col span={4}>
-            <Image
-              height={logoSize}
-              preview={false}
-              src={logoSrc}
-              onClick={() => navigate('/home')}
-              style={{ cursor: 'pointer', marginTop: isSwapPage ? '0px' : '6px' }}
-            />
+            <Tooltip 
+              title={
+                isSwapPage 
+                  ? 'SSP Wallet' 
+                  : `${blockchainConfig.name}${blockchainConfig.name.endsWith('Chain') ? '' : ` ${t('common:chain')}`}`
+              }
+              placement="bottom"
+            >
+              <Image
+                height={logoSize}
+                preview={false}
+                src={logoSrc}
+                onClick={() => navigate('/home')}
+                style={{ cursor: 'pointer', marginTop: isSwapPage ? '0px' : '6px' }}
+              />
+            </Tooltip>
           </Col>
           <Col span={16} style={{ fontSize: '16px', lineHeight: '36px' }}>
             {header && <span>{header}</span>}

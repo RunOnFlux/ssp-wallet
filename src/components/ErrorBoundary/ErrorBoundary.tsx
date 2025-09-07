@@ -2,9 +2,41 @@ import React, { Component, ReactNode } from 'react';
 import { Result, Button, Collapse, Typography, message, Card, theme } from 'antd';
 import { ExceptionOutlined, RedoOutlined, CopyOutlined, BugOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useRouteError } from 'react-router';
 
-const { Panel } = Collapse;
 const { Text } = Typography;
+
+// Shared function to copy error details
+const copyErrorDetails = (error: Error | null, errorInfo: React.ErrorInfo | null) => {
+  const errorDetails = [
+    'SSP Wallet Error Report',
+    '======================',
+    `Time: ${new Date().toISOString()}`,
+    `User Agent: ${navigator.userAgent}`,
+    `URL: ${window.location.href}`,
+    '',
+    `Error: ${error?.name || 'Unknown'}`,
+    `Message: ${error?.message || 'No message'}`,
+    '',
+    'Stack Trace:',
+    error?.stack || 'No stack trace available',
+    '',
+    'Component Stack:',
+    errorInfo?.componentStack || 'No component stack available'
+  ].join('\n');
+
+  navigator.clipboard.writeText(errorDetails)
+    .then(() => message.success('Error details copied to clipboard'))
+    .catch(() => {
+      const textArea = document.createElement('textarea');
+      textArea.value = errorDetails;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      message.success('Error details copied to clipboard');
+    });
+};
 
 interface State {
   hasError: boolean;
@@ -19,8 +51,38 @@ class ErrorBoundaryClass extends Component<{ children: ReactNode }, State> {
     return { hasError: true, error, errorInfo: null };
   }
 
+  componentDidMount() {
+    // Add global error handler as backup
+    window.addEventListener('error', this.handleGlobalError);
+    window.addEventListener('unhandledrejection', this.handleUnhandledRejection);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('error', this.handleGlobalError);
+    window.removeEventListener('unhandledrejection', this.handleUnhandledRejection);
+  }
+
+  handleGlobalError = (event: ErrorEvent) => {
+    console.error('Global error caught:', event.error);
+    this.setState({ 
+      hasError: true, 
+      error: event.error || new Error(event.message),
+      errorInfo: { componentStack: 'Global error' } 
+    });
+  };
+
+  handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+    console.error('Unhandled rejection caught:', event.reason);
+    const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+    this.setState({ 
+      hasError: true, 
+      error,
+      errorInfo: { componentStack: 'Unhandled promise rejection' }
+    });
+  };
+
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Something went wrong:', error, errorInfo);
+    console.error('React error caught:', error, errorInfo);
     this.setState({ error, errorInfo });
   }
 
@@ -30,35 +92,7 @@ class ErrorBoundaryClass extends Component<{ children: ReactNode }, State> {
   };
 
   handleCopyError = () => {
-    const { error, errorInfo } = this.state;
-    const errorDetails = [
-      'SSP Wallet Error Report',
-      '======================',
-      `Time: ${new Date().toISOString()}`,
-      `User Agent: ${navigator.userAgent}`,
-      `URL: ${window.location.href}`,
-      '',
-      `Error: ${error?.name || 'Unknown'}`,
-      `Message: ${error?.message || 'No message'}`,
-      '',
-      'Stack Trace:',
-      error?.stack || 'No stack trace available',
-      '',
-      'Component Stack:',
-      errorInfo?.componentStack || 'No component stack available'
-    ].join('\n');
-
-    navigator.clipboard.writeText(errorDetails)
-      .then(() => message.success('Error details copied to clipboard'))
-      .catch(() => {
-        const textArea = document.createElement('textarea');
-        textArea.value = errorDetails;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        message.success('Error details copied to clipboard');
-      });
+    copyErrorDetails(this.state.error, this.state.errorInfo);
   };
 
   render() {
@@ -170,43 +204,48 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
       </Card>
 
       {(error || errorInfo) && (
-        <Collapse style={{ marginTop: '16px', width: '100%', marginBottom: '24px' }} size="small">
-          <Panel 
-            header={
-              <span>
-                <BugOutlined style={{ marginRight: '6px' }} />
-                {t('technical_details')}
-              </span>
-            } 
-            key="error-details"
-          >
-            <div style={{ maxHeight: '250px', overflow: 'auto' }}>
-              {error && (
-                <div style={{ marginBottom: '12px' }}>
-                  <Text strong>{t('error_type')} </Text>
-                  <Text code>{error.name}</Text>
-                  <br />
-                  <Text strong>{t('error_message')} </Text>
-                  <Text style={{ wordBreak: 'break-word' }}>{error.message}</Text>
+        <Collapse 
+          style={{ marginTop: '16px', width: '100%', marginBottom: '24px' }} 
+          size="small"
+          items={[
+            {
+              key: 'error-details',
+              label: (
+                <span>
+                  <BugOutlined style={{ marginRight: '6px' }} />
+                  {t('technical_details')}
+                </span>
+              ),
+              children: (
+                <div style={{ maxHeight: '250px', overflow: 'auto' }}>
+                  {error && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <Text strong>{t('error_type')} </Text>
+                      <Text code>{error.name}</Text>
+                      <br />
+                      <Text strong>{t('error_message')} </Text>
+                      <Text style={{ wordBreak: 'break-word' }}>{error.message}</Text>
+                      
+                      {error.stack && (
+                        <div style={{ marginTop: '8px' }}>
+                          <Text strong>{t('stack_trace')}</Text>
+                          <pre style={preStyle}>{error.stack}</pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
-                  {error.stack && (
-                    <div style={{ marginTop: '8px' }}>
-                      <Text strong>{t('stack_trace')}</Text>
-                      <pre style={preStyle}>{error.stack}</pre>
+                  {errorInfo?.componentStack && (
+                    <div>
+                      <Text strong>{t('component_stack')}</Text>
+                      <pre style={preStyle}>{errorInfo.componentStack}</pre>
                     </div>
                   )}
                 </div>
-              )}
-              
-              {errorInfo?.componentStack && (
-                <div>
-                  <Text strong>{t('component_stack')}</Text>
-                  <pre style={preStyle}>{errorInfo.componentStack}</pre>
-                </div>
-              )}
-            </div>
-          </Panel>
-        </Collapse>
+              )
+            }
+          ]}
+        />
       )}
     </div>
   );
@@ -214,4 +253,23 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
 
 export default function ErrorBoundary({ children }: { children: ReactNode }) {
   return <ErrorBoundaryClass>{children}</ErrorBoundaryClass>;
+}
+
+// Router Error component that uses the same UI as ErrorBoundary
+export function RouterErrorBoundary() {
+  const routerError = useRouteError();
+  
+  // Convert router error to Error object if needed
+  const error = routerError instanceof Error 
+    ? routerError 
+    : new Error(String(routerError || 'Unknown router error'));
+
+  return (
+    <ErrorBoundaryUI 
+      error={error} 
+      errorInfo={{ componentStack: 'Router error' }}
+      onRestart={() => window.location.hash = '#/'}
+      onCopyError={() => copyErrorDetails(error, { componentStack: 'Router error' })}
+    />
+  );
 }

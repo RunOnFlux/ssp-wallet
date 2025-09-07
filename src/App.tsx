@@ -1,5 +1,5 @@
 import '@ant-design/v5-patch-for-react-19';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { RouterProvider } from 'react-router';
 import { ConfigProvider, theme, App as AntApp } from 'antd';
 import WalletConnectModals from './components/WalletConnect/WalletConnectModals';
@@ -9,11 +9,10 @@ import router from './router';
 
 function App() {
   const { defaultAlgorithm, darkAlgorithm } = theme;
-  const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
-  darkModePreference.addEventListener('change', (e) => changeTheme(e.matches));
-  const [themeStyle, setThemeStyle] = useState(
-    darkModePreference.matches ? 'dark' : 'light',
-  );
+  const [themeStyle, setThemeStyle] = useState(() => {
+    const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+    return darkModePreference.matches ? 'dark' : 'light';
+  });
 
   const changeTheme = (isDark: boolean) => {
     if (isDark) {
@@ -22,6 +21,17 @@ function App() {
       setThemeStyle('light');
     }
   };
+
+  useEffect(() => {
+    const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => changeTheme(e.matches);
+    
+    darkModePreference.addEventListener('change', handleChange);
+    
+    return () => {
+      darkModePreference.removeEventListener('change', handleChange);
+    };
+  }, []);
 
   return (
     <ConfigProvider
