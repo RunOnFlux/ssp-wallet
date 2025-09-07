@@ -80,6 +80,7 @@ function Restore() {
   // if user exists, navigate to login
   const [password, setPassword] = useState('');
   const [temporaryPassword, setTemporaryPassword] = useState('');
+  const [localPasswordStrength, setLocalPasswordStrength] = useState('');
   const [mnemonic, setMnemonic] = useState<Uint8Array>(new Uint8Array());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mnemonicShow, setMnemonicShow] = useState(false);
@@ -143,10 +144,10 @@ function Restore() {
   }, [password]);
 
   useEffect(() => {
-    if (temporaryPassword && mnemonic.length) {
+    if (temporaryPassword) {
       warningWeakPassword();
     }
-  }, [temporaryPassword, mnemonic]);
+  }, [temporaryPassword]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -449,10 +450,10 @@ function Restore() {
                     }
                     className="password-input"
                     onChange={(e) => {
-                      setTemporaryPassword(e.target.value);
+                      setLocalPasswordStrength(e.target.value);
                     }}
                   />
-                  <PasswordStrengthMeter password={temporaryPassword} />
+                  <PasswordStrengthMeter password={localPasswordStrength} />
                 </div>
               </Form.Item>
             </div>
