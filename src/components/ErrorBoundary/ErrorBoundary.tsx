@@ -63,22 +63,15 @@ class ErrorBoundaryClass extends Component<{ children: ReactNode }, State> {
   }
 
   handleGlobalError = (event: ErrorEvent) => {
-    console.error('Global error caught:', event.error);
-    this.setState({ 
-      hasError: true, 
-      error: event.error || new Error(event.message),
-      errorInfo: { componentStack: 'Global error' } 
-    });
+    console.error('Global error caught:', event);
+    // Don't trigger error boundary UI for global errors
+    // Just log them for debugging purposes
   };
 
   handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-    console.error('Unhandled rejection caught:', event.reason);
-    const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
-    this.setState({ 
-      hasError: true, 
-      error,
-      errorInfo: { componentStack: 'Unhandled promise rejection' }
-    });
+    console.error('Unhandled rejection caught:', event);
+    // Don't trigger error boundary UI for unhandled rejections
+    // Just log them for debugging purposes
   };
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
