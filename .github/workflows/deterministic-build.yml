@@ -2,12 +2,13 @@ name: Deterministic Build
 
 on:
   push:
-    tags: ['v*']
+    tags: ['v*']  # Only auto-trigger on tagged releases
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Tag to build'
-        required: true
+      ref:
+        description: 'Tag, branch, or commit to build (default: master)'
+        required: false
+        default: 'master'
 
 jobs:
   deterministic-build:
@@ -15,14 +16,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          ref: ${{ github.event.inputs.ref || github.ref }}
           
       - name: Build deterministic packages
         run: bash scripts/deterministic-build.sh
           
       - name: Extract version
         id: version
-        run: echo "version=${{ github.event.inputs.tag || github.ref_name }}" >> $GITHUB_OUTPUT
+        run: |
+          if [[ "${{ github.event.inputs.ref || github.ref }}" == refs/tags/* ]]; then
+            # For tags, use clean tag name
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          elif [[ -n "${{ github.event.inputs.ref }}" ]]; then
+            # For manual builds, use specified ref
+            echo "version=${{ github.event.inputs.ref }}" >> $GITHUB_OUTPUT
+          else
+            # For branch builds, use branch name
+            echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
         
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -49,6 +60,6 @@ jobs:
 
             **Files Verification:** `sha256sum -c SHA256SUMS`
             
-            **Reproduction:** `git checkout ${{ steps.version.outputs.version }} && npm run build:deterministic`
+            **Reproduction:** `git checkout ${{ github.event.inputs.ref || github.ref_name }} && npm run build:deterministic`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
