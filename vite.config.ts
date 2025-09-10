@@ -73,7 +73,7 @@ export default defineConfig({
   },
   define: {
     'process.env': {
-      // mainly disable user agent to prevent
+      // mainly disable user agent to prevent, we use static canvas
       VITE_SECURE_LOCAL_STORAGE_DISABLED_KEYS:
         'UserAgent|Plugins|TimeZone|Canvas',
       REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS:
@@ -97,6 +97,6 @@ export default defineConfig({
   esbuild: {
     keepNames: true, // Preserve class and function names,
     // disable console and debugger in production
-    drop: ['console', 'debugger'],
+    // drop: ['console', 'debugger'],
   },
 });

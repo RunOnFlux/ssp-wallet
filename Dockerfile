@@ -25,15 +25,19 @@ RUN chown node:node /app
 # Switch to node user for security
 USER node
 
-# Copy package files with exact permissions
-COPY --chown=node:node package.json ./
-COPY --chown=node:node yarn.lock ./
+# Copy all source code first
+COPY --chown=node:node . .
 
 # Install exact dependencies using frozen lockfile
 RUN yarn install --frozen-lockfile --production=false --cache-folder /tmp/yarn-cache
 
-# Copy source code
-COPY --chown=node:node . .
+# Verify that react-secure-storage patch was applied successfully
+RUN echo "Verifying patches were applied..." && \
+    if grep -q "localStorage.getItem.*canvas" node_modules/react-secure-storage/dist/fingerprint.lib.js; then \
+        echo "✓ react-secure-storage patch applied successfully"; \
+    else \
+        echo "✗ react-secure-storage patch FAILED to apply!" && exit 1; \
+    fi
 
 # Normalize all file timestamps to SOURCE_DATE_EPOCH for reproducibility  
 RUN find . -type f -not -path "./node_modules/*" -exec touch -d @${SOURCE_DATE_EPOCH} {} +
