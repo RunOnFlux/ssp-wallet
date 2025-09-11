@@ -16,7 +16,7 @@ function Receive(props: {
     (state) => state[activeChain],
   );
   const blockchainConfig = blockchains[activeChain];
-  
+
   // Check if there's a custom wallet name
   const customWalletName = useAppSelector(
     (state) => state.walletNames?.chains[activeChain]?.[walletInUse],

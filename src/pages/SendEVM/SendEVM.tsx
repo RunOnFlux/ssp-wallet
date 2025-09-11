@@ -161,7 +161,7 @@ function SendEVM() {
   const [txToken, setTxToken] = useState('');
   const blockchainConfig = blockchains[activeChain];
   const [txFee, setTxFee] = useState('0');
-  
+
   // Get custom wallet names for all wallets
   const walletNames = useAppSelector(
     (state) => state.walletNames?.chains[activeChain] || {},
@@ -300,7 +300,7 @@ function SendEVM() {
     Object.keys(wallets).forEach((wallet) => {
       const customName = walletNames[wallet];
       const walletName = getDisplayName(activeChain, wallet);
-      
+
       const wal = {
         value: wallets[wallet].address,
         index: wallet,

@@ -1,13 +1,30 @@
 import React, { Component, ReactNode } from 'react';
-import { Result, Button, Collapse, Typography, message, Card, theme } from 'antd';
-import { ExceptionOutlined, RedoOutlined, CopyOutlined, BugOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import {
+  Result,
+  Button,
+  Collapse,
+  Typography,
+  message,
+  Card,
+  theme,
+} from 'antd';
+import {
+  ExceptionOutlined,
+  RedoOutlined,
+  CopyOutlined,
+  BugOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useRouteError } from 'react-router';
 
 const { Text } = Typography;
 
 // Shared function to copy error details
-const copyErrorDetails = (error: Error | null, errorInfo: React.ErrorInfo | null) => {
+const copyErrorDetails = (
+  error: Error | null,
+  errorInfo: React.ErrorInfo | null,
+) => {
   const errorDetails = [
     'SSP Wallet Error Report',
     '======================',
@@ -22,10 +39,11 @@ const copyErrorDetails = (error: Error | null, errorInfo: React.ErrorInfo | null
     error?.stack || 'No stack trace available',
     '',
     'Component Stack:',
-    errorInfo?.componentStack || 'No component stack available'
+    errorInfo?.componentStack || 'No component stack available',
   ].join('\n');
 
-  navigator.clipboard.writeText(errorDetails)
+  navigator.clipboard
+    .writeText(errorDetails)
     .then(() => message.success('Error details copied to clipboard'))
     .catch(() => {
       const textArea = document.createElement('textarea');
@@ -54,12 +72,18 @@ class ErrorBoundaryClass extends Component<{ children: ReactNode }, State> {
   componentDidMount() {
     // Add global error handler as backup
     window.addEventListener('error', this.handleGlobalError);
-    window.addEventListener('unhandledrejection', this.handleUnhandledRejection);
+    window.addEventListener(
+      'unhandledrejection',
+      this.handleUnhandledRejection,
+    );
   }
 
   componentWillUnmount() {
     window.removeEventListener('error', this.handleGlobalError);
-    window.removeEventListener('unhandledrejection', this.handleUnhandledRejection);
+    window.removeEventListener(
+      'unhandledrejection',
+      this.handleUnhandledRejection,
+    );
   }
 
   handleGlobalError = (event: ErrorEvent) => {
@@ -90,13 +114,15 @@ class ErrorBoundaryClass extends Component<{ children: ReactNode }, State> {
 
   render() {
     if (!this.state.hasError) return this.props.children;
-    
-    return <ErrorBoundaryUI 
-      error={this.state.error} 
-      errorInfo={this.state.errorInfo}
-      onRestart={this.handleRestart}
-      onCopyError={this.handleCopyError}
-    />;
+
+    return (
+      <ErrorBoundaryUI
+        error={this.state.error}
+        errorInfo={this.state.errorInfo}
+        onRestart={this.handleRestart}
+        onCopyError={this.handleCopyError}
+      />
+    );
   }
 }
 
@@ -107,7 +133,12 @@ interface UIProps {
   onCopyError: () => void;
 }
 
-function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) {
+function ErrorBoundaryUI({
+  error,
+  errorInfo,
+  onRestart,
+  onCopyError,
+}: UIProps) {
   const { t } = useTranslation(['errorBoundary']);
   const { token } = theme.useToken();
 
@@ -121,7 +152,7 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
     maxWidth: '420px',
     margin: '0 auto',
     overflow: 'auto' as const,
-    paddingTop: '20px'
+    paddingTop: '20px',
   };
 
   const cardStyle = {
@@ -129,7 +160,7 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
     marginTop: '16px',
     backgroundColor: token.colorSuccessBg,
     border: `1px solid ${token.colorSuccessBorder}`,
-    textAlign: 'left' as const
+    textAlign: 'left' as const,
   };
 
   const preStyle = {
@@ -143,7 +174,7 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
     marginTop: '4px',
     wordBreak: 'break-all' as const,
     whiteSpace: 'pre-wrap' as const,
-    border: `1px solid ${token.colorBorder}`
+    border: `1px solid ${token.colorBorder}`,
   };
 
   return (
@@ -154,11 +185,23 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
         subTitle={t('subtitle')}
         style={{
           paddingTop: '24px',
-          paddingBottom: '16px'
+          paddingBottom: '16px',
         }}
         extra={
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
-            <Button type="primary" icon={<RedoOutlined />} onClick={onRestart} block>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              width: '100%',
+            }}
+          >
+            <Button
+              type="primary"
+              icon={<RedoOutlined />}
+              onClick={onRestart}
+              block
+            >
               {t('restart_button')}
             </Button>
             <Button icon={<CopyOutlined />} onClick={onCopyError} block>
@@ -168,20 +211,28 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
         }
       />
 
-      <Card 
+      <Card
         title={
           <span>
-            <InfoCircleOutlined style={{ marginRight: '8px', color: token.colorSuccess }} />
+            <InfoCircleOutlined
+              style={{ marginRight: '8px', color: token.colorSuccess }}
+            />
             {t('help_title')}
           </span>
-        } 
-        size="small" 
+        }
+        size="small"
         style={cardStyle}
       >
         <p style={{ fontSize: '13px', marginBottom: '8px' }}>
           <strong>{t('report_via')}</strong>
         </p>
-        <ul style={{ fontSize: '12px', paddingLeft: '16px', marginBottom: '12px' }}>
+        <ul
+          style={{
+            fontSize: '12px',
+            paddingLeft: '16px',
+            marginBottom: '12px',
+          }}
+        >
           <li>{t('support')}</li>
           <li>{t('discord')}</li>
           <li>{t('github')}</li>
@@ -197,8 +248,8 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
       </Card>
 
       {(error || errorInfo) && (
-        <Collapse 
-          style={{ marginTop: '16px', width: '100%', marginBottom: '24px' }} 
+        <Collapse
+          style={{ marginTop: '16px', width: '100%', marginBottom: '24px' }}
           size="small"
           items={[
             {
@@ -217,8 +268,10 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
                       <Text code>{error.name}</Text>
                       <br />
                       <Text strong>{t('error_message')} </Text>
-                      <Text style={{ wordBreak: 'break-word' }}>{error.message}</Text>
-                      
+                      <Text style={{ wordBreak: 'break-word' }}>
+                        {error.message}
+                      </Text>
+
                       {error.stack && (
                         <div style={{ marginTop: '8px' }}>
                           <Text strong>{t('stack_trace')}</Text>
@@ -227,7 +280,7 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
                       )}
                     </div>
                   )}
-                  
+
                   {errorInfo?.componentStack && (
                     <div>
                       <Text strong>{t('component_stack')}</Text>
@@ -235,8 +288,8 @@ function ErrorBoundaryUI({ error, errorInfo, onRestart, onCopyError }: UIProps) 
                     </div>
                   )}
                 </div>
-              )
-            }
+              ),
+            },
           ]}
         />
       )}
@@ -251,18 +304,21 @@ export default function ErrorBoundary({ children }: { children: ReactNode }) {
 // Router Error component that uses the same UI as ErrorBoundary
 export function RouterErrorBoundary() {
   const routerError = useRouteError();
-  
+
   // Convert router error to Error object if needed
-  const error = routerError instanceof Error 
-    ? routerError 
-    : new Error(String(routerError || 'Unknown router error'));
+  const error =
+    routerError instanceof Error
+      ? routerError
+      : new Error(JSON.stringify(routerError) || 'Unknown router error');
 
   return (
-    <ErrorBoundaryUI 
-      error={error} 
+    <ErrorBoundaryUI
+      error={error}
       errorInfo={{ componentStack: 'Router error' }}
-      onRestart={() => window.location.hash = '#/'}
-      onCopyError={() => copyErrorDetails(error, { componentStack: 'Router error' })}
+      onRestart={() => (window.location.hash = '#/')}
+      onCopyError={() =>
+        copyErrorDetails(error, { componentStack: 'Router error' })
+      }
     />
   );
 }

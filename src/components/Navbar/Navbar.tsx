@@ -100,7 +100,9 @@ function Navbar({
   const location = useLocation();
   const { activeChain } = useAppSelector((state) => state.sspState);
   const isSwapPage = location.pathname === '/swap';
-  const logoSrc = isSwapPage ? "/ssp-logo-black.svg" : blockchains[activeChain]?.logo;
+  const logoSrc = isSwapPage
+    ? '/ssp-logo-black.svg'
+    : blockchains[activeChain]?.logo;
   const logoSize = isSwapPage ? 30 : 24;
 
   const [triggerTutorialWelcome, setTriggerTutorialWelcome] = useState(false);
@@ -118,11 +120,7 @@ function Navbar({
   const [defaultWallet, setWalletValue] = useState<walletOption>({
     value: walletInUse,
     label: (
-      <WalletName 
-        walletId={walletInUse} 
-        chain={activeChain} 
-        editable={false} 
-      />
+      <WalletName walletId={walletInUse} chain={activeChain} editable={false} />
     ),
   });
   const [walletItems, setWalletItems] = useState<walletOption[]>([]);
@@ -140,10 +138,10 @@ function Navbar({
     const defValue = {
       value: walletInUse,
       label: (
-        <WalletName 
-          walletId={walletInUse} 
-          chain={activeChain} 
-          editable={false} 
+        <WalletName
+          walletId={walletInUse}
+          chain={activeChain}
+          editable={false}
         />
       ),
     };
@@ -155,10 +153,10 @@ function Navbar({
     const defValue = {
       value: walletInUse,
       label: (
-        <WalletName 
-          walletId={walletInUse} 
-          chain={activeChain} 
-          editable={false} 
+        <WalletName
+          walletId={walletInUse}
+          chain={activeChain}
+          editable={false}
         />
       ),
     };
@@ -284,11 +282,7 @@ function Navbar({
         const wal = {
           value: '0-0',
           label: (
-            <WalletName 
-              walletId="0-0" 
-              chain={activeChain} 
-              editable={false} 
-            />
+            <WalletName walletId="0-0" chain={activeChain} editable={false} />
           ),
         };
         handleChange(wal);
@@ -539,10 +533,10 @@ function Navbar({
       <div className="navbar">
         <Row justify="space-evenly">
           <Col span={4}>
-            <Tooltip 
+            <Tooltip
               title={
-                isSwapPage 
-                  ? 'SSP Wallet' 
+                isSwapPage
+                  ? 'SSP Wallet'
                   : `${blockchainConfig.name}${blockchainConfig.name.endsWith('Chain') ? '' : ` ${t('common:chain')}`}`
               }
               placement="bottom"
@@ -552,7 +546,10 @@ function Navbar({
                 preview={false}
                 src={logoSrc}
                 onClick={() => navigate('/home')}
-                style={{ cursor: 'pointer', marginTop: isSwapPage ? '0px' : '6px' }}
+                style={{
+                  cursor: 'pointer',
+                  marginTop: isSwapPage ? '0px' : '6px',
+                }}
               />
             </Tooltip>
           </Col>

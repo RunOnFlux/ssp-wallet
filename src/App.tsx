@@ -10,7 +10,9 @@ import router from './router';
 function App() {
   const { defaultAlgorithm, darkAlgorithm } = theme;
   const [themeStyle, setThemeStyle] = useState(() => {
-    const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModePreference = window.matchMedia(
+      '(prefers-color-scheme: dark)',
+    );
     return darkModePreference.matches ? 'dark' : 'light';
   });
 
@@ -23,11 +25,13 @@ function App() {
   };
 
   useEffect(() => {
-    const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModePreference = window.matchMedia(
+      '(prefers-color-scheme: dark)',
+    );
     const handleChange = (e: MediaQueryListEvent) => changeTheme(e.matches);
-    
+
     darkModePreference.addEventListener('change', handleChange);
-    
+
     return () => {
       darkModePreference.removeEventListener('change', handleChange);
     };

@@ -119,7 +119,7 @@ function Send() {
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
-  
+
   // Get custom wallet names for all wallets
   const walletNames = useAppSelector(
     (state) => state.walletNames?.chains[activeChain] || {},
@@ -168,7 +168,7 @@ function Send() {
     Object.keys(wallets).forEach((wallet) => {
       const customName = walletNames[wallet];
       const walletName = getDisplayName(activeChain, wallet);
-      
+
       const wal = {
         value: wallets[wallet].address,
         index: wallet,
