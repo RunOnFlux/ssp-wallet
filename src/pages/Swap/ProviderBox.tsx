@@ -5,6 +5,7 @@ import './ProviderBox.css';
 import { selectedExchangeType } from '../../types';
 import { formatCrypto } from '../../lib/currency';
 import { useAppSelector } from '../../hooks';
+import { getExchangeLogo } from '../../lib/exchangeLogos';
 function ProviderBox(props: {
   provider: selectedExchangeType;
   buySymbol: string;
@@ -21,12 +22,8 @@ function ProviderBox(props: {
         <Meta
           avatar={
             <div style={{ marginTop: '12px' }}>
-              {/* TODO: for some reason cloudflare worker image is not loading, replace with standard cdn */}
               <Avatar
-                src={providerFound?.logo.replace(
-                  'zelcore.workers.dev',
-                  'zelcore.io',
-                )}
+                src={getExchangeLogo(providerFound?.name || '')}
                 size={30}
               />
             </div>
