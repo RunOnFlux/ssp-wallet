@@ -22,10 +22,10 @@
     "postinstall": "patch-package"
   },
   "resolutions": {
-    "viem": "2.24.2"
+    "viem": "2.37.6"
   },
   "overrides": {
-    "viem": "2.24.2"
+    "viem": "2.37.6"
   },
   "dependencies": {
     "@alchemy/aa-core": "3.19.0",
@@ -70,7 +70,7 @@
     "socket.io-client": "4.8.1",
     "stream-browserify": "3.0.0",
     "util": "0.12.5",
-    "viem": "2.24.2"
+    "viem": "2.37.6"
   },
   "devDependencies": {
     "@eslint/js": "9.35.0",
