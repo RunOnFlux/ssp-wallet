@@ -8,6 +8,7 @@ import Home from './pages/Home/Home.tsx';
 import Send from './pages/Send/Send.tsx';
 import SendEVM from './pages/SendEVM/SendEVM.tsx';
 import Swap from './pages/Swap/Swap.tsx';
+import SecurityTest from './pages/SecurityTest/SecurityTest.tsx';
 import { RouterErrorBoundary } from './components/ErrorBoundary/ErrorBoundary.tsx';
 
 const router = createBrowserRouter([
@@ -49,6 +50,11 @@ const router = createBrowserRouter([
   {
     path: '/swap',
     element: <Swap />,
+    errorElement: <RouterErrorBoundary />,
+  },
+  {
+    path: '/security-test',
+    element: <SecurityTest />,
     errorElement: <RouterErrorBoundary />,
   },
   {

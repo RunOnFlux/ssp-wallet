@@ -1,11 +1,15 @@
 import { Image } from 'antd';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router';
 import { version } from '../../../package.json';
 
 interface Props {
   isClickeable?: boolean;
 }
 function PoweredByFlux({ isClickeable = false }: Props) {
+  const navigate = useNavigate();
+  const clickCountRef = useRef(0);
+  const lastClickTimeRef = useRef(0);
   const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
   darkModePreference.addEventListener('change', (e) => changeTheme(e.matches));
   const [themeStyle, setThemeStyle] = useState(
@@ -27,6 +31,24 @@ function PoweredByFlux({ isClickeable = false }: Props) {
 
   const open = (url: string) => {
     window.open(url, '_blank');
+  };
+
+  const handleVersionClick = () => {
+    const now = Date.now();
+
+    // Reset counter if more than 1 second has passed since last click
+    if (now - lastClickTimeRef.current > 1000) {
+      clickCountRef.current = 0;
+    }
+
+    clickCountRef.current++;
+    lastClickTimeRef.current = now;
+
+    // If clicked 5 times within a second, navigate to security test
+    if (clickCountRef.current >= 5) {
+      navigate('/security-test');
+      clickCountRef.current = 0; // Reset counter
+    }
   };
   return (
     <div
@@ -56,6 +78,7 @@ function PoweredByFlux({ isClickeable = false }: Props) {
           />
           <div
             style={{ fontSize: 10, position: 'absolute', bottom: 10, left: 10 }}
+            onClick={handleVersionClick}
           >
             v{version}
           </div>

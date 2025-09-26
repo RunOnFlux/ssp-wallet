@@ -1,9 +1,29 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
+import { viteLavaMoat } from 'vite-plugin-lavamoat';
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ command, mode }) => ({
+  plugins: [
+    react(),
+    // Only enable LavaMoat in production builds
+    ...(command === 'build'
+      ? [
+          viteLavaMoat({
+            policyPath: './security/vite-lavamoat-policy.json',
+            lockdown: true,
+            generatePolicy: false,  // Static policy - use npm run generate-policy to update
+            diagnostics: true,
+            scuttleGlobalThis: {
+              enabled: true,
+              exceptions: ['chrome', 'browser', 'global', 'self'],
+            },
+          }),
+        ]
+      : []),
+  ],
+
+  // Hot reload loop prevention is handled internally by the LavaMoat plugin
   resolve: {
     alias: {
       stream: 'stream-browserify',
@@ -81,7 +101,8 @@ export default defineConfig({
       SECURE_LOCAL_STORAGE_DISABLED_KEYS: 'UserAgent|Plugins|TimeZone|Canvas',
       // WalletConnect Project ID - Get from https://cloud.reown.com/
       REACT_APP_WALLETCONNECT_PROJECT_ID: JSON.stringify(
-        process.env.REACT_APP_WALLETCONNECT_PROJECT_ID || '0fddbe43cb0cca6b6e0fcf9b5f4f0ff6'
+        process.env.REACT_APP_WALLETCONNECT_PROJECT_ID ||
+          '0fddbe43cb0cca6b6e0fcf9b5f4f0ff6',
       ),
     },
   },
@@ -97,6 +118,6 @@ export default defineConfig({
   esbuild: {
     keepNames: true, // Preserve class and function names,
     // disable console and debugger in production
-    drop: ['console', 'debugger'],
+    // drop: ['console', 'debugger'],
   },
-});
+}));

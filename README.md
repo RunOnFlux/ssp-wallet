@@ -190,3 +190,20 @@ Our security is a top priority. All critical components of the SSP ecosystem hav
 📄 **SDK Audit**  
 - **[Halborn Audit Report – SDK](https://github.com/RunOnFlux/ssp-wallet/blob/master/Account_Abstraction_Schnorr_MultiSig_SDK_SecAudit_HALBORN_2025.pdf)** (GitHub)  
 - **[Halborn Public Report – SDK](https://www.halborn.com/audits/influx-technologies/account-abstraction-schnorr-signatures-sdk)** (Halborn)  
+
+## 🛡️ Runtime Security Protection
+
+SSP Wallet implements **Vite Plugin LavaMoat** - a custom-built security framework that provides runtime compartmentalization and protection against supply chain attacks.
+
+### Key Features
+- **SES Lockdown Runtime**: Blocks dangerous APIs (`eval()`, `Function` constructor) and prevents prototype pollution
+- **Module Compartmentalization**: Each dependency runs in isolated sandboxes with policy-based access control  
+- **Supply Chain Protection**: 70+ packages protected with granular permission controls
+- **Production-Only**: Clean development experience with full security in production builds
+
+### Security Verification
+Access the hidden security test page by clicking the version number in the footer **5 times within 1 second** to run comprehensive security tests including eval blocking, prototype pollution prevention, and WebAssembly protection.
+
+### LavaMoat Policy Management
+SSP Wallet uses **static LavaMoat policies** for maximum security following the principle of least privilege. Each of the 70+ packages receives only essential permissions via a curated security policy at `security/vite-lavamoat-policy.json`. When adding dependencies, run `npm run generate-policy` to update security permissions.
+
