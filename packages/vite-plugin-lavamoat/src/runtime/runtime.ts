@@ -127,51 +127,20 @@ try {
     const originalSeal = Object.seal;
     const originalPreventExtensions = Object.preventExtensions;
     
-    // Helper: Temporarily patch Object.defineProperty and Object.freeze for crypto compatibility
-    function withPatchedObjectMethods(fn: () => void) {
-      const tempDefineProperty = Object.defineProperty;
-      const tempFreeze = Object.freeze;
+    // SECURE: Direct property modification without global method overrides
+    function ensureCryptoCompatibility(obj: any, propName: string) {
       try {
-        Object.defineProperty = function(obj, prop, descriptor) {
-          if (prop === 'toString' || prop === 'valueOf' || prop === 'toJSON') {
-            // Force these properties to be configurable and writable for crypto libraries
-            const newDescriptor = {
-              ...descriptor,
-              configurable: true,
-              writable: true
-            };
-            return originalDefineProperty.call(this, obj, prop, newDescriptor);
-          }
-          return originalDefineProperty.call(this, obj, prop, descriptor);
-        };
-        Object.freeze = function(obj) {
-          if (obj && typeof obj === 'object') {
-            try {
-              // Before freezing, ensure critical properties are configurable
-              const criticalProps = ['toString', 'valueOf', 'toJSON'];
-              criticalProps.forEach(prop => {
-                if (obj.hasOwnProperty && obj.hasOwnProperty(prop)) {
-                  try {
-                    const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
-                    if (descriptor && !descriptor.configurable) {
-                      originalDefineProperty.call(Object, obj, prop, {
-                        ...descriptor,
-                        configurable: true,
-                        writable: true
-                      });
-                    }
-                  } catch (e) { /* ignore */ }
-                }
-              });
-            } catch (e) { /* ignore */ }
-          }
-          return originalFreeze.call(this, obj);
-        };
-        // Run the callback (e.g., load the crypto library)
-        fn();
-      } finally {
-        Object.defineProperty = tempDefineProperty;
-        Object.freeze = tempFreeze;
+        const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
+        if (descriptor && !descriptor.configurable) {
+          // Directly modify the specific property without global overrides
+          originalDefineProperty.call(Object, obj, propName, {
+            ...descriptor,
+            configurable: true,
+            writable: true
+          });
+        }
+      } catch (e) { 
+        // Ignore failures - crypto library will handle gracefully
       }
     }
     
@@ -182,18 +151,7 @@ try {
     cryptoSensitiveObjects.forEach(obj => {
       if (obj && obj.prototype) {
         criticalProperties.forEach(prop => {
-          try {
-            const descriptor = Object.getOwnPropertyDescriptor(obj.prototype, prop);
-            if (descriptor) {
-              originalDefineProperty.call(Object, obj.prototype, prop, {
-                ...descriptor,
-                configurable: true,
-                writable: true
-              });
-            }
-          } catch (e) {
-            // Ignore failures
-          }
+          ensureCryptoCompatibility(obj.prototype, prop);
         });
       }
     });
@@ -203,15 +161,7 @@ try {
       const functionPrototype = Function.prototype;
       const functionMethods = ['bind', 'call', 'apply', 'toString'];
       functionMethods.forEach(method => {
-        const original = functionPrototype[method];
-        if (original && typeof original === 'function') {
-          originalDefineProperty.call(Object, functionPrototype, method, {
-            value: original,
-            writable: true,
-            enumerable: false,
-            configurable: true
-          });
-        }
+        ensureCryptoCompatibility(functionPrototype, method);
       });
       console.log('✅ Function.prototype methods preserved for React compatibility');
     } catch (e) {
@@ -277,22 +227,10 @@ try {
           // Apply selective protection: protect constructor but allow prototype modification
           try {
             if (obj.prototype) {
-              // Use temporary patching for crypto-sensitive prototype modifications
-              withPatchedObjectMethods(() => {
-                // Allow crypto libraries to modify toString, valueOf, toJSON on prototypes
-                const cryptoProps = ['toString', 'valueOf', 'toJSON'];
-                cryptoProps.forEach(prop => {
-                  try {
-                    const descriptor = Object.getOwnPropertyDescriptor(obj.prototype, prop);
-                    if (descriptor && !descriptor.configurable) {
-                      originalDefineProperty.call(Object, obj.prototype, prop, {
-                        ...descriptor,
-                        configurable: true,
-                        writable: true
-                      });
-                    }
-                  } catch (e) { /* ignore */ }
-                });
+              // Directly ensure crypto compatibility for specific properties
+              const cryptoProps = ['toString', 'valueOf', 'toJSON'];
+              cryptoProps.forEach(prop => {
+                ensureCryptoCompatibility(obj.prototype, prop);
               });
               
               // Still protect the constructor itself
