@@ -136,8 +136,15 @@ export function viteLavaMoat(options: ViteLavaMoatOptions = {}): Plugin {
         userConfig.build.target = userConfig.build.target || 'es2020';
         userConfig.build.rollupOptions = userConfig.build.rollupOptions || {};
 
-        // Disable some optimizations that could interfere with compartmentalization
-        userConfig.build.rollupOptions.treeshake = false;
+        // Configure tree shaking to preserve modules with side effects required for LavaMoat compartmentalization
+        // This maintains bundle optimization while ensuring security-critical code isn't removed
+        userConfig.build.rollupOptions.treeshake = { 
+          moduleSideEffects: true,
+          // Preserve function names and properties that LavaMoat relies on for proper compartmentalization
+          propertyReadSideEffects: true,
+          // Keep annotations that may be used by security policies  
+          annotations: false
+        };
       }
     },
 
