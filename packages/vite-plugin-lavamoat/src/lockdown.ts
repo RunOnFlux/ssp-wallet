@@ -23,9 +23,26 @@ try {
         window['eval'] = function () {
           throw new Error('eval() blocked by LavaMoat fallback');
         };
-        (window as any)['Function'] = function () {
+        // Consistently block Function constructor across all access paths
+        const securedFunctionBlock = function () {
           throw new Error('Function constructor blocked by LavaMoat fallback');
-        } as any;
+        };
+        
+        // Remove the original Function constructor as much as possible
+        try {
+          // Delete the Function property if possible
+          delete (window as any)['Function'];
+        } catch (e) {
+          // Ignore if delete fails
+        }
+        
+        // Redefine Function as a non-configurable, non-writable property that throws
+        Object.defineProperty(window, 'Function', {
+          configurable: false,
+          enumerable: false,
+          writable: false,
+          value: securedFunctionBlock
+        });
 
         // Preserve Function.prototype methods before any freezing
         const functionPrototype = Function.prototype;

@@ -120,51 +120,60 @@ try {
   try {
     console.log('🔒 Initializing LavaMoat Runtime Security...');
     
-    // CRITICAL: Completely override Object.defineProperty to force crypto compatibility
+    // SECURE: Store original methods without global overrides
     const originalDefineProperty = Object.defineProperty;
     const originalDefineProperties = Object.defineProperties;
     const originalFreeze = Object.freeze;
     const originalSeal = Object.seal;
     const originalPreventExtensions = Object.preventExtensions;
     
-    // Override Object.defineProperty to allow toString modifications
-    Object.defineProperty = function(obj, prop, descriptor) {
-      if (prop === 'toString' || prop === 'valueOf' || prop === 'toJSON') {
-        // Force these properties to be configurable and writable for crypto libraries
-        const newDescriptor = {
-          ...descriptor,
-          configurable: true,
-          writable: true
+    // Helper: Temporarily patch Object.defineProperty and Object.freeze for crypto compatibility
+    function withPatchedObjectMethods(fn: () => void) {
+      const tempDefineProperty = Object.defineProperty;
+      const tempFreeze = Object.freeze;
+      try {
+        Object.defineProperty = function(obj, prop, descriptor) {
+          if (prop === 'toString' || prop === 'valueOf' || prop === 'toJSON') {
+            // Force these properties to be configurable and writable for crypto libraries
+            const newDescriptor = {
+              ...descriptor,
+              configurable: true,
+              writable: true
+            };
+            return originalDefineProperty.call(this, obj, prop, newDescriptor);
+          }
+          return originalDefineProperty.call(this, obj, prop, descriptor);
         };
-        return originalDefineProperty.call(this, obj, prop, newDescriptor);
-      }
-      return originalDefineProperty.call(this, obj, prop, descriptor);
-    };
-    
-    // Override Object.freeze to be less aggressive with critical properties
-    Object.freeze = function(obj) {
-      if (obj && typeof obj === 'object') {
-        try {
-          // Before freezing, ensure critical properties are configurable
-          const criticalProps = ['toString', 'valueOf', 'toJSON'];
-          criticalProps.forEach(prop => {
-            if (obj.hasOwnProperty && obj.hasOwnProperty(prop)) {
-              try {
-                const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
-                if (descriptor && !descriptor.configurable) {
-                  originalDefineProperty.call(Object, obj, prop, {
-                    ...descriptor,
-                    configurable: true,
-                    writable: true
-                  });
+        Object.freeze = function(obj) {
+          if (obj && typeof obj === 'object') {
+            try {
+              // Before freezing, ensure critical properties are configurable
+              const criticalProps = ['toString', 'valueOf', 'toJSON'];
+              criticalProps.forEach(prop => {
+                if (obj.hasOwnProperty && obj.hasOwnProperty(prop)) {
+                  try {
+                    const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+                    if (descriptor && !descriptor.configurable) {
+                      originalDefineProperty.call(Object, obj, prop, {
+                        ...descriptor,
+                        configurable: true,
+                        writable: true
+                      });
+                    }
+                  } catch (e) { /* ignore */ }
                 }
-              } catch (e) { /* ignore */ }
-            }
-          });
-        } catch (e) { /* ignore */ }
+              });
+            } catch (e) { /* ignore */ }
+          }
+          return originalFreeze.call(this, obj);
+        };
+        // Run the callback (e.g., load the crypto library)
+        fn();
+      } finally {
+        Object.defineProperty = tempDefineProperty;
+        Object.freeze = tempFreeze;
       }
-      return originalFreeze.call(this, obj);
-    };
+    }
     
     // Make toString properties configurable BEFORE any other protection
     const cryptoSensitiveObjects = [String, Number, Boolean, Object, Array, Function, Date, RegExp, Error];
@@ -219,33 +228,93 @@ try {
       throw new Error('eval() blocked by LavaMoat - Code: ' + (typeof code === 'string' ? code.substring(0, 50) : code));
     };
     
-    // Override Function constructor with enhanced security
-    window.Function = function(...args) {
+    // Consistently block Function constructor across all access methods
+    const securedFunctionBlock = function(...args) {
       console.warn('🚨 LavaMoat: Function constructor attempt blocked:', args);
       throw new Error('Function constructor blocked by LavaMoat - Args: ' + args.join(', '));
     };
     
-    // Enhanced prototype protection - crypto library compatible
+    // Block Function constructor through all possible access paths
+    window.Function = securedFunctionBlock;
+    
+    // Remove the original Function constructor as much as possible
+    try {
+      // Delete the Function property if possible
+      delete (window as any)['Function'];
+    } catch (e) {
+      // Ignore if delete fails
+    }
+    
+    // Redefine Function as a non-configurable, non-writable property that throws
+    Object.defineProperty(window, 'Function', {
+      configurable: false,
+      enumerable: false,
+      writable: false,
+      value: securedFunctionBlock
+    });
+    
+    // Also secure globalThis.Function access
+    try {
+      delete (globalThis as any)['Function'];
+      Object.defineProperty(globalThis, 'Function', {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: securedFunctionBlock
+      });
+    } catch (e) {
+      // Fallback if we can't secure globalThis
+      (globalThis as any)['Function'] = securedFunctionBlock;
+    }
+    
+    // SECURE: Enhanced prototype protection with selective crypto compatibility
     const protectObject = (obj, name) => {
       try {
-        // Crypto libraries often modify built-in objects - SKIP ALL FREEZING for crypto-sensitive objects
-        const isCryptoSensitive = ['Object', 'Array', 'Function', 'String', 'Number', 'Boolean', 'Date', 'RegExp', 'Error'].includes(name);
+        // Apply targeted protection instead of complete bypass
+        const needsCryptoCompat = ['String', 'Number', 'Boolean'].includes(name);
         
-        if (isCryptoSensitive) {
-          // COMPLETELY SKIP ALL PROTECTION for crypto-sensitive objects
-          ${options.diagnostics ? 'console.log("🔓 SKIPPING protection for crypto-sensitive:", name);' : ''}
-          return; // Exit early, no freezing at all
+        if (needsCryptoCompat) {
+          // Apply selective protection: protect constructor but allow prototype modification
+          try {
+            if (obj.prototype) {
+              // Use temporary patching for crypto-sensitive prototype modifications
+              withPatchedObjectMethods(() => {
+                // Allow crypto libraries to modify toString, valueOf, toJSON on prototypes
+                const cryptoProps = ['toString', 'valueOf', 'toJSON'];
+                cryptoProps.forEach(prop => {
+                  try {
+                    const descriptor = Object.getOwnPropertyDescriptor(obj.prototype, prop);
+                    if (descriptor && !descriptor.configurable) {
+                      originalDefineProperty.call(Object, obj.prototype, prop, {
+                        ...descriptor,
+                        configurable: true,
+                        writable: true
+                      });
+                    }
+                  } catch (e) { /* ignore */ }
+                });
+              });
+              
+              // Still protect the constructor itself
+              try {
+                originalFreeze.call(Object, obj.prototype.constructor);
+              } catch (e) { /* ignore */ }
+            }
+            ${options.diagnostics ? 'console.log("🔐 Selectively protected crypto-compatible:", name);' : ''}
+          } catch (cryptoError) {
+            ${options.diagnostics ? 'console.warn("⚠️  Crypto-compatible protection failed:", name, cryptoError.message);' : ''}
+          }
         } else {
-          // For other objects (like Promise), apply full protection
+          // For non-crypto objects, apply full protection
           try {
             originalFreeze.call(Object, obj);
             if (obj.prototype) {
               originalFreeze.call(Object, obj.prototype);
               originalFreeze.call(Object, obj.prototype.constructor);
             }
-            ${options.diagnostics ? 'console.log("🛡️  Protected:", name);' : ''}
+            ${options.diagnostics ? 'console.log("🛡️  Fully protected:", name);' : ''}
           } catch (freezeError) {
-            ${options.diagnostics ? 'console.warn("⚠️  Could not freeze object:", name, freezeError.message);' : ''}
+            ${options.diagnostics ? 'console.warn("⚠️  Could not fully protect:", name, freezeError.message);' : ''}
           }
         }
       } catch (e) {
