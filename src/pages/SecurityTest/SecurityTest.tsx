@@ -1,11 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Typography, Space } from 'antd';
 import {
@@ -35,21 +27,24 @@ const SecurityTest: React.FC = () => {
     setTestResults((prev) => [...prev, result]);
   };
 
-  // Pure bracket notation access without TypeScript casting
-  const getWindowProp = (prop: string) => {
-    // @ts-ignore - intentionally accessing window dynamically
-    return window[prop];
+  // Properly typed dynamic property access functions
+  const getWindowProp = (prop: string): unknown => {
+    return (window as unknown as Record<string, unknown>)[prop];
   };
   const setWindowProp = (prop: string, value: unknown): void => {
-    // @ts-ignore - intentionally setting window property dynamically
-    window[prop] = value;
+    (window as unknown as Record<string, unknown>)[prop] = value;
   };
-  const getGlobalProp = (obj: any, prop: string) => {
-    // @ts-ignore - intentionally accessing object property dynamically
+  const getGlobalProp = (
+    obj: Record<string, unknown>,
+    prop: string,
+  ): unknown => {
     return obj[prop];
   };
-  const setGlobalProp = (obj: any, prop: string, value: unknown): void => {
-    // @ts-ignore - intentionally setting object property dynamically
+  const setGlobalProp = (
+    obj: Record<string, unknown>,
+    prop: string,
+    value: unknown,
+  ): void => {
     obj[prop] = value;
   };
 
@@ -90,11 +85,14 @@ const SecurityTest: React.FC = () => {
     // Test 1: Function Constructor Attack
     logTest('🧪 Test 1: Function Constructor Code Injection', 'info');
     try {
-      const FunctionConstructor = window.Function || Function;
+      const FunctionConstructor =
+        (window as unknown as Record<string, unknown>).Function || Function;
       const testPayload =
         'return "SECURITY BREACH: Function constructor works"';
 
-      const maliciousFunction = new FunctionConstructor(testPayload);
+      const maliciousFunction = new (FunctionConstructor as new (
+        ...args: string[]
+      ) => () => string)(testPayload);
 
       const result = maliciousFunction();
       logTest('❌ FAIL: Function constructor not blocked - ' + result, 'fail');
@@ -108,10 +106,12 @@ const SecurityTest: React.FC = () => {
     // Test 2: eval() Attack
     logTest('🧪 Test 2: eval() Code Injection', 'info');
     try {
-      const evalFunction = window.eval || eval;
+      const evalFunction =
+        ((window as unknown as Record<string, unknown>).eval as typeof eval) ||
+        eval;
       const testPayload = '"SECURITY BREACH: eval works"';
 
-      const result = evalFunction.call(window, testPayload);
+      const result = evalFunction.call(window, testPayload) as string;
       logTest('❌ FAIL: eval() not blocked - ' + result, 'fail');
     } catch (error) {
       logTest('✅ PASS: eval() blocked - ' + (error as Error).message, 'pass');
@@ -144,8 +144,17 @@ const SecurityTest: React.FC = () => {
     // Method 1: Direct property assignment
     globalTamperingTotal++;
     try {
-      setGlobalProp(globalThis, '__test_property', 'test');
-      if (getGlobalProp(globalThis, '__test_property')) {
+      setGlobalProp(
+        globalThis as unknown as Record<string, unknown>,
+        '__test_property',
+        'test',
+      );
+      if (
+        getGlobalProp(
+          globalThis as unknown as Record<string, unknown>,
+          '__test_property',
+        )
+      ) {
         logTest('❌ Direct globalThis assignment not blocked', 'fail');
       } else {
         globalTamperingBlocked++;
@@ -168,7 +177,7 @@ const SecurityTest: React.FC = () => {
         enumerable: true,
         configurable: true,
       });
-      if ((window as any).maliciousExecuted) {
+      if ((window as unknown as Record<string, unknown>).maliciousExecuted) {
         logTest('❌ Object.defineProperty not blocked', 'fail');
       } else {
         globalTamperingBlocked++;
@@ -185,8 +194,9 @@ const SecurityTest: React.FC = () => {
     // Method 3: Bracket notation
     globalTamperingTotal++;
     try {
-      (window as any)['__maliciousFlag'] = 'bracket notation test';
-      if ((window as any)['__maliciousFlag']) {
+      (window as unknown as Record<string, unknown>)['__maliciousFlag'] =
+        'bracket notation test';
+      if ((window as unknown as Record<string, unknown>)['__maliciousFlag']) {
         logTest('❌ Bracket notation assignment not blocked', 'fail');
       } else {
         globalTamperingBlocked++;
@@ -208,7 +218,9 @@ const SecurityTest: React.FC = () => {
     // Test 4: Prototype Pollution
     logTest('🧪 Test 4: Prototype Pollution Attack', 'info');
     try {
-      (Object.prototype as any).maliciousProperty = 'SECURITY BREACH';
+      (
+        Object.prototype as unknown as Record<string, unknown>
+      ).maliciousProperty = 'SECURITY BREACH';
       const testObj = {};
       if ('maliciousProperty' in testObj) {
         logTest('❌ FAIL: Prototype pollution successful', 'fail');
@@ -232,7 +244,9 @@ const SecurityTest: React.FC = () => {
         document.body.appendChild(testDiv);
 
         setTimeout(() => {
-          if ((window as any).maliciousExecuted) {
+          if (
+            (window as unknown as Record<string, unknown>).maliciousExecuted
+          ) {
             logTest('❌ FAIL: Event-based execution not blocked', 'fail');
           } else {
             logTest('✅ PASS: Event-based execution blocked', 'pass');
@@ -264,10 +278,18 @@ const SecurityTest: React.FC = () => {
     advancedTotalCount++;
     try {
       // Check if window.constructor.constructor exists and behaves like Function
-      const constructorAccess = (window as any).constructor?.constructor;
+      const windowWithConstructor = window as unknown as Record<
+        string,
+        unknown
+      > & {
+        constructor?: { constructor?: unknown };
+      };
+      const constructorAccess = windowWithConstructor.constructor?.constructor;
       if (
         constructorAccess &&
-        constructorAccess.toString &&
+        typeof constructorAccess === 'function' &&
+        'toString' in constructorAccess &&
+        typeof constructorAccess.toString === 'function' &&
         constructorAccess.toString().includes('blocked by LavaMoat')
       ) {
         advancedBlockedCount++;
@@ -295,7 +317,9 @@ const SecurityTest: React.FC = () => {
     advancedTotalCount++;
     try {
       // Check if setTimeout is protected by examining its implementation
-      const originalSetTimeout = (globalThis as any).setTimeout;
+      const originalSetTimeout = (
+        globalThis as unknown as Record<string, unknown>
+      ).setTimeout as typeof setTimeout;
       if (
         originalSetTimeout &&
         originalSetTimeout
@@ -321,7 +345,7 @@ const SecurityTest: React.FC = () => {
               'fail',
             );
           }
-        } catch (e) {
+        } catch {
           advancedBlockedCount++;
           logTest('✅ setTimeout access restricted', 'pass');
         }
@@ -338,10 +362,11 @@ const SecurityTest: React.FC = () => {
     advancedTotalCount++;
     try {
       // Check if document.write is protected by examining its implementation
-      const documentWrite = (document as any).write;
+      const documentWrite = (document as unknown as Record<string, unknown>)
+        .write as Document['write'];
       if (
         documentWrite &&
-        documentWrite.toString &&
+        typeof documentWrite.toString === 'function' &&
         documentWrite.toString().includes('blocked by LavaMoat')
       ) {
         advancedBlockedCount++;
