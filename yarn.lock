@@ -1134,10 +1134,10 @@
   dependencies:
     "@types/deep-eql" "*"
 
-"@types/chrome@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@types/chrome/-/chrome-0.1.6.tgz#92f63c7eead162642e60216d2c40b6fe38cb1d01"
-  integrity sha512-Rnv8CDthTPA4/ojSWw5A//7Ew7P2pAJECxAR8YeOhehaUKZ7WX5fHIZbEw8m6bTRNzFyhxhzUb6T3gjKMry+2w==
+"@types/chrome@0.1.14":
+  version "0.1.14"
+  resolved "https://registry.yarnpkg.com/@types/chrome/-/chrome-0.1.14.tgz#9e14a614b78aeb9269355e9b43bb719179e696b7"
+  integrity sha512-uUX1f0zVFq9WhI1E9u0CSZFgqmoFxSqS0WgfjSWOdFSf3JXIHYXvhN5XyLQGovRUhhWQZgYIYw8ugSZ3EJ1mJw==
   dependencies:
     "@types/filesystem" "*"
     "@types/har-format" "*"

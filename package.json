@@ -75,7 +75,7 @@
   "devDependencies": {
     "@eslint/js": "9.35.0",
     "@types/bchaddrjs": "0.4.3",
-    "@types/chrome": "0.1.6",
+    "@types/chrome": "0.1.14",
     "@types/firefox-webext-browser": "120.0.4",
     "@types/node": "24.3.1",
     "@types/react": "19.1.12",
