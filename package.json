@@ -19,7 +19,7 @@
     "lint:fix": "eslint ./src ./public --fix",
     "type-check": "tsc",
     "preview": "vite preview",
-    "postinstall": "patch-package",
+    "postinstall": "patch-package && npm --prefix packages/vite-plugin-lavamoat run build",
     "generate-policy": "node scripts/generate-lavamoat-policy.js"
   },
   "resolutions": {
