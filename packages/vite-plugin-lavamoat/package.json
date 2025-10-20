@@ -40,13 +40,13 @@
   "license": "MIT",
   "dependencies": {
     "ses": "1.14.0",
-    "lavamoat-core": "16.6.2",
+    "lavamoat-core": "17.0.0",
     "@lavamoat/aa": "4.3.4",
     "tsup": "8.5.0",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   },
   "devDependencies": {
-    "@types/node": "24.5.2"
+    "@types/node": "24.8.1"
   },
   "peerDependencies": {
     "vite": "^7.0.0"

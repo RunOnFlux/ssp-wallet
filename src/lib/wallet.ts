@@ -3,7 +3,7 @@ import * as aaSchnorrMultisig from '@runonflux/aa-schnorr-multisig-sdk';
 import { Buffer } from 'buffer';
 import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
-import { wordlist } from '@scure/bip39/wordlists/english';
+import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { toCashAddress } from 'bchaddrjs';
 import {
   keyPair,

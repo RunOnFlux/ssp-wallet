@@ -49,7 +49,7 @@ import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
 import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter/PasswordStrengthMeter.tsx';
-import { wordlist } from '@scure/bip39/wordlists/english';
+import { wordlist } from '@scure/bip39/wordlists/english.js';
 
 interface passwordForm {
   password: string;
