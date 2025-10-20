@@ -8,12 +8,12 @@ import fusion from '../assets/logos/exchanges/fusion.svg';
 
 // Map exchange provider names to local logo imports (exact names from API)
 export const exchangeLogos: Record<string, string> = {
-  'Changelly': changelly,
-  'ChangeNow': changenow,
-  'SimpleSwap': simpleswap,
-  'ChangeHero': changehero,
-  'XOSwap': xoswap,
-  'Fusion': fusion,
+  Changelly: changelly,
+  ChangeNow: changenow,
+  SimpleSwap: simpleswap,
+  ChangeHero: changehero,
+  XOSwap: xoswap,
+  Fusion: fusion,
 };
 
 // Get logo by exchange name

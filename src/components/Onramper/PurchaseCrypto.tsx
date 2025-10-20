@@ -101,7 +101,12 @@ function PurchaseCrypto(props: {
             height="540px"
             width="404px"
             allow="accelerometer; autoplay; camera; gyroscope; payment; microphone"
+            // Security note: allow-scripts + allow-same-origin allows sandbox escape,
+            // but is required for Onramper widget to load resources (CORS).
+            // We accept this risk as we already trust Onramper with payment processing.
+            // Mitigations: user consent, extension isolation, referrer policy, HTTPS-only.
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            referrerPolicy="no-referrer"
             style={{
               border: 'none',
               margin: '-6px',
