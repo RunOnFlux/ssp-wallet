@@ -75,7 +75,7 @@
     "stream-browserify": "3.0.0",
     "util": "0.12.5",
     "viem": "2.24.2",
-    "vite-plugin-lavamoat": "file:packages/vite-plugin-lavamoat"
+    "vite-plugin-lavamoat": "link:packages/vite-plugin-lavamoat"
   },
   "devDependencies": {
     "@eslint/js": "9.35.0",

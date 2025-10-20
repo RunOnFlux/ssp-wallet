@@ -1,6 +1,7 @@
 {
   "name": "vite-plugin-lavamoat",
   "version": "1.0.0",
+  "private": true,
   "description": "Secure your Vite applications with LavaMoat runtime protection - blocks eval injection, prototype pollution, and supply chain attacks",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

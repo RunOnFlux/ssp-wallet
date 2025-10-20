@@ -7172,14 +7172,9 @@ vite-node@3.2.4:
     pathe "^2.0.3"
     vite "^5.0.0 || ^6.0.0 || ^7.0.0-0"
 
-"vite-plugin-lavamoat@file:packages/vite-plugin-lavamoat":
-  version "1.0.0"
-  dependencies:
-    "@lavamoat/aa" "4.3.4"
-    lavamoat-core "16.6.2"
-    ses "1.14.0"
-    tsup "8.5.0"
-    typescript "5.9.2"
+"vite-plugin-lavamoat@link:packages/vite-plugin-lavamoat":
+  version "0.0.0"
+  uid ""
 
 vite@7.1.5:
   version "7.1.5"
