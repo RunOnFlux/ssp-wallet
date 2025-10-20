@@ -4,6 +4,9 @@
   "private": true,
   "version": "1.26.2",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "vite --host",
     "build": "tsc && vite build",
@@ -19,7 +22,7 @@
     "lint:fix": "eslint ./src ./public --fix",
     "type-check": "tsc",
     "preview": "vite preview",
-    "postinstall": "patch-package && npm --prefix packages/vite-plugin-lavamoat run build",
+    "postinstall": "patch-package && npm run --workspace=vite-plugin-lavamoat build",
     "generate-policy": "node scripts/generate-lavamoat-policy.js"
   },
   "resolutions": {
