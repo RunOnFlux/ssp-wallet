@@ -1320,10 +1320,10 @@
   dependencies:
     "@types/deep-eql" "*"
 
-"@types/chrome@0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@types/chrome/-/chrome-0.1.6.tgz#92f63c7eead162642e60216d2c40b6fe38cb1d01"
-  integrity sha512-Rnv8CDthTPA4/ojSWw5A//7Ew7P2pAJECxAR8YeOhehaUKZ7WX5fHIZbEw8m6bTRNzFyhxhzUb6T3gjKMry+2w==
+"@types/chrome@0.1.24":
+  version "0.1.24"
+  resolved "https://registry.yarnpkg.com/@types/chrome/-/chrome-0.1.24.tgz#71c93111c40a057a8a45c4ab74eb7fe0aaf0048a"
+  integrity sha512-9iO9HL2bMeGS4C8m6gNFWUyuPE5HEUFk+rGh+7oriUjg+ata4Fc9PoVlu8xvGm7yoo3AmS3J6fAjoFj61NL2rw==
   dependencies:
     "@types/filesystem" "*"
     "@types/har-format" "*"
@@ -7173,8 +7173,13 @@ vite-node@3.2.4:
     vite "^5.0.0 || ^6.0.0 || ^7.0.0-0"
 
 "vite-plugin-lavamoat@link:packages/vite-plugin-lavamoat":
-  version "0.0.0"
-  uid ""
+  version "1.0.0"
+  dependencies:
+    "@lavamoat/aa" "4.3.4"
+    lavamoat-core "16.6.2"
+    ses "1.14.0"
+    tsup "8.5.0"
+    typescript "5.9.2"
 
 vite@7.1.5:
   version "7.1.5"
