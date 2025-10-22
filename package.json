@@ -2,7 +2,7 @@
   "name": "ssp-wallet",
   "description": "Secure. Simple. Powerful.",
   "private": true,
-  "version": "1.26.2",
+  "version": "1.27.0",
   "type": "module",
   "workspaces": [
     "packages/*"
