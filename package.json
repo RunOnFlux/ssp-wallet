@@ -26,10 +26,10 @@
     "generate-policy": "node scripts/generate-lavamoat-policy.js"
   },
   "resolutions": {
-    "viem": "2.38.3"
+    "viem": "2.38.5"
   },
   "overrides": {
-    "viem": "2.38.3"
+    "viem": "2.38.5"
   },
   "dependencies": {
     "@alchemy/aa-core": "3.19.0",
@@ -37,7 +37,7 @@
     "@ant-design/v5-patch-for-react-19": "1.0.3",
     "@metamask/browser-passworder": "6.0.0",
     "@noble/hashes": "2.0.1",
-    "@reduxjs/toolkit": "2.9.1",
+    "@reduxjs/toolkit": "2.9.2",
     "@reown/walletkit": "1.3.0",
     "@runonflux/aa-schnorr-multisig-sdk": "1.2.1",
     "@runonflux/flux-sdk": "1.0.3",
@@ -49,7 +49,7 @@
     "@walletconnect/utils": "2.22.4",
     "antd": "5.27.6",
     "assert": "2.1.0",
-    "axios": "1.12.2",
+    "axios": "1.13.0",
     "bchaddrjs": "0.5.2",
     "bignumber.js": "9.3.1",
     "buffer": "6.0.3",
@@ -67,36 +67,36 @@
     "react": "19.2.0",
     "react-countdown-circle-timer": "3.2.1",
     "react-dom": "19.2.0",
-    "react-i18next": "16.1.0",
+    "react-i18next": "16.2.1",
     "react-redux": "9.2.0",
     "react-router": "7.9.4",
     "react-secure-storage": "1.3.2",
     "socket.io-client": "4.8.1",
     "stream-browserify": "3.0.0",
     "util": "0.12.5",
-    "viem": "2.38.3",
+    "viem": "2.38.5",
     "vite-plugin-lavamoat": "link:packages/vite-plugin-lavamoat"
   },
   "devDependencies": {
     "@eslint/js": "9.38.0",
     "@lavamoat/allow-scripts": "3.4.0",
     "@types/bchaddrjs": "0.4.3",
-    "@types/chrome": "0.1.24",
+    "@types/chrome": "0.1.27",
     "@types/firefox-webext-browser": "143.0.0",
-    "@types/node": "24.8.1",
+    "@types/node": "24.9.1",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "@types/react-redux": "7.1.34",
-    "@typescript-eslint/eslint-plugin": "8.46.1",
-    "@typescript-eslint/parser": "8.46.1",
-    "@vitejs/plugin-react-swc": "4.1.0",
+    "@typescript-eslint/eslint-plugin": "8.46.2",
+    "@typescript-eslint/parser": "8.46.2",
+    "@vitejs/plugin-react-swc": "4.2.0",
     "@vitest/coverage-v8": "3.2.4",
     "archiver": "7.0.1",
     "eslint": "9.38.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.5.4",
     "eslint-plugin-react": "7.37.5",
-    "eslint-plugin-react-hooks": "7.0.0",
+    "eslint-plugin-react-hooks": "7.0.1",
     "eslint-plugin-react-refresh": "0.4.24",
     "globals": "16.4.0",
     "jsdom": "27.0.1",
@@ -104,8 +104,8 @@
     "tsconfig-paths": "4.2.0",
     "tsx": "4.20.6",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.46.1",
-    "vite": "7.1.11",
+    "typescript-eslint": "8.46.2",
+    "vite": "7.1.12",
     "vitest": "3.2.4"
   },
   "engines": {
