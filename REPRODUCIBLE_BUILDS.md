@@ -60,10 +60,25 @@ npm run build:deterministic
 # - SHA256SUMS
 ```
 
+## For Maintainers - Signing Releases
+
+After building deterministic packages, maintainers must sign the SHA256SUMS file with GPG:
+
+```bash
+# Sign the SHA256SUMS file with the official SSP Wallet GPG key
+gpg --armor --detach-sign --local-user F3244FFC7207DB2CAA355DF506139DA3A0B13EC1 SHA256SUMS
+
+# This creates SHA256SUMS.asc which users can verify with:
+# gpg --verify SHA256SUMS.asc SHA256SUMS
+```
+
+The signed `SHA256SUMS.asc` file must be uploaded to the GitHub release alongside the build artifacts.
+
 ## Requirements
 
 - Docker (for deterministic builds)
 - Git (for version checkout)
+- GPG (for signing releases - maintainers only)
 
 ## Technical Details
 
