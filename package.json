@@ -2,7 +2,7 @@
   "name": "ssp-wallet",
   "description": "Secure. Simple. Powerful.",
   "private": true,
-  "version": "1.27.0",
+  "version": "1.27.1",
   "type": "module",
   "workspaces": [
     "packages/*"
@@ -41,7 +41,7 @@
     "@reown/walletkit": "1.3.0",
     "@runonflux/aa-schnorr-multisig-sdk": "1.2.1",
     "@runonflux/flux-sdk": "1.0.3",
-    "@runonflux/utxo-lib": "1.0.1",
+    "@runonflux/utxo-lib": "1.0.2",
     "@scure/bip32": "2.0.1",
     "@scure/bip39": "2.0.1",
     "@walletconnect/core": "2.22.4",
