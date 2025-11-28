@@ -97,19 +97,28 @@ export function formatFiatWithSymbol(amount: BigNumber) {
   return `${sspConfig().fiatSymbol}${formated} ${sspConfig().fiatCurrency}`;
 }
 
+/**
+ * Fetches exchange rate for a specific blockchain chain and converts fiat rates.
+ * @param chain - The blockchain chain identifier (e.g., 'btc', 'eth', 'flux')
+ * @returns A currency object with converted fiat values based on the chain's crypto rate
+ */
 export async function fetchRate(chain: string): Promise<currency> {
   try {
     const url = `https://${sspConfig().relay}/v1/rates`;
     const response = await axios.get<currencySSPRelay>(url);
     const fiats = response.data.fiat;
     const cryptos = response.data.crypto;
-    for (const fiat of Object.keys(fiats)) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      fiats[fiat] = (cryptos[chain] ?? 0) * fiats[fiat];
+    const cryptoRate =
+      (cryptos as unknown as Record<string, number>)[chain] ?? 0;
+
+    // Convert each fiat rate by multiplying with the crypto rate
+    const fiatKeys = Object.keys(fiats) as (keyof currency)[];
+    for (const fiat of fiatKeys) {
+      (fiats as Record<keyof currency, number>)[fiat] =
+        cryptoRate * fiats[fiat];
     }
-    const currencyObj: currency = fiats;
-    return currencyObj;
+
+    return fiats;
   } catch (error) {
     console.log(error);
     throw error;

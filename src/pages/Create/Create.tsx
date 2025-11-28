@@ -631,7 +631,7 @@ function Create() {
     const [isConfirmed, setIsConfirmed] = useState(false);
 
     const RandomWord = () => {
-      const pos = Math.floor(Math.random() * (wordlist.length + 1));
+      const pos = Math.floor(Math.random() * wordlist.length);
       return wordlist[pos];
     };
 

@@ -263,23 +263,21 @@ function SendEVM() {
   }, [state.receiver, state.amount, state.data]);
 
   useEffect(() => {
-    setBaseGasPrice(networkFees[activeChain].base.toString());
-    setPriorityGasPrice(networkFees[activeChain].priority!.toString());
+    const chainFees = networkFees[activeChain];
+    const baseFee = chainFees?.base ?? blockchainConfig.baseFee;
+    const priorityFee = chainFees?.priority ?? blockchainConfig.priorityFee;
+
+    setBaseGasPrice(baseFee.toString());
+    setPriorityGasPrice(priorityFee.toString());
     // Initial gas breakdown will be calculated by getTotalGasLimit in useEffect
-    form.setFieldValue(
-      'base_gas_price',
-      networkFees[activeChain].base.toString(),
-    );
-    form.setFieldValue(
-      'priority_gas_price',
-      networkFees[activeChain].priority!.toString(),
-    );
+    form.setFieldValue('base_gas_price', baseFee.toString());
+    form.setFieldValue('priority_gas_price', priorityFee.toString());
 
     void getTotalGasLimit();
     const totalGas = new BigNumber(blockchainConfig.gasLimit.toString()); // get better estimation
-    const totalGasPrice = new BigNumber(
-      networkFees[activeChain].base.toString(),
-    ).plus(networkFees[activeChain].priority!.toString());
+    const totalGasPrice = new BigNumber(baseFee.toString()).plus(
+      priorityFee.toString(),
+    );
     const totalFee = totalGas.multipliedBy(totalGasPrice);
     const totalFeeETH = totalFee.dividedBy(10 ** 18).toFixed();
     if (totalFee.isNaN() || !totalFeeETH) {
@@ -654,9 +652,12 @@ function SendEVM() {
 
   const refreshAutomaticFee = () => {
     if (!manualFee) {
-      // reset fee
-      setBaseGasPrice(networkFees[activeChain].base.toString());
-      setPriorityGasPrice(networkFees[activeChain].priority!.toString());
+      // reset fee with safe fallbacks
+      const chainFees = networkFees[activeChain];
+      const baseFee = chainFees?.base ?? blockchainConfig.baseFee;
+      const priorityFee = chainFees?.priority ?? blockchainConfig.priorityFee;
+      setBaseGasPrice(baseFee.toString());
+      setPriorityGasPrice(priorityFee.toString());
       // Gas components will be recalculated by getTotalGasLimit
     }
   };
@@ -929,9 +930,9 @@ function SendEVM() {
           );
           throw new Error(t('send:err_public_nonces'));
         }
-        // choose random nonce
+        // choose random nonce (index must be within valid array bounds: 0 to length-1)
         const pos = Math.floor(
-          Math.random() * (sspKeyPublicNoncesStorage.length + 1),
+          Math.random() * sspKeyPublicNoncesStorage.length,
         );
         const publicNoncesSSP = sspKeyPublicNoncesStorage[pos];
         // delete the nonce from the array

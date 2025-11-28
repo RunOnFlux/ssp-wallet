@@ -73,7 +73,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [chain, setChain] = useState('');
   const [publicNonces, setPublicNonces] = useState('');
   const [publicNoncesRejected, setPublicNoncesRejected] = useState('');
-  const [socketIdentiy, setSocketIdentity] = useState('');
+  const [socketIdentity, setSocketIdentity] = useState('');
   const [walletConnectResponse, setWalletConnectResponse] =
     useState<WalletConnectSocketResponse | null>(null);
   const [evmSigned, setEvmSigned] = useState('');
@@ -95,15 +95,27 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('Connection Error', error);
     });
 
-    // leave if identity changed
-    if (socketIdentiy) {
-      newSocket.emit('leave', { wkIdentity: socketIdentiy });
-    }
-    setSocketIdentity(wkIdentity);
+    // Wait for connection before emitting events to avoid race conditions
+    newSocket.on('connect', () => {
+      // leave previous identity room if identity changed
+      if (socketIdentity && socketIdentity !== wkIdentity) {
+        newSocket.emit('leave', { wkIdentity: socketIdentity });
+      }
+      setSocketIdentity(wkIdentity);
 
-    newSocket.emit('join', {
-      wkIdentity,
+      newSocket.emit('join', {
+        wkIdentity,
+      });
     });
+
+    // If already connected (reconnection scenario), emit immediately
+    if (newSocket.connected) {
+      if (socketIdentity && socketIdentity !== wkIdentity) {
+        newSocket.emit('leave', { wkIdentity: socketIdentity });
+      }
+      setSocketIdentity(wkIdentity);
+      newSocket.emit('join', { wkIdentity });
+    }
 
     newSocket.on('txid', (tx: serverResponse) => {
       console.log('incoming txid');
