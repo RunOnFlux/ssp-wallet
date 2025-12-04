@@ -73,49 +73,39 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [chain, setChain] = useState('');
   const [publicNonces, setPublicNonces] = useState('');
   const [publicNoncesRejected, setPublicNoncesRejected] = useState('');
-  const [socketIdentity, setSocketIdentity] = useState('');
   const [walletConnectResponse, setWalletConnectResponse] =
     useState<WalletConnectSocketResponse | null>(null);
   const [evmSigned, setEvmSigned] = useState('');
   const [evmSigningRejected, setEvmSigningRejected] = useState('');
 
   useEffect(() => {
-    console.log('socket init');
+    console.log('socket init, wkIdentity:', wkIdentity);
     if (!wkIdentity) {
+      // Clear socket state when identity is cleared (logout)
+      setSocket(null);
       return;
     }
 
     const newSocket = io(`https://${sspConfig().relay}`, {
       path: '/v1/socket/wallet',
-      reconnectionAttempts: 100,
-      timeout: 10000,
+      reconnectionAttempts: 100, // default: Infinity
+      timeout: 10000, // default: 20000
+    });
+
+    // 'connect' fires on both initial connection AND after reconnection
+    // so we only need this one handler (not 'reconnect')
+    newSocket.on('connect', () => {
+      console.log('socket connected, joining room:', wkIdentity);
+      newSocket.emit('join', { wkIdentity });
+    });
+
+    newSocket.on('disconnect', (reason) => {
+      console.log('socket disconnected:', reason);
     });
 
     newSocket.on('connect_error', (error) => {
       console.error('Connection Error', error);
     });
-
-    // Wait for connection before emitting events to avoid race conditions
-    newSocket.on('connect', () => {
-      // leave previous identity room if identity changed
-      if (socketIdentity && socketIdentity !== wkIdentity) {
-        newSocket.emit('leave', { wkIdentity: socketIdentity });
-      }
-      setSocketIdentity(wkIdentity);
-
-      newSocket.emit('join', {
-        wkIdentity,
-      });
-    });
-
-    // If already connected (reconnection scenario), emit immediately
-    if (newSocket.connected) {
-      if (socketIdentity && socketIdentity !== wkIdentity) {
-        newSocket.emit('leave', { wkIdentity: socketIdentity });
-      }
-      setSocketIdentity(wkIdentity);
-      newSocket.emit('join', { wkIdentity });
-    }
 
     newSocket.on('txid', (tx: serverResponse) => {
       console.log('incoming txid');
@@ -165,7 +155,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     setSocket(newSocket);
+
     return () => {
+      console.log('socket cleanup, leaving room:', wkIdentity);
+      // Clear socket state immediately to prevent stale reference usage
+      setSocket(null);
+      if (newSocket.connected) {
+        newSocket.emit('leave', { wkIdentity });
+      }
       newSocket.close();
     };
   }, [wkIdentity]);
@@ -199,7 +196,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const sendWalletConnectRequest = (request: WalletConnectSocketRequest) => {
-    if (!socket) {
+    if (!socket || !socket.connected) {
       console.error('[WalletConnect Socket] Socket not connected');
       return;
     }

@@ -26,41 +26,33 @@ function SocketListener({
   const [txid, setTxid] = useState('');
 
   useEffect(() => {
-    if (socketTxid) {
-      setTxid(socketTxid);
-      clearTxid?.();
-      txSentProp();
-    }
-    if (ignorePopups) {
+    if (!socketTxid) {
       return;
     }
-    if (socketTxid) {
-      setTxid(socketTxid);
-      clearTxid?.();
+    // Always notify parent and store txid
+    setTxid(socketTxid);
+    clearTxid?.();
+    txSentProp();
+
+    // Show popup only if not ignoring
+    if (!ignorePopups) {
+      setOpenTxSent(true);
     }
   }, [socketTxid]);
 
   useEffect(() => {
-    if (txRejected) {
-      txRejectedProp();
-    }
-    if (ignorePopups) {
+    if (!txRejected) {
       return;
     }
-    if (txRejected) {
+    // Always notify parent
+    txRejectedProp();
+    clearTxRejected?.();
+
+    // Show popup only if not ignoring
+    if (!ignorePopups) {
       setOpenTxRejected(true);
-      clearTxRejected?.();
     }
   }, [txRejected]);
-
-  useEffect(() => {
-    if (ignorePopups) {
-      return;
-    }
-    if (txid) {
-      setOpenTxSent(true);
-    }
-  }, [txid]);
 
   const txSentAction = (status: boolean) => {
     setOpenTxSent(status);
