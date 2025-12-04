@@ -35,7 +35,7 @@ Help us build new features, fix bugs, or improve existing code by submitting a p
 ## Development Environment
 
 ### Prerequisites
-- **Node.js**: Version 22 or higher
+- **Node.js**: Version 24 or higher
 - **Yarn**: Latest version
 
 ### Setting Up

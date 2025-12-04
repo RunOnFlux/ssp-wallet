@@ -5,9 +5,9 @@
 === REPRODUCIBLE BUILD VERIFICATION ===
 
 Requirements:
-- Ubuntu 22.04 LTS (for consistent build environment)
+- Ubuntu 24.04 LTS (for consistent build environment)
 - Docker installed and running
-- Node.js 22+ installed
+- Node.js 24+ installed
 - Git installed
 
 To verify the submitted package matches source code exactly:

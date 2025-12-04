@@ -29,7 +29,7 @@ sha256sum -c SHA256SUMS
 
 ### Build Environment
 
-- **Docker Image:** `node:22.17.1-alpine` (SHA-pinned)
+- **Docker Image:** `node:24.11.1-alpine` (SHA-pinned)
 - **Build Date:** 2025-01-01 00:00:00 UTC (deterministic timestamp)
 - **Dependencies:** Frozen via `yarn.lock`
 - **Environment:** Isolated container with no network access

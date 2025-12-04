@@ -147,7 +147,7 @@ By using SSP Wallet, you agree to the terms outlined in our [Terms of Service](h
 ## Developer Information
 
 - **Built With:** React 19, TypeScript, Vite
-- **Node Version:** 22+
+- **Node Version:** 24+
 - **Install Dependencies:** `yarn`
 - **Run Development Mode:** `yarn dev`
 - **Build and Pack for production:** `yarn build:all`

@@ -40,19 +40,19 @@
   "license": "MIT",
   "dependencies": {
     "ses": "1.14.0",
-    "lavamoat-core": "17.0.0",
+    "lavamoat-core": "17.1.2",
     "@lavamoat/aa": "4.3.4",
-    "tsup": "8.5.0",
+    "tsup": "8.5.1",
     "typescript": "5.9.3"
   },
   "devDependencies": {
-    "@types/node": "24.9.1"
+    "@types/node": "24.10.1"
   },
   "peerDependencies": {
     "vite": "^7.0.0"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "repository": {
     "type": "git",

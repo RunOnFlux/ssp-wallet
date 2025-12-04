@@ -1,7 +1,7 @@
 # Deterministic Build Dockerfile for SSP Wallet
 # This Dockerfile ensures reproducible builds for Firefox review compliance
 
-FROM node:22.17.1-alpine@sha256:5539840ce9d013fa13e3b9814c9353024be7ac75aca5db6d039504a56c04ea59
+FROM node:24.11.1-alpine@sha256:2867d550cf9d8bb50059a0fff528741f11a84d985c732e60e19e8e75c7239c43
 
 # Set deterministic environment variables
 ENV NODE_ENV=production

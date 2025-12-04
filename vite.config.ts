@@ -12,7 +12,7 @@ export default defineConfig(({ command, mode }) => ({
           viteLavaMoat({
             policyPath: './security/vite-lavamoat-policy.json',
             lockdown: true,
-            generatePolicy: false,  // Static policy - use npm run generate-policy to update
+            generatePolicy: true,  // Static policy - use npm run generate-policy to update
             diagnostics: true,
             scuttleGlobalThis: {
               enabled: true,
