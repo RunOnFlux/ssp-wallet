@@ -136,13 +136,13 @@
     "language": "Bahasa",
     "fiat_currency": "Mata Uang Fiat",
     "use_system_language": "Gunakan Bahasa Sistem",
-    "public_nonces_sync": "Public Nonces",
-    "sync_public_nonces": "Sync Public Nonces",
-    "public_nonces_sync_help": "Public nonces are required for EVM transactions. This forces synchronisation of nonces from your SSP Key device to enable EVM transaction signing."
+    "public_nonces_sync": "Nonces Publik",
+    "sync_public_nonces": "Sinkronisasi Nonces Publik",
+    "public_nonces_sync_help": "Nonces publik diperlukan untuk transaksi EVM. Hal ini mengharuskan sinkronisasi nonces dari perangkat SSP Key milik Anda untuk memfasilitasi penandatanganan transaksi EVM."
   },
   "receive": {
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
-    "receive_wallet": "Receive to {{wallet}}",
+    "receive_wallet": "Terima ke {{wallet}}",
     "wallet_address": "Alamat Dompet",
     "wallet_address_desc": "Ini adalah alamat dompet Anda.",
     "warning_chain_only": "Alamat ini hanya untuk blockchain {{chain_name}} ({{chain_symbol}}). Hanya setorkan aset pada rantai {{chain_name}} ({{chain_symbol}}) ke alamat ini. Menyetorkan dari rantai lain akan mengakibatkan hilangnya dana!",
@@ -565,106 +565,106 @@
   },
   "tutorial": {
     "tutorial": "Tutorial",
-    "wallet_synchronized": "🎉 Wallet Synchronized!",
-    "wallet_synchronized_desc": "Your SSP Wallet is now ready! Would you like a quick tour to learn about all the features?",
-    "start_wallet_tour": "Start Wallet Tour",
-    "maybe_later": "Maybe later",
-    "skip_tutorial": "Skip Tutorial",
-    "previous": "Previous",
-    "next": "Next",
-    "complete": "Complete",
-    "step_of": "Step {{current}} of {{total}}",
-    "click_highlighted": "Click the highlighted element to continue",
-    "tutorial_help": "Tutorial & Help",
-    "start_tutorial": "Start Tutorial",
-    "reset_tutorial_progress": "Reset Tutorial Progress",
-    "tutorial_reset_success": "Tutorial has been reset. You can start it again from the help button.",
-    "tutorial_reset_error": "Failed to reset tutorial.",
-    "switch_to_bitcoin_first": "Please switch to Bitcoin blockchain first to start the tutorial. Use the chain selector at the top of the page.",
-    "err_tutorial_wallet_data": "Cannot start tutorial - wallet data not available. Please try again.",
-    "navigating_to_home": "Navigating to home page to start tutorial...",
-    "waiting_wallet_data": "Waiting for wallet data to load...",
-    "tutorial_cancelled": "Tutorial cancelled. You can restart it anytime using the help button.",
-    "tutorial_cancelled_wrong_chain": "Tutorial cancelled: You selected a different chain. The tutorial requires Ethereum to continue. You can restart it from the menu.",
-    "visit_website": "Visit Website",
-    "user_guide": "User Guide",
-    "support": "Support",
-    "contact": "Contact",
-    "privacy_policy": "Privacy Policy",
-    "terms_of_service": "Terms of Service",
+    "wallet_synchronized": "🎉 Dompet Telah Disinkronkan!",
+    "wallet_synchronized_desc": "Dompet SSP milik Anda sekarang sudah siap! Apakah Anda ingin tur singkat untuk mengenal semua fiturnya?",
+    "start_wallet_tour": "Mulai Tur Dompet",
+    "maybe_later": "Lain kali",
+    "skip_tutorial": "Lewati Tutorial",
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya",
+    "complete": "Selesai",
+    "step_of": "Langkah {{current}} dari {{total}}",
+    "click_highlighted": "Klik elemen yang ditandai untuk melanjutkan",
+    "tutorial_help": "Tutorial & Bantuan",
+    "start_tutorial": "Mulai Tutorial",
+    "reset_tutorial_progress": "Atur ulang Kemajuan Tutorial",
+    "tutorial_reset_success": "Tutorial telah diatur ulang. Anda dapat memulainya kembali dari tombol Bantuan.",
+    "tutorial_reset_error": "Gagal untuk mengatur ulang tutorial.",
+    "switch_to_bitcoin_first": "Silakan beralih ke blockchain Bitcoin terlebih dahulu untuk memulai tutorial. Gunakan selektor rantai di bagian atas halaman.",
+    "err_tutorial_wallet_data": "Tidak dapat memulai tutorial - data dompet tidak tersedia. Silakan coba lagi.",
+    "navigating_to_home": "Beralih ke halaman utama untuk memulai tutorial...",
+    "waiting_wallet_data": "Menunggu data dompet dimuat...",
+    "tutorial_cancelled": "Tutorial dibatalkan. Anda dapat memulainya kembali kapan saja dengan menggunakan tombol Bantuan.",
+    "tutorial_cancelled_wrong_chain": "Tutorial dibatalkan: Anda telah memilih rantai yang berbeda. Tutorial ini memerlukan Ethereum untuk dilanjutkan. Anda dapat memulainya kembali dari menu.",
+    "visit_website": "Kunjungi Situs Web",
+    "user_guide": "Panduan pengguna",
+    "support": "Dukungan",
+    "contact": "Kontak",
+    "privacy_policy": "Kebijakan Privasi",
+    "terms_of_service": "Ketentuan Layanan",
     "steps": {
       "welcome_overview": {
-        "title": "Welcome to SSP Wallet!",
-        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! Your wallet is now ready to use. Here you can see your wallet address and balance. Always verify that the wallet address displayed here matches the address shown on your SSP Key device."
+        "title": "Selamat Datang di Dompet SSP!",
+        "content": "Anda telah berhasil menyinkronkan Dompet SSP dengan Kunci SSP dan terhubung ke blockchain Bitcoin! Dompet Anda sekarang siap digunakan. Di sini Anda dapat melihat alamat dompet dan saldo Anda. Selalu pastikan bahwa alamat dompet yang ditampilkan di sini sesuai dengan alamat yang ditampilkan di perangkat Kunci SSP milik Anda."
       },
       "multi_chain_intro": {
-        "title": "Multiple Blockchain Support",
-        "content": "SSP Wallet supports multiple blockchains! This dropdown shows your current wallet and chain. Click on it to access chain switching options."
+        "title": "Dukungan untuk Beberapa Blockchain",
+        "content": "Dompet SSP mendukung multiple blockchain! Menu tarik-turun ini menampilkan dompet dan rantai blok Anda saat ini. Klik pada menu tersebut untuk mengakses opsi pergantian rantai blok."
       },
       "find_switch_chain": {
-        "title": "Switch Chain Button",
-        "content": "Perfect! Now click on \"Switch Chain\" to open the blockchain selection where you can choose different networks."
+        "title": "Tombol Pengalih Rantai",
+        "content": "Sempurna! Sekarang klik “Switch Chain” untuk membuka pilihan blockchain di mana Anda dapat memilih jaringan yang berbeda."
       },
       "select_ethereum": {
-        "title": "Select Ethereum",
-        "content": "Great! The chain selection modal is open. Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
+        "title": "Pilih Ethereum",
+        "content": "Bagus! Jendela pemilihan rantai sudah terbuka. Sekarang klik Ethereum untuk beralih ke blockchain Ethereum. Hal ini akan memicu sinkronisasi dengan jaringan Ethereum."
       },
       "ethereum_sync_waiting": {
-        "title": "Sync with SSP Key",
-        "content": "To begin synchronizing with the Ethereum blockchain, scan the QR code with your SSP Key. This will enable your wallet to interact with Ethereum, its tokens and dApps.",
-        "sync_hint": "The tutorial will continue automatically once sync is complete."
+        "title": "Sinkronisasi dengan Kunci SSP",
+        "content": "Untuk memulai sinkronisasi dengan blockchain Ethereum, pindai kode QR menggunakan SSP Key Anda. Hal ini akan memungkinkan dompet Anda untuk berinteraksi dengan Ethereum, token-tokennya, dan dApps.",
+        "sync_hint": "Tutorial akan dilanjutkan secara otomatis setelah sinkronisasi selesai."
       },
       "ethereum_tokens": {
-        "title": "Welcome to Ethereum!",
-        "content": "You're now on Ethereum! This chain supports smart contracts and ERC-20 tokens. The Tokens section lets you manage your token portfolio - view, add, or search for popular tokens like USDT and USDC."
+        "title": "Selamat datang di Etherium!",
+        "content": "Anda sekarang berada di Ethereum! Jaringan ini mendukung kontrak pintar dan token ERC-20. Bagian Token memungkinkan Anda mengelola portofolio token Anda - lihat, tambahkan, atau cari token populer seperti USDT dan USDC."
       },
       "add_token_demo": {
-        "title": "Adding Tokens",
-        "content": "Click here to add new tokens. You can search for popular tokens like USDT or add custom tokens by entering their contract address."
+        "title": "Menambahkan Token",
+        "content": "Klik di sini untuk menambahkan token baru. Anda dapat mencari token populer seperti USDT atau menambahkan token kustom dengan memasukkan alamat kontraknya."
       },
       "receive_intro": {
-        "title": "Receiving Funds",
-        "content": "Click Receive to get your Ethereum address. This address can receive ETH and any ERC-20 tokens. You can copy the address or use the QR code."
+        "title": "Menerima Dana",
+        "content": "Klik Terima untuk mendapatkan alamat Ethereum Anda. Alamat ini dapat menerima ETH dan token ERC-20 apa pun. Anda dapat menyalin alamat tersebut atau menggunakan kode QR."
       },
       "send_intro": {
-        "title": "Sending Funds",
-        "content": "The Send button opens the transaction interface where you can send cryptocurrency to other addresses. It includes fields for recipient, amount, and fees."
+        "title": "Pengiriman Dana",
+        "content": "Tombol Kirim membuka antarmuka transaksi di mana Anda dapat mengirim cryptocurrency ke alamat lain. Antarmuka ini mencakup kolom untuk penerima, jumlah, dan biaya."
       },
       "swap_feature": {
-        "title": "Swap Feature",
-        "content": "Exchange one cryptocurrency for another instantly. Swap between different tokens or convert ETH to tokens."
+        "title": "Fitur Swap",
+        "content": "Tukarkan satu cryptocurrency dengan cryptocurrency lain secara instan. Tukarkan antara token yang berbeda atau konversikan ETH menjadi token."
       },
       "buy_sell_feature": {
-        "title": "Buy & Sell Crypto",
-        "content": "Purchase cryptocurrency with fiat currency or sell your crypto for cash. This integrates with trusted payment providers."
+        "title": "Beli & Jual Kripto",
+        "content": "Beli cryptocurrency dengan mata uang fiat atau jual cryptocurrency Anda untuk uang tunai. Ini terintegrasi dengan penyedia pembayaran tepercaya."
       },
       "activity_section": {
-        "title": "Transaction History",
-        "content": "The Activity section shows your complete transaction history. View sent, received, and pending transactions with full details."
+        "title": "Riwayat Transaksi",
+        "content": "Bagian Aktivitas menampilkan riwayat transaksi lengkap Anda. Lihat transaksi yang telah dikirim, diterima, dan sedang dalam proses dengan detail lengkap."
       },
       "activity_explanation": {
-        "title": "Your Transactions",
-        "content": "Here you can see all your transactions - incoming, outgoing, and pending. Click any transaction for detailed information including fees and confirmations."
+        "title": "Transaksi Anda",
+        "content": "Di sini Anda dapat melihat semua transaksi Anda - masuk, keluar, dan yang sedang diproses. Klik transaksi mana pun untuk informasi detail termasuk biaya dan konfirmasi."
       },
       "contacts_section": {
-        "title": "Contacts Management",
-        "content": "The Contacts section lets you save frequently used addresses with custom names. This makes sending funds easier and safer."
+        "title": "Pengelolaan Kontak",
+        "content": "Bagian Kontak memungkinkan Anda menyimpan alamat yang sering digunakan dengan nama kustom. Hal ini memudahkan dan membuat proses pengiriman dana menjadi lebih aman."
       },
       "contacts_explanation": {
-        "title": "Your Address Book",
-        "content": "Save addresses you send to frequently. Each contact has a name and address, making transactions more convenient and reducing errors."
+        "title": "Buku Alamat Anda",
+        "content": "Simpan alamat yang sering Anda kirimkan. Setiap kontak memiliki nama dan alamat, sehingga transaksi menjadi lebih mudah dan mengurangi kesalahan."
       },
       "extended_menu_intro": {
-        "title": "Advanced Menu Features",
-        "content": "This menu provides access to advanced features: WalletConnect for connecting to dApps, Address Details, SSP Wallet Details, Settings and more. The lock icon on the right securely logs you out."
+        "title": "Fitur Menu Lanjutan",
+        "content": "Menu ini memberikan akses ke fitur-fitur lanjutan: WalletConnect untuk terhubung ke dApps, Rincian Alamat, Rincian Dompet SSP, Pengaturan, dan lainnya. Ikon gembok di sebelah kanan akan keluar secara aman."
       },
       "address_management": {
-        "title": "Wallets Management",
-        "content": "This dropdown manages multiple addresses per blockchain. You can create new addresses, switch between existing ones, or remove the last created address. Each address is independent with its own balance and transaction history."
+        "title": "Manajemen Dompet",
+        "content": "Menu tarik-turun ini mengelola beberapa alamat per blockchain. Anda dapat membuat alamat baru, beralih antara alamat yang sudah ada, atau menghapus alamat yang terakhir dibuat. Setiap alamat bersifat independen dengan saldo dan riwayat transaksi masing-masing."
       },
       "tutorial_complete": {
-        "title": "Tutorial Complete!",
-        "content": "Congratulations! You now know how to use all major features of SSP Wallet. Explore confidently and manage your crypto securely."
+        "title": "Tutorial Selesai!",
+        "content": "Selamat! Anda kini telah menguasai semua fitur utama Dompet SSP. Jelajahi dengan percaya diri dan kelola kripto milik Anda dengan aman."
       }
     }
   }
