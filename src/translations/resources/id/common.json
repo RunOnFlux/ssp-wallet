@@ -29,7 +29,7 @@
   "name": "Nama",
   "address": "Alamat",
   "activity": "Aktivitas",
-  "nodes": "Node",
+  "nodes": "Nodes",
   "tokens": "Token",
   "add_custom_token": "Tambahkan Token Khusus",
   "loading": "Memuat...",
