@@ -44,8 +44,8 @@
   "to": "Do",
   "from": "Z",
   "change": "Změnit",
-  "privacy_policy": "Privacy Policy",
-  "terms_of_service": "Terms of Service",
-  "my_wallets": "My Wallets",
-  "rename_wallet": "Rename wallet"
+  "privacy_policy": "Ochrana dat",
+  "terms_of_service": "Podmínky služby",
+  "my_wallets": "Moje Peněženky",
+  "rename_wallet": "Přejmenovat peněženku"
 }
