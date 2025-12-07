@@ -14,7 +14,7 @@
     "tx_rejected_info_2": "Η συναλλαγή σας δεν θα συμπεριληφθεί στο blockchain. Τα κεφάλαιά σας είναι πλήρως διαθέσιμα και είναι δυνατόν να αποσταλούν."
   },
   "publicNoncesRejected": {
-    "public_nonces_rejected": "Public Nonces Rejected!",
+    "public_nonces_rejected": "",
     "public_nonces_rejected_info": "Τα Δημόσια Nonces απορρίφθηκαν από την SSP Key.",
     "public_nonces_rejected_info_2": "Το SSP Key απέρριψε την αποστολή δημόσιων nonces. Χωρίς δημόσια nonces SSP το πορτοφόλι δεν μπορεί να δημιουργήσει συναλλαγές σε αλυσίδες EVM."
   },
@@ -291,7 +291,7 @@
     "fusion_maintenance": "To Fusion υποβάλλεται σε συντήρηση. Δοκιμάστε ξανά αργότερα.",
     "signature_error": "Σφάλμα κατά την υπογραφή του αιτήματος Fusion. Δοκιμάστε ξανά αργότερα.",
     "claim_successful": "Απαίτηση Αμοιβής Παράλληλων Περιουσιακών Στοιχείων (PA)",
-    "claim_received": "Claim Received!"
+    "claim_received": ""
   },
   "contacts": {
     "no_contacts": "Δεν Υπάρχουν Επαφές",
