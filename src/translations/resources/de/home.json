@@ -75,7 +75,7 @@
     "err_delete": "Fehler beim Löschen von {{chainName}} Node. Bitte erneut versuchen.",
     "node_deleted": "{{chainName}} Node gelöscht!",
     "add_to_flux_storage": "Füge zu Flux Storage hinzu",
-    "add_to_flux_storage_info": "This action will upload your configured Flux Node to Flux Storage. This is used to simplify the setup of your FluxOS. You will be presented with storage identifier to use for your FluxOS setup.",
+    "add_to_flux_storage_info": "",
     "node_uploaded_storage": "{{chainName}} Node wurde zu Flux Storage heraufgeladen!",
     "err_upload_storage": "Fehler beim Heraufladen von {{chainName}} Node zu Flux Storage. Bitte versuchen Sie es erneut.",
     "storage_phrase": "Storage Phrase",
