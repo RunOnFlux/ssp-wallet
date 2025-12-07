@@ -59,5 +59,5 @@
   "verification_gas_limit_help": "Maksimalni gas dodijeljen za validaciju potpisa transakcije i ovlasti računa. To pokriva fazu validacije vašeg novčanika apstrakcije računa.",
   "total_gas_help": "Ukupni maksimalni gas koji vaša transakcija može potrošiti. To je zbroj svih triju gore navedenih komponenti i predstavlja vaš potpuni gas proračun transakcije.",
   "base_gas_price_help": "Osnovna naknada po jedinici gasa koju zahtijeva mreža. To je minimalna naknada koja se spaljuje prema EIP-1559.",
-  "priority_gas_price_help": "Čini se da je ovo transfer tokena. Iznos i primatelj mogu biti kodirani u podacima transakcije."
+  "priority_gas_price_help": "Priority fee (tip) per gas unit paid to validators/miners to prioritize your transaction. Higher tips result in faster inclusion."
 }

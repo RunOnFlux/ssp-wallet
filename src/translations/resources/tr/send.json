@@ -59,5 +59,5 @@
   "verification_gas_limit_help": "İşlem imzanızı ve hesap izinlerinizi doğrulamak için ayrılan maksimum gaz. Bu, hesap soyutlama cüzdanınızın doğrulama aşamasını kapsar.",
   "total_gas_help": "İşleminizin tüketebileceği toplam maksimum gaz. Bu, yukarıdaki üç bileşenin toplamıdır ve işleminizin tam gaz bütçesini temsil eder.",
   "base_gas_price_help": "Ağ tarafından gerekli gaz birimi başına temel ücret. Bu, EIP-1559'a göre yakılan minimum ücrettir.",
-  "priority_gas_price_help": "Bu bir token transferi gibi görünüyor. Miktar ve alıcı işlem verilerinde kodlanmış olabilir."
+  "priority_gas_price_help": "Priority fee (tip) per gas unit paid to validators/miners to prioritize your transaction. Higher tips result in faster inclusion."
 }

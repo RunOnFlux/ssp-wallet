@@ -10,5 +10,6 @@
   "enter_pw": "Unesite lozinku",
   "unlock_wallet": "Otključaj novčanik",
   "forgot_pw": "Zaboravili ste lozinku?",
-  "restore": "Vrati"
+  "restore": "Vrati",
+  "err_lx": "Code {{code}}: Wallet data missing. Please restore your wallet."
 }

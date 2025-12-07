@@ -1,11 +1,11 @@
 {
   "appName": {
-    "full": "SSP Wallet",
-    "moto": "Secure. Simple. Powerful."
+    "full": "محفظة الأس ب بي",
+    "moto": "آمن. بسيط. قوي."
   },
   "back": "العودة",
   "cancel": "إلغاء",
-  "flux": "Flux",
+  "flux": "فلوكس",
   "ok": "موافق",
   "save": "حفظ",
   "confirm": "تأكيد",
@@ -24,7 +24,7 @@
   "start": "بدء",
   "delete": "حذف",
   "edit": "تحرير",
-  "fluxos": "FluxOS",
+  "fluxos": "فلوكس أو آس",
   "request_rejected": "تم رفض الطلب",
   "name": "اسم",
   "address": "العنوان",
