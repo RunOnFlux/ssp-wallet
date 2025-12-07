@@ -572,11 +572,11 @@
     "skip_tutorial": "Lewati Tutorial",
     "previous": "Sebelumnya",
     "next": "Selanjutnya",
-    "complete": "Selesai",
+    "complete": "Lengkap",
     "step_of": "Langkah {{current}} dari {{total}}",
     "click_highlighted": "Klik elemen yang ditandai untuk melanjutkan",
     "tutorial_help": "Tutorial & Bantuan",
-    "start_tutorial": "Mulai Tutorial",
+    "start_tutorial": "Mulai Panduan",
     "reset_tutorial_progress": "Atur ulang Kemajuan Tutorial",
     "tutorial_reset_success": "Tutorial telah diatur ulang. Anda dapat memulainya kembali dari tombol Bantuan.",
     "tutorial_reset_error": "Gagal untuk mengatur ulang tutorial.",
@@ -602,7 +602,7 @@
         "content": "Dompet SSP mendukung multiple blockchain! Menu tarik-turun ini menampilkan dompet dan rantai blok Anda saat ini. Klik pada menu tersebut untuk mengakses opsi pergantian rantai blok."
       },
       "find_switch_chain": {
-        "title": "Tombol Pengalih Rantai",
+        "title": "Tombol Rantai Pengalih",
         "content": "Sempurna! Sekarang klik “Switch Chain” untuk membuka pilihan blockchain di mana Anda dapat memilih jaringan yang berbeda."
       },
       "select_ethereum": {
@@ -624,7 +624,7 @@
       },
       "receive_intro": {
         "title": "Menerima Dana",
-        "content": "Klik Terima untuk mendapatkan alamat Ethereum Anda. Alamat ini dapat menerima ETH dan token ERC-20 apa pun. Anda dapat menyalin alamat tersebut atau menggunakan kode QR."
+        "content": "Klik “Terima” untuk mendapatkan alamat Ethereum Anda. Alamat ini dapat menerima ETH dan token ERC-20 apa pun. Anda dapat menyalin alamat tersebut atau menggunakan kode QR."
       },
       "send_intro": {
         "title": "Pengiriman Dana",
@@ -664,7 +664,7 @@
       },
       "tutorial_complete": {
         "title": "Tutorial Selesai!",
-        "content": "Selamat! Anda kini telah menguasai semua fitur utama Dompet SSP. Jelajahi dengan percaya diri dan kelola kripto milik Anda dengan aman."
+        "content": "Selamat! Anda kini telah menguasai semua fitur utama Dompet SSP. Jelajahi dengan percaya diri dan kelola kripto Anda dengan aman."
       }
     }
   }
