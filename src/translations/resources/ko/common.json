@@ -1,7 +1,7 @@
 {
   "appName": {
     "full": "SSP 지갑",
-    "moto": "안전함. 간단함. 강력함."
+    "moto": "안전. 간단. 강력."
   },
   "back": "뒤로",
   "cancel": "취소",
@@ -13,7 +13,7 @@
   "close": "닫기",
   "chain": "체인",
   "get": "가져오기",
-  "started": "시작됨!",
+  "started": "시작!",
   "import": "가져오기",
   "create": "생성",
   "wallet": "지갑",

@@ -3,17 +3,17 @@
   "description": "Peněženka pro decentralizovaný svět.",
   "get_started": "Pojďme Začít!",
   "restore_with_seed": "Obnovit se Seed Frází",
-  "watch_guide": "New to SSP? Watch guide",
+  "watch_guide": "Nováček v SSP? Spusťě průvodce ",
   "help": {
-    "tooltip": "Help & Support",
-    "guide_desc": "Video tutorials and guides",
-    "website": "Visit Website",
-    "website_desc": "Learn more about SSP Wallet",
-    "support": "Get Support",
-    "support_desc": "Contact our support team",
-    "privacy": "Privacy Policy",
-    "privacy_desc": "How we protect your data",
-    "terms": "Terms of Service",
-    "terms_desc": "Terms and conditions"
+    "tooltip": "Nápověda & Podpora",
+    "guide_desc": "Video tutoriály a návody",
+    "website": "Navštivte webové stránky",
+    "website_desc": "Zjistěte více o SSP Peněžence",
+    "support": "Podpora",
+    "support_desc": "Kontaktujte náš tým podpory",
+    "privacy": "Zásady ochrany osobních údajů",
+    "privacy_desc": "Jak chráníme vaše údaje",
+    "terms": "Podmínky služby",
+    "terms_desc": "Smluvní podmínky"
   }
 }

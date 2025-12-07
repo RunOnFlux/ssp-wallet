@@ -59,5 +59,5 @@
   "verification_gas_limit_help": "உங்கள் பரிவர்த்தனை கையொப்பம் மற்றும் கணக்கு அனுமதிகளை சரிபார்க்க ஒதுக்கப்பட்ட அதிகபட்ச gas. இது உங்கள் கணக்கு சுருக்க பணப்பையின் சரிபார்ப்பு கட்டத்திற்கான முக்கிய கணக்கீட்டு வரம்பு.",
   "total_gas_help": "உங்கள் பரிவர்த்தனையின் முழுமையான gas பட்ஜெட்டை குறிக்கிறது.",
   "base_gas_price_help": "நெட்வொர்க்கால் தேவைப்படும் gas அலகுக்கு அடிப்படை கட்டணம். இது EIP-1559 க்கு ஏற்ப எரிக்கப்படும் குறைந்தபட்ச கட்டணம்.",
-  "priority_gas_price_help": "பரிவர்த்தனை தரவு {{symbol}} பரிமாற்றங்களுக்கு மட்டுமே கிடைக்கும்। இது உங்கள் பரிவர்த்தனையின் முழுமையான gas பட்ஜெட்டை குறிக்கிறது."
+  "priority_gas_price_help": "Priority fee (tip) per gas unit paid to validators/miners to prioritize your transaction. Higher tips result in faster inclusion."
 }

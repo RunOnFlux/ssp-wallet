@@ -59,5 +59,5 @@
   "verification_gas_limit_help": "Maximalt gas allokerat för att validera din transaktionssignatur och kontobehörigheter. Detta täcker valideringsfasen av din kontoabstraktion-plånbok.",
   "total_gas_help": "Total maximalt gas som din transaktion kan förbruka. Detta är summan av alla tre komponenterna ovan och representerar din transaktions kompletta gas budget.",
   "base_gas_price_help": "Grundavgift per gasenhet som krävs av nätverket. Detta är minimiavgiften som bränns enligt EIP-1559.",
-  "priority_gas_price_help": "Detta verkar vara en token överföring. Beloppet och mottagaren kan vara kodade i transaktionsdata."
+  "priority_gas_price_help": "Priority fee (tip) per gas unit paid to validators/miners to prioritize your transaction. Higher tips result in faster inclusion."
 }
