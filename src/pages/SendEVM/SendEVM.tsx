@@ -1594,7 +1594,7 @@ function SendEVM() {
                         Boolean(state?.walletConnectMode && state?.data) ||
                         Boolean(
                           txToken &&
-                            txToken !== blockchainConfig.tokens[0].contract,
+                          txToken !== blockchainConfig.tokens[0].contract,
                         )
                       }
                       rows={3}

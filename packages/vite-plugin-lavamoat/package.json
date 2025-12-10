@@ -46,7 +46,7 @@
     "typescript": "5.9.3"
   },
   "devDependencies": {
-    "@types/node": "24.10.1"
+    "@types/node": "24.10.2"
   },
   "peerDependencies": {
     "vite": "^7.0.0"
