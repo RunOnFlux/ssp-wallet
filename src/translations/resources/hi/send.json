@@ -59,5 +59,5 @@
   "verification_gas_limit_help": "आपके लेनदेन हस्ताक्षर और खाता अनुमतियों को मान्य करने के लिए आवंटित अधिकतम गैस। यह आपके खाता एब्स्ट्रैक्शन वॉलेट के सत्यापन चरण को कवर करता है।",
   "total_gas_help": "कुल अधिकतम गैस जो आपका लेनदेन खर्च कर सकता है। यह उपरोक्त सभी तीन घटकों का योग है और आपके लेनदेन के पूर्ण गैस बजट का प्रतिनिधित्व करता है।",
   "base_gas_price_help": "नेटवर्क द्वारा आवश्यक प्रति गैस यूनिट आधार शुल्क। यह न्यूनतम शुल्क है जो EIP-1559 के अनुसार जलाया जाता है।",
-  "priority_gas_price_help": ""
+  "priority_gas_price_help": "Priority fee (tip) per gas unit paid to validators/miners to prioritize your transaction. Higher tips result in faster inclusion."
 }
