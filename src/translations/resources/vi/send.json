@@ -59,5 +59,5 @@
   "verification_gas_limit_help": "Gas tối đa được phân bổ để xác thực chữ ký giao dịch và quyền tài khoản của bạn. Điều này bao gồm giai đoạn xác thực của ví trừu tượng hóa tài khoản của bạn.",
   "total_gas_help": "Tổng gas tối đa mà giao dịch của bạn có thể tiêu thụ. Đây là tổng của cả ba thành phần trên và đại diện cho ngân sách gas hoàn chỉnh của giao dịch của bạn.",
   "base_gas_price_help": "Phí cơ sở trên mỗi đơn vị gas được yêu cầu bởi mạng. Đây là phí tối thiểu được đốt theo EIP-1559.",
-  "priority_gas_price_help": ""
+  "priority_gas_price_help": "Priority fee (tip) per gas unit paid to validators/miners to prioritize your transaction. Higher tips result in faster inclusion."
 }
