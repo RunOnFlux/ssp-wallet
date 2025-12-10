@@ -59,5 +59,5 @@
   "verification_gas_limit_help": "Maximálny gas pridelený na overenie podpisu transakcie a oprávnení účtu. Toto pokrýva fázu overenia vašej peňaženky abstrakcie účtu.",
   "total_gas_help": "Celkový maximálny gas, ktorý môže vaša transakcia spotrebovať. Toto je súčet všetkých troch komponentov vyššie a predstavuje váš kompletný gas rozpočet transakcie.",
   "base_gas_price_help": "Základný poplatok za jednotku gasu požadovaný sieťou. Toto je minimálny poplatok, ktorý je spálený podľa EIP-1559.",
-  "priority_gas_price_help": ""
+  "priority_gas_price_help": "Priority fee (tip) per gas unit paid to validators/miners to prioritize your transaction. Higher tips result in faster inclusion."
 }
