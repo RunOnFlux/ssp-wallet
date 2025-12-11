@@ -5,6 +5,7 @@ import simpleswap from '../assets/logos/exchanges/simpleswap.svg';
 import changehero from '../assets/logos/exchanges/changehero.svg';
 import xoswap from '../assets/logos/exchanges/xoswap.svg';
 import fusion from '../assets/logos/exchanges/fusion.svg';
+import exolix from '../assets/logos/exchanges/exolix.svg';
 
 // Map exchange provider names to local logo imports (exact names from API)
 export const exchangeLogos: Record<string, string> = {
@@ -14,6 +15,7 @@ export const exchangeLogos: Record<string, string> = {
   ChangeHero: changehero,
   XOSwap: xoswap,
   Fusion: fusion,
+  Exolix: exolix,
 };
 
 // Get logo by exchange name
