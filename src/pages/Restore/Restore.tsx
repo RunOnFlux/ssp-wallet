@@ -427,7 +427,7 @@ function Restore() {
             placement="top"
             content={t('cr:strong_password')}
             arrow={false}
-            styles={{ body: { marginBottom: -30, maxWidth: 300 } }}
+            styles={{ content: { maxWidth: 300 } }}
           >
             <div>
               <Form.Item

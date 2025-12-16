@@ -47,29 +47,6 @@
       },
       "builtins": {}
     },
-    "@ant-design/v5-patch-for-react-19": {
-      "packageName": "@ant-design/v5-patch-for-react-19",
-      "globals": {
-        "console": true,
-        "Object": true,
-        "Array": true,
-        "Error": true,
-        "TypeError": true,
-        "String": true,
-        "Number": true,
-        "Boolean": true,
-        "Date": true,
-        "Math": true,
-        "JSON": true,
-        "parseInt": true,
-        "parseFloat": true,
-        "isNaN": true,
-        "RegExp": true,
-        "Promise": true
-      },
-      "packages": {},
-      "builtins": {}
-    },
     "@metamask/browser-passworder": {
       "packageName": "@metamask/browser-passworder",
       "globals": {

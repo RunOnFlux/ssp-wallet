@@ -1,4 +1,3 @@
-import '@ant-design/v5-patch-for-react-19';
 import { useState, useEffect } from 'react';
 import { RouterProvider } from 'react-router';
 import { ConfigProvider, theme, App as AntApp } from 'antd';

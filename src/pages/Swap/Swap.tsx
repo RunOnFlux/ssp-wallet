@@ -863,7 +863,7 @@ function Swap() {
                 <Popover
                   content={t('home:swap.estimated_amount')}
                   title={t('home:swap.estimated_amount_title')}
-                  styles={{ body: { maxWidth: 300, marginLeft: 10 } }}
+                  styles={{ content: { maxWidth: 300 }, container: { marginLeft: 10 } }}
                 >
                   {t('home:swap.you_get')} ~ &nbsp;
                   {loading ? (
@@ -1071,7 +1071,7 @@ function Swap() {
                     ? t('home:swap.fixed_rate_title')
                     : t('home:swap.floating_rate_title')
                 }
-                styles={{ body: { maxWidth: 300, marginLeft: 10 } }}
+                styles={{ content: { maxWidth: 300, marginLeft: 10 } }}
               >
                 1 {sellAsset.split('_')[1]} = {rate} {buyAsset.split('_')[1]}
               </Popover>
