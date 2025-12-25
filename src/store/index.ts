@@ -56,6 +56,7 @@ const initialStatePasswordBlob = {
 // external is used for logging into services, public. Such as nodes, exchanges, etc. Just wallet identity (similar to FluxID)
 interface sspState {
   sspWalletKeyInternalIdentity: string;
+  sspWalletKeyInternalIdentityWitnessScript: string;
   sspWalletInternalIdentity: string;
   sspWalletExternalIdentity: string;
   identityChain: keyof cryptos;
@@ -64,6 +65,7 @@ interface sspState {
 
 const initialSspState: sspState = {
   sspWalletKeyInternalIdentity: '',
+  sspWalletKeyInternalIdentityWitnessScript: '',
   sspWalletInternalIdentity: '',
   sspWalletExternalIdentity: '',
   identityChain: 'btc',
@@ -363,6 +365,12 @@ const sspStateSlice = createSlice({
     setSspWalletKeyInternalIdentity: (state, action: PayloadAction<string>) => {
       state.sspWalletKeyInternalIdentity = action.payload;
     },
+    setSspWalletKeyInternalIdentityWitnessScript: (
+      state,
+      action: PayloadAction<string>,
+    ) => {
+      state.sspWalletKeyInternalIdentityWitnessScript = action.payload;
+    },
     setSspWalletInternalIdentity: (state, action: PayloadAction<string>) => {
       state.sspWalletInternalIdentity = action.payload;
     },
@@ -375,6 +383,7 @@ const sspStateSlice = createSlice({
     },
     setSSPInitialState: (state) => {
       state.sspWalletKeyInternalIdentity = '';
+      state.sspWalletKeyInternalIdentityWitnessScript = '';
       state.sspWalletInternalIdentity = '';
       state.sspWalletExternalIdentity = '';
       state.activeChain = 'btc';
@@ -436,6 +445,7 @@ export const { setWalletNamesForChain } = walletNamesSlice.actions;
 export const {
   setSSPInitialState,
   setSspWalletKeyInternalIdentity,
+  setSspWalletKeyInternalIdentityWitnessScript,
   setSspWalletInternalIdentity,
   setSspWalletExternalIdentity,
   setActiveChain,

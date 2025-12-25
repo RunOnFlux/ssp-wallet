@@ -21,6 +21,7 @@ import {
   getTransactionSize,
 } from '../../lib/constructTx';
 import { useAppSelector, useAppDispatch } from '../../hooks';
+import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
@@ -86,6 +87,7 @@ function Send() {
   const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
+  const { createWkIdentityAuth } = useRelayAuth();
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
@@ -520,7 +522,7 @@ function Send() {
     }
   };
 
-  const postAction = (
+  const postAction = async (
     action: string,
     payload: string,
     chain: string,
@@ -528,7 +530,7 @@ function Send() {
     wkIdentity: string,
     utxos: utxo[],
   ) => {
-    const data = {
+    const data: Record<string, unknown> = {
       action,
       payload,
       chain,
@@ -536,6 +538,17 @@ function Send() {
       wkIdentity,
       utxos,
     };
+
+    // Add authentication if available (includes hash of request body)
+    try {
+      const auth = await createWkIdentityAuth('action', wkIdentity, data);
+      if (auth) {
+        Object.assign(data, auth);
+      }
+    } catch (error) {
+      console.warn('[postAction] Auth not available, sending without signature');
+    }
+
     axios
       .post(`https://${sspConfig().relay}/v1/action`, data)
       .then((res) => {

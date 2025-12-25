@@ -27,6 +27,16 @@ interface RelayApiResponse {
 }
 
 /**
+ * Authentication fields for relay requests
+ */
+export interface AuthFields {
+  signature: string;
+  message: string;
+  publicKey: string;
+  witnessScript?: string;
+}
+
+/**
  * Simplified WalletConnect relay service using SSP Relay's action API
  *
  * Uses the TESTED working action API format that already supports WalletConnect
@@ -53,6 +63,7 @@ export class WalletConnectRelayService {
     chain: string,
     wkIdentity: string,
     metadata?: { dappName: string; dappUrl: string },
+    authFields?: AuthFields,
   ): Promise<{ approved: boolean; result?: string; error?: string }> {
     const requestId = this.generateRequestId();
 
@@ -76,13 +87,18 @@ export class WalletConnectRelayService {
     };
 
     // Send using the action API format that works
-    const requestData = {
+    const requestData: Record<string, unknown> = {
       action: 'walletconnect',
       payload: JSON.stringify(signingPayload),
       chain,
       path: '0-0',
       wkIdentity,
     };
+
+    // Add authentication if provided
+    if (authFields) {
+      Object.assign(requestData, authFields);
+    }
 
     try {
       const response: AxiosResponse<RelayApiResponse> = await axios.post(

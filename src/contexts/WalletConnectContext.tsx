@@ -14,6 +14,7 @@ import {
   formatJsonRpcError,
 } from '@walletconnect/jsonrpc-utils';
 import { useAppSelector } from '../hooks';
+import { useRelayAuth } from '../hooks/useRelayAuth';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../types';
 import localForage from 'localforage';
@@ -233,6 +234,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       ...state.sspState,
     }),
   );
+  const { createWkIdentityAuth } = useRelayAuth();
 
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
@@ -1411,20 +1413,31 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     }
   };
 
-  const postAction = (
+  const postAction = async (
     action: string,
     payload: string,
     chain: string,
     path: string,
     wkIdentity: string,
   ) => {
-    const data = {
+    const data: Record<string, unknown> = {
       action,
       payload,
       chain,
       path,
       wkIdentity,
     };
+
+    // Add authentication if available (includes hash of request body)
+    try {
+      const auth = await createWkIdentityAuth('action', wkIdentity, data);
+      if (auth) {
+        Object.assign(data, auth);
+      }
+    } catch (error) {
+      console.warn('[postAction] Auth not available, sending without signature');
+    }
+
     axios
       .post(`https://${sspConfig().relay}/v1/action`, data)
       .then((res) => {

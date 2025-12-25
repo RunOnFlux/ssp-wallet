@@ -21,6 +21,7 @@ import { sspConfig, sspConfigOriginal, loadSSPConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector, useAppDispatch } from '../../hooks';
+import { useRelayAuth } from '../../hooks/useRelayAuth';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 import { currency } from '../../types';
 import { supportedFiatValues, getFiatSymbol } from '../../lib/currency.ts';
@@ -42,6 +43,7 @@ function Settings(props: {
   const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
+  const { createWkIdentityAuth } = useRelayAuth();
   const { fiatRates } = useAppSelector((state) => state.fiatCryptoRates);
   const { t } = useTranslation(['home', 'common']);
   const NC = backends()[activeChain].node;
@@ -210,20 +212,31 @@ function Settings(props: {
     setExplorerConfig(backendsOriginalConfig[activeChain].explorer);
   };
 
-  const postAction = (
+  const postAction = async (
     action: string,
     payload: string,
     chain: string,
     path: string,
     wkIdentity: string,
   ) => {
-    const data = {
+    const data: Record<string, unknown> = {
       action,
       payload,
       chain,
       path,
       wkIdentity,
     };
+
+    // Add authentication if available (includes hash of request body)
+    try {
+      const auth = await createWkIdentityAuth('action', wkIdentity, data);
+      if (auth) {
+        Object.assign(data, auth);
+      }
+    } catch (error) {
+      console.warn('[postAction] Auth not available, sending without signature');
+    }
+
     axios
       .post(`https://${sspConfig().relay}/v1/action`, data)
       .then((res) => {

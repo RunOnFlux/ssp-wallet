@@ -1,6 +1,7 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { useAppSelector } from '../hooks';
+import { useRelayAuth } from '../hooks/useRelayAuth';
 import { sspConfig } from '@storage/ssp';
 
 interface SocketContextType {
@@ -67,6 +68,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { sspWalletKeyInternalIdentity: wkIdentity } = useAppSelector(
     (state) => state.sspState,
   );
+  const { createWkIdentityAuth, isAuthAvailable } = useRelayAuth();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [txRejected, setTxRejected] = useState('');
   const [txid, setTxid] = useState('');
@@ -77,6 +79,37 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     useState<WalletConnectSocketResponse | null>(null);
   const [evmSigned, setEvmSigned] = useState('');
   const [evmSigningRejected, setEvmSigningRejected] = useState('');
+
+  /**
+   * Emit an authenticated join event.
+   */
+  const emitAuthenticatedJoin = useCallback(
+    async (socketToUse: Socket, identity: string) => {
+      try {
+        if (isAuthAvailable) {
+          // Create join data to hash
+          const joinData = { wkIdentity: identity };
+          const auth = await createWkIdentityAuth('join', identity, joinData);
+          if (auth) {
+            console.log('[Socket] Emitting authenticated join');
+            socketToUse.emit('join', {
+              ...joinData,
+              ...auth,
+            });
+            return;
+          }
+        }
+        // Fallback to unauthenticated join (backward compatibility)
+        console.log('[Socket] Emitting unauthenticated join (auth not available)');
+        socketToUse.emit('join', { wkIdentity: identity });
+      } catch (error) {
+        console.error('[Socket] Error creating auth for join:', error);
+        // Fallback to unauthenticated join
+        socketToUse.emit('join', { wkIdentity: identity });
+      }
+    },
+    [createWkIdentityAuth, isAuthAvailable],
+  );
 
   useEffect(() => {
     console.log('socket init, wkIdentity:', wkIdentity);
@@ -96,7 +129,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     // so we only need this one handler (not 'reconnect')
     newSocket.on('connect', () => {
       console.log('socket connected, joining room:', wkIdentity);
-      newSocket.emit('join', { wkIdentity });
+      emitAuthenticatedJoin(newSocket, wkIdentity);
     });
 
     newSocket.on('disconnect', (reason) => {

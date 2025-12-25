@@ -12,6 +12,7 @@ import {
   setWitnessScript,
   setSspWalletInternalIdentity,
   setSspWalletKeyInternalIdentity,
+  setSspWalletKeyInternalIdentityWitnessScript,
   setSspWalletExternalIdentity,
   setInitialContactsState,
 } from '../../store';
@@ -133,6 +134,13 @@ function Home() {
           generatedSspWalletKeyInternalIdentity.address,
         ),
       );
+      if (generatedSspWalletKeyInternalIdentity.witnessScript) {
+        dispatch(
+          setSspWalletKeyInternalIdentityWitnessScript(
+            generatedSspWalletKeyInternalIdentity.witnessScript,
+          ),
+        );
+      }
       const generatedSspWalletExternaldentity =
         generateExternalIdentityAddress(xpubWalletIdentity);
       dispatch(setSspWalletExternalIdentity(generatedSspWalletExternaldentity));
