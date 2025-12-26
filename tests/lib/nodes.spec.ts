@@ -73,34 +73,42 @@ describe('Nodes Lib', () => {
 
     it('should return fetchDOSFlux data when value is flux', async () => {
       const res = await fetchDOSFlux('flux');
-      expect(res[0]).not.toBeNull();
-      expect(res[0]).toBeDefined();
-      expect(res[0].collateral).not.toBeNull();
-      expect(res[0].collateral).toBeDefined();
-      expect(res[0].added_height).not.toBeNull();
-      expect(res[0].added_height).toBeDefined();
-      expect(res[0].payment_address).not.toBeNull();
-      expect(res[0].payment_address).toBeDefined();
-      expect(res[0].eligible_in).not.toBeNull();
-      expect(res[0].eligible_in).toBeDefined();
-      expect(res[0].amount).not.toBeNull();
-      expect(res[0].amount).toBeDefined();
+      expect(Array.isArray(res)).toBe(true);
+      // Array may be empty if no nodes are in DOS state
+      if (res.length > 0) {
+        expect(res[0]).not.toBeNull();
+        expect(res[0]).toBeDefined();
+        expect(res[0].collateral).not.toBeNull();
+        expect(res[0].collateral).toBeDefined();
+        expect(res[0].added_height).not.toBeNull();
+        expect(res[0].added_height).toBeDefined();
+        expect(res[0].payment_address).not.toBeNull();
+        expect(res[0].payment_address).toBeDefined();
+        expect(res[0].eligible_in).not.toBeNull();
+        expect(res[0].eligible_in).toBeDefined();
+        expect(res[0].amount).not.toBeNull();
+        expect(res[0].amount).toBeDefined();
+      }
     });
 
     it('should return fetchStartFlux data when value is flux', async () => {
       const res = await fetchStartFlux('flux');
-      expect(res[0]).not.toBeNull();
-      expect(res[0]).toBeDefined();
-      expect(res[0].collateral).not.toBeNull();
-      expect(res[0].collateral).toBeDefined();
-      expect(res[0].added_height).not.toBeNull();
-      expect(res[0].added_height).toBeDefined();
-      expect(res[0].payment_address).not.toBeNull();
-      expect(res[0].payment_address).toBeDefined();
-      expect(res[0].expires_in).not.toBeNull();
-      expect(res[0].expires_in).toBeDefined();
-      expect(res[0].amount).not.toBeNull();
-      expect(res[0].amount).toBeDefined();
+      expect(Array.isArray(res)).toBe(true);
+      // Array may be empty if no nodes are in start state
+      if (res.length > 0) {
+        expect(res[0]).not.toBeNull();
+        expect(res[0]).toBeDefined();
+        expect(res[0].collateral).not.toBeNull();
+        expect(res[0].collateral).toBeDefined();
+        expect(res[0].added_height).not.toBeNull();
+        expect(res[0].added_height).toBeDefined();
+        expect(res[0].payment_address).not.toBeNull();
+        expect(res[0].payment_address).toBeDefined();
+        expect(res[0].expires_in).not.toBeNull();
+        expect(res[0].expires_in).toBeDefined();
+        expect(res[0].amount).not.toBeNull();
+        expect(res[0].amount).toBeDefined();
+      }
     });
   });
 });
