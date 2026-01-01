@@ -1,22 +1,39 @@
+// Generate unique request IDs to match responses to requests
+let requestIdCounter = 0;
+
 async function request(method, params) {
+  const requestId = ++requestIdCounter;
   const message = {
     method,
     params,
+    requestId,
   };
   const event = new CustomEvent('fromPageEvent', { detail: message });
   window.dispatchEvent(event);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const response = await new Promise((resolve, reject) => {
-    window.addEventListener(
-      'message',
-      function (eventReceived) {
-        if (eventReceived.data.type === "fromContentScript") {
-          resolve(eventReceived.data.detail);
+    function handleMessage(eventReceived) {
+      if (eventReceived.data.type === "fromContentScript") {
+        // Clean up listener after receiving response
+        window.removeEventListener('message', handleMessage, false);
+
+        const detail = eventReceived.data.detail;
+
+        // Handle error responses (e.g., popup closed by user)
+        if (detail && detail.status === 'ERROR') {
+          const error = new Error(detail.error || 'Request rejected');
+          error.code = detail.code || 4001;
+          reject(error);
+          return;
         }
-      },
-      false,
-    );
+
+        resolve(detail);
+      }
+    }
+
+    window.addEventListener('message', handleMessage, false);
   });
+
   return response;
 }
 

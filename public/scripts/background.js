@@ -11,6 +11,22 @@ const ext = chrome || browser;
 let awaitingSendResponse;
 let popupId;
 
+// Graceful shutdown: detect when popup is closed by user and reject pending promises
+ext.windows.onRemoved.addListener((windowId) => {
+  if (windowId === popupId) {
+    // Popup was closed - reject any pending request
+    if (awaitingSendResponse) {
+      awaitingSendResponse({
+        status: 'ERROR',
+        error: 'User closed the wallet popup',
+        code: 4001, // User rejected request (EIP-1193 standard)
+      });
+      awaitingSendResponse = null;
+    }
+    popupId = null;
+  }
+});
+
 const registerInPageContentScript = async () => {
   try {
     await ext.scripting.registerContentScripts([
@@ -66,11 +82,13 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   if (awaitingSendResponse) {
     awaitingSendResponse(request.data);
+    awaitingSendResponse = null; // Clear callback after use
   } else {
     sendResponse('Something went wrong.');
   }
   if (popupId) {
     ext.windows.remove(popupId);
+    popupId = null; // Clear popup ID after removal
   }
 });
 
