@@ -42,7 +42,6 @@ Simply serve the `examples/ssp-auth-demo` directory with any web server.
 2. **Demo creates a timestamped message**
    - 13-digit millisecond timestamp
    - 16-byte random challenge
-   - Hex-encoded
 3. **SSP Wallet prompts user for approval**
 4. **For Two-Factor mode, request is sent to SSP Key**
 5. **Signatures are returned to the demo**
@@ -77,7 +76,7 @@ See `SSP_Identity_Authentication_Guide.md` in the repository root for full verif
 ```javascript
 // Request SSP authentication
 const response = await window.ssp.request('wk_sign_message', {
-  message: hexEncodedMessage,      // Required: hex message with timestamp
+  message: timestampedMessage,      // Required: plain text message with timestamp
   authMode: 2,                      // Optional: 1=wallet only, 2=wallet+key (default)
   origin: 'https://example.com',    // Required: your domain
   siteName: 'My App',               // Optional: shown to user
@@ -95,7 +94,7 @@ const response = await window.ssp.request('wk_sign_message', {
     keyPubKey: '03def...',          // Only if authMode=2
     witnessScript: '5221...52ae',
     wkIdentity: 'bc1q...',
-    message: 'hex...'
+    message: '1704067200000abc...'
   }
 }
 ```

@@ -9,14 +9,14 @@
 let lastAuthResponse = null;
 
 /**
- * Creates a valid authentication message with timestamp
- * @returns {string} Hex-encoded message
+ * Creates a valid authentication message with timestamp and challenge
+ * @returns {string} Plain text message
  */
 function createAuthMessage() {
   // Current timestamp in milliseconds (13 digits)
   const timestamp = Date.now().toString();
 
-  // Generate random challenge (using crypto API if available, fallback to Math.random)
+  // Generate random challenge
   let challenge;
   if (window.crypto && window.crypto.getRandomValues) {
     const array = new Uint8Array(16);
@@ -26,40 +26,12 @@ function createAuthMessage() {
     challenge = Math.random().toString(36).substring(2, 18).padEnd(16, '0');
   }
 
-  // Combine timestamp and challenge
-  const message = timestamp + challenge;
+  // Format: timestamp + challenge (no separator needed)
+  const message = `${timestamp}${challenge}`;
 
-  // Convert to hex
-  const hexMessage = stringToHex(message);
+  console.log('Created auth message:', { timestamp, challenge, message });
 
-  console.log('Created auth message:', {
-    timestamp,
-    challenge,
-    message,
-    hexMessage
-  });
-
-  return hexMessage;
-}
-
-/**
- * Convert string to hex
- */
-function stringToHex(str) {
-  return Array.from(str)
-    .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
-    .join('');
-}
-
-/**
- * Convert hex to string
- */
-function hexToString(hex) {
-  let str = '';
-  for (let i = 0; i < hex.length; i += 2) {
-    str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-  }
-  return str;
+  return message;
 }
 
 /**
@@ -134,9 +106,9 @@ function validateResponse(result, authMode) {
       return { valid: false, error: 'Missing message' };
     }
 
-    // Validate timestamp from message
-    const decodedMessage = hexToString(result.message);
-    const timestamp = parseInt(decodedMessage.substring(0, 13), 10);
+    // Validate timestamp from message (first 13 characters)
+    const timestampStr = result.message.substring(0, 13);
+    const timestamp = parseInt(timestampStr, 10);
 
     if (isNaN(timestamp)) {
       return { valid: false, error: 'Invalid timestamp in message' };
@@ -198,10 +170,9 @@ function showAuthenticated(result, authMode) {
   hideAll();
   document.getElementById('authenticated').classList.remove('hidden');
 
-  // Display user info
+  // Display user info - show full identity
   const identity = result.wkIdentity;
-  document.getElementById('userIdentity').textContent =
-    identity.substring(0, 12) + '...' + identity.substring(identity.length - 12);
+  document.getElementById('userIdentity').textContent = identity;
 
   document.getElementById('authModeDisplay').textContent =
     authMode === 2 ? 'Two-Factor (Wallet + Key)' : 'Wallet Only';

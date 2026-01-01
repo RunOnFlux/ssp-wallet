@@ -9,7 +9,7 @@ import AllAddressesInfo from '../../components/AllAddressesInfo/AllAddressesInfo
 import WkSign from '../../components/WkSign/WkSign';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
-import { WkSignResponse } from '../../lib/wkSign';
+import { WkSignResponse, WkSignRequesterInfo } from '../../lib/wkSign';
 
 interface signMessageData {
   status: string;
@@ -59,6 +59,8 @@ function SspConnect() {
   const [openAllAddressesInfo, setOpenAllAddressesInfo] = useState(false);
   const [openWkSign, setOpenWkSign] = useState(false);
   const [authMode, setAuthMode] = useState<1 | 2>(2);
+  const [requesterInfo, setRequesterInfo] =
+    useState<WkSignRequesterInfo | null>(null);
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -76,6 +78,8 @@ function SspConnect() {
       } else if (sspConnectType === 'wk_sign_message') {
         // wk_sign uses authMode from request (1 = wallet only, 2 = wallet + key)
         setAuthMode((sspConnectAuthMode === 1 ? 1 : 2) as 1 | 2);
+        // Capture requesterInfo before clearRequest clears it
+        setRequesterInfo(sspConnectRequesterInfo);
         setOpenWkSign(true);
       } else if (sspConnectType === 'pay') {
         // show poup with information that we are going to pay after user approval
@@ -235,7 +239,7 @@ function SspConnect() {
         openAction={wkSignAction}
         message={message}
         authMode={authMode}
-        requesterInfo={sspConnectRequesterInfo}
+        requesterInfo={requesterInfo}
       />
     </>
   );

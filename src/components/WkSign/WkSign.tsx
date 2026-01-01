@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Typography, Button, Space, Modal, Spin, Alert } from 'antd';
 import { useAppSelector } from '../../hooks';
+import './WkSign.css';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { useSocket } from '../../hooks/useSocket';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
@@ -29,7 +30,7 @@ interface WkSignData {
 
 interface Props {
   open: boolean;
-  message: string; // hex-encoded message
+  message: string; // plain text message (format: timestamp:challenge)
   authMode: 1 | 2; // 1 = wallet only, 2 = wallet + key
   requesterInfo?: WkSignRequesterInfo | null;
   openAction?: (data: WkSignData | null) => void;
@@ -53,27 +54,13 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
   const [walletPubKey, setWalletPubKey] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [waitingForKey, setWaitingForKey] = useState(false);
-  const [decodedMessage, setDecodedMessage] = useState<string>('');
 
   // Reset state when modal closes
   useEffect(() => {
     if (!open) {
       resetState();
-      setDecodedMessage('');
     }
   }, [open]);
-
-  // Decode message for display
-  useEffect(() => {
-    if (message && open) {
-      try {
-        const decoded = Buffer.from(message, 'hex').toString('utf8');
-        setDecodedMessage(decoded);
-      } catch {
-        setDecodedMessage(message);
-      }
-    }
-  }, [message, open]);
 
   // Handle wkSigned response from Key
   useEffect(() => {
@@ -270,20 +257,7 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
     resetState();
   };
 
-  // Extract timestamp for display
-  const messageTimestamp = (() => {
-    try {
-      const decoded = Buffer.from(message, 'hex').toString('utf8');
-      const timestamp = parseInt(decoded.substring(0, 13), 10);
-      if (!isNaN(timestamp)) {
-        return new Date(timestamp).toLocaleString();
-      }
-    } catch {
-      // Ignore
-    }
-    return null;
-  })();
-
+  
   return (
     <Modal
       title={t('home:wkSign.title')}
@@ -298,16 +272,17 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
         size="middle"
         style={{ marginBottom: 16, marginTop: 16, width: '100%' }}
       >
+        <Text>{t('home:wkSign.description')}</Text>
+
         {/* Requester Info */}
         {requesterInfo && (
-          <div
-            style={{
-              background: '#f0f5ff',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid #d6e4ff',
-            }}
-          >
+          <div className="wk-sign-requester-info">
+            <Text
+              type="secondary"
+              style={{ fontSize: '11px', display: 'block', marginBottom: 8 }}
+            >
+              {t('home:wkSign.requester_info')}:
+            </Text>
             <Space direction="vertical" size="small" style={{ width: '100%' }}>
               {/* Icon and Site Name (if provided) */}
               {requesterInfo.siteName && (
@@ -333,14 +308,7 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
                 </Space>
               )}
               {/* Origin/Domain - ALWAYS shown prominently (verified, can't be faked) */}
-              <div
-                style={{
-                  background: '#fff',
-                  padding: '6px 10px',
-                  borderRadius: '4px',
-                  border: '1px solid #d9d9d9',
-                }}
-              >
+              <div className="wk-sign-origin-box">
                 <Text
                   type="secondary"
                   style={{ fontSize: '11px', display: 'block' }}
@@ -363,8 +331,6 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
             </Space>
           </div>
         )}
-
-        <Text>{t('home:wkSign.description')}</Text>
 
         {/* SSP Identity */}
         <Space direction="vertical" size="small">
@@ -391,29 +357,12 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
           </Text>
         </Space>
 
-        {/* Message Timestamp */}
-        {messageTimestamp && (
-          <Space direction="vertical" size="small">
-            <Text type="secondary">{t('home:wkSign.timestamp')}:</Text>
-            <Text>{messageTimestamp}</Text>
-          </Space>
-        )}
-
         {/* Message to Sign */}
         <Space direction="vertical" size="small" style={{ width: '100%' }}>
           <Text type="secondary">{t('home:wkSign.message_to_sign')}:</Text>
-          <div
-            style={{
-              background: '#f5f5f5',
-              padding: '10px',
-              borderRadius: '4px',
-              maxHeight: '100px',
-              overflow: 'auto',
-              wordBreak: 'break-all',
-            }}
-          >
+          <div className="wk-sign-message-box">
             <Text style={{ fontFamily: 'monospace', fontSize: '12px' }}>
-              {decodedMessage}
+              {message}
             </Text>
           </div>
         </Space>

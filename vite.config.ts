@@ -118,6 +118,6 @@ export default defineConfig(({ command, mode }) => ({
   esbuild: {
     keepNames: true, // Preserve class and function names,
     // disable console and debugger in production
-    drop: ['console', 'debugger'],
+    // drop: ['console', 'debugger'],
   },
 }));

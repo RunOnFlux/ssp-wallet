@@ -1,14 +1,23 @@
-const ext = chrome || browser;
+/*global chrome, browser*/
+// Firefox uses 'browser', Chrome uses 'chrome' - prefer browser for native promise support
+const ext = typeof browser !== 'undefined' ? browser : typeof chrome !== 'undefined' ? chrome : null;
 
 async function request(details) {
   try {
-    // eslint-disable-next-line no-undef
+    // Check if extension context is still valid
+    if (!ext || !ext.runtime || !ext.runtime.sendMessage) {
+      throw new Error('SSP Wallet extension context invalidated. Please refresh the page.');
+    }
     const response = await ext.runtime.sendMessage(details);
-    // console.log(response);
     return response;
   } catch (err) {
-    console.error(err);
-    return err;
+    console.error('[SSP Content Script]', err);
+    // Return error in format that inpage.js can handle
+    return {
+      status: 'ERROR',
+      error: err.message || 'Extension communication failed',
+      code: 4900, // Disconnected error code
+    };
   }
 }
 

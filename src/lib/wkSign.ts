@@ -13,8 +13,8 @@ const MESSAGE_VALIDITY_MS = 15 * 60 * 1000;
 // Maximum future timestamp drift allowed (5 minutes)
 const MAX_FUTURE_DRIFT_MS = 5 * 60 * 1000;
 
-// Minimum message length (timestamp = 13 chars = 26 hex chars minimum)
-const MIN_MESSAGE_HEX_LENGTH = 26;
+// Minimum message length (timestamp:challenge format)
+const MIN_MESSAGE_LENGTH = 20;
 
 export interface WkSignMessageValidation {
   valid: boolean;
@@ -43,57 +43,36 @@ export interface WkSignResponse {
 
 /**
  * Validates a wk_sign message format.
+ * Message should start with a 13-digit millisecond timestamp followed by random data.
  *
- * @param hexMessage - The hex-encoded message to validate
+ * @param message - The plain text message to validate
  * @returns Validation result with timestamp info if valid
  */
-export function validateWkSignMessage(
-  hexMessage: string,
-): WkSignMessageValidation {
+export function validateWkSignMessage(message: string): WkSignMessageValidation {
   // Check if message exists and is a string
-  if (!hexMessage || typeof hexMessage !== 'string') {
+  if (!message || typeof message !== 'string') {
     return {
       valid: false,
       error: 'Message is required and must be a string',
     };
   }
 
-  // Validate hex format
-  if (!/^[0-9a-fA-F]+$/.test(hexMessage)) {
-    return {
-      valid: false,
-      error: 'Message must be hex encoded',
-    };
-  }
-
   // Check minimum length
-  if (hexMessage.length < MIN_MESSAGE_HEX_LENGTH) {
+  if (message.length < MIN_MESSAGE_LENGTH) {
     return {
       valid: false,
       error: 'Message is too short',
     };
   }
 
-  // Decode hex to string
-  let decoded: string;
-  try {
-    decoded = Buffer.from(hexMessage, 'hex').toString('utf8');
-  } catch {
-    return {
-      valid: false,
-      error: 'Failed to decode hex message',
-    };
-  }
-
   // Extract timestamp (first 13 characters = milliseconds)
-  const timestampStr = decoded.substring(0, 13);
+  const timestampStr = message.substring(0, 13);
   const timestamp = parseInt(timestampStr, 10);
 
   if (isNaN(timestamp)) {
     return {
       valid: false,
-      error:
-        'Invalid timestamp in message - must start with 13-digit millisecond timestamp',
+      error: 'Invalid timestamp in message',
     };
   }
 
@@ -128,14 +107,6 @@ export function validateWkSignMessage(
     return {
       valid: false,
       error: 'Message timestamp is too far in the future',
-    };
-  }
-
-  // Check that there's some random content after the timestamp
-  if (decoded.length < 20) {
-    return {
-      valid: false,
-      error: 'Message must include random component after timestamp',
     };
   }
 

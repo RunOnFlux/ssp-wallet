@@ -6,29 +6,42 @@
 }
 
 :root {
-  --primary: #3b82f6;
-  --primary-dark: #2563eb;
-  --success: #10b981;
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
+  /* SSP Modern Primary Colors (Amber) */
+  --primary-50: #fef9e7;
+  --primary-100: #fef3c7;
+  --primary-200: #fde68a;
+  --primary-300: #fcd34d;
+  --primary-400: #fbbf24;
+  --primary-500: #f59e0b;
+  --primary-600: #d97706;
+  --primary-700: #b45309;
+  --primary-800: #92400e;
+  --primary-900: #78350f;
+
+  /* Dark theme colors */
+  --dark-50: #f9fafb;
+  --dark-100: #d1d5db;
+  --dark-200: #9ca3af;
+  --dark-300: #6b7280;
+  --dark-400: #4b5563;
+  --dark-500: #374151;
+  --dark-600: #1f2937;
+  --dark-700: #171923;
+  --dark-800: #0f1117;
+  --dark-900: #080a0d;
+
+  /* Semantic colors */
+  --success: #52c41a;
+  --error: #ff4d4f;
+  --warning: #faad14;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(180deg, var(--dark-900) 0%, var(--dark-800) 50%, var(--dark-900) 100%);
   min-height: 100vh;
-  color: var(--gray-800);
-  line-height: 1.5;
+  color: #ffffff;
+  line-height: 1.6;
 }
 
 .container {
@@ -40,8 +53,9 @@ body {
 /* Header */
 .header {
   padding: 1rem 2rem;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15, 17, 23, 0.8);
   backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(251, 191, 36, 0.1);
 }
 
 .logo {
@@ -51,10 +65,11 @@ body {
   color: white;
   font-size: 1.25rem;
   font-weight: 600;
+  font-family: 'Montserrat', system-ui, sans-serif;
 }
 
-.logo svg {
-  stroke: white;
+.logo img {
+  border-radius: 8px;
 }
 
 /* Main Content */
@@ -68,34 +83,41 @@ body {
 
 /* Card */
 .card {
-  background: white;
+  background: var(--dark-800);
   border-radius: 1rem;
   padding: 2.5rem;
   width: 100%;
   max-width: 480px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   text-align: center;
+  border: 1px solid rgba(251, 191, 36, 0.1);
 }
 
 .card h1 {
   font-size: 1.75rem;
-  color: var(--gray-900);
+  color: #ffffff;
   margin-bottom: 0.5rem;
+  font-family: 'Montserrat', system-ui, sans-serif;
 }
 
 .card h2 {
   font-size: 1.25rem;
-  color: var(--gray-800);
+  color: #e7e7e7;
   margin-bottom: 0.5rem;
+  font-family: 'Montserrat', system-ui, sans-serif;
 }
 
 .subtitle {
-  color: var(--gray-500);
+  color: var(--dark-200);
   margin-bottom: 1.5rem;
 }
 
 .card-icon {
   margin-bottom: 1.5rem;
+}
+
+.card-icon svg {
+  stroke: var(--dark-300);
 }
 
 /* Buttons */
@@ -115,34 +137,38 @@ body {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: var(--primary-600);
   color: white;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
 }
 
 .btn-primary:hover {
-  background: var(--primary-dark);
+  background: var(--primary-700);
   transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
 }
 
 .btn-secondary {
-  background: var(--gray-100);
-  color: var(--gray-700);
+  background: var(--dark-700);
+  color: #e7e7e7;
   margin-top: 0.75rem;
+  border: 1px solid rgba(251, 191, 36, 0.2);
 }
 
 .btn-secondary:hover {
-  background: var(--gray-200);
+  background: var(--dark-600);
+  border-color: var(--primary-500);
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--primary);
-  border: 2px solid var(--primary);
+  color: var(--primary-400);
+  border: 2px solid var(--primary-600);
   margin-top: 1.5rem;
 }
 
 .btn-outline:hover {
-  background: var(--primary);
+  background: var(--primary-600);
   color: white;
 }
 
@@ -155,7 +181,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  color: var(--gray-400);
+  color: var(--dark-200);
   font-size: 0.875rem;
   margin-top: 1.5rem;
 }
@@ -164,8 +190,8 @@ body {
 .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid var(--gray-200);
-  border-top-color: var(--primary);
+  border: 4px solid var(--dark-700);
+  border-top-color: var(--primary-500);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1.5rem;
@@ -178,10 +204,10 @@ body {
 .mode-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  background: var(--gray-100);
+  background: var(--dark-700);
   border-radius: 9999px;
   font-size: 0.875rem;
-  color: var(--gray-600);
+  color: var(--dark-100);
 }
 
 /* Success & Error Icons */
@@ -191,11 +217,12 @@ body {
 
 /* User Info */
 .user-info {
-  background: var(--gray-50);
+  background: var(--dark-700);
   border-radius: 0.75rem;
   padding: 1rem;
   margin: 1.5rem 0;
   text-align: left;
+  border: 1px solid rgba(251, 191, 36, 0.1);
 }
 
 .info-row {
@@ -203,7 +230,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 0;
-  border-bottom: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--dark-600);
 }
 
 .info-row:last-child {
@@ -211,19 +238,22 @@ body {
 }
 
 .info-row .label {
-  color: var(--gray-500);
+  color: var(--dark-200);
   font-size: 0.875rem;
 }
 
 .info-row .value {
-  color: var(--gray-800);
+  color: #e7e7e7;
   font-weight: 500;
   font-size: 0.875rem;
 }
 
 .info-row .value.mono {
   font-family: 'Monaco', 'Menlo', monospace;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  word-break: break-all;
+  text-align: right;
+  max-width: 250px;
 }
 
 /* Verification Section */
@@ -234,7 +264,7 @@ body {
 
 .verification-section h3 {
   font-size: 0.875rem;
-  color: var(--gray-500);
+  color: var(--dark-200);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 1rem;
@@ -251,15 +281,15 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: var(--gray-50);
+  background: var(--dark-700);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  color: var(--gray-400);
+  color: var(--dark-200);
 }
 
 .verify-item.success {
   color: var(--success);
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(82, 196, 26, 0.1);
 }
 
 .verify-item.success svg {
@@ -267,11 +297,11 @@ body {
 }
 
 .verify-item.pending {
-  color: var(--gray-400);
+  color: var(--dark-200);
 }
 
 .verify-item.na {
-  color: var(--gray-400);
+  color: var(--dark-300);
   opacity: 0.5;
 }
 
@@ -279,7 +309,7 @@ body {
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -288,13 +318,14 @@ body {
 }
 
 .modal-content {
-  background: white;
+  background: var(--dark-800);
   border-radius: 1rem;
   width: 100%;
   max-width: 600px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
+  border: 1px solid rgba(251, 191, 36, 0.1);
 }
 
 .modal-header {
@@ -302,26 +333,28 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--dark-700);
 }
 
 .modal-header h2 {
   font-size: 1.125rem;
   margin: 0;
+  color: #ffffff;
+  font-family: 'Montserrat', system-ui, sans-serif;
 }
 
 .close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: var(--gray-400);
+  color: var(--dark-200);
   cursor: pointer;
   padding: 0;
   line-height: 1;
 }
 
 .close-btn:hover {
-  color: var(--gray-600);
+  color: #e7e7e7;
 }
 
 .modal-body {
@@ -331,7 +364,7 @@ body {
 }
 
 .modal-body pre {
-  background: var(--gray-900);
+  background: var(--dark-700);
   color: #e5e7eb;
   padding: 1rem;
   border-radius: 0.5rem;
@@ -339,13 +372,14 @@ body {
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-all;
+  border: 1px solid var(--dark-600);
 }
 
 .modal-footer {
   display: flex;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
-  border-top: 1px solid var(--gray-200);
+  border-top: 1px solid var(--dark-700);
 }
 
 .modal-footer .btn {
@@ -357,16 +391,17 @@ body {
 .footer {
   padding: 1rem 2rem;
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--dark-300);
   font-size: 0.875rem;
 }
 
 .footer a {
-  color: white;
+  color: var(--primary-400);
   text-decoration: none;
 }
 
 .footer a:hover {
+  color: var(--primary-300);
   text-decoration: underline;
 }
 
@@ -389,5 +424,10 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
+  }
+
+  .info-row .value.mono {
+    max-width: 100%;
+    text-align: left;
   }
 }

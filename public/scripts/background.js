@@ -1,4 +1,4 @@
-/*global chrome*/
+/*global chrome, browser*/
 // https://github.com/MetaMask/metamask-extension/blob/develop/app/scripts/app-init.js
 
 /*
@@ -7,20 +7,28 @@
  * https://bugs.chromium.org/p/chromium/issues/detail?id=634381
  */
 
-const ext = chrome || browser;
+// Firefox uses 'browser', Chrome uses 'chrome' - prefer browser for native promise support
+const ext = typeof browser !== 'undefined' ? browser : typeof chrome !== 'undefined' ? chrome : null;
 let awaitingSendResponse;
 let popupId;
 
 // Graceful shutdown: detect when popup is closed by user and reject pending promises
 ext.windows.onRemoved.addListener((windowId) => {
+  console.log('[SSP Background] Window removed:', windowId, 'popupId:', popupId);
   if (windowId === popupId) {
     // Popup was closed - reject any pending request
+    console.log('[SSP Background] Popup closed, awaitingSendResponse:', !!awaitingSendResponse);
     if (awaitingSendResponse) {
-      awaitingSendResponse({
-        status: 'ERROR',
-        error: 'User closed the wallet popup',
-        code: 4001, // User rejected request (EIP-1193 standard)
-      });
+      try {
+        awaitingSendResponse({
+          status: 'ERROR',
+          error: 'User closed the wallet popup',
+          code: 4001, // User rejected request (EIP-1193 standard)
+        });
+        console.log('[SSP Background] Sent rejection response');
+      } catch (err) {
+        console.error('[SSP Background] Error sending rejection:', err);
+      }
       awaitingSendResponse = null;
     }
     popupId = null;

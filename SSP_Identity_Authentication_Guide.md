@@ -17,11 +17,10 @@ SSP Identity authentication works by:
 const timestamp = Date.now().toString(); // 13-digit millisecond timestamp
 const challenge = crypto.randomBytes(16).toString('hex');
 const message = timestamp + challenge;
-const hexMessage = Buffer.from(message).toString('hex');
 
 // 2. Request signature from SSP Wallet
 const response = await window.ssp.request('wk_sign_message', {
-  message: hexMessage,
+  message: message,
   origin: window.location.origin,
   siteName: 'Your App Name',
   description: 'Sign in to your account'
@@ -43,8 +42,8 @@ if (response.status === 'SUCCESS') {
 ### Format Requirements
 
 The message must be:
-- **Hex-encoded**: The entire message content encoded as hexadecimal
-- **Timestamp-prefixed**: First 13 characters (after hex decoding) must be a millisecond timestamp
+- **Plain text**: A simple string (no hex encoding required)
+- **Timestamp-prefixed**: First 13 characters must be a millisecond timestamp
 - **Time-valid**: Timestamp must be within 15 minutes in the past and 5 minutes in the future
 
 ### Example Message Construction
@@ -53,7 +52,7 @@ The message must be:
 /**
  * Creates a valid SSP Identity authentication message
  * @param {string} customData - Optional additional data to include
- * @returns {string} Hex-encoded message ready for signing
+ * @returns {string} Plain text message ready for signing
  */
 function createAuthMessage(customData = '') {
   // Current timestamp in milliseconds (13 digits)
@@ -63,15 +62,11 @@ function createAuthMessage(customData = '') {
   const challenge = crypto.randomBytes(16).toString('hex');
 
   // Combine: timestamp + challenge + optional custom data
-  const message = timestamp + challenge + customData;
-
-  // Convert to hex
-  return Buffer.from(message).toString('hex');
+  return timestamp + challenge + customData;
 }
 
 // Example output:
-// Message: "1704067200000a1b2c3d4e5f6a7b8c9d0e1f2a3b"
-// Hex:     "313730343036373230303030306131623263336434653566366137623863396430653166326133b"
+// "1704067200000a1b2c3d4e5f6a7b8c9d0e1f2a3b"
 ```
 
 ### Including Custom Data
@@ -81,8 +76,7 @@ You can include additional data after the timestamp + challenge:
 ```javascript
 // Include user session ID or nonce from your server
 const serverNonce = 'abc123';
-const message = timestamp + challenge + ':' + serverNonce;
-const hexMessage = Buffer.from(message).toString('hex');
+const message = timestamp + challenge + serverNonce;
 ```
 
 ---
@@ -93,7 +87,7 @@ const hexMessage = Buffer.from(message).toString('hex');
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
-| `message` | Yes | Hex-encoded message with 13-digit timestamp prefix |
+| `message` | Yes | Plain text message with 13-digit timestamp prefix |
 | `origin` | Yes | Your domain (verified by extension, shown to user) |
 | `authMode` | No | `1` = wallet only, `2` = wallet + key (default: `2`) |
 | `siteName` | No | Your app name (shown to user, max 100 chars) |
@@ -112,7 +106,7 @@ async function requestSSPAuth() {
   // Create message
   const timestamp = Date.now().toString();
   const challenge = crypto.randomBytes(16).toString('hex');
-  const message = Buffer.from(timestamp + challenge).toString('hex');
+  const message = timestamp + challenge;
 
   // Request signature
   const response = await window.ssp.request('wk_sign_message', {
@@ -148,7 +142,7 @@ async function requestSSPAuth() {
     keyPubKey: '03def456...',              // 66-char compressed public key
     witnessScript: '5221...52ae',          // Hex witness script
     wkIdentity: 'bc1q...',                 // P2WSH identity address
-    message: '31373034...'                 // Original hex message
+    message: '1704067200000a1b2c3d...'     // Original plain text message
   }
 }
 ```
@@ -163,7 +157,7 @@ async function requestSSPAuth() {
     walletPubKey: '02abc123...',
     witnessScript: '5221...52ae',
     wkIdentity: 'bc1q...',
-    message: '31373034...'
+    message: '1704067200000a1b2c3d...'
     // Note: keySignature and keyPubKey are NOT present
   }
 }
@@ -185,10 +179,7 @@ To verify the authentication:
 ### Step 1: Validate Timestamp
 
 ```javascript
-function validateTimestamp(hexMessage) {
-  // Decode hex to string
-  const message = Buffer.from(hexMessage, 'hex').toString('utf8');
-
+function validateTimestamp(message) {
   // Extract timestamp (first 13 characters)
   const timestamp = parseInt(message.substring(0, 13), 10);
 
@@ -222,10 +213,9 @@ const bitcoinMessage = require('bitcoinjs-message');
 
 function verifySignature(message, signature, publicKey) {
   try {
-    // Bitcoin message signing uses the message directly (not hex-encoded for verification)
-    // The message that was signed is the hex string itself
+    // Bitcoin message signing uses the message directly
     const verified = bitcoinMessage.verify(
-      message,           // The hex-encoded message string
+      message,           // The plain text message
       getAddressFromPubKey(publicKey),
       signature
     );
