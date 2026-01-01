@@ -6,8 +6,10 @@ import ChainsInfo from '../../components/ChainsInfo/ChainsInfo';
 import TokensInfo from '../../components/TokensInfo/TokensInfo';
 import AddressesInfo from '../../components/AddressesInfo/AddressesInfo';
 import AllAddressesInfo from '../../components/AllAddressesInfo/AllAddressesInfo';
+import WkSign from '../../components/WkSign/WkSign';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
+import { WkSignResponse } from '../../lib/wkSign';
 
 interface signMessageData {
   status: string;
@@ -23,6 +25,12 @@ interface paymentData {
   data?: string;
 }
 
+interface wkSignData {
+  status: string;
+  result?: WkSignResponse;
+  data?: string;
+}
+
 function SspConnect() {
   const {
     address: sspConnectAddress,
@@ -31,6 +39,8 @@ function SspConnect() {
     amount: sspConnectAmount,
     type: sspConnectType,
     contract: sspConnectContract,
+    authMode: sspConnectAuthMode,
+    requesterInfo: sspConnectRequesterInfo,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common', 'home']);
@@ -47,6 +57,8 @@ function SspConnect() {
   const [openTokensInfo, setOpenTokensInfo] = useState(false);
   const [openAddressesInfo, setOpenAddressesInfo] = useState(false);
   const [openAllAddressesInfo, setOpenAllAddressesInfo] = useState(false);
+  const [openWkSign, setOpenWkSign] = useState(false);
+  const [authMode, setAuthMode] = useState<1 | 2>(2);
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -61,6 +73,10 @@ function SspConnect() {
         sspConnectType === 'sspwid_sign_message'
       ) {
         setOpenSignMessage(true);
+      } else if (sspConnectType === 'wk_sign_message') {
+        // wk_sign uses authMode from request (1 = wallet only, 2 = wallet + key)
+        setAuthMode((sspConnectAuthMode === 1 ? 1 : 2) as 1 | 2);
+        setOpenWkSign(true);
       } else if (sspConnectType === 'pay') {
         // show poup with information that we are going to pay after user approval
         // here we should navigate to send page, change chain and input proper address, message, amount.
@@ -124,6 +140,31 @@ function SspConnect() {
     setOpenTokensInfo(false);
     setOpenAddressesInfo(false);
     setOpenAllAddressesInfo(false);
+    setOpenWkSign(false);
+  };
+
+  const wkSignAction = (data: wkSignData | null) => {
+    console.log('[WkSign] Action result:', data);
+    setOpenWkSign(false);
+    if (browser?.runtime?.sendMessage) {
+      if (!data) {
+        // reject message
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data: {
+            status: 'ERROR',
+            result: t('common:request_rejected'),
+          },
+        });
+      } else {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data,
+        });
+      }
+    } else {
+      console.log('no browser or chrome runtime.sendMessage');
+    }
   };
   const payRequestAction = (data: paymentData | null | 'continue') => {
     console.log(data);
@@ -188,6 +229,13 @@ function SspConnect() {
       <AllAddressesInfo
         open={openAllAddressesInfo}
         openAction={generalAction}
+      />
+      <WkSign
+        open={openWkSign}
+        openAction={wkSignAction}
+        message={message}
+        authMode={authMode}
+        requesterInfo={sspConnectRequesterInfo}
       />
     </>
   );

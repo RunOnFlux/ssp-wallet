@@ -3,6 +3,13 @@ import { useAppSelector } from '../hooks';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
 
+export interface WkSignRequesterInfo {
+  origin: string; // domain/origin of the requesting site (required)
+  siteName?: string; // friendly name of the site (optional)
+  description?: string; // what the site wants to authenticate for (optional)
+  iconUrl?: string; // site icon URL - HTTPS only (optional)
+}
+
 interface SspConnectContextType {
   type: string;
   address: string;
@@ -10,16 +17,20 @@ interface SspConnectContextType {
   amount: string;
   chain: string;
   contract: string;
+  authMode: number; // 1 = wallet only, 2 = wallet + key
+  requesterInfo: WkSignRequesterInfo | null; // requester info for wk_sign
   clearRequest?: () => void;
 }
 
 const defaultValue: SspConnectContextType = {
-  type: '', // only sign_message and sspwid_sign_message and pay
+  type: '', // only sign_message and sspwid_sign_message and pay and wk_sign_message
   address: '', // address to sign with
   message: '', // message to sign
   amount: '', // amount to pay
   chain: '', // chain to sign with
   contract: '', // contract to send token from
+  authMode: 2, // default to 2-of-2 for wk_sign
+  requesterInfo: null, // requester info for wk_sign
 };
 
 interface dataBgParams {
@@ -28,6 +39,12 @@ interface dataBgParams {
   amount: string;
   chain: string;
   contract: string;
+  authMode?: number;
+  // Requester info for wk_sign_message
+  origin?: string; // domain of requesting site
+  siteName?: string; // friendly name
+  description?: string; // what the auth is for
+  iconUrl?: string; // site icon (HTTPS only)
 }
 
 interface dataBgRequest {
@@ -56,8 +73,33 @@ export const SspConnectProvider = ({
   const [amount, setAmount] = useState(''); // only for pay
   const [chain, setChain] = useState('');
   const [contract, setContract] = useState('');
+  const [authMode, setAuthMode] = useState(2); // default to 2-of-2 for wk_sign
+  const [requesterInfo, setRequesterInfo] =
+    useState<WkSignRequesterInfo | null>(null);
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
+
+  // Validate and sanitize iconUrl - must be HTTPS
+  const sanitizeIconUrl = (url: string | undefined): string | undefined => {
+    if (!url) return undefined;
+    try {
+      const parsed = new URL(url);
+      // Only allow HTTPS URLs
+      if (parsed.protocol !== 'https:') {
+        console.log('Icon URL must be HTTPS');
+        return undefined;
+      }
+      // Limit URL length
+      if (url.length > 500) {
+        console.log('Icon URL too long');
+        return undefined;
+      }
+      return url;
+    } catch {
+      console.log('Invalid icon URL');
+      return undefined;
+    }
+  };
 
   const sanitizeRequest = (request: bgRequest) => {
     // sanitize request
@@ -99,20 +141,30 @@ export const SspConnectProvider = ({
     }
     if (sanitizedRequest.data.params) {
       for (const key in sanitizedRequest.data.params) {
-        if (
-          sanitizedRequest.data.params[key as keyof dataBgParams] &&
-          typeof sanitizedRequest.data.params[key as keyof dataBgParams] !==
-            'string'
-        ) {
-          console.log('Invalid param type' + key);
-          return null;
+        const paramValue =
+          sanitizedRequest.data.params[key as keyof dataBgParams];
+        // Skip undefined/null values
+        if (paramValue === undefined || paramValue === null) {
+          continue;
         }
-        if (
-          sanitizedRequest.data.params[key as keyof dataBgParams] &&
-          sanitizedRequest.data.params[key as keyof dataBgParams].length > 50000
-        ) {
-          console.log('Invalid param length' + key);
-          return null;
+        // authMode is a number, other params are strings
+        if (key === 'authMode') {
+          if (
+            typeof paramValue !== 'number' ||
+            (paramValue !== 1 && paramValue !== 2)
+          ) {
+            console.log('Invalid authMode value: ' + paramValue);
+            return null;
+          }
+        } else {
+          if (typeof paramValue !== 'string') {
+            console.log('Invalid param type ' + key);
+            return null;
+          }
+          if (paramValue.length > 50000) {
+            console.log('Invalid param length ' + key);
+            return null;
+          }
         }
       }
     }
@@ -149,7 +201,8 @@ export const SspConnectProvider = ({
         }
         if (
           request.data.method === 'sign_message' ||
-          request.data.method === 'sspwid_sign_message'
+          request.data.method === 'sspwid_sign_message' ||
+          request.data.method === 'wk_sign_message'
         ) {
           if (
             blockchains[request.data.params.chain] ||
@@ -160,6 +213,30 @@ export const SspConnectProvider = ({
             setType(request.data.method);
             setAddress(request.data.params.address || wExternalIdentity); // this can be undefined if its a request before we have identity
             setMessage(request.data.params.message || '');
+            // Set authMode and requester info for wk_sign_message
+            if (request.data.method === 'wk_sign_message') {
+              setAuthMode(request.data.params.authMode ?? 2);
+              // Capture requester info - origin is required for wk_sign
+              const origin = request.data.params.origin;
+              if (
+                origin &&
+                typeof origin === 'string' &&
+                origin.length <= 100
+              ) {
+                setRequesterInfo({
+                  origin,
+                  siteName: request.data.params.siteName?.substring(0, 100),
+                  description: request.data.params.description?.substring(
+                    0,
+                    500,
+                  ),
+                  iconUrl: sanitizeIconUrl(request.data.params.iconUrl),
+                });
+              } else {
+                // Use a fallback if origin not provided
+                setRequesterInfo({ origin: 'Unknown' });
+              }
+            }
           } else {
             console.log('Invalid chain' + request.data.params.chain);
             void browser.runtime.sendMessage({
@@ -264,11 +341,23 @@ export const SspConnectProvider = ({
     setAmount('');
     setChain('');
     setContract('');
+    setAuthMode(2);
+    setRequesterInfo(null);
   };
 
   return (
     <SspConnectContext.Provider
-      value={{ type, address, chain, message, amount, contract, clearRequest }}
+      value={{
+        type,
+        address,
+        chain,
+        message,
+        amount,
+        contract,
+        authMode,
+        requesterInfo,
+        clearRequest,
+      }}
     >
       {children}
     </SspConnectContext.Provider>

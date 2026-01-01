@@ -4,6 +4,13 @@ import { useAppSelector } from '../hooks';
 import { useRelayAuth } from '../hooks/useRelayAuth';
 import { sspConfig } from '@storage/ssp';
 
+interface WkSignedPayload {
+  keySignature: string;
+  keyPubKey: string;
+  requestId: string;
+  message: string;
+}
+
 interface SocketContextType {
   socket: Socket | null;
   txid: string;
@@ -14,6 +21,8 @@ interface SocketContextType {
   walletConnectResponse: WalletConnectSocketResponse | null;
   evmSigned: string;
   evmSigningRejected: string;
+  wkSigned: WkSignedPayload | null;
+  wkSigningRejected: string;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
   clearPublicNonces?: () => void;
@@ -21,6 +30,8 @@ interface SocketContextType {
   clearWalletConnectResponse?: () => void;
   clearEvmSigned?: () => void;
   clearEvmSigningRejected?: () => void;
+  clearWkSigned?: () => void;
+  clearWkSigningRejected?: () => void;
   sendWalletConnectRequest?: (request: WalletConnectSocketRequest) => void;
 }
 
@@ -60,6 +71,8 @@ const defaultValue: SocketContextType = {
   walletConnectResponse: null,
   evmSigned: '',
   evmSigningRejected: '',
+  wkSigned: null,
+  wkSigningRejected: '',
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultValue);
@@ -79,6 +92,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     useState<WalletConnectSocketResponse | null>(null);
   const [evmSigned, setEvmSigned] = useState('');
   const [evmSigningRejected, setEvmSigningRejected] = useState('');
+  const [wkSigned, setWkSigned] = useState<WkSignedPayload | null>(null);
+  const [wkSigningRejected, setWkSigningRejected] = useState('');
 
   /**
    * Emit an authenticated join event.
@@ -178,6 +193,23 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       setEvmSigningRejected('evmsigningrejected');
     });
 
+    newSocket.on('wksigned', (signed: serverResponse) => {
+      console.log('WK signing completed');
+      console.log(signed);
+      try {
+        const payload = JSON.parse(signed.payload) as WkSignedPayload;
+        setWkSigned(payload);
+      } catch {
+        console.error('Failed to parse wksigned payload');
+      }
+    });
+
+    newSocket.on('wksigningrejected', (rejected: serverResponse) => {
+      console.log('WK signing rejected');
+      console.log(rejected);
+      setWkSigningRejected('wksigningrejected');
+    });
+
     // WalletConnect socket events
     newSocket.on(
       'walletconnect_response',
@@ -228,6 +260,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     setEvmSigningRejected('');
   };
 
+  const clearWkSigned = () => {
+    setWkSigned(null);
+  };
+
+  const clearWkSigningRejected = () => {
+    setWkSigningRejected('');
+  };
+
   const sendWalletConnectRequest = (request: WalletConnectSocketRequest) => {
     if (!socket || !socket.connected) {
       console.error('[WalletConnect Socket] Socket not connected');
@@ -262,6 +302,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         walletConnectResponse,
         evmSigned,
         evmSigningRejected,
+        wkSigned,
+        wkSigningRejected,
         clearTxid,
         clearTxRejected,
         clearPublicNonces,
@@ -269,6 +311,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         clearWalletConnectResponse,
         clearEvmSigned,
         clearEvmSigningRejected,
+        clearWkSigned,
+        clearWkSigningRejected,
         sendWalletConnectRequest,
       }}
     >
