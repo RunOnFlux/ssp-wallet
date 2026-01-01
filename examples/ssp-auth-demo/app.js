@@ -16,14 +16,18 @@ function createAuthMessage() {
   // Current timestamp in milliseconds (13 digits)
   const timestamp = Date.now().toString();
 
-  // Generate random challenge
+  // Generate random challenge (16 bytes = 32 hex chars for proper security)
   let challenge;
   if (window.crypto && window.crypto.getRandomValues) {
     const array = new Uint8Array(16);
     window.crypto.getRandomValues(array);
     challenge = Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
   } else {
-    challenge = Math.random().toString(36).substring(2, 18).padEnd(16, '0');
+    // Fallback: generate 32 hex characters (less secure but still valid format)
+    challenge = '';
+    for (let i = 0; i < 32; i++) {
+      challenge += Math.floor(Math.random() * 16).toString(16);
+    }
   }
 
   // Format: timestamp + challenge (no separator needed)
@@ -55,14 +59,17 @@ async function authenticate(authMode) {
     // Request signature from SSP Wallet
     console.log('Requesting SSP authentication...', { authMode, message });
 
-    const response = await window.ssp.request('wk_sign_message', {
+    // Build request params
+    const params = {
       message: message,
       authMode: authMode,
       origin: window.location.origin,
       siteName: 'SSP Auth Demo',
       description: 'Sign in to access the demo dashboard',
-      iconUrl: window.location.origin + '/favicon.ico'
-    });
+      iconUrl: 'https://raw.githubusercontent.com/RunOnFlux/ssp-wallet/refs/heads/master/public/ssp-logo-black.svg',
+    };
+
+    const response = await window.ssp.request('wk_sign_message', params);
 
     console.log('SSP response:', response);
 
@@ -104,6 +111,14 @@ function validateResponse(result, authMode) {
 
     if (!result.message) {
       return { valid: false, error: 'Missing message' };
+    }
+
+    // Validate message length (45-500 characters)
+    if (result.message.length < 45) {
+      return { valid: false, error: 'Message too short (minimum 45 characters)' };
+    }
+    if (result.message.length > 500) {
+      return { valid: false, error: 'Message too long (maximum 500 characters)' };
     }
 
     // Validate timestamp from message (first 13 characters)

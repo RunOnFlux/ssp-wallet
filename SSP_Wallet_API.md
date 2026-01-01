@@ -294,7 +294,7 @@ window.ssp.request('user_chains_addresses_all').then(response => {
 - **Description:** Requests SSP to sign a message using Wallet-Key (WK) Identity. This creates a Bitcoin message signing request with configurable authentication modes. In 2-of-2 mode, the request is sent to the user's mobile SSP Key app for approval and co-signing.
 
 - **Parameters:**
-  - `message` (string, required): Plain text message starting with a 13-digit millisecond timestamp. The message must be valid for ~15 minutes from the timestamp and not more than 5 minutes in the future.
+  - `message` (string, required): Plain text message starting with a 13-digit millisecond timestamp. The message must be valid for ~15 minutes from the timestamp and not more than 5 minutes in the future. Length requirements: minimum 45 characters (13 timestamp + 32 random hex), maximum 500 characters.
   - `authMode` (number, optional): Authentication mode. `1` = wallet signature only, `2` = wallet + key signatures (2-of-2). Defaults to `2`.
   - `origin` (string, required): The domain/origin of the requesting site. This is verified and displayed prominently to the user.
   - `siteName` (string, optional): Friendly name of the requesting site (max 100 chars).

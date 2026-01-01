@@ -1,5 +1,14 @@
-import { useEffect, useState, useCallback } from 'react';
-import { Typography, Button, Space, Modal, Spin, Alert } from 'antd';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import {
+  Typography,
+  Button,
+  Space,
+  Modal,
+  Spin,
+  Alert,
+  QRCode,
+  Collapse,
+} from 'antd';
 import { useAppSelector } from '../../hooks';
 import './WkSign.css';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
@@ -54,6 +63,36 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
   const [walletPubKey, setWalletPubKey] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [waitingForKey, setWaitingForKey] = useState(false);
+
+  // Build manual input payload when we have wallet signature
+  const manualInputPayload = useMemo(() => {
+    if (!walletSignature || !walletPubKey || !requestId) return null;
+    return JSON.stringify({
+      message,
+      walletSignature,
+      walletPubKey,
+      witnessScript,
+      wkIdentity,
+      requestId,
+      requesterInfo: requesterInfo || undefined,
+    });
+  }, [
+    walletSignature,
+    walletPubKey,
+    requestId,
+    message,
+    witnessScript,
+    wkIdentity,
+    requesterInfo,
+  ]);
+
+  // QR payload with wksigningrequest prefix for SSP Key to recognize
+  const qrPayload = manualInputPayload
+    ? `wksigningrequest${manualInputPayload}`
+    : null;
+
+  // Check if payload is small enough for QR code (< 1250 chars like transactions)
+  const canShowQR = qrPayload && qrPayload.length < 1250;
 
   // Reset state when modal closes
   useEffect(() => {
@@ -257,7 +296,6 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
     resetState();
   };
 
-  
   return (
     <Modal
       title={t('home:wkSign.title')}
@@ -274,61 +312,44 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
       >
         <Text>{t('home:wkSign.description')}</Text>
 
-        {/* Requester Info */}
+        {/* Requester Info - Simple centered layout */}
         {requesterInfo && (
-          <div className="wk-sign-requester-info">
+          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            {requesterInfo.iconUrl && (
+              <img
+                src={requesterInfo.iconUrl}
+                alt=""
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 8,
+                  objectFit: 'contain',
+                  marginBottom: 8,
+                }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            )}
+            {requesterInfo.siteName && (
+              <Text strong style={{ fontSize: '15px', display: 'block' }}>
+                {requesterInfo.siteName}
+              </Text>
+            )}
             <Text
               type="secondary"
-              style={{ fontSize: '11px', display: 'block', marginBottom: 8 }}
+              style={{ fontSize: '12px', fontFamily: 'monospace' }}
             >
-              {t('home:wkSign.requester_info')}:
+              {requesterInfo.origin}
             </Text>
-            <Space direction="vertical" size="small" style={{ width: '100%' }}>
-              {/* Icon and Site Name (if provided) */}
-              {requesterInfo.siteName && (
-                <Space align="center">
-                  {requesterInfo.iconUrl && (
-                    <img
-                      src={requesterInfo.iconUrl}
-                      alt=""
-                      style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: 4,
-                        objectFit: 'contain',
-                      }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <Text strong style={{ fontSize: '14px' }}>
-                    {requesterInfo.siteName}
-                  </Text>
-                </Space>
-              )}
-              {/* Origin/Domain - ALWAYS shown prominently (verified, can't be faked) */}
-              <div className="wk-sign-origin-box">
-                <Text
-                  type="secondary"
-                  style={{ fontSize: '11px', display: 'block' }}
-                >
-                  {t('home:wkSign.verified_origin')}:
-                </Text>
-                <Text
-                  strong
-                  style={{ fontSize: '13px', fontFamily: 'monospace' }}
-                >
-                  {requesterInfo.origin}
-                </Text>
-              </div>
-              {/* Description */}
-              {requesterInfo.description && (
-                <Text style={{ fontSize: '13px' }}>
-                  {requesterInfo.description}
-                </Text>
-              )}
-            </Space>
+            {requesterInfo.description && (
+              <Text
+                type="secondary"
+                style={{ fontSize: '12px', display: 'block', marginTop: 4 }}
+              >
+                {requesterInfo.description}
+              </Text>
+            )}
           </div>
         )}
 
@@ -379,13 +400,65 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
 
         {/* Waiting for Key indicator */}
         {waitingForKey && (
-          <Alert
-            type="info"
-            message={t('home:wkSign.waiting_for_key')}
-            icon={<Spin size="small" />}
-            showIcon
-            style={{ textAlign: 'left' }}
-          />
+          <>
+            <Alert
+              type="info"
+              message={t('home:wkSign.waiting_for_key')}
+              icon={<Spin size="small" />}
+              showIcon
+              style={{ textAlign: 'left' }}
+            />
+            {/* Manual input option for SSP Key */}
+            {qrPayload && (
+              <Collapse
+                size="small"
+                items={[
+                  {
+                    key: '1',
+                    label: t('home:wkSign.manual_input'),
+                    children: (
+                      <Space
+                        direction="vertical"
+                        size="large"
+                        style={{ width: '100%' }}
+                      >
+                        {canShowQR && (
+                          <>
+                            <QRCode
+                              errorLevel="L"
+                              value={qrPayload}
+                              icon="/ssp-logo-black.svg"
+                              size={340}
+                              style={{ margin: '0 auto' }}
+                            />
+                            <Paragraph
+                              copyable={{ text: qrPayload }}
+                              className="copyableAddress"
+                            >
+                              <Text>{qrPayload}</Text>
+                            </Paragraph>
+                          </>
+                        )}
+                        {!canShowQR && (
+                          <>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                              {t('home:wkSign.manual_input_desc')}
+                            </Text>
+                            <Paragraph
+                              copyable={{ text: qrPayload }}
+                              className="copyableAddress"
+                            >
+                              <Text>{qrPayload}</Text>
+                            </Paragraph>
+                          </>
+                        )}
+                      </Space>
+                    ),
+                  },
+                ]}
+              />
+            )}
+          </>
         )}
 
         {/* Action buttons */}

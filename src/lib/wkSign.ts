@@ -13,8 +13,11 @@ const MESSAGE_VALIDITY_MS = 15 * 60 * 1000;
 // Maximum future timestamp drift allowed (5 minutes)
 const MAX_FUTURE_DRIFT_MS = 5 * 60 * 1000;
 
-// Minimum message length (timestamp:challenge format)
-const MIN_MESSAGE_LENGTH = 20;
+// Minimum message length: 13 (timestamp) + 32 (16 bytes random as hex) = 45 chars for proper security
+const MIN_MESSAGE_LENGTH = 45;
+
+// Maximum message length to prevent abuse
+const MAX_MESSAGE_LENGTH = 500;
 
 export interface WkSignMessageValidation {
   valid: boolean;
@@ -48,7 +51,9 @@ export interface WkSignResponse {
  * @param message - The plain text message to validate
  * @returns Validation result with timestamp info if valid
  */
-export function validateWkSignMessage(message: string): WkSignMessageValidation {
+export function validateWkSignMessage(
+  message: string,
+): WkSignMessageValidation {
   // Check if message exists and is a string
   if (!message || typeof message !== 'string') {
     return {
@@ -57,11 +62,19 @@ export function validateWkSignMessage(message: string): WkSignMessageValidation 
     };
   }
 
-  // Check minimum length
+  // Check minimum length (13 timestamp + 32 random hex = 45 chars minimum for security)
   if (message.length < MIN_MESSAGE_LENGTH) {
     return {
       valid: false,
-      error: 'Message is too short',
+      error: `Message is too short (minimum ${MIN_MESSAGE_LENGTH} characters)`,
+    };
+  }
+
+  // Check maximum length
+  if (message.length > MAX_MESSAGE_LENGTH) {
+    return {
+      valid: false,
+      error: `Message is too long (maximum ${MAX_MESSAGE_LENGTH} characters)`,
     };
   }
 

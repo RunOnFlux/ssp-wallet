@@ -45,6 +45,8 @@ The message must be:
 - **Plain text**: A simple string (no hex encoding required)
 - **Timestamp-prefixed**: First 13 characters must be a millisecond timestamp
 - **Time-valid**: Timestamp must be within 15 minutes in the past and 5 minutes in the future
+- **Minimum 45 characters**: 13 timestamp + at least 32 random chars (16 bytes as hex) for security
+- **Maximum 500 characters**: To prevent abuse and ensure reasonable payload sizes
 
 ### Example Message Construction
 
