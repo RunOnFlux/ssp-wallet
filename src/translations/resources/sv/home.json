@@ -250,6 +250,22 @@
     "signature": "Signatur",
     "err_sign_message": "Fel vid signering av meddelande."
   },
+  "wkSign": {
+    "title": "SSP Authentication",
+    "description": "A website is requesting your signature to authenticate. Please review the details below.",
+    "ssp_identity": "SSP Identity",
+    "auth_mode": "Authentication Mode",
+    "wallet_only": "Wallet Only",
+    "wallet_and_key": "Two-Factor (Wallet + Key)",
+    "timestamp": "Message Timestamp",
+    "message_to_sign": "Message to Sign",
+    "sign": "Sign",
+    "awaiting_key": "Awaiting Key...",
+    "waiting_for_key": "Waiting for SSP Key approval...",
+    "key_rejected": "Request rejected by SSP Key",
+    "verified_origin": "Verified Origin",
+    "requesting_from": "Requesting from"
+  },
   "sspConnect": {
     "invalid_chain": "Ogiltig kedja.",
     "invalid_method": "Ogiltig metod.",
