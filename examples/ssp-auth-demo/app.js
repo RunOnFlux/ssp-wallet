@@ -66,7 +66,7 @@ async function authenticate(authMode) {
       origin: window.location.origin,
       siteName: 'SSP Auth Demo',
       description: 'Sign in to access the demo dashboard',
-      iconUrl: 'https://raw.githubusercontent.com/RunOnFlux/ssp-wallet/refs/heads/master/public/ssp-logo-black.svg',
+      iconUrl: 'https://raw.githubusercontent.com/RunOnFlux/ssp-wallet/refs/heads/master/public/ssp-logo-black-256x256.png',
     };
 
     const response = await window.ssp.request('wk_sign_message', params);
