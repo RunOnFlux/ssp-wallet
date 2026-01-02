@@ -880,7 +880,7 @@ export async function estimateGas(
     } else {
       // Native transfer on existing account
       preVerificationGas = Math.ceil(62076 * 1.2);
-      callGasLimit = Math.ceil(27138 * 1.2);
+      callGasLimit = Math.ceil(55810 * 1.2);
       verificationGasLimit = Math.ceil(81242 * 1.2);
     }
   } else {
@@ -1121,7 +1121,12 @@ export async function constructAndSignEVMTransaction(
         },
       });
     }
-    console.log(uoStruct);
+
+    // @TODO: Override the SDK's estimated gas values with the user-provided values
+    // This ensures manual fee settings are respected otherwise those are kept as max for our SDK which is optimizing it for now.
+    // uoStruct.preVerificationGas = BigInt(gasPreVerification);
+    // uoStruct.callGasLimit = BigInt(gasCallLimit);
+    // uoStruct.verificationGasLimit = BigInt(gasVerificationLimit);
 
     const uoStructHexlified = deepHexlify(uoStruct) as UserOperationRequest_v6;
     const uoStructHash = multiSigSmartAccount

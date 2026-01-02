@@ -755,6 +755,11 @@ function SendEVM() {
   };
 
   const getTotalGasLimit = async () => {
+    // Don't auto-update gas limits when manual fee is enabled
+    if (manualFee) {
+      return;
+    }
+
     try {
       const gasEstimate = await estimateGas(
         activeChain,
