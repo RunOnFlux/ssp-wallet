@@ -699,6 +699,8 @@ function Swap() {
       setAmountSell(amountBuy);
       setSellAsset(buyAsset);
       setBuyAsset(sellAsset);
+      setSellAssetAddress(buyAssetAddress);
+      setBuyAssetAddress(sellAssetAddress);
       setTimeout(() => {
         setTriggerSwapDirection(false);
       }, 10);
@@ -810,7 +812,7 @@ function Swap() {
               {t('common:from')}
             </Col>
             <Col span={18} onClick={() => setSendingWalletModalOpen(true)}>
-              {userAddresses[sellAsset.split('_')[0]] ? (
+              {userAddresses[sellAsset.split('_')[0]]?.[sellAssetAddress] ? (
                 <Button
                   size="small"
                   type="text"
@@ -966,7 +968,7 @@ function Swap() {
               {t('common:to')}
             </Col>
             <Col span={18}>
-              {userAddresses[buyAsset.split('_')[0]] ? (
+              {userAddresses[buyAsset.split('_')[0]]?.[buyAssetAddress] ? (
                 <Button
                   size="small"
                   type="text"
@@ -1155,6 +1157,7 @@ function Swap() {
                 <div
                   onClick={() => {
                     setSellAsset(asset);
+                    setSellAssetAddress('0-0');
                     handleCancelSellAsset();
                   }}
                   key={asset}
@@ -1219,6 +1222,7 @@ function Swap() {
                 <div
                   onClick={() => {
                     setBuyAsset(asset);
+                    setBuyAssetAddress('0-0');
                     handleCancelBuyAsset();
                   }}
                   key={asset}
