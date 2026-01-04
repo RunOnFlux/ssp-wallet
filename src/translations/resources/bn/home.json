@@ -80,7 +80,18 @@
     "err_upload_storage": "{{chainName}} নোড ফ্লাক্স স্টোরেজে আপলোড করার সময় একটি ত্রুটি হয়েছে. অনুগ্রহ করে আবার চেষ্টা করুন.",
     "storage_phrase": "স্টোরেজ ফ্রেজ",
     "add_to_storage_added": "আপনার Flux node এখন ফ্লাক্স স্টোরেজে উপলব্ধ, আপনি এটি এখন আপনার FluxOS সেটআপে ব্যবহার করতে পারবেন.",
-    "add_to_storage_added_info": "ফ্লাক্স স্টোরেজ ফ্রেজটি কপি করুন এবং এটি আপনার ফ্লাক্সওএস সেটআপে ব্যবহার করুন."
+    "add_to_storage_added_info": "ফ্লাক্স স্টোরেজ ফ্রেজটি কপি করুন এবং এটি আপনার ফ্লাক্সওএস সেটআপে ব্যবহার করুন.",
+    "start_all_nodes": "Start All Nodes",
+    "start_all_nodes_title": "Start All {{chainName}} Nodes",
+    "start_all_nodes_info": "This will broadcast Start Transactions for all offline nodes that have been setup.",
+    "start_all_nodes_info_2": "Make sure all your {{chainName}} Nodes are running and passing benchmark before starting to avoid DoS status.",
+    "start_all_nodes_count_one": "{{count}} node will be started.",
+    "start_all_nodes_count_other": "{{count}} nodes will be started.",
+    "no_startable_nodes": "No nodes available to start. Nodes must be setup and offline.",
+    "starting_all_nodes": "Starting all nodes...",
+    "all_nodes_started_one": "{{count}} node started successfully!",
+    "all_nodes_started_other": "All {{count}} nodes started successfully!",
+    "some_nodes_failed": "{{success}} of {{total}} nodes started. {{failed}} failed."
   },
   "setupNode": {
     "setup_node": "{{chainName}} নোড সেটআপ করুন",
