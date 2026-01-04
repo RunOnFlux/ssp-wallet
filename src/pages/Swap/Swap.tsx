@@ -12,6 +12,7 @@ import {
   Input,
   message,
   Popover,
+  Tooltip,
 } from 'antd';
 import {
   CaretDownOutlined,
@@ -19,6 +20,7 @@ import {
   PlusCircleOutlined,
   MinusCircleOutlined,
   SwapOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons';
 import Navbar from '../../components/Navbar/Navbar.tsx';
 import { useTranslation } from 'react-i18next';
@@ -69,9 +71,10 @@ import {
 import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
 import { getFingerprint } from '../../lib/fingerprint.ts';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
-import { formatFiatWithSymbol } from '../../lib/currency.ts';
+import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency.ts';
 import { sspConfig } from '@storage/ssp';
 import ProviderBox from './ProviderBox.tsx';
+import { estimateGas } from '../../lib/constructTx.ts';
 
 interface navigationObject {
   receiver: string;
@@ -126,6 +129,11 @@ function Swap() {
   const [userAddresses, setUserAddresses] = useState<
     Record<keyof blockchains, generatedWallets>
   >({});
+  const [sellAssetBalance, setSellAssetBalance] = useState(new BigNumber(0));
+  const [estimatedFee, setEstimatedFee] = useState(new BigNumber(0));
+  const [maxSendableAmount, setMaxSendableAmount] = useState(new BigNumber(0));
+  const [amountExceedsBalance, setAmountExceedsBalance] = useState(false);
+  const { networkFees } = useAppSelector((state) => state.networkFees);
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const { sspWalletKeyInternalIdentity: sspwkid } = useAppSelector(
@@ -172,7 +180,6 @@ function Swap() {
         const generatedWallets: generatedWallets =
           (await localForage.getItem(`wallets-${chain}`)) ?? {};
         if (Object.keys(generatedWallets).length > 0) {
-          // remove any change addresses. Only addresses that start with 0 are valid
           const adjAddresses = Object.fromEntries(
             Object.entries(generatedWallets).filter(([key]) =>
               key.startsWith('0-'),
@@ -184,6 +191,106 @@ function Swap() {
       setUserAddresses(userAddrs);
     })();
   }, []);
+
+  useEffect(() => {
+    void (async () => {
+      const chain = sellAsset.split('_')[0] as keyof cryptos;
+      const tokenContract = sellAsset.split('_')[2];
+      const blockchainConfig = blockchains[chain];
+
+      if (tokenContract) {
+        const balancesTokens: tokenBalanceEVM[] | null =
+          await localForage.getItem(
+            `token-balances-${chain}-${sellAssetAddress}`,
+          );
+        if (balancesTokens?.length) {
+          const tokenBalExists = balancesTokens.find(
+            (token) => token.contract === tokenContract,
+          );
+          if (tokenBalExists) {
+            const token = blockchainConfig.tokens?.find(
+              (t) => t.contract === tokenContract,
+            );
+            const balanceInUnits = new BigNumber(
+              tokenBalExists.balance,
+            ).dividedBy(10 ** (token?.decimals ?? 18));
+            setSellAssetBalance(balanceInUnits);
+            setMaxSendableAmount(balanceInUnits);
+            setEstimatedFee(new BigNumber(0));
+          } else {
+            setSellAssetBalance(new BigNumber(0));
+            setMaxSendableAmount(new BigNumber(0));
+          }
+        } else {
+          setSellAssetBalance(new BigNumber(0));
+          setMaxSendableAmount(new BigNumber(0));
+        }
+      } else {
+        const balancesWallet: balancesObj | null = await localForage.getItem(
+          `balances-${chain}-${sellAssetAddress}`,
+        );
+        if (balancesWallet) {
+          const balanceInUnits = new BigNumber(
+            balancesWallet.confirmed,
+          ).dividedBy(10 ** blockchainConfig.decimals);
+          setSellAssetBalance(balanceInUnits);
+
+          let fee = new BigNumber(0);
+          if (blockchainConfig.chainType === 'evm') {
+            const chainFees = networkFees[chain];
+            const baseFee = chainFees?.base ?? blockchainConfig.baseFee;
+            const priorityFee =
+              chainFees?.priority ?? blockchainConfig.priorityFee;
+            const gasEstimate = await estimateGas(
+              chain,
+              userAddresses[chain]?.[sellAssetAddress] ?? '',
+              '',
+              '',
+            );
+            const totalGas =
+              Number(gasEstimate.preVerificationGas) +
+              Number(gasEstimate.callGasLimit) +
+              Number(gasEstimate.verificationGasLimit);
+            const totalGasPrice = new BigNumber(baseFee)
+              .plus(priorityFee)
+              .multipliedBy(10 ** 9);
+            fee = new BigNumber(totalGas)
+              .multipliedBy(totalGasPrice)
+              .dividedBy(10 ** 18);
+          } else {
+            const feeRate =
+              networkFees[chain]?.base ?? blockchainConfig.feePerByte ?? 10;
+            const estimatedTxSize = 250;
+            fee = new BigNumber(feeRate)
+              .multipliedBy(estimatedTxSize)
+              .dividedBy(10 ** blockchainConfig.decimals);
+          }
+
+          setEstimatedFee(fee);
+          const maxAmount = balanceInUnits.minus(fee);
+          setMaxSendableAmount(
+            maxAmount.isGreaterThan(0) ? maxAmount : new BigNumber(0),
+          );
+        } else {
+          setSellAssetBalance(new BigNumber(0));
+          setMaxSendableAmount(new BigNumber(0));
+        }
+      }
+    })();
+  }, [sellAsset, sellAssetAddress, networkFees, userAddresses]);
+
+  useEffect(() => {
+    const tokenContract = sellAsset.split('_')[2];
+
+    if (tokenContract) {
+      setAmountExceedsBalance(
+        new BigNumber(amountSell).isGreaterThan(sellAssetBalance),
+      );
+    } else {
+      const totalNeeded = new BigNumber(amountSell).plus(estimatedFee);
+      setAmountExceedsBalance(totalNeeded.isGreaterThan(sellAssetBalance));
+    }
+  }, [amountSell, sellAssetBalance, estimatedFee, sellAsset]);
 
   // chain switching mechanism. todo cleanup This extract and from chainSelect extract too
   useEffect(() => {
@@ -794,6 +901,50 @@ function Swap() {
               </Button>
             </Col>
             <Col span={24} className="swap-box-row-chain-info">
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  position: 'absolute',
+                  top: 7,
+                }}
+                onClick={() => {
+                  setAmountSell(
+                    maxSendableAmount
+                      .decimalPlaces(8, BigNumber.ROUND_DOWN)
+                      .toNumber(),
+                  );
+                }}
+              >
+                <Tooltip
+                  title={
+                    amountExceedsBalance
+                      ? t('home:swap.insufficient_balance')
+                      : sellAsset.split('_')[2]
+                        ? t('home:swap.max_tooltip_token')
+                        : t('home:swap.max_tooltip_native')
+                  }
+                  placement="bottomLeft"
+                >
+                  <InfoCircleOutlined
+                    style={{
+                      color: amountExceedsBalance ? '#ff4d4f' : 'inherit',
+                      cursor: 'help',
+                      fontSize: 10,
+                      marginTop: 1,
+                    }}
+                  />
+                </Tooltip>
+                <span>
+                  {t('home:swap.balance')}: {formatCrypto(sellAssetBalance, 8)}{' '}
+                  {blockchains[sellAsset.split('_')[0]].tokens?.find(
+                    (token) => token.symbol === sellAsset.split('_')[1],
+                  )?.symbol ?? blockchains[sellAsset.split('_')[0]]?.symbol}
+                </span>
+              </div>
               <div className="swap-box-row-chain-info-container">
                 <Image
                   height={14}
