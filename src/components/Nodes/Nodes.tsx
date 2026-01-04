@@ -8,6 +8,7 @@ import localForage from 'localforage';
 import { useAppSelector } from '../../hooks';
 import { setNodes } from '../../store';
 import NodesTable from './NodesTable.tsx';
+import NodesActions from './NodesActions.tsx';
 import { node } from '../../types';
 import { getFingerprint } from '../../lib/fingerprint';
 import {
@@ -255,12 +256,28 @@ function Nodes() {
   return (
     <div>
       {contextHolder}
-      <PArewards
-        redeemScript={redeemScript}
-        collateralPrivKey={collateralPrivKey}
-        collateralPubKey={collateralPublicKey}
-        sspwid={sspwid}
-      />
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <PArewards
+          redeemScript={redeemScript}
+          collateralPrivKey={collateralPrivKey}
+          collateralPubKey={collateralPublicKey}
+          sspwid={sspwid}
+        />
+        <NodesActions
+          nodes={myNodes}
+          chain={activeChain}
+          walletInUse={walletInUse}
+          collateralPK={collateralPrivKey}
+          identityPK={nodeIdentityPK}
+          redeemScript={redeemScript}
+        />
+      </div>
       <NodesTable
         nodes={myNodes}
         chain={activeChain}

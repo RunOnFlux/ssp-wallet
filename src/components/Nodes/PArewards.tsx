@@ -198,7 +198,7 @@ function PArewards(props: {
         <Spin size="large" style={{ marginTop: 14, marginBottom: 14 }} />
       )}
       {!claimInProgress && (
-        <Space size={'large'} style={{ marginTop: 8, marginBottom: 8 }}>
+        <Space size={'large'} style={{ marginTop: 8, marginBottom: 8, marginLeft: 4 }}>
           <div>
             <Tooltip title={t('home:fusion.pa_info')}>
               <b style={{ cursor: 'help' }}>{t('home:fusion.pa_reward')}</b>
