@@ -80,7 +80,18 @@
     "err_upload_storage": "{{chainName}} 노드를 Flux 저장소에 업로드하는 중 오류가 발생했습니다. 다시 시도하세요.",
     "storage_phrase": "저장소 문구",
     "add_to_storage_added": "Flux 노드가 Flux 저장소에 있습니다. 이제 FluxOS 설정에서 사용할 수 있습니다.",
-    "add_to_storage_added_info": "Flux 저장소 문구를 복사하여 FluxOS 설정에서 사용하세요."
+    "add_to_storage_added_info": "Flux 저장소 문구를 복사하여 FluxOS 설정에서 사용하세요.",
+    "start_all_nodes": "Start All Nodes",
+    "start_all_nodes_title": "Start All {{chainName}} Nodes",
+    "start_all_nodes_info": "This will broadcast Start Transactions for all offline nodes that have been setup.",
+    "start_all_nodes_info_2": "Make sure all your {{chainName}} Nodes are running and passing benchmark before starting to avoid DoS status.",
+    "start_all_nodes_count_one": "{{count}} node will be started.",
+    "start_all_nodes_count_other": "{{count}} nodes will be started.",
+    "no_startable_nodes": "No nodes available to start. Nodes must be setup and offline.",
+    "starting_all_nodes": "Starting all nodes...",
+    "all_nodes_started_one": "{{count}} node started successfully!",
+    "all_nodes_started_other": "All {{count}} nodes started successfully!",
+    "some_nodes_failed": "{{success}} of {{total}} nodes started. {{failed}} failed."
   },
   "setupNode": {
     "setup_node": "{{chainName}} 노드 설정",
