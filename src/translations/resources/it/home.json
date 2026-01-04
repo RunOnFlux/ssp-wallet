@@ -91,7 +91,20 @@
     "starting_all_nodes": "Starting all nodes...",
     "all_nodes_started_one": "{{count}} node started successfully!",
     "all_nodes_started_other": "All {{count}} nodes started successfully!",
-    "some_nodes_failed": "{{success}} of {{total}} nodes started. {{failed}} failed."
+    "some_nodes_failed": "{{success}} of {{total}} nodes started. {{failed}} failed.",
+    "configure_delegates": "Configure Delegates",
+    "configure_delegates_title": "Configure {{chainName}} Wallet {{wallet}} Delegates",
+    "configure_delegates_info": "Add up to 4 delegate public keys that can start your nodes on your behalf.",
+    "delegate_public_key": "Delegate Public Key",
+    "add_delegate": "Add Delegate",
+    "remove_delegate": "Remove",
+    "no_delegates": "No delegates configured",
+    "delegates_saved": "Delegates saved successfully!",
+    "err_invalid_delegate_key": "Invalid delegate public key. Must be 66 hex characters.",
+    "err_max_delegates": "Maximum 4 delegates allowed.",
+    "err_duplicate_delegate": "This delegate is already added.",
+    "delegates_count_one": "{{count}} delegate configured",
+    "delegates_count_other": "{{count}} delegates configured"
   },
   "setupNode": {
     "setup_node": "Configurazione Nodo {{chainName}}",
