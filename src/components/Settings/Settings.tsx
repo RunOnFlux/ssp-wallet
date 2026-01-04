@@ -234,7 +234,10 @@ function Settings(props: {
         Object.assign(data, auth);
       }
     } catch (error) {
-      console.warn('[postAction] Auth not available, sending without signature');
+      console.warn(
+        '[postAction] Auth not available, sending without signature',
+        error,
+      );
     }
 
     axios

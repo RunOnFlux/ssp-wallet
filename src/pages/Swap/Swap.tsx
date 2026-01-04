@@ -865,7 +865,10 @@ function Swap() {
                 <Popover
                   content={t('home:swap.estimated_amount')}
                   title={t('home:swap.estimated_amount_title')}
-                  styles={{ content: { maxWidth: 300 }, container: { marginLeft: 10 } }}
+                  styles={{
+                    content: { maxWidth: 300 },
+                    container: { marginLeft: 10 },
+                  }}
                 >
                   {t('home:swap.you_get')} ~ &nbsp;
                   {loading ? (

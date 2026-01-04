@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Dropdown, Modal, message, Spin } from 'antd';
-import { MoreOutlined } from '@ant-design/icons';
+import { MoreOutlined, SettingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
 import { fluxnode } from '@runonflux/flux-sdk';
@@ -9,6 +9,7 @@ import { blockchains } from '@storage/blockchains';
 import { setNodes } from '../../store';
 import { broadcastTx } from '../../lib/constructTx';
 import { NoticeType } from 'antd/es/message/interface';
+import ConfigureDelegates, { getDelegates } from './ConfigureDelegates';
 
 function NodesActions(props: {
   nodes: node[];
@@ -21,6 +22,7 @@ function NodesActions(props: {
   const { t } = useTranslation(['home', 'common']);
   const [startingAllNodes, setStartingAllNodes] = useState(false);
   const [startAllModalOpen, setStartAllModalOpen] = useState(false);
+  const [delegatesModalOpen, setDelegatesModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[props.chain];
 
@@ -45,6 +47,14 @@ function NodesActions(props: {
     setStartingAllNodes(true);
     displayMessage('info', t('home:nodesTable.starting_all_nodes'));
 
+    // Get configured delegates for this wallet
+    const delegates = await getDelegates(props.chain, props.walletInUse);
+    // type 1 = DELEGATE_TYPE_UPDATE (owner grants delegate permissions)
+    const delegateData =
+      delegates.length > 0
+        ? { version: 1, type: 1, delegatePublicKeys: delegates }
+        : undefined;
+
     let successCount = 0;
     let failCount = 0;
     const adjNodes: node[] = JSON.parse(JSON.stringify(props.nodes)) as node[];
@@ -61,6 +71,7 @@ function NodesActions(props: {
           true,
           true,
           props.redeemScript,
+          delegateData,
         );
         await broadcastTx(tx, props.chain);
 
@@ -125,6 +136,15 @@ function NodesActions(props: {
               disabled: startableNodesCount === 0,
               onClick: () => setStartAllModalOpen(true),
             },
+            {
+              type: 'divider',
+            },
+            {
+              key: 'configure-delegates',
+              label: t('home:nodesTable.configure_delegates'),
+              icon: <SettingOutlined />,
+              onClick: () => setDelegatesModalOpen(true),
+            },
           ],
         }}
         trigger={['click']}
@@ -159,6 +179,12 @@ function NodesActions(props: {
           </strong>
         </p>
       </Modal>
+      <ConfigureDelegates
+        open={delegatesModalOpen}
+        onClose={() => setDelegatesModalOpen(false)}
+        chain={props.chain}
+        walletInUse={props.walletInUse}
+      />
     </>
   );
 }

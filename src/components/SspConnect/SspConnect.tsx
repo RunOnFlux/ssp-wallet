@@ -77,7 +77,7 @@ function SspConnect() {
         setOpenSignMessage(true);
       } else if (sspConnectType === 'wk_sign_message') {
         // wk_sign uses authMode from request (1 = wallet only, 2 = wallet + key)
-        setAuthMode((sspConnectAuthMode === 1 ? 1 : 2) as 1 | 2);
+        setAuthMode(sspConnectAuthMode === 1 ? 1 : 2);
         // Capture requesterInfo before clearRequest clears it
         setRequesterInfo(sspConnectRequesterInfo);
         setOpenWkSign(true);

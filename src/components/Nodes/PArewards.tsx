@@ -198,9 +198,12 @@ function PArewards(props: {
         <Spin size="large" style={{ marginTop: 14, marginBottom: 14 }} />
       )}
       {!claimInProgress && (
-        <Space size={'large'} style={{ marginTop: 8, marginBottom: 8, marginLeft: 4 }}>
+        <Space
+          size={'large'}
+          style={{ marginTop: 8, marginBottom: 8, marginLeft: 4 }}
+        >
           <div>
-            <Tooltip title={t('home:fusion.pa_info')}>
+            <Tooltip title={t('home:fusion.pa_info')} placement="topLeft">
               <b style={{ cursor: 'help' }}>{t('home:fusion.pa_reward')}</b>
             </Tooltip>
             <br />{' '}
@@ -211,7 +214,7 @@ function PArewards(props: {
           </div>
           <Popconfirm
             title={t('home:fusion.claim_pa_reward')}
-            placement="bottomRight"
+            placement="topLeft"
             description={
               <>
                 <Paragraph type="secondary" className="detailsDescription">
@@ -236,7 +239,7 @@ function PArewards(props: {
                 <br /> <br />
               </>
             }
-            overlayStyle={{ maxWidth: 360, margin: 10 }}
+            overlayStyle={{ maxWidth: 360, paddingLeft: 20 }}
             okText={t('home:fusion.claim_reward')}
             cancelText={t('common:cancel')}
             onConfirm={() => {

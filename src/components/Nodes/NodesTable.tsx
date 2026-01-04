@@ -24,6 +24,7 @@ import {
 import { setNodes } from '../../store';
 import SetupNode from './SetupNode.tsx';
 import WordsDialog from './WordsDialog.tsx';
+import { getDelegates } from './ConfigureDelegates';
 
 // name, ip, tier, status
 function NodesTable(props: {
@@ -65,6 +66,15 @@ function NodesTable(props: {
     try {
       console.log(fluxnode);
       const timestamp = Math.round(new Date().getTime() / 1000).toString();
+
+      // Get configured delegates for this wallet
+      const delegates = await getDelegates(chain, props.walletInUse);
+      // type 1 = DELEGATE_TYPE_UPDATE (owner grants delegate permissions)
+      const delegateData =
+        delegates.length > 0
+          ? { version: 1, type: 1, delegatePublicKeys: delegates }
+          : undefined;
+
       // collateralPK, redeemScript
       const tx = fluxnode.startFluxNodev6(
         txhash,
@@ -75,6 +85,7 @@ function NodesTable(props: {
         true,
         true,
         props.redeemScript,
+        delegateData,
       );
       console.log(tx);
       const txid = await broadcastTx(tx, chain);
