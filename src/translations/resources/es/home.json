@@ -80,7 +80,18 @@
     "err_upload_storage": "Error al subir el nodo {{chainName}} al almacenamiento Flux. Inténtelo de nuevo por favor.",
     "storage_phrase": "Frase de almacenamiento",
     "add_to_storage_added": "Su Nodo Flux está disponible en el almacén de Flux, ahora puede usarlo en su configuración de FluxOS.",
-    "add_to_storage_added_info": "Copie la frase de almacenamiento de Flux y úsela en su configuración de FluxOS."
+    "add_to_storage_added_info": "Copie la frase de almacenamiento de Flux y úsela en su configuración de FluxOS.",
+    "start_all_nodes": "Start All Nodes",
+    "start_all_nodes_title": "Start All {{chainName}} Nodes",
+    "start_all_nodes_info": "This will broadcast Start Transactions for all offline nodes that have been setup.",
+    "start_all_nodes_info_2": "Make sure all your {{chainName}} Nodes are running and passing benchmark before starting to avoid DoS status.",
+    "start_all_nodes_count_one": "{{count}} node will be started.",
+    "start_all_nodes_count_other": "{{count}} nodes will be started.",
+    "no_startable_nodes": "No nodes available to start. Nodes must be setup and offline.",
+    "starting_all_nodes": "Starting all nodes...",
+    "all_nodes_started_one": "{{count}} node started successfully!",
+    "all_nodes_started_other": "All {{count}} nodes started successfully!",
+    "some_nodes_failed": "{{success}} of {{total}} nodes started. {{failed}} failed."
   },
   "setupNode": {
     "setup_node": "Configurar Nodo {{chainName}}",
