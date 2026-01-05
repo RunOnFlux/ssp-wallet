@@ -422,7 +422,11 @@
     "swapped_by": "Gewissel deur",
     "best_rate": "Beste Tarief",
     "select_swap_provider": "Kies Wissel Verskaffer",
-    "user_choice": "Gebruiker Keuse"
+    "user_choice": "Gebruiker Keuse",
+    "balance": "Balance",
+    "max_tooltip_token": "Send your entire token balance. Network fees are paid separately in the native coin.",
+    "max_tooltip_native": "Send your maximum available balance. Network fees are automatically reserved.",
+    "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees."
   },
   "walletconnect": {
     "title": "WalletConnect",
