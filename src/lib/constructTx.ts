@@ -693,6 +693,110 @@ export async function getTransactionSize(
   }
 }
 
+export async function estimateUtxoTxSize(
+  chain: keyof cryptos,
+  sender: string,
+  amount: string,
+  useAllUtxos = false,
+  excludeUtxos: txIdentifier[] = [],
+): Promise<number> {
+  try {
+    const blockchainConfig = blockchains[chain];
+    const utxos = await fetchUtxos(sender, chain, 0);
+    let utxosNonCoinbase = utxos.filter(
+      (x) =>
+        x.coinbase !== true ||
+        (x.coinbase === true && x.confirmations && x.confirmations > 100),
+    );
+
+    if (excludeUtxos.length > 0) {
+      utxosNonCoinbase = utxosNonCoinbase.filter(
+        (utxo) =>
+          !excludeUtxos.some(
+            (ex) => ex.txid === utxo.txid && ex.vout === utxo.vout,
+          ),
+      );
+    }
+
+    if (utxosNonCoinbase.length === 0) {
+      return 250;
+    }
+
+    let inputCount: number;
+
+    if (useAllUtxos) {
+      inputCount = utxosNonCoinbase.length;
+    } else {
+      const amountSatoshis = new BigNumber(amount).multipliedBy(
+        10 ** blockchainConfig.decimals,
+      );
+
+      let totalAmount = new BigNumber(0);
+      inputCount = 0;
+
+      const sortedUtxos = utxosNonCoinbase.sort((a, b) => {
+        const aSatoshis = new BigNumber(a.satoshis);
+        const bSatoshis = new BigNumber(b.satoshis);
+        if (aSatoshis.isLessThan(bSatoshis)) {
+          return -1;
+        }
+        if (aSatoshis.isGreaterThan(bSatoshis)) {
+          return 1;
+        }
+        return 0;
+      });
+
+      for (const utxo of sortedUtxos) {
+        totalAmount = totalAmount.plus(new BigNumber(utxo.satoshis));
+        inputCount++;
+        if (totalAmount.isGreaterThanOrEqualTo(amountSatoshis)) {
+          break;
+        }
+      }
+
+      if (inputCount === 0) {
+        inputCount = 1;
+      }
+    }
+
+    const outputCount = useAllUtxos ? 1 : 2;
+    let baseSize: number;
+    let inputSize: number;
+    let outputSize: number;
+
+    if (blockchainConfig.scriptType === 'p2wsh') {
+      baseSize = 11;
+      inputSize = 68;
+      outputSize = 43;
+      const witnessSize = 150 * inputCount;
+      const weight =
+        (baseSize + inputSize * inputCount + outputSize * outputCount) * 4 +
+        witnessSize;
+      const vSize = Math.ceil(weight / 4);
+      const secondSigSize = 18 * inputCount;
+      return vSize + secondSigSize;
+    } else if (blockchainConfig.scriptType === 'p2sh') {
+      baseSize = 10;
+      inputSize = 180;
+      outputSize = 34;
+      const txSize =
+        baseSize + inputSize * inputCount + outputSize * outputCount;
+      const secondSigSize = 72 * inputCount;
+      return txSize + secondSigSize;
+    } else {
+      baseSize = 10;
+      inputSize = 148;
+      outputSize = 34;
+      const txSize =
+        baseSize + inputSize * inputCount + outputSize * outputCount;
+      return txSize;
+    }
+  } catch (error) {
+    console.log(error);
+    return 500;
+  }
+}
+
 interface constructedTxInfo {
   signedTx: string;
   utxos: utxo[];

@@ -74,13 +74,18 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency.ts';
 import { sspConfig } from '@storage/ssp';
 import ProviderBox from './ProviderBox.tsx';
-import { estimateGas } from '../../lib/constructTx.ts';
+import {
+  estimateGas,
+  estimateUtxoTxSize,
+  fetchUtxos,
+} from '../../lib/constructTx.ts';
 
 interface navigationObject {
   receiver: string;
   amount: string;
   swap: swapResponseData;
   contract?: string;
+  fee?: string;
 }
 
 interface balancesObj {
@@ -230,7 +235,7 @@ function Swap() {
           `balances-${chain}-${sellAssetAddress}`,
         );
         if (balancesWallet) {
-          const balanceInUnits = new BigNumber(
+          let balanceInUnits = new BigNumber(
             balancesWallet.confirmed,
           ).dividedBy(10 ** blockchainConfig.decimals);
           setSellAssetBalance(balanceInUnits);
@@ -258,9 +263,62 @@ function Swap() {
               .multipliedBy(totalGasPrice)
               .dividedBy(10 ** 18);
           } else {
+            const senderAddress =
+              userAddresses[chain]?.[sellAssetAddress] ?? '';
+
+            const lockedUtxos: { txid: string; vout: number }[] = [];
+            if (senderAddress) {
+              const nodesWallet: node[] =
+                (await localForage.getItem(
+                  `nodes-${chain}-${sellAssetAddress}`,
+                )) ?? [];
+              const utxos = await fetchUtxos(senderAddress, chain, 0);
+              const utxosNonCoinbase = utxos.filter(
+                (x) =>
+                  x.coinbase !== true ||
+                  (x.coinbase === true &&
+                    x.confirmations &&
+                    x.confirmations > 100),
+              );
+
+              let lockedAmount = new BigNumber(0);
+              nodesWallet.forEach((nodeItem) => {
+                if (nodeItem.name) {
+                  const utxoExists = utxosNonCoinbase.find(
+                    (utxo) =>
+                      utxo.txid === nodeItem.txid &&
+                      utxo.vout === nodeItem.vout,
+                  );
+                  if (utxoExists) {
+                    lockedAmount = lockedAmount.plus(nodeItem.amount);
+                    lockedUtxos.push({
+                      txid: nodeItem.txid,
+                      vout: nodeItem.vout,
+                    });
+                  }
+                }
+              });
+
+              const lockedInUnits = lockedAmount.dividedBy(
+                10 ** blockchainConfig.decimals,
+              );
+              balanceInUnits = balanceInUnits.minus(lockedInUnits);
+              if (balanceInUnits.isLessThan(0)) {
+                balanceInUnits = new BigNumber(0);
+              }
+            }
+
             const feeRate =
               networkFees[chain]?.base ?? blockchainConfig.feePerByte ?? 10;
-            const estimatedTxSize = 250;
+            const estimatedTxSize = senderAddress
+              ? await estimateUtxoTxSize(
+                  chain,
+                  senderAddress,
+                  balanceInUnits.toFixed(),
+                  true,
+                  lockedUtxos,
+                )
+              : 500;
             fee = new BigNumber(feeRate)
               .multipliedBy(estimatedTxSize)
               .dividedBy(10 ** blockchainConfig.decimals);
@@ -579,6 +637,11 @@ function Swap() {
       };
       if (sellAsset.split('_')[2]) {
         navigationObject.contract = sellAsset.split('_')[2];
+      }
+      // Pass the estimated fee for UTXO chains so Send page can use it as minimum floor
+      const tokenContract = sellAsset.split('_')[2];
+      if (!tokenContract && estimatedFee.isGreaterThan(0)) {
+        navigationObject.fee = estimatedFee.toFixed();
       }
       // if chain is eth navigate to SendEVM else navigate to Send
       if (

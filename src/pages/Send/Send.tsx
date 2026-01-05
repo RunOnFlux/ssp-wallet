@@ -493,14 +493,24 @@ function Send() {
       .toFixed(); // satoshis
     console.log(feeSats);
     console.log(fpb);
-    const feeUnit = new BigNumber(feeSats)
+    let feeUnit = new BigNumber(feeSats)
       .dividedBy(10 ** blockchainConfig.decimals)
       .toFixed(); // unit
     console.log(feeUnit);
+
+    if (state.swap && state.fee) {
+      const swapFee = new BigNumber(state.fee);
+      const calculatedFee = new BigNumber(feeUnit);
+      if (swapFee.isGreaterThan(calculatedFee)) {
+        feeUnit = swapFee.toFixed();
+      }
+    }
+
     // if the difference is less than 20 satoshis, ignore.
     if (
       feeUnit !== txFee &&
-      new BigNumber(feeSats)
+      new BigNumber(feeUnit)
+        .multipliedBy(10 ** blockchainConfig.decimals)
         .minus(
           new BigNumber(txFee || '0').multipliedBy(
             10 ** blockchainConfig.decimals,

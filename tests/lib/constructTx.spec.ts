@@ -26,6 +26,7 @@ import {
   broadcastTx,
   estimateGas,
   constructAndSignEVMTransaction,
+  estimateUtxoTxSize,
 } from '../../src/lib/constructTx';
 
 const rawTxFlux =
@@ -255,13 +256,15 @@ describe('ConstructTx Lib', () => {
         '0x29c6fbfe8f749d4d122a3a8422e63977aaf943fb3674a927fb88f1a2833a53ad', // Valid hex private key
         '',
         {
-          kPublic: '022f8178611318387a91b287a5942278fb2f66942dfa72f2fdae5a2de4ba2a5e62',
-          kTwoPublic: '037a0ba8f0d247907508520ba7df81a31c3f084eb2648f566c8ad902af7a798d63',
+          kPublic:
+            '022f8178611318387a91b287a5942278fb2f66942dfa72f2fdae5a2de4ba2a5e62',
+          kTwoPublic:
+            '037a0ba8f0d247907508520ba7df81a31c3f084eb2648f566c8ad902af7a798d63',
         },
         '1000000000', // 1 gwei base
         '1000000000', // 1 gwei priority
         '80000', // preVerificationGas
-        '100000', // callGasLimit  
+        '100000', // callGasLimit
         '500000', // verificationGasLimit
       );
       expect(res).not.toBeNull();
@@ -387,6 +390,96 @@ describe('ConstructTx Lib', () => {
       // Moderate complexity triggers 1.5x call gas scaling and 1.2x preVerification scaling
       expect(callGasLimit).toBeGreaterThan(55000); // Base call gas * 1.5
       expect(preVerificationGas).toBeGreaterThan(75000); // Adjusted from 90000 to match actual behavior (~77133)
+    });
+  });
+
+  describe('estimateUtxoTxSize function', () => {
+    it('should return estimated tx size for flux address with UTXOs', async () => {
+      const result = await estimateUtxoTxSize(
+        'flux',
+        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
+        '1',
+      );
+
+      expect(result).not.toBeNull();
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('number');
+      expect(result).toBeGreaterThan(0);
+    });
+
+    it('should return estimated tx size for btc address', async () => {
+      const result = await estimateUtxoTxSize(
+        'btc',
+        'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
+        '0.001',
+      );
+
+      expect(result).not.toBeNull();
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('number');
+      expect(result).toBeGreaterThan(0);
+    });
+
+    it('should return fallback size (250) when address has no UTXOs', async () => {
+      const result = await estimateUtxoTxSize(
+        'flux',
+        't3EmptyAddressWithNoUtxos123456789',
+        '1',
+      );
+
+      expect(result).toBe(250);
+    });
+
+    it('should return reasonable size for p2wsh transactions (btc)', async () => {
+      const result = await estimateUtxoTxSize(
+        'btc',
+        'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
+        '0.0001',
+      );
+
+      expect(result).toBeGreaterThan(100);
+      expect(result).toBeLessThan(2000);
+    });
+
+    it('should return larger size when more UTXOs are needed for bigger amount', async () => {
+      const smallAmountSize = await estimateUtxoTxSize(
+        'flux',
+        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
+        '0.1',
+      );
+
+      const largeAmountSize = await estimateUtxoTxSize(
+        'flux',
+        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
+        '1000000',
+      );
+
+      expect(largeAmountSize).toBeGreaterThanOrEqual(smallAmountSize);
+    });
+
+    it('should handle invalid address gracefully and return fallback size', async () => {
+      const result = await estimateUtxoTxSize('btc', 'invalid_address', '1');
+
+      expect(result).toBeGreaterThan(0);
+      expect(result).toBeLessThanOrEqual(500);
+    });
+
+    it('should use all UTXOs and single output when useAllUtxos is true', async () => {
+      const normalSize = await estimateUtxoTxSize(
+        'flux',
+        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
+        '0.1',
+        false,
+      );
+
+      const maxSize = await estimateUtxoTxSize(
+        'flux',
+        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
+        '0.1',
+        true,
+      );
+
+      expect(maxSize).toBeGreaterThanOrEqual(normalSize);
     });
   });
 });
