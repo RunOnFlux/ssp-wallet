@@ -120,13 +120,11 @@ function SspConnect() {
 
   const generalAction = (data: signMessageData | null) => {
     if (browser?.runtime?.sendMessage) {
-      // we do not use sendResponse, instead we are sending new message
       if (!data) {
-        // reject message
         void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
-            status: 'ERROR', // do not translate
+            status: 'ERROR',
             result: t('common:request_rejected'),
           },
         });
@@ -152,7 +150,6 @@ function SspConnect() {
     setOpenWkSign(false);
     if (browser?.runtime?.sendMessage) {
       if (!data) {
-        // reject message
         void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
@@ -177,13 +174,11 @@ function SspConnect() {
       return;
     }
     if (browser?.runtime?.sendMessage) {
-      // we do not use sendResponse, instead we are sending new message
       if (!data) {
-        // reject message
         void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
-            status: 'ERROR', // do not translate
+            status: 'ERROR',
             result: t('common:request_rejected'),
           },
         });

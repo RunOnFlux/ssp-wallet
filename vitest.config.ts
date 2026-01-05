@@ -6,6 +6,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./tests/setup.ts'],
     testTimeout: 30000, // 30 seconds timeout for all tests
+    include: ['tests/**/*.{test,spec}.{js,ts,tsx}'],
+    exclude: ['node_modules', 'dist', 'temp_repos', '.git'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],

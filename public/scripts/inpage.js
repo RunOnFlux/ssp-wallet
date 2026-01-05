@@ -1,44 +1,61 @@
-// Generate unique request IDs to match responses to requests
-let requestIdCounter = 0;
+let pendingHandler = null;
 
 async function request(method, params) {
-  const requestId = ++requestIdCounter;
-  const message = {
-    method,
-    params,
-    requestId,
-  };
-  const event = new CustomEvent('fromPageEvent', { detail: message });
-  window.dispatchEvent(event);
+  if (pendingHandler) {
+    throw new Error('Another request is already pending');
+  }
 
-  const response = await new Promise((resolve, reject) => {
-    function handleMessage(eventReceived) {
-      if (eventReceived.data.type === "fromContentScript") {
-        // Clean up listener after receiving response
-        window.removeEventListener('message', handleMessage, false);
+  const message = { method, params };
 
-        const detail = eventReceived.data.detail;
+  return new Promise((resolve, reject) => {
+    let timeoutId = null;
 
-        // Handle error responses (e.g., popup closed by user)
-        if (detail && detail.status === 'ERROR') {
-          const error = new Error(detail.error || 'Request rejected');
-          error.code = detail.code || 4001;
-          reject(error);
-          return;
-        }
+    function handleMessage(event) {
+      if (event.data?.type !== 'fromContentScript') return;
 
-        resolve(detail);
+      cleanup();
+      const detail = event.data.detail;
+
+      if (detail?.status === 'ERROR') {
+        const error = new Error(detail.error || 'Request rejected');
+        error.code = detail.code || 4001;
+        reject(error);
+        return;
       }
+
+      resolve(detail);
     }
 
-    window.addEventListener('message', handleMessage, false);
-  });
+    function cleanup() {
+      window.removeEventListener('message', handleMessage, false);
+      if (timeoutId) clearTimeout(timeoutId);
+      pendingHandler = null;
+    }
 
-  return response;
+    pendingHandler = handleMessage;
+    window.addEventListener('message', handleMessage, false);
+
+    const customEvent = new CustomEvent('fromPageEvent', { detail: message });
+    window.dispatchEvent(customEvent);
+
+    timeoutId = setTimeout(() => {
+      if (pendingHandler) {
+        cleanup();
+        const error = new Error('Request timeout - wallet did not respond');
+        error.code = 4100;
+        reject(error);
+      }
+    }, 300000);
+  });
 }
 
 const sspObject = {
   request,
+  isConnected: () => true,
 };
 
-window.ssp = sspObject;
+Object.defineProperty(window, 'ssp', {
+  value: sspObject,
+  writable: false,
+  configurable: false,
+});

@@ -6,13 +6,23 @@ import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended'
 import reactRefresh from 'eslint-plugin-react-refresh';
 import reactHooks from 'eslint-plugin-react-hooks';
 
-export default [
+export default tseslint.config(
   eslintPluginPrettierRecommended,
   pluginJs.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  pluginReact.configs.flat.recommended,
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [...tseslint.configs.recommendedTypeChecked],
+  },
+  {
+    files: ['**/*.{ts,tsx,jsx}'],
+    extends: [pluginReact.configs.flat.recommended],
+    settings: {
+      react: { version: 'detect' },
+    },
+  },
   {
     files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
+    ignores: ['public/scripts/**'],
     languageOptions: {
       parserOptions: {
         projectService: {
@@ -37,7 +47,6 @@ export default [
       '@typescript-eslint/no-floating-promises': 'off',
     },
   },
-  // Test files configuration - more lenient rules
   {
     files: ['tests/**/*.ts', 'tests/**/*.spec.ts', '**/*.test.ts'],
     rules: {
@@ -57,4 +66,24 @@ export default [
       'no-console': 'off',
     },
   },
-];
+  {
+    files: ['public/scripts/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+      globals: {
+        ...globals.browser,
+        ...globals.webextensions,
+        chrome: 'readonly',
+        browser: 'readonly',
+      },
+    },
+    rules: {
+      'no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
+      'no-undef': 'error',
+    },
+  },
+);

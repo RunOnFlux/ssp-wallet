@@ -770,13 +770,11 @@ function Send() {
   const payRequestAction = (data: paymentData | null) => {
     console.log(data);
     if (browser?.runtime?.sendMessage) {
-      // we do not use sendResponse, instead we are sending new message
       if (!data) {
-        // reject message
         void browser.runtime.sendMessage({
           origin: 'ssp',
           data: {
-            status: 'ERROR', // do not translate
+            status: 'ERROR',
             result: t('common:request_rejected'),
           },
         });

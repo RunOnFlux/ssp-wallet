@@ -1,37 +1,25 @@
-/*global chrome, browser*/
-// https://github.com/MetaMask/metamask-extension/blob/develop/app/scripts/app-init.js
+const ext = typeof browser !== 'undefined' ? browser : chrome;
 
-/*
- * This content script is injected programmatically because
- * MAIN world injection does not work properly via manifest
- * https://bugs.chromium.org/p/chromium/issues/detail?id=634381
- */
+let pendingRequest = null;
+let popupId = null;
+let isPopupOpening = false;
 
-// Firefox uses 'browser', Chrome uses 'chrome' - prefer browser for native promise support
-const ext = typeof browser !== 'undefined' ? browser : typeof chrome !== 'undefined' ? chrome : null;
-let awaitingSendResponse;
-let popupId;
-
-// Graceful shutdown: detect when popup is closed by user and reject pending promises
 ext.windows.onRemoved.addListener((windowId) => {
-  console.log('[SSP Background] Window removed:', windowId, 'popupId:', popupId);
   if (windowId === popupId) {
-    // Popup was closed - reject any pending request
-    console.log('[SSP Background] Popup closed, awaitingSendResponse:', !!awaitingSendResponse);
-    if (awaitingSendResponse) {
+    if (pendingRequest) {
       try {
-        awaitingSendResponse({
+        pendingRequest({
           status: 'ERROR',
           error: 'User closed the wallet popup',
-          code: 4001, // User rejected request (EIP-1193 standard)
+          code: 4001,
         });
-        console.log('[SSP Background] Sent rejection response');
       } catch (err) {
         console.error('[SSP Background] Error sending rejection:', err);
       }
-      awaitingSendResponse = null;
+      pendingRequest = null;
     }
     popupId = null;
+    isPopupOpening = false;
   }
 });
 
@@ -47,108 +35,136 @@ const registerInPageContentScript = async () => {
       },
     ]);
   } catch (err) {
-    /**
-     * An error occurs when background.js is reloaded. Attempts to avoid the duplicate script error:
-     * 1. registeringContentScripts inside runtime.onInstalled - This caused a race condition
-     *    in which the provider might not be loaded in time.
-     * 2. await chrome.scripting.getRegisteredContentScripts() to check for an existing
-     *    inpage script before registering - The provider is not loaded on time.
-     */
-    console.warn(`Dropped attempt to register inpage content script. ${err}`);
+    console.warn('[SSP Background] Content script registration:', err.message);
   }
 };
 
 void registerInPageContentScript();
 
-async function getAllWindows() {
-  const windows = await ext.windows.getAll();
-  return windows;
-}
-
-function getPopupIn(windows) {
-  return windows
-    ? windows.find((win) => {
-      // Returns notification popup
-      return win && win.type === 'popup' && win.id === popupId;
-    })
-    : null;
-}
-
-async function getPopup() {
-  const windows = await getAllWindows();
-  return getPopupIn(windows);
-}
-
-async function focusWindow(windowId, options = { focused: true }) {
-  await ext.windows.update(windowId, options);
-}
-
-ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log(request);
-  if (request.origin !== 'ssp') {
-    return;
+async function getExistingPopup() {
+  if (!popupId) return null;
+  try {
+    const windows = await ext.windows.getAll({ windowTypes: ['popup'] });
+    return windows.find((win) => win.id === popupId) || null;
+  } catch (_err) {
+    return null;
   }
-  if (awaitingSendResponse) {
-    awaitingSendResponse(request.data);
-    awaitingSendResponse = null; // Clear callback after use
-  } else {
-    sendResponse('Something went wrong.');
+}
+
+async function focusWindow(windowId) {
+  try {
+    await ext.windows.update(windowId, { focused: true });
+  } catch (err) {
+    console.error('[SSP Background] Error focusing window:', err);
   }
+}
+
+async function createPopupWindow() {
+  let top = 80;
+  let left = 10;
+
+  try {
+    const lastFocused = await ext.windows.getLastFocused();
+    if (lastFocused && lastFocused.top !== undefined) {
+      top = lastFocused.top + 80;
+      left = Math.max(
+        (lastFocused.left || 0) + ((lastFocused.width || 500) - 420 - 10),
+        10,
+      );
+    }
+  } catch (_err) {
+    console.warn('[SSP Background] Could not get last focused window');
+  }
+
+  return ext.windows.create({
+    url: ext.runtime.getURL('index.html'),
+    type: 'popup',
+    top,
+    left,
+    width: 420,
+    height: 620,
+  });
+}
+
+function sendRequestToPopup(request) {
+  setTimeout(() => {
+    ext.runtime
+      .sendMessage({
+        origin: 'ssp-background',
+        data: request,
+      })
+      .catch(() => {});
+  }, 100);
+}
+
+ext.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+  if (message.origin !== 'ssp') {
+    return false;
+  }
+
+  if (pendingRequest) {
+    try {
+      pendingRequest(message.data);
+    } catch (err) {
+      console.error('[SSP Background] Error sending response:', err);
+    }
+    pendingRequest = null;
+  }
+
   if (popupId) {
-    ext.windows.remove(popupId);
-    popupId = null; // Clear popup ID after removal
+    ext.windows.remove(popupId).catch(() => {});
+    popupId = null;
   }
+
+  return false;
 });
 
 ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.origin === 'ssp' || request.origin === 'ssp-background') {
-    return;
+    return false;
   }
-  void (async () => {
-    awaitingSendResponse = sendResponse;
-    // we wait for user action on the popup
-    // console.log('background.js got a message');
-    // console.log(request);
-    // console.log(sender);
-    let top = 80;
-    let left = 10;
-    const lastFocused = await ext.windows.getLastFocused();
-    if (lastFocused) {
-      top = lastFocused.top + 80;
-      left = Math.max(lastFocused.left + (lastFocused.width - 420 - 10), 10);
-    }
-    const options = {
-      url: ext.runtime.getURL('index.html'),
-      type: 'popup',
-      top,
-      left,
-      width: 420,
-      height: 620,
-    };
-    const newPopup = await ext.windows.create(options);
-    popupId = newPopup.id;
-    setTimeout(() => {
-      void ext.runtime.sendMessage({
-        // send new message to poup. We do not await a response. Instead we listen for a new message from popup
-        origin: 'ssp-background',
-        data: request,
-        // data: {
-        //   method: 'sign_message',
-        //   params: {
-        //     address: 'abc',
-        //     message: 'edf',
-        //     chain: 'lllll',
-        //   }
-        // }
-        // data: {
-        //   method: 'sspwid_sign_message',
-        //   params: {
-        //     message: 'edf',
-        //   }
-        // }
+
+  if (pendingRequest) {
+    try {
+      pendingRequest({
+        status: 'ERROR',
+        error: 'New request received, previous request cancelled',
+        code: 4001,
       });
-    }, 1000);
+    } catch (_err) {
+      // Ignored - best effort rejection of previous request
+    }
+    pendingRequest = null;
+  }
+
+  pendingRequest = sendResponse;
+
+  void (async () => {
+    try {
+      const existingPopup = await getExistingPopup();
+
+      if (existingPopup) {
+        await focusWindow(popupId);
+        sendRequestToPopup(request);
+      } else if (isPopupOpening) {
+        setTimeout(() => sendRequestToPopup(request), 500);
+      } else {
+        isPopupOpening = true;
+        const popup = await createPopupWindow();
+        popupId = popup.id;
+        isPopupOpening = false;
+        setTimeout(() => sendRequestToPopup(request), 800);
+      }
+    } catch (err) {
+      console.error('[SSP Background] Error handling request:', err);
+      pendingRequest = null;
+      sendResponse({
+        status: 'ERROR',
+        error: err.message || 'Failed to open wallet popup',
+        code: 4900,
+      });
+    }
   })();
-  // Important! Return true to indicate you want to send a response asynchronously
+
   return true;
 });
