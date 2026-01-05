@@ -422,7 +422,11 @@
     "swapped_by": "Zprostředkovatel",
     "best_rate": "Nejlepší Kurz",
     "select_swap_provider": "Vybrat Poskytovatele Směny",
-    "user_choice": "Volba Uživatele"
+    "user_choice": "Volba Uživatele",
+    "balance": "Balance",
+    "max_tooltip_token": "Send your entire token balance. Network fees are paid separately in the native coin.",
+    "max_tooltip_native": "Send your maximum available balance. Network fees are automatically reserved.",
+    "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees."
   },
   "walletconnect": {
     "title": "WalletConnect",
