@@ -422,7 +422,11 @@
     "swapped_by": "Trocado por",
     "best_rate": "Melhor taxa",
     "select_swap_provider": "Selecionar operador de troca",
-    "user_choice": "Escolha de utilizador"
+    "user_choice": "Escolha de utilizador",
+    "balance": "Balance",
+    "max_tooltip_token": "Send your entire token balance. Network fees are paid separately in the native coin.",
+    "max_tooltip_native": "Send your maximum available balance. Network fees are automatically reserved.",
+    "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees."
   },
   "walletconnect": {
     "title": "WalletConnect",
