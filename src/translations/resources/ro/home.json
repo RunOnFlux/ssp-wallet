@@ -422,7 +422,11 @@
     "swapped_by": "Schimb realizat de",
     "best_rate": "Cea Mai Bună Rată",
     "select_swap_provider": "Selectează Furnizorul de Schimb",
-    "user_choice": "Alegerea Utilizatorului"
+    "user_choice": "Alegerea Utilizatorului",
+    "balance": "Balance",
+    "max_tooltip_token": "Send your entire token balance. Network fees are paid separately in the native coin.",
+    "max_tooltip_native": "Send your maximum available balance. Network fees are automatically reserved.",
+    "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees."
   },
   "walletconnect": {
     "title": "WalletConnect",
