@@ -276,22 +276,22 @@
   },
   "wkSign": {
     "title": "Autentikasi SSP",
-    "description": "A website is requesting your signature to authenticate. Please review the details below.",
-    "requester_info": "Requesting Website",
+    "description": "Sebuah situs web meminta tanda tangan Anda untuk otentikasi. Silakan tinjau detail di bawah ini.",
+    "requester_info": "Permintaan Situs Web",
     "ssp_identity": "Identitas SSP",
     "auth_mode": "Mode Autentikasi",
-    "wallet_only": "Wallet Only",
-    "wallet_and_key": "Two-Factor (Wallet + Key)",
+    "wallet_only": "Hanya Dompet",
+    "wallet_and_key": "Verifikasi Dua Langkah (Dompet + Kunci)",
     "timestamp": "Linimasa Pesan",
     "message_to_sign": "Pesan untuk Ditandatangani",
     "sign": "Tanda Tangani",
-    "awaiting_key": "Awaiting Key...",
-    "waiting_for_key": "Waiting for SSP Key approval...",
-    "key_rejected": "Request rejected by SSP Key",
+    "awaiting_key": "Menunggu Kunci...",
+    "waiting_for_key": "Menunggu persetujuan SSP Key...",
+    "key_rejected": "Permintaan ditolak oleh SSP Key",
     "verified_origin": "Asal",
     "requesting_from": "Meminta dari",
-    "manual_input": "Manual Input for SSP Key",
-    "manual_input_desc": "If automatic sync isn't working, scan QR code or copy the data for SSP Key."
+    "manual_input": "Input Manual untuk SSP Key",
+    "manual_input_desc": "Jika sinkronisasi otomatis tidak berfungsi, pindai kode QR atau salin data untuk SSP Key."
   },
   "sspConnect": {
     "invalid_chain": "Rantai tidak valid.",
@@ -424,9 +424,9 @@
     "select_swap_provider": "Pilih Penyedia Penukaran",
     "user_choice": "Pilihan Pengguna",
     "balance": "Saldo",
-    "max_tooltip_token": "Send your entire token balance. Network fees are paid separately in the native coin.",
-    "max_tooltip_native": "Send your maximum available balance. Network fees are automatically reserved.",
-    "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees."
+    "max_tooltip_token": "Kirim seluruh saldo token Anda. Biaya jaringan dibayarkan secara terpisah dalam mata uang asli.",
+    "max_tooltip_native": "Kirim saldo maksimum yang tersedia. Biaya jaringan akan dipotong secara otomatis.",
+    "insufficient_balance": "Saldo tidak mencukupi. Jumlahnya melebihi dana yang tersedia termasuk biaya jaringan."
   },
   "walletconnect": {
     "title": "WalletConnect",
