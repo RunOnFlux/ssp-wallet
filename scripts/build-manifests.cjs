@@ -4,45 +4,54 @@ const archiver = require('archiver');
 
 // Read the base manifest
 const baseManifest = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../public/manifest.json'), 'utf8')
+  fs.readFileSync(path.join(__dirname, '../public/manifest.json'), 'utf8'),
 );
 
 // Define browser-specific overrides
 const browserOverrides = {
   chrome: {
     background: {
-      service_worker: "scripts/background.js"
-    }
+      service_worker: 'scripts/background.js',
+    },
   },
   firefox: {
     background: {
-      scripts: ["scripts/background.js"]
-    }
-  }
+      scripts: ['scripts/background.js'],
+    },
+  },
 };
+
+// Keys to remove for Firefox (Chrome-only features)
+const firefoxRemoveKeys = ['side_panel'];
+const firefoxRemovePermissions = ['sidePanel'];
 
 // Create zip archive for a browser build
 function createZipArchive(browser, version) {
   return new Promise((resolve, reject) => {
     try {
       console.log(`Starting to create zip for ${browser}...`);
-      
+
       // Create dist-zip directory if it doesn't exist
       const zipDir = path.join(__dirname, '../dist-zip');
       if (!fs.existsSync(zipDir)) {
         fs.mkdirSync(zipDir, { recursive: true });
       }
-      
-      const outputPath = path.join(zipDir, `ssp-wallet-${browser}-v${version}.zip`);
+
+      const outputPath = path.join(
+        zipDir,
+        `ssp-wallet-${browser}-v${version}.zip`,
+      );
       const output = fs.createWriteStream(outputPath);
       const archive = archiver('zip', {
-        zlib: { level: 9 } // Maximum compression
+        zlib: { level: 9 }, // Maximum compression
       });
 
       // Listen for all archive data to be written
       output.on('close', () => {
         try {
-          console.log(`${browser} extension has been zipped: ${archive.pointer()} total bytes`);
+          console.log(
+            `${browser} extension has been zipped: ${archive.pointer()} total bytes`,
+          );
           resolve();
         } catch (error) {
           console.error(`Error in output close handler for ${browser}:`, error);
@@ -77,9 +86,9 @@ function createZipArchive(browser, version) {
 
       // Pipe archive data to the file
       archive.pipe(output);
-      
+
       console.log(`Creating ${browser} zip...`);
-      
+
       try {
         // For Firefox, we need to create a temporary manifest
         if (browser === 'firefox') {
@@ -89,27 +98,59 @@ function createZipArchive(browser, version) {
           if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
           }
-          
+
           console.log('Copying files to temporary Firefox directory...');
           // Copy all files from dist to temp directory
           copyFiles(
             path.join(__dirname, '../dist'),
             tempDir,
-            ['temp-firefox'] // Exclude temp directory itself
+            ['temp-firefox'], // Exclude temp directory itself
           );
-          
+
           console.log('Creating Firefox manifest...');
           // Create Firefox manifest with special handling for background property
-          const firefoxManifest = deepMerge(baseManifest, browserOverrides.firefox);
+          const firefoxManifest = deepMerge(
+            baseManifest,
+            browserOverrides.firefox,
+          );
           // Remove service_worker from Firefox background
-          if (firefoxManifest.background && firefoxManifest.background.service_worker) {
+          if (
+            firefoxManifest.background &&
+            firefoxManifest.background.service_worker
+          ) {
+            delete firefoxManifest.background.service_worker;
+          }
+          // Remove Chrome-only keys from Firefox manifest
+          for (const key of firefoxRemoveKeys) {
+            if (firefoxManifest[key]) {
+              delete firefoxManifest[key];
+            }
+          }
+          // Remove Chrome-only permissions from Firefox manifest
+          if (
+            firefoxManifest.permissions &&
+            Array.isArray(firefoxManifest.permissions)
+          ) {
+            firefoxManifest.permissions = firefoxManifest.permissions.filter(
+              (perm) => !firefoxRemovePermissions.includes(perm),
+            );
+          }
+          fs.writeFileSync(
+            path.join(tempDir, 'manifest.json'),
+            JSON.stringify(firefoxManifest, null, 2),
+          );
+          // Remove service_worker from Firefox background
+          if (
+            firefoxManifest.background &&
+            firefoxManifest.background.service_worker
+          ) {
             delete firefoxManifest.background.service_worker;
           }
           fs.writeFileSync(
             path.join(tempDir, 'manifest.json'),
-            JSON.stringify(firefoxManifest, null, 2)
+            JSON.stringify(firefoxManifest, null, 2),
           );
-          
+
           console.log('Adding Firefox files to archive...');
           // Add files from temp directory to archive
           archive.directory(tempDir, false);
@@ -123,7 +164,7 @@ function createZipArchive(browser, version) {
         reject(error);
         return;
       }
-      
+
       console.log(`Finalizing ${browser} zip...`);
       try {
         archive.finalize();
@@ -132,7 +173,10 @@ function createZipArchive(browser, version) {
         reject(error);
       }
     } catch (error) {
-      console.error(`Unexpected error in createZipArchive for ${browser}:`, error);
+      console.error(
+        `Unexpected error in createZipArchive for ${browser}:`,
+        error,
+      );
       reject(error);
     }
   });
@@ -142,22 +186,22 @@ function createZipArchive(browser, version) {
 async function buildManifests(browsers = ['chrome', 'firefox']) {
   try {
     const version = baseManifest.version;
-    
+
     console.log('Starting build process...');
-    
+
     try {
       // Always use Chrome manifest for the dist folder
       const chromeManifest = deepMerge(baseManifest, browserOverrides.chrome);
       fs.writeFileSync(
         path.join(__dirname, '../dist/manifest.json'),
-        JSON.stringify(chromeManifest, null, 2)
+        JSON.stringify(chromeManifest, null, 2),
       );
-      
+
       console.log('Generated Chrome manifest for dist folder');
     } catch (error) {
       console.error('Error generating Chrome manifest:', error);
     }
-    
+
     // Create zip archives for each browser
     for (const browser of browsers) {
       console.log(`Processing ${browser}...`);
@@ -168,7 +212,7 @@ async function buildManifests(browsers = ['chrome', 'firefox']) {
         console.error(`Error creating zip for ${browser}:`, error);
       }
     }
-    
+
     // Clean up temporary Firefox directory if it exists
     try {
       const tempFirefoxDir = path.join(__dirname, '../dist/temp-firefox');
@@ -180,7 +224,7 @@ async function buildManifests(browsers = ['chrome', 'firefox']) {
     } catch (error) {
       console.error('Error cleaning up temporary Firefox directory:', error);
     }
-    
+
     console.log('Build process completed successfully!');
   } catch (error) {
     console.error('Error in build process:', error);
@@ -192,9 +236,9 @@ async function buildManifests(browsers = ['chrome', 'firefox']) {
 function deepMerge(target, source) {
   try {
     const output = { ...target };
-    
+
     if (isObject(target) && isObject(source)) {
-      Object.keys(source).forEach(key => {
+      Object.keys(source).forEach((key) => {
         try {
           if (isObject(source[key])) {
             if (!(key in target)) {
@@ -211,7 +255,7 @@ function deepMerge(target, source) {
         }
       });
     }
-    
+
     return output;
   } catch (error) {
     console.error('Error in deepMerge:', error);
@@ -220,7 +264,7 @@ function deepMerge(target, source) {
 }
 
 function isObject(item) {
-  return (item && typeof item === 'object' && !Array.isArray(item));
+  return item && typeof item === 'object' && !Array.isArray(item);
 }
 
 // Copy files from source to destination, excluding specified directories
@@ -260,11 +304,12 @@ function copyFiles(source, destination, excludeDirs = []) {
 // If script is run directly
 if (require.main === module) {
   const browsers = process.argv.slice(2);
-  buildManifests(browsers.length > 0 ? browsers : ['chrome', 'firefox'])
-    .catch(err => {
+  buildManifests(browsers.length > 0 ? browsers : ['chrome', 'firefox']).catch(
+    (err) => {
       console.error('Error building manifests:', err);
       process.exit(1);
-    });
+    },
+  );
 }
 
 module.exports = { buildManifests };

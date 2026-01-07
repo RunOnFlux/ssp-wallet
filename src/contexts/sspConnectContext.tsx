@@ -79,6 +79,19 @@ export const SspConnectProvider = ({
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
 
+  // Port connection enables background.js to detect if UI (popup/sidepanel) is open
+  useEffect(() => {
+    if (!browser?.runtime?.connect) return;
+    const port = browser.runtime.connect({ name: 'ssp-ui' });
+    return () => {
+      try {
+        port.disconnect();
+      } catch {
+        /* Port already disconnected */
+      }
+    };
+  }, []);
+
   // Validate and sanitize iconUrl - must be HTTPS
   const sanitizeIconUrl = (url: string | undefined): string | undefined => {
     if (!url) return undefined;
