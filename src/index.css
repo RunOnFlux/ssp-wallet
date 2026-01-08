@@ -1,7 +1,8 @@
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-    'Noto Color Emoji';
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
   line-height: 1.1;
   font-weight: 500;
   color-scheme: light dark;
@@ -16,9 +17,8 @@ body {
   margin: auto;
   display: flex;
   place-items: center;
-  /* maximum size is 800px */
+  min-width: 360px;
   width: 420px;
-  /* maximum size is 600 */
   height: 600px;
   overflow: overlay;
   overflow-x: hidden;
@@ -30,10 +30,11 @@ body {
   height: calc(100% - 1.5rem);
   max-width: 1280px;
   text-align: center;
+  width: 100%;
 }
 
 .adjustedWidth {
-  width: calc(420px - 2rem);
+  width: calc(100% - 2rem);
 }
 
 .ant-divider-horizontal {
@@ -97,4 +98,40 @@ body {
 .copyableIcon svg {
   width: 13.33px !important;
   height: 13.33px !important;
+}
+
+/* Side panel mode - applied via JS detection */
+body.extension-sidepanel {
+  width: 100%;
+}
+
+@media (max-width: 419px) {
+  body #root {
+    padding: 0.5rem 0.5rem 1rem 0.5rem;
+  }
+}
+
+body.extension-sidepanel .adjustedWidth {
+  width: calc(100% - 1rem);
+}
+
+.popconfirm-container {
+  max-width: 360px;
+  margin: 30px;
+}
+
+.popconfirm-button {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 419px) {
+  .ant-popover-container {
+    margin: 30px;
+  }
+}
+
+.sign-message-text-area {
+  width: min(350px, calc(100vw - 70px));
 }

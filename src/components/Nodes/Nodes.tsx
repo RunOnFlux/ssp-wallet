@@ -261,6 +261,7 @@ function Nodes() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: '10px',
         }}
       >
         <PArewards

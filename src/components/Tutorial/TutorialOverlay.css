@@ -20,7 +20,7 @@
 .tutorial-card {
   position: fixed;
   max-width: 400px;
-  min-width: 350px;
+  min-width: 300px;
   pointer-events: auto;
   z-index: 10001;
   animation: tutorial-appear 0.3s ease-out;
@@ -86,7 +86,8 @@
 }
 
 @keyframes tutorial-pulse {
-  0%, 100% {
+  0%,
+  100% {
     border-color: #1890ff;
     box-shadow: 0 0 0 1px rgba(24, 144, 255, 0.2);
     opacity: 1;
@@ -111,15 +112,15 @@
 
 @media (max-width: 768px) {
   .tutorial-card {
-    max-width: 350px;
-    min-width: 280px;
+    max-width: 340px;
+    min-width: 260px;
     touch-action: none;
   }
-  
+
   .tutorial-drag-handle::before {
     content: '⋮⋮⋮';
   }
-  
+
   .tutorial-actions {
     flex-direction: column;
     gap: 6px;
@@ -128,27 +129,58 @@
 }
 
 /* Disable non-Ethereum chains during select-ethereum tutorial step */
-.tutorial-step-select-ethereum [data-tutorial*="chain-item-"]:not([data-tutorial="chain-item-eth"]) {
+.tutorial-step-select-ethereum
+  [data-tutorial*='chain-item-']:not([data-tutorial='chain-item-eth']) {
   opacity: 0.3;
   pointer-events: none;
   cursor: not-allowed;
 }
 
-.tutorial-step-select-ethereum [data-tutorial*="chain-item-"]:not([data-tutorial="chain-item-eth"]) .ant-image {
+.tutorial-step-select-ethereum
+  [data-tutorial*='chain-item-']:not([data-tutorial='chain-item-eth'])
+  .ant-image {
   filter: grayscale(100%);
 }
 
 @media (max-width: 480px) {
   .tutorial-card {
-    max-width: 320px;
-    min-width: 250px;
+    max-width: 310px;
+    min-width: 240px;
   }
-  
+
   .tutorial-content {
     font-size: 12px;
   }
-  
+
   .tutorial-card .ant-card-head {
     padding: 6px 12px;
   }
+}
+
+/* Tutorial intro screen buttons */
+.tutorial-intro-button {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.tutorial-intro-button > span {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.tutorial-intro-button > span > .anticon {
+  flex-shrink: 0;
+  margin-right: 6px;
+}
+
+.tutorial-intro-button > span > span:not(.anticon) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tutorial-intro-button {
+  padding: 0 5px;
 }

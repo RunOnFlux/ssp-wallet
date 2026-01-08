@@ -663,6 +663,7 @@ function Navbar({
               onClick={onClick}
               selectable={false}
               mode="horizontal"
+              disabledOverflow={true}
               items={menuItems}
               style={{
                 border: 'none',

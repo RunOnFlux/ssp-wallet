@@ -465,17 +465,19 @@ function Login() {
             autoComplete="off"
             layout="vertical"
           >
-            <Form.Item label={t('login:unlock_with_pw')} name="password">
-              <Input.Password
-                size="large"
-                placeholder={t('login:enter_pw')}
-                prefix={<LockOutlined />}
-                iconRender={(visible) =>
-                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-                }
-                className="password-input"
-              />
-            </Form.Item>
+            <div className="password-input-container">
+              <Form.Item label={t('login:unlock_with_pw')} name="password">
+                <Input.Password
+                  size="large"
+                  placeholder={t('login:enter_pw')}
+                  prefix={<LockOutlined />}
+                  iconRender={(visible) =>
+                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                  }
+                  className="password-input"
+                />
+              </Form.Item>
+            </div>
 
             <Form.Item>
               <Button type="primary" size="large" htmlType="submit">

@@ -66,6 +66,7 @@ function SwapHistory(props: {
         title={t('home:navbar.swap_history')}
         open={props.open}
         style={{ textAlign: 'center', top: 60 }}
+        styles={{ container: { paddingLeft: 0, paddingRight: 0 } }}
         onCancel={handleExit}
         footer={[]}
       >

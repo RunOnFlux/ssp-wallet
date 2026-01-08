@@ -366,6 +366,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               block
               size="large"
               onClick={() => setIsSSPKeyDownloadOpen(true)}
+              style={{ whiteSpace: 'normal' }}
             >
               {t('home:key.ssp_key_download_here')}
             </Button>

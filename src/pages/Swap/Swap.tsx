@@ -1316,6 +1316,7 @@ function Swap() {
         style={{
           paddingBottom: showAdvancedOptions ? '63px' : '43px',
           marginTop: '12px',
+          width: '100%',
         }}
       >
         <Button
@@ -1350,7 +1351,7 @@ function Swap() {
               allowClear
               onChange={(e) => setSellAssetFilter(e.target.value)}
               size="large"
-              style={{ marginBottom: '16px', width: '350px' }}
+              style={{ marginBottom: '16px', width: '100%' }}
             />
             {buyAssets[buyAsset]
               .filter(
@@ -1415,7 +1416,7 @@ function Swap() {
               allowClear
               onChange={(e) => setBuyAssetFilter(e.target.value)}
               size="large"
-              style={{ marginBottom: '16px', width: '350px' }}
+              style={{ marginBottom: '16px', width: '100%' }}
             />
             {sellAssets[sellAsset]
               .filter(
@@ -1548,10 +1549,11 @@ function Swap() {
           </Space>
         </Space>
       </Modal>
-      <Modal
+      <Modal  
         title={t('home:swap.select_swap_provider')}
         open={exchangeProviderModalOpen}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center', top: 60, }}
+        styles={{ container: { paddingLeft: 0, paddingRight: 0 } }}
         onCancel={handleCancelExchangeProvider}
         footer={[]}
       >

@@ -105,7 +105,7 @@ function SwapBox(props: {
     <>
       <Card
         hoverable
-        style={{ width: '350px' }}
+        className="swap-box-card-container"
         size="small"
         onClick={(e) => openDetails(e)}
       >

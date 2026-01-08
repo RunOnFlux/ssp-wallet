@@ -1,0 +1,5 @@
+.provider-box {
+  width: 100%;
+  min-width: min(350px, calc(100vw - 50px));
+  margin-top: 5px;
+}

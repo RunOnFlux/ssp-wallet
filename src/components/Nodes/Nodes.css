@@ -18,4 +18,31 @@
 .node-status {
   width: 60px;
   padding: 16px 10px !important;
+  text-align: right;
+}
+
+@media (max-width: 400px) {
+  .node-name {
+    width: 80px;
+    padding: 12px 6px !important;
+    font-size: 12px;
+  }
+
+  .node-ip {
+    width: 100px;
+    padding: 12px 6px !important;
+    font-size: 12px;
+  }
+
+  .node-tier {
+    width: 50px;
+    padding: 12px 6px !important;
+    font-size: 12px;
+  }
+
+  .node-status {
+    width: 50px;
+    padding: 12px 6px !important;
+    font-size: 12px;
+  }
 }

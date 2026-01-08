@@ -139,7 +139,7 @@ function PasswordConfirm(props: {
                 iconRender={(visible) =>
                   visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
                 }
-                className="password-input"
+                className="password-input-modal"
               />
             </Form.Item>
 

@@ -65,7 +65,7 @@ function AddressBox(props: { asset: string; wallet: string; address: string }) {
   }, [asset, wallet, address]);
   return (
     <>
-      <Card hoverable style={{ marginTop: 5, width: '350px' }} size="small">
+      <Card hoverable style={{ marginTop: 5, width: '100%' }} size="small">
         <Meta
           avatar={
             <div style={{ marginTop: '12px' }}>
@@ -91,37 +91,47 @@ function AddressBox(props: { asset: string; wallet: string; address: string }) {
             </div>
           }
           title={
-            <>
-              <div style={{ float: 'left' }}>
+            <Flex
+              justify="space-between"
+              align="center"
+              style={{ width: '100%' }}
+            >
+              <div
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '120px',
+                }}
+              >
                 {getDisplayName(asset.split('_')[0] as keyof cryptos, wallet)}
               </div>
-              <div style={{ float: 'right' }}>{formatCrypto(balance, 12)}</div>
-            </>
+              <div style={{ flexShrink: 0 }}>{formatCrypto(balance, 8)}</div>
+            </Flex>
           }
           description={
-            <>
-              <Flex vertical>
-                <div>
-                  <div
-                    style={{
-                      float: 'left',
-                    }}
-                  >
-                    {address.substring(0, 10)}...
-                    {address.substring(address.length - 9)}
-                  </div>
-                  <div
-                    style={{
-                      float: 'right',
-                    }}
-                  >
-                    {blockchains[asset.split('_')[0]].tokens?.find(
-                      (token) => token.symbol === asset.split('_')[1],
-                    )?.symbol ?? blockchains[asset.split('_')[0]]?.symbol}
-                  </div>
-                </div>
-              </Flex>
-            </>
+            <Flex
+              justify="space-between"
+              align="center"
+              style={{ width: '100%' }}
+            >
+              <div
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '12px',
+                }}
+              >
+                {address.substring(0, 8)}...
+                {address.substring(address.length - 6)}
+              </div>
+              <div style={{ flexShrink: 0 }}>
+                {blockchains[asset.split('_')[0]].tokens?.find(
+                  (token) => token.symbol === asset.split('_')[1],
+                )?.symbol ?? blockchains[asset.split('_')[0]]?.symbol}
+              </div>
+            </Flex>
           }
         />
       </Card>

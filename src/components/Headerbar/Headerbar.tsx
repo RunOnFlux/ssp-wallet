@@ -12,7 +12,7 @@ function Headerbar({ headerTitle, navigateTo }: Props) {
 
   return (
     <>
-      <div className="navbar">
+      <div className="headerbar">
         <Row justify="space-evenly">
           <Col span={4}>
             <Image
@@ -25,7 +25,12 @@ function Headerbar({ headerTitle, navigateTo }: Props) {
           </Col>
           <Col
             span={16}
-            style={{ fontSize: '16px', lineHeight: '36px', fontWeight: 'bold' }}
+            style={{
+              fontSize: '16px',
+              lineHeight: '36px',
+              fontWeight: 'bold',
+              textAlign: 'center',
+            }}
           >
             {headerTitle}
           </Col>

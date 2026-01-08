@@ -300,7 +300,7 @@ function Create() {
             arrow={false}
             styles={{ content: { maxWidth: 300 } }}
           >
-            <div>
+            <div className="password-input-container">
               <Form.Item
                 label={t('cr:set_password')}
                 name="password"
@@ -329,22 +329,23 @@ function Create() {
               </Form.Item>
             </div>
           </Popover>
-          <Form.Item
-            label={t('cr:confirm_password')}
-            name="confirm_password"
-            rules={[{ required: true, message: t('cr:pls_conf_pwd') }]}
-          >
-            <Input.Password
-              size="large"
-              placeholder={t('cr:confirm_password')}
-              prefix={<LockOutlined />}
-              iconRender={(visible) =>
-                visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-              }
-              className="password-input"
-            />
-          </Form.Item>
-
+          <div className="password-input-container">
+            <Form.Item
+              label={t('cr:confirm_password')}
+              name="confirm_password"
+              rules={[{ required: true, message: t('cr:pls_conf_pwd') }]}
+            >
+              <Input.Password
+                size="large"
+                placeholder={t('cr:confirm_password')}
+                prefix={<LockOutlined />}
+                iconRender={(visible) =>
+                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                }
+                className="password-input"
+              />
+            </Form.Item>
+          </div>
           <Form.Item name="tos" valuePropName="checked">
             <Checkbox>
               {t('cr:i_agree')}{' '}
@@ -420,6 +421,20 @@ function Create() {
     const darkModePreference = window.matchMedia(
       '(prefers-color-scheme: dark)',
     );
+    const [isNarrowScreen, setIsNarrowScreen] = useState(
+      window.innerWidth < 420,
+    );
+
+    useEffect(() => {
+      const handleResize = () => setIsNarrowScreen(window.innerWidth < 420);
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const canvasWidth = isNarrowScreen ? 290 : 366;
+    const canvasHeight = isNarrowScreen ? 240 : 180;
+    const columns = isNarrowScreen ? 3 : 4;
+    const columnWidth = isNarrowScreen ? 95 : 90;
 
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -434,8 +449,8 @@ function Create() {
             .decode(mnemonic)
             .split(' ')
             .forEach((word, index) => {
-              const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
-              const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
+              const x = (index % columns) * columnWidth + 5;
+              const y = Math.floor(index / columns) * 30 + 20;
               ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
               ctx.font =
                 '14px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
@@ -445,7 +460,7 @@ function Create() {
             });
         }
       }
-    }, [mnemonic, mnemonicShow]);
+    }, [mnemonic, mnemonicShow, isNarrowScreen]);
 
     return (
       <>
@@ -467,25 +482,28 @@ function Create() {
           <Divider />
           <canvas
             ref={canvasRef}
-            width={366}
-            height={180}
+            width={canvasWidth}
+            height={canvasHeight}
             style={{
               border: `0.5px solid ${darkModePreference.matches ? '#fff' : '#000'}`,
               marginLeft: '-15px',
+              marginRight: '-15px',
             }}
           />
           {mnemonicShow && (
-            <Button
-              type="dashed"
-              icon={<EyeFilled />}
-              onClick={() => {
-                setMnemonicShow(!mnemonicShow);
-                setWSPwasShown(true);
-              }}
-              style={{ margin: 5 }}
-            >
-              {t('cr:hide_mnemonic')} {t('cr:wallet_seed_phrase')}
-            </Button>
+            <div className="popconfirm-button">
+              <Button
+                type="dashed"
+                icon={<EyeFilled />}
+                onClick={() => {
+                  setMnemonicShow(!mnemonicShow);
+                  setWSPwasShown(true);
+                }}
+                style={{ margin: 5 }}
+              >
+                {t('cr:hide_mnemonic')} {t('cr:wallet_seed_phrase')}
+              </Button>
+            </div>
           )}
           {!mnemonicShow && (
             <Popconfirm
@@ -499,7 +517,7 @@ function Create() {
                   })}
                 </>
               }
-              overlayStyle={{ maxWidth: 360, margin: 10 }}
+              classNames={{ container: 'popconfirm-container' }}
               okText={t('common:confirm')}
               cancelText={t('common:cancel')}
               onConfirm={() => {
@@ -508,13 +526,15 @@ function Create() {
               }}
               icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
             >
-              <Button
-                type="dashed"
-                icon={<EyeInvisibleFilled />}
-                style={{ margin: 5 }}
-              >
-                {t('cr:show_mnemonic')} {t('cr:wallet_seed_phrase')}
-              </Button>
+              <div className="popconfirm-button">
+                <Button
+                  type="dashed"
+                  icon={<EyeInvisibleFilled />}
+                  style={{ margin: 5 }}
+                >
+                  {t('cr:show_mnemonic')} {t('cr:wallet_seed_phrase')}
+                </Button>
+              </div>
             </Popconfirm>
           )}
           <Popconfirm
@@ -533,7 +553,7 @@ function Create() {
                 <span>{t('cr:copy_anyone_can_read')}</span>
               </Space>
             }
-            overlayStyle={{ maxWidth: 360, margin: 10 }}
+            classNames={{ container: 'popconfirm-container' }}
             okText={t('common:confirm')}
             cancelText={t('common:cancel')}
             onConfirm={() => {
@@ -542,9 +562,15 @@ function Create() {
             }}
             icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
           >
-            <Button type="dashed" icon={<CopyOutlined />} style={{ margin: 5 }}>
-              {t('cr:copy_wallet_seed')}
-            </Button>
+            <div className="popconfirm-button">
+              <Button
+                type="dashed"
+                icon={<CopyOutlined />}
+                style={{ margin: 5 }}
+              >
+                {t('cr:copy_wallet_seed')}
+              </Button>
+            </div>
           </Popconfirm>
           <Divider />
           <br />

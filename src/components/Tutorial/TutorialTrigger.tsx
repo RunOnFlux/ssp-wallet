@@ -180,7 +180,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                     <Button
                       icon={<GlobalOutlined />}
                       onClick={() => openExternalLink('https://sspwallet.io')}
-                      style={{ width: '100%' }}
+                      className="tutorial-intro-button"
                     >
                       {t('home:tutorial.visit_website')}
                     </Button>
@@ -191,7 +191,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                       onClick={() =>
                         openExternalLink('https://sspwallet.io/guide')
                       }
-                      style={{ width: '100%' }}
+                      className="tutorial-intro-button"
                     >
                       {t('home:tutorial.user_guide')}
                     </Button>
@@ -202,7 +202,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                       onClick={() =>
                         openExternalLink('https://sspwallet.io/support')
                       }
-                      style={{ width: '100%' }}
+                      className="tutorial-intro-button"
                     >
                       {t('home:tutorial.support')}
                     </Button>
@@ -213,7 +213,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                       onClick={() =>
                         openExternalLink('https://sspwallet.io/contact')
                       }
-                      style={{ width: '100%' }}
+                      className="tutorial-intro-button"
                     >
                       {t('home:tutorial.contact')}
                     </Button>

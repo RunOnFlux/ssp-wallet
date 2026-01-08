@@ -196,7 +196,7 @@ function SignMessage({
             <Text>{t('home:signMessage.message')}:</Text>
             <TextArea
               onChange={handleTextInput}
-              style={{ width: 340 }}
+              className="sign-message-text-area"
               size={'large'}
               rows={4}
               disabled={message ? true : false}

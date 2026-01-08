@@ -9,3 +9,15 @@
   word-break: break-all;
   padding: 16px 10px !important;
 }
+
+@media (max-width: 400px) {
+  .contact-name {
+    width: 150px;
+    padding: 12px 6px !important;
+  }
+
+  .contact-address {
+    width: 120px;
+    padding: 12px 6px !important;
+  }
+}

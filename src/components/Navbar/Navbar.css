@@ -1,7 +1,7 @@
 .navbar {
   margin: auto;
   line-height: 30px;
-  width: calc(420px - 2rem);
+  width: calc(100% - 2rem);
   height: 25px;
 }
 

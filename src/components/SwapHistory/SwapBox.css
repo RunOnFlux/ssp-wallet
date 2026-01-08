@@ -25,3 +25,7 @@
   display: flex;
   justify-content: space-between;
 }
+
+.swap-box-card-container {
+  width: min(370px, calc(100vw - 50px));
+}

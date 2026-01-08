@@ -20,8 +20,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["scripts/contentscript.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "scripts/contentscript.js"
+      ],
       "run_at": "document_start",
       "all_frames": true
     }
@@ -36,7 +40,11 @@
   "content_security_policy": {
     "extension_pages": "default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src *; script-src 'self' 'wasm-unsafe-eval'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; frame-src https://buy.onramper.com"
   },
-  "host_permissions": ["file://*/*", "http://*/*", "https://*/*"],
+  "host_permissions": [
+    "file://*/*",
+    "http://*/*",
+    "https://*/*"
+  ],
   "minimum_chrome_version": "110",
   "browser_specific_settings": {
     "gecko": {

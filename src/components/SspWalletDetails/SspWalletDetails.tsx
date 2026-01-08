@@ -34,6 +34,11 @@ function SSPWalletDetails(props: {
   );
   const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isNarrowScreen, setIsNarrowScreen] = useState(window.innerWidth < 420);
+  const canvasWidth = isNarrowScreen ? 290 : 366;
+  const canvasHeight = isNarrowScreen ? 240 : 180;
+  const columns = isNarrowScreen ? 3 : 4;
+  const columnWidth = isNarrowScreen ? 95 : 90;
   const blockchainConfig = blockchains[activeChain];
   const identityChainConfig = blockchains[identityChain];
   const { t } = useTranslation(['home', 'common', 'cr']);
@@ -63,6 +68,12 @@ function SSPWalletDetails(props: {
   };
 
   useEffect(() => {
+    const handleResize = () => setIsNarrowScreen(window.innerWidth < 420);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     if (!open) {
       seedPhrase.fill(0);
       setSeedPhrase(new Uint8Array());
@@ -86,8 +97,8 @@ function SSPWalletDetails(props: {
           .decode(seedPhrase)
           .split(' ')
           .forEach((word, index) => {
-            const x = (index % 4) * 90 + 5; // Adjust x position for 4 words per row
-            const y = Math.floor(index / 4) * 30 + 20; // Adjust y position for each row
+            const x = (index % columns) * columnWidth + 5;
+            const y = Math.floor(index / columns) * 30 + 20;
             ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
             ctx.font =
               '14px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
@@ -97,7 +108,7 @@ function SSPWalletDetails(props: {
           });
       }
     }
-  }, [seedPhrase, seedPhraseVisible, open]);
+  }, [seedPhrase, seedPhraseVisible, open, isNarrowScreen]);
 
   useEffect(() => {
     if (open) {
@@ -420,13 +431,13 @@ function SSPWalletDetails(props: {
         <Space direction="vertical" size="small">
           <canvas
             ref={canvasRef}
-            width={366}
-            height={180}
+            width={canvasWidth}
+            height={canvasHeight}
             style={{
               border: `0.5px solid ${
                 darkModePreference.matches ? '#fff' : '#000'
               }`,
-              marginLeft: '-5px',
+              maxWidth: '100%',
             }}
           />
           <Popconfirm
@@ -455,7 +466,15 @@ function SSPWalletDetails(props: {
             }}
             icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
           >
-            <Button type="dashed" icon={<CopyOutlined />}>
+            <Button
+              type="dashed"
+              icon={<CopyOutlined />}
+              style={{
+                whiteSpace: 'normal',
+                paddingTop: 20,
+                paddingBottom: 20,
+              }}
+            >
               {t('home:sspWalletDetails.copy_data', {
                 data: t('home:sspWalletDetails.ssp_mnemonic'),
               })}

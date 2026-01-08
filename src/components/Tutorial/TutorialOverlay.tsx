@@ -551,7 +551,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         footer={null}
         centered
         width={400}
-        style={{ textAlign: 'center' }}
+        style={{ textAlign: 'center', maxWidth: '100%' }}
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <div>

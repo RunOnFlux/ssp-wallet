@@ -18,7 +18,7 @@ function ProviderBox(props: {
   );
   return (
     <>
-      <Card hoverable style={{ marginTop: 5, width: '350px' }} size="small">
+      <Card hoverable className="provider-box" size="small">
         <Meta
           avatar={
             <div style={{ marginTop: '12px' }}>

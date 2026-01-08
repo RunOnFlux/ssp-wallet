@@ -1,3 +1,16 @@
-.password-input {
-  width: 350px;
+.password-input,
+.password-input-modal {
+  width: min(350px, calc(100vw - 70px));
+}
+
+
+.password-input-container {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 370px) {
+  .seed-input {
+    width: 340px;
+  }
 }
