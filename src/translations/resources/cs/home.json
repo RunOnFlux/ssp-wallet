@@ -322,12 +322,12 @@
     "select_addresses": "Vyberte adresy ke sdílení"
   },
   "fusion": {
-    "pa_reward": "Odměny Souběžných Aktiv",
+    "pa_reward": "Odměny Paralelncíh Aktiv",
     "x_y_available": "{{amount}} {{symbol}} dostupné",
     "claim_with_fusion": "Vyzvednout s Fusion!",
     "claim_reward": "Vyzvednout Odměnu",
-    "claim_pa_reward": "Vyzvednout Odměnu Souběžných Aktiv",
-    "pa_info": "Souběžná Aktiva (PA) jsou další aktiva Fluxu na různých blockchainech. Můžete si vyzvednout Odměnu Souběžných Aktiv zde s pomocí aplikace Fusion. Fusion automaticky vyzvedne odměny, přemění je na hlavní chain Fluxu a odešle do vaší Flux peněženky.",
+    "claim_pa_reward": "Vyzvednout Odměnu Paralelních Aktiv",
+    "pa_info": "Paralelní Aktiva (PA) jsou další aktiva Fluxu na různých blockchainech. Můžete si vyzvednout Odměnu Paralelních Aktiv zde s pomocí aplikace Fusion. Fusion automaticky vyzvedne odměny, přemění je na hlavní chain Fluxu a odešle do vaší Flux peněženky.",
     "total_to_claim": "Celkem PA k Vyzvednutí: {{amount}} {{symbol}}",
     "fees_to_pay": "Poplatky Fusion k zaplacení: {{amount}} {{symbol}}",
     "total_reward": "Celková odměna k obdržení: {{amount}} {{symbol}}",
