@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { QRCode, Typography, Button, Space, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 const { Paragraph, Text } = Typography;
@@ -11,6 +12,15 @@ function ConfirmTxKey(props: {
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { open, openAction, txHex, chain, wallet } = props;
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const qrSize = windowWidth < 420 ? 290 : 340;
 
   const handleOk = () => {
     openAction(false);
@@ -42,7 +52,7 @@ function ConfirmTxKey(props: {
                 errorLevel="M"
                 value={`${chain}:${wallet}:${txHex}`}
                 icon="/ssp-logo-black.svg"
-                size={340}
+                size={qrSize}
                 style={{ margin: '0 auto' }}
               />
               <Paragraph

@@ -78,146 +78,85 @@ function PurchaseCrypto(props: {
     <>
       {contextHolder}
       <Modal
-        title="&nbsp;"
+        title={null}
         open={open}
         onOk={handleOk}
         onCancel={handleOk}
-        style={{
-          textAlign: 'center',
-          top: 5,
-          paddingBottom: '5px',
-          margin: '0 auto',
-          padding: '0 !important',
-          maxWidth: '404px',
-        }}
+        closable={true}
+        centered
+        width="min(600px, calc(100vw - 16px))"
         footer={null}
         wrapClassName="onramper-modal"
-        className="onramper-modal"
+        className={`onramper-modal${userConsentBuy && signature && !loading ? ' onramper-iframe-active' : ''}`}
+        styles={{ container: { padding: 0, margin: 0 } }}
       >
         {userConsentBuy && signature && !loading ? (
-          <iframe
-            src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy,sell&defaultCrypto=${props.cryptoAsset}&sell_onlyCryptoNetworks=${props.cryptoNetwork}&sell_defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&successRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_success&failureRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_failure&themeName=${darkModePreference.matches ? 'dark' : 'light'}&containerColor=${darkModePreference.matches ? '1f1f1f' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}&signature=${signature}`}
-            title="Onramper"
-            height="540px"
-            width="404px"
-            allow="accelerometer; autoplay; camera; gyroscope; payment; microphone"
-            // Security note: allow-scripts + allow-same-origin allows sandbox escape,
-            // but is required for Onramper widget to load resources (CORS).
-            // We accept this risk as we already trust Onramper with payment processing.
-            // Mitigations: user consent, extension isolation, referrer policy, HTTPS-only.
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-            referrerPolicy="no-referrer"
-            style={{
-              border: 'none',
-              margin: '-6px',
-              borderRadius: '5px',
-            }}
-          />
+          <div className="onramper-container">
+            {/* Security note: allow-scripts + allow-same-origin allows sandbox escape,
+               but is required for Onramper widget to load resources (CORS).
+               We accept this risk as we already trust Onramper with payment processing.
+               Mitigations: user consent, extension isolation, referrer policy, HTTPS-only. */}
+            <iframe
+              src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy,sell&defaultCrypto=${props.cryptoAsset}&sell_onlyCryptoNetworks=${props.cryptoNetwork}&sell_defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&successRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_success&failureRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_failure&themeName=${darkModePreference.matches ? 'dark' : 'light'}&containerColor=${darkModePreference.matches ? '1f1f1f' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}&signature=${signature}`}
+              title="Onramper"
+              allow="accelerometer; autoplay; camera; gyroscope; payment; microphone"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              referrerPolicy="no-referrer"
+              className="onramper-iframe"
+            />
+          </div>
         ) : loading && userConsentBuy ? (
-          <div
-            style={{
-              height: '534px',
-              width: '404px',
-            }}
-          >
-            <Space
-              direction="vertical"
-              size={48}
-              style={{
-                marginBottom: 16,
-                marginTop: 120,
-              }}
-            >
+          <div className="onramper-loading">
+            <Space direction="vertical" size={48}>
               <LoadingOutlined style={{ fontSize: '36px' }} />
               <Text strong style={{ fontSize: '24px' }}>
                 {t('common:loading')}
               </Text>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+            </Space>
+            <div className="onramper-consent-buttons">
+              <Button
+                type="primary"
+                size="middle"
+                onClick={() => {
+                  setUserConsentBuy(false);
+                  handleOk();
                 }}
               >
-                <Button
-                  type="primary"
-                  size="middle"
-                  style={{
-                    position: 'absolute',
-                    bottom: '40px',
-                  }}
-                  onClick={() => {
-                    setUserConsentBuy(false);
-                    handleOk();
-                  }}
-                >
-                  {t('common:cancel')}
-                </Button>
-              </div>
-            </Space>
+                {t('common:cancel')}
+              </Button>
+            </div>
           </div>
         ) : (
-          <div
-            style={{
-              height: '534px',
-              width: '404px',
-            }}
-          >
+          <div className="onramper-consent">
             <Space
               direction="vertical"
-              size={48}
-              style={{
-                marginBottom: 16,
-                marginTop: 16,
-                maxWidth: '354px',
-              }}
+              size={32}
+              className="onramper-consent-content"
             >
               <Text strong style={{ fontSize: '24px' }}>
                 {t('home:buy_sell_crypto.third_party_service')}
               </Text>
               <WarningOutlined style={{ fontSize: '36px' }} />
               <Text>{t('home:buy_sell_crypto.consent_info')}</Text>
-              <div
-                style={{
-                  marginBottom: 16,
-                  marginTop: 16,
-                  maxWidth: '354px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+            </Space>
+            <div className="onramper-consent-buttons">
+              <Button
+                type="primary"
+                size="middle"
+                onClick={() => setUserConsentBuy(true)}
+                className="onramper-consent-button"
+              >
+                {t('home:buy_sell_crypto.consent_info_2')}
+              </Button>
+              <Button
+                onClick={() => {
+                  setUserConsentBuy(false);
+                  handleOk();
                 }}
               >
-                <Space
-                  direction="vertical"
-                  size="large"
-                  style={{ position: 'absolute', bottom: '40px' }}
-                >
-                  <Button
-                    type="primary"
-                    size="middle"
-                    onClick={() => setUserConsentBuy(true)}
-                    block
-                    style={{
-                      maxWidth: '284px',
-                      display: 'block',
-                      whiteSpace: 'normal',
-                      height: 'auto',
-                      padding: '5px 12px',
-                    }}
-                  >
-                    {t('home:buy_sell_crypto.consent_info_2')}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setUserConsentBuy(false);
-                      handleOk();
-                    }}
-                  >
-                    {t('common:cancel')}
-                  </Button>
-                </Space>
-              </div>
-            </Space>
+                {t('common:cancel')}
+              </Button>
+            </div>
           </div>
         )}
       </Modal>

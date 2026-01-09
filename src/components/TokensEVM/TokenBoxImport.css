@@ -8,3 +8,15 @@
   overflow: hidden;
   max-width: 100%;
 }
+
+.token-box-import-container {
+  min-width: 170px;
+  width: calc(50% - 8px);
+  position: relative;
+}
+
+@media (max-width: 419px) {
+  .token-box-import-container {
+    width: 100%;
+  }
+}

@@ -120,7 +120,7 @@ function AddressesInfo({ open, chain, openAction }: Props) {
           <Select
             mode="multiple"
             allowClear
-            style={{ width: '300px' }}
+            style={{ width: '100%', maxWidth: '400px' }}
             placeholder={t('home:addressesInfo.select_addresses')}
             defaultValue={[]}
             onChange={handleApprovedAddressesChange}

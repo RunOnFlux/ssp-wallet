@@ -91,13 +91,7 @@ function TokenBoxImport(props: {
   };
 
   return (
-    <div
-      style={{
-        minWidth: '170px',
-        width: 'calc(50% - 8px)',
-        position: 'relative',
-      }}
-    >
+    <div className="token-box-import-container">
       {contextHolder}
       {props.deletePossible && (
         <Button

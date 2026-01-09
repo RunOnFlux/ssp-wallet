@@ -63,6 +63,15 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
   const [walletPubKey, setWalletPubKey] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [waitingForKey, setWaitingForKey] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const qrSize = windowWidth < 420 ? 290 : 340;
 
   // Build manual input payload when we have wallet signature
   const manualInputPayload = useMemo(() => {
@@ -428,7 +437,7 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
                               errorLevel="L"
                               value={qrPayload}
                               icon="/ssp-logo-black.svg"
-                              size={340}
+                              size={qrSize}
                               style={{ margin: '0 auto' }}
                             />
                             <Paragraph
