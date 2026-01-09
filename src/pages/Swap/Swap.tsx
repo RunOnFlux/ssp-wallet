@@ -1549,10 +1549,10 @@ function Swap() {
           </Space>
         </Space>
       </Modal>
-      <Modal  
+      <Modal
         title={t('home:swap.select_swap_provider')}
         open={exchangeProviderModalOpen}
-        style={{ textAlign: 'center', top: 60, }}
+        style={{ textAlign: 'center', top: 60 }}
         styles={{ container: { paddingLeft: 0, paddingRight: 0 } }}
         onCancel={handleCancelExchangeProvider}
         footer={[]}
