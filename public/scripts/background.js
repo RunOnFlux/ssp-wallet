@@ -6,6 +6,7 @@ let activeUIPort = null;
 
 const STORAGE_KEY_DEFAULT_OPEN = 'ssp_default_open_behavior';
 const OPEN_MODE_POPUP = 'popup';
+const OPEN_MODE_WINDOW = 'window';
 const OPEN_MODE_SIDEPANEL = 'sidepanel';
 
 const isSidePanelSupported = typeof ext.sidePanel !== 'undefined';
@@ -26,29 +27,44 @@ async function setDefaultOpenBehavior(mode) {
 }
 
 async function updateActionBehavior(mode) {
-  if (!isSidePanelSupported) return;
   try {
-    if (mode === OPEN_MODE_SIDEPANEL) {
+    if (isSidePanelSupported) {
+      await ext.sidePanel.setPanelBehavior({
+        openPanelOnActionClick: mode === OPEN_MODE_SIDEPANEL,
+      });
+    }
+
+    if (mode === OPEN_MODE_SIDEPANEL || mode === OPEN_MODE_WINDOW) {
       await ext.action.setPopup({ popup: '' });
-      await ext.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
     } else {
       await ext.action.setPopup({ popup: 'index.html' });
-      await ext.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
     }
   } catch (_err) {
     // Side panel API may not be fully available
   }
 }
 
+ext.action.onClicked.addListener(async (_tab) => {
+  const mode = await getDefaultOpenBehavior();
+  if (mode === OPEN_MODE_WINDOW) {
+    await openPopupWindow();
+  }
+  // Popup and sidepanel are handled automatically by the browser
+});
+
 function updateContextMenuCheckedState(mode) {
-  if (!isSidePanelSupported) return;
   try {
     ext.contextMenus.update('set-default-popup', {
       checked: mode === OPEN_MODE_POPUP,
     });
-    ext.contextMenus.update('set-default-sidepanel', {
-      checked: mode === OPEN_MODE_SIDEPANEL,
+    ext.contextMenus.update('set-default-window', {
+      checked: mode === OPEN_MODE_WINDOW,
     });
+    if (isSidePanelSupported) {
+      ext.contextMenus.update('set-default-sidepanel', {
+        checked: mode === OPEN_MODE_SIDEPANEL,
+      });
+    }
   } catch (_err) {
     /* Context menu not ready */
   }
@@ -56,9 +72,16 @@ function updateContextMenuCheckedState(mode) {
 
 function createContextMenus() {
   ext.contextMenus.removeAll(() => {
+    // Open As items (flat)
     ext.contextMenus.create({
       id: 'open-popup',
       title: 'Open as Popup',
+      contexts: ['action'],
+    });
+
+    ext.contextMenus.create({
+      id: 'open-window',
+      title: 'Open as Window',
       contexts: ['action'],
     });
 
@@ -68,37 +91,64 @@ function createContextMenus() {
         title: 'Open as Side Panel',
         contexts: ['action'],
       });
+    }
 
-      ext.contextMenus.create({
-        id: 'separator',
-        type: 'separator',
-        contexts: ['action'],
-      });
+    // Set Default submenu
+    ext.contextMenus.create({
+      id: 'set-default',
+      title: 'Set Default',
+      contexts: ['action'],
+    });
 
-      ext.contextMenus.create({
-        id: 'set-default-popup',
-        title: 'Default: Popup',
-        type: 'checkbox',
-        checked: true,
-        contexts: ['action'],
-      });
+    ext.contextMenus.create({
+      id: 'set-default-popup',
+      parentId: 'set-default',
+      title: 'Popup',
+      type: 'checkbox',
+      checked: true,
+      contexts: ['action'],
+    });
 
+    ext.contextMenus.create({
+      id: 'set-default-window',
+      parentId: 'set-default',
+      title: 'Window',
+      type: 'checkbox',
+      checked: false,
+      contexts: ['action'],
+    });
+
+    if (isSidePanelSupported) {
       ext.contextMenus.create({
         id: 'set-default-sidepanel',
-        title: 'Default: Side Panel',
+        parentId: 'set-default',
+        title: 'Side Panel',
         type: 'checkbox',
         checked: false,
         contexts: ['action'],
       });
-
-      getDefaultOpenBehavior().then(updateContextMenuCheckedState);
     }
+
+    getDefaultOpenBehavior().then(updateContextMenuCheckedState);
   });
 }
 
 ext.contextMenus.onClicked.addListener(async (info, tab) => {
   switch (info.menuItemId) {
     case 'open-popup':
+      try {
+        // Ensure popup is set before opening
+        await ext.action.setPopup({ popup: 'index.html' });
+        await ext.action.openPopup();
+        // Restore behavior based on current default
+        const currentMode = await getDefaultOpenBehavior();
+        await updateActionBehavior(currentMode);
+      } catch (_err) {
+        // openPopup may not be available, fall back to window
+        await openPopupWindow();
+      }
+      break;
+    case 'open-window':
       await openPopupWindow();
       break;
     case 'open-sidepanel':
@@ -106,6 +156,9 @@ ext.contextMenus.onClicked.addListener(async (info, tab) => {
       break;
     case 'set-default-popup':
       await setDefaultOpenBehavior(OPEN_MODE_POPUP);
+      break;
+    case 'set-default-window':
+      await setDefaultOpenBehavior(OPEN_MODE_WINDOW);
       break;
     case 'set-default-sidepanel':
       await setDefaultOpenBehavior(OPEN_MODE_SIDEPANEL);
@@ -135,7 +188,7 @@ async function openPopupWindow() {
     top,
     left,
     width: 420,
-    height: 620,
+    height: 650, // Extra height to account for window title bar
   });
   popupId = popup.id;
   return popup;
@@ -149,6 +202,8 @@ async function openSidePanel(windowId) {
     const targetWindowId = windowId || (await ext.windows.getCurrent()).id;
     await ext.sidePanel.open({ windowId: targetWindowId });
   } catch (_err) {
+    // Expected: sidePanel.open() requires user gesture, so programmatic
+    // requests (e.g. from websites) will fall back to window
     return openPopupWindow();
   }
 }
@@ -253,7 +308,10 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const defaultMode = await getDefaultOpenBehavior();
       if (defaultMode === OPEN_MODE_SIDEPANEL && isSidePanelSupported) {
         await openSidePanel(sender.tab?.windowId);
+      } else if (defaultMode === OPEN_MODE_WINDOW) {
+        await openPopupWindow();
       } else {
+        // For popup mode, open as window since we can't programmatically trigger the popup
         await openPopupWindow();
       }
     }
