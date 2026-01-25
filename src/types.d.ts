@@ -395,6 +395,11 @@ export interface syncSSPRelay {
   keyToken?: string | null;
   generatedAddress?: string;
   publicNonces?: publicNonce[];
+  // Additional fields for verification
+  walletXpub?: string;
+  keyIdentity?: string;
+  redeemScript?: string;
+  witnessScript?: string;
 }
 
 export interface actionSSPRelay {

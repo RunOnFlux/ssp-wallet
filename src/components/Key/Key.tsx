@@ -106,6 +106,51 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               }
               return;
             }
+            // Also verify first address matches
+            const generatedFirstAddress = generateMultisigAddress(
+              xpubWallet,
+              xpubKey,
+              0,
+              0,
+              activeChain,
+            );
+            if (
+              sspKeyGeneratedAddress &&
+              generatedFirstAddress.address !== sspKeyGeneratedAddress
+            ) {
+              displayMessage('error', t('home:key.err_sync_fail'));
+              syncRunning = false;
+              if (pollingSyncInterval) {
+                clearInterval(pollingSyncInterval);
+              }
+              return;
+            }
+            // Additional script verification - not strictly needed since address match
+            // already proves correct derivation, but provides extra assurance
+            const sspKeyWitnessScript = res.data.witnessScript;
+            const sspKeyRedeemScript = res.data.redeemScript;
+            if (sspKeyWitnessScript && generatedFirstAddress.witnessScript) {
+              if (sspKeyWitnessScript !== generatedFirstAddress.witnessScript) {
+                console.error('witnessScript mismatch');
+                displayMessage('error', t('home:key.err_sync_fail'));
+                syncRunning = false;
+                if (pollingSyncInterval) {
+                  clearInterval(pollingSyncInterval);
+                }
+                return;
+              }
+            }
+            if (sspKeyRedeemScript && generatedFirstAddress.redeemScript) {
+              if (sspKeyRedeemScript !== generatedFirstAddress.redeemScript) {
+                console.error('redeemScript mismatch');
+                displayMessage('error', t('home:key.err_sync_fail'));
+                syncRunning = false;
+                if (pollingSyncInterval) {
+                  clearInterval(pollingSyncInterval);
+                }
+                return;
+              }
+            }
           } else {
             const generatedAddress = generateMultisigAddress(
               xpubWallet,
@@ -124,6 +169,32 @@ function Key(props: { synchronised: (status: boolean) => void }) {
                 clearInterval(pollingSyncInterval);
               }
               return;
+            }
+            // Additional script verification - not strictly needed since address match
+            // already proves correct derivation, but provides extra assurance
+            const sspKeyWitnessScript = res.data.witnessScript;
+            const sspKeyRedeemScript = res.data.redeemScript;
+            if (sspKeyWitnessScript && generatedAddress.witnessScript) {
+              if (sspKeyWitnessScript !== generatedAddress.witnessScript) {
+                console.error('witnessScript mismatch');
+                displayMessage('error', t('home:key.err_sync_fail'));
+                syncRunning = false;
+                if (pollingSyncInterval) {
+                  clearInterval(pollingSyncInterval);
+                }
+                return;
+              }
+            }
+            if (sspKeyRedeemScript && generatedAddress.redeemScript) {
+              if (sspKeyRedeemScript !== generatedAddress.redeemScript) {
+                console.error('redeemScript mismatch');
+                displayMessage('error', t('home:key.err_sync_fail'));
+                syncRunning = false;
+                if (pollingSyncInterval) {
+                  clearInterval(pollingSyncInterval);
+                }
+                return;
+              }
             }
           }
           if (res.data.publicNonces) {
