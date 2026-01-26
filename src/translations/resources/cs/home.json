@@ -81,7 +81,7 @@
     "storage_phrase": "Fráze Úložiště",
     "add_to_storage_added": "Váš Flux Node je dostupný ve Flux Úložišti. Můžete jej nyní použít pro nastavení FluxOS.",
     "add_to_storage_added_info": "Zkopírujte Frázi Flux Úložiště a použijte ji při nastavování vašeho FluxOS.",
-    "start_all_nodes": "Spustit všechny node",
+    "start_all_nodes": "Spustit všechny nody",
     "start_all_nodes_title": "Spustit všechny {{chainName}} nody",
     "start_all_nodes_info": "Odešle startovací transakce pro všechny nody, které jsou nastavené ale vypnuté.",
     "start_all_nodes_info_2": "Ujistěte se, že všechny vaše {{chainName}} nody jsou spuštěny a prošly benchmarkem aby nody neupadly do statusu DoS.",
