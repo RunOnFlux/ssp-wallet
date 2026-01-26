@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Zgodovina transakcij ni bila najdena",
+    "txid": "TXID",
+    "output_id": "Izhod ID",
     "txid_link": "TXID: {{txid}}",
     "out_id": "Izhod ID: {{vout}}",
     "fee_with_symbol": "Provizija: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Skripta za unovčenje"
   },
   "setupNode": {
     "setup_node": "Nastavi {{chainName}} vozlišče",
