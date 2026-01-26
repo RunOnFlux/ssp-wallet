@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "No se encontró Historial de Transacciones",
+    "txid": "TXID",
+    "output_id": "Output ID",
     "txid_link": "TXID: {{txid}}",
     "out_id": "Output ID: {{vout}}",
     "fee_with_symbol": "Comisión: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Script de Canje"
   },
   "setupNode": {
     "setup_node": "Configurar Nodo {{chainName}}",
