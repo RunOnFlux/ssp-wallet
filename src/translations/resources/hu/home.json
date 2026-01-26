@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Nem található tranzakciós előzmény",
+    "txid": "TXID",
+    "output_id": "Kimeneti ID",
     "txid_link": "Tranzakciós szám",
     "out_id": "Kimeneti ID",
     "fee_with_symbol": "Díj: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Kiváltási script"
   },
   "setupNode": {
     "setup_node": "{{chainName}} Node beállítása",
