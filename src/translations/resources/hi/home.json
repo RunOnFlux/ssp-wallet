@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "कोई ट्रांजेक्शन इतिहास नहीं मिला",
+    "txid": "TXID",
+    "output_id": "आउटपुट आईडी",
     "txid_link": "टी एक्स आई डी: {{txid}}",
     "out_id": "आउटपुट आईडी: {{vout}}",
     "fee_with_symbol": "शुल्क: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "रिडीम स्क्रिप्ट"
   },
   "setupNode": {
     "setup_node": "{{chainName}} नोड सेटअप करें",

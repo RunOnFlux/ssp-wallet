@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Tiada Sejarah Transaksi Dijumpai",
+    "txid": "TXID",
+    "output_id": "ID Output",
     "txid_link": "TXID: {{txid}}",
     "out_id": "ID Output: {{vout}}",
     "fee_with_symbol": "Yuran: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Skrip Penebusan"
   },
   "setupNode": {
     "setup_node": "Sediakan Nod {{chainName}}",

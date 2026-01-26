@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Няма намерени транзакции",
+    "txid": "TXID",
+    "output_id": "Идентификатор на изходната транзакция",
     "txid_link": "Идентификационен номер на транзакцията / {{txid}}\nTXID {{txid}}",
     "out_id": "Идентификатор на изходната транзакция: {{vout}}",
     "fee_with_symbol": "Такса: {{fee}}{{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Скрипт за възстановяване"
   },
   "setupNode": {
     "setup_node": "Настройка на {{chainName}} валидатор",

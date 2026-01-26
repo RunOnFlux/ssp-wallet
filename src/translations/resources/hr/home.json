@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Nema povijesti transakcija",
+    "txid": "TXID",
+    "output_id": "ID izlaza",
     "txid_link": "TXID: {{txid}}",
     "out_id": "ID izlaza: {{vout}}",
     "fee_with_symbol": "Naknada: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Redeem Script"
   },
   "setupNode": {
     "setup_node": "Postavi {{chainName}} Node",

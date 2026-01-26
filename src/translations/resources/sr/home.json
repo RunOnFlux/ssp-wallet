@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "No Transaction History Found",
+    "txid": "TXID",
+    "output_id": "Output ID",
     "txid_link": "TXID: {{txid}}",
     "out_id": "Output ID: {{vout}}",
     "fee_with_symbol": "Fee: {{fee}} {{symbol}}",
@@ -80,7 +82,8 @@
     "err_upload_storage": "Error while uploading {{chainName}} Node to Flux Storage. Please try again.",
     "storage_phrase": "Storage Phrase",
     "add_to_storage_added": "Your Flux Node is available in Flux Storage, you can now use it in your FluxOS setup.",
-    "add_to_storage_added_info": "Copy the Flux Storage Phrase and use it in your FluxOS setup."
+    "add_to_storage_added_info": "Copy the Flux Storage Phrase and use it in your FluxOS setup.",
+    "redeem_script": "Redeem Script"
   },
   "setupNode": {
     "setup_node": "Setup {{chainName}} Node",

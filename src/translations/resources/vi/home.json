@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Không có lịch sử giao dịch được tìm thấy",
+    "txid": "TXID",
+    "output_id": "Đầu ra ID",
     "txid_link": "TXID:{{txid}}",
     "out_id": "Đầu ra ID:{{vout}}",
     "fee_with_symbol": "Phí:{{fee}}{{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Mã hóa thu đổi"
   },
   "setupNode": {
     "setup_node": "Cài đặt nút mạng {{chainName}}",

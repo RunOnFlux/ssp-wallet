@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "பரிவர்த்தனை வரலாறு காணப்படவில்லை",
+    "txid": "TXID",
+    "output_id": "வெளியீட்டு ID",
     "txid_link": "TXID: {{txid}}",
     "out_id": "வெளியீட்டு ID: {{vout}}",
     "fee_with_symbol": "கட்டணம்: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "மீட்டமைத்தல் ஸ்கிரிப்ட்"
   },
   "setupNode": {
     "setup_node": "அமைக்கவும் {{chainName}} நொடு",

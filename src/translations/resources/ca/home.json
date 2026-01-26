@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "No s'ha trobat historial de transaccions",
+    "txid": "TXID",
+    "output_id": "ID de sortida",
     "txid_link": "TXID: {{txid}}",
     "out_id": "ID de sortida: {{vout}}",
     "fee_with_symbol": "Taxa: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Guió de rescat"
   },
   "setupNode": {
     "setup_node": "Configura el node {{chainName}}",

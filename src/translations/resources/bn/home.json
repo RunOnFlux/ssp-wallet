@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "কোনো লেনদেনের ইতিহাস পাওয়া যায়নি",
+    "txid": "TXID",
+    "output_id": "আউটপুট আইডি",
     "txid_link": "টিএক্সআইডি: {{txid}}",
     "out_id": "আউটপুট আইডি: {{vout}}",
     "fee_with_symbol": "ফি: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "রিডিম স্ক্রিপ্ট"
   },
   "setupNode": {
     "setup_node": "{{chainName}} নোড সেটআপ করুন",
