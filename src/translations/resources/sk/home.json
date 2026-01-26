@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Nebola nájdená žiadna história transakcií",
+    "txid": "TXID",
+    "output_id": "ID výstupu",
     "txid_link": "TXID: {{txid}}",
     "out_id": "ID výstupu: {{vout}}",
     "fee_with_symbol": "Poplatok: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Skript na uplatnenie"
   },
   "setupNode": {
     "setup_node": "Nastaviť uzol {{chainName}}",
