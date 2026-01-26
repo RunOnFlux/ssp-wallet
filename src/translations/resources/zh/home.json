@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "未找到交易记录",
+    "txid": "TXID",
+    "output_id": "输出ID",
     "txid_link": "交易ID：{{txid}}",
     "out_id": "输出ID：{{vout}}",
     "fee_with_symbol": "费用：{{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "赎回脚本"
   },
   "setupNode": {
     "setup_node": "设置{{chainName}}节点",
