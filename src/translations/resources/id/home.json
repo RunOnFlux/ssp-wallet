@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Tidak Ditemukan Riwayat Transaksi",
+    "txid": "TXID",
+    "output_id": "Output ID",
     "txid_link": "TXID: {{txid}}",
     "out_id": "Output ID\" {{vout}}",
     "fee_with_symbol": "Biaya: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Jumlah delegasi maksimal yang diperbolehkan adalah 4 orang.",
     "err_duplicate_delegate": "Delegasi ini sudah ditambahkan.",
     "delegates_count_one": "{{count}} delegasi dikonfigurasi",
-    "delegates_count_other": "{{count}} delegasi dikonfigurasi"
+    "delegates_count_other": "{{count}} delegasi dikonfigurasi",
+    "redeem_script": "Skrip Penukaran"
   },
   "setupNode": {
     "setup_node": "Mempersiapkan {{chainName}} simpul",
