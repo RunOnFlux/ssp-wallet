@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Žádná Historie Transakcí",
+    "txid": "TXID",
+    "output_id": "Výstupní ID",
     "txid_link": "TXID: {{txid}}",
     "out_id": "Výstupní ID: {{vout}}",
     "fee_with_symbol": "Poplatek: {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximálně 4 delegáti povoleni.",
     "err_duplicate_delegate": "Tento delegát je již přidán.",
     "delegates_count_one": "{{count}} delegát nakonfigurován",
-    "delegates_count_other": "{{count}} delegátů nakonfigurováno"
+    "delegates_count_other": "{{count}} delegátů nakonfigurováno",
+    "redeem_script": "Redeem Skript"
   },
   "setupNode": {
     "setup_node": "Nastavit {{chainName}} Node",
