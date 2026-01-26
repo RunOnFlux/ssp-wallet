@@ -24,6 +24,8 @@
   },
   "transactionsTable": {
     "no_tx_history": "Aucun historique de transaction trouvé",
+    "txid": "TXID",
+    "output_id": "ID de Sortie",
     "txid_link": "TXID : {{txid}}",
     "out_id": "ID de Sortie : {{vout}}",
     "fee_with_symbol": "Frais : {{fee}} {{symbol}}",
@@ -104,7 +106,8 @@
     "err_max_delegates": "Maximum 4 delegates allowed.",
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
-    "delegates_count_other": "{{count}} delegates configured"
+    "delegates_count_other": "{{count}} delegates configured",
+    "redeem_script": "Script d'échange"
   },
   "setupNode": {
     "setup_node": "Configurer le nœud {{chainName}}",
