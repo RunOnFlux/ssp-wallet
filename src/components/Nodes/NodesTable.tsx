@@ -1,4 +1,5 @@
-import { Table, Empty, Button, Flex, Popconfirm, message } from 'antd';
+import { Table, Empty, Button, Flex, Popconfirm, message, Typography } from 'antd';
+const { Text } = Typography;
 import axios from 'axios';
 import { NoticeType } from 'antd/es/message/interface';
 import { useEffect, useState } from 'react';
@@ -12,7 +13,11 @@ import { useTranslation } from 'react-i18next';
 import { fluxnode } from '@runonflux/flux-sdk';
 import secureLocalStorage from 'react-secure-storage';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import {
+  QuestionCircleOutlined,
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+} from '@ant-design/icons';
 import { randomBytes } from 'crypto';
 import { broadcastTx } from '../../lib/constructTx';
 import { getFingerprint } from '../../lib/fingerprint';
@@ -55,6 +60,7 @@ function NodesTable(props: {
   const [wordsPhrase, setWordsPhrase] = useState('');
   const [phraseDialogOpen, setPhraseDialogOpen] = useState(false);
   const [editNodeOpen, setEditNodeOpen] = useState(false);
+  const [redeemScriptVisible, setRedeemScriptVisible] = useState(false);
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
@@ -351,31 +357,86 @@ function NodesTable(props: {
         expandable={{
           showExpandColumn: false,
           expandedRowRender: (record) => (
-            <div>
-              <p style={{ margin: 0 }}>
-                {t('home:nodesTable.amount')}:{' '}
-                {new BigNumber(record.amount)
-                  .dividedBy(10 ** blockchainConfig.decimals)
-                  .toFixed(0)}{' '}
-                {blockchainConfig.symbol}
-              </p>
-              <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                {t('home:transactionsTable.txid_link', {
-                  txid: record.txid,
-                })}
-              </p>
-              <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                {t('home:transactionsTable.out_id', {
-                  vout: record.vout,
-                })}
-              </p>
-              <p style={{ marginTop: 10, wordBreak: 'break-all' }}>
-                {t('home:nodesTable.identitypk')}: {props.identityPK}
-              </p>
-              <p style={{ marginTop: 10, wordBreak: 'break-all' }}>
-                {t('home:nodesTable.sspid')}: {props.sspwid}
-              </p>
-              <div style={{ marginTop: 10 }}>
+            <div className="node-expanded-row">
+              <div>
+                <Text type="secondary" className="node-detail-label">
+                  {t('home:nodesTable.amount')}
+                </Text>
+                <Text className="node-detail-value">
+                  {new BigNumber(record.amount)
+                    .dividedBy(10 ** blockchainConfig.decimals)
+                    .toFixed(0)}{' '}
+                  {blockchainConfig.symbol}
+                </Text>
+              </div>
+              <div>
+                <Text type="secondary" className="node-detail-label">
+                  {t('home:transactionsTable.txid')}
+                </Text>
+                <Text
+                  copyable={{ text: record.txid }}
+                  className="node-detail-value-mono"
+                >
+                  {record.txid}
+                </Text>
+              </div>
+              <div>
+                <Text type="secondary" className="node-detail-label">
+                  {t('home:transactionsTable.output_id')}
+                </Text>
+                <Text className="node-detail-value">{record.vout}</Text>
+              </div>
+              <div>
+                <Text type="secondary" className="node-detail-label">
+                  {t('home:nodesTable.identitypk')}
+                </Text>
+                <Text
+                  copyable={{ text: props.identityPK }}
+                  className="node-detail-value-mono"
+                >
+                  {props.identityPK}
+                </Text>
+              </div>
+              <div>
+                <Text type="secondary" className="node-detail-label">
+                  {t('home:nodesTable.sspid')}
+                </Text>
+                <Text
+                  copyable={{ text: props.sspwid }}
+                  className="node-detail-value-mono"
+                >
+                  {props.sspwid}
+                </Text>
+              </div>
+              {props.redeemScript && (
+                <div>
+                  <Text type="secondary" className="node-detail-label-with-icon">
+                    {redeemScriptVisible ? (
+                      <EyeTwoTone
+                        onClick={() => setRedeemScriptVisible(false)}
+                        className="node-clickable-icon"
+                      />
+                    ) : (
+                      <EyeInvisibleOutlined
+                        onClick={() => setRedeemScriptVisible(true)}
+                        className="node-clickable-icon"
+                      />
+                    )}
+                    {t('home:nodesTable.redeem_script')}
+                  </Text>
+                  <Text
+                    copyable={
+                      redeemScriptVisible ? { text: props.redeemScript } : false
+                    }
+                    className="node-detail-value-mono"
+                  >
+                    {redeemScriptVisible
+                      ? props.redeemScript
+                      : '*** *** *** *** *** ***'}
+                  </Text>
+                </div>
+              )}
+              <div className="node-detail-actions">
                 {!record.name && (
                   <Button
                     size="middle"

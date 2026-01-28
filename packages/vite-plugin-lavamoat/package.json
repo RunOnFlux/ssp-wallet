@@ -41,12 +41,12 @@
   "dependencies": {
     "ses": "1.14.0",
     "lavamoat-core": "17.1.2",
-    "@lavamoat/aa": "4.3.4",
+    "@lavamoat/aa": "4.3.5",
     "tsup": "8.5.1",
     "typescript": "5.9.3"
   },
   "devDependencies": {
-    "@types/node": "24.10.2"
+    "@types/node": "25.0.10"
   },
   "peerDependencies": {
     "vite": "^7.0.0"

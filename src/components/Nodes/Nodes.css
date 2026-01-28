@@ -21,6 +21,48 @@
   text-align: right;
 }
 
+/* Expanded row styles */
+.node-expanded-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-detail-label {
+  font-size: 12px;
+}
+
+.node-detail-label-with-icon {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.node-detail-value {
+  display: block;
+}
+
+.node-detail-value-mono {
+  display: block;
+  font-size: 11px;
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.node-detail-value-mono .ant-typography-copy {
+  font-size: 11px;
+}
+
+.node-detail-actions {
+  margin-top: 4px;
+}
+
+.node-clickable-icon {
+  cursor: pointer;
+  font-size: 12px;
+}
+
 @media (max-width: 400px) {
   .node-name {
     width: 80px;
