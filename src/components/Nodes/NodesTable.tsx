@@ -1,4 +1,12 @@
-import { Table, Empty, Button, Flex, Popconfirm, message, Typography } from 'antd';
+import {
+  Table,
+  Empty,
+  Button,
+  Flex,
+  Popconfirm,
+  message,
+  Typography,
+} from 'antd';
 const { Text } = Typography;
 import axios from 'axios';
 import { NoticeType } from 'antd/es/message/interface';
@@ -410,7 +418,10 @@ function NodesTable(props: {
               </div>
               {props.redeemScript && (
                 <div>
-                  <Text type="secondary" className="node-detail-label-with-icon">
+                  <Text
+                    type="secondary"
+                    className="node-detail-label-with-icon"
+                  >
                     {redeemScriptVisible ? (
                       <EyeTwoTone
                         onClick={() => setRedeemScriptVisible(false)}
