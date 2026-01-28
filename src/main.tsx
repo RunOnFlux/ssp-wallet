@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { store } from './store';
 import { Provider } from 'react-redux';
+import './lib/axiosConfig'; // Setup axios interceptors for SSP infrastructure
 import localForage from 'localforage';
 import App from './App';
 import { SocketProvider } from './contexts/SocketContext';
