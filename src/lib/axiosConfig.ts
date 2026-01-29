@@ -34,7 +34,7 @@ axios.interceptors.request.use(
     const url = config.url || '';
 
     if (isSSPInfrastructureUrl(url)) {
-      const wkIdentity = store.getState().sspState.sspWalletExternalIdentity;
+      const wkIdentity = store.getState().sspState.sspWalletKeyInternalIdentity;
       if (wkIdentity) {
         config.headers = config.headers || {};
         config.headers['sspwkid'] = wkIdentity;
