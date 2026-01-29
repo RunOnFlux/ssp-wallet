@@ -398,6 +398,7 @@ export interface syncSSPRelay {
   // Additional fields for verification
   walletXpub?: string;
   keyIdentity?: string;
+  // Scripts from first address (index 0) - not strictly needed but extra assurance
   redeemScript?: string;
   witnessScript?: string;
 }

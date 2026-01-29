@@ -87,9 +87,21 @@ function Key(props: { synchronised: (status: boolean) => void }) {
           console.log(res);
           const xpubKey = res.data.keyXpub;
           const wkIdentity = res.data.wkIdentity;
-          const sspKeyGeneratedAddress = res.data.generatedAddress;
-          // check that wkIdentity is correct
+          const sspKeyWalletXpub = res.data.walletXpub;
+          // Verify ssp-key received correct wallet xpub
+          if (sspKeyWalletXpub && sspKeyWalletXpub !== xpubWallet) {
+            console.error('sspKeyWalletXpub mismatch');
+            displayMessage('error', t('home:key.err_sync_fail'));
+            syncRunning = false;
+            if (pollingSyncInterval) {
+              clearInterval(pollingSyncInterval);
+            }
+            return;
+          }
+          // For identity chain, verify both wkIdentity and first address
           if (activeChain === identityChain) {
+            const sspKeyGeneratedAddress = res.data.generatedAddress;
+            // Verify wkIdentity (index 10, 0)
             const generatedSspWalletKeyIdentity = generateMultisigAddress(
               xpubWallet,
               xpubKey,
@@ -97,8 +109,8 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               0,
               activeChain,
             );
-            const generatedWkIdentity = generatedSspWalletKeyIdentity.address;
-            if (generatedWkIdentity !== wkIdentity) {
+            if (generatedSspWalletKeyIdentity.address !== wkIdentity) {
+              console.error('wkIdentity mismatch');
               displayMessage('error', t('home:key.err_sync_fail'));
               syncRunning = false;
               if (pollingSyncInterval) {
@@ -106,7 +118,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               }
               return;
             }
-            // Also verify first address matches
+            // Verify first address (index 0, 0)
             const generatedFirstAddress = generateMultisigAddress(
               xpubWallet,
               xpubKey,
@@ -118,6 +130,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               sspKeyGeneratedAddress &&
               generatedFirstAddress.address !== sspKeyGeneratedAddress
             ) {
+              console.error('generatedFirstAddress mismatch');
               displayMessage('error', t('home:key.err_sync_fail'));
               syncRunning = false;
               if (pollingSyncInterval) {
@@ -125,33 +138,38 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               }
               return;
             }
-            // Additional script verification - not strictly needed since address match
-            // already proves correct derivation, but provides extra assurance
+            // Script verification - not strictly needed but extra assurance
             const sspKeyWitnessScript = res.data.witnessScript;
             const sspKeyRedeemScript = res.data.redeemScript;
-            if (sspKeyWitnessScript && generatedFirstAddress.witnessScript) {
-              if (sspKeyWitnessScript !== generatedFirstAddress.witnessScript) {
-                console.error('witnessScript mismatch');
-                displayMessage('error', t('home:key.err_sync_fail'));
-                syncRunning = false;
-                if (pollingSyncInterval) {
-                  clearInterval(pollingSyncInterval);
-                }
-                return;
+            if (
+              sspKeyWitnessScript &&
+              generatedFirstAddress.witnessScript &&
+              sspKeyWitnessScript !== generatedFirstAddress.witnessScript
+            ) {
+              console.error('witnessScript mismatch');
+              displayMessage('error', t('home:key.err_sync_fail'));
+              syncRunning = false;
+              if (pollingSyncInterval) {
+                clearInterval(pollingSyncInterval);
               }
+              return;
             }
-            if (sspKeyRedeemScript && generatedFirstAddress.redeemScript) {
-              if (sspKeyRedeemScript !== generatedFirstAddress.redeemScript) {
-                console.error('redeemScript mismatch');
-                displayMessage('error', t('home:key.err_sync_fail'));
-                syncRunning = false;
-                if (pollingSyncInterval) {
-                  clearInterval(pollingSyncInterval);
-                }
-                return;
+            if (
+              sspKeyRedeemScript &&
+              generatedFirstAddress.redeemScript &&
+              sspKeyRedeemScript !== generatedFirstAddress.redeemScript
+            ) {
+              console.error('redeemScript mismatch');
+              displayMessage('error', t('home:key.err_sync_fail'));
+              syncRunning = false;
+              if (pollingSyncInterval) {
+                clearInterval(pollingSyncInterval);
               }
+              return;
             }
           } else {
+            // For non-identity chains, verify first address matches to prove keyXpub is correct
+            const sspKeyGeneratedAddress = res.data.generatedAddress;
             const generatedAddress = generateMultisigAddress(
               xpubWallet,
               xpubKey,
@@ -163,6 +181,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               sspKeyGeneratedAddress &&
               generatedAddress.address !== sspKeyGeneratedAddress
             ) {
+              console.error('generatedAddress mismatch');
               displayMessage('error', t('home:key.err_sync_fail'));
               syncRunning = false;
               if (pollingSyncInterval) {
@@ -170,31 +189,34 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               }
               return;
             }
-            // Additional script verification - not strictly needed since address match
-            // already proves correct derivation, but provides extra assurance
+            // Script verification - not strictly needed but extra assurance
             const sspKeyWitnessScript = res.data.witnessScript;
             const sspKeyRedeemScript = res.data.redeemScript;
-            if (sspKeyWitnessScript && generatedAddress.witnessScript) {
-              if (sspKeyWitnessScript !== generatedAddress.witnessScript) {
-                console.error('witnessScript mismatch');
-                displayMessage('error', t('home:key.err_sync_fail'));
-                syncRunning = false;
-                if (pollingSyncInterval) {
-                  clearInterval(pollingSyncInterval);
-                }
-                return;
+            if (
+              sspKeyWitnessScript &&
+              generatedAddress.witnessScript &&
+              sspKeyWitnessScript !== generatedAddress.witnessScript
+            ) {
+              console.error('witnessScript mismatch');
+              displayMessage('error', t('home:key.err_sync_fail'));
+              syncRunning = false;
+              if (pollingSyncInterval) {
+                clearInterval(pollingSyncInterval);
               }
+              return;
             }
-            if (sspKeyRedeemScript && generatedAddress.redeemScript) {
-              if (sspKeyRedeemScript !== generatedAddress.redeemScript) {
-                console.error('redeemScript mismatch');
-                displayMessage('error', t('home:key.err_sync_fail'));
-                syncRunning = false;
-                if (pollingSyncInterval) {
-                  clearInterval(pollingSyncInterval);
-                }
-                return;
+            if (
+              sspKeyRedeemScript &&
+              generatedAddress.redeemScript &&
+              sspKeyRedeemScript !== generatedAddress.redeemScript
+            ) {
+              console.error('redeemScript mismatch');
+              displayMessage('error', t('home:key.err_sync_fail'));
+              syncRunning = false;
+              if (pollingSyncInterval) {
+                clearInterval(pollingSyncInterval);
               }
+              return;
             }
           }
           if (res.data.publicNonces) {
