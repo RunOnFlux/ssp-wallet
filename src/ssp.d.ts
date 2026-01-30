@@ -51,14 +51,43 @@ declare module '@storage/ssp' {
     ETH: number;
   }
 
+  interface pulsePreferences {
+    incomingTx: boolean;
+    outgoingTx: boolean;
+    largeTransactions: boolean;
+    lowBalance: boolean;
+    weeklyReport: boolean;
+    marketing: boolean;
+  }
+
+  interface pulseConfig {
+    isSubscribed: boolean;
+    email: string;
+    preferences: pulsePreferences;
+  }
+
   interface ssp {
     maxTxFeeUSD: number;
     fiatCurrency: keyof currency;
     fiatSymbol: string;
     relay: string;
+    pulse?: pulseConfig;
   }
 
   let sspConfig: () => ssp;
   let sspConfigOriginal: () => ssp;
   let loadSSPConfig: () => void;
+  let getPulseConfig: () => pulseConfig | null;
+  let updatePulseConfig: (pulseConfigData: pulseConfig) => Promise<void>;
+  let subscribeToPulse: (
+    email: string,
+    preferences?: Partial<pulsePreferences>,
+  ) => Promise<void>;
+  let unsubscribeFromPulse: () => Promise<void>;
+  let getDefaultPulsePreferences: () => pulsePreferences;
+  let updatePulseFromStatus: (status: {
+    subscribed: boolean;
+    email?: string;
+    preferences?: pulsePreferences;
+  }) => Promise<void>;
 }

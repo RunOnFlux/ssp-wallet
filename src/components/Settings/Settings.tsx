@@ -17,22 +17,43 @@ import {
   backendsOriginal,
   loadBackendsConfig,
 } from '@storage/backends';
-import { sspConfig, sspConfigOriginal, loadSSPConfig } from '@storage/ssp';
+import {
+  sspConfig,
+  sspConfigOriginal,
+  loadSSPConfig,
+  getPulseConfig,
+  subscribeToPulse,
+  unsubscribeFromPulse,
+  getDefaultPulsePreferences,
+} from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
-import { currency } from '../../types';
+import { currency, cryptos } from '../../types';
 import { supportedFiatValues, getFiatSymbol } from '../../lib/currency.ts';
 import { setFiatRates } from '../../store';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import ConfirmPublicNoncesKey from '../ConfirmPublicNoncesKey/ConfirmPublicNoncesKey';
+import secureLocalStorage from 'react-secure-storage';
+import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
+import { getFingerprint } from '../../lib/fingerprint';
+import { getScriptType } from '../../lib/wallet';
 
 interface sspConfigType {
   relay?: string;
   fiatCurrency?: keyof currency;
+}
+
+interface PulseApiResponse {
+  status: string;
+  data?: {
+    success: boolean;
+    message?: string;
+    isNewSubscription?: boolean;
+  };
 }
 
 function Settings(props: {
@@ -40,9 +61,11 @@ function Settings(props: {
   openAction: (status: boolean) => void;
 }) {
   const dispatch = useAppDispatch();
-  const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
-    (state) => state.sspState,
-  );
+  const {
+    activeChain,
+    sspWalletKeyInternalIdentity,
+    sspWalletInternalIdentity,
+  } = useAppSelector((state) => state.sspState);
   const { createWkIdentityAuth } = useRelayAuth();
   const { fiatRates } = useAppSelector((state) => state.fiatCryptoRates);
   const { t } = useTranslation(['home', 'common']);
@@ -61,6 +84,15 @@ function Settings(props: {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const blockchainConfig = blockchains[activeChain];
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+
+  // SSP Pulse state
+  const pulseConfigData = getPulseConfig();
+  const [pulseEmail, setPulseEmail] = useState(pulseConfigData?.email ?? '');
+  const [isPulseSubscribed, setIsPulseSubscribed] = useState(
+    !!(pulseConfigData?.isSubscribed && pulseConfigData?.email),
+  );
+  const [pulseLoading, setPulseLoading] = useState(false);
 
   const backendsOriginalConfig = backendsOriginal();
   const originalConfig = sspConfigOriginal();
@@ -76,6 +108,15 @@ function Settings(props: {
     setApiConfig(API);
     setExplorerConfig(EXPLORER);
   }, [activeChain]);
+
+  // Sync pulse state when modal opens
+  useEffect(() => {
+    if (open) {
+      const config = getPulseConfig();
+      setPulseEmail(config?.email ?? '');
+      setIsPulseSubscribed(!!(config?.isSubscribed && config?.email));
+    }
+  }, [open]);
 
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -262,6 +303,161 @@ function Settings(props: {
     );
   };
 
+  // SSP Pulse handlers
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handlePulseSubscribe = async () => {
+    if (!pulseEmail || !validateEmail(pulseEmail)) {
+      displayMessage('error', t('home:settings.sspPulse.err_invalid_email'));
+      return;
+    }
+
+    setPulseLoading(true);
+    try {
+      // Decrypt password from passwordBlob
+      const fingerprint = getFingerprint();
+      const password = await passworderDecrypt(fingerprint, passwordBlob);
+      if (typeof password !== 'string') {
+        throw new Error('Failed to decrypt password');
+      }
+
+      // Load all synced chain xpubs from encrypted storage
+      const chainKeys = Object.keys(blockchains) as (keyof cryptos)[];
+      const chains: Record<string, { walletXpub: string; keyXpub: string }> =
+        {};
+
+      for (const chain of chainKeys) {
+        const chainConfig = blockchains[chain];
+        const xpubKey = `xpub-48-${chainConfig.slip}-0-${getScriptType(chainConfig.scriptType)}-${chainConfig.id}`;
+        const xpub2Key = `2-xpub-48-${chainConfig.slip}-0-${getScriptType(chainConfig.scriptType)}-${chainConfig.id}`;
+
+        const xpubEncrypted = secureLocalStorage.getItem(xpubKey);
+        const xpub2Encrypted = secureLocalStorage.getItem(xpub2Key);
+
+        // Only include chains where both wallet and key xpubs are synced
+        if (
+          xpubEncrypted &&
+          typeof xpubEncrypted === 'string' &&
+          xpub2Encrypted &&
+          typeof xpub2Encrypted === 'string'
+        ) {
+          try {
+            const walletXpub = await passworderDecrypt(password, xpubEncrypted);
+            const keyXpub = await passworderDecrypt(password, xpub2Encrypted);
+
+            if (typeof walletXpub === 'string' && typeof keyXpub === 'string') {
+              chains[chain] = { walletXpub, keyXpub };
+            }
+          } catch (decryptError) {
+            console.warn(
+              `[Pulse] Failed to decrypt xpubs for chain ${chain}`,
+              decryptError,
+            );
+          }
+        }
+      }
+
+      const data: Record<string, unknown> = {
+        wkIdentity: sspWalletKeyInternalIdentity,
+        walletIdentity: sspWalletInternalIdentity,
+        email: pulseEmail,
+        chains,
+        preferences: getDefaultPulsePreferences(),
+      };
+
+      // Add authentication
+      try {
+        const auth = await createWkIdentityAuth(
+          'action',
+          sspWalletKeyInternalIdentity,
+          data,
+        );
+        if (auth) {
+          Object.assign(data, auth);
+        }
+      } catch (error) {
+        console.warn('[Pulse Subscribe] Auth not available', error);
+      }
+
+      const response = await axios.post<PulseApiResponse>(
+        `https://${sspConfig().relay}/v1/pulse/subscribe`,
+        data,
+      );
+
+      if (response.data?.status === 'success' && response.data?.data?.success) {
+        await subscribeToPulse(pulseEmail);
+        setIsPulseSubscribed(true);
+        displayMessage(
+          'success',
+          t('home:settings.sspPulse.subscribe_success'),
+        );
+      } else {
+        displayMessage(
+          'error',
+          response.data?.data?.message ||
+            t('home:settings.sspPulse.err_subscribe'),
+        );
+      }
+    } catch (error) {
+      console.error('[Pulse Subscribe]', error);
+      displayMessage('error', t('home:settings.sspPulse.err_subscribe'));
+    } finally {
+      setPulseLoading(false);
+    }
+  };
+
+  const handlePulseUnsubscribe = async () => {
+    setPulseLoading(true);
+    try {
+      const data: Record<string, unknown> = {
+        wkIdentity: sspWalletKeyInternalIdentity,
+      };
+
+      // Add authentication
+      try {
+        const auth = await createWkIdentityAuth(
+          'action',
+          sspWalletKeyInternalIdentity,
+          data,
+        );
+        if (auth) {
+          Object.assign(data, auth);
+        }
+      } catch (error) {
+        console.warn('[Pulse Unsubscribe] Auth not available', error);
+      }
+
+      const response = await axios.post<PulseApiResponse>(
+        `https://${sspConfig().relay}/v1/pulse/unsubscribe`,
+        data,
+      );
+
+      if (response.data?.status === 'success' && response.data?.data?.success) {
+        await unsubscribeFromPulse();
+        setIsPulseSubscribed(false);
+        setPulseEmail('');
+        displayMessage(
+          'success',
+          t('home:settings.sspPulse.unsubscribe_success'),
+        );
+      } else {
+        displayMessage(
+          'error',
+          response.data?.data?.message ||
+            t('home:settings.sspPulse.err_unsubscribe'),
+        );
+      }
+    } catch (error) {
+      console.error('[Pulse Unsubscribe]', error);
+      displayMessage('error', t('home:settings.sspPulse.err_unsubscribe'));
+    } finally {
+      setPulseLoading(false);
+    }
+  };
+
   const fiatOptions = () => {
     const fiatOptions = [];
     for (const fiat of supportedFiatValues) {
@@ -331,6 +527,61 @@ function Settings(props: {
           >
             {t('home:settings.sync_public_nonces')}
           </Button>
+        </Space>
+        <br />
+        <br />
+        <h3>
+          <span>
+            {t('home:settings.sspPulse.title')}
+            <Tooltip title={t('home:settings.sspPulse.description')}>
+              <QuestionCircleOutlined
+                style={{
+                  marginLeft: 8,
+                  color: token.colorPrimary,
+                }}
+              />
+            </Tooltip>
+          </span>
+        </h3>
+        <Space direction="vertical" size="middle">
+          {!isPulseSubscribed ? (
+            <>
+              <Input
+                size="middle"
+                type="email"
+                placeholder={t('home:settings.sspPulse.email_placeholder')}
+                value={pulseEmail}
+                onChange={(e) => setPulseEmail(e.target.value)}
+                disabled={pulseLoading}
+                style={{ width: 220 }}
+              />
+              <Button
+                type="primary"
+                size="middle"
+                onClick={handlePulseSubscribe}
+                loading={pulseLoading}
+              >
+                {t('home:settings.sspPulse.subscribe')}
+              </Button>
+            </>
+          ) : (
+            <>
+              <div style={{ color: token.colorTextSecondary }}>
+                {t('home:settings.sspPulse.subscribed_as', {
+                  email: pulseEmail,
+                })}
+              </div>
+              <Button
+                type="default"
+                danger
+                size="middle"
+                onClick={handlePulseUnsubscribe}
+                loading={pulseLoading}
+              >
+                {t('home:settings.sspPulse.unsubscribe')}
+              </Button>
+            </>
+          )}
         </Space>
         <br />
         <br />

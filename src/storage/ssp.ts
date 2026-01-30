@@ -10,12 +10,28 @@ interface tutorialConfig {
   lastShown?: number; // timestamp
 }
 
+export interface pulsePreferences {
+  incomingTx: boolean;
+  outgoingTx: boolean;
+  largeTransactions: boolean;
+  lowBalance: boolean;
+  weeklyReport: boolean;
+  marketing: boolean;
+}
+
+export interface pulseConfig {
+  isSubscribed: boolean;
+  email: string;
+  preferences: pulsePreferences;
+}
+
 interface config {
   relay?: string; // user adjustable
   fiatCurrency?: keyof currency; // user adjustable
   maxTxFeeUSD?: number;
   fiatSymbol?: string;
   tutorial: tutorialConfig;
+  pulse?: pulseConfig;
 }
 
 let storedLocalForgeSSPConfig: Partial<config> = {};
@@ -55,6 +71,7 @@ export function sspConfig(): config {
     fiatSymbol: getFiatSymbol(
       storedLocalForgeSSPConfig?.fiatCurrency ?? ssp.fiatCurrency ?? 'USD',
     ),
+    pulse: storedLocalForgeSSPConfig?.pulse,
   };
 }
 
@@ -81,4 +98,74 @@ export async function resetTutorial() {
     tutorialType: 'onboarding',
   };
   await updateTutorialConfig(tutorialConfig);
+}
+
+// SSP Pulse configuration
+const defaultPulsePreferences: pulsePreferences = {
+  incomingTx: true,
+  outgoingTx: true,
+  largeTransactions: true,
+  lowBalance: true,
+  weeklyReport: true,
+  marketing: true,
+};
+
+export function getPulseConfig(): pulseConfig | null {
+  return storedLocalForgeSSPConfig?.pulse ?? null;
+}
+
+export async function updatePulseConfig(pulseConfigData: pulseConfig) {
+  const currentConfig = sspConfig();
+  const updatedConfig = {
+    ...currentConfig,
+    pulse: pulseConfigData,
+  };
+
+  storedLocalForgeSSPConfig = updatedConfig;
+  await localForage.setItem('sspConfig', updatedConfig);
+}
+
+export async function subscribeToPulse(
+  email: string,
+  preferences?: Partial<pulsePreferences>,
+) {
+  const pulseConfigData: pulseConfig = {
+    isSubscribed: true,
+    email: email.toLowerCase().trim(),
+    preferences: {
+      ...defaultPulsePreferences,
+      ...preferences,
+    },
+  };
+  await updatePulseConfig(pulseConfigData);
+}
+
+export async function unsubscribeFromPulse() {
+  const currentConfig = sspConfig();
+  const updatedConfig = {
+    ...currentConfig,
+    pulse: undefined,
+  };
+
+  storedLocalForgeSSPConfig = updatedConfig;
+  await localForage.setItem('sspConfig', updatedConfig);
+}
+
+export function getDefaultPulsePreferences(): pulsePreferences {
+  return { ...defaultPulsePreferences };
+}
+
+/**
+ * Update local pulse config from remote status response
+ */
+export async function updatePulseFromStatus(status: {
+  subscribed: boolean;
+  email?: string;
+  preferences?: pulsePreferences;
+}): Promise<void> {
+  if (status.subscribed && status.email) {
+    await subscribeToPulse(status.email, status.preferences);
+  } else if (!status.subscribed) {
+    await unsubscribeFromPulse();
+  }
 }

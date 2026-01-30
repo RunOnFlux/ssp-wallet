@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Typography, Card, Space, Flex, Modal } from 'antd';
+import { Button, Typography, Card, Space, Flex, Modal, Input } from 'antd';
 import {
   CloseOutlined,
   ArrowLeftOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
+  MailOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import './TutorialOverlay.css';
@@ -34,6 +35,12 @@ interface TutorialOverlayProps {
   onComplete: () => void;
   onClose: () => void;
   onPause: () => void;
+  // Pulse subscription props
+  pulseEmail: string;
+  setPulseEmail: (email: string) => void;
+  pulseLoading: boolean;
+  pulseSubscribed: boolean;
+  onPulseSubscribe: (email: string) => Promise<boolean>;
 }
 
 export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
@@ -45,6 +52,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   onComplete,
   onClose,
   onPause,
+  pulseEmail,
+  setPulseEmail,
+  pulseLoading,
+  pulseSubscribed,
+  onPulseSubscribe,
 }) => {
   const { t } = useTranslation(['home']);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
@@ -60,6 +72,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     height: 0,
   });
   const [elementNotFoundCount, setElementNotFoundCount] = useState(0);
+  const [showPulseSkipConfirm, setShowPulseSkipConfirm] = useState(false);
 
   const currentStepData = steps[currentStep];
 
@@ -570,16 +583,128 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             </Typography.Text>
           </div>
 
+          {/* SSP Pulse Subscription */}
+          {!pulseSubscribed && (
+            <div
+              style={{
+                background: 'rgba(24, 144, 255, 0.1)',
+                borderRadius: 8,
+                padding: 16,
+                textAlign: 'left',
+              }}
+            >
+              <Typography.Text
+                strong
+                style={{ display: 'block', marginBottom: 8 }}
+              >
+                <MailOutlined style={{ marginRight: 8 }} />
+                {t('home:settings.sspPulse.title')}
+              </Typography.Text>
+              <Typography.Text
+                type="secondary"
+                style={{ display: 'block', marginBottom: 12, fontSize: 12 }}
+              >
+                {t('home:settings.sspPulse.description')}
+              </Typography.Text>
+              <Space
+                direction="vertical"
+                style={{ width: '100%' }}
+                size="small"
+              >
+                <Input
+                  size="middle"
+                  type="email"
+                  placeholder={t('home:settings.sspPulse.email_placeholder')}
+                  value={pulseEmail}
+                  onChange={(e) => setPulseEmail(e.target.value)}
+                  disabled={pulseLoading}
+                  onPressEnter={() => onPulseSubscribe(pulseEmail)}
+                />
+                <Button
+                  type="primary"
+                  size="middle"
+                  onClick={() => onPulseSubscribe(pulseEmail)}
+                  loading={pulseLoading}
+                  block
+                >
+                  {t('home:settings.sspPulse.subscribe')}
+                </Button>
+              </Space>
+            </div>
+          )}
+
+          {pulseSubscribed && (
+            <div
+              style={{
+                background: 'rgba(82, 196, 26, 0.1)',
+                borderRadius: 8,
+                padding: 12,
+              }}
+            >
+              <Typography.Text type="success">
+                <CheckCircleOutlined style={{ marginRight: 8 }} />
+                {t('home:settings.sspPulse.subscribe_success')}
+              </Typography.Text>
+            </div>
+          )}
+
           <Button
             type="primary"
             size="large"
-            onClick={onComplete}
+            onClick={() => {
+              if (!pulseSubscribed) {
+                setShowPulseSkipConfirm(true);
+              } else {
+                onComplete();
+              }
+            }}
             style={{ width: '100%' }}
             icon={<CheckCircleOutlined />}
           >
             {t('home:tutorial.complete')}
           </Button>
         </Space>
+
+        {/* Confirmation modal for skipping Pulse subscription */}
+        <Modal
+          open={showPulseSkipConfirm}
+          onCancel={() => setShowPulseSkipConfirm(false)}
+          footer={null}
+          centered
+          width={350}
+        >
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <div style={{ textAlign: 'center' }}>
+              <MailOutlined
+                style={{ fontSize: 32, color: '#1890ff', marginBottom: 12 }}
+              />
+              <Typography.Title level={5} style={{ margin: 0 }}>
+                {t('home:tutorial.skip_pulse_title')}
+              </Typography.Title>
+              <Typography.Text type="secondary" style={{ marginTop: 8 }}>
+                {t('home:tutorial.skip_pulse_description')}
+              </Typography.Text>
+            </div>
+            <Space direction="vertical" style={{ width: '100%' }} size="small">
+              <Button
+                type="primary"
+                block
+                onClick={() => setShowPulseSkipConfirm(false)}
+              >
+                {t('home:tutorial.skip_pulse_subscribe')}
+              </Button>
+              <Button
+                block
+                onClick={() => {
+                  setShowPulseSkipConfirm(false);
+                  onComplete();
+                }}
+              >
+                {t('home:tutorial.skip_pulse_skip')}
+              </Button>
+            </Space>
+          </Space>
+        </Modal>
       </Modal>
     );
   }

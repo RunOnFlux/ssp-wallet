@@ -8,12 +8,26 @@ import React, {
 import { useSelector, useDispatch } from 'react-redux';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
+import axios from 'axios';
+import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
+import secureLocalStorage from 'react-secure-storage';
 import { RootState } from '../../store';
 import { useAppSelector } from '../../hooks';
+import { useRelayAuth } from '../../hooks/useRelayAuth';
 import TutorialOverlay, { TutorialStep } from './TutorialOverlay';
 import { getTutorialSteps } from './tutorialSteps';
 import { setTutorialState, setTutorialStep } from '../../store/index';
-import { updateTutorialConfig, resetTutorial } from '../../storage/ssp';
+import {
+  updateTutorialConfig,
+  resetTutorial,
+  sspConfig,
+  subscribeToPulse,
+  getDefaultPulsePreferences,
+} from '../../storage/ssp';
+import { blockchains } from '../../storage/blockchains';
+import { getFingerprint } from '../../lib/fingerprint';
+import { getScriptType } from '../../lib/wallet';
+import { cryptos } from '../../types';
 
 interface TutorialContextType {
   startTutorial: (tutorialType?: string) => void;
@@ -33,21 +47,129 @@ interface TutorialProviderProps {
   children: ReactNode;
 }
 
+interface PulseApiResponse {
+  status: string;
+  data?: {
+    success: boolean;
+    message?: string;
+  };
+}
+
 export const TutorialProvider: React.FC<TutorialProviderProps> = ({
   children,
 }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation(['home']);
   const tutorialState = useSelector((state: RootState) => state.tutorial);
-  const { activeChain } = useAppSelector((state) => state.sspState);
+  const {
+    activeChain,
+    sspWalletKeyInternalIdentity,
+    sspWalletInternalIdentity,
+  } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
   const { xpubKey: ethXpubKey } = useAppSelector((state) => state.eth);
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+  const { createWkIdentityAuth } = useRelayAuth();
   const [currentSteps, setCurrentSteps] = useState<TutorialStep[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
   const [expectedChain, setExpectedChain] = useState<string>('');
   const [pendingTutorialType, setPendingTutorialType] = useState<string>('');
+
+  // Pulse subscription state for tutorial completion
+  const [pulseEmail, setPulseEmail] = useState('');
+  const [pulseLoading, setPulseLoading] = useState(false);
+  const [pulseSubscribed, setPulseSubscribed] = useState(false);
+
+  const handlePulseSubscribe = async (email: string): Promise<boolean> => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      messageApi.error(t('home:settings.sspPulse.err_invalid_email'));
+      return false;
+    }
+
+    setPulseLoading(true);
+    try {
+      const fingerprint = getFingerprint();
+      const password = await passworderDecrypt(fingerprint, passwordBlob);
+      if (typeof password !== 'string') {
+        throw new Error('Failed to decrypt password');
+      }
+
+      const chainKeys = Object.keys(blockchains) as (keyof cryptos)[];
+      const chains: Record<string, { walletXpub: string; keyXpub: string }> =
+        {};
+
+      for (const chain of chainKeys) {
+        const chainConfig = blockchains[chain];
+        const xpubKey = `xpub-48-${chainConfig.slip}-0-${getScriptType(chainConfig.scriptType)}-${chainConfig.id}`;
+        const xpub2Key = `2-xpub-48-${chainConfig.slip}-0-${getScriptType(chainConfig.scriptType)}-${chainConfig.id}`;
+
+        const xpubEncrypted = secureLocalStorage.getItem(xpubKey);
+        const xpub2Encrypted = secureLocalStorage.getItem(xpub2Key);
+
+        if (
+          xpubEncrypted &&
+          typeof xpubEncrypted === 'string' &&
+          xpub2Encrypted &&
+          typeof xpub2Encrypted === 'string'
+        ) {
+          try {
+            const walletXpub = await passworderDecrypt(password, xpubEncrypted);
+            const keyXpub = await passworderDecrypt(password, xpub2Encrypted);
+            if (typeof walletXpub === 'string' && typeof keyXpub === 'string') {
+              chains[chain] = { walletXpub, keyXpub };
+            }
+          } catch {
+            // Skip chain if decryption fails
+          }
+        }
+      }
+
+      const data: Record<string, unknown> = {
+        wkIdentity: sspWalletKeyInternalIdentity,
+        walletIdentity: sspWalletInternalIdentity,
+        email,
+        chains,
+        preferences: getDefaultPulsePreferences(),
+      };
+
+      try {
+        const auth = await createWkIdentityAuth(
+          'action',
+          sspWalletKeyInternalIdentity,
+          data,
+        );
+        if (auth) Object.assign(data, auth);
+      } catch {
+        // Continue without auth
+      }
+
+      const response = await axios.post<PulseApiResponse>(
+        `https://${sspConfig().relay}/v1/pulse/subscribe`,
+        data,
+      );
+
+      if (response.data?.status === 'success' && response.data?.data?.success) {
+        await subscribeToPulse(email);
+        setPulseSubscribed(true);
+        messageApi.success(t('home:settings.sspPulse.subscribe_success'));
+        return true;
+      } else {
+        messageApi.error(
+          response.data?.data?.message ||
+            t('home:settings.sspPulse.err_subscribe'),
+        );
+        return false;
+      }
+    } catch (error) {
+      console.error('[Pulse Subscribe]', error);
+      messageApi.error(t('home:settings.sspPulse.err_subscribe'));
+      return false;
+    } finally {
+      setPulseLoading(false);
+    }
+  };
 
   const startTutorial = (tutorialType: string = 'onboarding') => {
     // Ensure we're on the home page
@@ -380,6 +502,11 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
         onComplete={completeTutorial}
         onClose={closeTutorial}
         onPause={pauseTutorial}
+        pulseEmail={pulseEmail}
+        setPulseEmail={setPulseEmail}
+        pulseLoading={pulseLoading}
+        pulseSubscribed={pulseSubscribed}
+        onPulseSubscribe={handlePulseSubscribe}
       />
     </TutorialContext.Provider>
   );
