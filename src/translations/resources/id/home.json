@@ -25,7 +25,7 @@
   "transactionsTable": {
     "no_tx_history": "Tidak Ditemukan Riwayat Transaksi",
     "txid": "TXID",
-    "output_id": "Output ID",
+    "output_id": "ID Output",
     "txid_link": "TXID: {{txid}}",
     "out_id": "Output ID\" {{vout}}",
     "fee_with_symbol": "Biaya: {{fee}} {{symbol}}",
@@ -165,7 +165,20 @@
     "use_system_language": "Gunakan Bahasa Sistem",
     "public_nonces_sync": "Nonces Publik",
     "sync_public_nonces": "Sinkronisasi Nonces Publik",
-    "public_nonces_sync_help": "Nonces publik diperlukan untuk transaksi EVM. Hal ini mengharuskan sinkronisasi nonces dari perangkat SSP Key milik Anda untuk memfasilitasi penandatanganan transaksi EVM."
+    "public_nonces_sync_help": "Nonces publik diperlukan untuk transaksi EVM. Hal ini mengharuskan sinkronisasi nonces dari perangkat SSP Key milik Anda untuk memfasilitasi penandatanganan transaksi EVM.",
+    "sspPulse": {
+      "title": "SSP Pulse",
+      "description": "Subscribe to SSP Pulse to receive email notifications about your wallet activity including incoming and outgoing transactions, balance alerts, and weekly reports.",
+      "subscribe": "Subscribe to SSP Pulse",
+      "unsubscribe": "Unsubscribe",
+      "subscribed_as": "Subscribed as: {{email}}",
+      "email_placeholder": "Enter your email address",
+      "subscribe_success": "Successfully subscribed to SSP Pulse!",
+      "unsubscribe_success": "Successfully unsubscribed from SSP Pulse.",
+      "err_subscribe": "Error subscribing to SSP Pulse. Please try again.",
+      "err_unsubscribe": "Error unsubscribing from SSP Pulse. Please try again.",
+      "err_invalid_email": "Please enter a valid email address."
+    }
   },
   "receive": {
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
@@ -642,6 +655,10 @@
     "contact": "Kontak",
     "privacy_policy": "Kebijakan Privasi",
     "terms_of_service": "Ketentuan Layanan",
+    "skip_pulse_title": "Skip SSP Pulse?",
+    "skip_pulse_description": "You haven't subscribed to SSP Pulse. Get email notifications for incoming transactions, balance alerts, and weekly reports.",
+    "skip_pulse_subscribe": "Go Back & Subscribe",
+    "skip_pulse_skip": "Skip for Now",
     "steps": {
       "welcome_overview": {
         "title": "Selamat Datang di Dompet SSP!",
