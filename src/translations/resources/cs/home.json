@@ -165,7 +165,20 @@
     "use_system_language": "Použít Systémový Jazyk",
     "public_nonces_sync": "Veřejná nonce",
     "sync_public_nonces": "Synchronizovat veřejné nonce",
-    "public_nonces_sync_help": "Veřejné nonce jsou vyžadovány pro EVM transakce. Tato akce spustí synchronizaci noncí z vašeho SSP klíče pro správnou funkci podepisování transakcí EVM."
+    "public_nonces_sync_help": "Veřejné nonce jsou vyžadovány pro EVM transakce. Tato akce spustí synchronizaci noncí z vašeho SSP klíče pro správnou funkci podepisování transakcí EVM.",
+    "sspPulse": {
+      "title": "SSP Pulse",
+      "description": "Subscribe to SSP Pulse to receive email notifications about your wallet activity including incoming and outgoing transactions, balance alerts, and weekly reports.",
+      "subscribe": "Subscribe to SSP Pulse",
+      "unsubscribe": "Unsubscribe",
+      "subscribed_as": "Subscribed as: {{email}}",
+      "email_placeholder": "Enter your email address",
+      "subscribe_success": "Successfully subscribed to SSP Pulse!",
+      "unsubscribe_success": "Successfully unsubscribed from SSP Pulse.",
+      "err_subscribe": "Error subscribing to SSP Pulse. Please try again.",
+      "err_unsubscribe": "Error unsubscribing from SSP Pulse. Please try again.",
+      "err_invalid_email": "Please enter a valid email address."
+    }
   },
   "receive": {
     "receive_chain_wallet": "Obdržet do {{chain}} {{wallet}}",
@@ -642,6 +655,10 @@
     "contact": "Kontakt",
     "privacy_policy": "Ochrana osobních údajů",
     "terms_of_service": "Podmínky používání",
+    "skip_pulse_title": "Skip SSP Pulse?",
+    "skip_pulse_description": "You haven't subscribed to SSP Pulse. Get email notifications for incoming transactions, balance alerts, and weekly reports.",
+    "skip_pulse_subscribe": "Go Back & Subscribe",
+    "skip_pulse_skip": "Skip for Now",
     "steps": {
       "welcome_overview": {
         "title": "Vítejte do SSP Peněženky!",
