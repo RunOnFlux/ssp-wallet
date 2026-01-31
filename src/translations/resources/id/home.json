@@ -168,6 +168,7 @@
     "public_nonces_sync_help": "Nonces publik diperlukan untuk transaksi EVM. Hal ini mengharuskan sinkronisasi nonces dari perangkat SSP Key milik Anda untuk memfasilitasi penandatanganan transaksi EVM.",
     "sspPulse": {
       "title": "SSP Pulse",
+      "title_enterprise": "SSP Pulse Enterprise",
       "description": "Subscribe to SSP Pulse to receive email notifications about your wallet activity including incoming and outgoing transactions, balance alerts, and weekly reports.",
       "subscribe": "Subscribe to SSP Pulse",
       "unsubscribe": "Unsubscribe",
