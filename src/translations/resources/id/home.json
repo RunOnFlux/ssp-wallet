@@ -169,16 +169,16 @@
     "sspPulse": {
       "title": "SSP Pulse",
       "title_enterprise": "SSP Pulse Enterprise",
-      "description": "Subscribe to SSP Pulse to receive email notifications about your wallet activity including incoming and outgoing transactions, balance alerts, and weekly reports.",
-      "subscribe": "Subscribe to SSP Pulse",
-      "unsubscribe": "Unsubscribe",
-      "subscribed_as": "Subscribed as: {{email}}",
-      "email_placeholder": "Enter your email address",
-      "subscribe_success": "Successfully subscribed to SSP Pulse!",
-      "unsubscribe_success": "Successfully unsubscribed from SSP Pulse.",
-      "err_subscribe": "Error subscribing to SSP Pulse. Please try again.",
-      "err_unsubscribe": "Error unsubscribing from SSP Pulse. Please try again.",
-      "err_invalid_email": "Please enter a valid email address."
+      "description": "Berlangganan SSP Pulse untuk menerima notifikasi email tentang aktivitas dompet Anda, termasuk transaksi masuk dan keluar, peringatan saldo, dan laporan mingguan.",
+      "subscribe": "Berlangganan SSP Pulse",
+      "unsubscribe": "Berhenti berlangganan",
+      "subscribed_as": "Berlangganan sebagai: {{email}}",
+      "email_placeholder": "Masukkan alamat email Anda",
+      "subscribe_success": "Berhasil berlangganan ke dalam SSP Pulse!",
+      "unsubscribe_success": "Berhasil berhenti berlangganan dari SSP Pulse.",
+      "err_subscribe": "Terjadi kesalahan saat berlangganan SSP Pulse. Silakan coba lagi.",
+      "err_unsubscribe": "Terjadi kesalahan saat berhenti berlangganan SSP Pulse. Silakan coba lagi.",
+      "err_invalid_email": "Silakan masukkan alamat email yang valid."
     }
   },
   "receive": {
@@ -656,10 +656,10 @@
     "contact": "Kontak",
     "privacy_policy": "Kebijakan Privasi",
     "terms_of_service": "Ketentuan Layanan",
-    "skip_pulse_title": "Skip SSP Pulse?",
-    "skip_pulse_description": "You haven't subscribed to SSP Pulse. Get email notifications for incoming transactions, balance alerts, and weekly reports.",
-    "skip_pulse_subscribe": "Go Back & Subscribe",
-    "skip_pulse_skip": "Skip for Now",
+    "skip_pulse_title": "Lewati SSP Pulse?",
+    "skip_pulse_description": "Anda belum berlangganan SSP Pulse. Dapatkan notifikasi email untuk transaksi masuk, peringatan saldo, dan laporan mingguan.",
+    "skip_pulse_subscribe": "Kembali & Berlangganan",
+    "skip_pulse_skip": "Lewati untuk Sekarang",
     "steps": {
       "welcome_overview": {
         "title": "Selamat Datang di Dompet SSP!",
