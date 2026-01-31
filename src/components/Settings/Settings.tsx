@@ -532,7 +532,7 @@ function Settings(props: {
         <br />
         <h3>
           <span>
-            {t('home:settings.sspPulse.title')}
+            {t('home:settings.sspPulse.title_enterprise')}
             <Tooltip title={t('home:settings.sspPulse.description')}>
               <QuestionCircleOutlined
                 style={{
