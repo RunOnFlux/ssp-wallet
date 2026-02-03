@@ -26,10 +26,10 @@
     "generate-policy": "node scripts/generate-lavamoat-policy.js"
   },
   "resolutions": {
-    "viem": "2.44.4"
+    "viem": "2.45.1"
   },
   "overrides": {
-    "viem": "2.44.4"
+    "viem": "2.45.1"
   },
   "dependencies": {
     "@alchemy/aa-core": "3.19.0",
@@ -73,7 +73,7 @@
     "socket.io-client": "4.8.3",
     "stream-browserify": "3.0.0",
     "util": "0.12.5",
-    "viem": "2.44.4",
+    "viem": "2.45.1",
     "vite-plugin-lavamoat": "link:packages/vite-plugin-lavamoat"
   },
   "devDependencies": {
