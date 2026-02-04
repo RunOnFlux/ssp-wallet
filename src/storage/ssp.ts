@@ -159,16 +159,19 @@ export function getDefaultEnterpriseNotificationPreferences(): enterpriseNotific
 }
 
 /**
- * Update local enterprise notification config from remote status response
+ * Update local enterprise notification config from remote status response.
  */
 export async function updateEnterpriseNotificationFromStatus(status: {
   subscribed: boolean;
   email?: string;
-  preferences?: enterpriseNotificationPreferences;
+  preferences?: Partial<enterpriseNotificationPreferences>;
 }): Promise<void> {
-  if (status.subscribed && status.email) {
+  if (status.email) {
     await subscribeToEnterpriseNotifications(status.email, status.preferences);
-  } else if (!status.subscribed) {
-    await unsubscribeFromEnterpriseNotifications();
+  } else {
+    const currentConfig = getEnterpriseNotificationConfig();
+    if (currentConfig?.isSubscribed) {
+      await unsubscribeFromEnterpriseNotifications();
+    }
   }
 }
