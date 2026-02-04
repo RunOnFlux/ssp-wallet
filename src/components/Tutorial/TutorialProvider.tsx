@@ -21,12 +21,15 @@ import {
   updateTutorialConfig,
   resetTutorial,
   sspConfig,
-  subscribeToPulse,
-  getDefaultPulsePreferences,
+  subscribeToEnterpriseNotifications,
+  getDefaultEnterpriseNotificationPreferences,
+  getEnterpriseNotificationConfig,
 } from '../../storage/ssp';
 import { blockchains } from '../../storage/blockchains';
 import { getFingerprint } from '../../lib/fingerprint';
 import { getScriptType } from '../../lib/wallet';
+import WkSign from '../WkSign/WkSign';
+import type { WkSignResponse } from '../../lib/wkSign';
 import { cryptos } from '../../types';
 
 interface TutorialContextType {
@@ -47,7 +50,7 @@ interface TutorialProviderProps {
   children: ReactNode;
 }
 
-interface PulseApiResponse {
+interface EnterpriseNotificationApiResponse {
   status: string;
   data?: {
     success: boolean;
@@ -77,19 +80,153 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
   const [expectedChain, setExpectedChain] = useState<string>('');
   const [pendingTutorialType, setPendingTutorialType] = useState<string>('');
 
-  // Pulse subscription state for tutorial completion
-  const [pulseEmail, setPulseEmail] = useState('');
-  const [pulseLoading, setPulseLoading] = useState(false);
-  const [pulseSubscribed, setPulseSubscribed] = useState(false);
+  // Enterprise notification subscription state for tutorial completion
+  const [enterpriseEmail, setEnterpriseEmail] = useState('');
+  const [enterpriseVerificationCode, setEnterpriseVerificationCode] =
+    useState('');
+  const [enterpriseSubscriptionStep, setEnterpriseSubscriptionStep] = useState<
+    'email' | 'verification' | 'signing'
+  >('email');
+  const [enterpriseLoading, setEnterpriseLoading] = useState(false);
+  const [enterpriseSubscribed, setEnterpriseSubscribed] = useState(() => {
+    const config = getEnterpriseNotificationConfig();
+    return !!(config?.isSubscribed && config?.email);
+  });
+  const [enterpriseError, setEnterpriseError] = useState<string | null>(null);
+  const [codeExpiresInMinutes, setCodeExpiresInMinutes] = useState<
+    number | null
+  >(null);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(
+    null,
+  );
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
 
-  const handlePulseSubscribe = async (email: string): Promise<boolean> => {
+  // WkSign state for enterprise subscription
+  const [showWkSign, setShowWkSign] = useState(false);
+  const [wkSignMessage, setWkSignMessage] = useState<string>('');
+
+  // Step 1: Request verification code
+  const handleEnterpriseRequestCode = async (
+    email: string,
+  ): Promise<boolean> => {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      messageApi.error(t('home:settings.sspPulse.err_invalid_email'));
+      setEnterpriseError(t('home:settings.sspEnterprise.err_invalid_email'));
       return false;
     }
 
-    setPulseLoading(true);
+    setEnterpriseLoading(true);
+    setEnterpriseError(null);
+
     try {
+      const response = await axios.post<{
+        status: string;
+        data?: {
+          success: boolean;
+          message?: string;
+          expiresInMinutes?: number;
+          remainingCodes?: number;
+          error?: string;
+        };
+      }>(`https://${sspConfig().relay}/v1/enterprise/email/verify/request`, {
+        email,
+        wkIdentity: sspWalletKeyInternalIdentity,
+        purpose: 'subscription',
+      });
+
+      if (response.data?.status === 'success' && response.data?.data?.success) {
+        setCodeExpiresInMinutes(response.data.data.expiresInMinutes || 10);
+        setEnterpriseSubscriptionStep('verification');
+        setEnterpriseVerificationCode('');
+        setRemainingAttempts(null);
+        messageApi.success(t('home:settings.sspEnterprise.code_sent'));
+        return true;
+      } else {
+        setEnterpriseError(
+          response.data?.data?.error ||
+            response.data?.data?.message ||
+            t('home:settings.sspEnterprise.err_request_code'),
+        );
+        return false;
+      }
+    } catch (error) {
+      console.error('[Enterprise Request Code]', error);
+      setEnterpriseError(t('home:settings.sspEnterprise.err_request_code'));
+      return false;
+    } finally {
+      setEnterpriseLoading(false);
+    }
+  };
+
+  // Step 2: Verify the code
+  const handleEnterpriseVerifyCode = async (
+    email: string,
+    code: string,
+  ): Promise<boolean> => {
+    // Prevent duplicate calls while loading
+    if (enterpriseLoading) {
+      return false;
+    }
+
+    const cleanCode = code.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    if (!cleanCode || cleanCode.length !== 6) {
+      setEnterpriseError(t('home:settings.sspEnterprise.err_invalid_code'));
+      return false;
+    }
+
+    setEnterpriseLoading(true);
+    setEnterpriseError(null);
+
+    try {
+      const response = await axios.post<{
+        status: string;
+        data?: {
+          success: boolean;
+          message?: string;
+          remainingAttempts?: number;
+          error?: string;
+        };
+      }>(`https://${sspConfig().relay}/v1/enterprise/email/verify/confirm`, {
+        email,
+        code: cleanCode,
+        wkIdentity: sspWalletKeyInternalIdentity,
+        purpose: 'subscription',
+      });
+
+      if (response.data?.status === 'success' && response.data?.data?.success) {
+        setVerifiedEmail(email);
+        setEnterpriseSubscriptionStep('signing');
+        messageApi.success(t('home:settings.sspEnterprise.email_verified'));
+        return true;
+      } else {
+        if (response.data?.data?.remainingAttempts !== undefined) {
+          setRemainingAttempts(response.data.data.remainingAttempts);
+        }
+        setEnterpriseError(
+          response.data?.data?.error ||
+            response.data?.data?.message ||
+            t('home:settings.sspEnterprise.err_invalid_code'),
+        );
+        return false;
+      }
+    } catch (error) {
+      console.error('[Enterprise Verify Code]', error);
+      setEnterpriseError(t('home:settings.sspEnterprise.err_verify_code'));
+      return false;
+    } finally {
+      setEnterpriseLoading(false);
+    }
+  };
+
+  // Complete subscription after receiving WK signature
+  const completeEnterpriseSubscription = async (result: WkSignResponse) => {
+    if (!verifiedEmail) {
+      setEnterpriseError(t('home:settings.sspEnterprise.err_subscribe'));
+      setEnterpriseLoading(false);
+      return;
+    }
+
+    try {
+      // Decrypt password and get chain xpubs
       const fingerprint = getFingerprint();
       const password = await passworderDecrypt(fingerprint, passwordBlob);
       if (typeof password !== 'string') {
@@ -126,49 +263,86 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
         }
       }
 
-      const data: Record<string, unknown> = {
+      // Build request body
+      const requestBody: Record<string, unknown> = {
         wkIdentity: sspWalletKeyInternalIdentity,
         walletIdentity: sspWalletInternalIdentity,
-        email,
+        email: verifiedEmail,
         chains,
-        preferences: getDefaultPulsePreferences(),
+        preferences: getDefaultEnterpriseNotificationPreferences(),
+        subscriptionMessage: result.message,
+        walletSignature: result.walletSignature,
+        walletPubKey: result.walletPubKey,
+        keySignature: result.keySignature,
+        keyPubKey: result.keyPubKey,
+        wkWitnessScript: result.witnessScript,
       };
 
-      try {
-        const auth = await createWkIdentityAuth(
-          'action',
-          sspWalletKeyInternalIdentity,
-          data,
-        );
-        if (auth) Object.assign(data, auth);
-      } catch {
-        // Continue without auth
+      // Add request authentication (required by middleware)
+      const auth = await createWkIdentityAuth(
+        'action',
+        sspWalletKeyInternalIdentity,
+        requestBody,
+      );
+      if (auth) {
+        Object.assign(requestBody, auth);
       }
 
-      const response = await axios.post<PulseApiResponse>(
-        `https://${sspConfig().relay}/v1/pulse/subscribe`,
-        data,
+      // Submit subscription with signatures
+      const response = await axios.post<EnterpriseNotificationApiResponse>(
+        `https://${sspConfig().relay}/v1/enterprise/subscribe`,
+        requestBody,
       );
 
       if (response.data?.status === 'success' && response.data?.data?.success) {
-        await subscribeToPulse(email);
-        setPulseSubscribed(true);
-        messageApi.success(t('home:settings.sspPulse.subscribe_success'));
-        return true;
+        await subscribeToEnterpriseNotifications(verifiedEmail);
+        setEnterpriseSubscribed(true);
+        messageApi.success(t('home:settings.sspEnterprise.subscribe_success'));
       } else {
-        messageApi.error(
+        setEnterpriseError(
           response.data?.data?.message ||
-            t('home:settings.sspPulse.err_subscribe'),
+            t('home:settings.sspEnterprise.err_subscribe'),
         );
-        return false;
       }
     } catch (error) {
-      console.error('[Pulse Subscribe]', error);
-      messageApi.error(t('home:settings.sspPulse.err_subscribe'));
-      return false;
+      console.error('[Enterprise Subscribe]', error);
+      setEnterpriseError(t('home:settings.sspEnterprise.err_subscribe'));
     } finally {
-      setPulseLoading(false);
+      setEnterpriseLoading(false);
     }
+  };
+
+  // Handle WkSign result
+  const handleWkSignResult = (data: { status: string; result?: WkSignResponse } | null) => {
+    setShowWkSign(false);
+
+    if (!data || data.status !== 'SUCCESS' || !data.result) {
+      // Cancelled or failed
+      setEnterpriseError(t('home:settings.sspEnterprise.signing_cancelled'));
+      return;
+    }
+
+    setEnterpriseLoading(true);
+    void completeEnterpriseSubscription(data.result);
+  };
+
+  // Step 3: Show WK signing dialog for subscription
+  const handleEnterpriseSignAndSubscribe = async (): Promise<boolean> => {
+    if (!verifiedEmail) {
+      setEnterpriseError(
+        t('home:settings.sspEnterprise.err_email_not_verified'),
+      );
+      return false;
+    }
+
+    setEnterpriseError(null);
+
+    // Generate the message to sign (with timestamp prefix for relay validation)
+    const msg = `${Date.now()} SSP Enterprise subscription for ${verifiedEmail}`;
+    setWkSignMessage(msg);
+    setShowWkSign(true);
+
+    return true; // WkSign modal will handle the rest
   };
 
   const startTutorial = (tutorialType: string = 'onboarding') => {
@@ -356,6 +530,15 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     }
   }, [tutorialState.tutorialType, tutorialState.isActive, t]);
 
+  // Re-check enterprise subscription status when tutorial becomes active
+  useEffect(() => {
+    if (tutorialState.isActive) {
+      const config = getEnterpriseNotificationConfig();
+      const isSubscribed = !!(config?.isSubscribed && config?.email);
+      setEnterpriseSubscribed(isSubscribed);
+    }
+  }, [tutorialState.isActive]);
+
   // Monitor chain changes during tutorial
   useEffect(() => {
     if (tutorialState.isActive && tutorialState.currentStep === 3) {
@@ -502,11 +685,30 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
         onComplete={completeTutorial}
         onClose={closeTutorial}
         onPause={pauseTutorial}
-        pulseEmail={pulseEmail}
-        setPulseEmail={setPulseEmail}
-        pulseLoading={pulseLoading}
-        pulseSubscribed={pulseSubscribed}
-        onPulseSubscribe={handlePulseSubscribe}
+        enterpriseEmail={enterpriseEmail}
+        setEnterpriseEmail={setEnterpriseEmail}
+        enterpriseVerificationCode={enterpriseVerificationCode}
+        setEnterpriseVerificationCode={setEnterpriseVerificationCode}
+        enterpriseSubscriptionStep={enterpriseSubscriptionStep}
+        enterpriseLoading={enterpriseLoading}
+        enterpriseSubscribed={enterpriseSubscribed}
+        enterpriseError={enterpriseError}
+        codeExpiresInMinutes={codeExpiresInMinutes}
+        remainingAttempts={remainingAttempts}
+        onEnterpriseRequestCode={handleEnterpriseRequestCode}
+        onEnterpriseVerifyCode={handleEnterpriseVerifyCode}
+        onEnterpriseSignAndSubscribe={handleEnterpriseSignAndSubscribe}
+      />
+      <WkSign
+        open={showWkSign}
+        message={wkSignMessage}
+        authMode={2}
+        requesterInfo={{
+          siteName: 'SSP Enterprise',
+          origin: 'SSP Wallet',
+          description: t('home:settings.sspEnterprise.description'),
+        }}
+        openAction={handleWkSignResult}
       />
     </TutorialContext.Provider>
   );

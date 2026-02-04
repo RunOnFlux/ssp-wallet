@@ -21,10 +21,10 @@ import {
   sspConfig,
   sspConfigOriginal,
   loadSSPConfig,
-  getPulseConfig,
-  subscribeToPulse,
-  unsubscribeFromPulse,
-  getDefaultPulsePreferences,
+  getEnterpriseNotificationConfig,
+  subscribeToEnterpriseNotifications,
+  unsubscribeFromEnterpriseNotifications,
+  getDefaultEnterpriseNotificationPreferences,
 } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
@@ -41,13 +41,15 @@ import secureLocalStorage from 'react-secure-storage';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { getFingerprint } from '../../lib/fingerprint';
 import { getScriptType } from '../../lib/wallet';
+import WkSign from '../WkSign/WkSign';
+import type { WkSignResponse } from '../../lib/wkSign';
 
 interface sspConfigType {
   relay?: string;
   fiatCurrency?: keyof currency;
 }
 
-interface PulseApiResponse {
+interface EnterpriseNotificationApiResponse {
   status: string;
   data?: {
     success: boolean;
@@ -86,13 +88,32 @@ function Settings(props: {
   const blockchainConfig = blockchains[activeChain];
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
 
-  // SSP Pulse state
-  const pulseConfigData = getPulseConfig();
-  const [pulseEmail, setPulseEmail] = useState(pulseConfigData?.email ?? '');
-  const [isPulseSubscribed, setIsPulseSubscribed] = useState(
-    !!(pulseConfigData?.isSubscribed && pulseConfigData?.email),
+  // SSP Enterprise Notification state
+  const enterpriseConfigData = getEnterpriseNotificationConfig();
+  const [enterpriseEmail, setEnterpriseEmail] = useState(
+    enterpriseConfigData?.email ?? '',
   );
-  const [pulseLoading, setPulseLoading] = useState(false);
+  const [isEnterpriseSubscribed, setIsEnterpriseSubscribed] = useState(
+    !!(enterpriseConfigData?.isSubscribed && enterpriseConfigData?.email),
+  );
+  const [enterpriseLoading, setEnterpriseLoading] = useState(false);
+  // Multi-step subscription state
+  const [subscriptionStep, setSubscriptionStep] = useState<
+    'email' | 'verification' | 'signing'
+  >('email');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
+  const [, setCodeExpiresInMinutes] = useState<number | null>(null);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(
+    null,
+  );
+
+  // WK signing state for enterprise operations
+  const [showWkSign, setShowWkSign] = useState(false);
+  const [wkSignMessage, setWkSignMessage] = useState<string>('');
+  const [signingOperation, setSigningOperation] = useState<
+    'subscribe' | 'unsubscribe' | null
+  >(null);
 
   const backendsOriginalConfig = backendsOriginal();
   const originalConfig = sspConfigOriginal();
@@ -109,14 +130,163 @@ function Settings(props: {
     setExplorerConfig(EXPLORER);
   }, [activeChain]);
 
-  // Sync pulse state when modal opens
+  // Sync enterprise state when modal opens
   useEffect(() => {
     if (open) {
-      const config = getPulseConfig();
-      setPulseEmail(config?.email ?? '');
-      setIsPulseSubscribed(!!(config?.isSubscribed && config?.email));
+      const config = getEnterpriseNotificationConfig();
+      setEnterpriseEmail(config?.email ?? '');
+      setIsEnterpriseSubscribed(!!(config?.isSubscribed && config?.email));
     }
   }, [open]);
+
+  // Complete subscribe after receiving WK signature
+  const completeSubscribe = async (result: WkSignResponse) => {
+    if (!verifiedEmail) {
+      displayMessage('error', t('home:settings.sspEnterprise.err_subscribe'));
+      setEnterpriseLoading(false);
+      return;
+    }
+
+    try {
+      const fingerprint = getFingerprint();
+      const password = await passworderDecrypt(fingerprint, passwordBlob);
+      if (typeof password !== 'string') throw new Error('Failed to decrypt');
+
+      const chainKeys = Object.keys(blockchains) as (keyof cryptos)[];
+      const chains: Record<string, { walletXpub: string; keyXpub: string }> =
+        {};
+
+      for (const chain of chainKeys) {
+        const chainConfig = blockchains[chain];
+        const xpubKey = `xpub-48-${chainConfig.slip}-0-${getScriptType(chainConfig.scriptType)}-${chainConfig.id}`;
+        const xpub2Key = `2-xpub-48-${chainConfig.slip}-0-${getScriptType(chainConfig.scriptType)}-${chainConfig.id}`;
+        const xpubEncrypted = secureLocalStorage.getItem(xpubKey);
+        const xpub2Encrypted = secureLocalStorage.getItem(xpub2Key);
+
+        if (
+          xpubEncrypted &&
+          typeof xpubEncrypted === 'string' &&
+          xpub2Encrypted &&
+          typeof xpub2Encrypted === 'string'
+        ) {
+          try {
+            const walletXpub = await passworderDecrypt(password, xpubEncrypted);
+            const keyXpub = await passworderDecrypt(password, xpub2Encrypted);
+            if (typeof walletXpub === 'string' && typeof keyXpub === 'string') {
+              chains[chain] = { walletXpub, keyXpub };
+            }
+          } catch {
+            // Skip
+          }
+        }
+      }
+
+      // Build request body
+      const requestBody: Record<string, unknown> = {
+        wkIdentity: sspWalletKeyInternalIdentity,
+        walletIdentity: sspWalletInternalIdentity,
+        email: verifiedEmail,
+        chains,
+        preferences: getDefaultEnterpriseNotificationPreferences(),
+        subscriptionMessage: result.message,
+        walletSignature: result.walletSignature,
+        walletPubKey: result.walletPubKey,
+        keySignature: result.keySignature,
+        keyPubKey: result.keyPubKey,
+        wkWitnessScript: result.witnessScript,
+      };
+
+      // Add request authentication (required by middleware)
+      const auth = await createWkIdentityAuth(
+        'action',
+        sspWalletKeyInternalIdentity,
+        requestBody,
+      );
+      if (auth) {
+        Object.assign(requestBody, auth);
+      }
+
+      const response = await axios.post<EnterpriseNotificationApiResponse>(
+        `https://${sspConfig().relay}/v1/enterprise/subscribe`,
+        requestBody,
+      );
+
+      if (response.data?.status === 'success' && response.data?.data?.success) {
+        await subscribeToEnterpriseNotifications(verifiedEmail);
+        setIsEnterpriseSubscribed(true);
+        setSubscriptionStep('email');
+        setVerifiedEmail(null);
+        setVerificationCode('');
+        displayMessage(
+          'success',
+          t('home:settings.sspEnterprise.subscribe_success'),
+        );
+      } else {
+        displayMessage(
+          'error',
+          response.data?.data?.message ||
+            t('home:settings.sspEnterprise.err_subscribe'),
+        );
+      }
+    } catch (error) {
+      console.error('[Settings completeSubscribe]', error);
+      displayMessage('error', t('home:settings.sspEnterprise.err_subscribe'));
+    } finally {
+      setEnterpriseLoading(false);
+    }
+  };
+
+  // Complete unsubscribe after receiving WK signature
+  const completeUnsubscribe = async (result: WkSignResponse) => {
+    try {
+      // Build request body
+      const requestBody: Record<string, unknown> = {
+        wkIdentity: sspWalletKeyInternalIdentity,
+        subscriptionMessage: result.message,
+        walletSignature: result.walletSignature,
+        walletPubKey: result.walletPubKey,
+        keySignature: result.keySignature,
+        keyPubKey: result.keyPubKey,
+        wkWitnessScript: result.witnessScript,
+      };
+
+      // Add request authentication (required by middleware)
+      const auth = await createWkIdentityAuth(
+        'action',
+        sspWalletKeyInternalIdentity,
+        requestBody,
+      );
+      if (auth) {
+        Object.assign(requestBody, auth);
+      }
+
+      const response = await axios.post<EnterpriseNotificationApiResponse>(
+        `https://${sspConfig().relay}/v1/enterprise/unsubscribe`,
+        requestBody,
+      );
+
+      if (response.data?.status === 'success' && response.data?.data?.success) {
+        await unsubscribeFromEnterpriseNotifications();
+        setIsEnterpriseSubscribed(false);
+        setEnterpriseEmail('');
+        displayMessage(
+          'success',
+          t('home:settings.sspEnterprise.unsubscribe_success'),
+        );
+      } else {
+        displayMessage(
+          'error',
+          response.data?.data?.message ||
+            t('home:settings.sspEnterprise.err_unsubscribe'),
+        );
+      }
+    } catch (error) {
+      console.error('[Settings completeUnsubscribe]', error);
+      displayMessage('error', t('home:settings.sspEnterprise.err_unsubscribe'));
+    } finally {
+      setEnterpriseLoading(false);
+    }
+  };
 
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
@@ -233,6 +403,15 @@ function Settings(props: {
     }
     loadBackendsConfig();
     loadSSPConfig();
+    // Reset enterprise subscription state
+    setSubscriptionStep('email');
+    setVerificationCode('');
+    setVerifiedEmail(null);
+    setCodeExpiresInMinutes(null);
+    setRemainingAttempts(null);
+    setShowWkSign(false);
+    setWkSignMessage('');
+    setSigningOperation(null);
     openAction(false);
   };
 
@@ -303,159 +482,170 @@ function Settings(props: {
     );
   };
 
-  // SSP Pulse handlers
+  // SSP Enterprise Notification handlers
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const handlePulseSubscribe = async () => {
-    if (!pulseEmail || !validateEmail(pulseEmail)) {
-      displayMessage('error', t('home:settings.sspPulse.err_invalid_email'));
+  // Step 1: Request verification code for new subscription
+  const handleEnterpriseRequestCode = async () => {
+    if (!enterpriseEmail || !validateEmail(enterpriseEmail)) {
+      displayMessage(
+        'error',
+        t('home:settings.sspEnterprise.err_invalid_email'),
+      );
       return;
     }
 
-    setPulseLoading(true);
+    setEnterpriseLoading(true);
     try {
-      // Decrypt password from passwordBlob
-      const fingerprint = getFingerprint();
-      const password = await passworderDecrypt(fingerprint, passwordBlob);
-      if (typeof password !== 'string') {
-        throw new Error('Failed to decrypt password');
-      }
-
-      // Load all synced chain xpubs from encrypted storage
-      const chainKeys = Object.keys(blockchains) as (keyof cryptos)[];
-      const chains: Record<string, { walletXpub: string; keyXpub: string }> =
-        {};
-
-      for (const chain of chainKeys) {
-        const chainConfig = blockchains[chain];
-        const xpubKey = `xpub-48-${chainConfig.slip}-0-${getScriptType(chainConfig.scriptType)}-${chainConfig.id}`;
-        const xpub2Key = `2-xpub-48-${chainConfig.slip}-0-${getScriptType(chainConfig.scriptType)}-${chainConfig.id}`;
-
-        const xpubEncrypted = secureLocalStorage.getItem(xpubKey);
-        const xpub2Encrypted = secureLocalStorage.getItem(xpub2Key);
-
-        // Only include chains where both wallet and key xpubs are synced
-        if (
-          xpubEncrypted &&
-          typeof xpubEncrypted === 'string' &&
-          xpub2Encrypted &&
-          typeof xpub2Encrypted === 'string'
-        ) {
-          try {
-            const walletXpub = await passworderDecrypt(password, xpubEncrypted);
-            const keyXpub = await passworderDecrypt(password, xpub2Encrypted);
-
-            if (typeof walletXpub === 'string' && typeof keyXpub === 'string') {
-              chains[chain] = { walletXpub, keyXpub };
-            }
-          } catch (decryptError) {
-            console.warn(
-              `[Pulse] Failed to decrypt xpubs for chain ${chain}`,
-              decryptError,
-            );
-          }
-        }
-      }
-
-      const data: Record<string, unknown> = {
+      const response = await axios.post<{
+        status: string;
+        data?: {
+          success: boolean;
+          message?: string;
+          expiresInMinutes?: number;
+          remainingCodes?: number;
+          error?: string;
+        };
+      }>(`https://${sspConfig().relay}/v1/enterprise/email/verify/request`, {
+        email: enterpriseEmail,
         wkIdentity: sspWalletKeyInternalIdentity,
-        walletIdentity: sspWalletInternalIdentity,
-        email: pulseEmail,
-        chains,
-        preferences: getDefaultPulsePreferences(),
-      };
-
-      // Add authentication
-      try {
-        const auth = await createWkIdentityAuth(
-          'action',
-          sspWalletKeyInternalIdentity,
-          data,
-        );
-        if (auth) {
-          Object.assign(data, auth);
-        }
-      } catch (error) {
-        console.warn('[Pulse Subscribe] Auth not available', error);
-      }
-
-      const response = await axios.post<PulseApiResponse>(
-        `https://${sspConfig().relay}/v1/pulse/subscribe`,
-        data,
-      );
+        purpose: 'subscription',
+      });
 
       if (response.data?.status === 'success' && response.data?.data?.success) {
-        await subscribeToPulse(pulseEmail);
-        setIsPulseSubscribed(true);
-        displayMessage(
-          'success',
-          t('home:settings.sspPulse.subscribe_success'),
-        );
+        setCodeExpiresInMinutes(response.data.data.expiresInMinutes || 10);
+        setSubscriptionStep('verification');
+        setVerificationCode('');
+        setRemainingAttempts(null);
+        displayMessage('success', t('home:settings.sspEnterprise.code_sent'));
       } else {
         displayMessage(
           'error',
-          response.data?.data?.message ||
-            t('home:settings.sspPulse.err_subscribe'),
+          response.data?.data?.error ||
+            response.data?.data?.message ||
+            t('home:settings.sspEnterprise.err_request_code'),
         );
       }
     } catch (error) {
-      console.error('[Pulse Subscribe]', error);
-      displayMessage('error', t('home:settings.sspPulse.err_subscribe'));
+      console.error('[Enterprise Request Code]', error);
+      displayMessage(
+        'error',
+        t('home:settings.sspEnterprise.err_request_code'),
+      );
     } finally {
-      setPulseLoading(false);
+      setEnterpriseLoading(false);
     }
   };
 
-  const handlePulseUnsubscribe = async () => {
-    setPulseLoading(true);
-    try {
-      const data: Record<string, unknown> = {
-        wkIdentity: sspWalletKeyInternalIdentity,
-      };
+  // Step 2: Verify the code for new subscription
+  const handleEnterpriseVerifyCode = async (codeParam?: string) => {
+    // Prevent duplicate calls while loading
+    if (enterpriseLoading) {
+      return;
+    }
 
-      // Add authentication
-      try {
-        const auth = await createWkIdentityAuth(
-          'action',
-          sspWalletKeyInternalIdentity,
-          data,
-        );
-        if (auth) {
-          Object.assign(data, auth);
-        }
-      } catch (error) {
-        console.warn('[Pulse Unsubscribe] Auth not available', error);
-      }
-
-      const response = await axios.post<PulseApiResponse>(
-        `https://${sspConfig().relay}/v1/pulse/unsubscribe`,
-        data,
+    // Use passed code (from onChange) or fall back to state (from button click)
+    const codeToVerify = codeParam ?? verificationCode;
+    const cleanCode = codeToVerify.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    if (!cleanCode || cleanCode.length !== 6) {
+      displayMessage(
+        'error',
+        t('home:settings.sspEnterprise.err_invalid_code'),
       );
+      return;
+    }
+
+    setEnterpriseLoading(true);
+    try {
+      const response = await axios.post<{
+        status: string;
+        data?: {
+          success: boolean;
+          message?: string;
+          remainingAttempts?: number;
+          error?: string;
+        };
+      }>(`https://${sspConfig().relay}/v1/enterprise/email/verify/confirm`, {
+        email: enterpriseEmail,
+        code: cleanCode,
+        wkIdentity: sspWalletKeyInternalIdentity,
+        purpose: 'subscription',
+      });
 
       if (response.data?.status === 'success' && response.data?.data?.success) {
-        await unsubscribeFromPulse();
-        setIsPulseSubscribed(false);
-        setPulseEmail('');
+        setVerifiedEmail(enterpriseEmail);
+        setSubscriptionStep('signing');
         displayMessage(
           'success',
-          t('home:settings.sspPulse.unsubscribe_success'),
+          t('home:settings.sspEnterprise.email_verified'),
         );
       } else {
+        if (response.data?.data?.remainingAttempts !== undefined) {
+          setRemainingAttempts(response.data.data.remainingAttempts);
+        }
         displayMessage(
           'error',
-          response.data?.data?.message ||
-            t('home:settings.sspPulse.err_unsubscribe'),
+          response.data?.data?.error ||
+            response.data?.data?.message ||
+            t('home:settings.sspEnterprise.err_invalid_code'),
         );
       }
     } catch (error) {
-      console.error('[Pulse Unsubscribe]', error);
-      displayMessage('error', t('home:settings.sspPulse.err_unsubscribe'));
+      console.error('[Enterprise Verify Code]', error);
+      displayMessage('error', t('home:settings.sspEnterprise.err_verify_code'));
     } finally {
-      setPulseLoading(false);
+      setEnterpriseLoading(false);
     }
+  };
+
+  // Step 3: Show WK signing dialog for subscription
+  const handleEnterpriseSignAndSubscribe = () => {
+    if (!verifiedEmail) {
+      displayMessage(
+        'error',
+        t('home:settings.sspEnterprise.err_email_not_verified'),
+      );
+      return;
+    }
+
+    const msg = `${Date.now()} SSP Enterprise subscription for ${verifiedEmail}`;
+    setWkSignMessage(msg);
+    setSigningOperation('subscribe');
+    setShowWkSign(true);
+  };
+
+  const handleEnterpriseUnsubscribe = () => {
+    const msg = `${Date.now()} SSP Enterprise unsubscribe for ${enterpriseEmail}`;
+    setWkSignMessage(msg);
+    setSigningOperation('unsubscribe');
+    setShowWkSign(true);
+  };
+
+  // Handle WkSign result
+  const handleWkSignResult = (data: { status: string; result?: WkSignResponse } | null) => {
+    setShowWkSign(false);
+
+    if (!data || data.status !== 'SUCCESS' || !data.result) {
+      // Cancelled or failed
+      if (signingOperation) {
+        displayMessage('error', t('home:settings.sspEnterprise.signing_cancelled'));
+      }
+      setSigningOperation(null);
+      return;
+    }
+
+    setEnterpriseLoading(true);
+
+    if (signingOperation === 'subscribe') {
+      void completeSubscribe(data.result);
+    } else if (signingOperation === 'unsubscribe') {
+      void completeUnsubscribe(data.result);
+    }
+
+    setSigningOperation(null);
   };
 
   const fiatOptions = () => {
@@ -532,8 +722,8 @@ function Settings(props: {
         <br />
         <h3>
           <span>
-            {t('home:settings.sspPulse.title')}
-            <Tooltip title={t('home:settings.sspPulse.description')}>
+            {t('home:settings.sspEnterprise.title')}
+            <Tooltip title={t('home:settings.sspEnterprise.description')}>
               <QuestionCircleOutlined
                 style={{
                   marginLeft: 8,
@@ -543,42 +733,142 @@ function Settings(props: {
             </Tooltip>
           </span>
         </h3>
-        <Space direction="vertical" size="middle">
-          {!isPulseSubscribed ? (
+        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          {!isEnterpriseSubscribed ? (
             <>
-              <Input
-                size="middle"
-                type="email"
-                placeholder={t('home:settings.sspPulse.email_placeholder')}
-                value={pulseEmail}
-                onChange={(e) => setPulseEmail(e.target.value)}
-                disabled={pulseLoading}
-                style={{ width: 220 }}
-              />
-              <Button
-                type="primary"
-                size="middle"
-                onClick={handlePulseSubscribe}
-                loading={pulseLoading}
-              >
-                {t('home:settings.sspPulse.subscribe')}
-              </Button>
+              {/* Step 1: Email Input */}
+              {subscriptionStep === 'email' && (
+                <>
+                  <Input
+                    size="middle"
+                    type="email"
+                    placeholder={t(
+                      'home:settings.sspEnterprise.email_placeholder',
+                    )}
+                    value={enterpriseEmail}
+                    onChange={(e) => setEnterpriseEmail(e.target.value)}
+                    disabled={enterpriseLoading}
+                    style={{ width: 220 }}
+                    onPressEnter={handleEnterpriseRequestCode}
+                  />
+                  <Button
+                    type="primary"
+                    size="middle"
+                    onClick={handleEnterpriseRequestCode}
+                    loading={enterpriseLoading}
+                  >
+                    {t('home:settings.sspEnterprise.subscribe')}
+                  </Button>
+                </>
+              )}
+
+              {/* Step 2: Verification Code */}
+              {subscriptionStep === 'verification' && (
+                <>
+                  <div
+                    style={{ color: token.colorTextSecondary, fontSize: 12 }}
+                  >
+                    {t('home:settings.sspEnterprise.code_sent_to', {
+                      email: enterpriseEmail,
+                    })}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Input.OTP
+                      length={6}
+                      size="large"
+                      value={verificationCode}
+                      onChange={(value) => {
+                        const cleanValue = value
+                          .replace(/[^A-Za-z0-9]/g, '')
+                          .toUpperCase();
+                        setVerificationCode(cleanValue);
+                        if (cleanValue.length === 6 && !enterpriseLoading) {
+                          handleEnterpriseVerifyCode(cleanValue);
+                        }
+                      }}
+                      disabled={enterpriseLoading}
+                    />
+                  </div>
+                  {remainingAttempts !== null && remainingAttempts < 5 && (
+                    <div style={{ color: token.colorWarning, fontSize: 11 }}>
+                      {t('home:settings.sspEnterprise.remaining_attempts', {
+                        count: remainingAttempts,
+                      })}
+                    </div>
+                  )}
+                  <Space>
+                    <Button
+                      type="default"
+                      size="middle"
+                      onClick={() => {
+                        setSubscriptionStep('email');
+                        setVerificationCode('');
+                      }}
+                    >
+                      {t('common:back')}
+                    </Button>
+                    <Button
+                      type="primary"
+                      size="middle"
+                      onClick={() => handleEnterpriseVerifyCode()}
+                      loading={enterpriseLoading}
+                      disabled={verificationCode.length !== 6}
+                    >
+                      {t('home:settings.sspEnterprise.verify_code')}
+                    </Button>
+                  </Space>
+                </>
+              )}
+
+              {/* Step 3: WK Signing */}
+              {subscriptionStep === 'signing' && (
+                <>
+                  <div style={{ color: token.colorSuccess, fontSize: 12 }}>
+                    ✓ {t('home:settings.sspEnterprise.email_verified')}
+                  </div>
+                  <div
+                    style={{ color: token.colorTextSecondary, fontSize: 12 }}
+                  >
+                    {t('home:settings.sspEnterprise.signing_required')}
+                  </div>
+                  <Space>
+                    <Button
+                      type="default"
+                      size="middle"
+                      onClick={() => {
+                        setSubscriptionStep('email');
+                        setVerifiedEmail(null);
+                      }}
+                    >
+                      {t('common:cancel')}
+                    </Button>
+                    <Button
+                      type="primary"
+                      size="middle"
+                      onClick={handleEnterpriseSignAndSubscribe}
+                      loading={enterpriseLoading}
+                    >
+                      {t('home:settings.sspEnterprise.sign_and_subscribe')}
+                    </Button>
+                  </Space>
+                </>
+              )}
             </>
           ) : (
             <>
               <div style={{ color: token.colorTextSecondary }}>
-                {t('home:settings.sspPulse.subscribed_as', {
-                  email: pulseEmail,
+                {t('home:settings.sspEnterprise.subscribed_as', {
+                  email: enterpriseEmail,
                 })}
               </div>
               <Button
                 type="default"
                 danger
                 size="middle"
-                onClick={handlePulseUnsubscribe}
-                loading={pulseLoading}
+                onClick={handleEnterpriseUnsubscribe}
+                loading={enterpriseLoading}
               >
-                {t('home:settings.sspPulse.unsubscribe')}
+                {t('home:settings.sspEnterprise.unsubscribe')}
               </Button>
             </>
           )}
@@ -673,6 +963,17 @@ function Settings(props: {
       <ConfirmPublicNoncesKey
         open={publicNoncesModalOpen}
         openAction={setPublicNoncesModalOpen}
+      />
+      <WkSign
+        open={showWkSign}
+        message={wkSignMessage}
+        authMode={2}
+        requesterInfo={{
+          siteName: 'SSP Enterprise',
+          origin: 'SSP Wallet',
+          description: t('home:settings.sspEnterprise.description'),
+        }}
+        openAction={handleWkSignResult}
       />
     </>
   );

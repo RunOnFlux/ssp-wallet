@@ -1,9 +1,9 @@
 /**
- * usePulseSync Hook
+ * useEnterpriseNotificationSync Hook
  *
- * Syncs SSP Pulse subscription status on login.
- * - Fetches pulse status from relay
- * - Updates local pulse config from remote state
+ * Syncs SSP Enterprise notification subscription status on login.
+ * - Fetches notification status from relay
+ * - Updates local notification config from remote state
  * - Sends xpubs for any chains that are synced locally but missing on server
  */
 
@@ -18,12 +18,12 @@ import { getScriptType } from '../lib/wallet';
 import { blockchains } from '@storage/blockchains';
 import {
   sspConfig,
-  updatePulseFromStatus,
-  getDefaultPulsePreferences,
+  updateEnterpriseNotificationFromStatus,
+  getDefaultEnterpriseNotificationPreferences,
 } from '@storage/ssp';
 import { cryptos } from '../types';
 
-interface PulseStatusResponse {
+interface EnterpriseNotificationStatusResponse {
   status: string;
   data?: {
     subscribed: boolean;
@@ -42,17 +42,17 @@ interface PulseStatusResponse {
 }
 
 /**
- * Hook to sync SSP Pulse status on login.
+ * Hook to sync SSP Enterprise notification status on login.
  * Automatically fetches status and sends missing xpubs.
  */
-export function usePulseSync(): void {
+export function useEnterpriseNotificationSync(): void {
   const hasSynced = useRef(false);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { sspWalletKeyInternalIdentity, sspWalletInternalIdentity } =
     useAppSelector((state) => state.sspState);
   const { createWkIdentityAuth, isAuthAvailable } = useRelayAuth();
 
-  const syncPulseStatus = useCallback(async () => {
+  const syncEnterpriseNotificationStatus = useCallback(async () => {
     if (!sspWalletKeyInternalIdentity || !isAuthAvailable || !passwordBlob) {
       return;
     }
@@ -73,20 +73,22 @@ export function usePulseSync(): void {
         Object.assign(statusData, auth);
       }
 
-      const response = await axios.post<PulseStatusResponse>(
-        `https://${sspConfig().relay}/v1/pulse/status`,
+      const response = await axios.post<EnterpriseNotificationStatusResponse>(
+        `https://${sspConfig().relay}/v1/enterprise/subscription`,
         statusData,
       );
 
       if (response.data?.status !== 'success' || !response.data?.data) {
-        console.log('[PulseSync] Status check failed or not subscribed');
+        console.log(
+          '[EnterpriseNotificationSync] Status check failed or not subscribed',
+        );
         return;
       }
 
       const status = response.data.data;
 
       // Update local config from remote status
-      await updatePulseFromStatus(status);
+      await updateEnterpriseNotificationFromStatus(status);
 
       // If user is subscribed, check if any xpubs are missing
       if (status.subscribed && status.syncedChains) {
@@ -96,7 +98,9 @@ export function usePulseSync(): void {
         const fingerprint = getFingerprint();
         const password = await passworderDecrypt(fingerprint, passwordBlob);
         if (typeof password !== 'string') {
-          console.warn('[PulseSync] Failed to decrypt password');
+          console.warn(
+            '[EnterpriseNotificationSync] Failed to decrypt password',
+          );
           return;
         }
 
@@ -142,7 +146,7 @@ export function usePulseSync(): void {
               }
             } catch (decryptError) {
               console.warn(
-                `[PulseSync] Failed to decrypt xpubs for chain ${chain}`,
+                `[EnterpriseNotificationSync] Failed to decrypt xpubs for chain ${chain}`,
                 decryptError,
               );
             }
@@ -152,7 +156,7 @@ export function usePulseSync(): void {
         // If we have chains to sync, send them via subscribe endpoint
         if (Object.keys(chainsToSync).length > 0) {
           console.log(
-            `[PulseSync] Syncing ${Object.keys(chainsToSync).length} missing chains`,
+            `[EnterpriseNotificationSync] Syncing ${Object.keys(chainsToSync).length} missing chains`,
           );
 
           const subscribeData: Record<string, unknown> = {
@@ -160,7 +164,9 @@ export function usePulseSync(): void {
             walletIdentity: sspWalletInternalIdentity,
             email: status.email,
             chains: chainsToSync,
-            preferences: status.preferences || getDefaultPulsePreferences(),
+            preferences:
+              status.preferences ||
+              getDefaultEnterpriseNotificationPreferences(),
           };
 
           const subscribeAuth = await createWkIdentityAuth(
@@ -173,16 +179,21 @@ export function usePulseSync(): void {
           }
 
           await axios.post(
-            `https://${sspConfig().relay}/v1/pulse/subscribe`,
+            `https://${sspConfig().relay}/v1/enterprise/subscribe`,
             subscribeData,
           );
 
-          console.log('[PulseSync] Missing chains synced successfully');
+          console.log(
+            '[EnterpriseNotificationSync] Missing chains synced successfully',
+          );
         }
       }
     } catch (error) {
-      // Silently fail - pulse sync is not critical
-      console.warn('[PulseSync] Error syncing pulse status:', error);
+      // Silently fail - notification sync is not critical
+      console.warn(
+        '[EnterpriseNotificationSync] Error syncing notification status:',
+        error,
+      );
     }
   }, [
     sspWalletKeyInternalIdentity,
@@ -204,8 +215,12 @@ export function usePulseSync(): void {
     }
 
     hasSynced.current = true;
-    void syncPulseStatus();
-  }, [isAuthAvailable, sspWalletKeyInternalIdentity, syncPulseStatus]);
+    void syncEnterpriseNotificationStatus();
+  }, [
+    isAuthAvailable,
+    sspWalletKeyInternalIdentity,
+    syncEnterpriseNotificationStatus,
+  ]);
 }
 
-export default usePulseSync;
+export default useEnterpriseNotificationSync;

@@ -10,7 +10,7 @@ interface tutorialConfig {
   lastShown?: number; // timestamp
 }
 
-export interface pulsePreferences {
+export interface enterpriseNotificationPreferences {
   incomingTx: boolean;
   outgoingTx: boolean;
   largeTransactions: boolean;
@@ -19,10 +19,10 @@ export interface pulsePreferences {
   marketing: boolean;
 }
 
-export interface pulseConfig {
+export interface enterpriseNotificationConfig {
   isSubscribed: boolean;
   email: string;
-  preferences: pulsePreferences;
+  preferences: enterpriseNotificationPreferences;
 }
 
 interface config {
@@ -31,7 +31,7 @@ interface config {
   maxTxFeeUSD?: number;
   fiatSymbol?: string;
   tutorial: tutorialConfig;
-  pulse?: pulseConfig;
+  enterpriseNotification?: enterpriseNotificationConfig;
 }
 
 let storedLocalForgeSSPConfig: Partial<config> = {};
@@ -71,7 +71,7 @@ export function sspConfig(): config {
     fiatSymbol: getFiatSymbol(
       storedLocalForgeSSPConfig?.fiatCurrency ?? ssp.fiatCurrency ?? 'USD',
     ),
-    pulse: storedLocalForgeSSPConfig?.pulse,
+    enterpriseNotification: storedLocalForgeSSPConfig?.enterpriseNotification,
   };
 }
 
@@ -100,72 +100,75 @@ export async function resetTutorial() {
   await updateTutorialConfig(tutorialConfig);
 }
 
-// SSP Pulse configuration
-const defaultPulsePreferences: pulsePreferences = {
-  incomingTx: true,
-  outgoingTx: true,
-  largeTransactions: true,
-  lowBalance: true,
-  weeklyReport: true,
-  marketing: true,
-};
+// SSP Enterprise Notification configuration
+const defaultEnterpriseNotificationPreferences: enterpriseNotificationPreferences =
+  {
+    incomingTx: true,
+    outgoingTx: true,
+    largeTransactions: true,
+    lowBalance: true,
+    weeklyReport: true,
+    marketing: true,
+  };
 
-export function getPulseConfig(): pulseConfig | null {
-  return storedLocalForgeSSPConfig?.pulse ?? null;
+export function getEnterpriseNotificationConfig(): enterpriseNotificationConfig | null {
+  return storedLocalForgeSSPConfig?.enterpriseNotification ?? null;
 }
 
-export async function updatePulseConfig(pulseConfigData: pulseConfig) {
+export async function updateEnterpriseNotificationConfig(
+  configData: enterpriseNotificationConfig,
+) {
   const currentConfig = sspConfig();
   const updatedConfig = {
     ...currentConfig,
-    pulse: pulseConfigData,
+    enterpriseNotification: configData,
   };
 
   storedLocalForgeSSPConfig = updatedConfig;
   await localForage.setItem('sspConfig', updatedConfig);
 }
 
-export async function subscribeToPulse(
+export async function subscribeToEnterpriseNotifications(
   email: string,
-  preferences?: Partial<pulsePreferences>,
+  preferences?: Partial<enterpriseNotificationPreferences>,
 ) {
-  const pulseConfigData: pulseConfig = {
+  const configData: enterpriseNotificationConfig = {
     isSubscribed: true,
     email: email.toLowerCase().trim(),
     preferences: {
-      ...defaultPulsePreferences,
+      ...defaultEnterpriseNotificationPreferences,
       ...preferences,
     },
   };
-  await updatePulseConfig(pulseConfigData);
+  await updateEnterpriseNotificationConfig(configData);
 }
 
-export async function unsubscribeFromPulse() {
+export async function unsubscribeFromEnterpriseNotifications() {
   const currentConfig = sspConfig();
   const updatedConfig = {
     ...currentConfig,
-    pulse: undefined,
+    enterpriseNotification: undefined,
   };
 
   storedLocalForgeSSPConfig = updatedConfig;
   await localForage.setItem('sspConfig', updatedConfig);
 }
 
-export function getDefaultPulsePreferences(): pulsePreferences {
-  return { ...defaultPulsePreferences };
+export function getDefaultEnterpriseNotificationPreferences(): enterpriseNotificationPreferences {
+  return { ...defaultEnterpriseNotificationPreferences };
 }
 
 /**
- * Update local pulse config from remote status response
+ * Update local enterprise notification config from remote status response
  */
-export async function updatePulseFromStatus(status: {
+export async function updateEnterpriseNotificationFromStatus(status: {
   subscribed: boolean;
   email?: string;
-  preferences?: pulsePreferences;
+  preferences?: enterpriseNotificationPreferences;
 }): Promise<void> {
   if (status.subscribed && status.email) {
-    await subscribeToPulse(status.email, status.preferences);
+    await subscribeToEnterpriseNotifications(status.email, status.preferences);
   } else if (!status.subscribed) {
-    await unsubscribeFromPulse();
+    await unsubscribeFromEnterpriseNotifications();
   }
 }

@@ -40,7 +40,7 @@ import { generatedWallets } from '../../types';
 import { blockchains } from '@storage/blockchains';
 import { useWalletConnect } from '../../contexts/WalletConnectContext';
 import { sspConfig } from '@storage/ssp';
-import { usePulseSync } from '../../hooks/usePulseSync';
+import { useEnterpriseNotificationSync } from '../../hooks/useEnterpriseNotificationSync';
 
 function Home() {
   const { t } = useTranslation(['home', 'common']);
@@ -61,8 +61,8 @@ function Home() {
   const [messageApi, contextHolder] = message.useMessage();
   const browser = window.chrome || window.browser;
 
-  // Sync SSP Pulse status on login (checks subscription, syncs)
-  usePulseSync();
+  // Sync SSP Enterprise notification status on login (checks subscription, syncs)
+  useEnterpriseNotificationSync();
 
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({

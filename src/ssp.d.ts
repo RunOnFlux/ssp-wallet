@@ -51,7 +51,7 @@ declare module '@storage/ssp' {
     ETH: number;
   }
 
-  interface pulsePreferences {
+  interface enterpriseNotificationPreferences {
     incomingTx: boolean;
     outgoingTx: boolean;
     largeTransactions: boolean;
@@ -60,10 +60,10 @@ declare module '@storage/ssp' {
     marketing: boolean;
   }
 
-  interface pulseConfig {
+  interface enterpriseNotificationConfig {
     isSubscribed: boolean;
     email: string;
-    preferences: pulsePreferences;
+    preferences: enterpriseNotificationPreferences;
   }
 
   interface ssp {
@@ -71,23 +71,25 @@ declare module '@storage/ssp' {
     fiatCurrency: keyof currency;
     fiatSymbol: string;
     relay: string;
-    pulse?: pulseConfig;
+    enterpriseNotification?: enterpriseNotificationConfig;
   }
 
   let sspConfig: () => ssp;
   let sspConfigOriginal: () => ssp;
   let loadSSPConfig: () => void;
-  let getPulseConfig: () => pulseConfig | null;
-  let updatePulseConfig: (pulseConfigData: pulseConfig) => Promise<void>;
-  let subscribeToPulse: (
-    email: string,
-    preferences?: Partial<pulsePreferences>,
+  let getEnterpriseNotificationConfig: () => enterpriseNotificationConfig | null;
+  let updateEnterpriseNotificationConfig: (
+    configData: enterpriseNotificationConfig,
   ) => Promise<void>;
-  let unsubscribeFromPulse: () => Promise<void>;
-  let getDefaultPulsePreferences: () => pulsePreferences;
-  let updatePulseFromStatus: (status: {
+  let subscribeToEnterpriseNotifications: (
+    email: string,
+    preferences?: Partial<enterpriseNotificationPreferences>,
+  ) => Promise<void>;
+  let unsubscribeFromEnterpriseNotifications: () => Promise<void>;
+  let getDefaultEnterpriseNotificationPreferences: () => enterpriseNotificationPreferences;
+  let updateEnterpriseNotificationFromStatus: (status: {
     subscribed: boolean;
     email?: string;
-    preferences?: pulsePreferences;
+    preferences?: enterpriseNotificationPreferences;
   }) => Promise<void>;
 }

@@ -25,6 +25,8 @@ export interface TutorialStep {
   closeModal?: boolean;
 }
 
+type EnterpriseSubscriptionStep = 'email' | 'verification' | 'signing';
+
 interface TutorialOverlayProps {
   steps: TutorialStep[];
   isActive: boolean;
@@ -35,12 +37,20 @@ interface TutorialOverlayProps {
   onComplete: () => void;
   onClose: () => void;
   onPause: () => void;
-  // Pulse subscription props
-  pulseEmail: string;
-  setPulseEmail: (email: string) => void;
-  pulseLoading: boolean;
-  pulseSubscribed: boolean;
-  onPulseSubscribe: (email: string) => Promise<boolean>;
+  // Enterprise notification subscription props
+  enterpriseEmail: string;
+  setEnterpriseEmail: (email: string) => void;
+  enterpriseVerificationCode: string;
+  setEnterpriseVerificationCode: (code: string) => void;
+  enterpriseSubscriptionStep: EnterpriseSubscriptionStep;
+  enterpriseLoading: boolean;
+  enterpriseSubscribed: boolean;
+  enterpriseError: string | null;
+  codeExpiresInMinutes: number | null;
+  remainingAttempts: number | null;
+  onEnterpriseRequestCode: (email: string) => Promise<boolean>;
+  onEnterpriseVerifyCode: (email: string, code: string) => Promise<boolean>;
+  onEnterpriseSignAndSubscribe: () => Promise<boolean>;
 }
 
 export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
@@ -52,11 +62,19 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   onComplete,
   onClose,
   onPause,
-  pulseEmail,
-  setPulseEmail,
-  pulseLoading,
-  pulseSubscribed,
-  onPulseSubscribe,
+  enterpriseEmail,
+  setEnterpriseEmail,
+  enterpriseVerificationCode,
+  setEnterpriseVerificationCode,
+  enterpriseSubscriptionStep,
+  enterpriseLoading,
+  enterpriseSubscribed,
+  enterpriseError,
+  // codeExpiresInMinutes - not displayed in UI
+  remainingAttempts,
+  onEnterpriseRequestCode,
+  onEnterpriseVerifyCode,
+  onEnterpriseSignAndSubscribe,
 }) => {
   const { t } = useTranslation(['home']);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
@@ -72,7 +90,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     height: 0,
   });
   const [elementNotFoundCount, setElementNotFoundCount] = useState(0);
-  const [showPulseSkipConfirm, setShowPulseSkipConfirm] = useState(false);
+  const [showEnterpriseSkipConfirm, setShowEnterpriseSkipConfirm] =
+    useState(false);
 
   const currentStepData = steps[currentStep];
 
@@ -583,8 +602,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             </Typography.Text>
           </div>
 
-          {/* SSP Pulse Subscription */}
-          {!pulseSubscribed && (
+          {/* SSP Enterprise Subscription - Multi-step flow */}
+          {!enterpriseSubscribed && (
             <div
               style={{
                 background: 'rgba(24, 144, 255, 0.1)',
@@ -598,42 +617,151 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 style={{ display: 'block', marginBottom: 8 }}
               >
                 <MailOutlined style={{ marginRight: 8 }} />
-                {t('home:settings.sspPulse.title')}
+                {t('home:settings.sspEnterprise.title')}
               </Typography.Text>
               <Typography.Text
                 type="secondary"
                 style={{ display: 'block', marginBottom: 12, fontSize: 12 }}
               >
-                {t('home:settings.sspPulse.description')}
+                {t('home:settings.sspEnterprise.description')}
               </Typography.Text>
-              <Space
-                direction="vertical"
-                style={{ width: '100%' }}
-                size="small"
-              >
-                <Input
-                  size="middle"
-                  type="email"
-                  placeholder={t('home:settings.sspPulse.email_placeholder')}
-                  value={pulseEmail}
-                  onChange={(e) => setPulseEmail(e.target.value)}
-                  disabled={pulseLoading}
-                  onPressEnter={() => onPulseSubscribe(pulseEmail)}
-                />
-                <Button
-                  type="primary"
-                  size="middle"
-                  onClick={() => onPulseSubscribe(pulseEmail)}
-                  loading={pulseLoading}
-                  block
+
+              {/* Error display */}
+              {enterpriseError && (
+                <Typography.Text
+                  type="danger"
+                  style={{ display: 'block', marginBottom: 8, fontSize: 12 }}
                 >
-                  {t('home:settings.sspPulse.subscribe')}
-                </Button>
-              </Space>
+                  {enterpriseError}
+                </Typography.Text>
+              )}
+
+              {/* Step 1: Email Input */}
+              {enterpriseSubscriptionStep === 'email' && (
+                <Space
+                  direction="vertical"
+                  style={{ width: '100%' }}
+                  size="small"
+                >
+                  <Input
+                    size="middle"
+                    type="email"
+                    placeholder={t(
+                      'home:settings.sspEnterprise.email_placeholder',
+                    )}
+                    value={enterpriseEmail}
+                    onChange={(e) => setEnterpriseEmail(e.target.value)}
+                    disabled={enterpriseLoading}
+                    onPressEnter={() =>
+                      onEnterpriseRequestCode(enterpriseEmail)
+                    }
+                  />
+                  <Button
+                    type="primary"
+                    size="middle"
+                    onClick={() => onEnterpriseRequestCode(enterpriseEmail)}
+                    loading={enterpriseLoading}
+                    block
+                  >
+                    {t('home:settings.sspEnterprise.subscribe')}
+                  </Button>
+                </Space>
+              )}
+
+              {/* Step 2: Verification Code */}
+              {enterpriseSubscriptionStep === 'verification' && (
+                <Space
+                  direction="vertical"
+                  style={{ width: '100%' }}
+                  size="small"
+                >
+                  <Typography.Text
+                    type="secondary"
+                    style={{ display: 'block', marginBottom: 4, fontSize: 12 }}
+                  >
+                    {t('home:settings.sspEnterprise.code_sent_to', {
+                      email: enterpriseEmail,
+                    })}
+                  </Typography.Text>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Input.OTP
+                      length={6}
+                      size="large"
+                      value={enterpriseVerificationCode}
+                      onChange={(value) => {
+                        const cleanValue = value
+                          .replace(/[^A-Za-z0-9]/g, '')
+                          .toUpperCase();
+                        setEnterpriseVerificationCode(cleanValue);
+                        if (cleanValue.length === 6 && !enterpriseLoading) {
+                          onEnterpriseVerifyCode(enterpriseEmail, cleanValue);
+                        }
+                      }}
+                      disabled={enterpriseLoading}
+                    />
+                  </div>
+                  {remainingAttempts !== null && remainingAttempts < 5 && (
+                    <Typography.Text type="warning" style={{ fontSize: 11 }}>
+                      {t('home:settings.sspEnterprise.remaining_attempts', {
+                        count: remainingAttempts,
+                      })}
+                    </Typography.Text>
+                  )}
+                  <Button
+                    type="primary"
+                    size="middle"
+                    onClick={() =>
+                      onEnterpriseVerifyCode(
+                        enterpriseEmail,
+                        enterpriseVerificationCode,
+                      )
+                    }
+                    loading={enterpriseLoading}
+                    disabled={enterpriseVerificationCode.length !== 6}
+                    block
+                  >
+                    {t('home:settings.sspEnterprise.verify_code')}
+                  </Button>
+                </Space>
+              )}
+
+              {/* Step 3: WK Signing */}
+              {enterpriseSubscriptionStep === 'signing' && (
+                <Space
+                  direction="vertical"
+                  style={{ width: '100%' }}
+                  size="small"
+                >
+                  <Typography.Text
+                    type="success"
+                    style={{ display: 'block', marginBottom: 4, fontSize: 12 }}
+                  >
+                    <CheckCircleOutlined style={{ marginRight: 4 }} />
+                    {t('home:settings.sspEnterprise.email_verified')}
+                  </Typography.Text>
+                  <Typography.Text
+                    type="secondary"
+                    style={{ display: 'block', marginBottom: 8, fontSize: 12 }}
+                  >
+                    {t('home:settings.sspEnterprise.signing_required')}
+                  </Typography.Text>
+                  <Button
+                    type="primary"
+                    size="middle"
+                    onClick={onEnterpriseSignAndSubscribe}
+                    loading={enterpriseLoading}
+                    block
+                  >
+                    {enterpriseLoading
+                      ? t('home:settings.sspEnterprise.waiting_signature')
+                      : t('home:settings.sspEnterprise.sign_and_subscribe')}
+                  </Button>
+                </Space>
+              )}
             </div>
           )}
 
-          {pulseSubscribed && (
+          {enterpriseSubscribed && (
             <div
               style={{
                 background: 'rgba(82, 196, 26, 0.1)',
@@ -643,7 +771,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             >
               <Typography.Text type="success">
                 <CheckCircleOutlined style={{ marginRight: 8 }} />
-                {t('home:settings.sspPulse.subscribe_success')}
+                {t('home:settings.sspEnterprise.subscribe_success')}
               </Typography.Text>
             </div>
           )}
@@ -652,8 +780,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             type="primary"
             size="large"
             onClick={() => {
-              if (!pulseSubscribed) {
-                setShowPulseSkipConfirm(true);
+              if (!enterpriseSubscribed) {
+                setShowEnterpriseSkipConfirm(true);
               } else {
                 onComplete();
               }
@@ -665,10 +793,10 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           </Button>
         </Space>
 
-        {/* Confirmation modal for skipping Pulse subscription */}
+        {/* Confirmation modal for skipping Enterprise subscription */}
         <Modal
-          open={showPulseSkipConfirm}
-          onCancel={() => setShowPulseSkipConfirm(false)}
+          open={showEnterpriseSkipConfirm}
+          onCancel={() => setShowEnterpriseSkipConfirm(false)}
           footer={null}
           centered
           width={350}
@@ -679,28 +807,28 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 style={{ fontSize: 32, color: '#1890ff', marginBottom: 12 }}
               />
               <Typography.Title level={5} style={{ margin: 0 }}>
-                {t('home:tutorial.skip_pulse_title')}
+                {t('home:tutorial.skip_enterprise_title')}
               </Typography.Title>
               <Typography.Text type="secondary" style={{ marginTop: 8 }}>
-                {t('home:tutorial.skip_pulse_description')}
+                {t('home:tutorial.skip_enterprise_description')}
               </Typography.Text>
             </div>
             <Space direction="vertical" style={{ width: '100%' }} size="small">
               <Button
                 type="primary"
                 block
-                onClick={() => setShowPulseSkipConfirm(false)}
+                onClick={() => setShowEnterpriseSkipConfirm(false)}
               >
-                {t('home:tutorial.skip_pulse_subscribe')}
+                {t('home:tutorial.skip_enterprise_subscribe')}
               </Button>
               <Button
                 block
                 onClick={() => {
-                  setShowPulseSkipConfirm(false);
+                  setShowEnterpriseSkipConfirm(false);
                   onComplete();
                 }}
               >
-                {t('home:tutorial.skip_pulse_skip')}
+                {t('home:tutorial.skip_enterprise_skip')}
               </Button>
             </Space>
           </Space>

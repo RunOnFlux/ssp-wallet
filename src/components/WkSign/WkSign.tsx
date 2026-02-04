@@ -319,7 +319,11 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
         size="middle"
         style={{ marginBottom: 16, marginTop: 16, width: '100%' }}
       >
-        <Text>{t('home:wkSign.description')}</Text>
+        <Text>
+          {requesterInfo?.origin === 'SSP Wallet'
+            ? t('home:wkSign.description_internal')
+            : t('home:wkSign.description')}
+        </Text>
 
         {/* Requester Info - Simple centered layout */}
         {requesterInfo && (
