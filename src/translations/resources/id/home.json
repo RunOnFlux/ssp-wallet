@@ -25,7 +25,7 @@
   "transactionsTable": {
     "no_tx_history": "Tidak Ditemukan Riwayat Transaksi",
     "txid": "TXID",
-    "output_id": "Output ID",
+    "output_id": "ID Output",
     "txid_link": "TXID: {{txid}}",
     "out_id": "Output ID\" {{vout}}",
     "fee_with_symbol": "Biaya: {{fee}} {{symbol}}",
@@ -165,7 +165,33 @@
     "use_system_language": "Gunakan Bahasa Sistem",
     "public_nonces_sync": "Nonces Publik",
     "sync_public_nonces": "Sinkronisasi Nonces Publik",
-    "public_nonces_sync_help": "Nonces publik diperlukan untuk transaksi EVM. Hal ini mengharuskan sinkronisasi nonces dari perangkat SSP Key milik Anda untuk memfasilitasi penandatanganan transaksi EVM."
+    "public_nonces_sync_help": "Nonces publik diperlukan untuk transaksi EVM. Hal ini mengharuskan sinkronisasi nonces dari perangkat SSP Key milik Anda untuk memfasilitasi penandatanganan transaksi EVM.",
+    "sspEnterprise": {
+      "title": "SSP Enterprise",
+      "description": "Hubungkan dompet Anda dengan SSP Enterprise untuk menerima notifikasi email tentang transaksi, peringatan saldo, dan laporan mingguan. Anda juga dapat mengelola dompet organisasi dan tim melalui aplikasi web SSP Enterprise.",
+      "subscribe": "Terhubung dengan SSP Enterprise",
+      "unsubscribe": "Berhenti berlangganan",
+      "subscribed_as": "Berlangganan sebagai: {{email}}",
+      "email_placeholder": "Masukkan alamat email Anda",
+      "subscribe_success": "Berhasil berlangganan SSP Enterprise!",
+      "unsubscribe_success": "Berhasil berhenti berlangganan dari SSP Enterprise.",
+      "err_subscribe": "Terjadi kesalahan saat berlangganan SSP Enterprise. Silakan coba lagi.",
+      "err_unsubscribe": "Terjadi kesalahan saat berhenti berlangganan dari SSP Enterprise. Silakan coba lagi.",
+      "err_invalid_email": "Silakan masukkan alamat email yang valid.",
+      "err_invalid_code": "Silakan masukkan kode 6 karakter yang valid.",
+      "err_request_code": "Terjadi kesalahan saat mengirim kode verifikasi. Silakan coba lagi.",
+      "err_verify_code": "Terjadi kesalahan saat memverifikasi kode. Silakan coba lagi.",
+      "err_email_not_verified": "Email belum terverifikasi. Mohon selesaikan verifikasi terlebih dahulu.",
+      "signing_required": "Masuk menggunakan Dompet SSP dan SSP Key milik Anda untuk menyelesaikan langganan.",
+      "signing_cancelled": "Penandatanganan telah dibatalkan. Silakan coba lagi.",
+      "verify_code": "Kode Verifikasi",
+      "code_sent": "Kode verifikasi telah terkirim! Periksa email Anda.",
+      "code_sent_to": "Kode dikirim ke {{email}}",
+      "remaining_attempts": "{{count}} percobaan tersisa",
+      "email_verified": "Email terverifikasi!",
+      "sign_and_subscribe": "Daftar & Berlangganan",
+      "waiting_signature": "Menunggu SSP Key..."
+    }
   },
   "receive": {
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
@@ -280,6 +306,7 @@
   "wkSign": {
     "title": "Autentikasi SSP",
     "description": "Sebuah situs web meminta tanda tangan Anda untuk otentikasi. Silakan tinjau detail di bawah ini.",
+    "description_internal": "Mohon tinjau dan tanda tangani untuk mengkonfirmasi tindakan ini.",
     "requester_info": "Permintaan Situs Web",
     "ssp_identity": "Identitas SSP",
     "auth_mode": "Mode Autentikasi",
@@ -642,6 +669,10 @@
     "contact": "Kontak",
     "privacy_policy": "Kebijakan Privasi",
     "terms_of_service": "Ketentuan Layanan",
+    "skip_enterprise_title": "Lewati SSP Enterprise?",
+    "skip_enterprise_description": "Anda belum terhubung dengan SSP Enterprise. Dapatkan notifikasi email untuk transaksi, peringatan saldo, dan akses ke fitur manajemen organisasi.",
+    "skip_enterprise_subscribe": "Kembali & Berlangganan",
+    "skip_enterprise_skip": "Lewati untuk Sekarang",
     "steps": {
       "welcome_overview": {
         "title": "Selamat Datang di Dompet SSP!",

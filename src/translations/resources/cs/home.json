@@ -165,7 +165,33 @@
     "use_system_language": "Použít Systémový Jazyk",
     "public_nonces_sync": "Veřejná nonce",
     "sync_public_nonces": "Synchronizovat veřejné nonce",
-    "public_nonces_sync_help": "Veřejné nonce jsou vyžadovány pro EVM transakce. Tato akce spustí synchronizaci noncí z vašeho SSP klíče pro správnou funkci podepisování transakcí EVM."
+    "public_nonces_sync_help": "Veřejné nonce jsou vyžadovány pro EVM transakce. Tato akce spustí synchronizaci noncí z vašeho SSP klíče pro správnou funkci podepisování transakcí EVM.",
+    "sspEnterprise": {
+      "title": "SSP Enterprise",
+      "description": "Connect your wallet with SSP Enterprise to receive email notifications about transactions, balance alerts, and weekly reports. You can also manage organizations and team wallets via the SSP Enterprise web app.",
+      "subscribe": "Connect with SSP Enterprise",
+      "unsubscribe": "Unsubscribe",
+      "subscribed_as": "Subscribed as: {{email}}",
+      "email_placeholder": "Enter your email address",
+      "subscribe_success": "Successfully subscribed to SSP Enterprise!",
+      "unsubscribe_success": "Successfully unsubscribed from SSP Enterprise.",
+      "err_subscribe": "Error subscribing to SSP Enterprise. Please try again.",
+      "err_unsubscribe": "Error unsubscribing from SSP Enterprise. Please try again.",
+      "err_invalid_email": "Please enter a valid email address.",
+      "err_invalid_code": "Please enter a valid 6-character code.",
+      "err_request_code": "Error sending verification code. Please try again.",
+      "err_verify_code": "Error verifying code. Please try again.",
+      "err_email_not_verified": "Email not verified. Please complete verification first.",
+      "signing_required": "Sign with both your SSP Wallet and SSP Key to complete subscription.",
+      "signing_cancelled": "Signing was cancelled. Please try again.",
+      "verify_code": "Verify Code",
+      "code_sent": "Verification code sent! Check your email.",
+      "code_sent_to": "Code sent to {{email}}",
+      "remaining_attempts": "{{count}} attempts remaining",
+      "email_verified": "Email verified!",
+      "sign_and_subscribe": "Sign & Subscribe",
+      "waiting_signature": "Awaiting SSP Key..."
+    }
   },
   "receive": {
     "receive_chain_wallet": "Obdržet do {{chain}} {{wallet}}",
@@ -280,6 +306,7 @@
   "wkSign": {
     "title": "Ověření SSP",
     "description": "Webová stránka požaduje podpis k ověření. Zkontrolujte prosím níže uvedené údaje.",
+    "description_internal": "Please review and sign to confirm this action.",
     "requester_info": "Požadující webová stránka",
     "ssp_identity": "Identita SSP",
     "auth_mode": "Režim ověřování",
@@ -642,6 +669,10 @@
     "contact": "Kontakt",
     "privacy_policy": "Ochrana osobních údajů",
     "terms_of_service": "Podmínky používání",
+    "skip_enterprise_title": "Skip SSP Enterprise?",
+    "skip_enterprise_description": "You haven't connected with SSP Enterprise. Get email notifications for transactions, balance alerts, and access to organization management features.",
+    "skip_enterprise_subscribe": "Go Back & Subscribe",
+    "skip_enterprise_skip": "Skip for Now",
     "steps": {
       "welcome_overview": {
         "title": "Vítejte do SSP Peněženky!",

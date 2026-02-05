@@ -165,7 +165,33 @@
     "use_system_language": "Utiliser la langue système",
     "public_nonces_sync": "Public Nonces",
     "sync_public_nonces": "Sync Public Nonces",
-    "public_nonces_sync_help": "Public nonces are required for EVM transactions. This forces synchronisation of nonces from your SSP Key device to enable EVM transaction signing."
+    "public_nonces_sync_help": "Public nonces are required for EVM transactions. This forces synchronisation of nonces from your SSP Key device to enable EVM transaction signing.",
+    "sspEnterprise": {
+      "title": "SSP Enterprise",
+      "description": "Connect your wallet with SSP Enterprise to receive email notifications about transactions, balance alerts, and weekly reports. You can also manage organizations and team wallets via the SSP Enterprise web app.",
+      "subscribe": "Connect with SSP Enterprise",
+      "unsubscribe": "Unsubscribe",
+      "subscribed_as": "Subscribed as: {{email}}",
+      "email_placeholder": "Enter your email address",
+      "subscribe_success": "Successfully subscribed to SSP Enterprise!",
+      "unsubscribe_success": "Successfully unsubscribed from SSP Enterprise.",
+      "err_subscribe": "Error subscribing to SSP Enterprise. Please try again.",
+      "err_unsubscribe": "Error unsubscribing from SSP Enterprise. Please try again.",
+      "err_invalid_email": "Please enter a valid email address.",
+      "err_invalid_code": "Please enter a valid 6-character code.",
+      "err_request_code": "Error sending verification code. Please try again.",
+      "err_verify_code": "Error verifying code. Please try again.",
+      "err_email_not_verified": "Email not verified. Please complete verification first.",
+      "signing_required": "Sign with both your SSP Wallet and SSP Key to complete subscription.",
+      "signing_cancelled": "Signing was cancelled. Please try again.",
+      "verify_code": "Verify Code",
+      "code_sent": "Verification code sent! Check your email.",
+      "code_sent_to": "Code sent to {{email}}",
+      "remaining_attempts": "{{count}} attempts remaining",
+      "email_verified": "Email verified!",
+      "sign_and_subscribe": "Sign & Subscribe",
+      "waiting_signature": "Awaiting SSP Key..."
+    }
   },
   "receive": {
     "receive_chain_wallet": "Recevoir vers {{chain}} {{wallet}}",
@@ -280,6 +306,7 @@
   "wkSign": {
     "title": "SSP Authentication",
     "description": "A website is requesting your signature to authenticate. Please review the details below.",
+    "description_internal": "Please review and sign to confirm this action.",
     "requester_info": "Requesting Website",
     "ssp_identity": "SSP Identity",
     "auth_mode": "Authentication Mode",
@@ -642,6 +669,10 @@
     "contact": "Contact",
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Terms of Service",
+    "skip_enterprise_title": "Skip SSP Enterprise?",
+    "skip_enterprise_description": "You haven't connected with SSP Enterprise. Get email notifications for transactions, balance alerts, and access to organization management features.",
+    "skip_enterprise_subscribe": "Go Back & Subscribe",
+    "skip_enterprise_skip": "Skip for Now",
     "steps": {
       "welcome_overview": {
         "title": "Welcome to SSP Wallet!",
