@@ -41,7 +41,7 @@
   "dependencies": {
     "ses": "1.14.0",
     "lavamoat-core": "17.1.2",
-    "@lavamoat/aa": "4.3.5",
+    "@lavamoat/aa": "4.3.6",
     "tsup": "8.5.1",
     "typescript": "5.9.3"
   },
