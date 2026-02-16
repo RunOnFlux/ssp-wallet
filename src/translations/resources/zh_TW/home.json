@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "擴展公鑰用於派生所有 {{chain}} 公鑰，地址由此構建.這是一個公共部分，可以安全共享，無法訪問資金.這是 SSP 錢包與 SSP 密鑰同步以生成地址的內容.",
     "chain_extended_priv_desc": "擴展私鑰用於派生所有控制公鑰 - 地址的 {{chain}} 私鑰.這是一個私人部分，切勿共享，因為它授予訪問資金的權限.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} 地址詳情(BIP-48)",
