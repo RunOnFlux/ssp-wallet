@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "এক্সটেন্ডেড পাবলিক কী আপনার {{chain}} পাবলিক কীগুলি তৈরি করতে ব্যবহৃত হয়, যেগুলি ঠিকানা গঠন করতে ব্যবহৃত হয়. এটি একটি পাবলিক অংশ, শেয়ার করতে নিরাপদ, এবং এটি তহবিলের অ্যাক্সেস প্রদান করে না. এটি SSP ওয়ালেট দ্বারা আপনার SSP কী-এর সাথে সিঙ্ক্রোনাইজ করা হয় ঠিকানা তৈরি করতে.",
     "chain_extended_priv_desc": "এক্সটেনডেড প্রাইভেট কী ব্যবহার করা হয় আপনার সমস্ত {{chain}} প্রাইভেট কী উৎপন্ন করতে, যা আপনার পাবলিক কী - ঠিকানাগুলির নিয়ন্ত্রণ করে. এটি একটি প্রাইভেট অংশ, কখনোই শেয়ার করবেন না, কারণ এটি তহবিলে অ্যাক্সেস প্রদান করে.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} ঠিকানা বিস্তারিত (BIP-48)",
