@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Rozszerzony klucz publiczny jest używany do generowania wszystkich kluczy publicznych {{chain}}, z których tworzone są adresy. Jest to część publiczna, bezpieczna do udostępniania, nie daje dostępu do środków. To właśnie SSP Wallet synchronizuje z kluczem SSP, aby generować adresy.",
     "chain_extended_priv_desc": "Rozszerzony klucz prywatny jest używany do generowania wszystkich prywatnych kluczy {{chain}}, które kontrolują klucze publiczne - adresy. Jest to część prywatna, NIE udostępniaj jej nikomu, ponieważ daje dostęp do środków.",
     "copy_data": "Skopiuj {{data}}",
-    "show_data": "Pokaż {{data}}"
+    "show_data": "Pokaż {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "Szczegóły adresu {{chain}} (BIP-48)",
