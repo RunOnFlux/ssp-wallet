@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Extended Public Key ใช้ในการสร้างคีย์สาธารณะทั้งหมดของคุณจาก {{chain}} ซึ่งที่อยู่จะถูกสร้างขึ้น นี่คือลักษณะสาธารณะที่สามารถแชร์ได้ ปลอดภัย ไม่ให้สิทธิ์การเข้าถึงเงิน นี่คือสิ่งที่ SSP Wallet ซิงค์กับ SSP Key เพื่อสร้างที่อยู่",
     "chain_extended_priv_desc": "Extended Private Key ใช้ในการสร้างคีย์ส่วนตัวทั้งหมดของคุณจาก {{chain}} ที่ควบคุมคีย์สาธารณะ - ที่อยู่ นี่คือลักษณะส่วนตัวห้ามแชร์เด็ดขาดเพราะมันให้สิทธิ์การเข้าถึงเงิน",
     "copy_data": "คัดลอก {{data}}",
-    "show_data": "แสดง {{data}}"
+    "show_data": "แสดง {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "รายละเอียดที่อยู่ {{chain}} (BIP-48)",
