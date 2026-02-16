@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Kunci Awam Lanjutan digunakan untuk mendapatkan semua kunci awam {{chain}} anda yang membentuk alamat. Ini adalah bahagian awam, selamat untuk dikongsi, dan tidak memberikan akses kepada dana. Ini adalah apa yang Dompet SSP selaraskan dengan SSP Key anda untuk menjana alamat.",
     "chain_extended_priv_desc": "Kunci Peribadi Lanjutan digunakan untuk mendapatkan semua kunci peribadi {{chain}} anda yang mengawal kunci awam - alamat anda. Ini adalah bahagian peribadi, JANGAN sesekali berkongsi kerana ia memberikan akses kepada dana.",
     "copy_data": "Salin {{data}}",
-    "show_data": "Tunjukkan {{data}}"
+    "show_data": "Tunjukkan {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "Butiran Alamat {{chain}} (BIP-48)",
