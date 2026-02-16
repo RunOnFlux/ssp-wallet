@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Το Εκτεταμένο Δημόσιο Κλειδί χρησιμοποιείται για την εξαγωγή όλων των δημόσιων κλειδιών {{chain}} από τα οποία κατασκευάζονται οι διευθύνσεις. Αυτή είναι η δημόσια πλευρά, ασφαλής για κοινή χρήση, δεν παρέχει πρόσβαση σε κεφάλαια. Αυτό είναι το οποίο συγχρονίζει το πορτοφόλι SSP με το κλειδί SSP σας για να δημιουργήσει διευθύνσεις.",
     "chain_extended_priv_desc": "Το Εκτεταμένο Ιδιωτικό Κλειδί χρησιμοποιείται για την εξαγωγή όλων των ιδιωτικών κλειδιών {{chain}} που ελέγχουν τα δημόσια κλειδιά - διευθύνσεις σας. Αυτή είναι η ιδιωτική πλευρά, ΜΗΝ το μοιράζεστε ποτέ, καθώς παρέχει πρόσβαση σε κεφάλαια.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Λεπτομέρειες Διεύθυνσης SSP (BIP-48)",
