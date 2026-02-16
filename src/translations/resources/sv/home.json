@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Utökad Offentlig nyckel används för att härleda alla dina {{chain}} offentliga nycklar från vilka adresser konstrueras. Detta är en offentlig del, säker att dela, ger inte åtkomst till medel. Detta är vad SSP Wallet synkroniserar med din SSP Nyckel för att generera adresser.",
     "chain_extended_priv_desc": "Utökad Privat nyckel används för att härleda alla dina {{chain}} privata nycklar som kontrollerar dina offentliga nycklar - adresser. Detta är en privat del, Dela ALDRIG eftersom det ger åtkomst till medel.",
     "copy_data": "Kopiera {{data}}",
-    "show_data": "Visa {{data}}"
+    "show_data": "Visa {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Adressdetaljer (BIP-48)",
