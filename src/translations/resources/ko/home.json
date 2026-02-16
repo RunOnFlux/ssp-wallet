@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "확장 공개 키는 {{chain}} 공개 키를 유도하는 데 사용되며, 이 공개 키에서 주소가 생성됩니다. 이는 공개 부분으로, 공유해도 안전하며 자금 접근 권한을 제공하지 않습니다. SSP 월렛은 이 키를 SSP 키와 동기화하여 주소를 생성합니다.",
     "chain_extended_priv_desc": "확장 개인 키는 {{chain}} 개인 키를 유도하는 데 사용되며, 이는 공개 키 - 주소를 제어합니다. 이는 비공개 부분으로, 자금에 접근할 수 있으므로 절대로 공유하지 마세요.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} 주소 세부정보 (BIP-48)",
