@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "விரிவாக்கப்பட்ட பொதுக் கீ உங்கள் {{chain}} பொதுக் கீகளை பெற பயன்படுத்தப்படுகிறது, அவற்றிலிருந்து முகவரிகள் உருவாக்கப்படுகின்றன. இது பொதுவான பகுதி ஆகும், பகிர்வதற்கு பாதுகாப்பானது, ஆனால் நிதிகளுக்கு அணுகலை வழங்காது. இது SSP வாலெட் உங்கள் SSP கீயுடன் ஒத்திசைத்து முகவரிகளை உருவாக்குவது ஆகும்.",
     "chain_extended_priv_desc": "விரிவாக்கப்பட்ட தனியார் கீ உங்கள் {{chain}} தனியார் கீகளை பெற பயன்படுத்தப்படுகிறது, அவை உங்கள் பொதுக் கீகள் - முகவரிகளைக் கட்டுப்படுத்துகின்றன. இது தனிப்பட்ட பகுதி ஆகும், அதை எப்போதும் பகிராதீர்கள், ஏனெனில் இது நிதிகளுக்கு அணுகலை வழங்குகிறது.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} முகவரி விவரங்கள் (BIP-48)",
