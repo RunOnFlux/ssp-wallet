@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Ang Extended Public key ay ginagamit upang makuha ang lahat ng iyong {{chain}} public keys kung saan ang mga address ay binuo. Ito ay isang pampublikong bahagi, ligtas na ibahagi, hindi nagbibigay ng access sa mga pondo. Ito ang sini-sync ng SSP Wallet sa iyong SSP Key upang makabuo ng mga address.",
     "chain_extended_priv_desc": "Ginagamit ang Extended Private key upang makuha ang lahat ng iyong {{chain}} private key na kumokontrol sa iyong mga pampublikong key - mga address. Ito ay isang pribadong bahagi, HUWAG magbahagi dahil nagbibigay ito ng access sa mga pondo.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Address Details (BIP-48)",
