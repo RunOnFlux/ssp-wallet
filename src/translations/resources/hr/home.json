@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Prošireni javni ključ koristi se za generiranje svih vaših {{chain}} javnih ključeva od kojih se konstruišu adrese. Ovo je javni dio, siguran za dijeljenje, ne daje pristup sredstvima. Ovo je ono s čim SSP Novčanik sinkronizira vaš SSP Key za generiranje adresa.",
     "chain_extended_priv_desc": "Prošireni privatni ključ koristi se za generiranje svih vaših {{chain}} privatnih ključeva koji kontroliraju vaše javne ključeve - adrese. Ovo je privatni dio, NIKADA ga ne dijelite jer daje pristup sredstvima.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Detalji Adrese (BIP-48)",
