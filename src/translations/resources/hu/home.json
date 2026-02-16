@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "A kiterjesztett nyilvános kulcsot az összes nyilvános {{chain}} kulcs képzéséhez használják, amelyekből a címek épülnek fel. Ez egy nyilvános rész, biztonságosan megosztható, nem biztosít hozzáférést az egyenleghez. Ezt szinkronizálja az SSP tárca az Ön SSP kulcsával a címek létrehozásához.",
     "chain_extended_priv_desc": "A kibővített magánkulcsot a kiterjesztett {{chain}} magánkulcsoknak képzésére használják, amelyek a nyilvános kulcsokat - címeket - irányítják. Ez egy privát rész, soha ne ossza meg, mivel hozzáférést biztosít az egyenleghez.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} címadatok (BIP-48)",
