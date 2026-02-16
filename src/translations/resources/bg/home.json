@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Разширеният публичен ключ се използва за извеждане на всички ваши публични ключове за {{chain}}, от които се изграждат адреси. Това е публична част, която е безопасно да се споделя и не дава достъп до средства. Това е това, с което SSP портфейлът се синхронизира с вашия SSP ключ, за да генерира адреси.",
     "chain_extended_priv_desc": "Разширеният частен ключ се използва за извеждане на всички ваши частни ключове за {{chain}}, които контролират вашите публични ключове - адреси. Това е частна информация, НЕ я споделяйте, тъй като дава достъп до средства.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "Детайли  за {{chain}} адреса (BIP-48).",
