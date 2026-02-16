@@ -29,9 +29,8 @@ function SSPWalletDetails(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
-  const { activeChain, identityChain } = useAppSelector(
-    (state) => state.sspState,
-  );
+  const { activeChain, identityChain, sspWalletKeyInternalIdentity } =
+    useAppSelector((state) => state.sspState);
   const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isNarrowScreen, setIsNarrowScreen] = useState(window.innerWidth < 420);
@@ -52,6 +51,7 @@ function SSPWalletDetails(props: {
   const [extendedPrivateKeyVisible, setExtendedPrivateKeyVisible] =
     useState(false);
   const [sspSyncKeyVisible, setSspSyncKeyVisible] = useState(false);
+  const [wkIdentityVisible, setWkIdentityVisible] = useState(false);
   const [seedPhraseVisible, setSeedPhraseVisible] = useState(false);
   const [seedPhraseCopyingVisible, setSeedPhraseCopyingVisible] =
     useState(false);
@@ -121,6 +121,7 @@ function SSPWalletDetails(props: {
     setExtendedPublicKeyVisible(false);
     setChainSyncKeyVisible(false);
     setSspSyncKeyVisible(false);
+    setWkIdentityVisible(false);
     setSeedPhraseVisible(false);
     openAction(false);
   };
@@ -394,6 +395,47 @@ function SSPWalletDetails(props: {
             </Text>
           </Paragraph>
         </Space>
+        {sspWalletKeyInternalIdentity && (
+          <>
+            <h3 className="detailsTitleWithDescription">
+              {wkIdentityVisible && (
+                <EyeTwoTone onClick={() => setWkIdentityVisible(false)} />
+              )}
+              {!wkIdentityVisible && (
+                <EyeInvisibleOutlined
+                  onClick={() => setWkIdentityVisible(true)}
+                />
+              )}{' '}
+              {t('home:sspWalletDetails.wk_identity')}:
+            </h3>
+            <Paragraph type="secondary" className="detailsDescription">
+              <blockquote>
+                {t('home:sspWalletDetails.wk_identity_desc')}
+              </blockquote>
+            </Paragraph>
+            <Space direction="vertical" size="small">
+              {wkIdentityVisible && (
+                <QRCode
+                  errorLevel="H"
+                  value={sspWalletKeyInternalIdentity}
+                  icon="/ssp-logo-black.svg"
+                  size={256}
+                  style={{ margin: '0 auto' }}
+                />
+              )}
+              <Paragraph
+                copyable={{ text: sspWalletKeyInternalIdentity }}
+                className="copyableAddress"
+              >
+                <Text>
+                  {wkIdentityVisible
+                    ? sspWalletKeyInternalIdentity
+                    : '*** *** *** *** *** ***'}
+                </Text>
+              </Paragraph>
+            </Space>
+          </>
+        )}
         <h3 className="detailsTitleWithDescription">
           {seedPhraseVisible && (
             <EyeTwoTone onClick={() => setSeedPhraseVisible(false)} />
