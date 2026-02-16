@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Laajennettua julkista avainta käytetään johdattamaan kaikki {{chain}} julkiset avaimet, joista osoitteet rakennetaan. Tämä on julkinen osa, turvallinen jakaa, ei anna pääsyä varoihin. Tämä on se, mitä SSP-lompakko synkronoi SSP-avaimesi kanssa osoitteiden luomiseksi.",
     "chain_extended_priv_desc": "Laajennettua yksityistä avainta käytetään johdattamaan kaikki {{chain}} yksityiset avaimet, jotka hallitsevat julkisia avaimiasi - osoitteita. Tämä on yksityinen osa, ÄLÄ koskaan jaa sitä, sillä se antaa pääsyn varoihisi.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Osoitetiedot (BIP-48)",
