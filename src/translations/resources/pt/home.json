@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Chave pública estendida é utilizada para derivar todas as suas {{chain}} chaves públicas de onde os endereços são criados.\nEsta parte é pública, seguro partilhar, não garante acesso a fundos. Isto é o que a carteira SSP sincroniza com a chave SSP para criar endereços.",
     "chain_extended_priv_desc": "Chave privada estendida é utilizada para derivar todas as suas {{chain}} chaves privadas que controlam as suas chaves e endereços públicos. Esta é uma parte privada, não partilhe porque garante acesso a fundos.",
     "copy_data": "Copiar {{data}}",
-    "show_data": "Mostrar {{data}}"
+    "show_data": "Mostrar {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Detalhes do endereço (BIP-48)",
