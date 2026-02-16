@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Den utvidede offentlige nøkkelen brukes til å generere alle dine {{chain}} offentlige nøkler, som adresser konstrueres fra. Dette er en offentlig del som er trygg å dele, da den ikke gir tilgang til midler. Dette er det SSP-lommeboken synkroniserer med din SSP-nøkkel for å generere adresser.",
     "chain_extended_priv_desc": "Den utvidede private nøkkelen brukes til å generere alle dine {{chain}} private nøkler som kontrollerer dine offentlige nøkler – adresser. Dette er en privat del, del den ALDRI med noen, da den gir tilgang til midler.",
     "copy_data": "Kopier {{data}}",
-    "show_data": "Vis {{data}}"
+    "show_data": "Vis {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Adresse detaljer (BIP-48)",
