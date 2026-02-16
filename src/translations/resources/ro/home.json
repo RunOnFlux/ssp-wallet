@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Cheia Publică Extinsă este utilizată pentru a deriva toate cheile publice {{chain}} din care sunt construite adresele. Aceasta este o parte publică, sigură pentru partajare, nu oferă acces la fonduri. Aceasta este ceea ce SSP Wallet sincronizează cu Cheia SSP pentru a genera adrese.",
     "chain_extended_priv_desc": "Cheia Privată Extinsă este utilizată pentru a deriva toate cheile private {{chain}} care controlează cheile publice - adresele tale. Aceasta este o parte privată, NU o împărtăși niciodată, deoarece oferă acces la fonduri.",
     "copy_data": "Copiază {{data}}",
-    "show_data": "Afișează {{data}}"
+    "show_data": "Afișează {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "Detalii adresă {{chain}} (BIP-48)",
