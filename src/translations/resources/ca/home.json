@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "La clau pública estesa s'utilitza per derivar totes les teves claus públiques {{chain}} a partir de les quals es construeixen les adreces. Aquesta és una part pública, segura de compartir, no atorga accés als fons. Això és el que SSP Wallet sincronitza amb la teva clau SSP per generar adreces.",
     "chain_extended_priv_desc": "La clau privada estesa s'utilitza per derivar totes les teves claus privades {{chain}} que controlen les teves claus públiques - adreces. Aquesta és una part privada, NO la comparteixis mai ja que atorga accés als fons.",
     "copy_data": "Copiar {{data}}",
-    "show_data": "Mostrar {{data}}"
+    "show_data": "Mostrar {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "Detalls de l'adreça {{chain}} (BIP-48)",
