@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Razširjeni javni ključ se uporablja za pridobivanje vseh vaših {{chain}} javnih ključev, iz katerih so sestavljeni naslovi. To je javni del, varen za deljenje, ne omogoča dostopa do sredstev. To je tisto, kar SSP denarnica sinhronizira z vašim SSP ključem za generiranje naslovov.",
     "chain_extended_priv_desc": "Razširjeni zasebni ključ se uporablja za pridobivanje vseh vaših {{chain}} zasebnih ključev, ki nadzorujejo vaše javne ključe - naslove. To je zasebni del, nikoli ga ne delite, saj omogoča dostop do sredstev.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "Podrobnosti naslova {{chain}} (BIP-48)",
