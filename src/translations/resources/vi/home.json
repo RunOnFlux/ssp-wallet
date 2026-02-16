@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Khóa công cộng mở rộng được dùng để dẫn xuất tất cả khóa công cộng chuỗi khối {{chain}} của bạn từ những địa chỉ được tạo ra. Đây là một phần công khai, an toàn để chia sẻ, không cấp quyền truy cập vào tài sản của bạn. Đây là những gì Ví SSP đồng bộ với Khóa SSP của bạn để khởi tạo ra các địa chỉ.",
     "chain_extended_priv_desc": "Khóa riêng tư mở rộng được dùng để dẫn xuất tất cả khóa riêng tư chuỗi khối {{chain}} của bạn mà kiểm soát các địa chỉ khóa công cộng của bạn. Đây là một phần riêng tư, ĐỪNG BAO GIỜ chia sẻ nó vì nó truy cập được vào tài sản của bạn.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Các chi tiết địa chỉ (BIP-48)",
