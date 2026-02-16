@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Расширенный Публичный ключ используется для получения всех публичных ключей {{chain}} из которых строятся адреса. Это публичная часть, безопасная для обмена, не дает доступа к средствам. Этот ключ используется для синхронизации SSP Кошелька с SSP Ключом для генерации адресов.",
     "chain_extended_priv_desc": "Расширенный Приватный ключ используется для получения всех приватных ключей {{chain}} для контроля над публичными ключами — адресами. Это приватная часть, НИКОГДА не делитесь этим ключом, так как он дает доступ к средствам.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Детали Адреса (BIP-48)",
