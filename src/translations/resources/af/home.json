@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Uitgebreide Publieke sleutel word gebruik om al jou {{chain}} publieke sleutels af te lei waarvan adresse gebou word. Dit is 'n openbare deel, veilig om te deel, gee nie toegang tot fondse nie. Dit is wat SSP Beursie sinkroniseer met jou SSP Sleutel om adresse te genereer.",
     "chain_extended_priv_desc": "Uitgebreide Privaatsleutel word gebruik om al jou {{chain}} privaat sleutels af te lei wat jou publieke sleutels - adresse beheer. Dit is 'n private deel, deel dit NOOIT nie, aangesien dit toegang tot fondse gee.",
     "copy_data": "Kopieer {{data}}",
-    "show_data": "Wys {{data}}"
+    "show_data": "Wys {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Adres Besonderhede (BIP-48)",
