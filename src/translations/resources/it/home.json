@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "La chiave pubblica estesa è usata per ricavare tutte le tue chiavi pubbliche {{chain}} da cui sono costruite gli indirizzi. Si tratta della parte pubblica, sicura da condividere, non consente l'accesso ai fondi. Questo è ciò che SSP Wallet sincronizza con la tua chiave SSP per la generazione degli indirizzi.",
     "chain_extended_priv_desc": "La chiave privata estesa viene utilizzata per ricavare tutte le chiavi private {{chain}} che controllano le tue chiavi pubbliche - indirizzi. Questa è una parte privata, NON condividerla mai in quanto garantisce l'accesso ai fondi.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Dettagli Dell'Indirizzo (Bip-48)",
