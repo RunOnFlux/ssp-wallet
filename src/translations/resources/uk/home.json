@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Розширений публічний ключ використовується для створення всіх публічних ключів у {{chain}}, з яких будуються адреси. Це публічна частина, яку можна ділити, оскільки вона не надає доступу до коштів. SSP Гаманець синхронізує цей ключ із SSP Ключем для створення адрес.",
     "chain_extended_priv_desc": "Розширений приватний ключ використовується для створення всіх приватних ключів у {{chain}}, які контролюють ваші публічні ключі та адреси. Це приватна частина, яку не можна ділити, оскільки вона надає доступ до коштів.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "Деталі адреси {{chain}} (BIP-48)",
