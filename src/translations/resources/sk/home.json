@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Rozšírený verejný kľúč sa používa na odvodenie všetkých vašich verejných kľúčov {{chain}}, z ktorých sa vytvárajú adresy. Toto je verejná časť, bezpečná na zdieľanie, neumožňuje prístup k finančným prostriedkom. SSP peňaženka ho synchronizuje s vaším SSP kľúčom na generovanie adries.",
     "chain_extended_priv_desc": "Rozšírený súkromný kľúč sa používa na odvodenie všetkých vašich súkromných kľúčov {{chain}}, ktoré ovládajú vaše verejné kľúče - adresy. Toto je súkromná časť, nikdy ju nezdieľajte, pretože poskytuje prístup k finančným prostriedkom.",
     "copy_data": "Kopírovať {{data}}",
-    "show_data": "Zobraziť {{data}}"
+    "show_data": "Zobraziť {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "Podrobnosti adresy {{chain}} (BIP-48)",
