@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "De uitgebreide openbare sleutel wordt gebruikt om al je {{chain}}-openbare sleutels af te leiden, waarmee adressen worden gecreëerd. Dit is een openbaar deel, veilig om te delen, en geeft geen toegang tot fondsen. Dit is waarmee SSP Wallet synchroniseert met je SSP-sleutel om adressen te genereren.",
     "chain_extended_priv_desc": "De uitgebreide privésleutel wordt gebruikt om al je {{chain}}-privésleutels af te leiden die je openbare sleutels - adressen - beheren. Dit is een privédeel, deel dit NOOIT, want het geeft toegang tot fondsen.",
     "copy_data": "Kopieer {{data}}",
-    "show_data": "Toon {{data}}"
+    "show_data": "Toon {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Adresgegevens (BIP-48)",
