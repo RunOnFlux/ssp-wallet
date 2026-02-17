@@ -12,7 +12,7 @@ export default defineConfig(({ command, mode }) => ({
           viteLavaMoat({
             policyPath: './security/vite-lavamoat-policy.json',
             lockdown: true,
-            generatePolicy: true,  // Static policy - use npm run generate-policy to update
+            generatePolicy: true, // Static policy - use npm run generate-policy to update
             diagnostics: true,
             scuttleGlobalThis: {
               enabled: true,
@@ -110,8 +110,17 @@ export default defineConfig(({ command, mode }) => ({
     esbuildOptions: {
       keepNames: true, // keep names is needed as of utxo-lib using typeforce, can't be mangled: `BigInteger`, `ECPair`, `Point`.
       // Node.js global to browser globalThis
+      // Dev-only: esbuild pre-bundles node_modules without the top-level `define`
       define: {
         global: 'globalThis',
+        'process.env.SECURE_LOCAL_STORAGE_DISABLED_KEYS': JSON.stringify(
+          'UserAgent|Plugins|TimeZone|Canvas',
+        ),
+        'process.env.REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS':
+          JSON.stringify('UserAgent|Plugins|TimeZone|Canvas'),
+        'process.env.VITE_SECURE_LOCAL_STORAGE_DISABLED_KEYS': JSON.stringify(
+          'UserAgent|Plugins|TimeZone|Canvas',
+        ),
       },
     },
   },
