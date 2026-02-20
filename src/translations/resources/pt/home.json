@@ -325,6 +325,34 @@
     "manual_input": "Manual Input for SSP Key",
     "manual_input_desc": "If automatic sync isn't working, scan QR code or copy the data for SSP Key."
   },
+  "enterpriseVaultXpub": {
+    "title": "Enterprise Vault Key Request",
+    "description": "A request to provide public keys for an enterprise vault has been received. Please review the details below.",
+    "vault_name": "Vault",
+    "org_name": "Organisation",
+    "chain": "Chain",
+    "ssp_identity": "SSP Identity",
+    "approve": "Approve",
+    "awaiting_key": "Awaiting Key...",
+    "waiting_for_key": "Waiting for SSP Key approval...",
+    "key_rejected": "Request rejected by SSP Key"
+  },
+  "enterpriseVaultSignTx": {
+    "title": "Enterprise Vault Transaction Signing",
+    "description": "A request to sign a vault transaction has been received. Please review the transaction details below.",
+    "vault_name": "Vault",
+    "org_name": "Organisation",
+    "chain": "Chain",
+    "ssp_identity": "SSP Identity",
+    "recipients": "Recipients",
+    "fee": "Network Fee",
+    "memo": "Memo",
+    "partial_signature_notice": "This transaction requires multiple signatures. Your signature alone will not broadcast the transaction.",
+    "sign": "Sign Transaction",
+    "awaiting_key": "Awaiting Key...",
+    "waiting_for_key": "Waiting for SSP Key approval...",
+    "key_rejected": "Transaction signing rejected by SSP Key"
+  },
   "sspConnect": {
     "invalid_chain": "Chain inválida.",
     "invalid_method": "Método inválido.",
