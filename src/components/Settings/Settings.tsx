@@ -625,13 +625,18 @@ function Settings(props: {
   };
 
   // Handle WkSign result
-  const handleWkSignResult = (data: { status: string; result?: WkSignResponse } | null) => {
+  const handleWkSignResult = (
+    data: { status: string; result?: WkSignResponse } | null,
+  ) => {
     setShowWkSign(false);
 
     if (!data || data.status !== 'SUCCESS' || !data.result) {
       // Cancelled or failed
       if (signingOperation) {
-        displayMessage('error', t('home:settings.sspEnterprise.signing_cancelled'));
+        displayMessage(
+          'error',
+          t('home:settings.sspEnterprise.signing_cancelled'),
+        );
       }
       setSigningOperation(null);
       return;

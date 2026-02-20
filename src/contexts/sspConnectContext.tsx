@@ -19,11 +19,26 @@ interface SspConnectContextType {
   contract: string;
   authMode: number; // 1 = wallet only, 2 = wallet + key
   requesterInfo: WkSignRequesterInfo | null; // requester info for wk_sign
+  orgIndex: number; // enterprise vault org index
+  vaultName: string; // enterprise vault name
+  orgName: string; // enterprise org name
+  // enterprise vault sign tx params
+  vaultIndex: number; // enterprise vault index
+  recipients: string; // JSON string of recipients array
+  fee: string; // transaction fee
+  memo: string; // transaction memo
+  rawUnsignedTx: string; // raw unsigned transaction hex
+  inputDetails: string; // JSON string of input details array
+  reservedNonce?: { kPublic: string; kTwoPublic: string }; // EVM wallet enterprise nonce
+  reservedKeyNonce?: { kPublic: string; kTwoPublic: string }; // EVM key enterprise nonce
+  keyXpub?: string; // Key's vault xpub for EVM Schnorr signing
+  allSignerKeys?: string[]; // EVM M-of-N: all 2M public keys hex (canonical order)
+  allSignerNonces?: Array<{ kPublic: string; kTwoPublic: string }>; // EVM M-of-N: all 2M nonces
   clearRequest?: () => void;
 }
 
 const defaultValue: SspConnectContextType = {
-  type: '', // only sign_message and sspwid_sign_message and pay and wk_sign_message
+  type: '', // only sign_message and sspwid_sign_message and pay and wk_sign_message and enterprise_vault_xpub and enterprise_vault_sign_tx
   address: '', // address to sign with
   message: '', // message to sign
   amount: '', // amount to pay
@@ -31,6 +46,16 @@ const defaultValue: SspConnectContextType = {
   contract: '', // contract to send token from
   authMode: 2, // default to 2-of-2 for wk_sign
   requesterInfo: null, // requester info for wk_sign
+  orgIndex: 0, // enterprise vault org index
+  vaultName: '', // enterprise vault name
+  orgName: '', // enterprise org name
+  // enterprise vault sign tx defaults
+  vaultIndex: 0,
+  recipients: '',
+  fee: '',
+  memo: '',
+  rawUnsignedTx: '',
+  inputDetails: '',
 };
 
 interface dataBgParams {
@@ -45,6 +70,22 @@ interface dataBgParams {
   siteName?: string; // friendly name
   description?: string; // what the auth is for
   iconUrl?: string; // site icon (HTTPS only)
+  // Enterprise vault xpub params
+  orgIndex?: number; // enterprise org index (positive integer)
+  vaultName?: string; // enterprise vault name
+  orgName?: string; // enterprise org name
+  // Enterprise vault sign tx params
+  vaultIndex?: number; // enterprise vault index (non-negative integer)
+  recipients?: string; // JSON string of recipients array
+  fee?: string; // transaction fee
+  memo?: string; // transaction memo
+  rawUnsignedTx?: string; // raw unsigned transaction hex
+  inputDetails?: string; // JSON string of input details array
+  reservedNonce?: { kPublic: string; kTwoPublic: string }; // EVM wallet nonce for signing
+  reservedKeyNonce?: { kPublic: string; kTwoPublic: string }; // EVM key nonce for Key signing
+  keyXpub?: string; // Key's vault xpub for EVM Schnorr signing
+  allSignerKeys?: string; // JSON string of all 2M public keys hex
+  allSignerNonces?: string; // JSON string of all 2M nonces
 }
 
 interface dataBgRequest {
@@ -76,6 +117,28 @@ export const SspConnectProvider = ({
   const [authMode, setAuthMode] = useState(2); // default to 2-of-2 for wk_sign
   const [requesterInfo, setRequesterInfo] =
     useState<WkSignRequesterInfo | null>(null);
+  const [orgIndex, setOrgIndex] = useState(0);
+  const [vaultName, setVaultName] = useState('');
+  const [orgName, setOrgName] = useState('');
+  const [vaultIndex, setVaultIndex] = useState(0);
+  const [recipients, setRecipients] = useState('');
+  const [fee, setFee] = useState('');
+  const [memo, setMemo] = useState('');
+  const [rawUnsignedTx, setRawUnsignedTx] = useState('');
+  const [inputDetails, setInputDetails] = useState('');
+  const [reservedNonce, setReservedNonce] = useState<
+    { kPublic: string; kTwoPublic: string } | undefined
+  >(undefined);
+  const [reservedKeyNonce, setReservedKeyNonce] = useState<
+    { kPublic: string; kTwoPublic: string } | undefined
+  >(undefined);
+  const [keyXpub, setKeyXpub] = useState<string | undefined>(undefined);
+  const [allSignerKeys, setAllSignerKeys] = useState<string[] | undefined>(
+    undefined,
+  );
+  const [allSignerNonces, setAllSignerNonces] = useState<
+    Array<{ kPublic: string; kTwoPublic: string }> | undefined
+  >(undefined);
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
 
@@ -160,13 +223,45 @@ export const SspConnectProvider = ({
         if (paramValue === undefined || paramValue === null) {
           continue;
         }
-        // authMode is a number, other params are strings
+        // authMode, orgIndex, and vaultIndex are numbers, other params are strings
         if (key === 'authMode') {
           if (
             typeof paramValue !== 'number' ||
             (paramValue !== 1 && paramValue !== 2)
           ) {
             console.log('Invalid authMode value: ' + paramValue);
+            return null;
+          }
+        } else if (key === 'orgIndex') {
+          if (
+            typeof paramValue !== 'number' ||
+            !Number.isInteger(paramValue) ||
+            paramValue < 100 ||
+            paramValue > 99999
+          ) {
+            console.log('Invalid orgIndex value:', paramValue);
+            return null;
+          }
+        } else if (key === 'vaultIndex') {
+          if (
+            typeof paramValue !== 'number' ||
+            !Number.isInteger(paramValue) ||
+            paramValue < 0 ||
+            paramValue > 99
+          ) {
+            console.log('Invalid vaultIndex value:', paramValue);
+            return null;
+          }
+        } else if (key === 'reservedNonce' || key === 'reservedKeyNonce') {
+          // EVM enterprise nonce objects — validate structure
+          if (
+            typeof paramValue !== 'object' ||
+            typeof (paramValue as Record<string, unknown>).kPublic !==
+              'string' ||
+            typeof (paramValue as Record<string, unknown>).kTwoPublic !==
+              'string'
+          ) {
+            console.log('Invalid ' + key + ' value');
             return null;
           }
         } else {
@@ -331,6 +426,327 @@ export const SspConnectProvider = ({
           // show dialog asking for approval to get the list of addresses for a given chain
           setType(request.data.method);
           setChain(request.data.params.chain || '');
+        } else if (request.data.method === 'enterprise_vault_xpub') {
+          // Validate required params for enterprise vault xpub
+          const vaultChain = request.data.params.chain;
+          const vaultOrgIndex = request.data.params.orgIndex;
+          const vaultNameParam = request.data.params.vaultName;
+          const orgNameParam = request.data.params.orgName;
+
+          if (!vaultChain || !blockchains[vaultChain]) {
+            console.log('Invalid chain for enterprise_vault_xpub');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_chain'),
+              },
+            });
+            return;
+          }
+          if (
+            typeof vaultOrgIndex !== 'number' ||
+            !Number.isInteger(vaultOrgIndex) ||
+            vaultOrgIndex < 100 ||
+            vaultOrgIndex > 99999
+          ) {
+            console.log('Invalid orgIndex for enterprise_vault_xpub');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+          if (
+            typeof vaultNameParam !== 'string' ||
+            !vaultNameParam ||
+            vaultNameParam.length > 100
+          ) {
+            console.log('Invalid vaultName for enterprise_vault_xpub');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+          if (
+            typeof orgNameParam !== 'string' ||
+            !orgNameParam ||
+            orgNameParam.length > 100
+          ) {
+            console.log('Invalid orgName for enterprise_vault_xpub');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+
+          setChain(vaultChain);
+          setOrgIndex(vaultOrgIndex);
+          setVaultName(vaultNameParam);
+          setOrgName(orgNameParam);
+          setType('enterprise_vault_xpub');
+
+          // Capture requester info
+          const origin = request.data.params.origin;
+          if (origin && typeof origin === 'string' && origin.length <= 100) {
+            setRequesterInfo({
+              origin,
+              siteName: request.data.params.siteName?.substring(0, 100),
+              iconUrl: sanitizeIconUrl(request.data.params.iconUrl),
+            });
+          } else {
+            setRequesterInfo({ origin: 'Unknown' });
+          }
+        } else if (request.data.method === 'enterprise_vault_sign_tx') {
+          // Validate required params for enterprise vault sign tx
+          const signChain = request.data.params.chain;
+          const signOrgIndex = request.data.params.orgIndex;
+          const signVaultIndex = request.data.params.vaultIndex;
+          const signRecipients = request.data.params.recipients;
+          const signFee = request.data.params.fee;
+          const signMemo = request.data.params.memo;
+          const signRawUnsignedTx = request.data.params.rawUnsignedTx;
+          const signInputDetails = request.data.params.inputDetails;
+          const signVaultName = request.data.params.vaultName;
+          const signOrgName = request.data.params.orgName;
+
+          if (!signChain || !blockchains[signChain]) {
+            console.log('Invalid chain for enterprise_vault_sign_tx');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_chain'),
+              },
+            });
+            return;
+          }
+          if (
+            typeof signOrgIndex !== 'number' ||
+            !Number.isInteger(signOrgIndex) ||
+            signOrgIndex < 100 ||
+            signOrgIndex > 99999
+          ) {
+            console.log('Invalid orgIndex for enterprise_vault_sign_tx');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+          if (
+            typeof signVaultIndex !== 'number' ||
+            !Number.isInteger(signVaultIndex) ||
+            signVaultIndex < 0 ||
+            signVaultIndex > 99
+          ) {
+            console.log('Invalid vaultIndex for enterprise_vault_sign_tx');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+          if (typeof signRecipients !== 'string' || !signRecipients) {
+            console.log('Invalid recipients for enterprise_vault_sign_tx');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+          if (typeof signFee !== 'string' || !signFee) {
+            console.log('Invalid fee for enterprise_vault_sign_tx');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+          if (typeof signRawUnsignedTx !== 'string' || !signRawUnsignedTx) {
+            console.log('Invalid rawUnsignedTx for enterprise_vault_sign_tx');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+          if (typeof signInputDetails !== 'string' || !signInputDetails) {
+            console.log('Invalid inputDetails for enterprise_vault_sign_tx');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+
+          setChain(signChain);
+          setOrgIndex(signOrgIndex);
+          setVaultIndex(signVaultIndex);
+          setRecipients(signRecipients);
+          setFee(signFee);
+          setMemo(signMemo || '');
+          setRawUnsignedTx(signRawUnsignedTx);
+          setInputDetails(signInputDetails);
+          setVaultName(typeof signVaultName === 'string' ? signVaultName : '');
+          setOrgName(typeof signOrgName === 'string' ? signOrgName : '');
+          // EVM enterprise nonce (optional)
+          const signReservedNonce = request.data.params.reservedNonce;
+          if (
+            signReservedNonce &&
+            typeof signReservedNonce === 'object' &&
+            typeof signReservedNonce.kPublic === 'string' &&
+            typeof signReservedNonce.kTwoPublic === 'string'
+          ) {
+            setReservedNonce(signReservedNonce);
+          } else {
+            setReservedNonce(undefined);
+          }
+          // EVM enterprise key nonce (optional — forwarded to Key for signing)
+          const signReservedKeyNonce = request.data.params.reservedKeyNonce;
+          if (
+            signReservedKeyNonce &&
+            typeof signReservedKeyNonce === 'object' &&
+            typeof signReservedKeyNonce.kPublic === 'string' &&
+            typeof signReservedKeyNonce.kTwoPublic === 'string'
+          ) {
+            setReservedKeyNonce(signReservedKeyNonce);
+          } else {
+            setReservedKeyNonce(undefined);
+          }
+          // Key's vault xpub (optional — for EVM Schnorr pubkey derivation)
+          const signKeyXpub = request.data.params.keyXpub;
+          setKeyXpub(
+            typeof signKeyXpub === 'string' && signKeyXpub
+              ? signKeyXpub
+              : undefined,
+          );
+          // EVM M-of-N: all signer keys and nonces (optional JSON strings)
+          const signAllSignerKeys = request.data.params.allSignerKeys;
+          if (typeof signAllSignerKeys === 'string' && signAllSignerKeys) {
+            try {
+              const parsed = JSON.parse(signAllSignerKeys) as unknown;
+              if (
+                Array.isArray(parsed) &&
+                parsed.every((k) => typeof k === 'string')
+              ) {
+                setAllSignerKeys(parsed);
+              } else {
+                setAllSignerKeys(undefined);
+              }
+            } catch {
+              setAllSignerKeys(undefined);
+            }
+          } else {
+            setAllSignerKeys(undefined);
+          }
+          const signAllSignerNonces = request.data.params.allSignerNonces;
+          if (typeof signAllSignerNonces === 'string' && signAllSignerNonces) {
+            try {
+              const parsed = JSON.parse(signAllSignerNonces) as unknown;
+              if (
+                Array.isArray(parsed) &&
+                parsed.every(
+                  (n) =>
+                    typeof n === 'object' &&
+                    n !== null &&
+                    typeof (n as Record<string, unknown>).kPublic ===
+                      'string' &&
+                    typeof (n as Record<string, unknown>).kTwoPublic ===
+                      'string',
+                )
+              ) {
+                setAllSignerNonces(
+                  parsed as Array<{ kPublic: string; kTwoPublic: string }>,
+                );
+              } else {
+                setAllSignerNonces(undefined);
+              }
+            } catch {
+              setAllSignerNonces(undefined);
+            }
+          } else {
+            setAllSignerNonces(undefined);
+          }
+          setType('enterprise_vault_sign_tx');
+
+          // Capture requester info
+          const signOrigin = request.data.params.origin;
+          if (
+            signOrigin &&
+            typeof signOrigin === 'string' &&
+            signOrigin.length <= 100
+          ) {
+            setRequesterInfo({
+              origin: signOrigin,
+              siteName: request.data.params.siteName?.substring(0, 100),
+              iconUrl: sanitizeIconUrl(request.data.params.iconUrl),
+            });
+          } else {
+            setRequesterInfo({ origin: 'Unknown' });
+          }
         } else {
           console.log('Invalid method' + request.data.method);
           void browser.runtime.sendMessage({
@@ -357,6 +773,20 @@ export const SspConnectProvider = ({
     setContract('');
     setAuthMode(2);
     setRequesterInfo(null);
+    setOrgIndex(0);
+    setVaultName('');
+    setOrgName('');
+    setVaultIndex(0);
+    setRecipients('');
+    setFee('');
+    setMemo('');
+    setRawUnsignedTx('');
+    setInputDetails('');
+    setReservedNonce(undefined);
+    setReservedKeyNonce(undefined);
+    setKeyXpub(undefined);
+    setAllSignerKeys(undefined);
+    setAllSignerNonces(undefined);
   };
 
   return (
@@ -370,6 +800,20 @@ export const SspConnectProvider = ({
         contract,
         authMode,
         requesterInfo,
+        orgIndex,
+        vaultName,
+        orgName,
+        vaultIndex,
+        recipients,
+        fee,
+        memo,
+        rawUnsignedTx,
+        inputDetails,
+        reservedNonce,
+        reservedKeyNonce,
+        keyXpub,
+        allSignerKeys,
+        allSignerNonces,
         clearRequest,
       }}
     >

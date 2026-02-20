@@ -1,0 +1,19 @@
+.vault-xpub-info-box {
+  padding: 10px;
+  border-radius: 4px;
+  max-height: 100px;
+  overflow: auto;
+  word-break: break-all;
+}
+
+@media (prefers-color-scheme: light) {
+  .vault-xpub-info-box {
+    background-color: #f5f5f5;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .vault-xpub-info-box {
+    background-color: #292929;
+  }
+}

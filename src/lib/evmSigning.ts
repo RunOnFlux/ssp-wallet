@@ -1,5 +1,5 @@
 import * as accountAbstraction from '@runonflux/aa-schnorr-multisig-sdk';
-import { keyPair } from '../types';
+import type { keyPair, publicPrivateNonce } from '../types';
 
 interface publicNonces {
   kPublic: string;
@@ -99,4 +99,99 @@ export function signMessageWithSchnorrMultisig(
     console.error('Error in Enhanced Schnorr MultiSig signing:', error);
     throw error;
   }
+}
+
+/**
+ * Vault Schnorr signing: uses pre-reserved enterprise nonces instead of
+ * generating fresh ones. Both wallet and key restore from their reserved
+ * nonce pair. Wallet produces a partial signature (sigOne) + challenge;
+ * Key then completes signing via continueSigningSchnorrMultisig().
+ *
+ * Accepts variable-length arrays for M-of-N signing:
+ * - allPublicKeys: ALL 2M public keys hex (canonical order)
+ * - allPublicNonces: ALL 2M public nonces (canonical order)
+ * The SDK finds this signer automatically via nonce match.
+ */
+export function signVaultMessageWithSchnorr(
+  messageToSign: string,
+  walletKeypair: keyPair,
+  walletNonce: publicPrivateNonce,
+  allPublicKeys: string[],
+  allPublicNonces: publicNonces[],
+): {
+  sigOne: string;
+  challenge: string;
+} {
+  if (
+    !allPublicKeys.length ||
+    !allPublicNonces.length ||
+    allPublicKeys.length !== allPublicNonces.length
+  ) {
+    throw new Error(
+      `Invalid signing arrays: ${allPublicKeys.length} keys vs ${allPublicNonces.length} nonces`,
+    );
+  }
+
+  // Create Schnorr signer from wallet private key
+  const signerOne =
+    accountAbstraction.helpers.SchnorrHelpers.createSchnorrSigner(
+      walletKeypair.privKey as `0x${string}`,
+    );
+
+  // CRITICAL: Restore pre-reserved nonce instead of generating fresh
+  const kPrivate = new accountAbstraction.types.Key(
+    Buffer.from(walletNonce.k, 'hex'),
+  );
+  const kTwoPrivate = new accountAbstraction.types.Key(
+    Buffer.from(walletNonce.kTwo, 'hex'),
+  );
+  signerOne.restorePubNonces(kPrivate, kTwoPrivate);
+
+  // Build Key[] and PublicNonces[] from hex inputs
+  const publicKeys = allPublicKeys.map(
+    (hex) => new accountAbstraction.types.Key(Buffer.from(hex, 'hex')),
+  );
+
+  // Replace this signer's pubkey entry with the one from the signer object
+  // (SDK matches by nonce, but pubkey must be the signer's internal Key instance)
+  const signerPubKey = signerOne.getPubKey();
+  const signerPubKeyHex = signerPubKey.buffer.toString('hex');
+  const signerKeyIdx = allPublicKeys.findIndex(
+    (hex) => hex === signerPubKeyHex,
+  );
+  if (signerKeyIdx === -1) {
+    throw new Error(
+      'Wallet public key not found in allSignerKeys array — key mismatch',
+    );
+  }
+  publicKeys[signerKeyIdx] = signerPubKey;
+
+  const signerPubNonces = signerOne.getPubNonces();
+  const signerNonceHex = signerPubNonces.kPublic.buffer.toString('hex');
+  const publicNoncesArr: accountAbstraction.types.PublicNonces[] =
+    allPublicNonces.map((n, i) => {
+      // For the signer's own nonce slot, use the signer's internal nonces
+      if (i === signerKeyIdx || n.kPublic === signerNonceHex) {
+        return signerPubNonces;
+      }
+      return {
+        kPublic: new accountAbstraction.types.Key(
+          Buffer.from(n.kPublic, 'hex'),
+        ),
+        kTwoPublic: new accountAbstraction.types.Key(
+          Buffer.from(n.kTwoPublic, 'hex'),
+        ),
+      };
+    });
+
+  const { signature: sigOne, challenge } = signerOne.signMultiSigMsg(
+    messageToSign,
+    publicKeys,
+    publicNoncesArr,
+  );
+
+  return {
+    sigOne: sigOne.buffer.toString('hex'),
+    challenge: challenge.buffer.toString('hex'),
+  };
 }

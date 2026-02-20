@@ -11,6 +11,23 @@ interface WkSignedPayload {
   message: string;
 }
 
+interface EnterpriseVaultXpubSignedPayload {
+  xpubKey: string;
+  keyXpubSignature: string;
+  requestId: string;
+  chain: string;
+  orgIndex: number;
+}
+
+export interface EnterpriseVaultSignedPayload {
+  keySignatures: string[]; // partial signatures from Key (UTXO)
+  keyPubKey: string; // Key's vault public key
+  requestId: string;
+  // EVM M-of-N vault: Key returns raw signer contribution + challenge
+  signerContribution?: string;
+  challenge?: string;
+}
+
 interface SocketContextType {
   socket: Socket | null;
   txid: string;
@@ -23,6 +40,10 @@ interface SocketContextType {
   evmSigningRejected: string;
   wkSigned: WkSignedPayload | null;
   wkSigningRejected: string;
+  enterpriseVaultXpubSigned: EnterpriseVaultXpubSignedPayload | null;
+  enterpriseVaultXpubRejected: string;
+  enterpriseVaultSigned: EnterpriseVaultSignedPayload | null;
+  enterpriseVaultSignRejected: string;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
   clearPublicNonces?: () => void;
@@ -32,6 +53,10 @@ interface SocketContextType {
   clearEvmSigningRejected?: () => void;
   clearWkSigned?: () => void;
   clearWkSigningRejected?: () => void;
+  clearEnterpriseVaultXpubSigned?: () => void;
+  clearEnterpriseVaultXpubRejected?: () => void;
+  clearEnterpriseVaultSigned?: () => void;
+  clearEnterpriseVaultSignRejected?: () => void;
   sendWalletConnectRequest?: (request: WalletConnectSocketRequest) => void;
 }
 
@@ -73,6 +98,10 @@ const defaultValue: SocketContextType = {
   evmSigningRejected: '',
   wkSigned: null,
   wkSigningRejected: '',
+  enterpriseVaultXpubSigned: null,
+  enterpriseVaultXpubRejected: '',
+  enterpriseVaultSigned: null,
+  enterpriseVaultSignRejected: '',
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultValue);
@@ -94,6 +123,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [evmSigningRejected, setEvmSigningRejected] = useState('');
   const [wkSigned, setWkSigned] = useState<WkSignedPayload | null>(null);
   const [wkSigningRejected, setWkSigningRejected] = useState('');
+  const [enterpriseVaultXpubSigned, setEnterpriseVaultXpubSigned] =
+    useState<EnterpriseVaultXpubSignedPayload | null>(null);
+  const [enterpriseVaultXpubRejected, setEnterpriseVaultXpubRejected] =
+    useState('');
+  const [enterpriseVaultSigned, setEnterpriseVaultSigned] =
+    useState<EnterpriseVaultSignedPayload | null>(null);
+  const [enterpriseVaultSignRejected, setEnterpriseVaultSignRejected] =
+    useState('');
 
   /**
    * Emit an authenticated join event.
@@ -212,6 +249,44 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       setWkSigningRejected('wksigningrejected');
     });
 
+    newSocket.on('enterprisevaultxpubsigned', (signed: serverResponse) => {
+      console.log('Enterprise vault xpub signed');
+      console.log(signed);
+      try {
+        const payload = JSON.parse(
+          signed.payload,
+        ) as EnterpriseVaultXpubSignedPayload;
+        setEnterpriseVaultXpubSigned(payload);
+      } catch {
+        console.error('Failed to parse enterprisevaultxpubsigned payload');
+      }
+    });
+
+    newSocket.on('enterprisevaultxpubrejected', (rejected: serverResponse) => {
+      console.log('Enterprise vault xpub rejected');
+      console.log(rejected);
+      setEnterpriseVaultXpubRejected('enterprisevaultxpubrejected');
+    });
+
+    newSocket.on('enterprisevaultsigned', (signed: serverResponse) => {
+      console.log('Enterprise vault sign completed');
+      console.log(signed);
+      try {
+        const payload = JSON.parse(
+          signed.payload,
+        ) as EnterpriseVaultSignedPayload;
+        setEnterpriseVaultSigned(payload);
+      } catch {
+        console.error('Failed to parse enterprisevaultsigned payload');
+      }
+    });
+
+    newSocket.on('enterprisevaultsignrejected', (rejected: serverResponse) => {
+      console.log('Enterprise vault sign rejected');
+      console.log(rejected);
+      setEnterpriseVaultSignRejected('enterprisevaultsignrejected');
+    });
+
     // WalletConnect socket events
     newSocket.on(
       'walletconnect_response',
@@ -270,6 +345,22 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     setWkSigningRejected('');
   };
 
+  const clearEnterpriseVaultXpubSigned = () => {
+    setEnterpriseVaultXpubSigned(null);
+  };
+
+  const clearEnterpriseVaultXpubRejected = () => {
+    setEnterpriseVaultXpubRejected('');
+  };
+
+  const clearEnterpriseVaultSigned = () => {
+    setEnterpriseVaultSigned(null);
+  };
+
+  const clearEnterpriseVaultSignRejected = () => {
+    setEnterpriseVaultSignRejected('');
+  };
+
   const sendWalletConnectRequest = (request: WalletConnectSocketRequest) => {
     if (!socket || !socket.connected) {
       console.error('[WalletConnect Socket] Socket not connected');
@@ -306,6 +397,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         evmSigningRejected,
         wkSigned,
         wkSigningRejected,
+        enterpriseVaultXpubSigned,
+        enterpriseVaultXpubRejected,
+        enterpriseVaultSigned,
+        enterpriseVaultSignRejected,
         clearTxid,
         clearTxRejected,
         clearPublicNonces,
@@ -315,6 +410,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         clearEvmSigningRejected,
         clearWkSigned,
         clearWkSigningRejected,
+        clearEnterpriseVaultXpubSigned,
+        clearEnterpriseVaultXpubRejected,
+        clearEnterpriseVaultSigned,
+        clearEnterpriseVaultSignRejected,
         sendWalletConnectRequest,
       }}
     >

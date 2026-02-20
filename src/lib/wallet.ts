@@ -12,6 +12,7 @@ import {
   xPrivXpub,
   cryptos,
   externalIdentity,
+  publicPrivateNonce,
 } from '../types';
 import { blockchains } from '@storage/blockchains';
 
@@ -308,7 +309,7 @@ export function generateMultisigAddressEVM(
 // given xpriv of our party, generate keypair consisting of privateKey in and public key belonging to it
 export function generateAddressKeypairEVM(
   xpriv: string,
-  typeIndex: 0 | 1 | 10,
+  typeIndex: 0 | 1 | 10, // normal, change, internal identity
   addressIndex: number,
   chain: keyof cryptos,
 ): keyPair {
@@ -329,7 +330,7 @@ export function generateAddressKeypairEVM(
 // given xpriv of our party, generate keypair consisting of privateKey in WIF format and public key belonging to it
 export function generateAddressKeypair(
   xpriv: string,
-  typeIndex: 0 | 1 | 10,
+  typeIndex: 0 | 1 | 10, // normal, change, internal identity
   addressIndex: number,
   chain: keyof cryptos,
 ): keyPair {
@@ -516,4 +517,17 @@ export function wifToPrivateKey(
   const keyPair = utxolib.ECPair.fromWIF(privateKey, network);
   const pk = keyPair.getPrivateKeyBuffer().toString('hex');
   return pk;
+}
+
+/**
+ * Generate a public-private nonce pair for EVM Schnorr multi-party signing.
+ */
+export function generatePublicNonce(): publicPrivateNonce {
+  const publicNonce = aaSchnorrMultisig.core._generateNonce();
+  return {
+    k: publicNonce.k.toString('hex'),
+    kTwo: publicNonce.kTwo.toString('hex'),
+    kPublic: publicNonce.kPublic.toString('hex'),
+    kTwoPublic: publicNonce.kTwoPublic.toString('hex'),
+  };
 }

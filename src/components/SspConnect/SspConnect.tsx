@@ -7,6 +7,8 @@ import TokensInfo from '../../components/TokensInfo/TokensInfo';
 import AddressesInfo from '../../components/AddressesInfo/AddressesInfo';
 import AllAddressesInfo from '../../components/AllAddressesInfo/AllAddressesInfo';
 import WkSign from '../../components/WkSign/WkSign';
+import EnterpriseVaultXpub from '../../components/EnterpriseVaultXpub/EnterpriseVaultXpub';
+import EnterpriseVaultSignTx from '../../components/EnterpriseVaultSignTx/EnterpriseVaultSignTx';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
 import { WkSignResponse, WkSignRequesterInfo } from '../../lib/wkSign';
@@ -31,6 +33,33 @@ interface wkSignData {
   data?: string;
 }
 
+interface enterpriseVaultXpubData {
+  status: string;
+  result?: {
+    xpubWallet: string;
+    xpubKey: string;
+    chain: string;
+    orgIndex: number;
+    wkIdentity: string;
+  };
+  data?: string;
+}
+
+interface enterpriseVaultSignTxData {
+  status: string;
+  result?: {
+    walletSignatures: string[];
+    keySignatures: string[];
+    walletPubKey: string;
+    keyPubKey: string;
+    wkIdentity: string;
+    chain: string;
+    orgIndex: number;
+    vaultIndex: number;
+  };
+  data?: string;
+}
+
 function SspConnect() {
   const {
     address: sspConnectAddress,
@@ -41,6 +70,20 @@ function SspConnect() {
     contract: sspConnectContract,
     authMode: sspConnectAuthMode,
     requesterInfo: sspConnectRequesterInfo,
+    orgIndex: sspConnectOrgIndex,
+    vaultName: sspConnectVaultName,
+    orgName: sspConnectOrgName,
+    vaultIndex: sspConnectVaultIndex,
+    recipients: sspConnectRecipients,
+    fee: sspConnectFee,
+    memo: sspConnectMemo,
+    rawUnsignedTx: sspConnectRawUnsignedTx,
+    inputDetails: sspConnectInputDetails,
+    reservedNonce: sspConnectReservedNonce,
+    reservedKeyNonce: sspConnectReservedKeyNonce,
+    keyXpub: sspConnectKeyXpub,
+    allSignerKeys: sspConnectAllSignerKeys,
+    allSignerNonces: sspConnectAllSignerNonces,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common', 'home']);
@@ -61,6 +104,31 @@ function SspConnect() {
   const [authMode, setAuthMode] = useState<1 | 2>(2);
   const [requesterInfo, setRequesterInfo] =
     useState<WkSignRequesterInfo | null>(null);
+  const [openEnterpriseVaultXpub, setOpenEnterpriseVaultXpub] = useState(false);
+  const [openEnterpriseVaultSignTx, setOpenEnterpriseVaultSignTx] =
+    useState(false);
+  const [orgIndex, setOrgIndex] = useState(0);
+  const [vaultName, setVaultName] = useState('');
+  const [orgName, setOrgName] = useState('');
+  const [vaultIndex, setVaultIndex] = useState(0);
+  const [recipients, setRecipients] = useState('');
+  const [txFee, setTxFee] = useState('');
+  const [txMemo, setTxMemo] = useState('');
+  const [rawUnsignedTx, setRawUnsignedTx] = useState('');
+  const [inputDetails, setInputDetails] = useState('');
+  const [reservedNonce, setReservedNonce] = useState<
+    { kPublic: string; kTwoPublic: string } | undefined
+  >(undefined);
+  const [reservedKeyNonce, setReservedKeyNonce] = useState<
+    { kPublic: string; kTwoPublic: string } | undefined
+  >(undefined);
+  const [keyXpub, setKeyXpub] = useState<string | undefined>(undefined);
+  const [allSignerKeys, setAllSignerKeys] = useState<string[] | undefined>(
+    undefined,
+  );
+  const [allSignerNonces, setAllSignerNonces] = useState<
+    Array<{ kPublic: string; kTwoPublic: string }> | undefined
+  >(undefined);
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -103,6 +171,31 @@ function SspConnect() {
       } else if (sspConnectType === 'user_chains_addresses_all') {
         // show poup that someone is asking to get all addresses for all chains
         setOpenAllAddressesInfo(true);
+      } else if (sspConnectType === 'enterprise_vault_xpub') {
+        // Enterprise vault xpub request - capture params before clearRequest
+        setRequesterInfo(sspConnectRequesterInfo);
+        setOrgIndex(sspConnectOrgIndex);
+        setVaultName(sspConnectVaultName);
+        setOrgName(sspConnectOrgName);
+        setOpenEnterpriseVaultXpub(true);
+      } else if (sspConnectType === 'enterprise_vault_sign_tx') {
+        // Enterprise vault sign tx request - capture params before clearRequest
+        setRequesterInfo(sspConnectRequesterInfo);
+        setOrgIndex(sspConnectOrgIndex);
+        setVaultIndex(sspConnectVaultIndex);
+        setVaultName(sspConnectVaultName);
+        setOrgName(sspConnectOrgName);
+        setRecipients(sspConnectRecipients);
+        setTxFee(sspConnectFee);
+        setTxMemo(sspConnectMemo);
+        setRawUnsignedTx(sspConnectRawUnsignedTx);
+        setInputDetails(sspConnectInputDetails);
+        setReservedNonce(sspConnectReservedNonce);
+        setReservedKeyNonce(sspConnectReservedKeyNonce);
+        setKeyXpub(sspConnectKeyXpub);
+        setAllSignerKeys(sspConnectAllSignerKeys);
+        setAllSignerNonces(sspConnectAllSignerNonces);
+        setOpenEnterpriseVaultSignTx(true);
       } else {
         generalAction({
           status: 'ERROR', // do not translate
@@ -143,11 +236,59 @@ function SspConnect() {
     setOpenAddressesInfo(false);
     setOpenAllAddressesInfo(false);
     setOpenWkSign(false);
+    setOpenEnterpriseVaultXpub(false);
+    setOpenEnterpriseVaultSignTx(false);
   };
 
   const wkSignAction = (data: wkSignData | null) => {
     console.log('[WkSign] Action result:', data);
     setOpenWkSign(false);
+    if (browser?.runtime?.sendMessage) {
+      if (!data) {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data: {
+            status: 'ERROR',
+            result: t('common:request_rejected'),
+          },
+        });
+      } else {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data,
+        });
+      }
+    } else {
+      console.log('no browser or chrome runtime.sendMessage');
+    }
+  };
+  const enterpriseVaultXpubAction = (data: enterpriseVaultXpubData | null) => {
+    console.log('[EnterpriseVaultXpub] Action result:', data);
+    setOpenEnterpriseVaultXpub(false);
+    if (browser?.runtime?.sendMessage) {
+      if (!data) {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data: {
+            status: 'ERROR',
+            result: t('common:request_rejected'),
+          },
+        });
+      } else {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data,
+        });
+      }
+    } else {
+      console.log('no browser or chrome runtime.sendMessage');
+    }
+  };
+  const enterpriseVaultSignTxAction = (
+    data: enterpriseVaultSignTxData | null,
+  ) => {
+    console.log('[EnterpriseVaultSignTx] Action result:', data);
+    setOpenEnterpriseVaultSignTx(false);
     if (browser?.runtime?.sendMessage) {
       if (!data) {
         void browser.runtime.sendMessage({
@@ -235,6 +376,35 @@ function SspConnect() {
         message={message}
         authMode={authMode}
         requesterInfo={requesterInfo}
+      />
+      <EnterpriseVaultXpub
+        open={openEnterpriseVaultXpub}
+        openAction={enterpriseVaultXpubAction}
+        chain={chain}
+        orgIndex={orgIndex}
+        vaultName={vaultName}
+        orgName={orgName}
+        requesterInfo={requesterInfo}
+      />
+      <EnterpriseVaultSignTx
+        open={openEnterpriseVaultSignTx}
+        openAction={enterpriseVaultSignTxAction}
+        chain={chain}
+        orgIndex={orgIndex}
+        vaultIndex={vaultIndex}
+        recipients={recipients}
+        fee={txFee}
+        memo={txMemo}
+        rawUnsignedTx={rawUnsignedTx}
+        inputDetails={inputDetails}
+        vaultName={vaultName}
+        orgName={orgName}
+        requesterInfo={requesterInfo}
+        reservedNonce={reservedNonce}
+        reservedKeyNonce={reservedKeyNonce}
+        keyXpub={keyXpub}
+        allSignerKeys={allSignerKeys}
+        allSignerNonces={allSignerNonces}
       />
     </>
   );

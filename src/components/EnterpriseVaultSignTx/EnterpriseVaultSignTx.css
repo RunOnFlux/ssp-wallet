@@ -1,0 +1,36 @@
+.vault-sign-info-box {
+  padding: 10px;
+  border-radius: 4px;
+  max-height: 150px;
+  overflow: auto;
+  word-break: break-all;
+}
+
+.vault-sign-recipient-box {
+  padding: 8px 10px;
+  border-radius: 4px;
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+@media (prefers-color-scheme: light) {
+  .vault-sign-info-box {
+    background-color: #f5f5f5;
+  }
+
+  .vault-sign-recipient-box {
+    background-color: #fafafa;
+    border: 1px solid #f0f0f0;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .vault-sign-info-box {
+    background-color: #292929;
+  }
+
+  .vault-sign-recipient-box {
+    background-color: #1f1f1f;
+    border: 1px solid #303030;
+  }
+}

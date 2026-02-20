@@ -401,6 +401,11 @@ export interface syncSSPRelay {
   // Scripts from first address (index 0) - not strictly needed but extra assurance
   redeemScript?: string;
   witnessScript?: string;
+  // Enterprise nonce pool status (enriched by relay)
+  enterpriseNoncesNeeded?: {
+    wallet: boolean;
+    key: boolean;
+  };
 }
 
 export interface actionSSPRelay {

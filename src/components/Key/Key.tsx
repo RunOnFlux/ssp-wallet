@@ -16,9 +16,13 @@ import {
   encrypt as passworderEncrypt,
 } from '@metamask/browser-passworder';
 import { getFingerprint } from '../../lib/fingerprint';
-import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
+import {
+  generateMultisigAddress,
+  getScriptType,
+} from '../../lib/wallet.ts';
+import { replenishWalletEnterpriseNonces } from '../../lib/enterpriseNonces';
 import { useAppSelector, useAppDispatch } from '../../hooks';
-import { syncSSPRelay } from '../../types';
+import type { syncSSPRelay } from '../../types';
 import { setXpubKey, setActiveChain } from '../../store';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 
@@ -31,6 +35,7 @@ const xpubRegex = /^([a-zA-Z]{2}ub[1-9A-HJ-NP-Za-km-z]{79,140})$/; // xpub start
 
 let pollingSyncInterval: string | number | NodeJS.Timeout | undefined;
 let syncRunning = false;
+let nonceReplenishRunning = false;
 
 function Key(props: { synchronised: (status: boolean) => void }) {
   const { t } = useTranslation(['home', 'common']);
@@ -225,6 +230,22 @@ function Key(props: { synchronised: (status: boolean) => void }) {
             await localForage
               .setItem('sspKeyPublicNonces', sspKeyPublicNonces)
               .catch((error) => console.log(error)); // we do not need to throw an error
+          }
+          // Enterprise nonce auto-replenish for wallet (debounced — skip if already running)
+          if (
+            res.data.enterpriseNoncesNeeded?.wallet &&
+            wkIdentity &&
+            passwordBlob &&
+            !nonceReplenishRunning
+          ) {
+            nonceReplenishRunning = true;
+            replenishWalletEnterpriseNonces(wkIdentity, passwordBlob)
+              .catch((e) =>
+                console.log('[Enterprise Nonces] wallet replenish error:', e),
+              )
+              .finally(() => {
+                nonceReplenishRunning = false;
+              });
           }
           // synced ok
           syncRunning = false;

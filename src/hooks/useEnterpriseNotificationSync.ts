@@ -15,6 +15,7 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { getFingerprint } from '../lib/fingerprint';
 import { getScriptType } from '../lib/wallet';
+import { replenishWalletEnterpriseNonces } from '../lib/enterpriseNonces';
 import { blockchains } from '@storage/blockchains';
 import {
   sspConfig,
@@ -187,6 +188,29 @@ export function useEnterpriseNotificationSync(): void {
             '[EnterpriseNotificationSync] Missing chains synced successfully',
           );
         }
+      }
+
+      // Non-blocking: check enterprise nonce pool and replenish if needed
+      try {
+        const nonceStatusRes = await axios.get(
+          `https://${sspConfig().relay}/v1/nonces/status/${sspWalletKeyInternalIdentity}`,
+        );
+        if (nonceStatusRes.data?.data?.replenishNeeded?.wallet) {
+          replenishWalletEnterpriseNonces(
+            sspWalletKeyInternalIdentity,
+            passwordBlob,
+          ).catch((e) =>
+            console.log(
+              '[EnterpriseNotificationSync] Wallet nonce replenish error:',
+              e,
+            ),
+          );
+        }
+      } catch (nonceError) {
+        console.log(
+          '[EnterpriseNotificationSync] Nonce pool check failed:',
+          nonceError,
+        );
       }
     } catch (error) {
       // Silently fail - notification sync is not critical

@@ -313,7 +313,9 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
   };
 
   // Handle WkSign result
-  const handleWkSignResult = (data: { status: string; result?: WkSignResponse } | null) => {
+  const handleWkSignResult = (
+    data: { status: string; result?: WkSignResponse } | null,
+  ) => {
     setShowWkSign(false);
 
     if (!data || data.status !== 'SUCCESS' || !data.result) {
@@ -327,6 +329,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
   };
 
   // Step 3: Show WK signing dialog for subscription
+  // eslint-disable-next-line @typescript-eslint/require-await
   const handleEnterpriseSignAndSubscribe = async (): Promise<boolean> => {
     if (!verifiedEmail) {
       setEnterpriseError(
