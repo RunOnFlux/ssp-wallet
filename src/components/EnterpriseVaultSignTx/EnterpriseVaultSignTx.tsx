@@ -86,10 +86,10 @@ interface Props {
 function formatAmount(amount: string, decimals: number): string {
   try {
     const raw = BigInt(amount);
-    const divisor = BigInt(10 ** decimals);
+    const divisor = 10n ** BigInt(decimals);
     const wholePart = raw / divisor;
     const fracPart = raw % divisor;
-    if (fracPart === BigInt(0)) {
+    if (fracPart === 0n) {
       return wholePart.toString();
     }
     const fracStr = fracPart.toString().padStart(decimals, '0');
