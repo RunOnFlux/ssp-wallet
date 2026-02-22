@@ -74,14 +74,6 @@ export function signMessageWithSchnorrMultisig(
       publicNonces,
     );
 
-    console.log(`Raw Data:`, {
-      message: messageToSign,
-      publicKeys,
-      publicNonces,
-      sigOne,
-      challenge,
-    });
-
     const publicNoncesOneHex = {
       kPublic: pubNoncesOne.kPublic.buffer.toString('hex'),
       kTwoPublic: pubNoncesOne.kTwoPublic.buffer.toString('hex'),

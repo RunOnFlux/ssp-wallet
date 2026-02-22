@@ -20,7 +20,7 @@ interface EnterpriseVaultXpubSignedPayload {
 }
 
 export interface EnterpriseVaultSignedPayload {
-  keySignatures: string[]; // partial signatures from Key (UTXO)
+  keySignatures?: string[]; // partial signatures from Key (UTXO only — EVM uses signerContribution)
   keyPubKey: string; // Key's vault public key
   requestId: string;
   // EVM M-of-N vault: Key returns raw signer contribution + challenge

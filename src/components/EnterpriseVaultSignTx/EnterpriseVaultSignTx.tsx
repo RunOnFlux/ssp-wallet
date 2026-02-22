@@ -78,6 +78,10 @@ interface Props {
   // EVM M-of-N: all 2M public keys and nonces in canonical order
   allSignerKeys?: string[];
   allSignerNonces?: Array<{ kPublic: string; kTwoPublic: string }>;
+  // ERC-20 token metadata (EVM only, omit for native currency)
+  tokenContract?: string;
+  tokenSymbol?: string;
+  tokenDecimals?: number;
 }
 
 /**
@@ -120,6 +124,9 @@ function EnterpriseVaultSignTx({
   keyXpub,
   allSignerKeys,
   allSignerNonces,
+  tokenContract,
+  tokenSymbol,
+  tokenDecimals,
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
@@ -172,6 +179,9 @@ function EnterpriseVaultSignTx({
   const chainConfig = chain ? blockchains[chain] : null;
   const chainDecimals = chainConfig?.decimals ?? 8;
   const chainSymbol = chainConfig?.symbol ?? chain.toUpperCase();
+  // For token transfers, use token decimals/symbol for amounts; fee always uses chain decimals/symbol
+  const amountDecimals = tokenDecimals != null ? tokenDecimals : chainDecimals;
+  const amountSymbol = tokenSymbol || chainSymbol;
 
   // Reset state when modal closes
   useEffect(() => {
@@ -196,7 +206,7 @@ function EnterpriseVaultSignTx({
         // For UTXO: Key returns keySignatures as before
         const keySignatures: string[] = enterpriseVaultSigned.signerContribution
           ? [enterpriseVaultSigned.signerContribution]
-          : enterpriseVaultSigned.keySignatures;
+          : (enterpriseVaultSigned.keySignatures ?? []);
         const keySignaturesChallenges: string[] =
           enterpriseVaultSigned.challenge
             ? [enterpriseVaultSigned.challenge]
@@ -274,12 +284,13 @@ function EnterpriseVaultSignTx({
       }
 
       const fingerprint = getFingerprint();
-      const password = await passworderDecrypt(fingerprint, passwordBlob);
+      let password = await passworderDecrypt(fingerprint, passwordBlob);
       if (typeof password !== 'string') {
         throw new Error('Failed to decrypt password');
       }
 
       let walletSeed = await passworderDecrypt(password, walSeedBlob);
+      password = '';
       if (typeof walletSeed !== 'string') {
         throw new Error('Failed to decrypt wallet seed');
       }
@@ -374,11 +385,11 @@ function EnterpriseVaultSignTx({
       vaultIndex,
       vaultName,
       orgName,
-      recipients: recipientsJson,
+      recipients: parsedRecipients,
       fee,
       memo,
       rawUnsignedTx,
-      inputDetails: inputDetailsJson,
+      inputDetails: parsedInputDetails,
       walletSignatures: walletSigs,
       walletPubKey: walletPk,
       requestId: reqId,
@@ -397,6 +408,13 @@ function EnterpriseVaultSignTx({
       payload.sigOne = schnorrData.sigOne;
     }
 
+    // Include token metadata for Key's approval display
+    if (tokenContract) {
+      payload.tokenContract = tokenContract;
+      payload.tokenSymbol = tokenSymbol;
+      payload.tokenDecimals = tokenDecimals;
+    }
+
     // Include all signer keys/nonces for EVM signing
     // Key needs these to call signMultiSigMsg with the same arrays
     // Use props if available, fall back to locally-built arrays (M=1 fallback)
@@ -405,10 +423,10 @@ function EnterpriseVaultSignTx({
       ? allSignerNonces
       : signerNonces;
     if (effectiveKeys?.length) {
-      payload.allSignerKeys = JSON.stringify(effectiveKeys);
+      payload.allSignerKeys = effectiveKeys;
     }
     if (effectiveNonces?.length) {
-      payload.allSignerNonces = JSON.stringify(effectiveNonces);
+      payload.allSignerNonces = effectiveNonces;
     }
 
     const data: Record<string, unknown> = {
@@ -544,6 +562,9 @@ function EnterpriseVaultSignTx({
         };
 
         // 4. Delete used nonce from local store (never reuse)
+        // Clear private nonce material before persisting
+        walletNonce.k = '';
+        walletNonce.kTwo = '';
         nonces.splice(matchIdx, 1);
         await saveEncryptedNonces(nonces, passwordBlob);
       } else if (chainConfig?.chainType === 'evm') {
@@ -697,7 +718,7 @@ function EnterpriseVaultSignTx({
                 {recipient.address}
               </Text>
               <Text strong>
-                {formatAmount(recipient.amount, chainDecimals)} {chainSymbol}
+                {formatAmount(recipient.amount, amountDecimals)} {amountSymbol}
               </Text>
             </div>
           ))}

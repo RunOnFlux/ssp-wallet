@@ -34,6 +34,10 @@ interface SspConnectContextType {
   keyXpub?: string; // Key's vault xpub for EVM Schnorr signing
   allSignerKeys?: string[]; // EVM M-of-N: all 2M public keys hex (canonical order)
   allSignerNonces?: Array<{ kPublic: string; kTwoPublic: string }>; // EVM M-of-N: all 2M nonces
+  // ERC-20 token metadata (EVM only)
+  tokenContract?: string;
+  tokenSymbol?: string;
+  tokenDecimals?: number;
   clearRequest?: () => void;
 }
 
@@ -86,6 +90,10 @@ interface dataBgParams {
   keyXpub?: string; // Key's vault xpub for EVM Schnorr signing
   allSignerKeys?: string; // JSON string of all 2M public keys hex
   allSignerNonces?: string; // JSON string of all 2M nonces
+  // ERC-20 token metadata (EVM only)
+  tokenContract?: string;
+  tokenSymbol?: string;
+  tokenDecimals?: number;
 }
 
 interface dataBgRequest {
@@ -139,6 +147,15 @@ export const SspConnectProvider = ({
   const [allSignerNonces, setAllSignerNonces] = useState<
     Array<{ kPublic: string; kTwoPublic: string }> | undefined
   >(undefined);
+  const [tokenContract, setTokenContract] = useState<string | undefined>(
+    undefined,
+  );
+  const [tokenSymbol, setTokenSymbol] = useState<string | undefined>(
+    undefined,
+  );
+  const [tokenDecimals, setTokenDecimals] = useState<number | undefined>(
+    undefined,
+  );
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
 
@@ -262,6 +279,16 @@ export const SspConnectProvider = ({
               'string'
           ) {
             console.log('Invalid ' + key + ' value');
+            return null;
+          }
+        } else if (key === 'tokenDecimals') {
+          // ERC-20 token decimals — non-negative integer
+          if (
+            typeof paramValue !== 'number' ||
+            !Number.isInteger(paramValue) ||
+            paramValue < 0
+          ) {
+            console.log('Invalid tokenDecimals value:', paramValue);
             return null;
           }
         } else {
@@ -730,6 +757,28 @@ export const SspConnectProvider = ({
           } else {
             setAllSignerNonces(undefined);
           }
+          // ERC-20 token metadata (optional)
+          const signTokenContract = request.data.params.tokenContract;
+          setTokenContract(
+            typeof signTokenContract === 'string' && signTokenContract
+              ? signTokenContract
+              : undefined,
+          );
+          const signTokenSymbol = request.data.params.tokenSymbol;
+          setTokenSymbol(
+            typeof signTokenSymbol === 'string' && signTokenSymbol
+              ? signTokenSymbol
+              : undefined,
+          );
+          const signTokenDecimals = request.data.params.tokenDecimals;
+          setTokenDecimals(
+            typeof signTokenDecimals === 'number' &&
+              Number.isInteger(signTokenDecimals) &&
+              signTokenDecimals >= 0
+              ? signTokenDecimals
+              : undefined,
+          );
+
           setType('enterprise_vault_sign_tx');
 
           // Capture requester info
@@ -787,6 +836,9 @@ export const SspConnectProvider = ({
     setKeyXpub(undefined);
     setAllSignerKeys(undefined);
     setAllSignerNonces(undefined);
+    setTokenContract(undefined);
+    setTokenSymbol(undefined);
+    setTokenDecimals(undefined);
   };
 
   return (
@@ -814,6 +866,9 @@ export const SspConnectProvider = ({
         keyXpub,
         allSignerKeys,
         allSignerNonces,
+        tokenContract,
+        tokenSymbol,
+        tokenDecimals,
         clearRequest,
       }}
     >

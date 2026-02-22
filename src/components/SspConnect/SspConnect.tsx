@@ -84,6 +84,9 @@ function SspConnect() {
     keyXpub: sspConnectKeyXpub,
     allSignerKeys: sspConnectAllSignerKeys,
     allSignerNonces: sspConnectAllSignerNonces,
+    tokenContract: sspConnectTokenContract,
+    tokenSymbol: sspConnectTokenSymbol,
+    tokenDecimals: sspConnectTokenDecimals,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common', 'home']);
@@ -129,6 +132,15 @@ function SspConnect() {
   const [allSignerNonces, setAllSignerNonces] = useState<
     Array<{ kPublic: string; kTwoPublic: string }> | undefined
   >(undefined);
+  const [tokenContract, setTokenContract] = useState<string | undefined>(
+    undefined,
+  );
+  const [tokenSymbol, setTokenSymbol] = useState<string | undefined>(
+    undefined,
+  );
+  const [tokenDecimals, setTokenDecimals] = useState<number | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -195,6 +207,9 @@ function SspConnect() {
         setKeyXpub(sspConnectKeyXpub);
         setAllSignerKeys(sspConnectAllSignerKeys);
         setAllSignerNonces(sspConnectAllSignerNonces);
+        setTokenContract(sspConnectTokenContract);
+        setTokenSymbol(sspConnectTokenSymbol);
+        setTokenDecimals(sspConnectTokenDecimals);
         setOpenEnterpriseVaultSignTx(true);
       } else {
         generalAction({
@@ -405,6 +420,9 @@ function SspConnect() {
         keyXpub={keyXpub}
         allSignerKeys={allSignerKeys}
         allSignerNonces={allSignerNonces}
+        tokenContract={tokenContract}
+        tokenSymbol={tokenSymbol}
+        tokenDecimals={tokenDecimals}
       />
     </>
   );
