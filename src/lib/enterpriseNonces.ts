@@ -71,11 +71,8 @@ export async function replenishWalletEnterpriseNonces(
       newNonces.push(generatePublicNonce());
     }
 
-    // Store all nonces encrypted
-    const allNonces = [...existingNonces, ...newNonces];
-    await saveEncryptedNonces(allNonces, passwordBlob);
-
-    // Submit public parts to relay
+    // Submit public parts to relay FIRST — if this fails, we don't save
+    // locally, avoiding a desync where wallet has nonces the server doesn't
     const publicParts = newNonces.map((n) => ({
       kPublic: n.kPublic,
       kTwoPublic: n.kTwoPublic,
@@ -85,6 +82,10 @@ export async function replenishWalletEnterpriseNonces(
       source: 'wallet',
       nonces: publicParts,
     });
+
+    // Only store locally after successful relay submission
+    const allNonces = [...existingNonces, ...newNonces];
+    await saveEncryptedNonces(allNonces, passwordBlob);
 
     console.log(
       `[Enterprise Nonces] Wallet: Generated and submitted ${toGenerate} nonces`,

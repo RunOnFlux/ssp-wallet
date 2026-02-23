@@ -97,9 +97,17 @@ export async function fetchUtxos(
         const dataB = responseB.data.filter((x) =>
           onlyConfirmed ? x.confirmations > 0 : true,
         );
-        const fetchedUtxos = data
-          .filter((x) => (onlyConfirmed ? x.confirmations > 0 : true))
-          .concat(dataB);
+        const confirmedUtxos = data.filter((x) =>
+          onlyConfirmed ? x.confirmations > 0 : true,
+        );
+        // Deduplicate: dataB may contain the same confirmed UTXOs
+        const confirmedSet = new Set(
+          confirmedUtxos.map((x) => `${x.txid}:${x.vout}`),
+        );
+        const unconfirmedOnly = dataB.filter(
+          (x) => !confirmedSet.has(`${x.txid}:${x.vout}`),
+        );
+        const fetchedUtxos = confirmedUtxos.concat(unconfirmedOnly);
         const utxos = fetchedUtxos.map((x) => ({
           txid: x.txid,
           vout: x.vout,
@@ -152,9 +160,17 @@ export async function fetchUtxos(
         const dataB = responseB.data.filter((x) =>
           onlyConfirmed ? x.confirmations > 0 : true,
         );
-        const fetchedUtxos = data
-          .filter((x) => (onlyConfirmed ? x.confirmations > 0 : true))
-          .concat(dataB);
+        const confirmedUtxos = data.filter((x) =>
+          onlyConfirmed ? x.confirmations > 0 : true,
+        );
+        // Deduplicate: dataB may contain the same confirmed UTXOs
+        const confirmedSet = new Set(
+          confirmedUtxos.map((x) => `${x.txid}:${x.vout}`),
+        );
+        const unconfirmedOnly = dataB.filter(
+          (x) => !confirmedSet.has(`${x.txid}:${x.vout}`),
+        );
+        const fetchedUtxos = confirmedUtxos.concat(unconfirmedOnly);
         const utxos = fetchedUtxos.map((x) => ({
           txid: x.txid,
           vout: x.vout,

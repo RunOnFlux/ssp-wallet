@@ -211,7 +211,7 @@ function Login() {
       const randomParamFingerprint = getFingerprint('forRandomParams');
       passworderDecrypt(randomParamFingerprint, randomParams)
         .then((decryptedRandomParams) => {
-          console.log(decryptedRandomParams);
+          console.log('Random params decrypted');
           if (typeof decryptedRandomParams === 'string') {
             setPassword(values.password + decryptedRandomParams);
           } else {
@@ -306,10 +306,11 @@ function Login() {
           );
           // set xpubs of chains
           if (typeof xpub === 'string' && typeof xpubIdentity === 'string') {
-            console.log(xpub);
-            console.log(activeChain);
+            console.log('Wallet unlocked for chain:', activeChain);
+            console.log('xpub:', xpub);
+            console.log('activeChain:', activeChain);
             setXpubWallet(activeChain, xpub);
-            console.log(xpubIdentity);
+            console.log('xpubIdentity:', xpubIdentity);
             setXpubWalletIdentity(xpubIdentity);
             const fingerprint: string = getFingerprint();
             const pwBlob = await passworderEncrypt(fingerprint, password);

@@ -460,6 +460,13 @@ function EnterpriseVaultSignTx({
     setLoading(true);
     setError(null);
 
+    // Declare sensitive vars outside try so they can be cleared in catch/finally
+    let vaultXpriv = '';
+    let keypair: { pubKey: string; privKey: string } = {
+      pubKey: '',
+      privKey: '',
+    };
+
     try {
       if (parsedRecipients.length === 0) {
         throw new Error('No recipients found');
@@ -478,7 +485,9 @@ function EnterpriseVaultSignTx({
           : 0;
 
       // Derive vault signing keypair at the correct addressIndex
-      let { keypair, vaultXpriv } = await deriveVaultKeypair(txAddressIndex);
+      const derived = await deriveVaultKeypair(txAddressIndex);
+      keypair = derived.keypair;
+      vaultXpriv = derived.vaultXpriv;
       const isEvm =
         chainConfig?.chainType === 'evm' &&
         !!reservedNonce &&
@@ -599,6 +608,9 @@ function EnterpriseVaultSignTx({
       );
       // Now wait for enterpriseVaultSigned event from socket
     } catch (err) {
+      // Clear sensitive key material on error path
+      vaultXpriv = '';
+      keypair = { pubKey: keypair?.pubKey ?? '', privKey: '' };
       console.error('[EnterpriseVaultSignTx] Error:', err);
       setLoading(false);
       setError(err instanceof Error ? err.message : 'Unknown error');

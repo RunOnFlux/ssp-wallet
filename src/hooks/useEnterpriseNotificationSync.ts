@@ -195,7 +195,10 @@ export function useEnterpriseNotificationSync(): void {
         const nonceStatusRes = await axios.get(
           `https://${sspConfig().relay}/v1/nonces/status/${sspWalletKeyInternalIdentity}`,
         );
-        if (nonceStatusRes.data?.data?.replenishNeeded?.wallet) {
+        const nonceData = nonceStatusRes.data as
+          | { data?: { replenishNeeded?: { wallet?: boolean } } }
+          | undefined;
+        if (nonceData?.data?.replenishNeeded?.wallet) {
           replenishWalletEnterpriseNonces(
             sspWalletKeyInternalIdentity,
             passwordBlob,

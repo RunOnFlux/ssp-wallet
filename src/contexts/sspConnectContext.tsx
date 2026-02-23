@@ -150,9 +150,7 @@ export const SspConnectProvider = ({
   const [tokenContract, setTokenContract] = useState<string | undefined>(
     undefined,
   );
-  const [tokenSymbol, setTokenSymbol] = useState<string | undefined>(
-    undefined,
-  );
+  const [tokenSymbol, setTokenSymbol] = useState<string | undefined>(undefined);
   const [tokenDecimals, setTokenDecimals] = useState<number | undefined>(
     undefined,
   );
@@ -246,7 +244,7 @@ export const SspConnectProvider = ({
             typeof paramValue !== 'number' ||
             (paramValue !== 1 && paramValue !== 2)
           ) {
-            console.log('Invalid authMode value: ' + paramValue);
+            console.log('Invalid authMode value:', paramValue);
             return null;
           }
         } else if (key === 'orgIndex') {

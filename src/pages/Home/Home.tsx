@@ -119,8 +119,9 @@ function Home() {
   const generateSSPIdentity = () => {
     try {
       // generate ssp wallet identity
-      console.log(xpubWalletIdentity);
-      console.log(xpubKeyIdentity);
+      console.log('Generating SSP identity from wallet and key xpubs');
+      console.log('xpubWalletIdentity', xpubWalletIdentity);
+      console.log('xpubKeyIdentity', xpubKeyIdentity);
       const generatedSspWalletInternalIdentity =
         generateInternalIdentityAddress(xpubWalletIdentity, identityChain);
       dispatch(

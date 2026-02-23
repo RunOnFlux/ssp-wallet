@@ -195,95 +195,93 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     newSocket.on('txid', (tx: serverResponse) => {
-      console.log('incoming txid');
-      console.log(tx);
+      console.log('[Socket] incoming txid, chain:', tx.chain, tx);
       setTxid(tx.payload);
       setChain(tx.chain);
     });
 
     newSocket.on('txrejected', (tx: serverResponse) => {
-      console.log('tx rejected');
-      console.log(tx);
+      console.log('[Socket] tx rejected, chain:', tx.chain, tx);
       setTxRejected(tx.payload);
       setChain(tx.chain);
     });
 
     newSocket.on('publicnonces', (nonces: serverResponse) => {
-      console.log('incoming public nonces');
-      console.log(nonces);
+      console.log('[Socket] incoming public nonces', nonces);
       setPublicNonces(nonces.payload);
     });
 
     newSocket.on('publicnoncesrejected', (nonces: serverResponse) => {
-      console.log('public nonces rejected');
-      console.log(nonces);
+      console.log('[Socket] public nonces rejected', nonces);
       setPublicNoncesRejected('publicnoncesrejected');
     });
 
     newSocket.on('evmsigned', (signed: serverResponse) => {
-      console.log('EVM signing completed');
-      console.log(signed);
+      console.log('[Socket] EVM signing completed, chain:', signed.chain, signed);
       setEvmSigned(signed.payload);
     });
 
     newSocket.on('evmsigningrejected', (rejected: serverResponse) => {
-      console.log('EVM signing rejected');
-      console.log(rejected);
+      console.log('[Socket] EVM signing rejected', rejected);
       setEvmSigningRejected('evmsigningrejected');
     });
 
     newSocket.on('wksigned', (signed: serverResponse) => {
-      console.log('WK signing completed');
-      console.log(signed);
+      console.log('[Socket] WK signing completed', signed);
       try {
         const payload = JSON.parse(signed.payload) as WkSignedPayload;
         setWkSigned(payload);
       } catch {
-        console.error('Failed to parse wksigned payload');
+        console.error('[Socket] Failed to parse wksigned payload');
       }
     });
 
     newSocket.on('wksigningrejected', (rejected: serverResponse) => {
-      console.log('WK signing rejected');
-      console.log(rejected);
+      console.log('[Socket] WK signing rejected', rejected);
       setWkSigningRejected('wksigningrejected');
     });
 
     newSocket.on('enterprisevaultxpubsigned', (signed: serverResponse) => {
-      console.log('Enterprise vault xpub signed');
-      console.log(signed);
+      console.log(
+        '[Socket] Enterprise vault xpub signed, chain:',
+        signed.chain,
+        signed,
+      );
       try {
         const payload = JSON.parse(
           signed.payload,
         ) as EnterpriseVaultXpubSignedPayload;
         setEnterpriseVaultXpubSigned(payload);
       } catch {
-        console.error('Failed to parse enterprisevaultxpubsigned payload');
+        console.error(
+          '[Socket] Failed to parse enterprisevaultxpubsigned payload',
+        );
       }
     });
 
     newSocket.on('enterprisevaultxpubrejected', (rejected: serverResponse) => {
-      console.log('Enterprise vault xpub rejected');
-      console.log(rejected);
+      console.log('[Socket] Enterprise vault xpub rejected', rejected);
       setEnterpriseVaultXpubRejected('enterprisevaultxpubrejected');
     });
 
     newSocket.on('enterprisevaultsigned', (signed: serverResponse) => {
-      console.log('Enterprise vault sign completed');
-      console.log(signed);
+      console.log(
+        '[Socket] Enterprise vault sign completed, chain:',
+        signed.chain,
+        signed,
+      );
       try {
         const payload = JSON.parse(
           signed.payload,
         ) as EnterpriseVaultSignedPayload;
         setEnterpriseVaultSigned(payload);
       } catch {
-        console.error('Failed to parse enterprisevaultsigned payload');
+        console.error('[Socket] Failed to parse enterprisevaultsigned payload');
       }
     });
 
     newSocket.on('enterprisevaultsignrejected', (rejected: serverResponse) => {
-      console.log('Enterprise vault sign rejected');
-      console.log(rejected);
+      console.log('[Socket] Enterprise vault sign rejected', rejected);
       setEnterpriseVaultSignRejected('enterprisevaultsignrejected');
     });
 
@@ -291,7 +289,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     newSocket.on(
       'walletconnect_response',
       (response: WalletConnectSocketResponse) => {
-        console.log('[WalletConnect Socket] Response received:', response);
+        console.log(
+          '[WalletConnect Socket] Response received:',
+          response,
+        );
         setWalletConnectResponse(response);
       },
     );

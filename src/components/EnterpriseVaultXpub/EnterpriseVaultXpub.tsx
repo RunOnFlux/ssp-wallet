@@ -167,7 +167,7 @@ function EnterpriseVaultXpub({
     }
 
     const fingerprint = getFingerprint();
-    const password = await passworderDecrypt(fingerprint, passwordBlob);
+    let password = await passworderDecrypt(fingerprint, passwordBlob);
     if (typeof password !== 'string') {
       throw new Error('Failed to decrypt password');
     }
@@ -200,18 +200,25 @@ function EnterpriseVaultXpub({
       throw new Error('Could not retrieve identity key');
     }
 
-    const xpriv = await passworderDecrypt(password, xprivEncrypted);
+    let xpriv = await passworderDecrypt(password, xprivEncrypted);
+    // Clear password — no longer needed
+    password = '';
     if (typeof xpriv !== 'string') {
       throw new Error('Failed to decrypt identity key');
     }
 
     const identityKeypair = generateAddressKeypair(xpriv, 10, 0, identityChain);
+    // Clear xpriv — no longer needed
+    xpriv = '';
     const xpubMessage = `SSP_VAULT_XPUB:wallet:${xpub}:${chain}:${String(orgIndex)}`;
     const signature = signMessage(
       xpubMessage,
       identityKeypair.privKey,
       identityChain,
     );
+
+    // Clear private key from keypair
+    identityKeypair.privKey = '';
 
     return { xpub, signature };
   }, [passwordBlob, chain, orgIndex, identityChain]);

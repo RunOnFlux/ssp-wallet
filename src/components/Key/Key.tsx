@@ -16,10 +16,7 @@ import {
   encrypt as passworderEncrypt,
 } from '@metamask/browser-passworder';
 import { getFingerprint } from '../../lib/fingerprint';
-import {
-  generateMultisigAddress,
-  getScriptType,
-} from '../../lib/wallet.ts';
+import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
 import { replenishWalletEnterpriseNonces } from '../../lib/enterpriseNonces';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import type { syncSSPRelay } from '../../types';
