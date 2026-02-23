@@ -230,7 +230,7 @@ export function generateMultisigAddress(
 
 export function deriveEVMPublicKey(
   xpub2: string,
-  typeIndex: 0 | 1 | 10, // normal, change, internal identity
+  typeIndex: number, // 0: normal, 1: change, 10: identity, or vaultIndex for enterprise
   addressIndex: number,
   chain: keyof cryptos,
 ): string {
@@ -309,7 +309,7 @@ export function generateMultisigAddressEVM(
 // given xpriv of our party, generate keypair consisting of privateKey in and public key belonging to it
 export function generateAddressKeypairEVM(
   xpriv: string,
-  typeIndex: 0 | 1 | 10, // normal, change, internal identity
+  typeIndex: number, // 0: normal, 1: change, 10: identity, or vaultIndex for enterprise
   addressIndex: number,
   chain: keyof cryptos,
 ): keyPair {
@@ -330,7 +330,7 @@ export function generateAddressKeypairEVM(
 // given xpriv of our party, generate keypair consisting of privateKey in WIF format and public key belonging to it
 export function generateAddressKeypair(
   xpriv: string,
-  typeIndex: 0 | 1 | 10, // normal, change, internal identity
+  typeIndex: number, // 0: normal, 1: change, 10: identity, or vaultIndex for enterprise
   addressIndex: number,
   chain: keyof cryptos,
 ): keyPair {

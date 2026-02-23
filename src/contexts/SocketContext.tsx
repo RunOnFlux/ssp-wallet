@@ -20,12 +20,14 @@ interface EnterpriseVaultXpubSignedPayload {
 }
 
 export interface EnterpriseVaultSignedPayload {
-  keySignatures?: string[]; // partial signatures from Key (UTXO only — EVM uses signerContribution)
+  keySignatures?: string[]; // legacy message signatures (unused with SIGHASH signing)
   keyPubKey: string; // Key's vault public key
   requestId: string;
   // EVM M-of-N vault: Key returns raw signer contribution + challenge
   signerContribution?: string;
   challenge?: string;
+  // UTXO progressive signing: Key returns fully signed TX hex (both wallet+key SIGHASH sigs)
+  signedHex?: string;
 }
 
 interface SocketContextType {

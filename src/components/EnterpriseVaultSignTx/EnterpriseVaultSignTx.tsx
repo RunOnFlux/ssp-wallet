@@ -13,11 +13,13 @@ import {
   getScriptType,
   deriveEVMPublicKey,
 } from '../../lib/wallet';
-import { signMessage } from '../../lib/relayAuth';
 import { signVaultMessageWithSchnorr } from '../../lib/evmSigning';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import axios from 'axios';
+import utxolib from '@runonflux/utxo-lib';
+import { Buffer } from 'buffer';
+import { getLibId } from '../../lib/constructTx';
 
 import { useTranslation } from 'react-i18next';
 import { generateRequestId } from '../../lib/wkSign';
@@ -44,6 +46,8 @@ interface EnterpriseVaultSignTxResponse {
   chain: string;
   orgIndex: number;
   vaultIndex: number;
+  // UTXO progressive signing: fully signed TX hex from Key (both wallet+key SIGHASH sigs)
+  signedHex?: string;
 }
 
 interface EnterpriseVaultSignTxData {
@@ -195,15 +199,15 @@ function EnterpriseVaultSignTx({
     if (enterpriseVaultSigned && waitingForKey && requestId) {
       if (enterpriseVaultSigned.requestId === requestId) {
         console.log(
-          '[EnterpriseVaultSignTx] Received signatures from Key:',
-          enterpriseVaultSigned,
+          '[EnterpriseVaultSignTx] Received response from Key, requestId:',
+          enterpriseVaultSigned.requestId,
         );
         setWaitingForKey(false);
         setLoading(false);
 
         // Build complete response
         // For EVM: Key returns signerContribution + challenge (raw sums, no ABI encoding)
-        // For UTXO: Key returns keySignatures as before
+        // For UTXO: Key returns signedHex (TX with both wallet+key SIGHASH sigs)
         const keySignatures: string[] = enterpriseVaultSigned.signerContribution
           ? [enterpriseVaultSigned.signerContribution]
           : (enterpriseVaultSigned.keySignatures ?? []);
@@ -223,6 +227,10 @@ function EnterpriseVaultSignTx({
           chain,
           orgIndex,
           vaultIndex,
+          // UTXO progressive signing: forward signedHex to enterprise app
+          ...(enterpriseVaultSigned.signedHex
+            ? { signedHex: enterpriseVaultSigned.signedHex }
+            : {}),
         };
 
         if (openAction) {
@@ -261,9 +269,7 @@ function EnterpriseVaultSignTx({
 
   /**
    * Derive the vault master xpriv and keypair at a given addressIndex.
-   * Path: m/48'/coin'/orgIndex'/scriptType'/0/{addressIndex}
-   *
-   * vaultIndex is always 0 (reserved for future expansion).
+   * Path: m/48'/coin'/orgIndex'/scriptType'/{vaultIndex}/{addressIndex}
    * Returns both the vault xpriv (for per-input UTXO derivation) and
    * the keypair at the specified addressIndex.
    */
@@ -308,61 +314,93 @@ function EnterpriseVaultSignTx({
       // Clear sensitive data
       walletSeed = '';
 
-      // Derive keypair at vaultIndex=0/addressIndex
+      // Derive keypair at vaultIndex/addressIndex
       const keypair = generateAddressKeypair(
         vaultXpriv,
-        0,
+        vaultIndex,
         addressIndex,
         chain as keyof cryptos,
       );
 
       return { keypair, vaultXpriv };
     },
-    [passwordBlob, chain, orgIndex, chainConfig],
+    [passwordBlob, chain, orgIndex, vaultIndex, chainConfig],
   );
 
   /**
-   * Sign each input with the wallet's vault private key (UTXO only).
-   * Derives a per-input keypair at vaultIndex=0/input.addressIndex to match
-   * the key that was used to generate each UTXO address.
+   * Sign each input with the wallet's vault private key using SIGHASH (UTXO only).
+   * Uses utxolib TransactionBuilder to produce proper ECDSA witness signatures
+   * that can be broadcast. Each input is signed with its per-address derived keypair.
    * EVM chains use Schnorr signing via signVaultMessageWithSchnorr() instead.
    */
-  const signInputs = useCallback(
-    (vaultXpriv: string): string[] => {
+  const signVaultUtxoInputs = useCallback(
+    (vaultXpriv: string): string => {
       const inputCount = parsedInputDetails.length;
       if (inputCount === 0) {
         throw new Error('No inputs to sign');
       }
 
-      const signatures: string[] = [];
+      const libID = getLibId(chain as keyof cryptos);
+      const network = utxolib.networks[libID];
+      const chainConfig = blockchains[chain as keyof cryptos];
 
+      // Determine hashType (BCH uses SIGHASH_BITCOINCASHBIP143)
+      let hashType = utxolib.Transaction.SIGHASH_ALL;
+      if (chainConfig?.hashType) {
+        hashType =
+          utxolib.Transaction.SIGHASH_ALL |
+          utxolib.Transaction.SIGHASH_BITCOINCASHBIP143;
+      }
+
+      // Parse TX into TransactionBuilder (unsigned for first signer, partially-signed for subsequent)
+      const txb = utxolib.TransactionBuilder.fromTransaction(
+        utxolib.Transaction.fromHex(rawUnsignedTx, network),
+        network,
+      );
+
+      // Sign each input with the correct per-address keypair
       for (let i = 0; i < inputCount; i++) {
-        const input = parsedInputDetails[i] as { addressIndex?: number };
+        const input = parsedInputDetails[i] as {
+          addressIndex?: number;
+          witnessScript?: string;
+          redeemScript?: string;
+          amount?: string;
+        };
         const addressIndex =
           typeof input?.addressIndex === 'number' ? input.addressIndex : 0;
 
         // Derive keypair for this input's address
         const inputKeypair = generateAddressKeypair(
           vaultXpriv,
-          0, // vaultIndex: always 0
+          vaultIndex,
           addressIndex,
           chain as keyof cryptos,
         );
 
-        // Sign: rawUnsignedTx + ':' + inputIndex
-        // This ensures each signature is bound to a specific input
-        const messageToSign = `${rawUnsignedTx}:${i}`;
-        const signature = signMessage(
-          messageToSign,
-          inputKeypair.privKey,
-          chain as keyof cryptos,
+        const keyPair = utxolib.ECPair.fromWIF(inputKeypair.privKey, network);
+
+        const witnessScriptBuf = input.witnessScript
+          ? Buffer.from(input.witnessScript, 'hex')
+          : undefined;
+        const redeemScriptBuf = input.redeemScript
+          ? Buffer.from(input.redeemScript, 'hex')
+          : undefined;
+        const amount = input.amount ? Number(input.amount) : 0;
+
+        txb.sign(
+          i,
+          keyPair,
+          redeemScriptBuf,
+          hashType,
+          amount,
+          witnessScriptBuf,
         );
-        signatures.push(signature);
       }
 
-      return signatures;
+      // buildIncomplete() — other signers (Key, then subsequent WK pairs) will add more sigs
+      return txb.buildIncomplete().toHex();
     },
-    [parsedInputDetails, rawUnsignedTx, chain],
+    [parsedInputDetails, rawUnsignedTx, chain, vaultIndex],
   );
 
   /**
@@ -396,6 +434,11 @@ function EnterpriseVaultSignTx({
       wkIdentity,
       scriptType: getScriptType(chainConfig?.scriptType ?? 'p2sh'),
     };
+
+    // UTXO progressive signing: send wallet-signed TX hex so Key can add its sigs on top
+    if (chainConfig?.chainType !== 'evm' && walletSigs.length === 1) {
+      payload.walletSignedHex = walletSigs[0];
+    }
 
     // Include Key's reserved nonce for EVM vault signing (Key uses this for its Schnorr signing)
     if (reservedKeyNonce) {
@@ -535,7 +578,7 @@ function EnterpriseVaultSignTx({
             throw new Error('Key vault xpub not provided. Re-run vault setup.');
           const keyVaultPubKey = deriveEVMPublicKey(
             keyXpub,
-            0,
+            vaultIndex,
             txAddressIndex,
             chain as keyof cryptos,
           );
@@ -582,8 +625,11 @@ function EnterpriseVaultSignTx({
           'Enterprise nonces required for EVM vault signing. Please wait for nonce replenishment.',
         );
       } else {
-        // UTXO: Bitcoin message signing per input with per-address keypairs
-        signatures = signInputs(vaultXpriv);
+        // UTXO: SIGHASH-based signing via TransactionBuilder (proper ECDSA witness sigs)
+        const walletSignedHex = signVaultUtxoInputs(vaultXpriv);
+        // Pack wallet-signed hex into signatures array — postVaultSignRequest extracts it
+        // as walletSignedHex for Key to load and add its signatures on top
+        signatures = [walletSignedHex];
       }
 
       // Clear sensitive key material
