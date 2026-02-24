@@ -2,7 +2,7 @@
 
 /**
  * Address Verification Test
- * 
+ *
  * Simple test to verify that extended private keys generate
  * the correct target address for SSP Wallet.
  */
@@ -40,7 +40,8 @@ if (!walletChild.privateKey || !keyChild.privateKey) {
   throw new Error('Failed to derive private keys');
 }
 
-const walletPrivKey = '0x' + Buffer.from(walletChild.privateKey).toString('hex');
+const walletPrivKey =
+  '0x' + Buffer.from(walletChild.privateKey).toString('hex');
 const keyPrivKey = '0x' + Buffer.from(keyChild.privateKey).toString('hex');
 
 console.log('✅ Child private keys derived');
@@ -60,15 +61,21 @@ console.log('Key pubkey:   ', keyPubKey.substring(0, 20) + '...');
 console.log('\n📊 Verification Summary');
 console.log('========================');
 console.log('✅ Extended private keys provided');
-console.log('✅ Extended public keys derived');  
+console.log('✅ Extended public keys derived');
 console.log('✅ Child keys derived for signing');
 console.log('✅ Public keys extracted');
 console.log('✅ Keys ready for Schnorr MultiSig signatures');
 
 console.log('\n🔑 Key Information:');
 console.log('Expected MultiSig Address:', EXPECTED_ADDRESS);
-console.log('Wallet Extended Key:      ', SSP_WALLET_XPRIV.substring(0, 20) + '...');
-console.log('Key Extended Key:         ', SSP_KEY_XPRIV.substring(0, 20) + '...');
+console.log(
+  'Wallet Extended Key:      ',
+  SSP_WALLET_XPRIV.substring(0, 20) + '...',
+);
+console.log(
+  'Key Extended Key:         ',
+  SSP_KEY_XPRIV.substring(0, 20) + '...',
+);
 
 console.log('\n✅ Address verification test completed!');
-console.log('📝 These keys are ready for use in the Schnorr MultiSig test'); 
+console.log('📝 These keys are ready for use in the Schnorr MultiSig test');

@@ -5,6 +5,7 @@ This directory contains simple proof-of-concept tests for the Schnorr MultiSig i
 ## 🎯 **Purpose**
 
 These tests demonstrate the basic functionality of:
+
 - Extended private key handling
 - EIP-191 message formatting
 - Schnorr MultiSig signature generation
@@ -13,15 +14,19 @@ These tests demonstrate the basic functionality of:
 ## 📁 **Test Files**
 
 ### **`simple-schnorr-test.mjs`**
+
 The main test that demonstrates the complete Schnorr MultiSig process:
+
 - ✅ Private key derivation from extended keys
 - ✅ EIP-191 message formatting
-- ✅ Schnorr MultiSig signature generation  
+- ✅ Schnorr MultiSig signature generation
 - ✅ Hash compatibility with `ethers.hashMessage()`
 - ✅ Optional contract verification
 
 ### **`address-verification.mjs`**
+
 Simple test to verify address generation:
+
 - ✅ Extended key to public key conversion
 - ✅ MultiSig address generation
 - ✅ Keypair creation for signing
@@ -29,17 +34,20 @@ Simple test to verify address generation:
 ## 🔑 **Test Configuration**
 
 ### **Extended Private Keys**:
+
 ```javascript
-SSP_WALLET_XPRIV: 'xprvREDACTED'
-SSP_KEY_XPRIV: 'xprvREDACTED'
+SSP_WALLET_XPRIV: 'xprvREDACTED';
+SSP_KEY_XPRIV: 'xprvREDACTED';
 ```
 
 ### **Target Address**:
+
 ```
 0x9b171134A9386149Ed030F499d5e318272eB9589
 ```
 
 ### **EIP-191 Format**:
+
 ```javascript
 const prefix = '\x19Ethereum Signed Message:\n';
 const eip191Message = prefix + message.length.toString() + message;
@@ -51,13 +59,14 @@ const eip191Message = prefix + message.length.toString() + message;
 # Main Schnorr MultiSig test
 node tests/proof-of-concept/simple-schnorr-test.mjs
 
-# Address verification test  
+# Address verification test
 node tests/proof-of-concept/address-verification.mjs
 ```
 
 ## 📋 **Expected Results**
 
 Both tests should show:
+
 - ✅ Successful key derivation
 - ✅ Proper EIP-191 formatting
 - ✅ Hash compatibility confirmation
@@ -66,6 +75,7 @@ Both tests should show:
 ## 🔗 **Integration**
 
 The core logic from these tests is used in:
+
 - **`src/contexts/WalletConnectContext.tsx`**: Main WalletConnect implementation
 - **Personal sign handling**: EIP-191 compatible signatures
 - **Hex message decoding**: Handles WalletConnect hex-encoded messages
@@ -73,9 +83,9 @@ The core logic from these tests is used in:
 ## 📝 **Key Points**
 
 1. **EIP-191 Standard**: Ensures Etherscan compatibility
-2. **Fresh Nonces**: Security requirement for Schnorr signatures  
+2. **Fresh Nonces**: Security requirement for Schnorr signatures
 3. **Hash Matching**: `ethers.hashMessage()` compatibility is crucial
 4. **ABI Encoding**: Proper format for smart contract verification
 5. **Hex Decoding**: WalletConnect sends hex-encoded messages
 
-This implementation provides the foundation for SSP Wallet's WalletConnect integration with proper Schnorr MultiSig signatures. 
+This implementation provides the foundation for SSP Wallet's WalletConnect integration with proper Schnorr MultiSig signatures.

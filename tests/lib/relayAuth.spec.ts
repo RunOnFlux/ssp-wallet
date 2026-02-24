@@ -11,7 +11,8 @@ import {
 } from '../../src/lib/relayAuth';
 
 // Test fixtures - same WIF used in ssp-relay tests for consistency
-const TEST_PRIVATE_KEY_WIF = 'L1TnU2zbNaAqMoVh65Cyvmcjzbrj41Gs9iTLcWbpJCMynXuap6UN';
+const TEST_PRIVATE_KEY_WIF =
+  'L1TnU2zbNaAqMoVh65Cyvmcjzbrj41Gs9iTLcWbpJCMynXuap6UN';
 
 describe('RelayAuth Lib', () => {
   describe('computeBodyHash', () => {
@@ -95,7 +96,11 @@ describe('RelayAuth Lib', () => {
     });
 
     it('should include data hash when provided', () => {
-      const payload = createSignaturePayload('sync', 'my-identity', 'abc123hash');
+      const payload = createSignaturePayload(
+        'sync',
+        'my-identity',
+        'abc123hash',
+      );
 
       expect(payload.data).toBe('abc123hash');
     });
@@ -147,7 +152,11 @@ describe('RelayAuth Lib', () => {
 
     it('should work with flux chain', () => {
       const message = 'flux test message';
-      const signature = signMessage(message, 'KxcvLgMARzhsH9ttJvxFC56aCNeYviVwN3GKXamhJb5PCPyYy6eU', 'flux');
+      const signature = signMessage(
+        message,
+        'KxcvLgMARzhsH9ttJvxFC56aCNeYviVwN3GKXamhJb5PCPyYy6eU',
+        'flux',
+      );
 
       expect(signature.length).toBeGreaterThan(0);
       expect(() => Buffer.from(signature, 'base64')).not.toThrow();

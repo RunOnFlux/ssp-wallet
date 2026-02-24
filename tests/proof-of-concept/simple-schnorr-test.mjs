@@ -2,7 +2,7 @@
 
 /**
  * Simple Schnorr MultiSig Test
- * 
+ *
  * This test demonstrates the core Schnorr MultiSig functionality
  * for SSP Wallet without external dependencies.
  */
@@ -31,15 +31,18 @@ const keyHDKey = HDKey.fromExtendedKey(SSP_KEY_XPRIV);
 const walletChild = walletHDKey.derive('m/0/0');
 const keyChild = keyHDKey.derive('m/0/0');
 
-const walletPrivKey = '0x' + Buffer.from(walletChild.privateKey).toString('hex');
+const walletPrivKey =
+  '0x' + Buffer.from(walletChild.privateKey).toString('hex');
 const keyPrivKey = '0x' + Buffer.from(keyChild.privateKey).toString('hex');
 
 console.log('✅ Private keys derived successfully');
 
 // Step 2: Create Schnorr signers
 console.log('\n🔐 Step 2: Creating Schnorr signers...');
-const signerOne = aaSchnorrMultisig.helpers.SchnorrHelpers.createSchnorrSigner(walletPrivKey);
-const signerTwo = aaSchnorrMultisig.helpers.SchnorrHelpers.createSchnorrSigner(keyPrivKey);
+const signerOne =
+  aaSchnorrMultisig.helpers.SchnorrHelpers.createSchnorrSigner(walletPrivKey);
+const signerTwo =
+  aaSchnorrMultisig.helpers.SchnorrHelpers.createSchnorrSigner(keyPrivKey);
 
 // Generate fresh nonces
 signerOne.generatePubNonces();
@@ -72,7 +75,8 @@ const { signature: sigTwo } = signerTwo.signMultiSigMsg(
 );
 
 const sSummed = aaSchnorrMultisig.signers.Schnorrkel.sumSigs([sigOne, sigTwo]);
-const combinedPublicKey = aaSchnorrMultisig.signers.Schnorrkel.getCombinedPublicKey(publicKeys);
+const combinedPublicKey =
+  aaSchnorrMultisig.signers.Schnorrkel.getCombinedPublicKey(publicKeys);
 
 const px = ethers.hexlify(combinedPublicKey.buffer.subarray(1, 33));
 const parity = combinedPublicKey.buffer[0] - 2 + 27;
@@ -80,12 +84,17 @@ const parity = combinedPublicKey.buffer[0] - 2 + 27;
 const abiCoder = new ethers.AbiCoder();
 const signature = abiCoder.encode(
   ['bytes32', 'bytes32', 'bytes32', 'uint8'],
-  [px, ethers.hexlify(challenge.buffer), ethers.hexlify(sSummed.buffer), parity],
+  [
+    px,
+    ethers.hexlify(challenge.buffer),
+    ethers.hexlify(sSummed.buffer),
+    parity,
+  ],
 );
 
 console.log('✅ Signature generated:', {
   length: signature.length,
-  preview: signature.substring(0, 50) + '...'
+  preview: signature.substring(0, 50) + '...',
 });
 
 // Step 5: Verify hash compatibility
@@ -135,4 +144,4 @@ console.log('- Etherscan verification');
 console.log('- Smart contract validation');
 console.log('- Any EIP-191 compatible system');
 
-console.log('\n🚀 Test completed successfully!'); 
+console.log('\n🚀 Test completed successfully!');
