@@ -78,7 +78,11 @@ function AllAddressesInfo({ open, openAction }: Props) {
       const chainsInformationToSend: chainsInfo[] = [];
       const chainsMap: { [key: string]: chainsInfo } = {};
       approvedAddresses.forEach((addr) => {
-        const [chainId, address] = addr.split(':');
+        // Split on first ':' only — CashAddr addresses (e.g. bitcoincash:qp3...)
+        // contain ':' which would break a naive split(':')
+        const colonIndex = addr.indexOf(':');
+        const chainId = addr.substring(0, colonIndex);
+        const address = addr.substring(colonIndex + 1);
         if (!chainsMap[chainId]) {
           const chainInfo: chainsInfo = {
             id: chainId,
