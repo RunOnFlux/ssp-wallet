@@ -34,6 +34,7 @@ declare module '@storage/blockchains' {
     feePerByte: number;
     maxMessage: number;
     maxTxSize: number;
+    maxFee: number;
     rbf: boolean;
     cashaddr: string;
     txExpiryHeight: number;

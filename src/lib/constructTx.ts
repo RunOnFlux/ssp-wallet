@@ -401,11 +401,28 @@ export function buildUnsignedRawTx(
 // SSP has one sender, one receiver - usually known to sender. We can ensure higher overall fee by spending all the mandatory utxos in a case where fee rate is higher.
 // in normal scenario automatic fee would solve vast majority of cases.
 // use all utxos that are selected mandatory in pick, add another if not sufficient
+// Calculate max UTXO inputs based on chain's maxTxSize and scriptType
+// Uses the same size formulas as estimateUtxoTxSize (2-of-2 multisig, 2 outputs)
+function getMaxUtxoInputs(maxTxSize: number, scriptType: string): number {
+  if (scriptType === 'p2wsh') {
+    // weight = (11 + 68*N + 43*2)*4 + 150*N → vSize ≈ 97 + 105.5*N, +18*N for 2nd sig
+    const overhead = 97;
+    const perInput = 123.5;
+    return Math.floor((maxTxSize - overhead) / perInput);
+  }
+  // P2SH: 10 + 180*N + 34*2 + 72*N = 78 + 252*N bytes
+  const overhead = 78;
+  const perInput = 252;
+  return Math.floor((maxTxSize - overhead) / perInput);
+}
+
 function pickUtxos(
   utxos: utxo[],
   amount: BigNumber,
   mandatoryUtxos?: txIdentifier[],
+  maxInputs?: number,
 ): utxo[] {
+  const inputLimit = maxInputs ?? 670;
   let selectedUtxos: utxo[] = [];
   // sorted utxos by satoshis, smallest first
   const sortedUtxos = utxos.sort((a, b) => {
@@ -473,7 +490,7 @@ function pickUtxos(
       selectedUtxos = [utxoX];
     }
   });
-  if (selectedUtxos.length && selectedUtxos.length <= 670) {
+  if (selectedUtxos.length && selectedUtxos.length <= inputLimit) {
     return selectedUtxos;
   }
 
@@ -491,7 +508,7 @@ function pickUtxos(
   if (totalAmountSmallerUtxos.isEqualTo(amount)) {
     selectedUtxos = utxosSmallerThanTarget;
   }
-  if (selectedUtxos.length && selectedUtxos.length <= 670) {
+  if (selectedUtxos.length && selectedUtxos.length <= inputLimit) {
     return selectedUtxos;
   }
 
@@ -506,7 +523,7 @@ function pickUtxos(
       selectedUtxos = [utxosBiggestThanTarget[0]];
     }
   }
-  if (selectedUtxos.length && selectedUtxos.length <= 670) {
+  if (selectedUtxos.length && selectedUtxos.length <= inputLimit) {
     return selectedUtxos;
   }
 
@@ -523,7 +540,7 @@ function pickUtxos(
         break;
       }
     }
-    if (selectedUtxos.length && selectedUtxos.length <= 670) {
+    if (selectedUtxos.length && selectedUtxos.length <= inputLimit) {
       return selectedUtxos;
     }
   }
@@ -541,7 +558,7 @@ function pickUtxos(
         break;
       }
     }
-    if (selectedUtxos.length && selectedUtxos.length <= 670) {
+    if (selectedUtxos.length && selectedUtxos.length <= inputLimit) {
       return selectedUtxos;
     }
   }
@@ -550,7 +567,7 @@ function pickUtxos(
   if (utxosBiggestThanTarget.length) {
     selectedUtxos = [utxosBiggestThanTarget[0]];
   }
-  if (selectedUtxos.length && selectedUtxos.length <= 670) {
+  if (selectedUtxos.length && selectedUtxos.length <= inputLimit) {
     return selectedUtxos;
   }
 
@@ -567,7 +584,7 @@ function pickUtxos(
       }
     }
   }
-  if (selectedUtxos.length && selectedUtxos.length <= 670) {
+  if (selectedUtxos.length && selectedUtxos.length <= inputLimit) {
     return selectedUtxos;
   }
   throw new Error(
@@ -634,7 +651,16 @@ export async function getTransactionSize(
       utxosFiltered = utxosNonCoinbase;
     }
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
-    const pickedUtxos = pickUtxos(utxosFiltered, amountToSend, mandatoryUtxos);
+    const maxInputs = getMaxUtxoInputs(
+      blockchainConfig.maxTxSize,
+      blockchainConfig.scriptType,
+    );
+    const pickedUtxos = pickUtxos(
+      utxosFiltered,
+      amountToSend,
+      mandatoryUtxos,
+      maxInputs,
+    );
     if (mandatoryUtxos?.length) {
       console.log('RBF TX');
     }
@@ -858,7 +884,16 @@ export async function constructAndSignTransaction(
       utxosFiltered = utxosNonCoinbase;
     }
     const amountToSend = new BigNumber(amount).plus(new BigNumber(fee));
-    const pickedUtxos = pickUtxos(utxosFiltered, amountToSend, mandatoryUtxos);
+    const maxInputs = getMaxUtxoInputs(
+      blockchains[chain].maxTxSize,
+      blockchains[chain].scriptType,
+    );
+    const pickedUtxos = pickUtxos(
+      utxosFiltered,
+      amountToSend,
+      mandatoryUtxos,
+      maxInputs,
+    );
     if (mandatoryUtxos?.length) {
       console.log('RBF TX');
     }

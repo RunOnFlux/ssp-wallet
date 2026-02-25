@@ -45,6 +45,7 @@ const flux = {
   feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 1800000, // 1,800,000 vbytes
+  maxFee: 1000000000, // 10 FLUX
   rbf: false,
   txExpiryHeight: 30, // 30 blocks, 1 hour
   onramperNetwork: 'flux',
@@ -76,6 +77,7 @@ const fluxTestnet = {
   feePerByte: 1, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 1800000, // 1,800,000 vbytes
+  maxFee: 10000000000, // 100 TEST-FLUX
   rbf: false,
   txExpiryHeight: 30, // 30 blocks, 1 hour
 };
@@ -104,6 +106,7 @@ const rvn = {
   feePerByte: 1050, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  maxFee: 50000000000, // 500 RVN
   rbf: true,
   onramperNetwork: 'ravencoin',
 };
@@ -133,6 +136,7 @@ const ltc = {
   feePerByte: 20, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  maxFee: 10000000, // 0.1 LTC
   rbf: true,
   onramperNetwork: 'litecoin',
 };
@@ -162,6 +166,7 @@ const btc = {
   feePerByte: 100, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  maxFee: 1000000, // 0.01 BTC
   rbf: true,
   onramperNetwork: 'bitcoin',
 };
@@ -190,6 +195,7 @@ const doge = {
   feePerByte: 1100, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  maxFee: 10000000000, // 100 DOGE
   rbf: true,
   onramperNetwork: 'dogecoin',
 };
@@ -219,6 +225,7 @@ const btcTestnet = {
   feePerByte: 5, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  maxFee: 100000000, // 1 TEST-BTC
   rbf: true,
 };
 
@@ -247,6 +254,7 @@ const btcSignet = {
   feePerByte: 4, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  maxFee: 100000000, // 1 TEST-BTC
   rbf: true,
 };
 
@@ -276,6 +284,7 @@ const zec = {
   feePerByte: 30, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  maxFee: 10000000, // 0.1 ZEC
   rbf: false,
   txExpiryHeight: 60, // 1 hour
   onramperNetwork: 'zcash',
@@ -305,6 +314,7 @@ const bch = {
   feePerByte: 4, // fee per byte
   maxMessage: 80, // 80 bytes in size
   maxTxSize: 100000, // 100,000 vbytes
+  maxFee: 1000000, // 0.01 BCH
   rbf: false,
   cashaddr: 'bitcoincash:',
   hashType: 0x40, // will force SIGHASH_BITCOINCASHBIP143

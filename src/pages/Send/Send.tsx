@@ -464,9 +464,10 @@ function Send() {
     const maxFeeUNIT = new BigNumber(maxFeeUSD)
       .dividedBy(fiatPriceUSD)
       .toFixed();
-    const maxFeeSat = new BigNumber(maxFeeUNIT)
-      .multipliedBy(10 ** blockchainConfig.decimals)
-      .toFixed();
+    const maxFeeSat = BigNumber.min(
+      new BigNumber(maxFeeUNIT).multipliedBy(10 ** blockchainConfig.decimals),
+      new BigNumber(blockchainConfig.maxFee),
+    ).toFixed();
     const txSize = await getTransactionSize(
       activeChain,
       txReceiver || sender, // estimate as if we are sending to ourselves
@@ -647,9 +648,12 @@ function Send() {
         const maxFeeUNIT = new BigNumber(maxFeeUSD)
           .dividedBy(fiatPriceUSD)
           .toFixed();
-        const maxFeeSat = new BigNumber(maxFeeUNIT)
-          .multipliedBy(10 ** blockchainConfig.decimals)
-          .toFixed();
+        const maxFeeSat = BigNumber.min(
+          new BigNumber(maxFeeUNIT).multipliedBy(
+            10 ** blockchainConfig.decimals,
+          ),
+          new BigNumber(blockchainConfig.maxFee),
+        ).toFixed();
         constructAndSignTransaction(
           activeChain,
           values.receiver,
