@@ -38,6 +38,8 @@ interface enterpriseVaultXpubData {
   result?: {
     xpubWallet: string;
     xpubKey: string;
+    walletXpubSignature: string;
+    keyXpubSignature: string;
     chain: string;
     orgIndex: number;
     wkIdentity: string;
@@ -56,6 +58,7 @@ interface enterpriseVaultSignTxData {
     chain: string;
     orgIndex: number;
     vaultIndex: number;
+    signedHex?: string;
   };
   data?: string;
 }

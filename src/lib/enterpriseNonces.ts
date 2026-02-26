@@ -12,6 +12,8 @@ import type { publicPrivateNonce } from '../types';
 const TARGET_COUNT = 50;
 const STORAGE_KEY = 'enterpriseNoncesWallet';
 
+let replenishing = false;
+
 /**
  * Decrypt enterprise nonces from encrypted storage.
  * Returns empty array if not found or decryption fails.
@@ -58,6 +60,8 @@ export async function replenishWalletEnterpriseNonces(
   wkIdentity: string,
   passwordBlob: string,
 ): Promise<void> {
+  if (replenishing) return;
+  replenishing = true;
   try {
     // Load existing enterprise nonces (encrypted)
     const existingNonces = await loadEncryptedNonces(passwordBlob);
@@ -92,5 +96,7 @@ export async function replenishWalletEnterpriseNonces(
     );
   } catch (error) {
     console.log('[Enterprise Nonces] Wallet replenish error:', error);
+  } finally {
+    replenishing = false;
   }
 }

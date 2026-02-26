@@ -307,7 +307,7 @@ export const SspConnectProvider = ({
   useEffect(() => {
     if (browser?.runtime?.onMessage) {
       // this will move to separate lib file
-      browser.runtime.onMessage.addListener((originalRequest: bgRequest) => {
+      const handler = (originalRequest: bgRequest) => {
         console.log(originalRequest);
         // sanitize request
         if (
@@ -807,7 +807,11 @@ export const SspConnectProvider = ({
             },
           });
         }
-      });
+      };
+      browser.runtime.onMessage.addListener(handler);
+      return () => {
+        browser.runtime.onMessage.removeListener(handler);
+      };
     }
   }, [wExternalIdentity]);
 

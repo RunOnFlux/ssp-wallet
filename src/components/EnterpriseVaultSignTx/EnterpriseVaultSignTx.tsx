@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Typography, Button, Space, Modal, Spin, Alert, Divider } from 'antd';
 import { useAppSelector } from '../../hooks';
 import './EnterpriseVaultSignTx.css';
@@ -153,6 +153,7 @@ function EnterpriseVaultSignTx({
   const [walletPubKey, setWalletPubKey] = useState<string | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [waitingForKey, setWaitingForKey] = useState(false);
+  const signingRef = useRef(false);
 
   // Parse recipients from JSON
   const parsedRecipients = useMemo((): Recipient[] => {
@@ -265,6 +266,7 @@ function EnterpriseVaultSignTx({
     setWalletPubKey(null);
     setRequestId(null);
     setWaitingForKey(false);
+    signingRef.current = false;
   };
 
   /**
@@ -500,6 +502,8 @@ function EnterpriseVaultSignTx({
    * Handle sign button click.
    */
   const handleSign = async () => {
+    if (signingRef.current) return;
+    signingRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -660,6 +664,7 @@ function EnterpriseVaultSignTx({
       console.error('[EnterpriseVaultSignTx] Error:', err);
       setLoading(false);
       setError(err instanceof Error ? err.message : 'Unknown error');
+      signingRef.current = false;
     }
   };
 
