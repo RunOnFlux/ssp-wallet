@@ -77,7 +77,7 @@
     "vite-plugin-lavamoat": "link:packages/vite-plugin-lavamoat"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.3",
+    "@eslint/js": "10.0.1",
     "@lavamoat/allow-scripts": "3.4.3",
     "@types/bchaddrjs": "0.4.3",
     "@types/chrome": "0.1.37",
