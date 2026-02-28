@@ -137,6 +137,13 @@ SSP Wallet supports multiple languages! Help us make it accessible to everyone b
 
 ---
 
+## SSP Enterprise
+
+SSP Enterprise extends SSP Wallet into a multi-party business cryptocurrency management platform with true self-custody across 15+ blockchains.
+[Learn more about SSP Enterprise](https://sspwallet.io/ssp-enterprise.html)
+
+---
+
 ## Disclaimer
 By using SSP Wallet, you agree to the terms outlined in our [Terms of Service](https://sspwallet.io/terms-of-service) and [SSP Disclaimer](https://github.com/RunOnFlux/ssp-wallet/blob/master/DISCLAIMER.md).
 
