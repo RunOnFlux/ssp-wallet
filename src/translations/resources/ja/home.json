@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "拡張公開鍵は、{{chain}}の公開鍵を導出するために使用され、そこからアドレスが構築されます. これは公開部分であり、共有しても安全で、資金へのアクセスはありません. これがSSPウォレットがSSPキーと同期してアドレスを生成するために使用するものです.",
     "chain_extended_priv_desc": "拡張秘密鍵は、{{chain}}の秘密鍵を導出するために使用され、これが公開鍵（アドレス）を制御します. これは秘密部分であり、資金へのアクセスを与えるため、決して共有しないでください.",
     "copy_data": "Copy {{data}}",
-    "show_data": "Show {{data}}"
+    "show_data": "Show {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "{{chain}}アドレスの詳細 (BIP-48)",
@@ -322,6 +324,34 @@
     "requesting_from": "Requesting from",
     "manual_input": "Manual Input for SSP Key",
     "manual_input_desc": "If automatic sync isn't working, scan QR code or copy the data for SSP Key."
+  },
+  "enterpriseVaultXpub": {
+    "title": "Enterprise Vault Key Request",
+    "description": "A request to provide public keys for an enterprise vault has been received. Please review the details below.",
+    "vault_name": "Vault",
+    "org_name": "Organisation",
+    "chain": "Chain",
+    "ssp_identity": "SSP Identity",
+    "approve": "Approve",
+    "awaiting_key": "Awaiting Key...",
+    "waiting_for_key": "Waiting for SSP Key approval...",
+    "key_rejected": "Request rejected by SSP Key"
+  },
+  "enterpriseVaultSignTx": {
+    "title": "Enterprise Vault Transaction Signing",
+    "description": "A request to sign a vault transaction has been received. Please review the transaction details below.",
+    "vault_name": "Vault",
+    "org_name": "Organisation",
+    "chain": "Chain",
+    "ssp_identity": "SSP Identity",
+    "recipients": "Recipients",
+    "fee": "Network Fee",
+    "memo": "Memo",
+    "partial_signature_notice": "This transaction requires multiple signatures. Your signature alone will not broadcast the transaction.",
+    "sign": "Sign Transaction",
+    "awaiting_key": "Awaiting Key...",
+    "waiting_for_key": "Waiting for SSP Key approval...",
+    "key_rejected": "Transaction signing rejected by SSP Key"
   },
   "sspConnect": {
     "invalid_chain": "無効なチェーン.",

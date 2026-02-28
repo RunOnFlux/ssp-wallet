@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Kunci Awam Lanjutan digunakan untuk mendapatkan semua kunci awam {{chain}} anda yang membentuk alamat. Ini adalah bahagian awam, selamat untuk dikongsi, dan tidak memberikan akses kepada dana. Ini adalah apa yang Dompet SSP selaraskan dengan SSP Key anda untuk menjana alamat.",
     "chain_extended_priv_desc": "Kunci Peribadi Lanjutan digunakan untuk mendapatkan semua kunci peribadi {{chain}} anda yang mengawal kunci awam - alamat anda. Ini adalah bahagian peribadi, JANGAN sesekali berkongsi kerana ia memberikan akses kepada dana.",
     "copy_data": "Salin {{data}}",
-    "show_data": "Tunjukkan {{data}}"
+    "show_data": "Tunjukkan {{data}}",
+    "wk_identity": "WK Identity (SSP Enterprise)",
+    "wk_identity_desc": "Your unique Wallet-Key Identity — a 2-of-2 multisig address derived from your SSP Wallet and SSP Key. Used as your SSP Enterprise identification for multisig team vaults. Do NOT send any funds to this address."
   },
   "addressDetails": {
     "chain_bip": "Butiran Alamat {{chain}} (BIP-48)",
@@ -322,6 +324,34 @@
     "requesting_from": "Requesting from",
     "manual_input": "Manual Input for SSP Key",
     "manual_input_desc": "If automatic sync isn't working, scan QR code or copy the data for SSP Key."
+  },
+  "enterpriseVaultXpub": {
+    "title": "Enterprise Vault Key Request",
+    "description": "A request to provide public keys for an enterprise vault has been received. Please review the details below.",
+    "vault_name": "Vault",
+    "org_name": "Organisation",
+    "chain": "Chain",
+    "ssp_identity": "SSP Identity",
+    "approve": "Approve",
+    "awaiting_key": "Awaiting Key...",
+    "waiting_for_key": "Waiting for SSP Key approval...",
+    "key_rejected": "Request rejected by SSP Key"
+  },
+  "enterpriseVaultSignTx": {
+    "title": "Enterprise Vault Transaction Signing",
+    "description": "A request to sign a vault transaction has been received. Please review the transaction details below.",
+    "vault_name": "Vault",
+    "org_name": "Organisation",
+    "chain": "Chain",
+    "ssp_identity": "SSP Identity",
+    "recipients": "Recipients",
+    "fee": "Network Fee",
+    "memo": "Memo",
+    "partial_signature_notice": "This transaction requires multiple signatures. Your signature alone will not broadcast the transaction.",
+    "sign": "Sign Transaction",
+    "awaiting_key": "Awaiting Key...",
+    "waiting_for_key": "Waiting for SSP Key approval...",
+    "key_rejected": "Transaction signing rejected by SSP Key"
   },
   "sspConnect": {
     "invalid_chain": "Rantai Tidak Sah.",

@@ -140,7 +140,9 @@
     "chain_extended_pub_desc": "Kunci Publik yang Diperluas digunakan untuk mendapatkan semua file Anda {{chain}} kunci publik dari mana alamat dibangun.",
     "chain_extended_priv_desc": "Kunci Pribadi yang Diperluas digunakan untuk mendapatkan semua file Anda {{chain}} kunci pribadi yang mengontrol kunci publik Anda - alamat.",
     "copy_data": "Salin {{data}}",
-    "show_data": "Lihat {{data}}"
+    "show_data": "Lihat {{data}}",
+    "wk_identity": "Identitas WK (SSP Enterprise)",
+    "wk_identity_desc": "Identitas Dompet-Kunci Unik Anda — alamat multisig 2-dari-2 yang dihasilkan dari Dompet SSP dan Kunci SSP milik Anda. Digunakan sebagai identifikasi SSP Enterprise Anda untuk brankas tim multisig. Jangan kirimkan dana apa pun ke alamat ini."
   },
   "addressDetails": {
     "chain_bip": "{{chain}} Detail Alamat (BIP-48)",
@@ -322,6 +324,34 @@
     "requesting_from": "Meminta dari",
     "manual_input": "Input Manual untuk SSP Key",
     "manual_input_desc": "Jika sinkronisasi otomatis tidak berfungsi, pindai kode QR atau salin data untuk SSP Key."
+  },
+  "enterpriseVaultXpub": {
+    "title": "Permohonan Kunci Brankas Enterprise",
+    "description": "Permohonan untuk menyediakan kunci publik untuk brankas perusahaan telah diterima. Silakan periksa detail di bawah ini.",
+    "vault_name": "Brankas",
+    "org_name": "Organisasi",
+    "chain": "Rantai",
+    "ssp_identity": "Identitas SSP",
+    "approve": "Setujui",
+    "awaiting_key": "Menunggu Kunci...",
+    "waiting_for_key": "Menunggu persetujuan SSP Key...",
+    "key_rejected": "Permohonan ditolak oleh Kunci SSP"
+  },
+  "enterpriseVaultSignTx": {
+    "title": "Penandatanganan Transaksi Brankas Enterprise",
+    "description": "Permohonan untuk menandatangani transaksi brankas telah diterima. Silakan periksa rincian transaksi di bawah ini.",
+    "vault_name": "Brankas",
+    "org_name": "Organisasi",
+    "chain": "Rantai",
+    "ssp_identity": "Identitas SSP",
+    "recipients": "Penerima",
+    "fee": "Biaya Network",
+    "memo": "Catatan",
+    "partial_signature_notice": "Transaksi ini memerlukan beberapa tanda tangan. Tanda tangan Anda saja tidak akan mengirimkan transaksi tersebut.",
+    "sign": "Tandatangani Transaksi",
+    "awaiting_key": "Menunggu Kunci...",
+    "waiting_for_key": "Menunggu persetujuan SSP Key...",
+    "key_rejected": "Penandatanganan transaksi ditolak oleh Kunci SSP"
   },
   "sspConnect": {
     "invalid_chain": "Rantai tidak valid.",
