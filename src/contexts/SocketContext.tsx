@@ -219,7 +219,11 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     newSocket.on('evmsigned', (signed: serverResponse) => {
-      console.log('[Socket] EVM signing completed, chain:', signed.chain, signed);
+      console.log(
+        '[Socket] EVM signing completed, chain:',
+        signed.chain,
+        signed,
+      );
       setEvmSigned(signed.payload);
     });
 
@@ -291,10 +295,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     newSocket.on(
       'walletconnect_response',
       (response: WalletConnectSocketResponse) => {
-        console.log(
-          '[WalletConnect Socket] Response received:',
-          response,
-        );
+        console.log('[WalletConnect Socket] Response received:', response);
         setWalletConnectResponse(response);
       },
     );
