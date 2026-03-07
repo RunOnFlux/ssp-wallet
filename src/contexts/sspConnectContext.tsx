@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import { useAppSelector } from '../hooks';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
+import { replenishWalletEnterpriseNonces } from '../lib/enterpriseNonces';
 
 export interface WkSignRequesterInfo {
   origin: string; // domain/origin of the requesting site (required)
@@ -114,8 +115,12 @@ export const SspConnectProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { sspWalletExternalIdentity: wExternalIdentity, identityChain } =
-    useAppSelector((state) => state.sspState);
+  const {
+    sspWalletExternalIdentity: wExternalIdentity,
+    sspWalletKeyInternalIdentity,
+    identityChain,
+  } = useAppSelector((state) => state.sspState);
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [type, setType] = useState('');
   const [address, setAddress] = useState('');
   const [message, setMessage] = useState('');
@@ -793,6 +798,44 @@ export const SspConnectProvider = ({
             });
           } else {
             setRequesterInfo({ origin: 'Unknown' });
+          }
+        } else if (request.data.method === 'enterprise_nonce_sync') {
+          // Non-interactive: trigger enterprise nonce replenishment and respond immediately
+          if (!sspWalletKeyInternalIdentity || !passwordBlob) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result: 'Wallet not ready for nonce sync',
+              },
+            });
+          } else {
+            replenishWalletEnterpriseNonces(
+              sspWalletKeyInternalIdentity,
+              passwordBlob,
+            )
+              .then(() => {
+                void browser.runtime.sendMessage({
+                  origin: 'ssp',
+                  data: {
+                    status: 'OK',
+                    result: 'Nonce sync complete',
+                  },
+                });
+              })
+              .catch((e) => {
+                console.log(
+                  '[Enterprise Nonces] Sync from enterprise app failed:',
+                  e,
+                );
+                void browser.runtime.sendMessage({
+                  origin: 'ssp',
+                  data: {
+                    status: 'ERROR',
+                    result: 'Nonce sync failed',
+                  },
+                });
+              });
           }
         } else {
           console.log('Invalid method' + request.data.method);

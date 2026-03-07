@@ -53,8 +53,8 @@ export async function saveEncryptedNonces(
 
 /**
  * Check enterprise nonce pool status and replenish wallet nonces if below threshold.
- * Loads existing nonces from encrypted storage, generates new ones, stores them,
- * and submits public parts to the relay.
+ * Fetches server-side pool count, generates enough to reach TARGET_COUNT on the server,
+ * stores them locally, and submits public parts to the relay.
  */
 export async function replenishWalletEnterpriseNonces(
   wkIdentity: string,
@@ -63,10 +63,65 @@ export async function replenishWalletEnterpriseNonces(
   if (replenishing) return;
   replenishing = true;
   try {
+    // Check server-side pool status to know how many nonces the server actually has
+    let serverAvailable = 0;
+    try {
+      const statusRes = await axios.get(
+        `https://${sspConfig().relay}/v1/nonces/status/${wkIdentity}`,
+      );
+      const poolData = statusRes.data as
+        | { data?: { wallet?: { available?: number } } }
+        | undefined;
+      if (poolData?.data?.wallet?.available != null) {
+        serverAvailable = poolData.data.wallet.available;
+      }
+    } catch {
+      // If status check fails, fall back to local count
+    }
+
     // Load existing enterprise nonces (encrypted)
     const existingNonces = await loadEncryptedNonces(passwordBlob);
 
-    const toGenerate = TARGET_COUNT - existingNonces.length;
+    // Reconcile: tell server which nonces we actually have locally.
+    // This purges server-side 'available' nonces that we don't have
+    // (e.g. local save failed after relay submission, extension reinstalled).
+    if (existingNonces.length > 0 || serverAvailable > 0) {
+      try {
+        const localPublicKeys = existingNonces.map((n) => ({
+          kPublic: n.kPublic,
+          kTwoPublic: n.kTwoPublic,
+        }));
+        const reconcileRes = await axios.post(
+          `https://${sspConfig().relay}/v1/nonces/reconcile`,
+          {
+            wkIdentity,
+            source: 'wallet',
+            localNonces: localPublicKeys,
+          },
+        );
+        const reconcileData = reconcileRes.data as
+          | { data?: { purged?: number } }
+          | undefined;
+        const purged = reconcileData?.data?.purged ?? 0;
+        if (purged > 0) {
+          console.log(
+            `[Enterprise Nonces] Wallet: Purged ${purged} orphaned server nonces`,
+          );
+          // Update serverAvailable after purge
+          serverAvailable = Math.max(serverAvailable - purged, 0);
+        }
+      } catch {
+        // Reconcile is best-effort — don't block replenishment
+      }
+    }
+
+    // Generate based on what the SERVER needs, not just local count.
+    // This handles the case where server nonces were deleted but local still has them.
+    const toGenerate = Math.max(
+      TARGET_COUNT - existingNonces.length,
+      TARGET_COUNT - serverAvailable,
+      0,
+    );
     if (toGenerate <= 0) return;
 
     // Generate new nonces
@@ -92,7 +147,7 @@ export async function replenishWalletEnterpriseNonces(
     await saveEncryptedNonces(allNonces, passwordBlob);
 
     console.log(
-      `[Enterprise Nonces] Wallet: Generated and submitted ${toGenerate} nonces`,
+      `[Enterprise Nonces] Wallet: Generated and submitted ${toGenerate} nonces (server had ${serverAvailable}, local had ${existingNonces.length})`,
     );
   } catch (error) {
     console.log('[Enterprise Nonces] Wallet replenish error:', error);

@@ -26,6 +26,7 @@ import { generateRequestId } from '../../lib/wkSign';
 import {
   loadEncryptedNonces,
   saveEncryptedNonces,
+  replenishWalletEnterpriseNonces,
 } from '../../lib/enterpriseNonces';
 import type { WkSignRequesterInfo } from '../../lib/wkSign';
 import type { cryptos } from '../../types';
@@ -559,13 +560,21 @@ function EnterpriseVaultSignTx({
         const nonces = await loadEncryptedNonces(passwordBlob);
         if (nonces.length === 0)
           throw new Error('No enterprise nonces available');
+        console.log(
+          `[EnterpriseVaultSignTx] Looking for nonce: kPublic=${reservedNonce.kPublic.slice(0, 8)}… kTwoPublic=${reservedNonce.kTwoPublic.slice(0, 8)}…`,
+        );
+        console.log(
+          `[EnterpriseVaultSignTx] Local pool has ${nonces.length} nonces, first kPublic=${nonces[0]?.kPublic?.slice(0, 8)}…`,
+        );
         const matchIdx = nonces.findIndex(
           (n) =>
             n.kPublic === reservedNonce.kPublic &&
             n.kTwoPublic === reservedNonce.kTwoPublic,
         );
         if (matchIdx === -1)
-          throw new Error('Reserved enterprise nonce not found locally');
+          throw new Error(
+            `Reserved enterprise nonce not found locally. Pool has ${nonces.length} nonces, looking for kPublic=${reservedNonce.kPublic.slice(0, 8)}…`,
+          );
         const walletNonce = nonces[matchIdx];
 
         // 2. Build allKeys and allNonces arrays for M-of-N signing
@@ -662,8 +671,21 @@ function EnterpriseVaultSignTx({
       vaultXpriv = '';
       keypair = { pubKey: keypair?.pubKey ?? '', privKey: '' };
       console.error('[EnterpriseVaultSignTx] Error:', err);
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
+
+      // If nonce mismatch, trigger replenishment so next attempt works
+      if (
+        errMsg.includes('nonce not found locally') &&
+        wkIdentity &&
+        passwordBlob
+      ) {
+        replenishWalletEnterpriseNonces(wkIdentity, passwordBlob).catch((e) =>
+          console.log('[EnterpriseVaultSignTx] Auto-replenish failed:', e),
+        );
+      }
+
       setLoading(false);
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(errMsg);
       signingRef.current = false;
     }
   };
