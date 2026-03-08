@@ -11,8 +11,13 @@ async function request(method, params) {
         const detail = eventReceived.data.detail;
 
         if (detail && detail.status === 'ERROR') {
-          const error = new Error(detail.error || 'Request rejected');
+          const error = new Error(
+            detail.data || detail.error || 'Request rejected',
+          );
           error.code = detail.code || 4001;
+          if (detail.errorCode) {
+            error.errorCode = detail.errorCode;
+          }
           reject(error);
           return;
         }

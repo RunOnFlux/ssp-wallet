@@ -19,6 +19,10 @@ interface EnterpriseVaultXpubSignedPayload {
   orgIndex: number;
 }
 
+export interface EnterpriseKeyNonceSyncedPayload {
+  requestId?: string;
+}
+
 export interface EnterpriseVaultSignedPayload {
   keySignatures?: string[]; // legacy message signatures (unused with SIGHASH signing)
   keyPubKey: string; // Key's vault public key
@@ -46,6 +50,8 @@ interface SocketContextType {
   enterpriseVaultXpubRejected: string;
   enterpriseVaultSigned: EnterpriseVaultSignedPayload | null;
   enterpriseVaultSignRejected: string;
+  enterpriseKeyNonceSynced: EnterpriseKeyNonceSyncedPayload | null;
+  enterpriseKeyNonceSyncRejected: string;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
   clearPublicNonces?: () => void;
@@ -59,6 +65,8 @@ interface SocketContextType {
   clearEnterpriseVaultXpubRejected?: () => void;
   clearEnterpriseVaultSigned?: () => void;
   clearEnterpriseVaultSignRejected?: () => void;
+  clearEnterpriseKeyNonceSynced?: () => void;
+  clearEnterpriseKeyNonceSyncRejected?: () => void;
   sendWalletConnectRequest?: (request: WalletConnectSocketRequest) => void;
 }
 
@@ -104,6 +112,8 @@ const defaultValue: SocketContextType = {
   enterpriseVaultXpubRejected: '',
   enterpriseVaultSigned: null,
   enterpriseVaultSignRejected: '',
+  enterpriseKeyNonceSynced: null,
+  enterpriseKeyNonceSyncRejected: '',
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultValue);
@@ -132,6 +142,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [enterpriseVaultSigned, setEnterpriseVaultSigned] =
     useState<EnterpriseVaultSignedPayload | null>(null);
   const [enterpriseVaultSignRejected, setEnterpriseVaultSignRejected] =
+    useState('');
+  const [enterpriseKeyNonceSynced, setEnterpriseKeyNonceSynced] =
+    useState<EnterpriseKeyNonceSyncedPayload | null>(null);
+  const [enterpriseKeyNonceSyncRejected, setEnterpriseKeyNonceSyncRejected] =
     useState('');
 
   /**
@@ -291,6 +305,21 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       setEnterpriseVaultSignRejected('enterprisevaultsignrejected');
     });
 
+    newSocket.on('enterprisekeynoncesynced', () => {
+      console.log('[Socket] Enterprise key nonce sync completed');
+      setEnterpriseKeyNonceSynced({});
+    });
+
+    newSocket.on(
+      'enterprisekeynoncesyncrejected',
+      (rejected: serverResponse) => {
+        console.log('[Socket] Enterprise key nonce sync rejected');
+        setEnterpriseKeyNonceSyncRejected(
+          rejected.payload || 'enterprisekeynoncesyncrejected',
+        );
+      },
+    );
+
     // WalletConnect socket events
     newSocket.on(
       'walletconnect_response',
@@ -365,6 +394,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     setEnterpriseVaultSignRejected('');
   };
 
+  const clearEnterpriseKeyNonceSynced = () => {
+    setEnterpriseKeyNonceSynced(null);
+  };
+
+  const clearEnterpriseKeyNonceSyncRejected = () => {
+    setEnterpriseKeyNonceSyncRejected('');
+  };
+
   const sendWalletConnectRequest = (request: WalletConnectSocketRequest) => {
     if (!socket || !socket.connected) {
       console.error('[WalletConnect Socket] Socket not connected');
@@ -405,6 +442,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         enterpriseVaultXpubRejected,
         enterpriseVaultSigned,
         enterpriseVaultSignRejected,
+        enterpriseKeyNonceSynced,
+        enterpriseKeyNonceSyncRejected,
         clearTxid,
         clearTxRejected,
         clearPublicNonces,
@@ -418,6 +457,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         clearEnterpriseVaultXpubRejected,
         clearEnterpriseVaultSigned,
         clearEnterpriseVaultSignRejected,
+        clearEnterpriseKeyNonceSynced,
+        clearEnterpriseKeyNonceSyncRejected,
         sendWalletConnectRequest,
       }}
     >

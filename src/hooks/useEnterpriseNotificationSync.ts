@@ -48,7 +48,6 @@ interface EnterpriseNotificationStatusResponse {
  */
 export function useEnterpriseNotificationSync(): void {
   const hasSynced = useRef(false);
-  const hasCheckedNonces = useRef(false);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { sspWalletKeyInternalIdentity, sspWalletInternalIdentity } =
     useAppSelector((state) => state.sspState);
@@ -249,36 +248,6 @@ export function useEnterpriseNotificationSync(): void {
     sspWalletKeyInternalIdentity,
     syncEnterpriseNotificationStatus,
   ]);
-
-  // Independent nonce pool check — runs even if subscription sync fails
-  useEffect(() => {
-    if (hasCheckedNonces.current) return;
-    if (!sspWalletKeyInternalIdentity || !passwordBlob) return;
-
-    hasCheckedNonces.current = true;
-
-    (async () => {
-      try {
-        const nonceStatusRes = await axios.get(
-          `https://${sspConfig().relay}/v1/nonces/status/${sspWalletKeyInternalIdentity}`,
-        );
-        const nonceData = nonceStatusRes.data as
-          | { data?: { replenishNeeded?: { wallet?: boolean } } }
-          | undefined;
-        if (nonceData?.data?.replenishNeeded?.wallet) {
-          await replenishWalletEnterpriseNonces(
-            sspWalletKeyInternalIdentity,
-            passwordBlob,
-          );
-        }
-      } catch (e) {
-        console.log(
-          '[EnterpriseNotificationSync] Independent nonce check failed:',
-          e,
-        );
-      }
-    })();
-  }, [sspWalletKeyInternalIdentity, passwordBlob]);
 }
 
 export default useEnterpriseNotificationSync;

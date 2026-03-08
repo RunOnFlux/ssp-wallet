@@ -26,7 +26,6 @@ import { generateRequestId } from '../../lib/wkSign';
 import {
   loadEncryptedNonces,
   saveEncryptedNonces,
-  replenishWalletEnterpriseNonces,
 } from '../../lib/enterpriseNonces';
 import type { WkSignRequesterInfo } from '../../lib/wkSign';
 import type { cryptos } from '../../types';
@@ -55,6 +54,7 @@ interface EnterpriseVaultSignTxData {
   status: string;
   result?: EnterpriseVaultSignTxResponse;
   data?: string;
+  errorCode?: string;
 }
 
 interface ReservedNonce {
@@ -253,10 +253,19 @@ function EnterpriseVaultSignTx({
   useEffect(() => {
     if (enterpriseVaultSignRejected && waitingForKey) {
       console.log('[EnterpriseVaultSignTx] Signing rejected by Key');
-      setWaitingForKey(false);
-      setLoading(false);
-      setError(t('home:enterpriseVaultSignTx.key_rejected'));
       clearEnterpriseVaultSignRejected?.();
+      if (openAction) {
+        openAction({
+          status: 'ERROR',
+          data: t('home:enterpriseVaultSignTx.key_rejected'),
+          errorCode: 'KEY_REJECTED',
+        });
+        resetState();
+      } else {
+        setWaitingForKey(false);
+        setLoading(false);
+        setError(t('home:enterpriseVaultSignTx.key_rejected'));
+      }
     }
   }, [enterpriseVaultSignRejected, waitingForKey]);
 
@@ -673,20 +682,26 @@ function EnterpriseVaultSignTx({
       console.error('[EnterpriseVaultSignTx] Error:', err);
       const errMsg = err instanceof Error ? err.message : 'Unknown error';
 
-      // If nonce mismatch, trigger replenishment so next attempt works
-      if (
-        errMsg.includes('nonce not found locally') &&
-        wkIdentity &&
-        passwordBlob
-      ) {
-        replenishWalletEnterpriseNonces(wkIdentity, passwordBlob).catch((e) =>
-          console.log('[EnterpriseVaultSignTx] Auto-replenish failed:', e),
-        );
-      }
+      // Classify error for structured error code
+      const isNonceError =
+        errMsg.includes('nonce not found locally') ||
+        errMsg.includes('No enterprise nonces available') ||
+        errMsg.includes('Enterprise nonces required');
+      const errorCode = isNonceError ? 'NONCE_NOT_FOUND' : 'SIGNING_ERROR';
 
-      setLoading(false);
-      setError(errMsg);
-      signingRef.current = false;
+      // Send structured error back to enterprise app and close modal
+      if (openAction) {
+        openAction({
+          status: 'ERROR',
+          data: errMsg,
+          errorCode,
+        });
+        resetState();
+      } else {
+        setLoading(false);
+        setError(errMsg);
+        signingRef.current = false;
+      }
     }
   };
 

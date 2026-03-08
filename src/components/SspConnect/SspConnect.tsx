@@ -9,6 +9,7 @@ import AllAddressesInfo from '../../components/AllAddressesInfo/AllAddressesInfo
 import WkSign from '../../components/WkSign/WkSign';
 import EnterpriseVaultXpub from '../../components/EnterpriseVaultXpub/EnterpriseVaultXpub';
 import EnterpriseVaultSignTx from '../../components/EnterpriseVaultSignTx/EnterpriseVaultSignTx';
+import EnterpriseNonceSync from '../../components/EnterpriseNonceSync/EnterpriseNonceSync';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
 import { WkSignResponse, WkSignRequesterInfo } from '../../lib/wkSign';
@@ -47,6 +48,12 @@ interface enterpriseVaultXpubData {
   data?: string;
 }
 
+interface NonceSyncResponse {
+  status: string;
+  result?: string;
+  data?: string;
+}
+
 interface enterpriseVaultSignTxData {
   status: string;
   result?: {
@@ -61,6 +68,7 @@ interface enterpriseVaultSignTxData {
     signedHex?: string;
   };
   data?: string;
+  errorCode?: string;
 }
 
 function SspConnect() {
@@ -113,6 +121,7 @@ function SspConnect() {
   const [openEnterpriseVaultXpub, setOpenEnterpriseVaultXpub] = useState(false);
   const [openEnterpriseVaultSignTx, setOpenEnterpriseVaultSignTx] =
     useState(false);
+  const [openEnterpriseNonceSync, setOpenEnterpriseNonceSync] = useState(false);
   const [orgIndex, setOrgIndex] = useState(0);
   const [vaultName, setVaultName] = useState('');
   const [orgName, setOrgName] = useState('');
@@ -212,6 +221,10 @@ function SspConnect() {
         setTokenSymbol(sspConnectTokenSymbol);
         setTokenDecimals(sspConnectTokenDecimals);
         setOpenEnterpriseVaultSignTx(true);
+      } else if (sspConnectType === 'enterprise_nonce_sync') {
+        // Enterprise nonce sync request — interactive dialog
+        setRequesterInfo(sspConnectRequesterInfo);
+        setOpenEnterpriseNonceSync(true);
       } else {
         generalAction({
           status: 'ERROR', // do not translate
@@ -254,6 +267,7 @@ function SspConnect() {
     setOpenWkSign(false);
     setOpenEnterpriseVaultXpub(false);
     setOpenEnterpriseVaultSignTx(false);
+    setOpenEnterpriseNonceSync(false);
   };
 
   const wkSignAction = (data: wkSignData | null) => {
@@ -303,7 +317,7 @@ function SspConnect() {
   const enterpriseVaultSignTxAction = (
     data: enterpriseVaultSignTxData | null,
   ) => {
-    console.log('[EnterpriseVaultSignTx] Action result:', data);
+    console.log('[EnterpriseVaultSignTx] Action result:', data?.status);
     setOpenEnterpriseVaultSignTx(false);
     if (browser?.runtime?.sendMessage) {
       if (!data) {
@@ -322,6 +336,25 @@ function SspConnect() {
       }
     } else {
       console.log('no browser or chrome runtime.sendMessage');
+    }
+  };
+  const enterpriseNonceSyncAction = (data: NonceSyncResponse | null) => {
+    setOpenEnterpriseNonceSync(false);
+    if (browser?.runtime?.sendMessage) {
+      if (!data) {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data: {
+            status: 'ERROR',
+            result: t('common:request_rejected'),
+          },
+        });
+      } else {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data,
+        });
+      }
     }
   };
   const payRequestAction = (data: paymentData | null | 'continue') => {
@@ -424,6 +457,11 @@ function SspConnect() {
         tokenContract={tokenContract}
         tokenSymbol={tokenSymbol}
         tokenDecimals={tokenDecimals}
+      />
+      <EnterpriseNonceSync
+        open={openEnterpriseNonceSync}
+        openAction={enterpriseNonceSyncAction}
+        requesterInfo={requesterInfo}
       />
     </>
   );
