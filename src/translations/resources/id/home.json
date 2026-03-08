@@ -337,6 +337,19 @@
     "waiting_for_key": "Menunggu persetujuan SSP Key...",
     "key_rejected": "Permohonan ditolak oleh Kunci SSP"
   },
+  "enterpriseNonceSync": {
+    "title": "Enterprise Nonce Synchronisation",
+    "description": "SSP Enterprise is requesting to synchronise cryptographic nonces used for vault transaction signing. This will sync both your wallet and SSP Key nonces.",
+    "info": "This will generate fresh signing nonces and sync them with the relay server. No funds will be moved.",
+    "approve": "Sync Nonces",
+    "syncing": "Synchronising nonces...",
+    "syncing_wallet": "Synchronising wallet nonces...",
+    "syncing_key": "Waiting for SSP Key to sync nonces...",
+    "success": "Wallet and Key nonces synchronised successfully!",
+    "wallet_not_ready": "Wallet is not unlocked. Please unlock your wallet first.",
+    "key_sync_failed": "SSP Key nonce sync failed. Please try again.",
+    "key_sync_timeout": "SSP Key did not respond. Open SSP Key and try again."
+  },
   "enterpriseVaultSignTx": {
     "title": "Penandatanganan Transaksi Brankas Enterprise",
     "description": "Permohonan untuk menandatangani transaksi brankas telah diterima. Silakan periksa rincian transaksi di bawah ini.",
