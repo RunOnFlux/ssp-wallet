@@ -176,7 +176,11 @@ export function signVaultMessageWithSchnorr(
       };
     });
 
-  const { signature: sigOne, challenge } = signerOne.signMultiSigMsg(
+  // Use signMultiSigHash (not signMultiSigMsg) because messageToSign is already
+  // a keccak256 hash (the ERC-4337 UserOp hash). signMultiSigMsg would double-hash
+  // it via _hashMessage, producing a signature that doesn't match what the
+  // EntryPoint's _validateSignature passes to _verifySchnorr.
+  const { signature: sigOne, challenge } = signerOne.signMultiSigHash(
     messageToSign,
     publicKeys,
     publicNoncesArr,
