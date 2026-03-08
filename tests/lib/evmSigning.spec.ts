@@ -37,6 +37,10 @@ const {
       signature: _mockSig,
       challenge: _mockChallenge,
     })),
+    signMultiSigHash: vi.fn(() => ({
+      signature: _mockSig,
+      challenge: _mockChallenge,
+    })),
   };
 
   // Key must support `new` — use a proper constructor function.
@@ -118,6 +122,10 @@ describe('evmSigning', () => {
     mockSigner.getPubKey.mockReturnValue(mockKey);
     mockSigner.getPubNonces.mockReturnValue(mockPubNonces);
     mockSigner.signMultiSigMsg.mockReturnValue({
+      signature: mockSig,
+      challenge: mockChallenge,
+    });
+    mockSigner.signMultiSigHash.mockReturnValue({
       signature: mockSig,
       challenge: mockChallenge,
     });
@@ -457,8 +465,8 @@ describe('evmSigning', () => {
         allPublicNonces,
       );
 
-      // signMultiSigMsg receives the publicKeys array
-      const [, publicKeys] = mockSigner.signMultiSigMsg.mock.calls[0];
+      // signMultiSigHash receives the publicKeys array
+      const [, publicKeys] = mockSigner.signMultiSigHash.mock.calls[0];
       // The signer's slot (index 0) must be the signer's internal Key (mockKey),
       // not a new Key constructed from hex
       expect(publicKeys[0]).toBe(mockKey);
@@ -475,7 +483,7 @@ describe('evmSigning', () => {
         allPublicNonces,
       );
 
-      const [, , publicNoncesArr] = mockSigner.signMultiSigMsg.mock.calls[0];
+      const [, , publicNoncesArr] = mockSigner.signMultiSigHash.mock.calls[0];
       // Index 0 should be the signer's internal nonces (mockPubNonces)
       expect(publicNoncesArr[0]).toBe(mockPubNonces);
       // Other indices should NOT be the signer's nonces
@@ -515,9 +523,9 @@ describe('evmSigning', () => {
         allPublicNonces,
       );
 
-      // signMultiSigMsg should receive arrays of length 4
+      // signMultiSigHash should receive arrays of length 4
       const [, publicKeys, publicNoncesArr] =
-        mockSigner.signMultiSigMsg.mock.calls[0];
+        mockSigner.signMultiSigHash.mock.calls[0];
       expect(publicKeys).toHaveLength(4);
       expect(publicNoncesArr).toHaveLength(4);
       expect(result.sigOne).toBeDefined();
@@ -536,14 +544,14 @@ describe('evmSigning', () => {
       );
 
       const [, publicKeys, publicNoncesArr] =
-        mockSigner.signMultiSigMsg.mock.calls[0];
+        mockSigner.signMultiSigHash.mock.calls[0];
       expect(publicKeys).toHaveLength(6);
       expect(publicNoncesArr).toHaveLength(6);
       expect(result.sigOne).toBeDefined();
       expect(result.challenge).toBeDefined();
     });
 
-    it('should pass the correct message to signMultiSigMsg', () => {
+    it('should pass the correct message to signMultiSigHash', () => {
       const { allPublicKeys, allPublicNonces } = buildTwoOfTwoArrays();
       const customMessage = 'Custom vault transaction message for signing';
 
@@ -555,7 +563,7 @@ describe('evmSigning', () => {
         allPublicNonces,
       );
 
-      const [msg] = mockSigner.signMultiSigMsg.mock.calls[0];
+      const [msg] = mockSigner.signMultiSigHash.mock.calls[0];
       expect(msg).toBe(customMessage);
     });
 
@@ -600,7 +608,7 @@ describe('evmSigning', () => {
     it('should propagate SDK signing errors', () => {
       const { allPublicKeys, allPublicNonces } = buildTwoOfTwoArrays();
 
-      mockSigner.signMultiSigMsg.mockImplementationOnce(() => {
+      mockSigner.signMultiSigHash.mockImplementationOnce(() => {
         throw new Error('Schnorr signing failed: invalid nonce');
       });
 

@@ -12,6 +12,7 @@ const {
   mockPassworderDecrypt,
   mockGeneratePublicNonce,
   mockAxiosPost,
+  mockAxiosGet,
 } = vi.hoisted(() => ({
   mockSecureStorage: {
     getItem: vi.fn(),
@@ -23,6 +24,7 @@ const {
   mockPassworderDecrypt: vi.fn(),
   mockGeneratePublicNonce: vi.fn(),
   mockAxiosPost: vi.fn(),
+  mockAxiosGet: vi.fn(),
 }));
 
 const MOCK_FINGERPRINT = 'a'.repeat(64);
@@ -53,8 +55,9 @@ vi.mock('../../src/storage/ssp', () => ({
 }));
 
 vi.mock('axios', () => ({
-  default: { post: mockAxiosPost },
+  default: { post: mockAxiosPost, get: mockAxiosGet },
   post: mockAxiosPost,
+  get: mockAxiosGet,
 }));
 
 import {
@@ -87,6 +90,14 @@ function makeFakeNonce(index: number) {
 describe('Enterprise Nonces — Security-critical nonce management', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: server status returns 0 available (will be overridden per test)
+    mockAxiosGet.mockResolvedValue({
+      data: { data: { wallet: { available: 0 } } },
+    });
+    // Default: reconcile returns 0 purged
+    mockAxiosPost.mockResolvedValue({
+      data: { status: 'success', data: { purged: 0 } },
+    });
     // Default: passworderDecrypt resolves the 2-step decryption chain
     // Step 1: fingerprint + passwordBlob -> password
     // Step 2: password + encrypted -> JSON string of nonces
@@ -279,6 +290,10 @@ describe('Enterprise Nonces — Security-critical nonce management', () => {
         if (key === MOCK_FINGERPRINT) return FAKE_PASSWORD;
         return JSON.stringify(fullPool);
       });
+      // Server also reports full pool
+      mockAxiosGet.mockResolvedValue({
+        data: { data: { wallet: { available: 50 } } },
+      });
 
       await replenishWalletEnterpriseNonces(
         FAKE_WK_IDENTITY,
@@ -286,7 +301,6 @@ describe('Enterprise Nonces — Security-critical nonce management', () => {
       );
 
       expect(mockGeneratePublicNonce).not.toHaveBeenCalled();
-      expect(mockAxiosPost).not.toHaveBeenCalled();
     });
 
     it('should skip replenishment when pool exceeds TARGET_COUNT', async () => {
@@ -296,6 +310,10 @@ describe('Enterprise Nonces — Security-critical nonce management', () => {
         if (key === MOCK_FINGERPRINT) return FAKE_PASSWORD;
         return JSON.stringify(overPool);
       });
+      // Server also reports over-full pool
+      mockAxiosGet.mockResolvedValue({
+        data: { data: { wallet: { available: 60 } } },
+      });
 
       await replenishWalletEnterpriseNonces(
         FAKE_WK_IDENTITY,
@@ -303,7 +321,6 @@ describe('Enterprise Nonces — Security-critical nonce management', () => {
       );
 
       expect(mockGeneratePublicNonce).not.toHaveBeenCalled();
-      expect(mockAxiosPost).not.toHaveBeenCalled();
     });
 
     it('should generate correct number of nonces to reach TARGET_COUNT', async () => {
@@ -315,7 +332,10 @@ describe('Enterprise Nonces — Security-critical nonce management', () => {
         if (key === MOCK_FINGERPRINT) return FAKE_PASSWORD;
         return JSON.stringify(existingNonces);
       });
-      mockAxiosPost.mockResolvedValue({ data: { status: 'success' } });
+      // Server reports same count as local
+      mockAxiosGet.mockResolvedValue({
+        data: { data: { wallet: { available: 30 } } },
+      });
 
       await replenishWalletEnterpriseNonces(
         FAKE_WK_IDENTITY,
@@ -423,7 +443,10 @@ describe('Enterprise Nonces — Security-critical nonce management', () => {
         if (key === MOCK_FINGERPRINT) return FAKE_PASSWORD;
         return JSON.stringify(existingNonces);
       });
-      mockAxiosPost.mockResolvedValue({ data: { status: 'success' } });
+      // Server reports same count as local
+      mockAxiosGet.mockResolvedValue({
+        data: { data: { wallet: { available: 2 } } },
+      });
 
       // Track what gets encrypted for saving
       let savedData: string | undefined;
