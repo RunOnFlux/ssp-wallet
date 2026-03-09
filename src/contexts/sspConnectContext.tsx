@@ -40,6 +40,8 @@ interface SspConnectContextType {
   tokenDecimals?: number;
   // Source vault address for display on Key
   sourceAddress?: string;
+  // Full EVM UserOp struct (JSON string) for trustless decode
+  evmUserOp?: string;
   clearRequest?: () => void;
 }
 
@@ -98,6 +100,8 @@ interface dataBgParams {
   tokenDecimals?: number;
   // Source vault address for display on Key
   sourceAddress?: string;
+  // Full EVM UserOp struct (JSON string) for trustless decode
+  evmUserOp?: string;
 }
 
 interface dataBgRequest {
@@ -161,6 +165,7 @@ export const SspConnectProvider = ({
   const [sourceAddress, setSourceAddress] = useState<string | undefined>(
     undefined,
   );
+  const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
 
@@ -790,6 +795,13 @@ export const SspConnectProvider = ({
               ? signSourceAddress
               : undefined,
           );
+          // Full EVM UserOp struct (optional JSON string — for trustless decode)
+          const signEvmUserOp = request.data.params.evmUserOp;
+          setEvmUserOp(
+            typeof signEvmUserOp === 'string' && signEvmUserOp
+              ? signEvmUserOp
+              : undefined,
+          );
 
           setType('enterprise_vault_sign_tx');
 
@@ -876,6 +888,7 @@ export const SspConnectProvider = ({
     setTokenSymbol(undefined);
     setTokenDecimals(undefined);
     setSourceAddress(undefined);
+    setEvmUserOp(undefined);
   };
 
   return (
@@ -907,6 +920,7 @@ export const SspConnectProvider = ({
         tokenSymbol,
         tokenDecimals,
         sourceAddress,
+        evmUserOp,
         clearRequest,
       }}
     >

@@ -7,8 +7,8 @@
 }
 
 .vault-sign-recipient-box {
-  padding: 8px 10px;
-  border-radius: 4px;
+  padding: 12px 14px;
+  border-radius: 8px;
   text-align: left;
   margin-bottom: 4px;
 }
@@ -19,8 +19,8 @@
   }
 
   .vault-sign-recipient-box {
-    background-color: #fafafa;
-    border: 1px solid #f0f0f0;
+    background-color: #fffbeb;
+    border: 1.5px solid #fbbf24;
   }
 }
 
@@ -30,7 +30,7 @@
   }
 
   .vault-sign-recipient-box {
-    background-color: #1f1f1f;
-    border: 1px solid #303030;
+    background-color: #1a1708;
+    border: 1.5px solid #b8860b;
   }
 }

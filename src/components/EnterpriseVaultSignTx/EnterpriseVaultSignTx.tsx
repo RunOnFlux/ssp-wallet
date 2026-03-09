@@ -14,6 +14,10 @@ import {
   deriveEVMPublicKey,
 } from '../../lib/wallet';
 import { signVaultMessageWithSchnorr } from '../../lib/evmSigning';
+import {
+  decodeVaultTransaction,
+  type VaultDecodedTx,
+} from '../../lib/transactions';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import axios from 'axios';
@@ -89,6 +93,8 @@ interface Props {
   tokenDecimals?: number;
   // Source vault address for display on Key
   sourceAddress?: string;
+  // Full EVM UserOp struct (JSON string) for trustless decode
+  evmUserOp?: string;
 }
 
 /**
@@ -135,6 +141,7 @@ function EnterpriseVaultSignTx({
   tokenSymbol,
   tokenDecimals,
   sourceAddress,
+  evmUserOp,
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
@@ -191,6 +198,44 @@ function EnterpriseVaultSignTx({
   // For token transfers, use token decimals/symbol for amounts; fee always uses chain decimals/symbol
   const amountDecimals = tokenDecimals != null ? tokenDecimals : chainDecimals;
   const amountSymbol = tokenSymbol || chainSymbol;
+
+  // Independently decode raw transaction — trustless verification
+  // For EVM: rawUnsignedTx is a hash (not decodable), use evmUserOp JSON instead
+  // For UTXO: rawUnsignedTx is the actual TX hex
+  const decodedTx = useMemo((): VaultDecodedTx | null => {
+    if (!chain) return null;
+    const isEvm = chainConfig?.chainType === 'evm';
+    if (isEvm) {
+      // EVM: decode from evmUserOp JSON string (contains userOpRequest with callData)
+      if (!evmUserOp) {
+        return null;
+      }
+      try {
+        const parsed = JSON.parse(evmUserOp) as Record<string, unknown>;
+        const decodableJson = JSON.stringify({ userOpRequest: parsed });
+        return decodeVaultTransaction(decodableJson, chain as keyof cryptos);
+      } catch (e) {
+        console.error('[EnterpriseVaultSignTx] evmUserOp parse error:', e);
+        return {
+          sender: '',
+          recipients: [],
+          fee: '0',
+          error: 'Failed to parse EVM UserOp data',
+        };
+      }
+    }
+    // UTXO: decode from raw TX hex
+    if (!rawUnsignedTx) return null;
+    const inputAmounts = parsedInputDetails.map((input) => {
+      const inp = input as { amount?: string };
+      return inp.amount || '0';
+    });
+    return decodeVaultTransaction(
+      rawUnsignedTx,
+      chain as keyof cryptos,
+      inputAmounts,
+    );
+  }, [rawUnsignedTx, chain, chainConfig, parsedInputDetails, evmUserOp]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -478,6 +523,11 @@ function EnterpriseVaultSignTx({
       payload.sourceAddress = sourceAddress;
     }
 
+    // Include EVM UserOp for Key's trustless decode
+    if (evmUserOp) {
+      payload.evmUserOp = evmUserOp;
+    }
+
     // Include all signer keys/nonces for EVM signing
     // Key needs these to call signMultiSigMsg with the same arrays
     // Use props if available, fall back to locally-built arrays (M=1 fallback)
@@ -512,13 +562,6 @@ function EnterpriseVaultSignTx({
       );
     }
 
-    console.log(
-      '[EnterpriseVaultSignTx] Posting vault sign request to relay, recipients:',
-      parsedRecipients.length,
-      parsedRecipients.length > 0
-        ? `first: ${parsedRecipients[0].address.substring(0, 20)}...`
-        : 'EMPTY',
-    );
     await axios.post(`https://${sspConfig().relay}/v1/action`, data);
   };
 
@@ -808,7 +851,7 @@ function EnterpriseVaultSignTx({
                     : chain}
                 </Text>
               </div>
-              {sourceAddress && (
+              {decodedTx?.sender && (
                 <div>
                   <Text type="secondary">
                     {t('home:enterpriseVaultSignTx.source_address')}:{' '}
@@ -820,7 +863,7 @@ function EnterpriseVaultSignTx({
                       wordBreak: 'break-all',
                     }}
                   >
-                    {sourceAddress}
+                    {decodedTx.sender}
                   </Text>
                 </div>
               )}
@@ -830,39 +873,62 @@ function EnterpriseVaultSignTx({
 
         <Divider style={{ margin: '8px 0' }} />
 
-        {/* Recipients */}
+        {/* Decoded transaction data notice */}
+        <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center' }}>
+          {t('home:enterpriseVaultSignTx.decoded_notice')}
+        </Text>
+
+        {decodedTx?.error && (
+          <Alert
+            type="error"
+            message={t('home:enterpriseVaultSignTx.decode_error')}
+            description={decodedTx.error}
+            showIcon
+            style={{ textAlign: 'left' }}
+          />
+        )}
+
+        {/* Recipients — decoded from raw transaction */}
         <Space direction="vertical" size="small" style={{ width: '100%' }}>
           <Text type="secondary" strong>
             {t('home:enterpriseVaultSignTx.recipients')}:
           </Text>
-          {parsedRecipients.map((recipient, index) => (
+          {(decodedTx?.recipients ?? []).map((recipient, index) => (
             <div key={index} className="vault-sign-recipient-box">
               <Text
+                copyable={{ text: recipient.address }}
                 style={{
                   fontFamily: 'monospace',
-                  fontSize: '11px',
+                  fontSize: '13px',
                   wordBreak: 'break-all',
                   display: 'block',
                 }}
               >
                 {recipient.address}
               </Text>
-              <Text strong>
-                {formatAmount(recipient.amount, amountDecimals)} {amountSymbol}
+              <Text
+                strong
+                style={{ fontSize: '17px', marginTop: 6, display: 'block' }}
+              >
+                {formatAmount(
+                  recipient.amount,
+                  decodedTx?.tokenDecimals ?? amountDecimals,
+                )}{' '}
+                {decodedTx?.tokenSymbol || amountSymbol}
               </Text>
             </div>
           ))}
         </Space>
 
-        {/* Fee */}
+        {/* Fee — decoded from raw transaction */}
         <Space direction="vertical" size="small">
           <Text type="secondary">{t('home:enterpriseVaultSignTx.fee')}: </Text>
           <Text strong>
-            {formatAmount(fee, chainDecimals)} {chainSymbol}
+            {formatAmount(decodedTx?.fee ?? fee, chainDecimals)} {chainSymbol}
           </Text>
         </Space>
 
-        {/* Memo */}
+        {/* Memo — from metadata (not in raw transaction) */}
         {memo && (
           <Space direction="vertical" size="small" style={{ width: '100%' }}>
             <Text type="secondary">
