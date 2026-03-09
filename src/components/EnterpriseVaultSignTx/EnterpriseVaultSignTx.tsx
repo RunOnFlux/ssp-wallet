@@ -874,7 +874,10 @@ function EnterpriseVaultSignTx({
         <Divider style={{ margin: '8px 0' }} />
 
         {/* Decoded transaction data notice */}
-        <Text type="secondary" style={{ fontSize: '12px', textAlign: 'center' }}>
+        <Text
+          type="secondary"
+          style={{ fontSize: '12px', textAlign: 'center' }}
+        >
           {t('home:enterpriseVaultSignTx.decoded_notice')}
         </Text>
 
