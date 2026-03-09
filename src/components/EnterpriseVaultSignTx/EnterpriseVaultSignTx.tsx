@@ -87,6 +87,8 @@ interface Props {
   tokenContract?: string;
   tokenSymbol?: string;
   tokenDecimals?: number;
+  // Source vault address for display on Key
+  sourceAddress?: string;
 }
 
 /**
@@ -132,6 +134,7 @@ function EnterpriseVaultSignTx({
   tokenContract,
   tokenSymbol,
   tokenDecimals,
+  sourceAddress,
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
@@ -470,6 +473,11 @@ function EnterpriseVaultSignTx({
       payload.tokenDecimals = tokenDecimals;
     }
 
+    // Include source vault address for Key's approval display
+    if (sourceAddress) {
+      payload.sourceAddress = sourceAddress;
+    }
+
     // Include all signer keys/nonces for EVM signing
     // Key needs these to call signMultiSigMsg with the same arrays
     // Use props if available, fall back to locally-built arrays (M=1 fallback)
@@ -504,7 +512,13 @@ function EnterpriseVaultSignTx({
       );
     }
 
-    console.log('[EnterpriseVaultSignTx] Posting vault sign request to relay');
+    console.log(
+      '[EnterpriseVaultSignTx] Posting vault sign request to relay, recipients:',
+      parsedRecipients.length,
+      parsedRecipients.length > 0
+        ? `first: ${parsedRecipients[0].address.substring(0, 20)}...`
+        : 'EMPTY',
+    );
     await axios.post(`https://${sspConfig().relay}/v1/action`, data);
   };
 
@@ -794,6 +808,22 @@ function EnterpriseVaultSignTx({
                     : chain}
                 </Text>
               </div>
+              {sourceAddress && (
+                <div>
+                  <Text type="secondary">
+                    {t('home:enterpriseVaultSignTx.source_address')}:{' '}
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: '11px',
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    {sourceAddress}
+                  </Text>
+                </div>
+              )}
             </Space>
           </div>
         </Space>

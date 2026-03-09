@@ -38,6 +38,8 @@ interface SspConnectContextType {
   tokenContract?: string;
   tokenSymbol?: string;
   tokenDecimals?: number;
+  // Source vault address for display on Key
+  sourceAddress?: string;
   clearRequest?: () => void;
 }
 
@@ -94,6 +96,8 @@ interface dataBgParams {
   tokenContract?: string;
   tokenSymbol?: string;
   tokenDecimals?: number;
+  // Source vault address for display on Key
+  sourceAddress?: string;
 }
 
 interface dataBgRequest {
@@ -152,6 +156,9 @@ export const SspConnectProvider = ({
   );
   const [tokenSymbol, setTokenSymbol] = useState<string | undefined>(undefined);
   const [tokenDecimals, setTokenDecimals] = useState<number | undefined>(
+    undefined,
+  );
+  const [sourceAddress, setSourceAddress] = useState<string | undefined>(
     undefined,
   );
   const { t } = useTranslation(['home', 'common']);
@@ -776,6 +783,13 @@ export const SspConnectProvider = ({
               ? signTokenDecimals
               : undefined,
           );
+          // Source vault address (optional — for display on Key)
+          const signSourceAddress = request.data.params.sourceAddress;
+          setSourceAddress(
+            typeof signSourceAddress === 'string' && signSourceAddress
+              ? signSourceAddress
+              : undefined,
+          );
 
           setType('enterprise_vault_sign_tx');
 
@@ -861,6 +875,7 @@ export const SspConnectProvider = ({
     setTokenContract(undefined);
     setTokenSymbol(undefined);
     setTokenDecimals(undefined);
+    setSourceAddress(undefined);
   };
 
   return (
@@ -891,6 +906,7 @@ export const SspConnectProvider = ({
         tokenContract,
         tokenSymbol,
         tokenDecimals,
+        sourceAddress,
         clearRequest,
       }}
     >
