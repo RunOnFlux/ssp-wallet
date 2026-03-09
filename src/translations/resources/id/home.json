@@ -361,6 +361,8 @@
     "recipients": "Penerima",
     "fee": "Biaya Network",
     "memo": "Catatan",
+    "decoded_notice": "The data below is decoded directly from the raw transaction you are signing. Always verify recipients and amounts before approving.",
+    "decode_error": "Could not fully decode transaction data. Proceed with caution.",
     "partial_signature_notice": "This is a multisig vault transaction. It will only be broadcast once all required signers have approved.",
     "sign": "Tandatangani Transaksi",
     "awaiting_key": "Menunggu Kunci...",
