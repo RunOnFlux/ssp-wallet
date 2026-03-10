@@ -338,6 +338,8 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       if (newSocket.connected) {
         newSocket.emit('leave', { wkIdentity });
       }
+      // Remove all listeners before closing to prevent memory leaks on reconnection cycles
+      newSocket.removeAllListeners();
       newSocket.close();
     };
   }, [wkIdentity]);
