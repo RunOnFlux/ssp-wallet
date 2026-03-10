@@ -517,12 +517,13 @@ export function decodeVaultTransaction(
   chain: keyof cryptos,
   inputAmounts: string[] = [],
   importedTokens: Token[] = [],
+  inputScripts?: { witnessScript?: string; redeemScript?: string },
 ): VaultDecodedTx {
   try {
     if (blockchains[chain].chainType === 'evm') {
       return decodeVaultEvmTransaction(rawTx, chain, importedTokens);
     }
-    return decodeVaultUtxoTransaction(rawTx, chain, inputAmounts);
+    return decodeVaultUtxoTransaction(rawTx, chain, inputAmounts, inputScripts);
   } catch (error) {
     return {
       sender: '',
@@ -538,6 +539,7 @@ function decodeVaultUtxoTransaction(
   rawTx: string,
   chain: keyof cryptos,
   inputAmounts: string[],
+  inputScripts?: { witnessScript?: string; redeemScript?: string },
 ): VaultDecodedTx {
   const libID = getLibId(chain);
   const cashAddrPrefix = blockchains[chain].cashaddr;
@@ -548,21 +550,44 @@ function decodeVaultUtxoTransaction(
     network,
   );
 
-  // Derive sender address from first input's script
+  // Derive sender address from first input's script.
+  // For unsigned TXs the scripts aren't embedded in the raw hex, so we also
+  // accept them from inputDetails metadata (witnessScript/redeemScript from
+  // the vault address generation, stored in the proposal).
   let senderAddress = '';
-  if (txb.inputs[0].witnessScript && txb.inputs[0].redeemScript) {
+
+  // Try scripts from the raw TX first (available for partially-signed TXs)
+  const txWitnessScript = txb.inputs[0].witnessScript;
+  const txRedeemScript = txb.inputs[0].redeemScript;
+
+  // Fall back to scripts from inputDetails metadata (always available)
+  const witnessScript =
+    txWitnessScript ||
+    (inputScripts?.witnessScript
+      ? Buffer.from(inputScripts.witnessScript, 'hex')
+      : undefined);
+  const redeemScript =
+    txRedeemScript ||
+    (inputScripts?.redeemScript
+      ? Buffer.from(inputScripts.redeemScript, 'hex')
+      : undefined);
+
+  if (witnessScript && redeemScript) {
+    // P2SH-P2WSH
     const scriptPubKey = utxolib.script.scriptHash.output.encode(
-      utxolib.crypto.hash160(txb.inputs[0].redeemScript),
+      utxolib.crypto.hash160(redeemScript),
     );
     senderAddress = utxolib.address.fromOutputScript(scriptPubKey, network);
-  } else if (txb.inputs[0].witnessScript) {
+  } else if (witnessScript) {
+    // P2WSH
     const scriptPubKey = utxolib.script.witnessScriptHash.output.encode(
-      utxolib.crypto.sha256(txb.inputs[0].witnessScript),
+      utxolib.crypto.sha256(witnessScript),
     );
     senderAddress = utxolib.address.fromOutputScript(scriptPubKey, network);
-  } else if (txb.inputs[0].redeemScript) {
+  } else if (redeemScript) {
+    // P2SH
     const scriptPubKey = utxolib.script.scriptHash.output.encode(
-      utxolib.crypto.hash160(txb.inputs[0].redeemScript),
+      utxolib.crypto.hash160(redeemScript),
     );
     senderAddress = utxolib.address.fromOutputScript(scriptPubKey, network);
   }

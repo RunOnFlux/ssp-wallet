@@ -230,10 +230,19 @@ function EnterpriseVaultSignTx({
       const inp = input as { amount?: string };
       return inp.amount || '0';
     });
+    // Pass first input's scripts so sender address can be derived even from unsigned TXs
+    const firstInput = parsedInputDetails[0] as
+      | {
+          witnessScript?: string;
+          redeemScript?: string;
+        }
+      | undefined;
     return decodeVaultTransaction(
       rawUnsignedTx,
       chain as keyof cryptos,
       inputAmounts,
+      [],
+      firstInput,
     );
   }, [rawUnsignedTx, chain, chainConfig, parsedInputDetails, evmUserOp]);
 
