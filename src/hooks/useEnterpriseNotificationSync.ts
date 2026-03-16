@@ -190,36 +190,38 @@ export function useEnterpriseNotificationSync(): void {
         }
       }
 
-      // Non-blocking: check enterprise nonce pool and replenish if needed
-      try {
-        const nonceStatusRes = await axios.get(
-          `https://${sspConfig().relay}/v1/nonces/status/${sspWalletKeyInternalIdentity}`,
-        );
-        const nonceData = nonceStatusRes.data as
-          | { data?: { replenishNeeded?: { wallet?: boolean } } }
-          | undefined;
-        if (nonceData?.data?.replenishNeeded?.wallet) {
-          replenishWalletEnterpriseNonces(
-            sspWalletKeyInternalIdentity,
-            passwordBlob,
-          ).catch((e) =>
-            console.log(
-              '[EnterpriseNotificationSync] Wallet nonce replenish error:',
-              e,
-            ),
-          );
-        }
-      } catch (nonceError) {
-        console.log(
-          '[EnterpriseNotificationSync] Nonce pool check failed:',
-          nonceError,
-        );
-      }
     } catch (error) {
       // Silently fail - notification sync is not critical
       console.warn(
         '[EnterpriseNotificationSync] Error syncing notification status:',
         error,
+      );
+    }
+
+    // Non-blocking: check enterprise nonce pool and replenish if needed.
+    // Runs independently of notification subscription status.
+    try {
+      const nonceStatusRes = await axios.get(
+        `https://${sspConfig().relay}/v1/nonces/status/${sspWalletKeyInternalIdentity}`,
+      );
+      const nonceData = nonceStatusRes.data as
+        | { data?: { replenishNeeded?: { wallet?: boolean } } }
+        | undefined;
+      if (nonceData?.data?.replenishNeeded?.wallet) {
+        replenishWalletEnterpriseNonces(
+          sspWalletKeyInternalIdentity,
+          passwordBlob,
+        ).catch((e) =>
+          console.log(
+            '[EnterpriseNotificationSync] Wallet nonce replenish error:',
+            e,
+          ),
+        );
+      }
+    } catch (nonceError) {
+      console.log(
+        '[EnterpriseNotificationSync] Nonce pool check failed:',
+        nonceError,
       );
     }
   }, [
