@@ -335,7 +335,14 @@
     "approve": "Setujui",
     "awaiting_key": "Menunggu Kunci...",
     "waiting_for_key": "Menunggu persetujuan SSP Key...",
-    "key_rejected": "Permohonan ditolak oleh Kunci SSP"
+    "key_rejected": "Permohonan ditolak oleh Kunci SSP",
+    "err_not_logged_in": "Not logged in",
+    "err_invalid_chain": "Invalid chain",
+    "err_seed_unavailable": "Could not retrieve wallet seed",
+    "err_decrypt_password": "Failed to decrypt password",
+    "err_decrypt_seed": "Failed to decrypt wallet seed",
+    "err_identity_key_unavailable": "Could not retrieve identity key",
+    "err_decrypt_identity_key": "Failed to decrypt identity key"
   },
   "enterpriseNonceSync": {
     "title": "Sinkronisasi Nonce Perusahaan",
@@ -348,7 +355,9 @@
     "success": "Nonce dompet dan kunci berhasil disinkronkan!",
     "wallet_not_ready": "Dompet belum dibuka kuncinya. Harap buka kunci dompet Anda terlebih dahulu.",
     "key_sync_failed": "Sinkronisasi nonce SSP Key gagal. Silakan coba lagi.",
-    "key_sync_timeout": "SSP Key tidak merespons. Buka SSP Key dan coba lagi."
+    "key_sync_timeout": "SSP Key tidak merespons. Buka SSP Key dan coba lagi.",
+    "err_wallet_not_ready": "Wallet not ready",
+    "err_sync_failed": "Nonce sync failed"
   },
   "enterpriseVaultSignTx": {
     "title": "Penandatanganan Transaksi Brankas Enterprise",
@@ -367,7 +376,11 @@
     "sign": "Tandatangani Transaksi",
     "awaiting_key": "Menunggu Kunci...",
     "waiting_for_key": "Menunggu persetujuan SSP Key...",
-    "key_rejected": "Penandatanganan transaksi ditolak oleh Kunci SSP"
+    "key_rejected": "Penandatanganan transaksi ditolak oleh Kunci SSP",
+    "err_no_nonces": "No enterprise nonces available",
+    "err_nonce_not_found": "Reserved enterprise nonce not found locally. Please sync nonces and recreate the proposal.",
+    "err_nonce_retry_not_found": "Nonce not found after retry. Please sync nonces and recreate the proposal.",
+    "err_password_unavailable": "Password not available"
   },
   "sspConnect": {
     "invalid_chain": "Rantai tidak valid.",
