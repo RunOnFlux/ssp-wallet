@@ -30,7 +30,6 @@ import { generateRequestId } from '../../lib/wkSign';
 import {
   loadEncryptedNonces,
   saveEncryptedNonces,
-  replenishWalletEnterpriseNonces,
 } from '../../lib/enterpriseNonces';
 import type { WkSignRequesterInfo } from '../../lib/wkSign';
 import type { cryptos } from '../../types';
@@ -670,12 +669,8 @@ function EnterpriseVaultSignTx({
           console.log(
             `[EnterpriseVaultSignTx] NONCE MISMATCH — looking for ${reservedNonce.kPublic.slice(0, 8)}, local pool (${nonces.length}): [${localPrefixes}…]`,
           );
-          // Nonce desync — trigger background reconcile so next attempt will work
-          replenishWalletEnterpriseNonces(wkIdentity, passwordBlob).catch(
-            () => {},
-          );
           throw new Error(
-            `Reserved enterprise nonce not found locally. Pool has ${nonces.length} nonces, looking for kPublic=${reservedNonce.kPublic.slice(0, 8)}…\nNonces have been resynced. Please cancel and recreate the proposal.`,
+            `Reserved enterprise nonce not found locally. Pool has ${nonces.length} nonces, looking for kPublic=${reservedNonce.kPublic.slice(0, 8)}…\nPlease sync nonces and recreate the proposal.`,
           );
         }
         const walletNonce = nonces[matchIdx];

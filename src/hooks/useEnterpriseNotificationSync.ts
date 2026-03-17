@@ -189,7 +189,6 @@ export function useEnterpriseNotificationSync(): void {
           );
         }
       }
-
     } catch (error) {
       // Silently fail - notification sync is not critical
       console.warn(
