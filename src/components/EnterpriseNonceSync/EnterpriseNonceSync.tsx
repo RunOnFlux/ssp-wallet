@@ -92,7 +92,7 @@ function EnterpriseNonceSync({ open, requesterInfo, openAction }: Props) {
 
     try {
       if (!wkIdentity || !passwordBlob) {
-        throw new Error('Wallet not ready');
+        throw new Error(t('home:enterpriseNonceSync.err_wallet_not_ready'));
       }
       // Phase 1: Force-replace wallet nonces (purge old, generate fresh set)
       await replenishWalletEnterpriseNonces(wkIdentity, passwordBlob, true);
@@ -143,7 +143,10 @@ function EnterpriseNonceSync({ open, requesterInfo, openAction }: Props) {
       setLoading(false);
       setPhase('idle');
       waitingForKeyRef.current = false;
-      const msg = err instanceof Error ? err.message : 'Nonce sync failed';
+      const msg =
+        err instanceof Error
+          ? err.message
+          : t('home:enterpriseNonceSync.err_sync_failed');
       setError(msg);
     }
   };

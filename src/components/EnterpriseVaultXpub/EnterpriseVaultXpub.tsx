@@ -152,29 +152,29 @@ function EnterpriseVaultXpub({
     signature: string;
   }> => {
     if (!passwordBlob) {
-      throw new Error('Not logged in');
+      throw new Error(t('home:enterpriseVaultXpub.err_not_logged_in'));
     }
 
     const chainConfig = blockchains[chain];
     if (!chainConfig) {
-      throw new Error('Invalid chain');
+      throw new Error(t('home:enterpriseVaultXpub.err_invalid_chain'));
     }
 
     // Get the wallet seed from secure storage
     const walSeedBlob = secureLocalStorage.getItem('walletSeed');
     if (!walSeedBlob || typeof walSeedBlob !== 'string') {
-      throw new Error('Could not retrieve wallet seed');
+      throw new Error(t('home:enterpriseVaultXpub.err_seed_unavailable'));
     }
 
     const fingerprint = getFingerprint();
     let password = await passworderDecrypt(fingerprint, passwordBlob);
     if (typeof password !== 'string') {
-      throw new Error('Failed to decrypt password');
+      throw new Error(t('home:enterpriseVaultXpub.err_decrypt_password'));
     }
 
     let walletSeed = await passworderDecrypt(password, walSeedBlob);
     if (typeof walletSeed !== 'string') {
-      throw new Error('Failed to decrypt wallet seed');
+      throw new Error(t('home:enterpriseVaultXpub.err_decrypt_seed'));
     }
 
     // Derive xpub at m/48'/coin'/orgIndex'/scriptType'
@@ -197,14 +197,16 @@ function EnterpriseVaultXpub({
     )}-${identityChainConfig.id}`;
     const xprivEncrypted = secureLocalStorage.getItem(xprivStorageKey);
     if (!xprivEncrypted || typeof xprivEncrypted !== 'string') {
-      throw new Error('Could not retrieve identity key');
+      throw new Error(
+        t('home:enterpriseVaultXpub.err_identity_key_unavailable'),
+      );
     }
 
     let xpriv = await passworderDecrypt(password, xprivEncrypted);
     // Clear password — no longer needed
     password = '';
     if (typeof xpriv !== 'string') {
-      throw new Error('Failed to decrypt identity key');
+      throw new Error(t('home:enterpriseVaultXpub.err_decrypt_identity_key'));
     }
 
     const identityKeypair = generateAddressKeypair(xpriv, 10, 0, identityChain);

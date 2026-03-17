@@ -631,7 +631,10 @@ function EnterpriseVaultSignTx({
         // EVM: Schnorr signing with enterprise nonces
 
         // 1. Load wallet's enterprise nonce WITH private parts (encrypted)
-        if (!passwordBlob) throw new Error('Password not available');
+        if (!passwordBlob)
+          throw new Error(
+            t('home:enterpriseVaultSignTx.err_password_unavailable'),
+          );
         // Load nonces with retry — storage may need a moment to be readable
         let nonces = await loadEncryptedNonces(passwordBlob);
         let matchIdx = nonces.findIndex(
@@ -653,7 +656,7 @@ function EnterpriseVaultSignTx({
           );
         }
         if (nonces.length === 0)
-          throw new Error('No enterprise nonces available');
+          throw new Error(t('home:enterpriseVaultSignTx.err_no_nonces'));
         console.log(
           `[EnterpriseVaultSignTx] Looking for nonce: kPublic=${reservedNonce.kPublic.slice(0, 8)}… kTwoPublic=${reservedNonce.kTwoPublic.slice(0, 8)}…`,
         );
@@ -669,9 +672,7 @@ function EnterpriseVaultSignTx({
           console.log(
             `[EnterpriseVaultSignTx] NONCE MISMATCH — looking for ${reservedNonce.kPublic.slice(0, 8)}, local pool (${nonces.length}): [${localPrefixes}…]`,
           );
-          throw new Error(
-            `Reserved enterprise nonce not found locally. Pool has ${nonces.length} nonces, looking for kPublic=${reservedNonce.kPublic.slice(0, 8)}…\nPlease sync nonces and recreate the proposal.`,
-          );
+          throw new Error(t('home:enterpriseVaultSignTx.err_nonce_not_found'));
         }
         const walletNonce = nonces[matchIdx];
 
