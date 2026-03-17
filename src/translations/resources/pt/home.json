@@ -335,7 +335,14 @@
     "approve": "Approve",
     "awaiting_key": "Awaiting Key...",
     "waiting_for_key": "Waiting for SSP Key approval...",
-    "key_rejected": "Request rejected by SSP Key"
+    "key_rejected": "Request rejected by SSP Key",
+    "err_not_logged_in": "Not logged in",
+    "err_invalid_chain": "Invalid chain",
+    "err_seed_unavailable": "Could not retrieve wallet seed",
+    "err_decrypt_password": "Failed to decrypt password",
+    "err_decrypt_seed": "Failed to decrypt wallet seed",
+    "err_identity_key_unavailable": "Could not retrieve identity key",
+    "err_decrypt_identity_key": "Failed to decrypt identity key"
   },
   "enterpriseNonceSync": {
     "title": "Enterprise Nonce Synchronisation",
@@ -348,7 +355,9 @@
     "success": "Wallet and Key nonces synchronised successfully!",
     "wallet_not_ready": "Wallet is not unlocked. Please unlock your wallet first.",
     "key_sync_failed": "SSP Key nonce sync failed. Please try again.",
-    "key_sync_timeout": "SSP Key did not respond. Open SSP Key and try again."
+    "key_sync_timeout": "SSP Key did not respond. Open SSP Key and try again.",
+    "err_wallet_not_ready": "Wallet not ready",
+    "err_sync_failed": "Nonce sync failed"
   },
   "enterpriseVaultSignTx": {
     "title": "Enterprise Vault Transaction Signing",
@@ -367,7 +376,11 @@
     "sign": "Sign Transaction",
     "awaiting_key": "Awaiting Key...",
     "waiting_for_key": "Waiting for SSP Key approval...",
-    "key_rejected": "Transaction signing rejected by SSP Key"
+    "key_rejected": "Transaction signing rejected by SSP Key",
+    "err_no_nonces": "No enterprise nonces available",
+    "err_nonce_not_found": "Reserved enterprise nonce not found locally. Please sync nonces and recreate the proposal.",
+    "err_nonce_retry_not_found": "Nonce not found after retry. Please sync nonces and recreate the proposal.",
+    "err_password_unavailable": "Password not available"
   },
   "sspConnect": {
     "invalid_chain": "Chain inválida.",
