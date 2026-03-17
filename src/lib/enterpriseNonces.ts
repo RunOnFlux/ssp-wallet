@@ -64,7 +64,16 @@ export async function replenishWalletEnterpriseNonces(
   passwordBlob: string,
   forceReplace = false,
 ): Promise<void> {
-  if (replenishing) return;
+  if (replenishing) {
+    if (!forceReplace) return;
+    // forceReplace: wait for background replenish to finish
+    const maxWait = 30000;
+    const start = Date.now();
+    while (replenishing && Date.now() - start < maxWait) {
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    if (replenishing) return; // timed out
+  }
   replenishing = true;
   try {
     // Check server-side pool status to know how many nonces the server actually has

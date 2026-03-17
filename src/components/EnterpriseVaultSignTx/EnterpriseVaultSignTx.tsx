@@ -30,6 +30,7 @@ import { generateRequestId } from '../../lib/wkSign';
 import {
   loadEncryptedNonces,
   saveEncryptedNonces,
+  replenishWalletEnterpriseNonces,
 } from '../../lib/enterpriseNonces';
 import type { WkSignRequesterInfo } from '../../lib/wkSign';
 import type { cryptos } from '../../types';
@@ -632,7 +633,26 @@ function EnterpriseVaultSignTx({
 
         // 1. Load wallet's enterprise nonce WITH private parts (encrypted)
         if (!passwordBlob) throw new Error('Password not available');
-        const nonces = await loadEncryptedNonces(passwordBlob);
+        // Load nonces with retry — storage may need a moment to be readable
+        let nonces = await loadEncryptedNonces(passwordBlob);
+        let matchIdx = nonces.findIndex(
+          (n) =>
+            n.kPublic === reservedNonce.kPublic &&
+            n.kTwoPublic === reservedNonce.kTwoPublic,
+        );
+        if (matchIdx === -1 && nonces.length > 0) {
+          // Retry after short delay — storage may not be fully synced yet
+          console.log(
+            `[EnterpriseVaultSignTx] Nonce not found on first try, retrying in 2s…`,
+          );
+          await new Promise((r) => setTimeout(r, 2000));
+          nonces = await loadEncryptedNonces(passwordBlob);
+          matchIdx = nonces.findIndex(
+            (n) =>
+              n.kPublic === reservedNonce.kPublic &&
+              n.kTwoPublic === reservedNonce.kTwoPublic,
+          );
+        }
         if (nonces.length === 0)
           throw new Error('No enterprise nonces available');
         console.log(
@@ -641,15 +661,23 @@ function EnterpriseVaultSignTx({
         console.log(
           `[EnterpriseVaultSignTx] Local pool has ${nonces.length} nonces, first kPublic=${nonces[0]?.kPublic?.slice(0, 8)}…`,
         );
-        const matchIdx = nonces.findIndex(
-          (n) =>
-            n.kPublic === reservedNonce.kPublic &&
-            n.kTwoPublic === reservedNonce.kTwoPublic,
-        );
-        if (matchIdx === -1)
-          throw new Error(
-            `Reserved enterprise nonce not found locally. Pool has ${nonces.length} nonces, looking for kPublic=${reservedNonce.kPublic.slice(0, 8)}…`,
+        if (matchIdx === -1) {
+          // Log all local kPublic prefixes for debugging
+          const localPrefixes = nonces
+            .slice(0, 5)
+            .map((n) => n.kPublic.slice(0, 8))
+            .join(', ');
+          console.log(
+            `[EnterpriseVaultSignTx] NONCE MISMATCH — looking for ${reservedNonce.kPublic.slice(0, 8)}, local pool (${nonces.length}): [${localPrefixes}…]`,
           );
+          // Nonce desync — trigger background reconcile so next attempt will work
+          replenishWalletEnterpriseNonces(wkIdentity, passwordBlob).catch(
+            () => {},
+          );
+          throw new Error(
+            `Reserved enterprise nonce not found locally. Pool has ${nonces.length} nonces, looking for kPublic=${reservedNonce.kPublic.slice(0, 8)}…\nNonces have been resynced. Please cancel and recreate the proposal.`,
+          );
+        }
         const walletNonce = nonces[matchIdx];
 
         // 2. Build allKeys and allNonces arrays for M-of-N signing
