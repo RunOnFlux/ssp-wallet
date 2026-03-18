@@ -165,6 +165,8 @@ function EnterpriseVaultSignTx({
   const [requestId, setRequestId] = useState<string | null>(null);
   const [waitingForKey, setWaitingForKey] = useState(false);
   const signingRef = useRef(false);
+  // Store wallet's Schnorr challenge for wallet-only mode (Key returns empty challenge)
+  const walletChallengeRef = useRef<string>('');
 
   // Parse recipients from JSON
   const parsedRecipients = useMemo((): Recipient[] => {
@@ -270,10 +272,15 @@ function EnterpriseVaultSignTx({
         const keySignatures: string[] = enterpriseVaultSigned.signerContribution
           ? [enterpriseVaultSigned.signerContribution]
           : (enterpriseVaultSigned.keySignatures ?? []);
-        const keySignaturesChallenges: string[] =
-          enterpriseVaultSigned.challenge
-            ? [enterpriseVaultSigned.challenge]
-            : keySignatures;
+        // Challenge source priority:
+        // 1. Key's challenge (dual mode + key-only mode: Key signed)
+        // 2. Wallet's stored challenge (wallet-only mode: Key didn't sign, returned empty)
+        // 3. Fallback to keySignatures (UTXO / legacy)
+        const challengeValue =
+          enterpriseVaultSigned.challenge || walletChallengeRef.current;
+        const keySignaturesChallenges: string[] = challengeValue
+          ? [challengeValue]
+          : keySignatures;
 
         const response: EnterpriseVaultSignTxResponse = {
           walletSignatures: enterpriseVaultSigned.signerContribution
@@ -334,6 +341,7 @@ function EnterpriseVaultSignTx({
     setRequestId(null);
     setWaitingForKey(false);
     signingRef.current = false;
+    walletChallengeRef.current = '';
   };
 
   /**
@@ -630,107 +638,130 @@ function EnterpriseVaultSignTx({
       if (isEvm) {
         // EVM: Schnorr signing with enterprise nonces
 
-        // 1. Load wallet's enterprise nonce WITH private parts (encrypted)
-        if (!passwordBlob)
-          throw new Error(
-            t('home:enterpriseVaultSignTx.err_password_unavailable'),
-          );
-        // Load nonces with retry — storage may need a moment to be readable
-        let nonces = await loadEncryptedNonces(passwordBlob);
-        let matchIdx = nonces.findIndex(
-          (n) =>
-            n.kPublic === reservedNonce.kPublic &&
-            n.kTwoPublic === reservedNonce.kTwoPublic,
-        );
-        if (matchIdx === -1 && nonces.length > 0) {
-          // Retry after short delay — storage may not be fully synced yet
+        // Key-only mode: wallet nonce is empty placeholder — wallet skips
+        // Schnorr signing entirely, Key signs independently.
+        const isKeyOnlyMode = !reservedNonce.kPublic;
+
+        if (isKeyOnlyMode) {
+          // Key-only vault: wallet doesn't participate in Schnorr signing.
+          // Forward allSignerKeys/allSignerNonces directly to Key.
           console.log(
-            `[EnterpriseVaultSignTx] Nonce not found on first try, retrying in 2s…`,
+            '[EnterpriseVaultSignTx] Key-only mode — skipping wallet Schnorr signing',
           );
-          await new Promise((r) => setTimeout(r, 2000));
-          nonces = await loadEncryptedNonces(passwordBlob);
-          matchIdx = nonces.findIndex(
+          effectiveSignerKeys = allSignerKeys;
+          effectiveSignerNonces = allSignerNonces;
+          signatures = [''];
+          schnorrData = { sigOne: '', challenge: '' };
+        } else {
+          // Dual mode: wallet participates in Schnorr signing
+
+          // 1. Load wallet's enterprise nonce WITH private parts (encrypted)
+          if (!passwordBlob)
+            throw new Error(
+              t('home:enterpriseVaultSignTx.err_password_unavailable'),
+            );
+          // Load nonces with retry — storage may need a moment to be readable
+          let nonces = await loadEncryptedNonces(passwordBlob);
+          let matchIdx = nonces.findIndex(
             (n) =>
               n.kPublic === reservedNonce.kPublic &&
               n.kTwoPublic === reservedNonce.kTwoPublic,
           );
-        }
-        if (nonces.length === 0)
-          throw new Error(t('home:enterpriseVaultSignTx.err_no_nonces'));
-        console.log(
-          `[EnterpriseVaultSignTx] Looking for nonce: kPublic=${reservedNonce.kPublic.slice(0, 8)}… kTwoPublic=${reservedNonce.kTwoPublic.slice(0, 8)}…`,
-        );
-        console.log(
-          `[EnterpriseVaultSignTx] Local pool has ${nonces.length} nonces, first kPublic=${nonces[0]?.kPublic?.slice(0, 8)}…`,
-        );
-        if (matchIdx === -1) {
-          // Log all local kPublic prefixes for debugging
-          const localPrefixes = nonces
-            .slice(0, 5)
-            .map((n) => n.kPublic.slice(0, 8))
-            .join(', ');
+          if (matchIdx === -1 && nonces.length > 0) {
+            // Retry after short delay — storage may not be fully synced yet
+            console.log(
+              `[EnterpriseVaultSignTx] Nonce not found on first try, retrying in 2s…`,
+            );
+            await new Promise((r) => setTimeout(r, 2000));
+            nonces = await loadEncryptedNonces(passwordBlob);
+            matchIdx = nonces.findIndex(
+              (n) =>
+                n.kPublic === reservedNonce.kPublic &&
+                n.kTwoPublic === reservedNonce.kTwoPublic,
+            );
+          }
+          if (nonces.length === 0)
+            throw new Error(t('home:enterpriseVaultSignTx.err_no_nonces'));
           console.log(
-            `[EnterpriseVaultSignTx] NONCE MISMATCH — looking for ${reservedNonce.kPublic.slice(0, 8)}, local pool (${nonces.length}): [${localPrefixes}…]`,
+            `[EnterpriseVaultSignTx] Looking for nonce: kPublic=${reservedNonce.kPublic.slice(0, 8)}… kTwoPublic=${reservedNonce.kTwoPublic.slice(0, 8)}…`,
           );
-          throw new Error(t('home:enterpriseVaultSignTx.err_nonce_not_found'));
-        }
-        const walletNonce = nonces[matchIdx];
-
-        // 2. Build allKeys and allNonces arrays for M-of-N signing
-        let signingKeys: string[];
-        let signingNonces: Array<{ kPublic: string; kTwoPublic: string }>;
-
-        if (allSignerKeys?.length && allSignerNonces?.length) {
-          // M-of-N: use pre-built arrays from enterprise app
-          signingKeys = allSignerKeys;
-          signingNonces = allSignerNonces;
-        } else {
-          // M=1 fallback: build 2-element arrays from this signer's data
-          if (!keyXpub)
-            throw new Error('Key vault xpub not provided. Re-run vault setup.');
-          const keyVaultPubKey = deriveEVMPublicKey(
-            keyXpub,
-            vaultIndex,
-            txAddressIndex,
-            chain as keyof cryptos,
+          console.log(
+            `[EnterpriseVaultSignTx] Local pool has ${nonces.length} nonces, first kPublic=${nonces[0]?.kPublic?.slice(0, 8)}…`,
           );
-          signingKeys = [keypair.pubKey, keyVaultPubKey];
-          signingNonces = [
-            {
-              kPublic: reservedNonce.kPublic,
-              kTwoPublic: reservedNonce.kTwoPublic,
-            },
-            {
-              kPublic: reservedKeyNonce.kPublic,
-              kTwoPublic: reservedKeyNonce.kTwoPublic,
-            },
-          ];
+          if (matchIdx === -1) {
+            // Log all local kPublic prefixes for debugging
+            const localPrefixes = nonces
+              .slice(0, 5)
+              .map((n) => n.kPublic.slice(0, 8))
+              .join(', ');
+            console.log(
+              `[EnterpriseVaultSignTx] NONCE MISMATCH — looking for ${reservedNonce.kPublic.slice(0, 8)}, local pool (${nonces.length}): [${localPrefixes}…]`,
+            );
+            throw new Error(
+              t('home:enterpriseVaultSignTx.err_nonce_not_found'),
+            );
+          }
+          const walletNonce = nonces[matchIdx];
+
+          // 2. Build allKeys and allNonces arrays for M-of-N signing
+          let signingKeys: string[];
+          let signingNonces: Array<{ kPublic: string; kTwoPublic: string }>;
+
+          if (allSignerKeys?.length && allSignerNonces?.length) {
+            // M-of-N: use pre-built arrays from enterprise app
+            signingKeys = allSignerKeys;
+            signingNonces = allSignerNonces;
+          } else {
+            // M=1 fallback: build 2-element arrays from this signer's data
+            if (!keyXpub)
+              throw new Error(
+                'Key vault xpub not provided. Re-run vault setup.',
+              );
+            const keyVaultPubKey = deriveEVMPublicKey(
+              keyXpub,
+              vaultIndex,
+              txAddressIndex,
+              chain as keyof cryptos,
+            );
+            signingKeys = [keypair.pubKey, keyVaultPubKey];
+            signingNonces = [
+              {
+                kPublic: reservedNonce.kPublic,
+                kTwoPublic: reservedNonce.kTwoPublic,
+              },
+              {
+                kPublic: reservedKeyNonce.kPublic,
+                kTwoPublic: reservedKeyNonce.kTwoPublic,
+              },
+            ];
+          }
+
+          // Track effective arrays so we can forward them to Key
+          effectiveSignerKeys = signingKeys;
+          effectiveSignerNonces = signingNonces;
+
+          // 3. Schnorr partial sign with variable-length arrays
+          const result = signVaultMessageWithSchnorr(
+            rawUnsignedTx,
+            keypair,
+            walletNonce,
+            signingKeys,
+            signingNonces,
+          );
+          signatures = [result.sigOne];
+          schnorrData = {
+            sigOne: result.sigOne,
+            challenge: result.challenge,
+          };
+          // Store wallet's challenge for wallet-only mode fallback
+          walletChallengeRef.current = result.challenge;
+
+          // 4. Delete used nonce from local store (never reuse)
+          walletNonce.k = '';
+          walletNonce.kTwo = '';
+          nonces.splice(matchIdx, 1);
+          await saveEncryptedNonces(nonces, passwordBlob);
         }
-
-        // Track effective arrays so we can forward them to Key
-        effectiveSignerKeys = signingKeys;
-        effectiveSignerNonces = signingNonces;
-
-        // 3. Schnorr partial sign with variable-length arrays
-        const result = signVaultMessageWithSchnorr(
-          rawUnsignedTx,
-          keypair,
-          walletNonce,
-          signingKeys,
-          signingNonces,
-        );
-        signatures = [result.sigOne];
-        schnorrData = {
-          sigOne: result.sigOne,
-          challenge: result.challenge,
-        };
-
-        // 4. Delete used nonce from local store (never reuse)
-        // Clear private nonce material before persisting
-        walletNonce.k = '';
-        walletNonce.kTwo = '';
-        nonces.splice(matchIdx, 1);
-        await saveEncryptedNonces(nonces, passwordBlob);
       } else if (chainConfig?.chainType === 'evm') {
         // EVM chain but missing nonces — cannot sign without enterprise nonces
         throw new Error(

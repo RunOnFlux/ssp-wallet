@@ -152,9 +152,9 @@ export function signVaultMessageWithSchnorr(
     (hex) => hex === signerPubKeyHex,
   );
   if (signerKeyIdx === -1) {
-    throw new Error(
-      'Wallet public key not found in allSignerKeys array — key mismatch',
-    );
+    // Wallet pubkey not in signing array (e.g., key-only vault mode).
+    // Return empty so signing is delegated to the other device.
+    return { sigOne: '', challenge: '' };
   }
   publicKeys[signerKeyIdx] = signerPubKey;
 
