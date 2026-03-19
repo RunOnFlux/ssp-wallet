@@ -436,22 +436,24 @@ describe('evmSigning', () => {
       expect(mockSigner.getPubKey).toHaveBeenCalled();
     });
 
-    it('should throw when wallet public key is not found in array (key mismatch)', () => {
+    it('should return empty passthrough when wallet public key is not found (key-only mode)', () => {
       const allPublicKeys = ['ff'.repeat(33), 'fe'.repeat(33)];
       const allPublicNonces = [
         { kPublic: 'a1'.repeat(33), kTwoPublic: 'a2'.repeat(33) },
         { kPublic: 'a3'.repeat(33), kTwoPublic: 'a4'.repeat(33) },
       ];
 
-      expect(() =>
-        signVaultMessageWithSchnorr(
-          MESSAGE,
-          WALLET_KEYPAIR,
-          WALLET_NONCE,
-          allPublicKeys,
-          allPublicNonces,
-        ),
-      ).toThrow('Wallet public key not found in allSignerKeys array');
+      const result = signVaultMessageWithSchnorr(
+        MESSAGE,
+        WALLET_KEYPAIR,
+        WALLET_NONCE,
+        allPublicKeys,
+        allPublicNonces,
+      );
+
+      // Wallet pubkey not in array → key-only passthrough
+      expect(result.sigOne).toBe('');
+      expect(result.challenge).toBe('');
     });
 
     it('should replace the signer Key entry with the internal Key instance', () => {
