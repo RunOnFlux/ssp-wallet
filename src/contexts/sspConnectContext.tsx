@@ -42,6 +42,8 @@ interface SspConnectContextType {
   sourceAddress?: string;
   // Full EVM UserOp struct (JSON string) for trustless decode
   evmUserOp?: string;
+  // Vault signing mode (dual, key_only, wallet_only)
+  signingMode?: string;
   clearRequest?: () => void;
 }
 
@@ -102,6 +104,8 @@ interface dataBgParams {
   sourceAddress?: string;
   // Full EVM UserOp struct (JSON string) for trustless decode
   evmUserOp?: string;
+  // Vault signing mode (dual, key_only, wallet_only)
+  signingMode?: string;
 }
 
 interface dataBgRequest {
@@ -166,6 +170,7 @@ export const SspConnectProvider = ({
     undefined,
   );
   const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
+  const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
 
@@ -803,6 +808,14 @@ export const SspConnectProvider = ({
               : undefined,
           );
 
+          // Vault signing mode (optional — dual, key_only, wallet_only)
+          const signSigningMode = request.data.params.signingMode;
+          setSigningMode(
+            typeof signSigningMode === 'string' && signSigningMode
+              ? signSigningMode
+              : undefined,
+          );
+
           setType('enterprise_vault_sign_tx');
 
           // Capture requester info
@@ -889,6 +902,7 @@ export const SspConnectProvider = ({
     setTokenDecimals(undefined);
     setSourceAddress(undefined);
     setEvmUserOp(undefined);
+    setSigningMode(undefined);
   };
 
   return (
@@ -921,6 +935,7 @@ export const SspConnectProvider = ({
         tokenDecimals,
         sourceAddress,
         evmUserOp,
+        signingMode,
         clearRequest,
       }}
     >

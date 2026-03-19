@@ -100,6 +100,7 @@ function SspConnect() {
     tokenDecimals: sspConnectTokenDecimals,
     sourceAddress: sspConnectSourceAddress,
     evmUserOp: sspConnectEvmUserOp,
+    signingMode: sspConnectSigningMode,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common', 'home']);
@@ -157,6 +158,7 @@ function SspConnect() {
     undefined,
   );
   const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
+  const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -228,6 +230,7 @@ function SspConnect() {
         setTokenDecimals(sspConnectTokenDecimals);
         setSourceAddress(sspConnectSourceAddress);
         setEvmUserOp(sspConnectEvmUserOp);
+        setSigningMode(sspConnectSigningMode);
         setOpenEnterpriseVaultSignTx(true);
       } else if (sspConnectType === 'enterprise_nonce_sync') {
         // Enterprise nonce sync request — interactive dialog
@@ -467,6 +470,7 @@ function SspConnect() {
         tokenDecimals={tokenDecimals}
         sourceAddress={sourceAddress}
         evmUserOp={evmUserOp}
+        signingMode={signingMode}
       />
       <EnterpriseNonceSync
         open={openEnterpriseNonceSync}

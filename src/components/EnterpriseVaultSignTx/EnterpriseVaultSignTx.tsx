@@ -95,6 +95,8 @@ interface Props {
   sourceAddress?: string;
   // Full EVM UserOp struct (JSON string) for trustless decode
   evmUserOp?: string;
+  // Vault signing mode (dual, key_only, wallet_only)
+  signingMode?: string;
 }
 
 /**
@@ -142,6 +144,7 @@ function EnterpriseVaultSignTx({
   tokenDecimals,
   sourceAddress,
   evmUserOp,
+  signingMode,
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
@@ -517,6 +520,11 @@ function EnterpriseVaultSignTx({
       payload.walletSignedHex = walletSigs[0];
     }
 
+    // Include signing mode so Key knows whether to sign or pass through
+    if (signingMode) {
+      payload.signingMode = signingMode;
+    }
+
     // Include Key's reserved nonce for EVM vault signing (Key uses this for its Schnorr signing)
     if (reservedKeyNonce) {
       payload.reservedNonce = reservedKeyNonce;
@@ -767,6 +775,12 @@ function EnterpriseVaultSignTx({
         throw new Error(
           'Enterprise nonces required for EVM vault signing. Please wait for nonce replenishment.',
         );
+      } else if (signingMode === 'key_only') {
+        // UTXO key-only: wallet doesn't sign, forward raw TX for Key to sign independently
+        console.log(
+          '[EnterpriseVaultSignTx] Key-only UTXO mode — skipping wallet signing',
+        );
+        signatures = [rawUnsignedTx];
       } else {
         // UTXO: SIGHASH-based signing via TransactionBuilder (proper ECDSA witness sigs)
         const walletSignedHex = signVaultUtxoInputs(vaultXpriv);
