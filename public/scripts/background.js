@@ -14,9 +14,12 @@ const isSidePanelSupported = typeof ext.sidePanel !== 'undefined';
 async function getDefaultOpenBehavior() {
   try {
     const result = await ext.storage.local.get(STORAGE_KEY_DEFAULT_OPEN);
-    return result[STORAGE_KEY_DEFAULT_OPEN] || OPEN_MODE_POPUP;
+    return (
+      result[STORAGE_KEY_DEFAULT_OPEN] ||
+      (isSidePanelSupported ? OPEN_MODE_SIDEPANEL : OPEN_MODE_POPUP)
+    );
   } catch (_err) {
-    return OPEN_MODE_POPUP;
+    return isSidePanelSupported ? OPEN_MODE_SIDEPANEL : OPEN_MODE_POPUP;
   }
 }
 
@@ -105,7 +108,7 @@ function createContextMenus() {
       parentId: 'set-default',
       title: 'Popup',
       type: 'checkbox',
-      checked: true,
+      checked: !isSidePanelSupported,
       contexts: ['action'],
     });
 
@@ -124,7 +127,7 @@ function createContextMenus() {
         parentId: 'set-default',
         title: 'Side Panel',
         type: 'checkbox',
-        checked: false,
+        checked: true,
         contexts: ['action'],
       });
     }
