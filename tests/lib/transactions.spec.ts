@@ -249,7 +249,8 @@ describe('Transactions Lib', () => {
       expect(res.sender).toBe('0xd447BA08b0d395fCAd6e480d270529c932289Ce1');
       expect(res.receiver).toBe('0x66324EE406cCccdDdAd7f510a61Af22DeC391606');
       expect(res.amount).toBe('0.1');
-      expect(res.fee).toBe('591584934602552');
+      // fee = totalGasLimit * maxFeePerGas (maxFeePerGas already includes priority fee)
+      expect(res.fee).toBe('332876934602552');
       expect(res.token).toBe('');
       expect(res.tokenSymbol).toBe('TEST-ETH');
       expect(res.decimals).toBe(18);
@@ -519,7 +520,8 @@ describe('Transactions Lib', () => {
       expect(res.recipients[0].amount).toBe(amountWei);
       expect(res.tokenSymbol).toBe('ETH');
       expect(res.tokenContract).toBeUndefined();
-      expect(res.fee).toBe('1800000000000000');
+      // fee = totalGasLimit * maxFeePerGas (maxFeePerGas already includes priority fee)
+      expect(res.fee).toBe('1500000000000000');
     });
 
     it('should decode real Sepolia 0.1 TEST-ETH transfer', () => {
@@ -532,7 +534,8 @@ describe('Transactions Lib', () => {
       );
       expect(res.recipients[0].amount).toBe('100000000000000000');
       expect(res.tokenSymbol).toBe('TEST-ETH');
-      expect(res.fee).toBe('591584934602552');
+      // fee = totalGasLimit * maxFeePerGas (maxFeePerGas already includes priority fee)
+      expect(res.fee).toBe('332876934602552');
     });
 
     it('should decode real Sepolia vault proposal (evmUserOp wrapped)', () => {
@@ -565,8 +568,9 @@ describe('Transactions Lib', () => {
       );
       expect(res.recipients[0].amount).toBe('100000000000000');
       expect(res.tokenSymbol).toBe('TEST-ETH');
-      // fee = (0x524a + 0x1181a + 0xcfbb) * (0x4aa00100 + 0x4a817c80) = 365169402000000
-      expect(res.fee).toBe('365169402000000');
+      // fee = (0x524a + 0x1181a + 0xcfbb) * 0x4aa00100 = 182730652000000
+      // maxFeePerGas already includes the priority fee — do not add maxPriorityFeePerGas
+      expect(res.fee).toBe('182730652000000');
     });
 
     it('should decode a very small native transfer (1 wei)', () => {
@@ -734,7 +738,8 @@ describe('Transactions Lib', () => {
       });
 
       const res = decodeVaultTransaction(rawTx, 'sepolia');
-      expect(res.fee).toBe('90');
+      // totalGas = 1+2+3 = 6, maxFeePerGas = 0xA = 10, fee = 60
+      expect(res.fee).toBe('60');
     });
 
     it('fee with large gas values does not lose precision', () => {
@@ -754,7 +759,8 @@ describe('Transactions Lib', () => {
       });
 
       const res = decodeVaultTransaction(rawTx, 'eth');
-      expect(res.fee).toBe('45000000000000000');
+      // totalGas = 3M, maxFeePerGas = 10 Gwei, fee = 30000000000000000
+      expect(res.fee).toBe('30000000000000000');
     });
   });
 
