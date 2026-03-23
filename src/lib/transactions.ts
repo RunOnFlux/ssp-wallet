@@ -652,17 +652,15 @@ function decodeVaultEvmTransaction(
     verificationGasLimit,
     preVerificationGas,
     maxFeePerGas,
-    maxPriorityFeePerGas,
   } = multisigUserOpJSON.userOpRequest;
 
   // Calculate fee in base units (wei)
+  // maxFeePerGas already includes the priority fee — it is the maximum total
+  // fee per gas unit (base fee + priority tip).
   const totalGasLimit = new BigNumber(callGasLimit)
     .plus(new BigNumber(verificationGasLimit))
     .plus(new BigNumber(preVerificationGas));
-  const totalMaxWeiPerGas = new BigNumber(maxFeePerGas).plus(
-    new BigNumber(maxPriorityFeePerGas),
-  );
-  const fee = totalGasLimit.multipliedBy(totalMaxWeiPerGas).toFixed();
+  const fee = totalGasLimit.multipliedBy(new BigNumber(maxFeePerGas)).toFixed();
 
   // Decode callData
   const decodedData = decodeFunctionData({
@@ -925,18 +923,14 @@ export function decodeEVMTransactionForApproval(
       verificationGasLimit,
       preVerificationGas,
       maxFeePerGas,
-      maxPriorityFeePerGas,
     } = multisigUserOpJSON.userOpRequest;
 
     const totalGasLimit = new BigNumber(callGasLimit)
       .plus(new BigNumber(verificationGasLimit))
       .plus(new BigNumber(preVerificationGas));
 
-    const totalMaxWeiPerGas = new BigNumber(maxFeePerGas).plus(
-      new BigNumber(maxPriorityFeePerGas),
-    );
-
-    const totalFeeWei = totalGasLimit.multipliedBy(totalMaxWeiPerGas);
+    // maxFeePerGas already includes the priority fee — do not add it again
+    const totalFeeWei = totalGasLimit.multipliedBy(new BigNumber(maxFeePerGas));
 
     console.log(multisigUserOpJSON);
 

@@ -78,6 +78,11 @@ vi.mock('@runonflux/aa-schnorr-multisig-sdk', () => ({
     Schnorrkel: {
       getCombinedPublicKey: vi.fn(() => mockKey),
       sumSigs: vi.fn(() => mockSig),
+      signHash: vi.fn(() => ({
+        signature: mockSig,
+        finalPublicNonce: mockPubNonces.kPublic,
+        challenge: mockChallenge,
+      })),
     },
   },
 }));
@@ -127,6 +132,11 @@ describe('evmSigning', () => {
     });
     mockSigner.signMultiSigHash.mockReturnValue({
       signature: mockSig,
+      challenge: mockChallenge,
+    });
+    accountAbstraction.signers.Schnorrkel.signHash.mockReturnValue({
+      signature: mockSig,
+      finalPublicNonce: mockPubNonces.kPublic,
       challenge: mockChallenge,
     });
   });
@@ -623,6 +633,138 @@ describe('evmSigning', () => {
           allPublicNonces,
         ),
       ).toThrow('Schnorr signing failed: invalid nonce');
+    });
+
+    // -----------------------------------------------------------------------
+    // Single-key path: allPublicKeys.length === 1
+    // -----------------------------------------------------------------------
+
+    it('should use Schnorrkel.signHash for single-key (allPublicKeys.length === 1)', () => {
+      const allPublicKeys = [SIGNER_PUB_KEY_HEX];
+      const allPublicNonces = [
+        {
+          kPublic: WALLET_NONCE.kPublic,
+          kTwoPublic: WALLET_NONCE.kTwoPublic,
+        },
+      ];
+
+      signVaultMessageWithSchnorr(
+        MESSAGE,
+        WALLET_KEYPAIR,
+        WALLET_NONCE,
+        allPublicKeys,
+        allPublicNonces,
+      );
+
+      expect(
+        accountAbstraction.signers.Schnorrkel.signHash,
+      ).toHaveBeenCalledTimes(1);
+      expect(mockSigner.signMultiSigHash).not.toHaveBeenCalled();
+    });
+
+    it('single-key: should return signature and challenge from signHash result', () => {
+      const allPublicKeys = [SIGNER_PUB_KEY_HEX];
+      const allPublicNonces = [
+        {
+          kPublic: WALLET_NONCE.kPublic,
+          kTwoPublic: WALLET_NONCE.kTwoPublic,
+        },
+      ];
+
+      const result = signVaultMessageWithSchnorr(
+        MESSAGE,
+        WALLET_KEYPAIR,
+        WALLET_NONCE,
+        allPublicKeys,
+        allPublicNonces,
+      );
+
+      expect(typeof result.sigOne).toBe('string');
+      expect(typeof result.challenge).toBe('string');
+      expect(result.sigOne).toBe(mockSigBuffer.toString('hex'));
+      expect(result.challenge).toBe(mockChallengeBuffer.toString('hex'));
+
+      const hexRegex = /^[0-9a-f]+$/;
+      expect(result.sigOne).toMatch(hexRegex);
+      expect(result.challenge).toMatch(hexRegex);
+    });
+
+    it('single-key: should construct private key from wallet keypair', () => {
+      const allPublicKeys = [SIGNER_PUB_KEY_HEX];
+      const allPublicNonces = [
+        {
+          kPublic: WALLET_NONCE.kPublic,
+          kTwoPublic: WALLET_NONCE.kTwoPublic,
+        },
+      ];
+
+      signVaultMessageWithSchnorr(
+        MESSAGE,
+        WALLET_KEYPAIR,
+        WALLET_NONCE,
+        allPublicKeys,
+        allPublicNonces,
+      );
+
+      // Strip the leading "0x" from WALLET_KEYPAIR.privKey to get raw hex bytes
+      const privHex = WALLET_KEYPAIR.privKey.startsWith('0x')
+        ? WALLET_KEYPAIR.privKey.slice(2)
+        : WALLET_KEYPAIR.privKey;
+      const expectedPrivBuf = Buffer.from(privHex, 'hex');
+
+      const keyCalls = MockKeyConstructor.mock.calls;
+      const privKeyCall = keyCalls.find(
+        (call) => call[0] instanceof Buffer && call[0].equals(expectedPrivBuf),
+      );
+      expect(privKeyCall).toBeDefined();
+    });
+
+    it('single-key: should not call signMultiSigHash (restorePubNonces is still called)', () => {
+      const allPublicKeys = [SIGNER_PUB_KEY_HEX];
+      const allPublicNonces = [
+        {
+          kPublic: WALLET_NONCE.kPublic,
+          kTwoPublic: WALLET_NONCE.kTwoPublic,
+        },
+      ];
+
+      signVaultMessageWithSchnorr(
+        MESSAGE,
+        WALLET_KEYPAIR,
+        WALLET_NONCE,
+        allPublicKeys,
+        allPublicNonces,
+      );
+
+      // restorePubNonces runs before the single-key branch check, so it is called
+      expect(mockSigner.restorePubNonces).toHaveBeenCalledTimes(1);
+      // The multi-sig path must not have been taken
+      expect(mockSigner.signMultiSigHash).not.toHaveBeenCalled();
+    });
+
+    it('single-key: should not call getCombinedPublicKey or sumSigs', () => {
+      const allPublicKeys = [SIGNER_PUB_KEY_HEX];
+      const allPublicNonces = [
+        {
+          kPublic: WALLET_NONCE.kPublic,
+          kTwoPublic: WALLET_NONCE.kTwoPublic,
+        },
+      ];
+
+      signVaultMessageWithSchnorr(
+        MESSAGE,
+        WALLET_KEYPAIR,
+        WALLET_NONCE,
+        allPublicKeys,
+        allPublicNonces,
+      );
+
+      expect(
+        accountAbstraction.signers.Schnorrkel.getCombinedPublicKey,
+      ).not.toHaveBeenCalled();
+      expect(
+        accountAbstraction.signers.Schnorrkel.sumSigs,
+      ).not.toHaveBeenCalled();
     });
   });
 });

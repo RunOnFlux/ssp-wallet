@@ -558,9 +558,7 @@ describe('Transactions Lib', () => {
       const res = decodeVaultTransaction(decodableJson, 'sepolia');
 
       expect(res.error).toBeUndefined();
-      expect(res.sender).toBe(
-        '0x015A90244c718c454d503ac67212f88F00D16d87',
-      );
+      expect(res.sender).toBe('0x015A90244c718c454d503ac67212f88F00D16d87');
       expect(res.recipients).toHaveLength(1);
       expect(res.recipients[0].address.toLowerCase()).toBe(
         '0x74bf2d5a93e3f1cd91b1e3e5039269c9829a4d06',
