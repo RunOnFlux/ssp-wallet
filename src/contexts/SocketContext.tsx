@@ -52,6 +52,11 @@ interface SocketContextType {
   enterpriseVaultSignRejected: string;
   enterpriseKeyNonceSynced: EnterpriseKeyNonceSyncedPayload | null;
   enterpriseKeyNonceSyncRejected: string;
+  enterpriseFluxNodeStarted: {
+    requestId: string;
+    signedTxHex?: string;
+    error?: string;
+  } | null;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
   clearPublicNonces?: () => void;
@@ -67,6 +72,7 @@ interface SocketContextType {
   clearEnterpriseVaultSignRejected?: () => void;
   clearEnterpriseKeyNonceSynced?: () => void;
   clearEnterpriseKeyNonceSyncRejected?: () => void;
+  clearEnterpriseFluxNodeStarted?: () => void;
   sendWalletConnectRequest?: (request: WalletConnectSocketRequest) => void;
 }
 
@@ -114,6 +120,7 @@ const defaultValue: SocketContextType = {
   enterpriseVaultSignRejected: '',
   enterpriseKeyNonceSynced: null,
   enterpriseKeyNonceSyncRejected: '',
+  enterpriseFluxNodeStarted: null,
 };
 
 export const SocketContext = createContext<SocketContextType>(defaultValue);
@@ -147,6 +154,11 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     useState<EnterpriseKeyNonceSyncedPayload | null>(null);
   const [enterpriseKeyNonceSyncRejected, setEnterpriseKeyNonceSyncRejected] =
     useState('');
+  const [enterpriseFluxNodeStarted, setEnterpriseFluxNodeStarted] = useState<{
+    requestId: string;
+    signedTxHex?: string;
+    error?: string;
+  } | null>(null);
 
   /**
    * Emit an authenticated join event.
@@ -320,6 +332,21 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       },
     );
 
+    // Enterprise Flux Node Start response from Key
+    newSocket.on('enterprisefluxnodestarted', (data: { payload: string }) => {
+      console.log('[Socket] Enterprise flux node start response received');
+      try {
+        const parsed = JSON.parse(data.payload) as {
+          requestId: string;
+          signedTxHex?: string;
+          error?: string;
+        };
+        setEnterpriseFluxNodeStarted(parsed);
+      } catch {
+        console.error('[Socket] Failed to parse flux node start response');
+      }
+    });
+
     // WalletConnect socket events
     newSocket.on(
       'walletconnect_response',
@@ -404,6 +431,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     setEnterpriseKeyNonceSyncRejected('');
   };
 
+  const clearEnterpriseFluxNodeStarted = () => {
+    setEnterpriseFluxNodeStarted(null);
+  };
+
   const sendWalletConnectRequest = (request: WalletConnectSocketRequest) => {
     if (!socket || !socket.connected) {
       console.error('[WalletConnect Socket] Socket not connected');
@@ -446,6 +477,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         enterpriseVaultSignRejected,
         enterpriseKeyNonceSynced,
         enterpriseKeyNonceSyncRejected,
+        enterpriseFluxNodeStarted,
         clearTxid,
         clearTxRejected,
         clearPublicNonces,
@@ -461,6 +493,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         clearEnterpriseVaultSignRejected,
         clearEnterpriseKeyNonceSynced,
         clearEnterpriseKeyNonceSyncRejected,
+        clearEnterpriseFluxNodeStarted,
         sendWalletConnectRequest,
       }}
     >

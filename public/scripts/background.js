@@ -1,6 +1,7 @@
 const ext = typeof browser !== 'undefined' ? browser : chrome;
 
 let pendingRequest = null;
+let pendingMessageData = null;
 let popupId = null;
 let activeUIPort = null;
 
@@ -224,9 +225,11 @@ initializeExtension();
 ext.runtime.onConnect.addListener((port) => {
   if (port.name === 'ssp-ui') {
     activeUIPort = port;
+
     port.onDisconnect.addListener(() => {
       if (activeUIPort === port) {
         activeUIPort = null;
+        pendingMessageData = null;
         if (pendingRequest) {
           try {
             pendingRequest({
@@ -246,6 +249,7 @@ ext.runtime.onConnect.addListener((port) => {
 
 ext.windows.onRemoved.addListener((windowId) => {
   if (windowId === popupId) {
+    pendingMessageData = null;
     if (pendingRequest) {
       try {
         pendingRequest({
@@ -281,6 +285,22 @@ const registerInPageContentScript = async () => {
 
 registerInPageContentScript();
 
+// UI listener is ready — forward any buffered message
+ext.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+  if (message.origin !== 'ssp-ui-ready') return false;
+
+  if (pendingMessageData) {
+    const data = pendingMessageData;
+    pendingMessageData = null;
+    void ext.runtime.sendMessage({
+      origin: 'ssp-background',
+      data,
+    });
+  }
+
+  return false;
+});
+
 ext.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
   if (message.origin !== 'ssp') return false;
 
@@ -298,7 +318,11 @@ ext.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
 });
 
 ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.origin === 'ssp' || request.origin === 'ssp-background') {
+  if (
+    request.origin === 'ssp' ||
+    request.origin === 'ssp-background' ||
+    request.origin === 'ssp-ui-ready'
+  ) {
     return false;
   }
 
@@ -308,6 +332,9 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const hasActiveUI = activeUIPort !== null;
 
     if (!hasActiveUI) {
+      // Buffer message — it will be sent when the UI port connects
+      pendingMessageData = request;
+
       const defaultMode = await getDefaultOpenBehavior();
       if (defaultMode === OPEN_MODE_SIDEPANEL && isSidePanelSupported) {
         await openSidePanel(sender.tab?.windowId);
@@ -317,17 +344,15 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // For popup mode, open as window since we can't programmatically trigger the popup
         await openPopupWindow();
       }
-    }
-
-    setTimeout(
-      () => {
+    } else {
+      // UI already open and listener registered — short delay is safe
+      setTimeout(() => {
         void ext.runtime.sendMessage({
           origin: 'ssp-background',
           data: request,
         });
-      },
-      hasActiveUI ? 100 : 1000,
-    );
+      }, 100);
+    }
   })();
 
   return true;

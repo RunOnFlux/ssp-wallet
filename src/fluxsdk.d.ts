@@ -17,6 +17,16 @@ declare module '@runonflux/flux-sdk' {
       redeemScript: string,
       delegateData?: DelegateData,
     ) => string;
+    startFluxNodev6WithPubKey: (
+      collateralOutHash: string,
+      collateralOutIndex: number,
+      collateralPrivateKey: string,
+      fluxnodePublicKey: string,
+      timestamp: string,
+      compressedCollateralPrivateKey: boolean,
+      redeemScript: string,
+      delegateData?: DelegateData,
+    ) => string;
     startFluxNodeAddDelegate: (
       collateralOutHash: string,
       collateralOutIndex: number,

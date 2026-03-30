@@ -10,6 +10,7 @@ import WkSign from '../../components/WkSign/WkSign';
 import EnterpriseVaultXpub from '../../components/EnterpriseVaultXpub/EnterpriseVaultXpub';
 import EnterpriseVaultSignTx from '../../components/EnterpriseVaultSignTx/EnterpriseVaultSignTx';
 import EnterpriseNonceSync from '../../components/EnterpriseNonceSync/EnterpriseNonceSync';
+import EnterpriseFluxNodeStart from '../../components/EnterpriseFluxNodeStart/EnterpriseFluxNodeStart';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
 import { WkSignResponse, WkSignRequesterInfo } from '../../lib/wkSign';
@@ -125,6 +126,8 @@ function SspConnect() {
   const [openEnterpriseVaultSignTx, setOpenEnterpriseVaultSignTx] =
     useState(false);
   const [openEnterpriseNonceSync, setOpenEnterpriseNonceSync] = useState(false);
+  const [openEnterpriseFluxNodeStart, setOpenEnterpriseFluxNodeStart] =
+    useState(false);
   const [orgIndex, setOrgIndex] = useState(0);
   const [vaultName, setVaultName] = useState('');
   const [orgName, setOrgName] = useState('');
@@ -232,6 +235,22 @@ function SspConnect() {
         setEvmUserOp(sspConnectEvmUserOp);
         setSigningMode(sspConnectSigningMode);
         setOpenEnterpriseVaultSignTx(true);
+      } else if (sspConnectType === 'enterprise_flux_node_start') {
+        // Enterprise Flux node start request
+        setRequesterInfo(sspConnectRequesterInfo);
+        setOrgIndex(sspConnectOrgIndex);
+        setVaultIndex(sspConnectVaultIndex);
+        setChain(sspConnectChain);
+        setVaultName(sspConnectVaultName); // node name
+        setOrgName(sspConnectOrgName); // collateral amount
+        setRecipients(sspConnectRecipients); // delegates JSON
+        setMessage(sspConnectMessage); // identity key
+        setAddress(sspConnectAddress); // collateral txid
+        setAmount(sspConnectAmount); // collateral vout
+        setContract(sspConnectContract); // redeemScript
+        setTxMemo(sspConnectMemo); // signing device
+        setTxFee(sspConnectFee); // addressIndex
+        setOpenEnterpriseFluxNodeStart(true);
       } else if (sspConnectType === 'enterprise_nonce_sync') {
         // Enterprise nonce sync request — interactive dialog
         setRequesterInfo(sspConnectRequesterInfo);
@@ -349,6 +368,28 @@ function SspConnect() {
       console.log('no browser or chrome runtime.sendMessage');
     }
   };
+  const enterpriseFluxNodeStartAction = (
+    data: { status: string; result?: { signedTxHex: string } } | null,
+  ) => {
+    setOpenEnterpriseFluxNodeStart(false);
+    if (browser?.runtime?.sendMessage) {
+      if (!data) {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data: {
+            status: 'ERROR',
+            result: t('common:request_rejected'),
+          },
+        });
+      } else {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data,
+        });
+      }
+    }
+  };
+
   const enterpriseNonceSyncAction = (data: NonceSyncResponse | null) => {
     setOpenEnterpriseNonceSync(false);
     if (browser?.runtime?.sendMessage) {
@@ -476,6 +517,29 @@ function SspConnect() {
         open={openEnterpriseNonceSync}
         openAction={enterpriseNonceSyncAction}
         requesterInfo={requesterInfo}
+      />
+      <EnterpriseFluxNodeStart
+        open={openEnterpriseFluxNodeStart}
+        openAction={enterpriseFluxNodeStartAction}
+        requesterInfo={requesterInfo}
+        chain={chain}
+        orgIndex={orgIndex}
+        vaultIndex={vaultIndex}
+        addressIndex={parseInt(txFee, 10) || 0}
+        nodeName={vaultName}
+        collateralAmount={orgName}
+        identityPubKey={message}
+        collateralTxid={address}
+        collateralVout={parseInt(amount, 10) || 0}
+        redeemScript={contract}
+        signingDevice={txMemo as 'wallet' | 'key'}
+        delegates={(() => {
+          try {
+            return JSON.parse(recipients) as string[];
+          } catch {
+            return [];
+          }
+        })()}
       />
     </>
   );

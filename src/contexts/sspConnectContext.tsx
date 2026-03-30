@@ -106,6 +106,16 @@ interface dataBgParams {
   evmUserOp?: string;
   // Vault signing mode (dual, key_only, wallet_only)
   signingMode?: string;
+  // Enterprise Flux Node Start params
+  addressIndex?: number;
+  collateralTxid?: string;
+  collateralVout?: number;
+  collateralAmount?: string;
+  identityPubKey?: string;
+  redeemScript?: string;
+  signingDevice?: string;
+  nodeName?: string;
+  delegates?: string[];
 }
 
 interface dataBgRequest {
@@ -833,6 +843,148 @@ export const SspConnectProvider = ({
           } else {
             setRequesterInfo({ origin: 'Unknown' });
           }
+        } else if (request.data.method === 'enterprise_flux_node_start') {
+          // Validate required params for enterprise flux node start
+          const fnChain = request.data.params.chain;
+          const fnOrgIndex = request.data.params.orgIndex;
+          const fnVaultIndex = request.data.params.vaultIndex;
+          const fnAddressIndex = request.data.params.addressIndex;
+          const fnCollateralTxid = request.data.params.collateralTxid;
+          const fnIdentityPubKey = request.data.params.identityPubKey;
+          const fnRedeemScript = request.data.params.redeemScript;
+          const fnSigningDevice = request.data.params.signingDevice;
+          const fnNodeName = request.data.params.nodeName;
+
+          if (
+            !fnChain ||
+            !blockchains[fnChain] ||
+            (fnChain !== 'flux' && fnChain !== 'fluxTestnet')
+          ) {
+            console.log('Invalid chain for enterprise_flux_node_start');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result: 'Invalid chain — must be flux or fluxTestnet',
+              },
+            });
+            return;
+          }
+
+          if (
+            typeof fnOrgIndex !== 'number' ||
+            fnOrgIndex < 100 ||
+            fnOrgIndex > 99999
+          ) {
+            console.log('Invalid orgIndex for enterprise_flux_node_start');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result: 'Invalid orgIndex',
+              },
+            });
+            return;
+          }
+
+          if (
+            typeof fnVaultIndex !== 'number' ||
+            fnVaultIndex < 0 ||
+            fnVaultIndex > 9999
+          ) {
+            console.log('Invalid vaultIndex for enterprise_flux_node_start');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result: 'Invalid vaultIndex',
+              },
+            });
+            return;
+          }
+
+          if (typeof fnAddressIndex !== 'number' || fnAddressIndex < 0) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid addressIndex' },
+            });
+            return;
+          }
+
+          if (
+            typeof fnCollateralTxid !== 'string' ||
+            fnCollateralTxid.length !== 64
+          ) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid collateral txid' },
+            });
+            return;
+          }
+
+          if (
+            typeof fnIdentityPubKey !== 'string' ||
+            fnIdentityPubKey.length !== 66
+          ) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid identity public key' },
+            });
+            return;
+          }
+
+          if (typeof fnRedeemScript !== 'string' || !fnRedeemScript) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Missing redeemScript' },
+            });
+            return;
+          }
+
+          if (fnSigningDevice !== 'wallet' && fnSigningDevice !== 'key') {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid signingDevice' },
+            });
+            return;
+          }
+
+          // Store all params in context
+          setOrgIndex(fnOrgIndex);
+          setVaultIndex(fnVaultIndex);
+          setChain(fnChain);
+          setMessage(fnIdentityPubKey); // identity pub key via message field
+          setAddress(fnCollateralTxid); // collateral txid via address field
+          setAmount(String(request.data.params.collateralVout ?? 0)); // collateral vout via amount field
+          setContract(fnRedeemScript); // redeemScript via contract field
+          setVaultName(typeof fnNodeName === 'string' ? fnNodeName : '');
+          setOrgName(
+            typeof request.data.params.collateralAmount === 'string'
+              ? request.data.params.collateralAmount
+              : '',
+          ); // collateral amount via orgName
+          setMemo(fnSigningDevice); // signing device via memo field
+          setFee(String(fnAddressIndex)); // addressIndex via fee field
+          setRecipients(JSON.stringify(request.data.params.delegates || [])); // delegates via recipients
+          setType('enterprise_flux_node_start');
+
+          // Capture requester info
+          if (
+            typeof request.data.params === 'object' &&
+            request.data.params !== null
+          ) {
+            const fnOrigin =
+              typeof request.data.params.origin === 'string'
+                ? request.data.params.origin.substring(0, 200)
+                : '';
+            setRequesterInfo({
+              origin: fnOrigin || 'Unknown',
+              siteName: request.data.params.siteName?.substring(0, 100),
+              iconUrl: sanitizeIconUrl(request.data.params.iconUrl),
+            });
+          } else {
+            setRequesterInfo({ origin: 'Unknown' });
+          }
         } else if (request.data.method === 'enterprise_nonce_sync') {
           // Interactive: show a dialog for nonce sync confirmation
           setType('enterprise_nonce_sync');
@@ -868,6 +1020,10 @@ export const SspConnectProvider = ({
         }
       };
       browser.runtime.onMessage.addListener(handler);
+      // Signal background that the listener is ready to receive messages
+      if (wExternalIdentity) {
+        void browser.runtime.sendMessage({ origin: 'ssp-ui-ready' });
+      }
       return () => {
         browser.runtime.onMessage.removeListener(handler);
       };
