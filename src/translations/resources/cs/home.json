@@ -382,6 +382,25 @@
     "err_nonce_retry_not_found": "Nonce not found after retry. Please sync nonces and recreate the proposal.",
     "err_password_unavailable": "Password not available"
   },
+  "enterpriseFluxNodeStart": {
+    "title": "Start Flux Node",
+    "from": "From",
+    "node": "Node",
+    "chain": "Chain",
+    "collateral": "Collateral",
+    "signing_with": "Signing with",
+    "delegates": "Delegates",
+    "key_rejected": "Key rejected the request",
+    "waiting_for_key": "Waiting for SSP Key to sign...",
+    "waiting": "Waiting...",
+    "signing": "Signing...",
+    "err_failed": "Failed to start node",
+    "err_not_logged_in": "Not logged in",
+    "err_invalid_chain": "Invalid chain",
+    "err_seed_unavailable": "Could not retrieve wallet seed",
+    "err_decrypt_password": "Failed to decrypt password",
+    "err_decrypt_seed": "Failed to decrypt wallet seed"
+  },
   "sspConnect": {
     "invalid_chain": "Neplatný chain.",
     "invalid_method": "Neplatná metoda.",
