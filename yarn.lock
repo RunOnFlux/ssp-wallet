@@ -1454,10 +1454,10 @@
     secp256k1 "^3.0.1"
     varuint-bitcoin "^1.0.1"
 
-"@runonflux/flux-sdk@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@runonflux/flux-sdk/-/flux-sdk-1.0.4.tgz#4ec7cd9f4c58ecd7e4fa56af53e4c337c16b76d2"
-  integrity sha512-T5wzg3+uPr5B3W/nlvqz4ZsaHQzWNO19Ef/rH/nE39QlzFuc46fsULmKd05A/wV/4EMMW1WhQdkHwYZfXjT8Dw==
+"@runonflux/flux-sdk@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@runonflux/flux-sdk/-/flux-sdk-1.1.0.tgz#6102ebc422677b9a3e55cb6eb1797f2106a0666c"
+  integrity sha512-3nK9kv9VQ/cOiRumUE4cdVwRJMf4Ly8nGkq0rw/B71Y0x5ClRcMVtwUPf01EZX3JFb7CPFs9R/GHvVCkBRUtUA==
   dependencies:
     "@runonflux/bitcoinjs-message" "^2.3.0"
     bs58check "^4.0.0"

@@ -39,7 +39,7 @@
     "@reduxjs/toolkit": "2.11.2",
     "@reown/walletkit": "1.5.3",
     "@runonflux/aa-schnorr-multisig-sdk": "1.2.1",
-    "@runonflux/flux-sdk": "1.0.4",
+    "@runonflux/flux-sdk": "1.1.0",
     "@runonflux/utxo-lib": "1.0.2",
     "@scure/bip32": "2.0.1",
     "@scure/bip39": "2.0.1",
