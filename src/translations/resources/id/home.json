@@ -337,6 +337,7 @@
     "waiting_for_key": "Menunggu persetujuan SSP Key...",
     "key_rejected": "Permohonan ditolak oleh Kunci SSP",
     "err_not_logged_in": "Belum masuk",
+    "err_not_synced": "Dompet SSP belum disinkronkan dengan SSP Key. Mohon selesaikan proses sinkronisasi terlebih dahulu.",
     "err_invalid_chain": "Rantai tidak valid",
     "err_seed_unavailable": "Tidak dapat mengambil seed dompet",
     "err_decrypt_password": "Gagal mendekripsi kata sandi",
@@ -381,6 +382,25 @@
     "err_nonce_not_found": "Nonce perusahaan yang dicadangkan tidak ditemukan secara lokal. Harap sinkronkan nonce dan buat ulang proposalnya.",
     "err_nonce_retry_not_found": "Nonce tidak ditemukan setelah percobaan ulang. Harap sinkronkan nonce dan buat ulang proposal.",
     "err_password_unavailable": "Kata sandi tidak tersedia"
+  },
+  "enterpriseFluxNodeStart": {
+    "title": "Mulai Node Flux",
+    "from": "Dari",
+    "node": "Node",
+    "chain": "Rantai",
+    "collateral": "Jaminan",
+    "signing_with": "Tanda tangan dengan",
+    "delegates": "Delegasi",
+    "key_rejected": "Key menolak permintaan tersebut",
+    "waiting_for_key": "Menunggu SSP Key untuk ditandatangani...",
+    "waiting": "Menunggu...",
+    "signing": "Menandatangani...",
+    "err_failed": "Gagal memulai node",
+    "err_not_logged_in": "Belum masuk",
+    "err_invalid_chain": "Rantai tidak valid",
+    "err_seed_unavailable": "Tidak dapat mengambil seed dompet",
+    "err_decrypt_password": "Gagal mendekripsi kata sandi",
+    "err_decrypt_seed": "Gagal mendekripsi seed dompet"
   },
   "sspConnect": {
     "invalid_chain": "Rantai tidak valid.",
