@@ -56,16 +56,16 @@ ext.action.onClicked.addListener(async (_tab) => {
   // Popup and sidepanel are handled automatically by the browser
 });
 
-function updateContextMenuCheckedState(mode) {
+async function updateContextMenuCheckedState(mode) {
   try {
-    ext.contextMenus.update('set-default-popup', {
+    await ext.contextMenus.update('set-default-popup', {
       checked: mode === OPEN_MODE_POPUP,
     });
-    ext.contextMenus.update('set-default-window', {
+    await ext.contextMenus.update('set-default-window', {
       checked: mode === OPEN_MODE_WINDOW,
     });
     if (isSidePanelSupported) {
-      ext.contextMenus.update('set-default-sidepanel', {
+      await ext.contextMenus.update('set-default-sidepanel', {
         checked: mode === OPEN_MODE_SIDEPANEL,
       });
     }

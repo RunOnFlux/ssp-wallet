@@ -136,8 +136,11 @@ export const SspConnectProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { sspWalletExternalIdentity: wExternalIdentity, identityChain } =
-    useAppSelector((state) => state.sspState);
+  const {
+    sspWalletExternalIdentity: wExternalIdentity,
+    sspWalletKeyInternalIdentity: wkIdentity,
+    identityChain,
+  } = useAppSelector((state) => state.sspState);
   const [type, setType] = useState('');
   const [address, setAddress] = useState('');
   const [message, setMessage] = useState('');
@@ -479,6 +482,22 @@ export const SspConnectProvider = ({
           setType(request.data.method);
           setChain(request.data.params.chain || '');
         } else if (request.data.method === 'enterprise_vault_xpub') {
+          // Wallet must be synced with Key before enterprise vault operations
+          if (!wkIdentity) {
+            console.log('Wallet not synced with Key for enterprise_vault_xpub');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:enterpriseVaultXpub.err_not_synced'),
+              },
+            });
+            return;
+          }
+
           // Validate required params for enterprise vault xpub
           const vaultChain = request.data.params.chain;
           const vaultOrgIndex = request.data.params.orgIndex;
@@ -573,6 +592,24 @@ export const SspConnectProvider = ({
             setRequesterInfo({ origin: 'Unknown' });
           }
         } else if (request.data.method === 'enterprise_vault_sign_tx') {
+          // Wallet must be synced with Key before enterprise vault operations
+          if (!wkIdentity) {
+            console.log(
+              'Wallet not synced with Key for enterprise_vault_sign_tx',
+            );
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:enterpriseVaultXpub.err_not_synced'),
+              },
+            });
+            return;
+          }
+
           // Validate required params for enterprise vault sign tx
           const signChain = request.data.params.chain;
           const signOrgIndex = request.data.params.orgIndex;
@@ -844,6 +881,24 @@ export const SspConnectProvider = ({
             setRequesterInfo({ origin: 'Unknown' });
           }
         } else if (request.data.method === 'enterprise_flux_node_start') {
+          // Wallet must be synced with Key before enterprise operations
+          if (!wkIdentity) {
+            console.log(
+              'Wallet not synced with Key for enterprise_flux_node_start',
+            );
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:enterpriseVaultXpub.err_not_synced'),
+              },
+            });
+            return;
+          }
+
           // Validate required params for enterprise flux node start
           const fnChain = request.data.params.chain;
           const fnOrgIndex = request.data.params.orgIndex;
@@ -986,6 +1041,22 @@ export const SspConnectProvider = ({
             setRequesterInfo({ origin: 'Unknown' });
           }
         } else if (request.data.method === 'enterprise_nonce_sync') {
+          // Wallet must be synced with Key before enterprise operations
+          if (!wkIdentity) {
+            console.log('Wallet not synced with Key for enterprise_nonce_sync');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:enterpriseVaultXpub.err_not_synced'),
+              },
+            });
+            return;
+          }
+
           // Interactive: show a dialog for nonce sync confirmation
           setType('enterprise_nonce_sync');
           // Capture requester info for display
@@ -1021,14 +1092,15 @@ export const SspConnectProvider = ({
       };
       browser.runtime.onMessage.addListener(handler);
       // Signal background that the listener is ready to receive messages
-      if (wExternalIdentity) {
+      // Wait for both identities to be available before signaling ready
+      if (wExternalIdentity && wkIdentity) {
         void browser.runtime.sendMessage({ origin: 'ssp-ui-ready' });
       }
       return () => {
         browser.runtime.onMessage.removeListener(handler);
       };
     }
-  }, [wExternalIdentity]);
+  }, [wExternalIdentity, wkIdentity]);
 
   const clearRequest = () => {
     setType('');

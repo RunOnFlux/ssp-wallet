@@ -607,6 +607,10 @@ function EnterpriseVaultSignTx({
     };
 
     try {
+      // Guard: wallet must be synced with Key (wkIdentity must be set)
+      if (!wkIdentity) {
+        throw new Error(t('home:enterpriseVaultXpub.err_not_synced'));
+      }
       if (parsedRecipients.length === 0) {
         throw new Error('No recipients found');
       }

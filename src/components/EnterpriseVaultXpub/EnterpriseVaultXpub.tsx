@@ -230,6 +230,9 @@ function EnterpriseVaultXpub({
    */
   const postVaultXpubRequest = async (walletXpub: string, reqId: string) => {
     const chainConfig = blockchains[chain];
+    if (!chainConfig) {
+      throw new Error(t('home:enterpriseVaultXpub.err_invalid_chain'));
+    }
     const payload = {
       chain,
       orgIndex,
@@ -273,6 +276,11 @@ function EnterpriseVaultXpub({
     setError(null);
 
     try {
+      // Guard: wallet must be synced with Key (wkIdentity must be set)
+      if (!wkIdentity) {
+        throw new Error(t('home:enterpriseVaultXpub.err_not_synced'));
+      }
+
       // Derive wallet xpub for the vault path and sign it
       const { xpub: walletXpub, signature: walletSig } =
         await deriveVaultXpub();

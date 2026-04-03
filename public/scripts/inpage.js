@@ -12,7 +12,7 @@ async function request(method, params) {
 
         if (detail && detail.status === 'ERROR') {
           const error = new Error(
-            detail.data || detail.error || 'Request rejected',
+            detail.data || detail.result || detail.error || 'Request rejected',
           );
           error.code = detail.code || 4001;
           if (detail.errorCode) {
