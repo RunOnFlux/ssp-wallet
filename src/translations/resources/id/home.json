@@ -337,6 +337,7 @@
     "waiting_for_key": "Menunggu persetujuan SSP Key...",
     "key_rejected": "Permohonan ditolak oleh Kunci SSP",
     "err_not_logged_in": "Belum masuk",
+    "err_not_synced": "SSP Wallet is not yet synchronised with SSP Key. Please complete the sync first.",
     "err_invalid_chain": "Rantai tidak valid",
     "err_seed_unavailable": "Tidak dapat mengambil seed dompet",
     "err_decrypt_password": "Gagal mendekripsi kata sandi",
