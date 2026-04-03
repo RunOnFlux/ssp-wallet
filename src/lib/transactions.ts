@@ -764,32 +764,40 @@ export async function fetchDataForCSV(
       Timestamp: t.timestamp,
       Date: new Date(t.timestamp).toUTCString(),
       'Koinly Date': new Date(t.timestamp).toUTCString(),
-      Amount: new BigNumber(t.amount)
-        .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
-        .toNumber(),
+      Amount: parseFloat(
+        new BigNumber(t.amount)
+          .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
+          .toFixed(t.decimals ?? blockchainConfig.decimals)
+      ),
       Currency: t.tokenSymbol || blockchainConfig.symbol,
       'Sent Amount': new BigNumber(t.amount)
-        .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
+        .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
         .isNegative()
-        ? new BigNumber(t.amount)
-            .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
-            .toNumber()
+        ? parseFloat(
+            new BigNumber(t.amount)
+              .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
+              .toFixed(t.decimals ?? blockchainConfig.decimals)
+          )
         : 0,
       'Sent Currency': t.tokenSymbol || blockchainConfig.symbol,
       'Received Amount': new BigNumber(t.amount)
-        .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
+        .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
         .isPositive()
-        ? new BigNumber(t.amount)
-            .dividedBy(10 ** (t.decimals ?? blockchainConfig.decimals))
-            .toNumber()
+        ? parseFloat(
+            new BigNumber(t.amount)
+              .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
+              .toFixed(t.decimals ?? blockchainConfig.decimals)
+          )
         : 0,
       'Received Currency': t.tokenSymbol || blockchainConfig.symbol,
       'Fee Amount': new BigNumber(t.amount) // ONLY add fee if I am sending to support koinly well
-        .dividedBy(10 ** blockchainConfig.decimals)
+        .dividedBy(new BigNumber(10).pow(blockchainConfig.decimals))
         .isNegative()
-        ? new BigNumber(t.fee)
-            .dividedBy(10 ** blockchainConfig.decimals)
-            .toNumber()
+        ? parseFloat(
+            new BigNumber(t.fee)
+              .dividedBy(new BigNumber(10).pow(blockchainConfig.decimals))
+              .toFixed(blockchainConfig.decimals)
+          )
         : 0,
       'Fee Currency': blockchainConfig.symbol,
       TxHash: t.txid,

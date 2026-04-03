@@ -68,23 +68,25 @@ export function decimalPlaces() {
 }
 
 export function formatCrypto(amount: BigNumber, maxDecimals = 8) {
-  const formated = amount
-    .toNumber()
-    .toLocaleString(navigator.language ?? 'en-US', {
+  const formated = parseFloat(amount.toFixed(maxDecimals)).toLocaleString(
+    navigator.language ?? 'en-US',
+    {
       maximumFractionDigits: maxDecimals,
       minimumFractionDigits: 0,
-    }); // or force 'en-US'?
+    }
+  );
   return formated;
 }
 
 export function formatFiat(amount: BigNumber) {
   const digits = decimalPlaces();
-  const formated = amount
-    .toNumber()
-    .toLocaleString(navigator.language ?? 'en-US', {
+  const formated = parseFloat(amount.toFixed(digits)).toLocaleString(
+    navigator.language ?? 'en-US',
+    {
       maximumFractionDigits: digits,
       minimumFractionDigits: digits,
-    });
+    }
+  );
   return formated;
 }
 
