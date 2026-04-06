@@ -43,7 +43,7 @@
     "@runonflux/utxo-lib": "1.0.2",
     "@scure/bip32": "2.0.1",
     "@scure/bip39": "2.0.1",
-    "@walletconnect/core": "2.23.6",
+    "@walletconnect/core": "2.23.9",
     "@walletconnect/jsonrpc-utils": "1.0.8",
     "@walletconnect/utils": "2.23.6",
     "antd": "6.3.1",
