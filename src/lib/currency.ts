@@ -73,7 +73,7 @@ export function formatCrypto(amount: BigNumber, maxDecimals = 8) {
     {
       maximumFractionDigits: maxDecimals,
       minimumFractionDigits: 0,
-    }
+    },
   );
   return formated;
 }
@@ -85,7 +85,7 @@ export function formatFiat(amount: BigNumber) {
     {
       maximumFractionDigits: digits,
       minimumFractionDigits: digits,
-    }
+    },
   );
   return formated;
 }

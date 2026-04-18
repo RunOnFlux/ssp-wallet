@@ -766,27 +766,37 @@ export async function fetchDataForCSV(
       'Koinly Date': new Date(t.timestamp).toUTCString(),
       Amount: parseFloat(
         new BigNumber(t.amount)
-          .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
-          .toFixed(t.decimals ?? blockchainConfig.decimals)
+          .dividedBy(
+            new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals),
+          )
+          .toFixed(t.decimals ?? blockchainConfig.decimals),
       ),
       Currency: t.tokenSymbol || blockchainConfig.symbol,
       'Sent Amount': new BigNumber(t.amount)
-        .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
+        .dividedBy(
+          new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals),
+        )
         .isNegative()
         ? parseFloat(
             new BigNumber(t.amount)
-              .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
-              .toFixed(t.decimals ?? blockchainConfig.decimals)
+              .dividedBy(
+                new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals),
+              )
+              .toFixed(t.decimals ?? blockchainConfig.decimals),
           )
         : 0,
       'Sent Currency': t.tokenSymbol || blockchainConfig.symbol,
       'Received Amount': new BigNumber(t.amount)
-        .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
+        .dividedBy(
+          new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals),
+        )
         .isPositive()
         ? parseFloat(
             new BigNumber(t.amount)
-              .dividedBy(new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals))
-              .toFixed(t.decimals ?? blockchainConfig.decimals)
+              .dividedBy(
+                new BigNumber(10).pow(t.decimals ?? blockchainConfig.decimals),
+              )
+              .toFixed(t.decimals ?? blockchainConfig.decimals),
           )
         : 0,
       'Received Currency': t.tokenSymbol || blockchainConfig.symbol,
@@ -796,7 +806,7 @@ export async function fetchDataForCSV(
         ? parseFloat(
             new BigNumber(t.fee)
               .dividedBy(new BigNumber(10).pow(blockchainConfig.decimals))
-              .toFixed(blockchainConfig.decimals)
+              .toFixed(blockchainConfig.decimals),
           )
         : 0,
       'Fee Currency': blockchainConfig.symbol,
