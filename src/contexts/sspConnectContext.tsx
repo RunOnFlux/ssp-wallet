@@ -319,6 +319,28 @@ export const SspConnectProvider = ({
             console.log('Invalid tokenDecimals value:', paramValue);
             return null;
           }
+        } else if (key === 'addressIndex' || key === 'collateralVout') {
+          // Enterprise flux node start — non-negative integer
+          if (
+            typeof paramValue !== 'number' ||
+            !Number.isInteger(paramValue) ||
+            paramValue < 0
+          ) {
+            console.log('Invalid ' + key + ' value:', paramValue);
+            return null;
+          }
+        } else if (key === 'delegates') {
+          // Enterprise flux node start — array of pubkey hex strings
+          if (!Array.isArray(paramValue)) {
+            console.log('Invalid delegates value (not array)');
+            return null;
+          }
+          for (const d of paramValue) {
+            if (typeof d !== 'string' || d.length > 200) {
+              console.log('Invalid delegate entry');
+              return null;
+            }
+          }
         } else {
           if (typeof paramValue !== 'string') {
             console.log('Invalid param type ' + key);
