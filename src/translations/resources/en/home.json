@@ -390,6 +390,7 @@
     "node": "Node",
     "chain": "Chain",
     "collateral": "Collateral",
+    "collateral_address": "Collateral Address",
     "collateral_utxo": "Collateral UTXO",
     "signing_with": "Signing with",
     "device_wallet": "SSP Wallet",

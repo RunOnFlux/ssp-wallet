@@ -31,6 +31,7 @@ interface EnterpriseFluxNodeStartProps {
   addressIndex: number;
   nodeName: string;
   collateralAmount: string;
+  collateralAddress?: string;
   identityPubKey: string;
   collateralTxid: string;
   collateralVout: number;
@@ -49,6 +50,7 @@ function EnterpriseFluxNodeStart({
   addressIndex,
   nodeName,
   collateralAmount,
+  collateralAddress,
   identityPubKey,
   collateralTxid,
   collateralVout,
@@ -219,6 +221,7 @@ function EnterpriseFluxNodeStart({
           addressIndex,
           nodeName,
           collateralAmount,
+          collateralAddress,
           identityPubKey,
           collateralTxid,
           collateralVout,
@@ -273,7 +276,8 @@ function EnterpriseFluxNodeStart({
     signingDevice === 'wallet'
       ? t('home:enterpriseFluxNodeStart.device_wallet')
       : t('home:enterpriseFluxNodeStart.device_key');
-  const truncatedTxid = collateralTxid
+  const utxoFull = collateralTxid ? `${collateralTxid}:${collateralVout}` : '';
+  const utxoDisplay = collateralTxid
     ? `${collateralTxid.slice(0, 10)}…${collateralTxid.slice(-8)}:${collateralVout}`
     : '';
 
@@ -348,16 +352,35 @@ function EnterpriseFluxNodeStart({
                 </Text>
                 <Text strong>{amountFlux} FLUX</Text>
               </div>
-              {truncatedTxid && (
+              {collateralAddress && (
+                <div>
+                  <Text type="secondary">
+                    {t('home:enterpriseFluxNodeStart.collateral_address')}:{' '}
+                  </Text>
+                  <Text
+                    strong
+                    copyable={{ text: collateralAddress }}
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    {collateralAddress}
+                  </Text>
+                </div>
+              )}
+              {utxoDisplay && (
                 <div>
                   <Text type="secondary">
                     {t('home:enterpriseFluxNodeStart.collateral_utxo')}:{' '}
                   </Text>
                   <Text
                     strong
+                    copyable={{ text: utxoFull }}
                     style={{ fontFamily: 'monospace', fontSize: 12 }}
                   >
-                    {truncatedTxid}
+                    {utxoDisplay}
                   </Text>
                 </div>
               )}

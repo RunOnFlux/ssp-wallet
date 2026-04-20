@@ -111,6 +111,7 @@ interface dataBgParams {
   collateralTxid?: string;
   collateralVout?: number;
   collateralAmount?: string;
+  collateralAddress?: string;
   identityPubKey?: string;
   redeemScript?: string;
   signingDevice?: string;
@@ -1043,6 +1044,11 @@ export const SspConnectProvider = ({
           setMemo(fnSigningDevice); // signing device via memo field
           setFee(String(fnAddressIndex)); // addressIndex via fee field
           setRecipients(JSON.stringify(request.data.params.delegates || [])); // delegates via recipients
+          setSourceAddress(
+            typeof request.data.params.collateralAddress === 'string'
+              ? request.data.params.collateralAddress
+              : undefined,
+          ); // collateral (vault) address
           setType('enterprise_flux_node_start');
 
           // Capture requester info

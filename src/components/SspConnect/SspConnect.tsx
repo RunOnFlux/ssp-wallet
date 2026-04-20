@@ -528,6 +528,7 @@ function SspConnect() {
         addressIndex={parseInt(txFee, 10) || 0}
         nodeName={vaultName}
         collateralAmount={orgName}
+        collateralAddress={sourceAddress}
         identityPubKey={message}
         collateralTxid={address}
         collateralVout={parseInt(amount, 10) || 0}
