@@ -19,11 +19,16 @@ import './EnterpriseFluxNodeStart.css';
 
 const { Text } = Typography;
 
+interface EnterpriseFluxNodeStartResponse {
+  status: string;
+  result?: { signedTxHex: string };
+  data?: string;
+  errorCode?: string;
+}
+
 interface EnterpriseFluxNodeStartProps {
   open: boolean;
-  openAction: (
-    data: { status: string; result?: { signedTxHex: string } } | null,
-  ) => void;
+  openAction: (data: EnterpriseFluxNodeStartResponse | null) => void;
   requesterInfo: WkSignRequesterInfo | null;
   chain: string;
   orgIndex: number;
@@ -91,10 +96,14 @@ function EnterpriseFluxNodeStart({
           result: { signedTxHex: enterpriseFluxNodeStarted.signedTxHex },
         });
       } else {
-        setError(
+        const rejectionMessage =
           enterpriseFluxNodeStarted.error ||
-            t('home:enterpriseFluxNodeStart.key_rejected'),
-        );
+          t('home:enterpriseFluxNodeStart.key_rejected');
+        openAction({
+          status: 'ERROR',
+          data: rejectionMessage,
+          errorCode: 'KEY_REJECTED',
+        });
       }
       clearEnterpriseFluxNodeStarted?.();
     }
