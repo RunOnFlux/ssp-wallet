@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Typography, Button, Space, Modal, Spin, Alert } from 'antd';
 import { fluxnode } from '@runonflux/flux-sdk';
 import { useAppSelector } from '../../hooks';
 import { cryptos } from '../../types';
@@ -14,6 +15,9 @@ import secureLocalStorage from 'react-secure-storage';
 import { getFingerprint } from '../../lib/fingerprint';
 import { useSocket } from '../../hooks/useSocket';
 import axios from 'axios';
+import './EnterpriseFluxNodeStart.css';
+
+const { Text } = Typography;
 
 interface EnterpriseFluxNodeStartProps {
   open: boolean;
@@ -54,7 +58,7 @@ function EnterpriseFluxNodeStart({
 }: EnterpriseFluxNodeStartProps) {
   const { t } = useTranslation(['home', 'common']);
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [waitingForKey, setWaitingForKey] = useState(false);
 
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
@@ -67,7 +71,7 @@ function EnterpriseFluxNodeStart({
   const { createWkIdentityAuth } = useRelayAuth();
   const requestIdRef = useRef('');
 
-  const chainConfig = blockchains[chain as keyof cryptos];
+  const chainConfig = chain ? blockchains[chain as keyof cryptos] : null;
 
   // Listen for Key's response
   useEffect(() => {
@@ -97,11 +101,12 @@ function EnterpriseFluxNodeStart({
     waitingForKey,
     openAction,
     clearEnterpriseFluxNodeStarted,
+    t,
   ]);
 
   const resetState = useCallback(() => {
     setProcessing(false);
-    setError('');
+    setError(null);
     setWaitingForKey(false);
     requestIdRef.current = '';
     clearEnterpriseFluxNodeStarted?.();
@@ -140,7 +145,6 @@ function EnterpriseFluxNodeStart({
       throw new Error(t('home:enterpriseFluxNodeStart.err_decrypt_seed'));
     }
 
-    // m/48'/coin'/orgIndex'/scriptType'
     let vaultXpriv = getMasterXpriv(
       walletSeed,
       48,
@@ -152,39 +156,38 @@ function EnterpriseFluxNodeStart({
 
     walletSeed = '';
 
-    // Derive at vaultIndex/addressIndex
     const keypair = generateAddressKeypair(
       vaultXpriv,
       vaultIndex,
       addressIndex,
       chain as keyof cryptos,
     );
-    vaultXpriv = ''; // clear sensitive data
+    vaultXpriv = '';
 
     return keypair;
   };
 
-  const handleReject = () => {
+  const handleCancel = () => {
+    if (processing && !waitingForKey) return;
     openAction(null);
+    resetState();
   };
 
-  const handleSign = async () => {
+  const handleApprove = async () => {
     setProcessing(true);
-    setError('');
+    setError(null);
 
     let collateralPrivKey = '';
 
     try {
       const timestamp = Math.floor(Date.now() / 1000).toString();
 
-      // Build delegate data if delegates are present
       let delegateData;
       if (delegates.length > 0) {
         delegateData = { version: 1, type: 1, delegatePublicKeys: delegates };
       }
 
       if (signingDevice === 'wallet') {
-        // Wallet signs directly — derive collateral key
         const keypair = await deriveCollateralKeypair();
         collateralPrivKey = keypair.privKey;
 
@@ -194,12 +197,11 @@ function EnterpriseFluxNodeStart({
           collateralPrivKey,
           identityPubKey,
           timestamp,
-          true, // compressedCollateralPrivateKey
+          true,
           redeemScript,
           delegateData,
         );
 
-        // Clear sensitive data
         collateralPrivKey = '';
 
         openAction({
@@ -207,7 +209,6 @@ function EnterpriseFluxNodeStart({
           result: { signedTxHex },
         });
       } else {
-        // Key signs — relay the request via socket
         const reqId = generateRequestId();
         requestIdRef.current = reqId;
 
@@ -262,156 +263,187 @@ function EnterpriseFluxNodeStart({
     }
   };
 
-  if (!open) return null;
-
-  // Display values
   const amountFlux = collateralAmount
     ? (parseInt(collateralAmount, 10) / 1e8).toFixed(2)
     : '?';
-  const chainLabel = chain === 'fluxTestnet' ? 'Flux Testnet' : 'Flux';
-  const deviceLabel = signingDevice === 'wallet' ? 'SSP Wallet' : 'SSP Key';
+  const chainLabel = chainConfig
+    ? `${chainConfig.name} (${chainConfig.symbol})`
+    : chain;
+  const deviceLabel =
+    signingDevice === 'wallet'
+      ? t('home:enterpriseFluxNodeStart.device_wallet')
+      : t('home:enterpriseFluxNodeStart.device_key');
+  const truncatedTxid = collateralTxid
+    ? `${collateralTxid.slice(0, 10)}…${collateralTxid.slice(-8)}:${collateralVout}`
+    : '';
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 9999,
-      }}
+    <Modal
+      title={t('home:enterpriseFluxNodeStart.title')}
+      open={open}
+      style={{ textAlign: 'center', top: 60 }}
+      onCancel={handleCancel}
+      footer={[]}
+      maskClosable={false}
     >
-      <div
-        style={{
-          background: 'white',
-          borderRadius: 12,
-          padding: 24,
-          maxWidth: 400,
-          width: '90%',
-          color: '#333',
-        }}
+      <Space
+        direction="vertical"
+        size="middle"
+        style={{ marginBottom: 16, marginTop: 16, width: '100%' }}
       >
-        <h3 style={{ margin: '0 0 16px', fontSize: 18 }}>
-          {t('home:enterpriseFluxNodeStart.title')}
-        </h3>
+        <Text>{t('home:enterpriseFluxNodeStart.description')}</Text>
 
+        {/* Requester Info */}
         {requesterInfo && (
-          <div
-            style={{
-              fontSize: 12,
-              color: '#666',
-              marginBottom: 12,
-              padding: '4px 8px',
-              background: '#f5f5f5',
-              borderRadius: 4,
-            }}
-          >
-            {t('home:enterpriseFluxNodeStart.from')}:{' '}
-            {requesterInfo.siteName || requesterInfo.origin}
+          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            {requesterInfo.iconUrl && (
+              <img
+                src={requesterInfo.iconUrl}
+                alt=""
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 8,
+                  objectFit: 'contain',
+                  marginBottom: 8,
+                }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            )}
+            {requesterInfo.siteName && (
+              <Text strong style={{ fontSize: '15px', display: 'block' }}>
+                {requesterInfo.siteName}
+              </Text>
+            )}
+            <Text
+              type="secondary"
+              style={{ fontSize: '12px', fontFamily: 'monospace' }}
+            >
+              {requesterInfo.origin}
+            </Text>
           </div>
         )}
 
-        <div style={{ marginBottom: 16, fontSize: 14 }}>
-          <div style={{ marginBottom: 8 }}>
-            <strong>{t('home:enterpriseFluxNodeStart.node')}:</strong>{' '}
-            {nodeName}
+        {/* Node Info */}
+        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+          <div className="flux-node-start-info-box">
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <div>
+                <Text type="secondary">
+                  {t('home:enterpriseFluxNodeStart.node')}:{' '}
+                </Text>
+                <Text strong>{nodeName || '-'}</Text>
+              </div>
+              <div>
+                <Text type="secondary">
+                  {t('home:enterpriseFluxNodeStart.chain')}:{' '}
+                </Text>
+                <Text strong>{chainLabel}</Text>
+              </div>
+              <div>
+                <Text type="secondary">
+                  {t('home:enterpriseFluxNodeStart.collateral')}:{' '}
+                </Text>
+                <Text strong>{amountFlux} FLUX</Text>
+              </div>
+              {truncatedTxid && (
+                <div>
+                  <Text type="secondary">
+                    {t('home:enterpriseFluxNodeStart.collateral_utxo')}:{' '}
+                  </Text>
+                  <Text
+                    strong
+                    style={{ fontFamily: 'monospace', fontSize: 12 }}
+                  >
+                    {truncatedTxid}
+                  </Text>
+                </div>
+              )}
+              <div>
+                <Text type="secondary">
+                  {t('home:enterpriseFluxNodeStart.signing_with')}:{' '}
+                </Text>
+                <Text strong>{deviceLabel}</Text>
+              </div>
+              {delegates.length > 0 && (
+                <div>
+                  <Text type="secondary">
+                    {t('home:enterpriseFluxNodeStart.delegates')}:{' '}
+                  </Text>
+                  <Text strong>{delegates.length}</Text>
+                </div>
+              )}
+            </Space>
           </div>
-          <div style={{ marginBottom: 8 }}>
-            <strong>{t('home:enterpriseFluxNodeStart.chain')}:</strong>{' '}
-            {chainLabel}
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <strong>{t('home:enterpriseFluxNodeStart.collateral')}:</strong>{' '}
-            {amountFlux} FLUX
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <strong>{t('home:enterpriseFluxNodeStart.signing_with')}:</strong>{' '}
-            {deviceLabel}
-          </div>
-          {delegates.length > 0 && (
-            <div style={{ marginBottom: 8 }}>
-              <strong>{t('home:enterpriseFluxNodeStart.delegates')}:</strong>{' '}
-              {delegates.length}
-            </div>
-          )}
-        </div>
+        </Space>
 
+        {/* SSP Identity */}
+        <Space direction="vertical" size="small">
+          <Text type="secondary">
+            {t('home:enterpriseFluxNodeStart.ssp_identity')}:
+          </Text>
+          <Text
+            strong
+            style={{
+              fontFamily: 'monospace',
+              fontSize: '12px',
+              wordBreak: 'break-all',
+            }}
+          >
+            {wkIdentity}
+          </Text>
+        </Space>
+
+        {/* Error display */}
         {error && (
-          <div
-            style={{
-              color: '#d32f2f',
-              fontSize: 13,
-              marginBottom: 12,
-              padding: '8px 12px',
-              background: '#fce4ec',
-              borderRadius: 4,
-            }}
-          >
-            {error}
-          </div>
+          <Alert
+            type="error"
+            message={error}
+            showIcon
+            style={{ textAlign: 'left' }}
+          />
         )}
 
+        {/* Waiting for Key indicator */}
         {waitingForKey && (
-          <div
-            style={{
-              color: '#1976d2',
-              fontSize: 13,
-              marginBottom: 12,
-              padding: '8px 12px',
-              background: '#e3f2fd',
-              borderRadius: 4,
-              textAlign: 'center',
-            }}
-          >
-            {t('home:enterpriseFluxNodeStart.waiting_for_key')}
-          </div>
+          <Alert
+            type="info"
+            message={t('home:enterpriseFluxNodeStart.waiting_for_key')}
+            icon={<Spin size="small" />}
+            showIcon
+            style={{ textAlign: 'left' }}
+          />
         )}
 
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button
-            onClick={handleReject}
-            disabled={processing}
-            style={{
-              padding: '8px 20px',
-              borderRadius: 6,
-              border: '1px solid #ddd',
-              background: 'white',
-              cursor: processing ? 'not-allowed' : 'pointer',
-              fontSize: 14,
-            }}
-          >
-            {t('common:reject')}
-          </button>
-          <button
+        {/* Action buttons */}
+        <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
+          <Button
+            type="primary"
+            size="large"
             onClick={() => {
-              void handleSign();
+              void handleApprove();
             }}
-            disabled={processing}
-            style={{
-              padding: '8px 20px',
-              borderRadius: 6,
-              border: 'none',
-              background: processing ? '#ccc' : '#fbbf24',
-              color: processing ? '#666' : '#000',
-              cursor: processing ? 'not-allowed' : 'pointer',
-              fontWeight: 600,
-              fontSize: 14,
-            }}
+            loading={processing && !waitingForKey}
+            disabled={processing || waitingForKey}
           >
-            {processing
-              ? waitingForKey
-                ? t('home:enterpriseFluxNodeStart.waiting')
-                : t('home:enterpriseFluxNodeStart.signing')
-              : t('common:approve')}
-          </button>
-        </div>
-      </div>
-    </div>
+            {waitingForKey
+              ? t('home:enterpriseFluxNodeStart.awaiting_key')
+              : t('home:enterpriseFluxNodeStart.approve')}
+          </Button>
+          <Button
+            type="link"
+            block
+            size="small"
+            onClick={handleCancel}
+            disabled={processing && !waitingForKey}
+          >
+            {t('common:cancel')}
+          </Button>
+        </Space>
+      </Space>
+    </Modal>
   );
 }
 
