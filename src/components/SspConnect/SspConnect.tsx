@@ -250,6 +250,7 @@ function SspConnect() {
         setContract(sspConnectContract); // redeemScript
         setTxMemo(sspConnectMemo); // signing device
         setTxFee(sspConnectFee); // addressIndex
+        setSourceAddress(sspConnectSourceAddress); // collateral (vault) address
         setOpenEnterpriseFluxNodeStart(true);
       } else if (sspConnectType === 'enterprise_nonce_sync') {
         // Enterprise nonce sync request — interactive dialog
