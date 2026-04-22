@@ -1,10 +1,60 @@
 diff --git a/node_modules/react-secure-storage/dist/fingerprint.lib.js b/node_modules/react-secure-storage/dist/fingerprint.lib.js
-index fb5dbd7..6acd6ef 100644
+index fb5dbd7..d5ebd79 100644
 --- a/node_modules/react-secure-storage/dist/fingerprint.lib.js
 +++ b/node_modules/react-secure-storage/dist/fingerprint.lib.js
-@@ -77,7 +77,15 @@ var ClientJS = /*#__PURE__*/function () {
+@@ -43,7 +43,14 @@ var ClientJS = /*#__PURE__*/function () {
+       }
+ 
+       if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.SCREEN_PRINT)) {
+-        key += this.getScreenPrint() + bar;
++        var storedScreen = localStorage.getItem("screenPrint");
++        if (storedScreen) {
++          key += storedScreen + bar;
++        } else {
++          var screenValue = this.getScreenPrint();
++          localStorage.setItem("screenPrint", screenValue);
++          key += screenValue + bar;
++        }
+       }
+ 
+       if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.PLUGINS)) {
+@@ -67,17 +74,46 @@ var ClientJS = /*#__PURE__*/function () {
+       }
+ 
+       if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.LANGUAGE)) {
+-        key += this.getLanguage() + bar;
++        var storedLang = localStorage.getItem("language");
++        if (storedLang) {
++          key += storedLang + bar;
++        } else {
++          var langValue = this.getLanguage();
++          localStorage.setItem("language", langValue);
++          key += langValue + bar;
++        }
+       }
+ 
+       if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.SYSTEM_LANGUAGE)) {
+-        key += this.getSystemLanguage() + bar;
++        var storedSysLang = localStorage.getItem("systemLanguage");
++        if (storedSysLang) {
++          key += storedSysLang + bar;
++        } else {
++          var sysLangValue = this.getSystemLanguage();
++          localStorage.setItem("systemLanguage", sysLangValue);
++          key += sysLangValue + bar;
++        }
+       }
+ 
        if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.COOKIE)) {
-         key += this.isCookie() + bar;
+-        key += this.isCookie() + bar;
++        var storedCookie = localStorage.getItem("cookieEnabled");
++        if (storedCookie) {
++          key += storedCookie + bar;
++        } else {
++          var cookieValue = this.isCookie();
++          localStorage.setItem("cookieEnabled", String(cookieValue));
++          key += cookieValue + bar;
++        }
        }
 +      var canvasPrint = localStorage.getItem("canvas");
 +      if (canvasPrint) {
@@ -19,13 +69,63 @@ index fb5dbd7..6acd6ef 100644
          key += this.getCanvasPrint();
        }
 diff --git a/node_modules/react-secure-storage/src/lib/fingerprint.lib.ts b/node_modules/react-secure-storage/src/lib/fingerprint.lib.ts
-index 8877bfb..e4ab40e 100644
+index 8877bfb..76cb1b8 100644
 --- a/node_modules/react-secure-storage/src/lib/fingerprint.lib.ts
 +++ b/node_modules/react-secure-storage/src/lib/fingerprint.lib.ts
-@@ -46,6 +46,15 @@ const ClientJS = class {
-     if (!disabledKeys.includes(FINGERPRINT_KEYS.COOKIE)) {
-       key += this.isCookie() + bar;
+@@ -20,7 +20,15 @@ const ClientJS = class {
+       key += window.location.hostname + bar;
      }
+     if (!disabledKeys.includes(FINGERPRINT_KEYS.SCREEN_PRINT)) {
+-      key += this.getScreenPrint() + bar;
++      // cache screen print to avoid drift (monitor swap, HDR toggle)
++      const storedScreen = localStorage.getItem("screenPrint");
++      if (storedScreen) {
++        key += storedScreen + bar;
++      } else {
++        const screenValue = this.getScreenPrint();
++        localStorage.setItem("screenPrint", screenValue);
++        key += screenValue + bar;
++      }
+     }
+     if (!disabledKeys.includes(FINGERPRINT_KEYS.PLUGINS)) {
+       key += this.getPlugins() + bar;
+@@ -38,13 +46,44 @@ const ClientJS = class {
+       key += this.getTimeZone() + bar;
+     }
+     if (!disabledKeys.includes(FINGERPRINT_KEYS.LANGUAGE)) {
+-      key += this.getLanguage() + bar;
++      // cache language to avoid drift from browser language changes
++      const storedLang = localStorage.getItem("language");
++      if (storedLang) {
++        key += storedLang + bar;
++      } else {
++        const langValue = this.getLanguage();
++        localStorage.setItem("language", langValue);
++        key += langValue + bar;
++      }
+     }
+     if (!disabledKeys.includes(FINGERPRINT_KEYS.SYSTEM_LANGUAGE)) {
+-      key += this.getSystemLanguage() + bar;
++      const storedSysLang = localStorage.getItem("systemLanguage");
++      if (storedSysLang) {
++        key += storedSysLang + bar;
++      } else {
++        const sysLangValue = this.getSystemLanguage();
++        localStorage.setItem("systemLanguage", sysLangValue);
++        key += sysLangValue + bar;
++      }
+     }
+     if (!disabledKeys.includes(FINGERPRINT_KEYS.COOKIE)) {
+-      key += this.isCookie() + bar;
++      const storedCookie = localStorage.getItem("cookieEnabled");
++      if (storedCookie) {
++        key += storedCookie + bar;
++      } else {
++        const cookieValue = this.isCookie();
++        localStorage.setItem("cookieEnabled", String(cookieValue));
++        key += cookieValue + bar;
++      }
++    }
 +    // always add canvas, make it persistent for convenience as of system updates
 +    const canvasPrint = localStorage.getItem("canvas");
 +    if (canvasPrint) {
@@ -34,7 +134,6 @@ index 8877bfb..e4ab40e 100644
 +      const canvasPrint = this.getCanvasPrint();
 +      localStorage.setItem("canvas", canvasPrint);
 +      key += canvasPrint;
-+    }
+     }
      if (!disabledKeys.includes(FINGERPRINT_KEYS.CANVAS)) {
        key += this.getCanvasPrint();
-     }
