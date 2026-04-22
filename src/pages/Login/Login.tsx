@@ -624,6 +624,10 @@ function Login() {
           errorCode={recoveryErrorCode}
           onClose={closeRecoveryDialog}
           onRetry={retryRecovery}
+          onRestore={() => {
+            closeRecoveryDialog();
+            navigate('/restore');
+          }}
         />
       )}
       <PoweredByFlux isClickeable={true} />

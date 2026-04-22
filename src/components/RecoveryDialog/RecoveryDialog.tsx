@@ -17,6 +17,13 @@ interface RecoveryDialogProps {
   errorCode?: string;
   onClose: () => void;
   onRetry?: () => void;
+  /**
+   * Navigate to the full wallet restore flow. Shown as a tertiary/link-style
+   * option so users whose phone is unreachable (lost, dead battery, SSP Key
+   * reinstall pending) still have an exit — without having to close this
+   * dialog first and find the Restore button on the login screen.
+   */
+  onRestore?: () => void;
 }
 
 function RecoveryDialog({
@@ -25,10 +32,12 @@ function RecoveryDialog({
   errorCode,
   onClose,
   onRetry,
+  onRestore,
 }: RecoveryDialogProps) {
   const { t } = useTranslation(['login', 'common']);
 
   const isBusy = status === 'waiting';
+  const isApproved = status === 'approved';
   const isFailure =
     status === 'denied' || status === 'timeout' || status === 'error';
 
@@ -38,7 +47,7 @@ function RecoveryDialog({
       open={open}
       style={{ textAlign: 'center', top: 60 }}
       onCancel={onClose}
-      closable={!isBusy}
+      closable={!isBusy && !isApproved}
       maskClosable={false}
       footer={[]}
     >
@@ -63,31 +72,9 @@ function RecoveryDialog({
             <Text>{t('login:recovery_approved')}</Text>
           </>
         )}
-        {status === 'denied' && (
-          <>
-            <Text>{t('login:recovery_denied_body')}</Text>
-            <Space>
-              {onRetry && (
-                <Button type="primary" onClick={onRetry}>
-                  {t('common:retry')}
-                </Button>
-              )}
-              <Button onClick={onClose}>{t('common:cancel')}</Button>
-            </Space>
-          </>
-        )}
+        {status === 'denied' && <Text>{t('login:recovery_denied_body')}</Text>}
         {status === 'timeout' && (
-          <>
-            <Text>{t('login:recovery_timeout_body')}</Text>
-            <Space>
-              {onRetry && (
-                <Button type="primary" onClick={onRetry}>
-                  {t('common:retry')}
-                </Button>
-              )}
-              <Button onClick={onClose}>{t('common:cancel')}</Button>
-            </Space>
-          </>
+          <Text>{t('login:recovery_timeout_body')}</Text>
         )}
         {status === 'error' && (
           <>
@@ -97,27 +84,31 @@ function RecoveryDialog({
                 {t('login:err_lx', { code: errorCode })}
               </Text>
             )}
-            <Space>
-              {onRetry && (
-                <Button type="primary" onClick={onRetry}>
-                  {t('common:retry')}
-                </Button>
-              )}
-              <Button onClick={onClose}>{t('common:cancel')}</Button>
-            </Space>
           </>
         )}
 
-        {isBusy && (
-          <Button size="small" onClick={onClose}>
-            {t('common:cancel')}
-          </Button>
-        )}
-        {!isBusy && !isFailure && status !== 'approved' && (
-          <Button type="primary" size="middle" onClick={onClose}>
-            {t('common:ok')}
-          </Button>
-        )}
+        {/* Action buttons — content-width, centered by the modal's
+            textAlign: 'center'. Matches StrongEncryptionChange and other
+            SSP dialogs (no full-width/block buttons). Retry is primary on
+            failure; cancel is always present except on the approved
+            auto-dismiss flash; restore is a subtle link as last-resort. */}
+        <Space direction="vertical" size={12} align="center">
+          {isFailure && onRetry && (
+            <Button type="primary" size="middle" onClick={onRetry}>
+              {t('common:retry')}
+            </Button>
+          )}
+          {!isApproved && (
+            <Button size="middle" onClick={onClose}>
+              {t('common:cancel')}
+            </Button>
+          )}
+          {!isApproved && onRestore && (
+            <Button type="link" size="small" onClick={onRestore}>
+              {t('login:recovery_restore_instead')}
+            </Button>
+          )}
+        </Space>
       </Space>
     </Modal>
   );
