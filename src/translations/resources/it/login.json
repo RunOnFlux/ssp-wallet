@@ -8,5 +8,13 @@
   "enter_pw": "Inserisci la Password",
   "unlock_wallet": "Sblocca Portafoglio",
   "forgot_pw": "Hai dimenticato la Password?",
-  "restore": "Ripristina"
+  "restore": "Ripristina",
+  "recovery_dialog_title": "Browser change detected",
+  "recovery_dialog_body": "Your browser environment has changed. Open SSP Key on your phone and approve the recovery request to unlock your wallet.",
+  "recovery_waiting": "Waiting for SSP Key approval…",
+  "recovery_approved": "Recovery approved. Unlocking your wallet…",
+  "recovery_denied_body": "The recovery request was denied on SSP Key.",
+  "recovery_timeout_body": "SSP Key didn't respond in time. Make sure the app is open and try again.",
+  "recovery_error_body": "Recovery failed. Please try again.",
+  "recovery_restore_instead": "Restore wallet instead"
 }
