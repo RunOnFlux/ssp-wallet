@@ -1,18 +1,13 @@
-import { beforeAll, vi } from 'vitest';
+import { beforeAll } from 'vitest';
+import { webcrypto } from 'crypto';
 
 // Set up basic test environment
 beforeAll(() => {
-  // Mock crypto for Node.js environment
+  // Expose Node's webcrypto as `globalThis.crypto` so libraries that
+  // depend on the Web Crypto API (e.g. @metamask/browser-passworder's
+  // crypto.subtle usage) work under Vitest's default Node env.
   Object.defineProperty(global, 'crypto', {
-    value: {
-      getRandomValues: vi.fn((arr) => {
-        for (let i = 0; i < arr.length; i++) {
-          arr[i] = Math.floor(Math.random() * 256);
-        }
-        return arr;
-      }),
-      randomUUID: vi.fn(() => 'test-uuid'),
-    },
+    value: webcrypto,
     writable: true,
     configurable: true,
   });

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Input, Image, Button, Form, message, Spin } from 'antd';
 import localForage from 'localforage';
@@ -47,12 +47,21 @@ import {
   generateExternalIdentityAddress,
   getScriptType,
 } from '../../lib/wallet.ts';
+import {
+  readRecoveryEnvelope,
+  decryptRecoveryEnvelope,
+} from '../../lib/recoveryEnvelope';
+import { requestRecovery, RecoveryError } from '../../lib/recoveryProtocol';
+import { sspConfig } from '@storage/ssp';
 
 import { blockchains, Token } from '@storage/blockchains';
 
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
+import RecoveryDialog, {
+  RecoveryDialogStatus,
+} from '../../components/RecoveryDialog/RecoveryDialog.tsx';
 
 import { transaction, generatedWallets, cryptos, node } from '../../types';
 
@@ -86,6 +95,21 @@ function Login() {
     (state) => state.sspState,
   );
   const [strongEncryptionChange, setStrongEncryptionChange] = useState(false);
+  const [recoveryStatus, setRecoveryStatus] =
+    useState<RecoveryDialogStatus | null>(null);
+  const [recoveryErrorCode, setRecoveryErrorCode] = useState<string>('');
+  // Raw user password stashed during recovery for retry. We can't keep it
+  // in React state because that would trigger the `password` useEffect
+  // which expects `password + randomParams`, not the raw form value.
+  const recoveryPasswordRef = useRef<string>('');
+  // Guards the in-flight recovery from continuing after the user cancels.
+  // `requestRecovery` can't be aborted mid-flight, so instead we flip this
+  // flag and have the resolution callbacks bail out before touching state
+  // or the login path.
+  const recoveryCancelledRef = useRef(false);
+  // Whether the component is still mounted — prevents setState warnings
+  // from the 400ms auto-close timeout firing after unmount.
+  const mountedRef = useRef(true);
   const blockchainConfig = blockchains[activeChain];
   const blockchainConfigIdentity = blockchains[identityChain];
   const browser = window.chrome || window.browser;
@@ -94,6 +118,8 @@ function Login() {
     return () => {
       // reset state
       setPassword('');
+      mountedRef.current = false;
+      recoveryCancelledRef.current = true;
     };
   }, []); // Empty dependency array ensures this effect runs only on mount/unmount
 
@@ -196,6 +222,92 @@ function Login() {
     });
   };
 
+  /**
+   * Recovers plaintext `randomParams` via ssp-key when our own fingerprint
+   * drifted and the local decrypt failed (L5). Re-encrypts under the fresh
+   * fingerprint so subsequent logins work locally again, then continues
+   * the normal login path by setting `password + randomParams` into state.
+   */
+  const runRecovery = async (userPassword: string) => {
+    const envelope = readRecoveryEnvelope();
+    if (!envelope) {
+      // Pre-feature install with no envelope available — fall back to the
+      // original L5 error path.
+      displayMessage('error', t('login:err_lx', { code: 'L5' }));
+      return;
+    }
+    recoveryCancelledRef.current = false;
+    setRecoveryErrorCode('');
+    setRecoveryStatus('waiting');
+    try {
+      const skR = await requestRecovery({
+        wkIdentity: envelope.wkIdentity,
+        keyIdentityPubKeyHex: envelope.keyIdentityPubKey,
+        relay: sspConfig().relay,
+        chain: identityChain,
+      });
+      if (recoveryCancelledRef.current || !mountedRef.current) return;
+
+      const plaintextRandomParams = await decryptRecoveryEnvelope({
+        envelope,
+        userPassword,
+        skR,
+      });
+      if (recoveryCancelledRef.current || !mountedRef.current) return;
+
+      // Re-encrypt randomParams under the fresh (drifted) fingerprint so
+      // the normal fingerprint-gated decrypt works on the next login.
+      // Safe to do even if user later cancels — writes only the opaque blob.
+      const freshFingerprint = getFingerprint('forRandomParams');
+      const newBlob = await passworderEncrypt(
+        freshFingerprint,
+        plaintextRandomParams,
+      );
+      if (recoveryCancelledRef.current || !mountedRef.current) return;
+      secureLocalStorage.setItem('randomParams', newBlob);
+
+      setRecoveryStatus('approved');
+      recoveryPasswordRef.current = '';
+      // Hand off to the rest of the login flow by setting the combined
+      // password — the existing useEffect on `password` picks it up.
+      setPassword(userPassword + plaintextRandomParams);
+      // Close the dialog shortly after showing the success state.
+      setTimeout(() => {
+        if (mountedRef.current) setRecoveryStatus(null);
+      }, 400);
+    } catch (err) {
+      if (recoveryCancelledRef.current || !mountedRef.current) return;
+      if (err instanceof RecoveryError) {
+        if (err.code === 'denied') {
+          setRecoveryStatus('denied');
+        } else if (err.code === 'timeout') {
+          setRecoveryStatus('timeout');
+        } else {
+          setRecoveryErrorCode(err.code);
+          setRecoveryStatus('error');
+        }
+      } else {
+        setRecoveryErrorCode('L5R');
+        setRecoveryStatus('error');
+      }
+      console.log('[recovery] failed:', err);
+    }
+  };
+
+  const retryRecovery = () => {
+    if (!recoveryPasswordRef.current) return;
+    void runRecovery(recoveryPasswordRef.current);
+  };
+
+  const closeRecoveryDialog = () => {
+    // Mark the in-flight recovery (if any) as cancelled so its resolution
+    // callbacks won't re-open the dialog or drive the login forward.
+    recoveryCancelledRef.current = true;
+    setRecoveryStatus(null);
+    setRecoveryErrorCode('');
+    recoveryPasswordRef.current = '';
+  };
+
   const onFinish = (values: loginForm) => {
     if (values.password.length < 8) {
       displayMessage('error', t('login:err_invalid_pw'));
@@ -219,8 +331,12 @@ function Login() {
           }
         })
         .catch((error) => {
-          displayMessage('error', t('login:err_lx', { code: 'L5' }));
           console.log(error);
+          // Our-fingerprint drift (L5): try the ssp-key recovery envelope.
+          // Stash raw password in a ref so retry can replay it without
+          // triggering the password-useEffect with a half-assembled value.
+          recoveryPasswordRef.current = values.password;
+          void runRecovery(values.password);
         });
     } else {
       setPassword(values.password);
@@ -501,6 +617,15 @@ function Login() {
         open={strongEncryptionChange}
         openAction={stronEncryptionChangeAction}
       />
+      {recoveryStatus && (
+        <RecoveryDialog
+          open={true}
+          status={recoveryStatus}
+          errorCode={recoveryErrorCode}
+          onClose={closeRecoveryDialog}
+          onRetry={retryRecovery}
+        />
+      )}
       <PoweredByFlux isClickeable={true} />
       <div style={{ position: 'absolute', top: 6, right: 6 }}>
         <LanguageSelector label={false} />

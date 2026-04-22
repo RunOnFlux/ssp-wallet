@@ -35,6 +35,7 @@ import {
   generateInternalIdentityAddress,
   generateExternalIdentityAddress,
 } from '../../lib/wallet.ts';
+import { ensureRecoveryEnvelope } from '../../lib/recoveryEnvelope.ts';
 import { useTranslation } from 'react-i18next';
 import { generatedWallets } from '../../types';
 import { blockchains } from '@storage/blockchains';
@@ -50,9 +51,9 @@ function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isNewWallet, setIsNewWallet] = useState(false);
   const [walletSynced, setWalletSynced] = useState(false);
-  const { activeChain, identityChain } = useAppSelector(
-    (state) => state.sspState,
-  );
+  const { activeChain, identityChain, sspWalletKeyInternalIdentity } =
+    useAppSelector((state) => state.sspState);
+  const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { xpubKey: xpubKeyIdentity, xpubWallet: xpubWalletIdentity } =
     useAppSelector((state) => state[identityChain]);
   const { xpubKey, xpubWallet, walletInUse, wallets } = useAppSelector(
@@ -203,6 +204,32 @@ function Home() {
     console.log('Key of Identity synchronised.');
     generateSSPIdentity();
   }, [xpubKeyIdentity]);
+
+  // Build the randomParams recovery envelope once all the inputs are
+  // available (ssp-key xpub synchronised + wkIdentity generated +
+  // passwordBlob session cache present). Idempotent — does nothing if an
+  // envelope already exists. Covers new wallets and first-login migration
+  // for pre-existing users.
+  useEffect(() => {
+    if (
+      !passwordBlob ||
+      !xpubKeyIdentity ||
+      !sspWalletKeyInternalIdentity ||
+      !identityChain
+    )
+      return;
+    void ensureRecoveryEnvelope({
+      passwordBlob,
+      xpubKeyIdentity,
+      wkIdentity: sspWalletKeyInternalIdentity,
+      identityChain,
+    });
+  }, [
+    passwordBlob,
+    xpubKeyIdentity,
+    sspWalletKeyInternalIdentity,
+    identityChain,
+  ]);
 
   useEffect(() => {
     if (!xpubKey) return;
