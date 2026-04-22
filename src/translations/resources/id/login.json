@@ -8,5 +8,13 @@
   "enter_pw": "Masukkan kata kunci",
   "unlock_wallet": "Buka Kunci Dompet",
   "forgot_pw": "Tidak ingat kata sandi?",
-  "restore": "Pulihkan"
+  "restore": "Pulihkan",
+  "recovery_dialog_title": "Perubahan browser terdeteksi",
+  "recovery_dialog_body": "Lingkungan browser milik Anda telah berubah. Buka SSP Key di ponsel milik Anda dan setujui permintaan pemulihan untuk membuka kunci dompet milik Anda.",
+  "recovery_waiting": "Menunggu persetujuan SSP Key…",
+  "recovery_approved": "Pemulihan disetujui. Membuka dompet milik Anda…",
+  "recovery_denied_body": "Permintaan pemulihan telah ditolak pada SSP Key.",
+  "recovery_timeout_body": "SSP Key tidak merespons tepat waktu. Pastikan aplikasi terbuka dan cobalah lagi.",
+  "recovery_error_body": "Pemulihan gagal. Silakan coba lagi.",
+  "recovery_restore_instead": "Pulihkan dompet Anda sebagai gantinya"
 }
