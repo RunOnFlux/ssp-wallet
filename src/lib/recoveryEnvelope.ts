@@ -12,6 +12,7 @@
  */
 
 import { HDKey } from '@scure/bip32';
+import utxolib from '@runonflux/utxo-lib';
 import {
   encrypt as passworderEncrypt,
   decrypt as passworderDecrypt,
@@ -22,6 +23,7 @@ import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../types';
 import { eciesEncrypt, eciesDecrypt } from './recoveryCrypto';
 import { getFingerprint } from './fingerprint';
+import { getLibId } from './wallet';
 
 const STORAGE_KEY = 'recovery_v1';
 const RECOVERY_TYPE_INDEX = 11;
@@ -37,6 +39,24 @@ export interface RecoveryEnvelopeV1 {
 }
 
 /**
+ * Parse an xpub with the chain's SSP-custom BIP32 version bytes, falling
+ * back to utxolib's network-standard version bytes if the xpub was encoded
+ * under the standard scheme. Mirrors the try/catch pattern in wallet.ts's
+ * `generateMultisigAddress` — xpubs in SSP can be either encoding.
+ */
+function parseHdKey(xpub: string, identityChain: keyof cryptos): HDKey {
+  const bipParams = blockchains[identityChain].bip32;
+  try {
+    return HDKey.fromExtendedKey(xpub, bipParams);
+  } catch (e) {
+    console.log('[recovery] xpub parse fallback:', e);
+    const libID = getLibId(identityChain);
+    const networkBipParams = utxolib.networks[libID].bip32;
+    return HDKey.fromExtendedKey(xpub, networkBipParams);
+  }
+}
+
+/**
  * Derive the ssp-key-side pubkeys needed for the envelope and later recovery:
  *   - pk_r at /11/0: target of the ECIES outer wrap.
  *   - identity pub at /10/0: used at recovery time as the ECDH peer key
@@ -47,8 +67,7 @@ function deriveKeyPubKeys(
   xpubKeyIdentity: string,
   identityChain: keyof cryptos,
 ): { pkR: Buffer; keyIdentityPub: Buffer } {
-  const bipParams = blockchains[identityChain].bip32;
-  const masterHdKey = HDKey.fromExtendedKey(xpubKeyIdentity, bipParams);
+  const masterHdKey = parseHdKey(xpubKeyIdentity, identityChain);
 
   const recoveryChild = masterHdKey
     .deriveChild(RECOVERY_TYPE_INDEX)
