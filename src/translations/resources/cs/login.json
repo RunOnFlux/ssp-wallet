@@ -8,5 +8,13 @@
   "enter_pw": "Zadejte Heslo",
   "unlock_wallet": "Odemknout Peněženku",
   "forgot_pw": "Zapomenuté Heslo?",
-  "restore": "Obnovit"
+  "restore": "Obnovit",
+  "recovery_dialog_title": "Zjištěná změna nastavení prohlížeče",
+  "recovery_dialog_body": "Vaše prostředí prohlížeče se změnilo. Otevřete SSP klíč na telefonu a potvrďte žádost o obnovení pro odemknutí vaší peněženky.",
+  "recovery_waiting": "Čekání na schválení SSP Klíče…",
+  "recovery_approved": "Obnovení schváleno. Odemykání peněženky…",
+  "recovery_denied_body": "Žádost o obnovu byla zamítnuta na SSP Klíči.",
+  "recovery_timeout_body": "SSP Klíč neodpověděl včas. Ujistěte se, že aplikace je otevřena a zkuste to znovu.",
+  "recovery_error_body": "Obnovení se nezdařilo. Prosím, zkuste to znovu.",
+  "recovery_restore_instead": "Namísto toho obnovit peněženku"
 }
