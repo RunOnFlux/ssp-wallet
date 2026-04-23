@@ -18,6 +18,14 @@ const browserOverrides = {
     background: {
       scripts: ['scripts/background.js'],
     },
+    // See: https://mzl.la/firefox-builtin-data-consent
+    browser_specific_settings: {
+      gecko: {
+        data_collection_permissions: {
+          required: ['none'],
+        },
+      },
+    },
   },
 };
 
