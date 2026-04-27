@@ -40,7 +40,7 @@
   "license": "MIT",
   "dependencies": {
     "ses": "1.15.0",
-    "lavamoat-core": "17.1.3",
+    "lavamoat-core": "18.0.2",
     "@lavamoat/aa": "4.3.6",
     "tsup": "8.5.1",
     "typescript": "5.9.3"
