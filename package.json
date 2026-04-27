@@ -59,7 +59,7 @@
     "export-to-csv": "1.4.0",
     "i18next": "25.8.13",
     "localforage": "1.10.0",
-    "lru-cache": "11.2.6",
+    "lru-cache": "11.3.5",
     "patch-package": "8.0.1",
     "postinstall-postinstall": "2.1.0",
     "process": "0.11.10",
