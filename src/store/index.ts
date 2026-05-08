@@ -43,6 +43,7 @@ const chains = {
   base: chainSliceBaseTokens('base'),
   bsc: chainSliceBaseTokens('bsc'),
   avax: chainSliceBaseTokens('avax'),
+  solDevnet: chainSliceBaseTokens('solDevnet'),
 };
 // ********** Import chains **********
 

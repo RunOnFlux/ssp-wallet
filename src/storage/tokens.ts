@@ -1,4 +1,5 @@
 import sepoliaLogo from '../assets/ethTestnet.svg';
+import solDevnetLogo from '../assets/solDevnet.svg';
 import fluxLogo from '../assets/flux.svg';
 import ethLogo from '../assets/eth.svg';
 import usdtLogo from '../assets/usdt.svg';
@@ -1023,6 +1024,27 @@ function bsc() {
   return tokens;
 }
 
+function solDevnet() {
+  const tokens = [
+    {
+      contract: '', // native SOL
+      name: 'Solana Devnet',
+      symbol: 'TEST-SOL',
+      decimals: 9,
+      logo: solDevnetLogo,
+    },
+    {
+      // Circle's official USDC devnet mint
+      contract: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+      name: 'USD Coin (Devnet)',
+      symbol: 'TEST-USDC',
+      decimals: 6,
+      logo: usdcLogo,
+    },
+  ];
+  return tokens;
+}
+
 export const tokens = {
   eth,
   sepolia,
@@ -1031,4 +1053,5 @@ export const tokens = {
   base,
   avax,
   bsc,
+  solDevnet,
 };

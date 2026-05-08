@@ -7,6 +7,7 @@ import Login from './pages/Login/Login.tsx';
 import Home from './pages/Home/Home.tsx';
 import Send from './pages/Send/Send.tsx';
 import SendEVM from './pages/SendEVM/SendEVM.tsx';
+import SendSOL from './pages/SendSOL/SendSOL.tsx';
 import Swap from './pages/Swap/Swap.tsx';
 import SecurityTest from './pages/SecurityTest/SecurityTest.tsx';
 import { RouterErrorBoundary } from './components/ErrorBoundary/ErrorBoundary.tsx';
@@ -45,6 +46,11 @@ const router = createBrowserRouter([
   {
     path: '/sendevm',
     element: <SendEVM />,
+    errorElement: <RouterErrorBoundary />,
+  },
+  {
+    path: '/sendsol',
+    element: <SendSOL />,
     errorElement: <RouterErrorBoundary />,
   },
   {

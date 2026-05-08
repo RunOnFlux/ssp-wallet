@@ -433,6 +433,82 @@ export async function fetchAddressTransactions(
       }
 
       return allTransactions.sort((a, b) => b.timestamp - a.timestamp);
+    } else if (blockchains[chain].chainType === 'sol') {
+      // Solana: fetch recent signatures, then parse each tx for amount /
+      // direction. Public devnet RPC is rate-limited so we cap to 25 here;
+      // production should use Helius or similar with the same shape.
+      const url = `https://${backendConfig.node}`;
+      const limit = Math.max(1, Math.min(25, to - from));
+      const sigsResp = await axios.post<{
+        result: Array<{
+          signature: string;
+          slot: number;
+          blockTime: number | null;
+          err: unknown;
+        }>;
+      }>(url, {
+        id: Date.now(),
+        jsonrpc: '2.0',
+        method: 'getSignaturesForAddress',
+        params: [address, { limit }],
+      });
+      const sigs = sigsResp.data.result ?? [];
+      if (sigs.length === 0) return [];
+
+      const txs: transaction[] = [];
+      for (const sigEntry of sigs) {
+        try {
+          const txResp = await axios.post<{
+            result: {
+              meta: {
+                err: unknown;
+                fee: number;
+                preBalances: number[];
+                postBalances: number[];
+              } | null;
+              transaction: {
+                message: { accountKeys: Array<{ pubkey: string }> };
+              };
+              blockTime: number | null;
+              slot: number;
+            } | null;
+          }>(url, {
+            id: Date.now(),
+            jsonrpc: '2.0',
+            method: 'getParsedTransaction',
+            params: [
+              sigEntry.signature,
+              { commitment: 'confirmed', maxSupportedTransactionVersion: 0 },
+            ],
+          });
+          const tx = txResp.data.result;
+          if (!tx || !tx.meta) continue;
+          // Compute net SOL delta for our address based on pre/post
+          // balance diff at our index in account_keys.
+          const keys = tx.transaction.message.accountKeys;
+          const idx = keys.findIndex((k) => k.pubkey === address);
+          let amount = '0';
+          if (idx >= 0) {
+            const delta =
+              tx.meta.postBalances[idx] - tx.meta.preBalances[idx];
+            amount = String(delta);
+          }
+          txs.push({
+            txid: sigEntry.signature,
+            blockheight: tx.slot,
+            timestamp: tx.blockTime ?? 0,
+            fee: String(tx.meta.fee ?? 0),
+            amount,
+            message: '',
+            receiver: '',
+            isError: tx.meta.err != null,
+            decimals: blockchains[chain].decimals,
+          });
+        } catch (e) {
+          console.log('[SOL tx fetch] failed', sigEntry.signature, e);
+        }
+      }
+      return txs.sort((a, b) => b.timestamp - a.timestamp);
     } else if (blockchains[chain].backend === 'blockbook') {
       const pageSize = to - from;
       const url = `https://${backendConfig.node}/api/v2/address/${address}?pageSize=${pageSize}&details=txs&page=${page}`;
