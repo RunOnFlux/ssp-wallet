@@ -489,8 +489,7 @@ export async function fetchAddressTransactions(
           const idx = keys.findIndex((k) => k.pubkey === address);
           let amount = '0';
           if (idx >= 0) {
-            const delta =
-              tx.meta.postBalances[idx] - tx.meta.preBalances[idx];
+            const delta = tx.meta.postBalances[idx] - tx.meta.preBalances[idx];
             amount = String(delta);
           }
           txs.push({

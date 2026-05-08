@@ -78,10 +78,9 @@ function Navigation() {
           size={'middle'}
           style={{ minWidth: '105px' }}
           onClick={() =>
-            navigate(
-              isSOL ? '/sendsol' : isEVM ? '/sendevm' : '/send',
-              { state: { receiver: '' } },
-            )
+            navigate(isSOL ? '/sendsol' : isEVM ? '/sendevm' : '/send', {
+              state: { receiver: '' },
+            })
           }
           data-tutorial="send-button"
         >

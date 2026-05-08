@@ -1436,7 +1436,11 @@ export async function constructAndSignSOLTransaction(opts: {
   // Compute multisig + vault PDAs from the two member pubkeys.
   const members = [walletPubkey, keyPubkey];
   const threshold = 2;
-  const [multisigAddress] = deriveMultisigAddress(members, threshold, programId);
+  const [multisigAddress] = deriveMultisigAddress(
+    members,
+    threshold,
+    programId,
+  );
   const [vaultAddress] = deriveVaultAddress(multisigAddress, 0, programId);
 
   // Check if multisig is already initialized.
@@ -1452,9 +1456,7 @@ export async function constructAndSignSOLTransaction(opts: {
   }
   // After init, multisig.transaction_index = 0; first proposal is index 1.
   // For already-initialized cases, use the on-chain value.
-  const currentTxIndex = needsInit
-    ? BigInt(0)
-    : multisigState!.transactionIndex;
+  const currentTxIndex = needsInit ? BigInt(0) : multisigState.transactionIndex;
 
   const recipientPubkey = new PublicKey(opts.recipient);
 
@@ -1504,7 +1506,12 @@ export async function constructAndSignSOLTransaction(opts: {
       numSigners: 1,
       numWritableSigners: 1,
       numWritableNonSigners: 2,
-      accountKeys: [vaultAddress, sourceAta, destAta, splToken.TOKEN_PROGRAM_ID],
+      accountKeys: [
+        vaultAddress,
+        sourceAta,
+        destAta,
+        splToken.TOKEN_PROGRAM_ID,
+      ],
       instructions: [
         {
           programIdIndex: 3,
@@ -1549,14 +1556,17 @@ export async function constructAndSignSOLTransaction(opts: {
   }
 
   // Build the four program instructions.
-  const { instruction: createIx, transactionAddress, transactionIndex } =
-    await client.buildCreateTransactionInstruction({
-      multisigAddress,
-      currentTransactionIndex: currentTxIndex,
-      vaultIndex: 0,
-      message,
-      creator: walletPubkey,
-    });
+  const {
+    instruction: createIx,
+    transactionAddress,
+    transactionIndex,
+  } = await client.buildCreateTransactionInstruction({
+    multisigAddress,
+    currentTransactionIndex: currentTxIndex,
+    vaultIndex: 0,
+    message,
+    creator: walletPubkey,
+  });
   const approveWalletIx = await client.buildApproveTransactionInstruction({
     multisigAddress,
     transactionAddress,
@@ -1641,17 +1651,13 @@ export async function cosignAndBroadcastSOLTransaction(opts: {
   keyPubkeyBase58: string;
   keyPrivKeyHex: string; // 64-byte Ed25519 secret key (hex)
 }): Promise<string> {
-  const { Connection, Transaction, Keypair } = await import(
-    '@solana/web3.js'
-  );
+  const { Connection, Transaction, Keypair } = await import('@solana/web3.js');
   const backendConfig = backends()[opts.chain];
   const connection = new Connection(`https://${backendConfig.node}`, {
     commitment: 'confirmed',
   });
 
-  const keySecretKey = new Uint8Array(
-    Buffer.from(opts.keyPrivKeyHex, 'hex'),
-  );
+  const keySecretKey = new Uint8Array(Buffer.from(opts.keyPrivKeyHex, 'hex'));
   const keyKeypair = Keypair.fromSecretKey(keySecretKey);
   if (keyKeypair.publicKey.toBase58() !== opts.keyPubkeyBase58) {
     throw new Error('Key privkey/pubkey mismatch');

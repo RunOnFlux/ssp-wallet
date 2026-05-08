@@ -142,9 +142,8 @@ function SendSOL() {
     derivationPath: string;
   }): Promise<{ walletSig: string; keySig: string } | null> => {
     const { Connection, PublicKey } = await import('@solana/web3.js');
-    const { SolanaMultisigClient, deriveMultisigAddress } = await import(
-      '@runonflux/solana-multisig'
-    );
+    const { SolanaMultisigClient, deriveMultisigAddress } =
+      await import('@runonflux/solana-multisig');
     const cfg = blockchains[args.chain];
     if (!cfg.programId) throw new Error(`No programId for ${args.chain}`);
     const programId = new PublicKey(cfg.programId);
@@ -271,8 +270,7 @@ function SendSOL() {
         const selectedToken = tokenOptions.find(
           (t) => t.value === values.token,
         );
-        const decimals =
-          selectedToken?.decimals ?? blockchainConfig.decimals;
+        const decimals = selectedToken?.decimals ?? blockchainConfig.decimals;
         const baseUnits = new BigNumber(values.amount)
           .multipliedBy(10 ** decimals)
           .toFixed(0);
@@ -295,10 +293,7 @@ function SendSOL() {
           const tokenBal = tokenBalances.find(
             (b) => b.contract === tokenMintBase58,
           );
-          if (
-            !tokenBal ||
-            new BigNumber(tokenBal.balance).lt(baseUnits)
-          ) {
+          if (!tokenBal || new BigNumber(tokenBal.balance).lt(baseUnits)) {
             throw new Error(
               `Insufficient ${selectedToken?.label ?? 'token'} balance in vault`,
             );
