@@ -30,6 +30,22 @@ const { confirm } = Modal;
 
 const xpubRegex = /^([a-zA-Z]{2}ub[1-9A-HJ-NP-Za-km-z]{79,140})$/; // xpub start is the most usual, but can also be Ltub
 
+// Solana repurposes the "xpub" field as a JSON-stringified array of 20
+// base58-encoded Ed25519 leaf pubkeys. Accept that format too in manual
+// sync input.
+function isSolanaPubkeyArrayString(input: string): boolean {
+  try {
+    const arr: unknown = JSON.parse(input.trim());
+    if (!Array.isArray(arr) || arr.length !== 20) return false;
+    const base58Pk = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+    return arr.every(
+      (pk): pk is string => typeof pk === 'string' && base58Pk.test(pk),
+    );
+  } catch {
+    return false;
+  }
+}
+
 let pollingSyncInterval: string | number | NodeJS.Timeout | undefined;
 let syncRunning = false;
 let nonceReplenishRunning = false;
@@ -292,7 +308,11 @@ function Key(props: { synchronised: (status: boolean) => void }) {
       );
       return;
     }
-    if (xpubRegex.test(xpubKeyInput)) {
+    const isSolanaChain = blockchainConfig.chainType === 'sol';
+    const inputValid = isSolanaChain
+      ? isSolanaPubkeyArrayString(xpubKeyInput)
+      : xpubRegex.test(xpubKeyInput);
+    if (inputValid) {
       // alright we are in business
       let keyValid = true;
       // try generating an address from it
@@ -423,15 +443,33 @@ function Key(props: { synchronised: (status: boolean) => void }) {
         <br />
         <br />
         <Space direction="vertical" size="small" style={{ marginBottom: 25 }}>
-          <QRCode
-            errorLevel="H"
-            value={
-              isIdentityChain ? xpubWallet : `${activeChain}:${xpubWallet}`
-            }
-            icon="/ssp-logo-black.svg"
-            size={256}
-            style={{ margin: '0 auto' }}
-          />
+          {(() => {
+            const qrValue = isIdentityChain
+              ? xpubWallet
+              : `${activeChain}:${xpubWallet}`;
+            // QR error-correction level vs. payload size — display size is
+            // fixed at 256px so cell size shrinks as data grows. Pick the
+            // EC level that gives both decent damage tolerance AND cells
+            // big enough for a phone camera to resolve at typical scan
+            // distance:
+            //   - Short payloads (~120 chars, normal xpub): Q (25%) — the
+            //     QR has few enough modules that cells stay large; Q gives
+            //     reliable recovery without forcing tiny cells.
+            //   - Long payloads (Solana's ~950-char JSON pubkey array): M
+            //     (15%) — fewer redundancy modules than Q/H, so cells stay
+            //     resolvable on a phone camera while still tolerating some
+            //     glare/angle.
+            const qrErrorLevel = qrValue.length > 200 ? 'M' : 'Q';
+            return (
+              <QRCode
+                errorLevel={qrErrorLevel}
+                value={qrValue}
+                icon="/ssp-logo-black.svg"
+                size={256}
+                style={{ margin: '0 auto' }}
+              />
+            );
+          })()}
           <Paragraph
             copyable={{
               text: isIdentityChain

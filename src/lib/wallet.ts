@@ -142,7 +142,7 @@ export function generateMultisigAddress(
     );
   }
   if (blockchains[chain].chainType === 'sol') {
-    // For Solana, xpub1/xpub2 are JSON-stringified arrays of 42 base58
+    // For Solana, xpub1/xpub2 are JSON-stringified arrays of 20 base58
     // Ed25519 leaf pubkeys. Look up the pubkey for the requested index
     // and derive the vault PDA via the multisig SDK.
     let walletPubkeys: string[];
@@ -158,8 +158,8 @@ export function generateMultisigAddress(
     if (
       !Array.isArray(walletPubkeys) ||
       !Array.isArray(keyPubkeys) ||
-      walletPubkeys.length !== 42 ||
-      keyPubkeys.length !== 42
+      walletPubkeys.length !== 20 ||
+      keyPubkeys.length !== 20
     ) {
       throw new Error('generateMultisigAddress: sol pubkey arrays malformed');
     }
@@ -168,7 +168,7 @@ export function generateMultisigAddress(
     // the pubkey array using addressIndex; treat identity (typeIndex=10) as
     // index 0.
     const idx = typeIndex === 10 ? 0 : addressIndex;
-    if (idx < 0 || idx >= 42) {
+    if (idx < 0 || idx >= 20) {
       throw new Error(
         `generateMultisigAddress: sol address index ${idx} out of range`,
       );
@@ -420,19 +420,40 @@ export function generateAddressKeypairSOL(
 }
 
 /**
- * Pre-derive an array of 42 leaf Ed25519 public keys (base58-encoded) for
+ * Pre-derive an array of 20 leaf Ed25519 public keys (base58-encoded) for
  * a Solana chain. This is what gets exchanged via pairing — once at setup,
- * both wallet and key send each other their 42-pubkey arrays so each side
- * can compute multisig vault addresses for any address index 0-41.
+ * both wallet and key send each other their 20-pubkey arrays so each side
+ * can compute multisig vault addresses for any address index 0-19.
  *
- * 42 matches the existing UI cap on wallet count (Navbar.tsx:306).
+ * 20 matches the wallet-count UI cap (Navbar.tsx).
+ *
+ * ⚠️  CHANGING THIS LIMIT — the value is mirrored in several places that
+ *    must stay in lockstep:
+ *      - this loop bound
+ *      - generateMultisigAddress sol length check + index bound (this file)
+ *      - Key.tsx isSolanaPubkeyArrayString length check + QR errorLevel
+ *      - Navbar.tsx max-wallet guard
+ *      - TokenBoxImport.tsx activated-tokens cleanup loop
+ *      - ssp-key wallet.ts (mirror functions)
+ *      - ssp-key Home.tsx isSolanaPubkeyArrayString
+ *      - ssp-key AddressDetails picker length
+ *      - ssp-relay syncApi.ts validation (length === 20)
+ *      - ssp-relay-enterprise lib/config.ts portfolio.addressDerivationCount
+ *
+ *    QR coupling: the sync QR carries `${chain}:${JSON-array}`. Key.tsx
+ *    picks errorLevel Q for short payloads and M for long ones (>200
+ *    chars) — at the fixed 256px display size, M keeps Solana's ~951-char
+ *    payload's cells large enough for a phone camera to resolve. v40 QR
+ *    capacity at M is ~2331 bytes — fits up to ~50 pubkeys. Past that you'd
+ *    drop to L (~2953 bytes / ~64 pubkeys) and beyond that, split into
+ *    multiple QR codes.
  */
 export function generateSolanaPubkeyArray(
   xpriv: string,
   chain: keyof cryptos,
 ): string[] {
   const pubkeys: string[] = [];
-  for (let i = 0; i < 42; i++) {
+  for (let i = 0; i < 20; i++) {
     const { pubKey } = generateAddressKeypairSOL(xpriv, 0, i, chain);
     pubkeys.push(pubKey);
   }

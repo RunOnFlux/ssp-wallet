@@ -56,11 +56,11 @@ describe('Solana wallet lib', () => {
   });
 
   describe('generateSolanaPubkeyArray', () => {
-    it('produces exactly 42 distinct base58 pubkeys', () => {
+    it('produces exactly 20 distinct base58 pubkeys', () => {
       const arr = generateSolanaPubkeyArray(xprivWallet, 'solDevnet');
-      expect(arr).toHaveLength(42);
+      expect(arr).toHaveLength(20);
       const set = new Set(arr);
-      expect(set.size).toBe(42);
+      expect(set.size).toBe(20);
       for (const pk of arr) {
         expect(() => new PublicKey(pk)).not.toThrow();
       }

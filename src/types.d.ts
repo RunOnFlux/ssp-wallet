@@ -407,7 +407,7 @@ export interface syncSSPRelay {
     key: boolean;
   };
   // For chainType === 'sol', keyXpub/walletXpub are JSON-stringified
-  // arrays of 42 base58 Ed25519 leaf pubkeys (one per address index 0-41).
+  // arrays of 20 base58 Ed25519 leaf pubkeys (one per address index 0-19).
 }
 
 export interface actionSSPRelay {
@@ -618,7 +618,7 @@ export interface fusionMessage {
 
 export interface chainState {
   // For chainType === 'sol', xpubWallet/xpubKey are JSON-stringified
-  // arrays of 42 base58 Ed25519 leaf pubkeys (one per address index 0-41).
+  // arrays of 20 base58 Ed25519 leaf pubkeys (one per address index 0-19).
   // Use the helper `parseSolanaPubkeys()` to deserialize.
   xpubWallet: string;
   xpubKey: string;

@@ -242,15 +242,24 @@ function SSPWalletDetails(props: {
           </blockquote>
         </Paragraph>
         <Space direction="vertical" size="small">
-          {chainSyncKeyVisible && (
-            <QRCode
-              errorLevel="H"
-              value={activeChain + ':' + xpub}
-              icon="/ssp-logo-black.svg"
-              size={256}
-              style={{ margin: '0 auto' }}
-            />
-          )}
+          {chainSyncKeyVisible &&
+            (() => {
+              const qrValue = activeChain + ':' + xpub;
+              // Mirror the rule from Key.tsx sync QR: short payloads use Q
+              // (high recovery, cells stay big at 256px); long payloads
+              // (Solana's JSON pubkey array) drop to M so cells remain
+              // resolvable on phone cameras.
+              const qrErrorLevel = qrValue.length > 200 ? 'M' : 'Q';
+              return (
+                <QRCode
+                  errorLevel={qrErrorLevel}
+                  value={qrValue}
+                  icon="/ssp-logo-black.svg"
+                  size={256}
+                  style={{ margin: '0 auto' }}
+                />
+              );
+            })()}
           <Paragraph
             copyable={{ text: activeChain + ':' + xpub }}
             className="copyableAddress"

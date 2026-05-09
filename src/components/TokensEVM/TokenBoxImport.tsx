@@ -54,8 +54,8 @@ function TokenBoxImport(props: {
           (item) => item.toLowerCase() !== contract.toLowerCase(),
         ),
       );
-      // remove from local storage of activatedTokens for ALL wallets (iterate from 0 to 41)
-      for (let i = 0; i < 42; i++) {
+      // remove from local storage of activatedTokens for ALL wallets (iterate from 0 to 19)
+      for (let i = 0; i < 20; i++) {
         const activatedTokens: string[] =
           (await localForage.getItem(`activated-tokens-${props.chain}-${i}`)) ??
           [];

@@ -173,7 +173,7 @@ async function loadChainFromStorage(
 
         if (xpubChainKey && typeof xpubChainKey === 'string') {
           // For sol chains, both xpubChainWallet and xpubChainKey are
-          // JSON-stringified arrays of 42 base58 pubkeys, but Redux/storage
+          // JSON-stringified arrays of 20 base58 pubkeys, but Redux/storage
           // treat them identically as opaque strings — consumers JSON.parse
           // when needed (see generateMultisigAddress dispatch).
           setXpubWallet(chainToSwitch, xpubChainWallet);
@@ -259,7 +259,7 @@ async function generateNewChainData(
   walletSeed = '';
 
   // For Solana chains the wallet's "xpub" is actually a JSON-stringified
-  // array of 42 leaf Ed25519 pubkeys (Ed25519 has no non-hardened public-key
+  // array of 20 leaf Ed25519 pubkeys (Ed25519 has no non-hardened public-key
   // derivation; xpub alone is useless). Pre-derive now while xpriv is in
   // scope; storage layout reuses the existing xpub paths.
   let xpubWalletForChain = xpubWallet;

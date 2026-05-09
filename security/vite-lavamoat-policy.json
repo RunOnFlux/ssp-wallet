@@ -125,6 +125,18 @@
       "packages": {},
       "builtins": {}
     },
+    "@runonflux/solana-multisig": {
+      "packageName": "@runonflux/solana-multisig",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
     "@runonflux/utxo-lib": {
       "packageName": "@runonflux/utxo-lib",
       "globals": {
@@ -174,6 +186,30 @@
         "Uint8Array": true,
         "ArrayBuffer": true,
         "String": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
+    "@solana/spl-token": {
+      "packageName": "@solana/spl-token",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
+    "@solana/web3.js": {
+      "packageName": "@solana/web3.js",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
       },
       "packages": {},
       "builtins": {}
@@ -296,6 +332,18 @@
         "parseFloat": true,
         "isNaN": true,
         "isFinite": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
+    "bs58": {
+      "packageName": "bs58",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
       },
       "packages": {},
       "builtins": {}
@@ -605,6 +653,18 @@
         "events": true,
         "util": true
       }
+    },
+    "tweetnacl": {
+      "packageName": "tweetnacl",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
     },
     "util": {
       "packageName": "util",
