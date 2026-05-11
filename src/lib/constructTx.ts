@@ -39,6 +39,10 @@ const utxoCache = new LRUCache({
   ttl: 1 * 60 * 60 * 1000, // 1 hour, just as precaution here, not really needed
 });
 
+// SPL Memo v2 program — standard on Solana for attaching arbitrary UTF-8
+// payloads to a tx, indexed by explorers and parsed by getTransaction.
+const MEMO_PROGRAM_ID_BASE58 = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
+
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
 }
@@ -1448,6 +1452,9 @@ export async function constructAndSignSOLTransaction(opts: {
   // SPL transfer if set; otherwise native SOL. Recipient ATA is auto-created
   // (idempotent ix).
   tokenMintBase58?: string;
+  // Optional memo embedded as an SPL Memo v2 instruction inside the proposal.
+  // Shows up on explorers and is parsed back into history's note field.
+  memo?: string;
 }): Promise<string> {
   const { Connection, PublicKey, SystemProgram, Transaction, Keypair } =
     await import('@solana/web3.js');
@@ -1567,30 +1574,42 @@ export async function constructAndSignSOLTransaction(opts: {
       toPubkey: paymasterPubkey,
       lamports: BigInt(opts.paymasterFeeLamports),
     });
+    const memoText = opts.memo?.trim() ?? '';
+    const memoProgramId = new PublicKey(MEMO_PROGRAM_ID_BASE58);
+    const splAccountKeys = [
+      vaultAddress,
+      sourceAta,
+      destAta,
+      splToken.TOKEN_PROGRAM_ID,
+      paymasterPubkey,
+      SystemProgram.programId,
+    ];
+    const splInstructions = [
+      {
+        programIdIndex: 3, // TOKEN_PROGRAM_ID
+        accountIndexes: new Uint8Array([1, 2, 0]), // [source, dest, authority]
+        data: new Uint8Array(transferIx.data),
+      },
+      {
+        programIdIndex: 5, // SystemProgram for reimbursement
+        accountIndexes: new Uint8Array([0, 4]), // [vault, paymaster]
+        data: new Uint8Array(reimburseIx.data),
+      },
+    ];
+    if (memoText) {
+      splAccountKeys.push(memoProgramId);
+      splInstructions.push({
+        programIdIndex: splAccountKeys.length - 1,
+        accountIndexes: new Uint8Array([]),
+        data: new Uint8Array(Buffer.from(memoText, 'utf8')),
+      });
+    }
     message = {
       numSigners: 1,
       numWritableSigners: 1,
       numWritableNonSigners: 3,
-      accountKeys: [
-        vaultAddress,
-        sourceAta,
-        destAta,
-        splToken.TOKEN_PROGRAM_ID,
-        paymasterPubkey,
-        SystemProgram.programId,
-      ],
-      instructions: [
-        {
-          programIdIndex: 3, // TOKEN_PROGRAM_ID
-          accountIndexes: new Uint8Array([1, 2, 0]), // [source, dest, authority]
-          data: new Uint8Array(transferIx.data),
-        },
-        {
-          programIdIndex: 5, // SystemProgram for reimbursement
-          accountIndexes: new Uint8Array([0, 4]), // [vault, paymaster]
-          data: new Uint8Array(reimburseIx.data),
-        },
-      ],
+      accountKeys: splAccountKeys,
+      instructions: splInstructions,
       addressTableLookups: [],
     };
     executeRemainingAccounts = [
@@ -1601,6 +1620,13 @@ export async function constructAndSignSOLTransaction(opts: {
       { pubkey: paymasterPubkey, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ];
+    if (memoText) {
+      executeRemainingAccounts.push({
+        pubkey: memoProgramId,
+        isSigner: false,
+        isWritable: false,
+      });
+    }
   } else {
     // Native SOL transfer + paymaster reimbursement.
     const transferIx = SystemProgram.transfer({
@@ -1618,28 +1644,40 @@ export async function constructAndSignSOLTransaction(opts: {
     // before paymaster pushes paymaster into the readonly zone — execute
     // then fails with "instruction changed the balance of a read-only
     // account" when the reimbursement transfer credits paymaster.
+    const memoText = opts.memo?.trim() ?? '';
+    const memoProgramId = new PublicKey(MEMO_PROGRAM_ID_BASE58);
+    const solAccountKeys = [
+      vaultAddress,
+      recipientPubkey,
+      paymasterPubkey,
+      SystemProgram.programId,
+    ];
+    const solInstructions = [
+      {
+        programIdIndex: 3,
+        accountIndexes: new Uint8Array([0, 1]), // [vault, recipient]
+        data: new Uint8Array(transferIx.data),
+      },
+      {
+        programIdIndex: 3,
+        accountIndexes: new Uint8Array([0, 2]), // [vault, paymaster]
+        data: new Uint8Array(reimburseIx.data),
+      },
+    ];
+    if (memoText) {
+      solAccountKeys.push(memoProgramId);
+      solInstructions.push({
+        programIdIndex: solAccountKeys.length - 1,
+        accountIndexes: new Uint8Array([]),
+        data: new Uint8Array(Buffer.from(memoText, 'utf8')),
+      });
+    }
     message = {
       numSigners: 1,
       numWritableSigners: 1,
       numWritableNonSigners: 2,
-      accountKeys: [
-        vaultAddress,
-        recipientPubkey,
-        paymasterPubkey,
-        SystemProgram.programId,
-      ],
-      instructions: [
-        {
-          programIdIndex: 3,
-          accountIndexes: new Uint8Array([0, 1]), // [vault, recipient]
-          data: new Uint8Array(transferIx.data),
-        },
-        {
-          programIdIndex: 3,
-          accountIndexes: new Uint8Array([0, 2]), // [vault, paymaster]
-          data: new Uint8Array(reimburseIx.data),
-        },
-      ],
+      accountKeys: solAccountKeys,
+      instructions: solInstructions,
       addressTableLookups: [],
     };
     executeRemainingAccounts = [
@@ -1648,6 +1686,13 @@ export async function constructAndSignSOLTransaction(opts: {
       { pubkey: paymasterPubkey, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ];
+    if (memoText) {
+      executeRemainingAccounts.push({
+        pubkey: memoProgramId,
+        isSigner: false,
+        isWritable: false,
+      });
+    }
   }
 
   const {

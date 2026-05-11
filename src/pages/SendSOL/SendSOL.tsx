@@ -70,6 +70,7 @@ interface sendForm {
   amount: string;
   asset: string;
   fee: string;
+  message?: string;
 }
 
 interface LocationState {
@@ -125,6 +126,7 @@ function SendSOL() {
   // Local UI state — mirrors SendEVM's pattern.
   const [txReceiver, setTxReceiver] = useState('');
   const [txToken, setTxToken] = useState(''); // mint or '' for native
+  const [txMessage, setTxMessage] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txFee, setTxFee] = useState('0');
   const [manualFee, setManualFee] = useState(false);
@@ -625,6 +627,7 @@ function SendSOL() {
           paymasterPubkeyBase58: paymasterPubkey,
           paymasterFeeLamports,
           tokenMintBase58,
+          memo: values.message,
         });
         await postAction(
           'tx',
@@ -800,6 +803,20 @@ function SendSOL() {
             .dividedBy(10 ** selectedTokenInfo.decimals)
             .toFixed()}
         </Button>
+
+        <Form.Item
+          style={{ marginTop: '26px' }}
+          label={t('send:message')}
+          name="message"
+          rules={[{ required: false, message: t('send:include_message') }]}
+        >
+          <Input
+            size="large"
+            value={txMessage}
+            placeholder={t('send:payment_note')}
+            onChange={(e) => setTxMessage(e.target.value)}
+          />
+        </Form.Item>
 
         <Form.Item
           label={t('send:max_fee')}

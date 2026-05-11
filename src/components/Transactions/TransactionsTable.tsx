@@ -134,7 +134,7 @@ function TransactionsTable(props: {
               <p style={{ margin: 0, wordBreak: 'break-all' }}>
                 {t('home:transactionsTable.txid_link', { txid: record.txid })}
               </p>
-              {record.type !== 'evm' && (
+              {record.type !== 'evm' && record.type !== 'sol' && (
                 <p style={{ margin: 0 }}>
                   {t('home:transactionsTable.fee_with_symbol', {
                     fee: formatCrypto(
@@ -148,7 +148,7 @@ function TransactionsTable(props: {
                   {record.vsize ? 'sat/vB' : 'sat/B'})
                 </p>
               )}
-              {record.type === 'evm' && (
+              {(record.type === 'evm' || record.type === 'sol') && (
                 <p style={{ margin: 0 }}>
                   {t('home:transactionsTable.fee_with_symbol', {
                     fee: formatCrypto(
@@ -161,11 +161,13 @@ function TransactionsTable(props: {
                 </p>
               )}
 
-              <p style={{ margin: 0 }}>
-                {t('home:transactionsTable.note_with_note', {
-                  note: record.message || '-',
-                })}
-              </p>
+              {record.message && (
+                <p style={{ margin: 0 }}>
+                  {t('home:transactionsTable.note_with_note', {
+                    note: record.message,
+                  })}
+                </p>
+              )}
               <a
                 href={explorerTxUrl(chain, record.txid)}
                 target="_blank"
