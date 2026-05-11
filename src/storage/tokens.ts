@@ -1041,6 +1041,14 @@ function solDevnet() {
       decimals: 6,
       logo: usdcLogo,
     },
+    {
+      // Flux on Solana devnet — bridged/wrapped FLUX SPL mint
+      contract: 'FLUX2cragmo9LyWcbmDskU9V9akfoKEZUDLAmgGGEiRP',
+      name: 'Flux (Devnet)',
+      symbol: 'TEST-FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    },
   ];
   return tokens;
 }

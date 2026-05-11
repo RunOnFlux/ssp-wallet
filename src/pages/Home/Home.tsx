@@ -305,7 +305,8 @@ function Home() {
               ]}
             />
           )}
-          {blockchains[activeChain].chainType === 'evm' && (
+          {(blockchains[activeChain].chainType === 'evm' ||
+            blockchains[activeChain].chainType === 'sol') && (
             <Tabs
               defaultActiveKey="tokens"
               size="small"
@@ -333,7 +334,8 @@ function Home() {
           )}
           {wallets?.[walletInUse] &&
             !wallets[walletInUse].nodes &&
-            blockchains[activeChain].chainType !== 'evm' && (
+            blockchains[activeChain].chainType !== 'evm' &&
+            blockchains[activeChain].chainType !== 'sol' && (
               <Tabs
                 defaultActiveKey="activity"
                 size="small"

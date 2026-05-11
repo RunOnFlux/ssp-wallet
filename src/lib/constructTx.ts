@@ -1363,51 +1363,96 @@ export async function isEVMContractDeployed(
 // ============================================================================
 
 /**
- * Build a Solana 2-of-2 send transaction.
+ * Probes on-chain state to decide:
+ *   - `needsSetup`: caller must POST /v1/sol/setup before constructAndSignSOLTransaction.
+ *     True iff multisig OR durable nonce account is missing.
+ *   - `isFirstRealSend`: charges firstSendLamports vs subsequentSendLamports.
+ *     True iff multisig is missing OR multisig.transaction_index === 0.
+ *     (The second condition captures the case where /v1/sol/setup ran
+ *     hours/days ago but the user hasn't actually sent anything yet, so the
+ *     paymaster's pre-paid setup rent still needs to be reimbursed on this send.)
  *
- * If the multisig isn't yet initialized on-chain AND `initSignatures` are
- * provided, the tx prepends a batched Ed25519 verify ix + initialize_multisig
- * ix to the standard create+approve+approve+execute sequence — atomic init
- * + first send in one transaction.
+ * Uses Connection directly — no SDK client spin-up needed.
+ */
+export async function getSolanaMultisigInitState(opts: {
+  chain: keyof cryptos;
+  walletPubkeyBase58: string;
+  keyPubkeyBase58: string;
+}): Promise<{ needsSetup: boolean; isFirstRealSend: boolean }> {
+  const { Connection, PublicKey } = await import('@solana/web3.js');
+  const { SolanaMultisigClient, deriveMultisigAddress, deriveNonceAccount } =
+    await import('@runonflux/solana-multisig');
+  const backendConfig = backends()[opts.chain];
+  const blockchainConfig = blockchains[opts.chain];
+  if (!blockchainConfig.programId) {
+    throw new Error(`Chain ${opts.chain} has no programId in spec`);
+  }
+  const programId = new PublicKey(blockchainConfig.programId);
+  const connection = new Connection(`https://${backendConfig.node}`, {
+    commitment: 'confirmed',
+  });
+  const members = [
+    new PublicKey(opts.walletPubkeyBase58),
+    new PublicKey(opts.keyPubkeyBase58),
+  ];
+  const [multisigAddress] = deriveMultisigAddress(members, 2, programId);
+  const nonceAccount = await deriveNonceAccount(multisigAddress);
+
+  const client = new SolanaMultisigClient(connection, programId);
+  const [multisigState, nonceAccountInfo] = await Promise.all([
+    client.getMultisig(multisigAddress),
+    connection.getAccountInfo(nonceAccount),
+  ]);
+
+  const needsSetup = !multisigState || !nonceAccountInfo;
+  // SDK's MultisigConfig.transactionIndex is typed as bigint but anchor's
+  // u64 deserialization actually returns BN at runtime. Normalize via
+  // .toString() so the BigInt comparison is correct either way.
+  const isFirstRealSend =
+    !multisigState ||
+    BigInt(multisigState.transactionIndex.toString()) === BigInt(0);
+  return { needsSetup, isFirstRealSend };
+}
+
+/**
+ * Build a Solana 2-of-2 send transaction, wallet-leaf-signed and ready for
+ * the SSP relay → Key co-sign → broadcast flow.
  *
- * If the multisig is already initialized, those init ixs are omitted and
- * the tx is just create+approve+approve+execute (4 ixs).
+ * When the multisig PDA isn't yet initialized on-chain, prepends a single
+ * permissionless `initialize_multisig` ix. No member signatures are needed
+ * for init — the PDA is fully determined by `(sorted_members, threshold)`,
+ * so initializing with the canonical inputs is the only way to land at the
+ * canonical address.
  *
- * Returns the partially-signed tx as a base64 string ready for relay
- * transport via the existing `/v1/action` endpoint.
+ * Layout (when needsInit=true):
+ *   [initialize_multisig, ...extraOuterIxs, create, approve×2, execute, close]
+ * Layout (when needsInit=false):
+ *   [...extraOuterIxs, create, approve×2, execute, close]
+ *
+ * Wallet leaf-signs in place and returns the partially-signed tx as base64.
+ * Identical wire format for first / subsequent sends — Key co-signs + posts
+ * to /v1/sol/broadcast.
  */
 export async function constructAndSignSOLTransaction(opts: {
   chain: keyof cryptos;
   recipient: string; // base58 Solana address (recipient OWNER for SPL)
   amount: string; // amount in base units (lamports for SOL, raw token units for SPL)
-  walletPubkeyBase58: string; // wallet's leaf Ed25519 pubkey for the address index
-  keyPubkeyBase58: string; // key's leaf Ed25519 pubkey for the address index
-  walletPrivKeyHex: string; // 64-byte Ed25519 secret key (hex), used for partial-sign
-  // The relay paymaster's pubkey — used as feePayer so users don't need
-  // SOL in their leaf keypair (vault PDA is the deposit address, leaf is
-  // signing-only). Fetch from `GET /v1/sol/paymaster?chain=solDevnet`.
+  walletPubkeyBase58: string;
+  keyPubkeyBase58: string;
+  walletPrivKeyHex: string;
+  // Fetched from GET /v1/sol/paymaster — the relay's paymaster signs feePayer.
   paymasterPubkeyBase58: string;
-  // Optional: if set, builds an SPL token transfer instead of native SOL.
-  // The vault's ATA for this mint is the source; recipient's ATA is the
-  // destination. If recipient's ATA doesn't exist, an idempotent
-  // createAssociatedTokenAccount ix is prepended (paymaster pays the
-  // ~0.002 SOL rent — falls under the auto-top-up budget).
+  // Vault → paymaster reimbursement, embedded in the proposal. Relay
+  // rejects txs below FEE_SCHEDULE.minReimbursementLamports.
+  paymasterFeeLamports: string;
+  // SPL transfer if set; otherwise native SOL. Recipient ATA is auto-created
+  // (idempotent ix).
   tokenMintBase58?: string;
-  // Optional: if the multisig isn't yet initialized, both members' Ed25519
-  // signatures over the init message (base64-encoded).
-  initSignatureWalletBase64?: string;
-  initSignatureKeyBase64?: string;
 }): Promise<string> {
   const { Connection, PublicKey, SystemProgram, Transaction, Keypair } =
     await import('@solana/web3.js');
-  const {
-    SolanaMultisigClient,
-    deriveMultisigAddress,
-    deriveVaultAddress,
-    createInitializationMessage,
-    createBatchedEd25519Instruction,
-    sortMembers,
-  } = await import('@runonflux/solana-multisig');
+  const { SolanaMultisigClient, deriveMultisigAddress, deriveVaultAddress } =
+    await import('@runonflux/solana-multisig');
   const backendConfig = backends()[opts.chain];
   const blockchainConfig = blockchains[opts.chain];
   if (!blockchainConfig.programId) {
@@ -1443,20 +1488,34 @@ export async function constructAndSignSOLTransaction(opts: {
   );
   const [vaultAddress] = deriveVaultAddress(multisigAddress, 0, programId);
 
-  // Check if multisig is already initialized.
+  // The multisig must already be initialized AND its durable nonce account
+  // must already be provisioned by the time this function is called.
+  // SendSOL.tsx is responsible for calling /v1/sol/setup on the relay
+  // before invoking us when either is missing — that endpoint atomically
+  // sets up both via a paymaster-signed tx with vault-balance gating.
+  //
+  // We can therefore assume here that:
+  //   - `client.getMultisig(multisigAddress)` returns non-null
+  //   - `connection.getAccountInfo(nonceAccount)` returns non-null
+  //   - We can always use the durable-nonce flow (nonceAdvance at ix[0])
   const client = new SolanaMultisigClient(connection, programId);
   const multisigState = await client.getMultisig(multisigAddress);
-  const needsInit = !multisigState;
-  if (needsInit) {
-    if (!opts.initSignatureWalletBase64 || !opts.initSignatureKeyBase64) {
-      throw new Error(
-        'SOL multisig not initialized — both initSignatureWalletBase64 and initSignatureKeyBase64 must be provided to bundle init+send atomically',
-      );
-    }
+  if (!multisigState) {
+    throw new Error(
+      'Multisig not initialized on-chain — caller must POST /v1/sol/setup first',
+    );
   }
-  // After init, multisig.transaction_index = 0; first proposal is index 1.
-  // For already-initialized cases, use the on-chain value.
-  const currentTxIndex = needsInit ? BigInt(0) : multisigState.transactionIndex;
+  // First *real* send is detected by transactionIndex===0 (not by needsInit)
+  // because pre-setup leaves multisig.transaction_index at 0 even after
+  // initialize_multisig has run. This means the wallet's fee calculator
+  // correctly charges firstSendLamports on the first send even when the
+  // multisig was pre-initialized by /v1/sol/setup hours/days earlier.
+  const currentTxIndex = multisigState.transactionIndex;
+
+  // Determine the durable nonce account for this multisig. Pure deterministic
+  // derivation — paymaster-independent, no DB lookup needed.
+  const { deriveNonceAccount } = await import('@runonflux/solana-multisig');
+  const nonceAccount = await deriveNonceAccount(multisigAddress);
 
   const recipientPubkey = new PublicKey(opts.recipient);
 
@@ -1502,21 +1561,34 @@ export async function constructAndSignSOLTransaction(opts: {
       vaultAddress, // authority
       BigInt(opts.amount),
     );
+    // Paymaster reimbursement, validated by the relay against its floor.
+    const reimburseIx = SystemProgram.transfer({
+      fromPubkey: vaultAddress,
+      toPubkey: paymasterPubkey,
+      lamports: BigInt(opts.paymasterFeeLamports),
+    });
     message = {
       numSigners: 1,
       numWritableSigners: 1,
-      numWritableNonSigners: 2,
+      numWritableNonSigners: 3,
       accountKeys: [
         vaultAddress,
         sourceAta,
         destAta,
         splToken.TOKEN_PROGRAM_ID,
+        paymasterPubkey,
+        SystemProgram.programId,
       ],
       instructions: [
         {
-          programIdIndex: 3,
+          programIdIndex: 3, // TOKEN_PROGRAM_ID
           accountIndexes: new Uint8Array([1, 2, 0]), // [source, dest, authority]
           data: new Uint8Array(transferIx.data),
+        },
+        {
+          programIdIndex: 5, // SystemProgram for reimbursement
+          accountIndexes: new Uint8Array([0, 4]), // [vault, paymaster]
+          data: new Uint8Array(reimburseIx.data),
         },
       ],
       addressTableLookups: [],
@@ -1526,24 +1598,46 @@ export async function constructAndSignSOLTransaction(opts: {
       { pubkey: sourceAta, isSigner: false, isWritable: true },
       { pubkey: destAta, isSigner: false, isWritable: true },
       { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+      { pubkey: paymasterPubkey, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ];
   } else {
-    // Native SOL transfer.
+    // Native SOL transfer + paymaster reimbursement.
     const transferIx = SystemProgram.transfer({
       fromPubkey: vaultAddress,
       toPubkey: recipientPubkey,
       lamports: BigInt(opts.amount),
     });
+    const reimburseIx = SystemProgram.transfer({
+      fromPubkey: vaultAddress,
+      toPubkey: paymasterPubkey,
+      lamports: BigInt(opts.paymasterFeeLamports),
+    });
+    // account_keys MUST be ordered: [writable_signers, readonly_signers,
+    // writable_non_signers, readonly_non_signers]. Putting SystemProgram
+    // before paymaster pushes paymaster into the readonly zone — execute
+    // then fails with "instruction changed the balance of a read-only
+    // account" when the reimbursement transfer credits paymaster.
     message = {
       numSigners: 1,
       numWritableSigners: 1,
-      numWritableNonSigners: 1,
-      accountKeys: [vaultAddress, recipientPubkey, SystemProgram.programId],
+      numWritableNonSigners: 2,
+      accountKeys: [
+        vaultAddress,
+        recipientPubkey,
+        paymasterPubkey,
+        SystemProgram.programId,
+      ],
       instructions: [
         {
-          programIdIndex: 2,
-          accountIndexes: new Uint8Array([0, 1]),
+          programIdIndex: 3,
+          accountIndexes: new Uint8Array([0, 1]), // [vault, recipient]
           data: new Uint8Array(transferIx.data),
+        },
+        {
+          programIdIndex: 3,
+          accountIndexes: new Uint8Array([0, 2]), // [vault, paymaster]
+          data: new Uint8Array(reimburseIx.data),
         },
       ],
       addressTableLookups: [],
@@ -1551,11 +1645,11 @@ export async function constructAndSignSOLTransaction(opts: {
     executeRemainingAccounts = [
       { pubkey: vaultAddress, isSigner: false, isWritable: true },
       { pubkey: recipientPubkey, isSigner: false, isWritable: true },
+      { pubkey: paymasterPubkey, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ];
   }
 
-  // Build the four program instructions.
   const {
     instruction: createIx,
     transactionAddress,
@@ -1566,6 +1660,9 @@ export async function constructAndSignSOLTransaction(opts: {
     vaultIndex: 0,
     message,
     creator: walletPubkey,
+    // Paymaster funds the proposal rent — leaf doesn't need a SOL balance.
+    // close_transaction below refunds rent back to the same paymaster.
+    payer: paymasterPubkey,
   });
   const approveWalletIx = await client.buildApproveTransactionInstruction({
     multisigAddress,
@@ -1586,47 +1683,42 @@ export async function constructAndSignSOLTransaction(opts: {
     executor: walletPubkey,
     remainingAccounts: executeRemainingAccounts,
   });
+  // Close refunds proposal rent to the original payer (paymaster);
+  // bundled with execute so it's atomic.
+  const closeIx = await client.buildCloseTransactionInstruction({
+    multisigAddress,
+    transactionAddress,
+    transactionIndex,
+    payer: paymasterPubkey,
+  });
 
-  // If init is needed, prepend the Ed25519-verify ix + initialize_multisig ix.
-  let initIxs: import('@solana/web3.js').TransactionInstruction[] = [];
-  if (needsInit) {
-    const sortedMembers = sortMembers(members);
-    const initMessage = createInitializationMessage(members, threshold);
-    // The Ed25519 native program expects entries in {signer, signature}
-    // form. Order doesn't matter for verification — the program enforces
-    // that all harvested signers are valid members.
-    const sigs = [
-      {
-        signer: walletPubkey,
-        signature: Buffer.from(opts.initSignatureWalletBase64!, 'base64'),
-      },
-      {
-        signer: keyPubkey,
-        signature: Buffer.from(opts.initSignatureKeyBase64!, 'base64'),
-      },
-    ];
-    const ed25519Ix = createBatchedEd25519Instruction(sigs, initMessage);
-    const { instruction: initIx } =
-      await client.buildInitializeMultisigInstruction({
-        members: sortedMembers,
-        threshold,
-        payer: paymasterPubkey,
-      });
-    initIxs = [ed25519Ix, initIx];
+  // Durable nonce flow. Multisig + nonce account are guaranteed to exist
+  // at this point (caller ran /v1/sol/setup first if needed). Fetch the
+  // current nonce value, use it as `recentBlockhash`, and prepend
+  // SystemProgram.nonceAdvance at ix[0]. Wallet's signature then survives
+  // the full wallet→relay→push→user-approve→key-sign round trip without
+  // expiring — durable nonces don't have the 60s blockhash window.
+  const nonceState = await connection.getNonceAndContext(nonceAccount);
+  if (!nonceState.value) {
+    throw new Error(
+      `Durable nonce at ${nonceAccount.toBase58()} not initialized — caller must POST /v1/sol/setup first`,
+    );
   }
+  const nonceAdvanceIx = SystemProgram.nonceAdvance({
+    noncePubkey: nonceAccount,
+    authorizedPubkey: paymasterPubkey,
+  });
 
-  // Bundle init (if needed) + ATA creation (if SPL) + send ixs into one
-  // atomic tx. Paymaster pays tx fees + any rent-exempt deposits.
   const tx = new Transaction().add(
-    ...initIxs,
+    nonceAdvanceIx, // ix[0] — MUST be first for Solana to recognize durable-nonce semantics
     ...extraOuterIxs,
     createIx,
     approveWalletIx,
     approveKeyIx,
     executeIx,
+    closeIx,
   );
-  const { blockhash } = await connection.getLatestBlockhash();
-  tx.recentBlockhash = blockhash;
+  tx.recentBlockhash = nonceState.value.nonce;
   tx.feePayer = paymasterPubkey;
   tx.partialSign(walletKeypair);
 
@@ -1634,41 +1726,4 @@ export async function constructAndSignSOLTransaction(opts: {
   return tx
     .serialize({ requireAllSignatures: false, verifySignatures: false })
     .toString('base64');
-}
-
-/**
- * Co-sign a partially-signed Solana tx (key device side) and broadcast.
- *
- * Used by ssp-key when it receives an action of type `tx` for a `chainType
- * === 'sol'` chain. The wallet has already partial-signed; key adds its own
- * partial-sig (its member ix authorization) and broadcasts.
- *
- * Returns the broadcast signature.
- */
-export async function cosignAndBroadcastSOLTransaction(opts: {
-  chain: keyof cryptos;
-  serializedTxBase64: string;
-  keyPubkeyBase58: string;
-  keyPrivKeyHex: string; // 64-byte Ed25519 secret key (hex)
-}): Promise<string> {
-  const { Connection, Transaction, Keypair } = await import('@solana/web3.js');
-  const backendConfig = backends()[opts.chain];
-  const connection = new Connection(`https://${backendConfig.node}`, {
-    commitment: 'confirmed',
-  });
-
-  const keySecretKey = new Uint8Array(Buffer.from(opts.keyPrivKeyHex, 'hex'));
-  const keyKeypair = Keypair.fromSecretKey(keySecretKey);
-  if (keyKeypair.publicKey.toBase58() !== opts.keyPubkeyBase58) {
-    throw new Error('Key privkey/pubkey mismatch');
-  }
-
-  const tx = Transaction.from(Buffer.from(opts.serializedTxBase64, 'base64'));
-  tx.partialSign(keyKeypair);
-
-  const sig = await connection.sendRawTransaction(tx.serialize(), {
-    skipPreflight: false,
-  });
-  await connection.confirmTransaction(sig, 'confirmed');
-  return sig;
 }

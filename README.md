@@ -87,6 +87,22 @@ This design ensures that **both devices are required** to authorize any transact
 
 ---
 
+## Solana Fees
+
+Solana transactions in SSP work slightly differently from EVM/UTXO chains because the multisig vault is a Program Derived Address (PDA) — a PDA can't sign for itself, so Solana transactions need a separate `feePayer` account.
+
+SSP solves this with a **paymaster** running on the SSP relay:
+
+- The paymaster signs the transaction's `feePayer` slot on behalf of the user.
+- The user's vault, in the same atomic transaction, transfers the fee back to the paymaster as a `SystemProgram.transfer` instruction inside the multisig proposal.
+- This means the fee shown in the SSP Wallet send UI is **paid by the user (from their vault)** — not by SSP — and the paymaster's balance stays flat over time.
+
+The fee covers Solana's network transaction fee (~0.000005 SOL) + multisig proposal account rent (~0.007 SOL, refundable when the proposal closes) + a small markup. The relay rejects any transaction that doesn't include a sufficient reimbursement transfer to the paymaster, so the paymaster can't be drained.
+
+For the operator-side details of running the relay paymaster, see the [SSP Relay README](https://github.com/RunOnFlux/ssp-relay#solana-paymaster).
+
+---
+
 ## WalletConnect Integration
 
 SSP Wallet supports **WalletConnect v2**, enabling seamless integration with thousands of decentralized applications (dApps) across multiple blockchain networks.

@@ -1499,14 +1499,13 @@
     create-hash "^1.2.0"
     secp256k1 "^5.0.1"
 
-"@runonflux/solana-multisig@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@runonflux/solana-multisig/-/solana-multisig-0.2.0.tgz#29d22c25c59072b54b2963f011d0c3cbc953ac3e"
-  integrity sha512-17XwUnQFV88X3sZtY95WtrdwiQOzh5rPJYKPFZvQ7OYU31aGcFiBlooaBWz9fNTY0MD4BOFiJoe7uZwpRv+yGw==
+"@runonflux/solana-multisig@0.8.1":
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/@runonflux/solana-multisig/-/solana-multisig-0.8.1.tgz#7606016913d998ea7ee57fd963aeb739c2cf92b0"
+  integrity sha512-Igby3YA/UYaB/7onsAutZLPzHe59Bx4pUuBKKy9t5Hk/HXBwEq+1DW/OovBKJNswW/i1nb2dGFAwjT5NMdGp0g==
   dependencies:
     "@coral-xyz/anchor" "^0.31.1"
     "@solana/web3.js" "^1.98.4"
-    tweetnacl "^1.0.3"
 
 "@runonflux/utxo-lib@1.0.2":
   version "1.0.2"
@@ -7075,7 +7074,7 @@ tsx@4.21.0:
   optionalDependencies:
     fsevents "~2.3.3"
 
-tweetnacl@1.0.3, tweetnacl@^1.0.3:
+tweetnacl@1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-1.0.3.tgz#ac0af71680458d8a6378d0d0d050ab1407d35596"
   integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==

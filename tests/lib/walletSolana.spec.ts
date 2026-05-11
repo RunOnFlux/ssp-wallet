@@ -5,14 +5,12 @@ import { Buffer } from 'buffer';
 import * as nacl from 'tweetnacl';
 import bs58 from 'bs58';
 import { PublicKey } from '@solana/web3.js';
-import { createInitializationMessage } from '@runonflux/solana-multisig';
 
 import {
   getMasterXpriv,
   generateAddressKeypairSOL,
   generateMultisigAddressSOL,
   generateSolanaPubkeyArray,
-  signSolanaInitMessage,
 } from '../../src/lib/wallet';
 
 const mnemonic =
@@ -147,42 +145,4 @@ describe('Solana wallet lib', () => {
     });
   });
 
-  describe('signSolanaInitMessage', () => {
-    it('produces a base64 signature that verifies against the SDK init message', () => {
-      const wKp = generateAddressKeypairSOL(xprivWallet, 0, 0, 'solDevnet');
-      const kKp = generateAddressKeypairSOL(xprivKey, 0, 0, 'solDevnet');
-
-      const sigB64 = signSolanaInitMessage(wKp.privKey, wKp.pubKey, kKp.pubKey);
-      const sig = new Uint8Array(Buffer.from(sigB64, 'base64'));
-      expect(sig.length).toBe(64);
-
-      const message = createInitializationMessage(
-        [new PublicKey(wKp.pubKey), new PublicKey(kKp.pubKey)],
-        2,
-      );
-      const pub = bs58.decode(wKp.pubKey);
-      expect(nacl.sign.detached.verify(message, sig, pub)).toBe(true);
-    });
-
-    it('is order-independent in member arguments (members are sorted on-chain)', () => {
-      const wKp = generateAddressKeypairSOL(xprivWallet, 0, 0, 'solDevnet');
-      const kKp = generateAddressKeypairSOL(xprivKey, 0, 0, 'solDevnet');
-      const a = signSolanaInitMessage(wKp.privKey, wKp.pubKey, kKp.pubKey);
-      const b = signSolanaInitMessage(wKp.privKey, kKp.pubKey, wKp.pubKey);
-      expect(a).toBe(b);
-    });
-
-    it('produces signatures that fail verification with the wrong public key', () => {
-      const wKp = generateAddressKeypairSOL(xprivWallet, 0, 0, 'solDevnet');
-      const kKp = generateAddressKeypairSOL(xprivKey, 0, 0, 'solDevnet');
-      const sigB64 = signSolanaInitMessage(wKp.privKey, wKp.pubKey, kKp.pubKey);
-      const sig = new Uint8Array(Buffer.from(sigB64, 'base64'));
-      const message = createInitializationMessage(
-        [new PublicKey(wKp.pubKey), new PublicKey(kKp.pubKey)],
-        2,
-      );
-      const wrongPub = bs58.decode(kKp.pubKey);
-      expect(nacl.sign.detached.verify(message, sig, wrongPub)).toBe(false);
-    });
-  });
 });

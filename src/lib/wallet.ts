@@ -11,7 +11,6 @@ import { PublicKey } from '@solana/web3.js';
 import {
   deriveMultisigAddress as deriveSolanaMultisigAddress,
   deriveVaultAddress as deriveSolanaVaultAddress,
-  createInitializationMessage,
 } from '@runonflux/solana-multisig';
 import {
   keyPair,
@@ -494,34 +493,6 @@ export function generateMultisigAddressSOL(
   return {
     address: vaultPda.toBase58(),
   };
-}
-
-/**
- * Sign the SSP Solana Multisig init message off-chain with our leaf Ed25519
- * private key. Both wallet and key produce one of these; both signatures
- * are bundled into a single batched Ed25519 native ix at tx index 0 of the
- * init transaction. The on-chain `initialize_multisig` ix harvests the
- * verified signers from that batched ix.
- *
- * The init message format (53 bytes):
- *   "SOLANA_MULTISIG_INIT" (20) || sha256(sorted_members) (32) || threshold (1)
- *
- * Returns base64-encoded 64-byte Ed25519 signature.
- */
-export function signSolanaInitMessage(
-  privKeyHex: string,
-  walletPubkeyBase58: string,
-  keyPubkeyBase58: string,
-): string {
-  const members = [
-    new PublicKey(walletPubkeyBase58),
-    new PublicKey(keyPubkeyBase58),
-  ];
-  const threshold = 2;
-  const message = createInitializationMessage(members, threshold);
-  const secretKey = new Uint8Array(Buffer.from(privKeyHex, 'hex'));
-  const signature = nacl.sign.detached(message, secretKey);
-  return Buffer.from(signature).toString('base64');
 }
 
 // given xpriv of our party, generate keypair consisting of privateKey in WIF format and public key belonging to it

@@ -24,7 +24,7 @@ import { transaction } from '../../types';
 import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
-import { backends } from '@storage/backends';
+import { explorerTxUrl } from '../../lib/explorerUrl';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 import { fetchDataForCSV } from '../../lib/transactions';
@@ -44,7 +44,6 @@ function TransactionsTable(props: {
   const { chain } = props;
   const [fiatRate, setFiatRate] = useState(0);
   const blockchainConfig = blockchains[chain];
-  const backendConfig = backends()[chain];
   const [messageApi, contextHolder] = message.useMessage();
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
@@ -168,7 +167,7 @@ function TransactionsTable(props: {
                 })}
               </p>
               <a
-                href={`https://${backendConfig.explorer ?? backendConfig.node}/tx/${record.txid}`}
+                href={explorerTxUrl(chain, record.txid)}
                 target="_blank"
                 rel="noreferrer"
               >

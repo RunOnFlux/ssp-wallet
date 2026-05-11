@@ -31,9 +31,15 @@ function ImportCustomToken(props: {
   // check if already imported, if not get metadata and add to custom tokens, store in custom tokens
   // add to current wallet activated tokens
   const handleCustomImport = async () => {
+    // Solana base58 is case-sensitive; EVM hex addresses are not. Use
+    // exact match for Solana, case-insensitive for everything else.
+    const isSolana = blockchains[props.chain].chainType === 'sol';
+    const eq = (a: string, b: string) =>
+      isSolana ? a === b : a.toLowerCase() === b.toLowerCase();
+
     // check if already in our tokens array
-    const nativelyPresent = blockchains[props.chain].tokens.find(
-      (item) => item.contract.toLowerCase() === contractAddress.toLowerCase(),
+    const nativelyPresent = blockchains[props.chain].tokens.find((item) =>
+      eq(item.contract, contractAddress),
     );
 
     if (nativelyPresent) {
@@ -46,8 +52,8 @@ function ImportCustomToken(props: {
       (await localForage.getItem(`imported-tokens-${props.chain}`)) ?? [];
 
     // check if already imported
-    const alreadyImported = importedTokens.find(
-      (item) => item.contract.toLowerCase() === contractAddress.toLowerCase(),
+    const alreadyImported = importedTokens.find((item) =>
+      eq(item.contract, contractAddress),
     );
     if (alreadyImported) {
       displayMessage('error', t('home:tokens.token_already_imported'));
@@ -66,7 +72,10 @@ function ImportCustomToken(props: {
 
     let logo = 'src/assets/customToken.svg';
 
-    if (!data.name || !data.symbol) {
+    // Decimals must be present — without them we can't display amounts
+    // correctly, so reject. Name/symbol can fall back gracefully (many
+    // SPL tokens lack on-chain Metaplex metadata).
+    if (data.decimals == null || data.decimals < 0) {
       displayMessage('error', t('home:tokens.invalid_token_contract'));
       return;
     }
@@ -75,10 +84,14 @@ function ImportCustomToken(props: {
       logo = data.logo;
     }
 
+    // Fallback name/symbol when on-chain metadata is missing — common for
+    // older or simple SPL tokens. The user can rename later if we add an
+    // edit flow; for now they at least get the token usable.
+    const fallbackSymbol = contractAddress.slice(0, 6);
     const tokenToImport = {
       contract: contractAddress,
-      name: data.name,
-      symbol: data.symbol,
+      name: data.name || `Token ${fallbackSymbol}`,
+      symbol: data.symbol || fallbackSymbol,
       decimals: data.decimals,
       logo: logo,
     };

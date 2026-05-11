@@ -97,8 +97,11 @@ function Balances() {
       .catch((error) => {
         console.log(error);
       });
-    // only fetch for evm chainType
-    if (blockchains[chainFetched].chainType === 'evm') {
+    // Fetch token balances for chains that support tokens (EVM + Solana SPL).
+    if (
+      blockchains[chainFetched].chainType === 'evm' ||
+      blockchains[chainFetched].chainType === 'sol'
+    ) {
       // create contracts array from tokens contracts in specs
       fetchAddressTokenBalances(
         wallets[walletFetched].address,

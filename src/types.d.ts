@@ -418,10 +418,13 @@ export interface actionSSPRelay {
 }
 
 export interface tokenDataSSPRelay {
-  decimals: number;
+  decimals: number | null;
   logo: string | null;
-  name: string;
-  symbol: string;
+  // Solana SPL tokens without a Metaplex metadata account return null
+  // name/symbol — the wallet should fall back to a sensible default
+  // rather than reject the import.
+  name: string | null;
+  symbol: string | null;
 }
 
 export interface currency {
