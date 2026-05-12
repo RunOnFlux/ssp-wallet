@@ -101,6 +101,10 @@ The fee covers Solana's network transaction fee (~0.000005 SOL) + multisig propo
 
 For the operator-side details of running the relay paymaster, see the [SSP Relay README](https://github.com/RunOnFlux/ssp-relay#solana-paymaster).
 
+### Enterprise vault Solana signing
+
+The same wallet acts as one of the M signers on **SSP Enterprise** Solana vaults. `EnterpriseVaultSignTx` decodes the bundled tx the backend builds (containing `nonceAdvance + create_transaction + approve_transaction×threshold + execute_transaction + close_transaction`), partial-signs it with the wallet's ed25519 keypair derived from the vault xpriv at the proposal's addressIndex, extracts its sig, and forwards the partial-signed tx to SSP Key (sol_dual) or returns the wallet sig directly (sol_single).
+
 ---
 
 ## WalletConnect Integration

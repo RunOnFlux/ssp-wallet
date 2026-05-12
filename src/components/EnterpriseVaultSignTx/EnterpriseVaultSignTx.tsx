@@ -272,18 +272,25 @@ function EnterpriseVaultSignTx({
         // Build complete response
         // For EVM: Key returns signerContribution + challenge (raw sums, no ABI encoding)
         // For UTXO: Key returns signedHex (TX with both wallet+key SIGHASH sigs)
-        const keySignatures: string[] = enterpriseVaultSigned.signerContribution
-          ? [enterpriseVaultSigned.signerContribution]
-          : (enterpriseVaultSigned.keySignatures ?? []);
+        // For Solana: Key returns keySignatureBase64 — single ed25519 sig.
+        const isSolanaSig = !!enterpriseVaultSigned.keySignatureBase64;
+        const keySignatures: string[] = isSolanaSig
+          ? [enterpriseVaultSigned.keySignatureBase64!]
+          : enterpriseVaultSigned.signerContribution
+            ? [enterpriseVaultSigned.signerContribution]
+            : (enterpriseVaultSigned.keySignatures ?? []);
         // Challenge source priority:
         // 1. Key's challenge (dual mode + key-only mode: Key signed)
         // 2. Wallet's stored challenge (wallet-only mode: Key didn't sign, returned empty)
         // 3. Fallback to keySignatures (UTXO / legacy)
+        // Solana doesn't use challenges — pass keySignatures through unchanged.
         const challengeValue =
           enterpriseVaultSigned.challenge || walletChallengeRef.current;
-        const keySignaturesChallenges: string[] = challengeValue
-          ? [challengeValue]
-          : keySignatures;
+        const keySignaturesChallenges: string[] = isSolanaSig
+          ? keySignatures
+          : challengeValue
+            ? [challengeValue]
+            : keySignatures;
 
         const response: EnterpriseVaultSignTxResponse = {
           walletSignatures: enterpriseVaultSigned.signerContribution
@@ -614,11 +621,15 @@ function EnterpriseVaultSignTx({
       if (parsedRecipients.length === 0) {
         throw new Error('No recipients found');
       }
-      if (parsedInputDetails.length === 0) {
+      // Solana doesn't use inputDetails — the bundled tx in rawUnsignedTx
+      // is self-contained. UTXO/EVM still require it.
+      const isSolanaSign = chainConfig?.chainType === 'sol';
+      if (!isSolanaSign && parsedInputDetails.length === 0) {
         throw new Error('No input details found');
       }
 
-      // Get addressIndex from first input detail (source address for this transaction)
+      // Get addressIndex from first input detail (UTXO source address). For
+      // Solana the proposal doesn't ship inputDetails; default to 0.
       const firstInput = parsedInputDetails[0] as
         | { addressIndex?: number }
         | undefined;
@@ -779,6 +790,33 @@ function EnterpriseVaultSignTx({
         throw new Error(
           'Enterprise nonces required for EVM vault signing. Please wait for nonce replenishment.',
         );
+      } else if (chainConfig?.chainType === 'sol') {
+        // Solana enterprise: ed25519 partial-sign the bundled tx.
+        // rawUnsignedTx carries the bundle from solanaVaultProposalBuilderService
+        // (base64 of nonceAdvance + create + approve×threshold + execute + close).
+        const { Transaction: SolTransaction, Keypair: SolKeypair } =
+          await import('@solana/web3.js');
+        const walletSecretKey = new Uint8Array(
+          Buffer.from(keypair.privKey, 'hex'),
+        );
+        const walletKeypair = SolKeypair.fromSecretKey(walletSecretKey);
+        const tx = SolTransaction.from(
+          Buffer.from(rawUnsignedTx, 'base64'),
+        );
+        tx.partialSign(walletKeypair);
+        const sigEntry = tx.signatures.find((s) =>
+          s.publicKey.equals(walletKeypair.publicKey),
+        );
+        if (!sigEntry?.signature) {
+          throw new Error(
+            'Solana partial-sign produced no signature at wallet slot',
+          );
+        }
+        const walletSigBase64 = Buffer.from(sigEntry.signature).toString(
+          'base64',
+        );
+        signatures = [walletSigBase64];
+        // sol_single skips Key entirely; sol_dual forwards to Key for ed25519 co-sign.
       } else if (signingMode === 'key_only') {
         // UTXO key-only: wallet doesn't sign, forward raw TX for Key to sign independently
         console.log(
@@ -799,6 +837,29 @@ function EnterpriseVaultSignTx({
 
       setWalletSignatures(signatures);
       setWalletPubKey(keypair.pubKey);
+
+      // sol_single skips Key: wallet ed25519 is the only sig needed per signer.
+      // Return immediately without round-tripping to the Key device.
+      if (signingMode === 'sol_single') {
+        setLoading(false);
+        if (openAction) {
+          openAction({
+            status: 'SUCCESS',
+            result: {
+              walletSignatures: signatures,
+              keySignatures: [],
+              walletPubKey: keypair.pubKey,
+              keyPubKey: '',
+              wkIdentity: wkIdentity ?? '',
+              chain,
+              orgIndex,
+              vaultIndex,
+            },
+          });
+        }
+        signingRef.current = false;
+        return;
+      }
 
       // Send to Key for co-signing
       const reqId = generateRequestId();

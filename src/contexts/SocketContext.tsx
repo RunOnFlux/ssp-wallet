@@ -32,6 +32,9 @@ export interface EnterpriseVaultSignedPayload {
   challenge?: string;
   // UTXO progressive signing: Key returns fully signed TX hex (both wallet+key SIGHASH sigs)
   signedHex?: string;
+  // Solana sol_dual: Key returns its 64-byte ed25519 sig (base64) for the
+  // bundled tx's `member` slot. Wallet forwards it to enterprise's signProposal.
+  keySignatureBase64?: string;
 }
 
 interface SocketContextType {
