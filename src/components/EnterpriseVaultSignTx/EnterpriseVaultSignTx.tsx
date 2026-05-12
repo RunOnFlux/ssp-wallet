@@ -210,6 +210,7 @@ function EnterpriseVaultSignTx({
   const decodedTx = useMemo((): VaultDecodedTx | null => {
     if (!chain) return null;
     const isEvm = chainConfig?.chainType === 'evm';
+    const isSol = chainConfig?.chainType === 'sol';
     if (isEvm) {
       // EVM: decode from evmUserOp JSON string (contains userOpRequest with callData)
       if (!evmUserOp) {
@@ -228,6 +229,20 @@ function EnterpriseVaultSignTx({
           error: 'Failed to parse EVM UserOp data',
         };
       }
+    }
+    if (isSol) {
+      // Solana: rawUnsignedTx is base64 of a Solana bundled tx — not parseable
+      // as UTXO hex. Construct the decoded view directly from props (the
+      // enterprise app already shows recipient + amount + source from the
+      // proposal record, no need to re-parse the on-the-wire bytes).
+      return {
+        sender: sourceAddress ?? '',
+        recipients: parsedRecipients.map((r) => ({
+          address: r.address,
+          amount: r.amount,
+        })),
+        fee: fee || '0',
+      };
     }
     // UTXO: decode from raw TX hex
     if (!rawUnsignedTx) return null;
@@ -249,7 +264,16 @@ function EnterpriseVaultSignTx({
       [],
       firstInput,
     );
-  }, [rawUnsignedTx, chain, chainConfig, parsedInputDetails, evmUserOp]);
+  }, [
+    rawUnsignedTx,
+    chain,
+    chainConfig,
+    parsedInputDetails,
+    evmUserOp,
+    sourceAddress,
+    parsedRecipients,
+    fee,
+  ]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -621,15 +645,15 @@ function EnterpriseVaultSignTx({
       if (parsedRecipients.length === 0) {
         throw new Error('No recipients found');
       }
-      // Solana doesn't use inputDetails — the bundled tx in rawUnsignedTx
-      // is self-contained. UTXO/EVM still require it.
-      const isSolanaSign = chainConfig?.chainType === 'sol';
-      if (!isSolanaSign && parsedInputDetails.length === 0) {
+      if (parsedInputDetails.length === 0) {
         throw new Error('No input details found');
       }
 
-      // Get addressIndex from first input detail (UTXO source address). For
-      // Solana the proposal doesn't ship inputDetails; default to 0.
+      // addressIndex comes from inputDetails[0] for all chains. For UTXO this
+      // is the source address; for EVM it's the sender address index; for
+      // Solana the enterprise app synthesizes a single entry carrying the
+      // proposal's solanaBundle.addressIndex so the wallet derives the right
+      // ed25519 keypair to match the on-chain multisig PDA.
       const firstInput = parsedInputDetails[0] as
         | { addressIndex?: number }
         | undefined;
