@@ -524,6 +524,7 @@ export const SspConnectProvider = ({
           // Validate required params for enterprise vault xpub
           const vaultChain = request.data.params.chain;
           const vaultOrgIndex = request.data.params.orgIndex;
+          const vaultIndexParam = request.data.params.vaultIndex;
           const vaultNameParam = request.data.params.vaultName;
           const orgNameParam = request.data.params.orgName;
 
@@ -548,6 +549,24 @@ export const SspConnectProvider = ({
             vaultOrgIndex > 99999
           ) {
             console.log('Invalid orgIndex for enterprise_vault_xpub');
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:sspConnect.invalid_request'),
+              },
+            });
+            return;
+          }
+          if (
+            typeof vaultIndexParam !== 'number' ||
+            !Number.isInteger(vaultIndexParam) ||
+            vaultIndexParam < 0
+          ) {
+            console.log('Invalid vaultIndex for enterprise_vault_xpub');
             void browser.runtime.sendMessage({
               origin: 'ssp',
               data: {
@@ -597,8 +616,13 @@ export const SspConnectProvider = ({
             return;
           }
 
+          // Solana xpub generation uses vault.vaultIndex as the HD typeIndex
+          // slot (mirrors EVM/UTXO per-vault key separation). EVM/UTXO xpubs
+          // ignore it (BIP32 xpubs are scoped to (chain, orgIndex)). The
+          // value was validated above as a non-negative integer.
           setChain(vaultChain);
           setOrgIndex(vaultOrgIndex);
+          setVaultIndex(vaultIndexParam);
           setVaultName(vaultNameParam);
           setOrgName(orgNameParam);
           setType('enterprise_vault_xpub');

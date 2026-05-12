@@ -262,9 +262,16 @@ async function generateNewChainData(
   // array of 20 leaf Ed25519 pubkeys (Ed25519 has no non-hardened public-key
   // derivation; xpub alone is useless). Pre-derive now while xpriv is in
   // scope; storage layout reuses the existing xpub paths.
+  // Consumer wallet has a single wallet per chain → typeIndex=0 (receiving
+  // slot). Enterprise vaults pass vault.vaultIndex via a different code path
+  // (EnterpriseVaultXpub) so each vault gets its own pubkey pool.
   let xpubWalletForChain = xpubWallet;
   if (blockchainConfig.chainType === 'sol') {
-    const solanaPubkeys = generateSolanaPubkeyArray(xprivWallet, chainToSwitch);
+    const solanaPubkeys = generateSolanaPubkeyArray(
+      xprivWallet,
+      chainToSwitch,
+      0,
+    );
     xpubWalletForChain = JSON.stringify(solanaPubkeys);
   }
 

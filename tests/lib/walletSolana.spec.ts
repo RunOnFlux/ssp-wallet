@@ -55,7 +55,7 @@ describe('Solana wallet lib', () => {
 
   describe('generateSolanaPubkeyArray', () => {
     it('produces exactly 20 distinct base58 pubkeys', () => {
-      const arr = generateSolanaPubkeyArray(xprivWallet, 'solDevnet');
+      const arr = generateSolanaPubkeyArray(xprivWallet, 'solDevnet', 0);
       expect(arr).toHaveLength(20);
       const set = new Set(arr);
       expect(set.size).toBe(20);
@@ -65,7 +65,7 @@ describe('Solana wallet lib', () => {
     });
 
     it('matches generateAddressKeypairSOL element-by-element', () => {
-      const arr = generateSolanaPubkeyArray(xprivWallet, 'solDevnet');
+      const arr = generateSolanaPubkeyArray(xprivWallet, 'solDevnet', 0);
       for (let i = 0; i < arr.length; i += 7) {
         const { pubKey } = generateAddressKeypairSOL(
           xprivWallet,
@@ -78,8 +78,8 @@ describe('Solana wallet lib', () => {
     });
 
     it('is deterministic across calls', () => {
-      const a = generateSolanaPubkeyArray(xprivWallet, 'solDevnet');
-      const b = generateSolanaPubkeyArray(xprivWallet, 'solDevnet');
+      const a = generateSolanaPubkeyArray(xprivWallet, 'solDevnet', 0);
+      const b = generateSolanaPubkeyArray(xprivWallet, 'solDevnet', 0);
       expect(a).toEqual(b);
     });
   });
@@ -144,5 +144,4 @@ describe('Solana wallet lib', () => {
       expect(v0.address).not.toBe(v1.address);
     });
   });
-
 });

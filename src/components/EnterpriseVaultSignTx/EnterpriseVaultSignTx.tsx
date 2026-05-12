@@ -425,7 +425,10 @@ function EnterpriseVaultSignTx({
       // Clear sensitive data
       walletSeed = '';
 
-      // Derive keypair at vaultIndex/addressIndex
+      // Derive keypair at vaultIndex/addressIndex. For Solana, this matches
+      // generateSolanaPubkeyArray which now also derives at the same
+      // typeIndex=vault.vaultIndex slot — each vault in an org has its own
+      // pubkey pool, identical model to EVM/UTXO per-vault key separation.
       const keypair = generateAddressKeypair(
         vaultXpriv,
         vaultIndex,
@@ -824,9 +827,7 @@ function EnterpriseVaultSignTx({
           Buffer.from(keypair.privKey, 'hex'),
         );
         const walletKeypair = SolKeypair.fromSecretKey(walletSecretKey);
-        const tx = SolTransaction.from(
-          Buffer.from(rawUnsignedTx, 'base64'),
-        );
+        const tx = SolTransaction.from(Buffer.from(rawUnsignedTx, 'base64'));
         tx.partialSign(walletKeypair);
         const sigEntry = tx.signatures.find((s) =>
           s.publicKey.equals(walletKeypair.publicKey),

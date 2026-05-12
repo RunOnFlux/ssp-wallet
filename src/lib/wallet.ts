@@ -450,10 +450,17 @@ export function generateAddressKeypairSOL(
 export function generateSolanaPubkeyArray(
   xpriv: string,
   chain: keyof cryptos,
+  typeIndex: number,
 ): string[] {
+  // typeIndex selects the BIP32 child slot under which we derive the 20
+  // ed25519 leaves. Consumer wallet passes 0 (receiving). Enterprise
+  // vaults pass `vault.vaultIndex` so each vault in an org gets a distinct
+  // pubkey pool — mirrors EVM/UTXO per-vault key separation. Both sides
+  // (wallet + key) must pass the same typeIndex or the multisig PDA built
+  // from the resulting pubkey arrays won't match what each device signs.
   const pubkeys: string[] = [];
   for (let i = 0; i < 20; i++) {
-    const { pubKey } = generateAddressKeypairSOL(xpriv, 0, i, chain);
+    const { pubKey } = generateAddressKeypairSOL(xpriv, typeIndex, i, chain);
     pubkeys.push(pubKey);
   }
   return pubkeys;
