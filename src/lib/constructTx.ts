@@ -1768,7 +1768,14 @@ export async function constructAndSignSOLTransaction(opts: {
   tx.partialSign(walletKeypair);
 
   // Serialize without verifying signatures (key's slot is still unsigned).
-  return tx
+  const serialized = tx
     .serialize({ requireAllSignatures: false, verifySignatures: false })
     .toString('base64');
+  // Zero the raw 64-byte ed25519 secret-key buffer once we're done signing.
+  // JS GC doesn't promise prompt zeroing; explicit wipe defends against
+  // memory inspection / heap dumps surfacing the wallet's vault privkey.
+  // Keypair.fromSecretKey holds an internal reference too — we can't reach
+  // into it, but zeroing the source buffer is still meaningful.
+  walletSecretKey.fill(0);
+  return serialized;
 }

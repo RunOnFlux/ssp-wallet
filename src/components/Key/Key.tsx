@@ -38,9 +38,19 @@ function isSolanaPubkeyArrayString(input: string): boolean {
     const arr: unknown = JSON.parse(input.trim());
     if (!Array.isArray(arr) || arr.length !== 20) return false;
     const base58Pk = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
-    return arr.every(
-      (pk): pk is string => typeof pk === 'string' && base58Pk.test(pk),
-    );
+    const seen = new Set<string>();
+    for (const pk of arr) {
+      if (typeof pk !== 'string' || !base58Pk.test(pk)) return false;
+      // Each HD slot derives a distinct ed25519 leaf — duplicate entries
+      // are either a wallet/key bug or a malformed paste. Reject so the
+      // sync flow doesn't accept an array that would later break address
+      // derivation (different addressIndex collapsing to the same pubkey
+      // would dilute multisig threshold semantics for enterprise vaults
+      // sharing this pubkey pool).
+      if (seen.has(pk)) return false;
+      seen.add(pk);
+    }
+    return true;
   } catch {
     return false;
   }

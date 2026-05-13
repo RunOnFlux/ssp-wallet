@@ -144,4 +144,100 @@ describe('Solana wallet lib', () => {
       expect(v0.address).not.toBe(v1.address);
     });
   });
+
+  // Per-vault HD slot invariants for enterprise Solana. These pin the
+  // critical contract that the wallet's signing keypair (derived at
+  // [vault.vaultIndex][addressIndex]) MUST match the slot pubkey computed
+  // from the stored xpub array's [addressIndex] entry — which itself was
+  // generated at HD path [typeIndex=vault.vaultIndex][i=0..19]. If these
+  // ever drift the slot-match check at sign time fails with PUBKEY_MISMATCH.
+  describe('per-vault Solana xpub model', () => {
+    it('pubkey array at typeIndex=N is element-by-element identical to keypair derivation at [N][i]', () => {
+      for (const typeIndex of [0, 1, 2, 17, 99]) {
+        const arr = generateSolanaPubkeyArray(
+          xprivWallet,
+          'solDevnet',
+          typeIndex,
+        );
+        for (let i = 0; i < arr.length; i++) {
+          const { pubKey } = generateAddressKeypairSOL(
+            xprivWallet,
+            typeIndex,
+            i,
+            'solDevnet',
+          );
+          expect(arr[i]).toBe(pubKey);
+        }
+      }
+    });
+
+    it('different typeIndex produces a completely disjoint pubkey set', () => {
+      const arrV0 = generateSolanaPubkeyArray(xprivWallet, 'solDevnet', 0);
+      const arrV1 = generateSolanaPubkeyArray(xprivWallet, 'solDevnet', 1);
+      const arrV2 = generateSolanaPubkeyArray(xprivWallet, 'solDevnet', 2);
+      // No overlap — each vault has its own pool.
+      for (const pk of arrV0) {
+        expect(arrV1).not.toContain(pk);
+        expect(arrV2).not.toContain(pk);
+      }
+      for (const pk of arrV1) {
+        expect(arrV2).not.toContain(pk);
+      }
+    });
+
+    it('signing keypair at [vaultIndex][addressIndex] matches pubkey from stored array at addressIndex', () => {
+      // Simulate the slot-match invariant for a few (vault, address) tuples.
+      // The "stored array" is what generateSolanaPubkeyArray emits during
+      // xpub submission; the "signing keypair" is what
+      // EnterpriseVaultSignTx.deriveVaultKeypair produces at sign time.
+      const cases = [
+        { vaultIndex: 0, addressIndex: 0 },
+        { vaultIndex: 0, addressIndex: 7 },
+        { vaultIndex: 1, addressIndex: 0 },
+        { vaultIndex: 5, addressIndex: 12 },
+        { vaultIndex: 255, addressIndex: 19 },
+      ];
+      for (const { vaultIndex, addressIndex } of cases) {
+        const storedArray = generateSolanaPubkeyArray(
+          xprivWallet,
+          'solDevnet',
+          vaultIndex,
+        );
+        const { pubKey: signingPubkey } = generateAddressKeypairSOL(
+          xprivWallet,
+          vaultIndex,
+          addressIndex,
+          'solDevnet',
+        );
+        expect(signingPubkey).toBe(storedArray[addressIndex]);
+      }
+    });
+
+    it('two vaults with same members/threshold but different vaultIndex produce different multisig PDAs', () => {
+      // This is what protects the per-vault separation: even if both
+      // vaults have the same {signers, threshold, addressIndex} config,
+      // their pubkey arrays differ (per-vault HD slot), so their multisig
+      // PDAs differ.
+      const wArrV0 = generateSolanaPubkeyArray(xprivWallet, 'solDevnet', 0);
+      const kArrV0 = generateSolanaPubkeyArray(xprivKey, 'solDevnet', 0);
+      const wArrV1 = generateSolanaPubkeyArray(xprivWallet, 'solDevnet', 1);
+      const kArrV1 = generateSolanaPubkeyArray(xprivKey, 'solDevnet', 1);
+      // For both vaults, picking addressIndex=0 gives a (wallet, key) pair
+      // that goes into the multisig PDA. Use the same vaultIndex (0) at the
+      // SDK level so we're only varying the inputs (the pubkeys themselves).
+      const a = generateMultisigAddressSOL(
+        wArrV0[0],
+        kArrV0[0],
+        0,
+        'solDevnet',
+      );
+      const b = generateMultisigAddressSOL(
+        wArrV1[0],
+        kArrV1[0],
+        0,
+        'solDevnet',
+      );
+      expect(a.address).not.toBe(b.address);
+    });
+  });
 });

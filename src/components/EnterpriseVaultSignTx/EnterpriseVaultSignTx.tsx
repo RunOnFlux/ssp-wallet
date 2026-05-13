@@ -827,19 +827,28 @@ function EnterpriseVaultSignTx({
           Buffer.from(keypair.privKey, 'hex'),
         );
         const walletKeypair = SolKeypair.fromSecretKey(walletSecretKey);
-        const tx = SolTransaction.from(Buffer.from(rawUnsignedTx, 'base64'));
-        tx.partialSign(walletKeypair);
-        const sigEntry = tx.signatures.find((s) =>
-          s.publicKey.equals(walletKeypair.publicKey),
-        );
-        if (!sigEntry?.signature) {
-          throw new Error(
-            'Solana partial-sign produced no signature at wallet slot',
+        let walletSigBase64: string;
+        try {
+          const tx = SolTransaction.from(Buffer.from(rawUnsignedTx, 'base64'));
+          tx.partialSign(walletKeypair);
+          const sigEntry = tx.signatures.find((s) =>
+            s.publicKey.equals(walletKeypair.publicKey),
           );
+          if (!sigEntry?.signature) {
+            throw new Error(
+              'Solana partial-sign produced no signature at wallet slot',
+            );
+          }
+          walletSigBase64 = Buffer.from(sigEntry.signature).toString('base64');
+        } finally {
+          // Zero the raw 64-byte ed25519 secret-key buffer regardless of
+          // success/failure. SolKeypair holds an internal reference too —
+          // we can't reach into it, but zeroing the source buffer makes
+          // recovery from memory considerably harder. JS GC doesn't promise
+          // prompt zeroing, so this is a defense-in-depth wipe to match the
+          // hex-string clear at line ~861 (vaultXpriv / keypair.privKey).
+          walletSecretKey.fill(0);
         }
-        const walletSigBase64 = Buffer.from(sigEntry.signature).toString(
-          'base64',
-        );
         signatures = [walletSigBase64];
         // sol_single skips Key entirely; sol_dual forwards to Key for ed25519 co-sign.
       } else if (signingMode === 'key_only') {
