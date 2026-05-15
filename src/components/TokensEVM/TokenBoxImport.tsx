@@ -39,6 +39,11 @@ function TokenBoxImport(props: {
   const handleDelete = async (contract: string) => {
     try {
       console.log('delete', contract);
+      // Solana SPL mints are case-significant base58; EVM contracts are
+      // case-insensitive hex.
+      const isSolana = blockchains[props.chain].chainType === 'sol';
+      const neq = (a: string, b: string) =>
+        isSolana ? a !== b : a.toLowerCase() !== b.toLowerCase();
       // make sure it is unselected
       triggerAction(contract, false);
       // remove from any wallet of activatedTokens array
@@ -50,9 +55,7 @@ function TokenBoxImport(props: {
       setActivatedTokens(
         props.chain,
         props.walletInUse,
-        activatedTokensCurrentWallet.filter(
-          (item) => item.toLowerCase() !== contract.toLowerCase(),
-        ),
+        activatedTokensCurrentWallet.filter((item) => neq(item, contract)),
       );
       // remove from local storage of activatedTokens for ALL wallets (iterate from 0 to 19)
       for (let i = 0; i < 20; i++) {
@@ -62,9 +65,7 @@ function TokenBoxImport(props: {
         if (activatedTokens.length > 0) {
           await localForage.setItem(
             `activated-tokens-${props.chain}-${i}`,
-            activatedTokens.filter(
-              (item) => item.toLowerCase() !== contract.toLowerCase(),
-            ),
+            activatedTokens.filter((item) => neq(item, contract)),
           );
         }
       }
@@ -73,16 +74,12 @@ function TokenBoxImport(props: {
         (await localForage.getItem(`imported-tokens-${props.chain}`)) ?? [];
       await localForage.setItem(
         `imported-tokens-${props.chain}`,
-        importedTokens.filter(
-          (item) => item.contract.toLowerCase() !== contract.toLowerCase(),
-        ),
+        importedTokens.filter((item) => neq(item.contract, contract)),
       );
       // save importedTokens to redux
       setImportedTokens(
         props.chain,
-        importedTokens.filter(
-          (item) => item.contract.toLowerCase() !== contract.toLowerCase(),
-        ),
+        importedTokens.filter((item) => neq(item.contract, contract)),
       );
     } catch (error) {
       console.log(error);

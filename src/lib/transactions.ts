@@ -408,6 +408,15 @@ async function fetchSolanaTransactionsPage(
         program?: string;
         programId?: string;
       };
+      type ParsedTokenBalance = {
+        accountIndex: number;
+        mint: string;
+        owner?: string;
+        uiTokenAmount: {
+          amount: string;
+          decimals: number;
+        };
+      };
       const txResp = await axios.post<{
         result: {
           meta: {
@@ -415,6 +424,8 @@ async function fetchSolanaTransactionsPage(
             fee: number;
             preBalances: number[];
             postBalances: number[];
+            preTokenBalances?: ParsedTokenBalance[];
+            postTokenBalances?: ParsedTokenBalance[];
             innerInstructions?: Array<{
               index: number;
               instructions: ParsedTransferInstruction[];
@@ -490,15 +501,83 @@ async function fetchSolanaTransactionsPage(
       // If we are the fee payer (not the SSP case but defensively), include
       // the L1 network fee.
       const networkFee = feePayer === address ? tx.meta.fee ?? 0 : 0;
+
+      // SPL transfer detection. `system`-only walking misses SPL Token
+      // Program ixs entirely, so the wallet's own SPL sends used to render
+      // with amount = paymaster fee (in SOL), no symbol, no mint. Use the
+      // tx's pre/postTokenBalances tables instead: any owner-attributed
+      // delta on a token account belonging to `address` is the true
+      // SPL movement, and the counterparty's owner is the receiver.
+      type Delta = {
+        delta: bigint;
+        mint: string;
+        owner: string;
+        decimals: number;
+      };
+      const preTok = tx.meta.preTokenBalances ?? [];
+      const postTok = tx.meta.postTokenBalances ?? [];
+      const preTokMap = new Map<number, ParsedTokenBalance>();
+      const postTokMap = new Map<number, ParsedTokenBalance>();
+      for (const b of preTok) preTokMap.set(b.accountIndex, b);
+      for (const b of postTok) postTokMap.set(b.accountIndex, b);
+      const tokenDeltas: Delta[] = [];
+      const tokenIndices = new Set<number>([
+        ...preTokMap.keys(),
+        ...postTokMap.keys(),
+      ]);
+      for (const i of tokenIndices) {
+        const pre = preTokMap.get(i);
+        const post = postTokMap.get(i);
+        const owner = post?.owner ?? pre?.owner ?? '';
+        const mint = post?.mint ?? pre?.mint ?? '';
+        const decimals =
+          post?.uiTokenAmount.decimals ?? pre?.uiTokenAmount.decimals ?? 0;
+        const preAmt = BigInt(pre?.uiTokenAmount.amount ?? '0');
+        const postAmt = BigInt(post?.uiTokenAmount.amount ?? '0');
+        const delta = postAmt - preAmt;
+        if (delta !== 0n) {
+          tokenDeltas.push({ delta, mint, owner, decimals });
+        }
+      }
+      const ourSplChange = tokenDeltas.find((c) => c.owner === address);
+      const splCounterparty = ourSplChange
+        ? tokenDeltas.find(
+            (c) =>
+              c.mint === ourSplChange.mint &&
+              c.owner !== address &&
+              c.delta === -ourSplChange.delta,
+          )
+        : undefined;
+
       let amount = '0';
-      if (outgoingLamports > 0) {
+      let txType = 'sol';
+      let txReceiver = primaryReceiver;
+      let txDecimals = blockchains[chain].decimals;
+      let txTokenSymbol: string | undefined;
+      let txContract: string | undefined;
+      if (ourSplChange) {
+        // SPL transfer touches our address. Use the token delta as the
+        // primary amount; the SOL fee is still surfaced via `fee`.
+        amount = ourSplChange.delta.toString();
+        txType = 'token';
+        txDecimals = ourSplChange.decimals;
+        txContract = ourSplChange.mint;
+        const knownToken = blockchains[chain].tokens.find(
+          (t) => t.contract === ourSplChange.mint,
+        );
+        txTokenSymbol = knownToken?.symbol;
+        if (splCounterparty?.owner) {
+          txReceiver = splCounterparty.owner;
+        }
+      } else if (outgoingLamports > 0) {
         amount = String(-outgoingLamports);
       } else if (incomingLamports > 0) {
         amount = String(incomingLamports);
       } else if (idx >= 0) {
-        // Fallback: no parsed system-program transfers (e.g. SPL or program
-        // CPI). Use raw vault balance delta + add back the paymaster fee so
-        // the displayed amount is the real transfer size, not transfer+fee.
+        // Fallback: no parsed system-program transfers (e.g. program CPI)
+        // and no SPL token-balance delta for us. Use raw vault balance
+        // delta + add back the paymaster fee so the displayed amount is
+        // the real transfer size, not transfer+fee.
         const delta = tx.meta.postBalances[idx] - tx.meta.preBalances[idx];
         amount = String(delta + paymasterFeeLamports);
       }
@@ -509,10 +588,12 @@ async function fetchSolanaTransactionsPage(
         fee: String(paymasterFeeLamports + networkFee),
         amount,
         message: memoText,
-        receiver: primaryReceiver,
-        type: 'sol',
+        receiver: txReceiver,
+        type: txType,
         isError: tx.meta.err != null,
-        decimals: blockchains[chain].decimals,
+        decimals: txDecimals,
+        ...(txTokenSymbol && { tokenSymbol: txTokenSymbol }),
+        ...(txContract && { contractAddress: txContract }),
       });
     } catch (e) {
       console.log('[SOL tx fetch] failed', sigEntry.signature, e);

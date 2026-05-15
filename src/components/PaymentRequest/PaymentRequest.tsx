@@ -366,6 +366,8 @@ function PaymentRequest(props: {
     if (blockchainConfig.chainType === 'evm') {
       // navigate to the particular chain send for mand fill in the data.
       navigate('/sendevm', { state: navigationObject });
+    } else if (blockchainConfig.chainType === 'sol') {
+      navigate('/sendsol', { state: navigationObject });
     } else {
       // navigate to the particular chain send for mand fill in the data.
       navigate('/send', { state: navigationObject });

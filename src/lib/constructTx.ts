@@ -1452,6 +1452,11 @@ export async function constructAndSignSOLTransaction(opts: {
   // SPL transfer if set; otherwise native SOL. Recipient ATA is auto-created
   // (idempotent ix).
   tokenMintBase58?: string;
+  // Required when tokenMintBase58 is set. Embedded in the SPL TransferChecked
+  // instruction so the signed bytes carry the decimals — ssp-key verifies this
+  // against its wallet-supplied tokenMeta.decimals, and the on-chain SPL Token
+  // program rejects the tx if it doesn't match the mint's actual decimals.
+  tokenDecimals?: number;
   // Optional memo embedded as an SPL Memo v2 instruction inside the proposal.
   // Shows up on explorers and is parsed back into history's note field.
   memo?: string;
@@ -1562,11 +1567,21 @@ export async function constructAndSignSOLTransaction(opts: {
         mint,
       ),
     ];
-    const transferIx = splToken.createTransferInstruction(
+    if (opts.tokenDecimals == null) {
+      throw new Error('tokenDecimals is required for SPL transfers');
+    }
+    // TransferChecked (tag 12) embeds the mint pubkey + decimals byte into the
+    // signed instruction bytes. ssp-key can then verify wallet-supplied
+    // tokenMeta.{mint,decimals} against the bytes it's about to sign, and the
+    // on-chain SPL Token program double-checks decimals against the mint —
+    // wrong decimals = automatic on-chain rejection.
+    const transferIx = splToken.createTransferCheckedInstruction(
       sourceAta,
+      mint,
       destAta,
       vaultAddress, // authority
       BigInt(opts.amount),
+      opts.tokenDecimals,
     );
     // Paymaster reimbursement, validated by the relay against its floor.
     const reimburseIx = SystemProgram.transfer({
@@ -1576,23 +1591,31 @@ export async function constructAndSignSOLTransaction(opts: {
     });
     const memoText = opts.memo?.trim() ?? '';
     const memoProgramId = new PublicKey(MEMO_PROGRAM_ID_BASE58);
+    // account_keys MUST be ordered: [writable_signers, readonly_signers,
+    // writable_non_signers, readonly_non_signers]. paymaster is credited by
+    // the reimbursement transfer, so it must sit in the writable_non_signers
+    // zone BEFORE the mint / TOKEN_PROGRAM_ID / SystemProgram — otherwise
+    // execute fails with "instruction changed the balance of a read-only
+    // account". The mint is referenced read-only by TransferChecked.
     const splAccountKeys = [
       vaultAddress,
       sourceAta,
       destAta,
-      splToken.TOKEN_PROGRAM_ID,
       paymasterPubkey,
+      mint,
+      splToken.TOKEN_PROGRAM_ID,
       SystemProgram.programId,
     ];
     const splInstructions = [
       {
-        programIdIndex: 3, // TOKEN_PROGRAM_ID
-        accountIndexes: new Uint8Array([1, 2, 0]), // [source, dest, authority]
+        programIdIndex: 5, // TOKEN_PROGRAM_ID
+        // TransferChecked: [source, mint, dest, authority]
+        accountIndexes: new Uint8Array([1, 4, 2, 0]),
         data: new Uint8Array(transferIx.data),
       },
       {
-        programIdIndex: 5, // SystemProgram for reimbursement
-        accountIndexes: new Uint8Array([0, 4]), // [vault, paymaster]
+        programIdIndex: 6, // SystemProgram for reimbursement
+        accountIndexes: new Uint8Array([0, 3]), // [vault, paymaster]
         data: new Uint8Array(reimburseIx.data),
       },
     ];
@@ -1616,8 +1639,9 @@ export async function constructAndSignSOLTransaction(opts: {
       { pubkey: vaultAddress, isSigner: false, isWritable: true },
       { pubkey: sourceAta, isSigner: false, isWritable: true },
       { pubkey: destAta, isSigner: false, isWritable: true },
-      { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: paymasterPubkey, isSigner: false, isWritable: true },
+      { pubkey: mint, isSigner: false, isWritable: false },
+      { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ];
     if (memoText) {

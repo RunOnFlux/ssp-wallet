@@ -46,6 +46,7 @@ import {
 } from '../../lib/balances';
 import { sspConfig } from '@storage/ssp';
 import { blockchains } from '@storage/blockchains';
+import { backends } from '@storage/backends';
 import { getDisplayName } from '../../storage/walletNames';
 import './SendSOL.css';
 
@@ -141,6 +142,10 @@ function SendSOL() {
   const [feeSchedule, setFeeSchedule] = useState<FeeSchedule | null>(null);
   const [paymasterPubkey, setPaymasterPubkey] = useState('');
   const [needsInit, setNeedsInit] = useState(true);
+  // Recipient's Associated Token Account existence — when true for an SPL
+  // send, the create-ATA-idempotent ix is a no-op and we can drop the fee
+  // bump. Null = unknown (treat as "missing" → charge bump defensively).
+  const [destAtaExists, setDestAtaExists] = useState<boolean | null>(null);
 
   // Submit-flow state.
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
@@ -309,6 +314,46 @@ function SendSOL() {
     };
   }, [activeChain, walletInUse, xpubKey, xpubWallet]);
 
+  // Probe whether the recipient already has an ATA for the selected SPL
+  // mint. When they do, the create-ATA-idempotent ix is a no-op and we
+  // skip splFeeBumpLamports (~2.5M lamports / ~$0.40 saved per repeat send
+  // to the same recipient). Null = unknown → fee logic treats as missing.
+  useEffect(() => {
+    let cancelled = false;
+    setDestAtaExists(null);
+    const isSpl = !!txToken && txToken !== blockchainConfig.tokens[0].contract;
+    if (!isSpl || !txReceiver) return;
+    void (async () => {
+      try {
+        const [{ Connection, PublicKey }, splToken] = await Promise.all([
+          import('@solana/web3.js'),
+          import('@solana/spl-token'),
+        ]);
+        const recipientPubkey = new PublicKey(txReceiver);
+        const mint = new PublicKey(txToken);
+        const destAta = splToken.getAssociatedTokenAddressSync(
+          mint,
+          recipientPubkey,
+          true,
+        );
+        const backendNode = backends()[activeChain].node;
+        const connection = new Connection(`https://${backendNode}`, {
+          commitment: 'confirmed',
+        });
+        const info = await connection.getAccountInfo(destAta);
+        if (!cancelled) setDestAtaExists(info !== null);
+      } catch (e) {
+        if (!cancelled) {
+          console.log('[SendSOL] destAta probe failed', e);
+          setDestAtaExists(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [txReceiver, txToken, activeChain, blockchainConfig.tokens]);
+
   // autoFee is the schedule-derived baseline; manual fees can tip up but
   // not below it.
   useEffect(() => {
@@ -324,8 +369,12 @@ function SendSOL() {
       ? feeSchedule.firstSendLamports
       : feeSchedule.subsequentSendLamports;
     const isSpl = !!txToken && txToken !== blockchainConfig.tokens[0].contract;
+    // Charge the SPL bump only when we don't know the ATA exists. Probing
+    // is defensive: an unknown state (null) keeps the bump so we don't
+    // under-pay if the probe failed.
+    const needsAtaBump = isSpl && destAtaExists !== true;
     const totalLamports =
-      baseLamports + (isSpl ? feeSchedule.splFeeBumpLamports : 0);
+      baseLamports + (needsAtaBump ? feeSchedule.splFeeBumpLamports : 0);
     const feeSol = new BigNumber(totalLamports)
       .dividedBy(10 ** blockchainConfig.decimals)
       .toFixed();
@@ -334,7 +383,7 @@ function SendSOL() {
       setTxFee(feeSol);
       form.setFieldValue('fee', feeSol);
     }
-  }, [feeSchedule, needsInit, txToken, manualFee]);
+  }, [feeSchedule, needsInit, txToken, manualFee, destAtaExists]);
 
   // Spendable balance: vault SOL for native, vault token balance for SPL.
   useEffect(() => {
@@ -595,11 +644,39 @@ function SendSOL() {
         }
 
         const isSpl = !!tokenMintBase58;
+        // Re-probe destAta at submit time — the UI state may be stale if
+        // the user changed recipient/token quickly, and we want the fee
+        // floor to reflect the actual on-chain state right before send.
+        let bumpNeeded = isSpl;
+        if (isSpl && tokenMintBase58) {
+          try {
+            const [{ Connection, PublicKey }, splToken] = await Promise.all([
+              import('@solana/web3.js'),
+              import('@solana/spl-token'),
+            ]);
+            const recipientPubkey = new PublicKey(values.receiver);
+            const mint = new PublicKey(tokenMintBase58);
+            const destAta = splToken.getAssociatedTokenAddressSync(
+              mint,
+              recipientPubkey,
+              true,
+            );
+            const conn = new Connection(
+              `https://${backends()[activeChain].node}`,
+              { commitment: 'confirmed' },
+            );
+            const info = await conn.getAccountInfo(destAta);
+            bumpNeeded = info === null;
+          } catch (e) {
+            // Probe failed — keep bump on for safety.
+            console.log('[SendSOL] submit destAta probe failed', e);
+          }
+        }
         const autoLamports =
           (isFirstRealSend
             ? feeSchedule.firstSendLamports
             : feeSchedule.subsequentSendLamports) +
-          (isSpl ? feeSchedule.splFeeBumpLamports : 0);
+          (bumpNeeded ? feeSchedule.splFeeBumpLamports : 0);
         let paymasterFeeLamports: string;
         if (manualFee) {
           const manualLamports = new BigNumber(values.fee || '0')
@@ -627,11 +704,26 @@ function SendSOL() {
           paymasterPubkeyBase58: paymasterPubkey,
           paymasterFeeLamports,
           tokenMintBase58,
+          tokenDecimals: tokenMintBase58
+            ? selectedTokenInfo.decimals
+            : undefined,
           memo: values.message,
         });
+        // Wrap the payload in JSON with token metadata so the Key can
+        // display the SPL token's symbol + decimals on the approval screen
+        // (the bare proposal bytes don't carry the mint, only ATAs). Native
+        // SOL sends stay bare-base64 — old Keys handle them unchanged.
+        const actionPayload = tokenMintBase58
+          ? JSON.stringify({
+              unsignedTxBase64: signedTxBase64,
+              tokenMint: tokenMintBase58,
+              tokenSymbol: selectedTokenInfo.symbol,
+              tokenDecimals: selectedTokenInfo.decimals,
+            })
+          : signedTxBase64;
         await postAction(
           'tx',
-          signedTxBase64,
+          actionPayload,
           activeChain,
           walletInUse,
           sspWalletKeyInternalIdentity,
