@@ -34,6 +34,7 @@ function Balances() {
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
+  const walletAddress = wallets[walletInUse]?.address;
   const myNodes = wallets[walletInUse].nodes || [];
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
@@ -58,6 +59,7 @@ function Balances() {
   );
 
   useEffect(() => {
+    if (!walletAddress) return;
     void (async function () {
       const wInUse = walletInUse;
       const chInUse = activeChain;
@@ -76,7 +78,7 @@ function Balances() {
     globalThis.refreshIntervalBalances = setInterval(() => {
       refresh();
     }, 20000);
-  }, [activeChain, walletInUse]);
+  }, [activeChain, walletInUse, walletAddress]);
 
   useEffect(() => {
     getCryptoRate(activeChain, sspConfig().fiatCurrency);
