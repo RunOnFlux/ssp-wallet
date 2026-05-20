@@ -521,9 +521,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         // Get stored wallets for this chain
         const generatedWallets =
           (await localForage.getItem(`wallets-${chain.id}`)) || {};
-        const walletKeys = Object.keys(
-          generatedWallets as Record<string, string>,
-        );
+        const walletKeys = Object.keys(generatedWallets);
 
         for (const walletKey of walletKeys) {
           const address = (generatedWallets as Record<string, string>)[
@@ -558,9 +556,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     try {
       const generatedWallets =
         (await localForage.getItem(`wallets-${evmChain.id}`)) || {};
-      const walletKeys = Object.keys(
-        generatedWallets as Record<string, string>,
-      );
+      const walletKeys = Object.keys(generatedWallets);
 
       const accounts: string[] = [];
       for (const walletKey of walletKeys) {

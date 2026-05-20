@@ -249,7 +249,7 @@ function Navbar({
         );
       }
       await localForage.setItem(`walletInUse-${activeChain}`, value.value);
-      setWalletValue(value as walletOption);
+      setWalletValue(value);
       setWalletInUse(activeChain, value.value);
     })();
   };

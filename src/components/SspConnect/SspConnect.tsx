@@ -470,7 +470,7 @@ function SspConnect() {
       <AddressesInfo
         open={openAddressesInfo}
         openAction={generalAction}
-        chain={chain as keyof cryptos}
+        chain={chain}
       />
       <AllAddressesInfo
         open={openAllAddressesInfo}

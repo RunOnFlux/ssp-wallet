@@ -218,7 +218,9 @@ export function processTransactionTokenScan(
     amount = '-' + amount;
   }
   const { gasUsed, gasPrice } = tx;
-  const totalGas = new BigNumber(gasUsed).multipliedBy(new BigNumber(gasPrice));
+  const totalGas = new BigNumber(gasUsed ?? 0).multipliedBy(
+    new BigNumber(gasPrice ?? 0),
+  );
   const tran: transaction = {
     type: 'evm',
     txid: tx.hash,
@@ -335,7 +337,9 @@ export function processTransactionExternalScan(
     amount = '-' + amount;
   }
   const { gasUsed, gasPrice } = tx;
-  const totalGas = new BigNumber(gasUsed).multipliedBy(new BigNumber(gasPrice));
+  const totalGas = new BigNumber(gasUsed ?? 0).multipliedBy(
+    new BigNumber(gasPrice ?? 0),
+  );
   const tran: transaction = {
     type: 'evm',
     txid: tx.hash,
@@ -500,7 +504,7 @@ async function fetchSolanaTransactionsPage(
       }
       // If we are the fee payer (not the SSP case but defensively), include
       // the L1 network fee.
-      const networkFee = feePayer === address ? tx.meta.fee ?? 0 : 0;
+      const networkFee = feePayer === address ? (tx.meta.fee ?? 0) : 0;
 
       // SPL transfer detection. `system`-only walking misses SPL Token
       // Program ixs entirely, so the wallet's own SPL sends used to render
