@@ -52,6 +52,8 @@ declare module '@storage/blockchains' {
     // buy sell
     onramperNetwork?: string;
     chainId?: string;
+    // sol
+    programId?: string; // on-chain Solana program for chainType='sol'
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

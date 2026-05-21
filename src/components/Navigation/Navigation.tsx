@@ -67,6 +67,7 @@ function Navigation() {
   );
   const blockchainConfig = blockchains[activeChain];
   const isEVM = blockchainConfig.chainType === 'evm';
+  const isSOL = blockchainConfig.chainType === 'sol';
 
   return (
     <>
@@ -77,7 +78,9 @@ function Navigation() {
           size={'middle'}
           style={{ minWidth: '105px' }}
           onClick={() =>
-            navigate(isEVM ? '/sendevm' : '/send', { state: { receiver: '' } })
+            navigate(isSOL ? '/sendsol' : isEVM ? '/sendevm' : '/send', {
+              state: { receiver: '' },
+            })
           }
           data-tutorial="send-button"
         >

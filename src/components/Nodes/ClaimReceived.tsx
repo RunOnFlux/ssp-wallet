@@ -1,5 +1,5 @@
 import { QRCode, Typography, Button, Space, Modal } from 'antd';
-import { backends } from '@storage/backends';
+import { explorerTxUrl } from '../../lib/explorerUrl';
 const { Paragraph, Text } = Typography;
 import { useTranslation } from 'react-i18next';
 
@@ -11,17 +11,13 @@ function ClaimReceived(props: {
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { open, openAction, chain } = props;
-  const backendConfig = backends()[chain];
 
   const handleOk = () => {
     openAction(false);
   };
 
   const openInExplorer = () => {
-    window.open(
-      `https://${backendConfig.explorer ?? backendConfig.node}/tx/${props.txid}`,
-      '_blank',
-    );
+    window.open(explorerTxUrl(chain, props.txid), '_blank');
   };
   return (
     <>

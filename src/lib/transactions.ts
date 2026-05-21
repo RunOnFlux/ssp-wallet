@@ -218,7 +218,9 @@ export function processTransactionTokenScan(
     amount = '-' + amount;
   }
   const { gasUsed, gasPrice } = tx;
-  const totalGas = new BigNumber(gasUsed).multipliedBy(new BigNumber(gasPrice));
+  const totalGas = new BigNumber(gasUsed ?? 0).multipliedBy(
+    new BigNumber(gasPrice ?? 0),
+  );
   const tran: transaction = {
     type: 'evm',
     txid: tx.hash,
@@ -335,7 +337,9 @@ export function processTransactionExternalScan(
     amount = '-' + amount;
   }
   const { gasUsed, gasPrice } = tx;
-  const totalGas = new BigNumber(gasUsed).multipliedBy(new BigNumber(gasPrice));
+  const totalGas = new BigNumber(gasUsed ?? 0).multipliedBy(
+    new BigNumber(gasPrice ?? 0),
+  );
   const tran: transaction = {
     type: 'evm',
     txid: tx.hash,
@@ -360,6 +364,246 @@ export function processTransactionsExternalScan(
     txs.push(processedTransaction);
   }
   return txs;
+}
+
+async function fetchSolanaTransactionsPage(
+  address: string,
+  chain: keyof cryptos,
+  limit: number,
+  before?: string,
+): Promise<transaction[]> {
+  // Public devnet RPC accepts up to 1000 signatures per call; per-tx parsing
+  // is a separate RPC each, so callers should pick a sensible batch size.
+  const cappedLimit = Math.max(1, Math.min(1000, limit));
+  const backendConfig = backends()[chain];
+  const url = `https://${backendConfig.node}`;
+  const sigsParams: { limit: number; before?: string } = { limit: cappedLimit };
+  if (before) sigsParams.before = before;
+  const sigsResp = await axios.post<{
+    result: Array<{
+      signature: string;
+      slot: number;
+      blockTime: number | null;
+      err: unknown;
+    }>;
+  }>(url, {
+    id: Date.now(),
+    jsonrpc: '2.0',
+    method: 'getSignaturesForAddress',
+    params: [address, sigsParams],
+  });
+  const sigs = sigsResp.data.result ?? [];
+  if (sigs.length === 0) return [];
+
+  const txs: transaction[] = [];
+  for (const sigEntry of sigs) {
+    try {
+      type ParsedTransferInstruction = {
+        parsed?:
+          | {
+              type?: string;
+              info?: {
+                source?: string;
+                destination?: string;
+                lamports?: number;
+              };
+            }
+          | string;
+        program?: string;
+        programId?: string;
+      };
+      type ParsedTokenBalance = {
+        accountIndex: number;
+        mint: string;
+        owner?: string;
+        uiTokenAmount: {
+          amount: string;
+          decimals: number;
+        };
+      };
+      const txResp = await axios.post<{
+        result: {
+          meta: {
+            err: unknown;
+            fee: number;
+            preBalances: number[];
+            postBalances: number[];
+            preTokenBalances?: ParsedTokenBalance[];
+            postTokenBalances?: ParsedTokenBalance[];
+            innerInstructions?: Array<{
+              index: number;
+              instructions: ParsedTransferInstruction[];
+            }>;
+          } | null;
+          transaction: {
+            message: {
+              accountKeys: Array<{ pubkey: string }>;
+              instructions?: ParsedTransferInstruction[];
+            };
+          };
+          blockTime: number | null;
+          slot: number;
+        } | null;
+      }>(url, {
+        id: Date.now(),
+        jsonrpc: '2.0',
+        method: 'getTransaction',
+        params: [
+          sigEntry.signature,
+          {
+            encoding: 'jsonParsed',
+            commitment: 'confirmed',
+            maxSupportedTransactionVersion: 0,
+          },
+        ],
+      });
+      const tx = txResp.data.result;
+      if (!tx || !tx.meta) continue;
+      const keys = tx.transaction.message.accountKeys;
+      const idx = keys.findIndex((k) => k.pubkey === address);
+      // Fee payer = first signer (Account 0). For SSP Solana sends this is
+      // the paymaster, and the vault pays a cost-recovery transfer to it
+      // in-band. Attribute that transfer as the user's fee.
+      const feePayer = keys[0]?.pubkey;
+      const allInstructions: ParsedTransferInstruction[] = [
+        ...(tx.transaction.message.instructions ?? []),
+        ...(tx.meta.innerInstructions?.flatMap((g) => g.instructions) ?? []),
+      ];
+      let paymasterFeeLamports = 0;
+      let outgoingLamports = 0;
+      let incomingLamports = 0;
+      let primaryReceiver = '';
+      let memoText = '';
+      for (const ix of allInstructions) {
+        if (ix.program === 'spl-memo') {
+          // Parsed memo can be a bare string OR an object — both shapes seen
+          // in different RPC versions. Take the first non-empty one.
+          if (typeof ix.parsed === 'string' && ix.parsed && !memoText) {
+            memoText = ix.parsed;
+          }
+          continue;
+        }
+        if (ix.program !== 'system') continue;
+        if (typeof ix.parsed !== 'object' || !ix.parsed) continue;
+        if (ix.parsed.type !== 'transfer') continue;
+        const info = ix.parsed.info;
+        if (!info || typeof info.lamports !== 'number') continue;
+        const lamports = info.lamports;
+        if (info.source === address) {
+          if (info.destination === feePayer) {
+            paymasterFeeLamports += lamports;
+          } else {
+            outgoingLamports += lamports;
+            if (!primaryReceiver && info.destination) {
+              primaryReceiver = info.destination;
+            }
+          }
+        } else if (info.destination === address) {
+          incomingLamports += lamports;
+        }
+      }
+      // If we are the fee payer (not the SSP case but defensively), include
+      // the L1 network fee.
+      const networkFee = feePayer === address ? (tx.meta.fee ?? 0) : 0;
+
+      // SPL transfer detection. `system`-only walking misses SPL Token
+      // Program ixs entirely, so the wallet's own SPL sends used to render
+      // with amount = paymaster fee (in SOL), no symbol, no mint. Use the
+      // tx's pre/postTokenBalances tables instead: any owner-attributed
+      // delta on a token account belonging to `address` is the true
+      // SPL movement, and the counterparty's owner is the receiver.
+      type Delta = {
+        delta: bigint;
+        mint: string;
+        owner: string;
+        decimals: number;
+      };
+      const preTok = tx.meta.preTokenBalances ?? [];
+      const postTok = tx.meta.postTokenBalances ?? [];
+      const preTokMap = new Map<number, ParsedTokenBalance>();
+      const postTokMap = new Map<number, ParsedTokenBalance>();
+      for (const b of preTok) preTokMap.set(b.accountIndex, b);
+      for (const b of postTok) postTokMap.set(b.accountIndex, b);
+      const tokenDeltas: Delta[] = [];
+      const tokenIndices = new Set<number>([
+        ...preTokMap.keys(),
+        ...postTokMap.keys(),
+      ]);
+      for (const i of tokenIndices) {
+        const pre = preTokMap.get(i);
+        const post = postTokMap.get(i);
+        const owner = post?.owner ?? pre?.owner ?? '';
+        const mint = post?.mint ?? pre?.mint ?? '';
+        const decimals =
+          post?.uiTokenAmount.decimals ?? pre?.uiTokenAmount.decimals ?? 0;
+        const preAmt = BigInt(pre?.uiTokenAmount.amount ?? '0');
+        const postAmt = BigInt(post?.uiTokenAmount.amount ?? '0');
+        const delta = postAmt - preAmt;
+        if (delta !== 0n) {
+          tokenDeltas.push({ delta, mint, owner, decimals });
+        }
+      }
+      const ourSplChange = tokenDeltas.find((c) => c.owner === address);
+      const splCounterparty = ourSplChange
+        ? tokenDeltas.find(
+            (c) =>
+              c.mint === ourSplChange.mint &&
+              c.owner !== address &&
+              c.delta === -ourSplChange.delta,
+          )
+        : undefined;
+
+      let amount = '0';
+      let txType = 'sol';
+      let txReceiver = primaryReceiver;
+      let txDecimals = blockchains[chain].decimals;
+      let txTokenSymbol: string | undefined;
+      let txContract: string | undefined;
+      if (ourSplChange) {
+        // SPL transfer touches our address. Use the token delta as the
+        // primary amount; the SOL fee is still surfaced via `fee`.
+        amount = ourSplChange.delta.toString();
+        txType = 'token';
+        txDecimals = ourSplChange.decimals;
+        txContract = ourSplChange.mint;
+        const knownToken = blockchains[chain].tokens.find(
+          (t) => t.contract === ourSplChange.mint,
+        );
+        txTokenSymbol = knownToken?.symbol;
+        if (splCounterparty?.owner) {
+          txReceiver = splCounterparty.owner;
+        }
+      } else if (outgoingLamports > 0) {
+        amount = String(-outgoingLamports);
+      } else if (incomingLamports > 0) {
+        amount = String(incomingLamports);
+      } else if (idx >= 0) {
+        // Fallback: no parsed system-program transfers (e.g. program CPI)
+        // and no SPL token-balance delta for us. Use raw vault balance
+        // delta + add back the paymaster fee so the displayed amount is
+        // the real transfer size, not transfer+fee.
+        const delta = tx.meta.postBalances[idx] - tx.meta.preBalances[idx];
+        amount = String(delta + paymasterFeeLamports);
+      }
+      txs.push({
+        txid: sigEntry.signature,
+        blockheight: tx.slot,
+        timestamp: tx.blockTime ?? 0,
+        fee: String(paymasterFeeLamports + networkFee),
+        amount,
+        message: memoText,
+        receiver: txReceiver,
+        type: txType,
+        isError: tx.meta.err != null,
+        decimals: txDecimals,
+        ...(txTokenSymbol && { tokenSymbol: txTokenSymbol }),
+        ...(txContract && { contractAddress: txContract }),
+      });
+    } catch (e) {
+      console.log('[SOL tx fetch] failed', sigEntry.signature, e);
+    }
+  }
+  return txs.sort((a, b) => b.timestamp - a.timestamp);
 }
 
 export async function fetchAddressTransactions(
@@ -433,6 +677,11 @@ export async function fetchAddressTransactions(
       }
 
       return allTransactions.sort((a, b) => b.timestamp - a.timestamp);
+    } else if (blockchains[chain].chainType === 'sol') {
+      // Public devnet RPC is rate-limited; cap UI-list page to 25.
+      // CSV export uses fetchSolanaTransactionsPage directly with cursor.
+      const limit = Math.max(1, Math.min(25, to - from));
+      return fetchSolanaTransactionsPage(address, chain, limit);
     } else if (blockchains[chain].backend === 'blockbook') {
       const pageSize = to - from;
       const url = `https://${backendConfig.node}/api/v2/address/${address}?pageSize=${pageSize}&details=txs&page=${page}`;
@@ -743,21 +992,42 @@ export async function fetchDataForCSV(
   address: string,
   chain: keyof cryptos,
 ): Promise<csvTransaction[]> {
-  const txs = [];
-  let page = 1;
-  let from = 0;
-  let to = 50;
-  let txsPage: transaction[] = [];
+  const txs: transaction[] = [];
   const blockchainConfig = blockchains[chain];
-  do {
-    txsPage = await fetchAddressTransactions(address, chain, from, to, page); // 50 txs per page is maximum usually
-    if (txsPage) {
-      txs.push(...txsPage);
-      page++;
-      from = to;
-      to = to + 50;
+  if (blockchainConfig.chainType === 'sol') {
+    // Solana uses signature-cursor pagination, not from/to offsets.
+    // Page through with `before` until a page comes back short.
+    const pageSize = 100;
+    let before: string | undefined;
+    // Hard cap to avoid runaway loops on busy addresses.
+    const maxPages = 50;
+    for (let i = 0; i < maxPages; i++) {
+      const page = await fetchSolanaTransactionsPage(
+        address,
+        chain,
+        pageSize,
+        before,
+      );
+      if (page.length === 0) break;
+      txs.push(...page);
+      if (page.length < pageSize) break;
+      before = page[page.length - 1].txid;
     }
-  } while (txsPage.length >= 50 || page === 1);
+  } else {
+    let page = 1;
+    let from = 0;
+    let to = 50;
+    let txsPage: transaction[] = [];
+    do {
+      txsPage = await fetchAddressTransactions(address, chain, from, to, page); // 50 txs per page is maximum usually
+      if (txsPage) {
+        txs.push(...txsPage);
+        page++;
+        from = to;
+        to = to + 50;
+      }
+    } while (txsPage.length >= 50 || page === 1);
+  }
   const data = [];
   for (const t of txs) {
     data.push({

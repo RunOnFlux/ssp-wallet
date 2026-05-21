@@ -249,7 +249,7 @@ function Navbar({
         );
       }
       await localForage.setItem(`walletInUse-${activeChain}`, value.value);
-      setWalletValue(value as walletOption);
+      setWalletValue(value);
       setWalletInUse(activeChain, value.value);
     })();
   };
@@ -303,8 +303,8 @@ function Navbar({
         i++;
         path = '0-' + i;
       }
-      if (i > 41) {
-        // max 42 wallets
+      if (i > 19) {
+        // max 20 wallets
         displayMessage('error', t('home:navbar.max_wallets'));
         return;
       }
@@ -607,6 +607,11 @@ function Navbar({
                           type="text"
                           icon={<PlusOutlined />}
                           onClick={addWallet}
+                          // Cap at 20 wallets per chain — the wallet count
+                          // mirrors several places (see lib/wallet.ts coupling
+                          // notes) and bumping it has knock-on consequences
+                          // for the Solana sync QR's encoded payload size.
+                          disabled={walletItems.length >= 20}
                           style={{ width: '100%', textAlign: 'left' }}
                           data-tutorial="add-wallet-button"
                         >

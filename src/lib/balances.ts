@@ -34,6 +34,25 @@ export async function fetchAddressBalance(
         address: address,
       };
       return bal;
+    } else if (blockchains[chain].chainType === 'sol') {
+      // Solana: use JSON-RPC getBalance against the configured node.
+      // Returns lamports (1 SOL = 10^9 lamports).
+      const url = `https://${backendConfig.node}`;
+      const data = {
+        id: Date.now(),
+        jsonrpc: '2.0',
+        method: 'getBalance',
+        params: [address],
+      };
+      const response = await axios.post<{
+        result: { value: number };
+      }>(url, data);
+      const bal: balance = {
+        confirmed: new BigNumber(response.data.result?.value ?? 0).toFixed(),
+        unconfirmed: '0',
+        address: address,
+      };
+      return bal;
     } else if (blockchains[chain].backend === 'blockbook') {
       const url = `https://${backendConfig.node}/api/v2/address/${address}?details=basic`;
       const response = await axios.get<balanceBlockbook>(url);
@@ -92,8 +111,54 @@ export async function fetchAddressTokenBalances(
   tokens: string[],
 ): Promise<tokenBalanceEVM[]> {
   try {
+    // Solana: fetch all parsed token accounts owned by the vault and
+    // intersect with the requested mint list. One RPC call regardless of
+    // token count, no Alchemy-style batching needed.
+    if (blockchains[chain].chainType === 'sol') {
+      const backendConfig = backends()[chain];
+      const url = `https://${backendConfig.node}`;
+      const data = {
+        id: Date.now(),
+        jsonrpc: '2.0',
+        method: 'getTokenAccountsByOwner',
+        params: [
+          address,
+          { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' },
+          { encoding: 'jsonParsed' },
+        ],
+      };
+      const response = await axios.post<{
+        result: {
+          value: Array<{
+            account: {
+              data: {
+                parsed: {
+                  info: {
+                    mint: string;
+                    tokenAmount: { amount: string };
+                  };
+                };
+              };
+            };
+          }>;
+        };
+      }>(url, data);
+      const accounts = response.data.result?.value ?? [];
+      const requested = new Set(tokens.filter((t) => t.length > 0));
+      const out: tokenBalanceEVM[] = [];
+      for (const acc of accounts) {
+        const info = acc.account.data.parsed.info;
+        if (requested.has(info.mint)) {
+          out.push({
+            contract: info.mint,
+            balance: new BigNumber(info.tokenAmount.amount || '0').toFixed(),
+          });
+        }
+      }
+      return out;
+    }
     if (blockchains[chain].chainType !== 'evm') {
-      throw new Error('Only EVM chains support token balances');
+      throw new Error('Only EVM and Solana chains support token balances');
     }
     const tokenChunks = [];
     // split tokens into chunks of 100

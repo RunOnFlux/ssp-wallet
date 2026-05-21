@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import {
   Divider,
   InputNumber,
@@ -117,6 +118,9 @@ function Swap() {
   const [buyAssetFilter, setBuyAssetFilter] = useState('');
   const [sellAssetAddress, setSellAssetAddress] = useState('0-0');
   const [buyAssetAddress, setBuyAssetAddress] = useState('0-0');
+  // Monotonic request counter used to discard stale responses from
+  // pairDetailsSellAmount when the user types fast (race-condition guard).
+  const pairDetailsRequestIdRef = useRef(0);
   const [loadingSwap, setLoadingSwap] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [triggerSwapDirection, setTriggerSwapDirection] = useState(false);
@@ -172,10 +176,30 @@ function Swap() {
     });
   };
 
-  useEffect(() => {
-    if (!triggerSwapDirection) {
-      fetchPairDetails();
+  // ABE returns inconsistent shapes on failure (sometimes a string,
+  // sometimes { message }, sometimes wrapped in an axios error). Pull a
+  // human-readable detail out when we can so the toast carries some signal.
+  const extractAbeErrorDetail = (data: unknown): string => {
+    if (!data) return '';
+    if (typeof data === 'string') return data;
+    if (typeof data === 'object') {
+      const obj = data as Record<string, unknown>;
+      if (typeof obj.message === 'string' && obj.message.trim()) {
+        return obj.message.trim();
+      }
     }
+    return '';
+  };
+
+  useEffect(() => {
+    if (triggerSwapDirection) return;
+    // Bump the request id immediately so any in-flight call from prior
+    // keystrokes is invalidated even before this debounce fires.
+    pairDetailsRequestIdRef.current += 1;
+    const handle = setTimeout(() => {
+      fetchPairDetails();
+    }, 400);
+    return () => clearTimeout(handle);
   }, [amountSell, sellAsset, buyAsset, triggerSwapDirection]);
 
   useEffect(() => {
@@ -665,17 +689,24 @@ function Swap() {
   };
 
   const fetchPairDetails = async () => {
+    // Capture this call's request id. Any keystroke between now and the
+    // response landing will have bumped the ref, so we drop the result.
+    const myRequestId = pairDetailsRequestIdRef.current;
+    const isLatest = () => pairDetailsRequestIdRef.current === myRequestId;
+    const resetQuote = () => {
+      if (!isLatest()) return;
+      setAmountBuy(0);
+      setRate(0);
+      setLoading(false);
+      setSelectedExchange({});
+      setPossibleExchangeProviders([]);
+    };
     try {
       if (!amountSell) {
-        setAmountBuy(0);
-        setRate(0);
-        setLoading(false);
-        setSelectedExchange({});
-        setPossibleExchangeProviders([]);
+        resetQuote();
         return;
       }
       setLoading(true);
-      // ask abe for pairDetailsSellAmount
       const sellAssetZelcoreID = abeMapping[sellAsset];
       const buyAssetZelcoreID = abeMapping[buyAsset];
       const pairDetails = await pairDetailsSellAmount(
@@ -683,8 +714,8 @@ function Swap() {
         buyAssetZelcoreID,
         amountSell,
       );
+      if (!isLatest()) return;
       if (pairDetails.status === 'success') {
-        // find the exchange with the highest buyAmount
         const highestBuyAmount = pairDetails.data.exchanges.reduce(
           (max, current) =>
             parseFloat(current.buyAmount) > parseFloat(max.buyAmount)
@@ -696,39 +727,21 @@ function Swap() {
           highestBuyAmount.buyAmount &&
           highestBuyAmount.rate
         ) {
-          // only update this if the response in sellAmount is the same as our amountSell
-          if (highestBuyAmount.sellAmount === Number(amountSell).toFixed(8)) {
-            // loading stop
-            setAmountBuy(parseFloat(highestBuyAmount.buyAmount));
-            setRate(parseFloat(highestBuyAmount.rate));
-            setLoading(false);
-            setSelectedExchange(highestBuyAmount);
-            setPossibleExchangeProviders(pairDetails.data.exchanges);
-          }
-        } else {
-          console.log('error');
-          setAmountBuy(0);
-          setRate(0);
+          setAmountBuy(parseFloat(highestBuyAmount.buyAmount));
+          setRate(parseFloat(highestBuyAmount.rate));
           setLoading(false);
-          setSelectedExchange({});
-          setPossibleExchangeProviders([]);
+          setSelectedExchange(highestBuyAmount);
+          setPossibleExchangeProviders(pairDetails.data.exchanges);
+        } else {
+          resetQuote();
         }
       } else {
         console.log(pairDetails.data?.message || pairDetails.data);
-        setAmountBuy(0);
-        setRate(0);
-        setLoading(false);
-        setSelectedExchange({});
-        setPossibleExchangeProviders([]);
+        resetQuote();
       }
-      console.log(pairDetails);
     } catch (error) {
       console.log(error);
-      setAmountBuy(0);
-      setRate(0);
-      setLoading(false);
-      setSelectedExchange({});
-      setPossibleExchangeProviders([]);
+      resetQuote();
     }
   };
 
@@ -799,7 +812,13 @@ function Swap() {
       // especially on fixed rate, our current selection must be pretty recent otherwise rateIds might expire causing failure. // @todo constant rate polling, refreshment of options with up to date data?
       const swap = await createSwap(data, sspwkid);
       if (swap.status !== 'success') {
-        displayMessage('error', t('home:swap.error_creating_swap'));
+        const detail = extractAbeErrorDetail(swap.data);
+        displayMessage(
+          'error',
+          detail
+            ? `${t('home:swap.error_creating_swap')} (${detail})`
+            : t('home:swap.error_creating_swap'),
+        );
         setLoadingSwap(false);
         return;
       }
@@ -825,7 +844,15 @@ function Swap() {
       // now we triggered useEffect function of chainSwitching
     } catch (error) {
       console.log(error);
-      displayMessage('error', t('home:swap.error_creating_swap'));
+      const detail = axios.isAxiosError(error)
+        ? extractAbeErrorDetail(error.response?.data)
+        : '';
+      displayMessage(
+        'error',
+        detail
+          ? `${t('home:swap.error_creating_swap')} (${detail})`
+          : t('home:swap.error_creating_swap'),
+      );
       setLoadingSwap(false);
     }
   };
@@ -880,16 +907,7 @@ function Swap() {
   return (
     <>
       {contextHolder}
-      {loadingSwap && (
-        <Spin
-          size="large"
-          fullscreen
-          style={{
-            position: 'absolute',
-            top: '250px',
-          }}
-        />
-      )}
+      {loadingSwap && <Spin size="large" fullscreen />}
       <Navbar
         refresh={refresh}
         hasRefresh={false}

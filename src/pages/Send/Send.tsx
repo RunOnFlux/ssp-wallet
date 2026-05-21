@@ -1010,7 +1010,12 @@ function Send() {
               <Button
                 type="primary"
                 size="large"
-                style={{ maxWidth: '380px', overflow: 'scroll' }}
+                style={{
+                  maxWidth: '380px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
               >
                 {state.swap
                   ? t('send:send_swap', {

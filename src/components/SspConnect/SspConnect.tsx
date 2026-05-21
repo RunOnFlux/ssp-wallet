@@ -205,9 +205,13 @@ function SspConnect() {
         // show poup that someone is asking to get all addresses for all chains
         setOpenAllAddressesInfo(true);
       } else if (sspConnectType === 'enterprise_vault_xpub') {
-        // Enterprise vault xpub request - capture params before clearRequest
+        // Enterprise vault xpub request - capture params before clearRequest.
+        // vaultIndex is required for Solana so the wallet derives the
+        // pubkey array at the per-vault HD typeIndex slot (matches Key
+        // which receives vaultIndex in the relay payload).
         setRequesterInfo(sspConnectRequesterInfo);
         setOrgIndex(sspConnectOrgIndex);
+        setVaultIndex(sspConnectVaultIndex);
         setVaultName(sspConnectVaultName);
         setOrgName(sspConnectOrgName);
         setOpenEnterpriseVaultXpub(true);
@@ -466,7 +470,7 @@ function SspConnect() {
       <AddressesInfo
         open={openAddressesInfo}
         openAction={generalAction}
-        chain={chain as keyof cryptos}
+        chain={chain}
       />
       <AllAddressesInfo
         open={openAllAddressesInfo}
@@ -484,6 +488,7 @@ function SspConnect() {
         openAction={enterpriseVaultXpubAction}
         chain={chain}
         orgIndex={orgIndex}
+        vaultIndex={vaultIndex}
         vaultName={vaultName}
         orgName={orgName}
         requesterInfo={requesterInfo}

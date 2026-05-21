@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const archiver = require('archiver');
+const { ZipArchive } = require('archiver');
 
 // Read the base manifest
 const baseManifest = JSON.parse(
@@ -50,7 +50,7 @@ function createZipArchive(browser, version) {
         `ssp-wallet-${browser}-v${version}.zip`,
       );
       const output = fs.createWriteStream(outputPath);
-      const archive = archiver('zip', {
+      const archive = new ZipArchive({
         zlib: { level: 9 }, // Maximum compression
       });
 

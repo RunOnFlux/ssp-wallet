@@ -406,6 +406,8 @@ export interface syncSSPRelay {
     wallet: boolean;
     key: boolean;
   };
+  // For chainType === 'sol', keyXpub/walletXpub are JSON-stringified
+  // arrays of 20 base58 Ed25519 leaf pubkeys (one per address index 0-19).
 }
 
 export interface actionSSPRelay {
@@ -416,10 +418,13 @@ export interface actionSSPRelay {
 }
 
 export interface tokenDataSSPRelay {
-  decimals: number;
+  decimals: number | null;
   logo: string | null;
-  name: string;
-  symbol: string;
+  // Solana SPL tokens without a Metaplex metadata account return null
+  // name/symbol — the wallet should fall back to a sensible default
+  // rather than reject the import.
+  name: string | null;
+  symbol: string | null;
 }
 
 export interface currency {
@@ -492,6 +497,7 @@ export interface cryptos {
   base: number;
   bsc: number;
   avax: number;
+  solDevnet: number;
 }
 
 export interface externalIdentity {
@@ -614,6 +620,9 @@ export interface fusionMessage {
 }
 
 export interface chainState {
+  // For chainType === 'sol', xpubWallet/xpubKey are JSON-stringified
+  // arrays of 20 base58 Ed25519 leaf pubkeys (one per address index 0-19).
+  // Use the helper `parseSolanaPubkeys()` to deserialize.
   xpubWallet: string;
   xpubKey: string;
   wallets: wallets;

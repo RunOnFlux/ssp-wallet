@@ -60,7 +60,7 @@ describe('Balances Lib', () => {
           'flux',
           [],
         ),
-      ).rejects.toThrow('Only EVM chains support token balances');
+      ).rejects.toThrow('Only EVM and Solana chains support token balances');
     });
 
     it('should return fetchAddressTokenBalances data when value is evm type', async () => {

@@ -210,6 +210,7 @@ function EnterpriseVaultSignTx({
   const decodedTx = useMemo((): VaultDecodedTx | null => {
     if (!chain) return null;
     const isEvm = chainConfig?.chainType === 'evm';
+    const isSol = chainConfig?.chainType === 'sol';
     if (isEvm) {
       // EVM: decode from evmUserOp JSON string (contains userOpRequest with callData)
       if (!evmUserOp) {
@@ -228,6 +229,20 @@ function EnterpriseVaultSignTx({
           error: 'Failed to parse EVM UserOp data',
         };
       }
+    }
+    if (isSol) {
+      // Solana: rawUnsignedTx is base64 of a Solana bundled tx — not parseable
+      // as UTXO hex. Construct the decoded view directly from props (the
+      // enterprise app already shows recipient + amount + source from the
+      // proposal record, no need to re-parse the on-the-wire bytes).
+      return {
+        sender: sourceAddress ?? '',
+        recipients: parsedRecipients.map((r) => ({
+          address: r.address,
+          amount: r.amount,
+        })),
+        fee: fee || '0',
+      };
     }
     // UTXO: decode from raw TX hex
     if (!rawUnsignedTx) return null;
@@ -249,7 +264,16 @@ function EnterpriseVaultSignTx({
       [],
       firstInput,
     );
-  }, [rawUnsignedTx, chain, chainConfig, parsedInputDetails, evmUserOp]);
+  }, [
+    rawUnsignedTx,
+    chain,
+    chainConfig,
+    parsedInputDetails,
+    evmUserOp,
+    sourceAddress,
+    parsedRecipients,
+    fee,
+  ]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -272,18 +296,25 @@ function EnterpriseVaultSignTx({
         // Build complete response
         // For EVM: Key returns signerContribution + challenge (raw sums, no ABI encoding)
         // For UTXO: Key returns signedHex (TX with both wallet+key SIGHASH sigs)
-        const keySignatures: string[] = enterpriseVaultSigned.signerContribution
-          ? [enterpriseVaultSigned.signerContribution]
-          : (enterpriseVaultSigned.keySignatures ?? []);
+        // For Solana: Key returns keySignatureBase64 — single ed25519 sig.
+        const isSolanaSig = !!enterpriseVaultSigned.keySignatureBase64;
+        const keySignatures: string[] = isSolanaSig
+          ? [enterpriseVaultSigned.keySignatureBase64!]
+          : enterpriseVaultSigned.signerContribution
+            ? [enterpriseVaultSigned.signerContribution]
+            : (enterpriseVaultSigned.keySignatures ?? []);
         // Challenge source priority:
         // 1. Key's challenge (dual mode + key-only mode: Key signed)
         // 2. Wallet's stored challenge (wallet-only mode: Key didn't sign, returned empty)
         // 3. Fallback to keySignatures (UTXO / legacy)
+        // Solana doesn't use challenges — pass keySignatures through unchanged.
         const challengeValue =
           enterpriseVaultSigned.challenge || walletChallengeRef.current;
-        const keySignaturesChallenges: string[] = challengeValue
-          ? [challengeValue]
-          : keySignatures;
+        const keySignaturesChallenges: string[] = isSolanaSig
+          ? keySignatures
+          : challengeValue
+            ? [challengeValue]
+            : keySignatures;
 
         const response: EnterpriseVaultSignTxResponse = {
           walletSignatures: enterpriseVaultSigned.signerContribution
@@ -394,7 +425,10 @@ function EnterpriseVaultSignTx({
       // Clear sensitive data
       walletSeed = '';
 
-      // Derive keypair at vaultIndex/addressIndex
+      // Derive keypair at vaultIndex/addressIndex. For Solana, this matches
+      // generateSolanaPubkeyArray which now also derives at the same
+      // typeIndex=vault.vaultIndex slot — each vault in an org has its own
+      // pubkey pool, identical model to EVM/UTXO per-vault key separation.
       const keypair = generateAddressKeypair(
         vaultXpriv,
         vaultIndex,
@@ -618,7 +652,11 @@ function EnterpriseVaultSignTx({
         throw new Error('No input details found');
       }
 
-      // Get addressIndex from first input detail (source address for this transaction)
+      // addressIndex comes from inputDetails[0] for all chains. For UTXO this
+      // is the source address; for EVM it's the sender address index; for
+      // Solana the enterprise app synthesizes a single entry carrying the
+      // proposal's solanaBundle.addressIndex so the wallet derives the right
+      // ed25519 keypair to match the on-chain multisig PDA.
       const firstInput = parsedInputDetails[0] as
         | { addressIndex?: number }
         | undefined;
@@ -779,6 +817,40 @@ function EnterpriseVaultSignTx({
         throw new Error(
           'Enterprise nonces required for EVM vault signing. Please wait for nonce replenishment.',
         );
+      } else if (chainConfig?.chainType === 'sol') {
+        // Solana enterprise: ed25519 partial-sign the bundled tx.
+        // rawUnsignedTx carries the bundle from solanaVaultProposalBuilderService
+        // (base64 of nonceAdvance + create + approve×threshold + execute + close).
+        const { Transaction: SolTransaction, Keypair: SolKeypair } =
+          await import('@solana/web3.js');
+        const walletSecretKey = new Uint8Array(
+          Buffer.from(keypair.privKey, 'hex'),
+        );
+        const walletKeypair = SolKeypair.fromSecretKey(walletSecretKey);
+        let walletSigBase64: string;
+        try {
+          const tx = SolTransaction.from(Buffer.from(rawUnsignedTx, 'base64'));
+          tx.partialSign(walletKeypair);
+          const sigEntry = tx.signatures.find((s) =>
+            s.publicKey.equals(walletKeypair.publicKey),
+          );
+          if (!sigEntry?.signature) {
+            throw new Error(
+              'Solana partial-sign produced no signature at wallet slot',
+            );
+          }
+          walletSigBase64 = Buffer.from(sigEntry.signature).toString('base64');
+        } finally {
+          // Zero the raw 64-byte ed25519 secret-key buffer regardless of
+          // success/failure. SolKeypair holds an internal reference too —
+          // we can't reach into it, but zeroing the source buffer makes
+          // recovery from memory considerably harder. JS GC doesn't promise
+          // prompt zeroing, so this is a defense-in-depth wipe to match the
+          // hex-string clear at line ~861 (vaultXpriv / keypair.privKey).
+          walletSecretKey.fill(0);
+        }
+        signatures = [walletSigBase64];
+        // sol_single skips Key entirely; sol_dual forwards to Key for ed25519 co-sign.
       } else if (signingMode === 'key_only') {
         // UTXO key-only: wallet doesn't sign, forward raw TX for Key to sign independently
         console.log(
@@ -799,6 +871,29 @@ function EnterpriseVaultSignTx({
 
       setWalletSignatures(signatures);
       setWalletPubKey(keypair.pubKey);
+
+      // sol_single skips Key: wallet ed25519 is the only sig needed per signer.
+      // Return immediately without round-tripping to the Key device.
+      if (signingMode === 'sol_single') {
+        setLoading(false);
+        if (openAction) {
+          openAction({
+            status: 'SUCCESS',
+            result: {
+              walletSignatures: signatures,
+              keySignatures: [],
+              walletPubKey: keypair.pubKey,
+              keyPubKey: '',
+              wkIdentity: wkIdentity ?? '',
+              chain,
+              orgIndex,
+              vaultIndex,
+            },
+          });
+        }
+        signingRef.current = false;
+        return;
+      }
 
       // Send to Key for co-signing
       const reqId = generateRequestId();

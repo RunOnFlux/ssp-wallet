@@ -5,6 +5,13 @@ import { HDKey } from '@scure/bip32';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { toCashAddress } from 'bchaddrjs';
+import * as nacl from 'tweetnacl';
+import bs58 from 'bs58';
+import { PublicKey } from '@solana/web3.js';
+import {
+  deriveMultisigAddress as deriveSolanaMultisigAddress,
+  deriveVaultAddress as deriveSolanaVaultAddress,
+} from '@runonflux/solana-multisig';
 import {
   keyPair,
   minHDKey,
@@ -15,6 +22,14 @@ import {
   publicPrivateNonce,
 } from '../types';
 import { blockchains } from '@storage/blockchains';
+
+function getSolanaProgramId(chain: keyof cryptos): PublicKey {
+  const id = blockchains[chain].programId;
+  if (!id) {
+    throw new Error(`Chain ${chain} has no programId in spec`);
+  }
+  return new PublicKey(id);
+}
 
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
@@ -122,6 +137,45 @@ export function generateMultisigAddress(
       xpub2,
       typeIndex,
       addressIndex,
+      chain,
+    );
+  }
+  if (blockchains[chain].chainType === 'sol') {
+    // For Solana, xpub1/xpub2 are JSON-stringified arrays of 20 base58
+    // Ed25519 leaf pubkeys. Look up the pubkey for the requested index
+    // and derive the vault PDA via the multisig SDK.
+    let walletPubkeys: string[];
+    let keyPubkeys: string[];
+    try {
+      walletPubkeys = JSON.parse(xpub1) as string[];
+      keyPubkeys = JSON.parse(xpub2) as string[];
+    } catch {
+      throw new Error(
+        'generateMultisigAddress: sol xpub fields are not JSON arrays',
+      );
+    }
+    if (
+      !Array.isArray(walletPubkeys) ||
+      !Array.isArray(keyPubkeys) ||
+      walletPubkeys.length !== 20 ||
+      keyPubkeys.length !== 20
+    ) {
+      throw new Error('generateMultisigAddress: sol pubkey arrays malformed');
+    }
+    // typeIndex doesn't apply to Solana (no change/identity distinction at
+    // the address-derivation level — multisig IS the identity). Index into
+    // the pubkey array using addressIndex; treat identity (typeIndex=10) as
+    // index 0.
+    const idx = typeIndex === 10 ? 0 : addressIndex;
+    if (idx < 0 || idx >= 20) {
+      throw new Error(
+        `generateMultisigAddress: sol address index ${idx} out of range`,
+      );
+    }
+    return generateMultisigAddressSOL(
+      walletPubkeys[idx],
+      keyPubkeys[idx],
+      0, // vaultIndex — SSP uses single vault per multisig
       chain,
     );
   }
@@ -327,6 +381,127 @@ export function generateAddressKeypairEVM(
   return { privKey: privateKey, pubKey: publicKey };
 }
 
+/**
+ * Solana key derivation: BIP32 leaf private key bytes are used as the
+ * Ed25519 seed (per nacl.sign.keyPair.fromSeed). This keeps the entire HD
+ * tree unified under BIP32 — Ed25519 only enters at the leaf, so the same
+ * `m/48'/coin'/account'/scriptType'/typeIndex/addressIndex` path works
+ * across all chains.
+ *
+ * Returns:
+ *   privKey — 64-byte Ed25519 secret key (seed + public, hex)
+ *   pubKey  — 32-byte Ed25519 public key, base58-encoded (Solana convention)
+ */
+export function generateAddressKeypairSOL(
+  xpriv: string,
+  typeIndex: number,
+  addressIndex: number,
+  chain: keyof cryptos,
+): keyPair {
+  const bipParams = blockchains[chain].bip32;
+  const externalChain = HDKey.fromExtendedKey(xpriv, bipParams);
+
+  const externalAddress = externalChain
+    .deriveChild(typeIndex)
+    .deriveChild(addressIndex);
+
+  if (!externalAddress.privateKey) {
+    throw new Error(
+      `generateAddressKeypairSOL: no private key derivable for ${chain}`,
+    );
+  }
+
+  const ed25519Pair = nacl.sign.keyPair.fromSeed(externalAddress.privateKey);
+  const pubKeyBase58 = bs58.encode(ed25519Pair.publicKey);
+  const privKeyHex = Buffer.from(ed25519Pair.secretKey).toString('hex');
+
+  return { privKey: privKeyHex, pubKey: pubKeyBase58 };
+}
+
+/**
+ * Pre-derive an array of 20 leaf Ed25519 public keys (base58-encoded) for
+ * a Solana chain. This is what gets exchanged via pairing — once at setup,
+ * both wallet and key send each other their 20-pubkey arrays so each side
+ * can compute multisig vault addresses for any address index 0-19.
+ *
+ * 20 matches the wallet-count UI cap (Navbar.tsx).
+ *
+ * ⚠️  CHANGING THIS LIMIT — the value is mirrored in several places that
+ *    must stay in lockstep:
+ *      - this loop bound
+ *      - generateMultisigAddress sol length check + index bound (this file)
+ *      - Key.tsx isSolanaPubkeyArrayString length check + QR errorLevel
+ *      - Navbar.tsx max-wallet guard
+ *      - TokenBoxImport.tsx activated-tokens cleanup loop
+ *      - ssp-key wallet.ts (mirror functions)
+ *      - ssp-key Home.tsx isSolanaPubkeyArrayString
+ *      - ssp-key AddressDetails picker length
+ *      - ssp-relay syncApi.ts validation (length === 20)
+ *      - ssp-relay-enterprise lib/config.ts portfolio.addressDerivationCount
+ *
+ *    QR coupling: the sync QR carries `${chain}:${JSON-array}`. Key.tsx
+ *    picks errorLevel Q for short payloads and M for long ones (>200
+ *    chars) — at the fixed 256px display size, M keeps Solana's ~951-char
+ *    payload's cells large enough for a phone camera to resolve. v40 QR
+ *    capacity at M is ~2331 bytes — fits up to ~50 pubkeys. Past that you'd
+ *    drop to L (~2953 bytes / ~64 pubkeys) and beyond that, split into
+ *    multiple QR codes.
+ */
+export function generateSolanaPubkeyArray(
+  xpriv: string,
+  chain: keyof cryptos,
+  typeIndex: number,
+): string[] {
+  // typeIndex selects the BIP32 child slot under which we derive the 20
+  // ed25519 leaves. Consumer wallet passes 0 (receiving). Enterprise
+  // vaults pass `vault.vaultIndex` so each vault in an org gets a distinct
+  // pubkey pool — mirrors EVM/UTXO per-vault key separation. Both sides
+  // (wallet + key) must pass the same typeIndex or the multisig PDA built
+  // from the resulting pubkey arrays won't match what each device signs.
+  const pubkeys: string[] = [];
+  for (let i = 0; i < 20; i++) {
+    const { pubKey } = generateAddressKeypairSOL(xpriv, typeIndex, i, chain);
+    pubkeys.push(pubKey);
+  }
+  return pubkeys;
+}
+
+/**
+ * Compute the deposit address (vault PDA) for a 2-of-2 SSP multisig on
+ * Solana, given both members' Ed25519 public keys.
+ *
+ * Solana addresses cannot be derived from a partner's xpub alone (Ed25519
+ * has no non-hardened public-key derivation), so this function takes the
+ * actual leaf Ed25519 pubkeys of both members. Pairing exchanges these
+ * once at setup time (see Phase 3 — pairing payload extension).
+ */
+export function generateMultisigAddressSOL(
+  myEd25519PubkeyBase58: string,
+  partnerEd25519PubkeyBase58: string,
+  vaultIndex: number,
+  chain: keyof cryptos,
+): multisig {
+  const programId = getSolanaProgramId(chain);
+  const members = [
+    new PublicKey(myEd25519PubkeyBase58),
+    new PublicKey(partnerEd25519PubkeyBase58),
+  ];
+  const threshold = 2; // SSP is always 2-of-2 (wallet + key)
+  const [multisigPda] = deriveSolanaMultisigAddress(
+    members,
+    threshold,
+    programId,
+  );
+  const [vaultPda] = deriveSolanaVaultAddress(
+    multisigPda,
+    vaultIndex,
+    programId,
+  );
+  return {
+    address: vaultPda.toBase58(),
+  };
+}
+
 // given xpriv of our party, generate keypair consisting of privateKey in WIF format and public key belonging to it
 export function generateAddressKeypair(
   xpriv: string,
@@ -337,6 +512,9 @@ export function generateAddressKeypair(
   const { chainType } = blockchains[chain];
   if (chainType === 'evm') {
     return generateAddressKeypairEVM(xpriv, typeIndex, addressIndex, chain);
+  }
+  if (chainType === 'sol') {
+    return generateAddressKeypairSOL(xpriv, typeIndex, addressIndex, chain);
   }
   const libID = getLibId(chain);
   const bipParams = blockchains[chain].bip32;

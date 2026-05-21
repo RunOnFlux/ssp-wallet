@@ -90,6 +90,11 @@ const assetBackends: backends = {
     api: 'api.bsc-mainnet.runonflux.io/api',
     explorer: 'bscscan.com',
   },
+  solDevnet: {
+    node: 'api.devnet.solana.com',
+    api: 'api.devnet.solana.com',
+    explorer: 'explorer.solana.com',
+  },
 };
 
 export function backends() {

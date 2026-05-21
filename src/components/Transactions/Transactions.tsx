@@ -19,6 +19,7 @@ function Transactions() {
   const { wallets, walletInUse, blockheight, importedTokens } = useAppSelector(
     (state) => state[activeChain],
   );
+  const walletAddress = wallets[walletInUse]?.address;
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -27,6 +28,7 @@ function Transactions() {
   const [fiatRate, setFiatRate] = useState(0);
 
   useEffect(() => {
+    if (!walletAddress) return;
     setPendingTxs([]);
     getPendingTx();
     void (async function () {
@@ -47,7 +49,7 @@ function Transactions() {
       getTransactions();
       getCryptoRate(activeChain, sspConfig().fiatCurrency);
     }, 20000);
-  }, [activeChain, walletInUse]);
+  }, [activeChain, walletInUse, walletAddress]);
 
   useEffect(() => {
     getCryptoRate(activeChain, sspConfig().fiatCurrency);

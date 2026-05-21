@@ -29,7 +29,7 @@ import {
 import secureLocalStorage from 'react-secure-storage';
 import { getScriptType } from './wallet';
 import { getMasterXpriv, getMasterXpub } from './wallet';
-import { generateMultisigAddress } from './wallet';
+import { generateMultisigAddress, generateSolanaPubkeyArray } from './wallet';
 import type {
   generatedWallets,
   transaction,
@@ -172,7 +172,10 @@ async function loadChainFromStorage(
         const xpubChainKey = await passworderDecrypt(password, xpub2Encrypted);
 
         if (xpubChainKey && typeof xpubChainKey === 'string') {
-          // Set xpub wallet and key
+          // For sol chains, both xpubChainWallet and xpubChainKey are
+          // JSON-stringified arrays of 20 base58 pubkeys, but Redux/storage
+          // treat them identically as opaque strings — consumers JSON.parse
+          // when needed (see generateMultisigAddress dispatch).
           setXpubWallet(chainToSwitch, xpubChainWallet);
           setXpubKey(chainToSwitch, xpubChainKey);
 
@@ -255,10 +258,27 @@ async function generateNewChainData(
   // Clear sensitive data
   walletSeed = '';
 
+  // For Solana chains the wallet's "xpub" is actually a JSON-stringified
+  // array of 20 leaf Ed25519 pubkeys (Ed25519 has no non-hardened public-key
+  // derivation; xpub alone is useless). Pre-derive now while xpriv is in
+  // scope; storage layout reuses the existing xpub paths.
+  // Consumer wallet has a single wallet per chain → typeIndex=0 (receiving
+  // slot). Enterprise vaults pass vault.vaultIndex via a different code path
+  // (EnterpriseVaultXpub) so each vault gets its own pubkey pool.
+  let xpubWalletForChain = xpubWallet;
+  if (blockchainConfig.chainType === 'sol') {
+    const solanaPubkeys = generateSolanaPubkeyArray(
+      xprivWallet,
+      chainToSwitch,
+      0,
+    );
+    xpubWalletForChain = JSON.stringify(solanaPubkeys);
+  }
+
   // Encrypt and store xpriv and xpub
   const xprivBlob = await passworderEncrypt(password, xprivWallet);
   xprivWallet = '';
-  const xpubBlob = await passworderEncrypt(password, xpubWallet);
+  const xpubBlob = await passworderEncrypt(password, xpubWalletForChain);
 
   secureLocalStorage.setItem(
     `xpriv-48-${blockchainConfig.slip}-0-${getScriptType(
@@ -273,8 +293,8 @@ async function generateNewChainData(
     xpubBlob,
   );
 
-  // Set xpub in Redux
-  setXpubWallet(chainToSwitch, xpubWallet);
+  // Set xpub in Redux (string for non-sol; JSON-stringified pubkey array for sol)
+  setXpubWallet(chainToSwitch, xpubWalletForChain);
 
   // Load existing wallets and data
   const generatedWallets: generatedWallets =

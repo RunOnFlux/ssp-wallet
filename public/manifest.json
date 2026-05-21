@@ -45,11 +45,11 @@
     "http://*/*",
     "https://*/*"
   ],
-  "minimum_chrome_version": "110",
+  "minimum_chrome_version": "111",
   "browser_specific_settings": {
     "gecko": {
       "id": "extension@sspwallet.io",
-      "strict_min_version": "110.0"
+      "strict_min_version": "114.0"
     }
   }
 }

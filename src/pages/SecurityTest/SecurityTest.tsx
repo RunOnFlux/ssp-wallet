@@ -144,17 +144,8 @@ const SecurityTest: React.FC = () => {
     // Method 1: Direct property assignment
     globalTamperingTotal++;
     try {
-      setGlobalProp(
-        globalThis as unknown as Record<string, unknown>,
-        '__test_property',
-        'test',
-      );
-      if (
-        getGlobalProp(
-          globalThis as unknown as Record<string, unknown>,
-          '__test_property',
-        )
-      ) {
+      setGlobalProp(globalThis, '__test_property', 'test');
+      if (getGlobalProp(globalThis, '__test_property')) {
         logTest('❌ Direct globalThis assignment not blocked', 'fail');
       } else {
         globalTamperingBlocked++;

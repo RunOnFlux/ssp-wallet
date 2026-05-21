@@ -9,8 +9,10 @@ import secureLocalStorage from 'react-secure-storage';
 import { getFingerprint } from '../../lib/fingerprint';
 import {
   getMasterXpub,
+  getMasterXpriv,
   getScriptType,
   generateAddressKeypair,
+  generateSolanaPubkeyArray,
 } from '../../lib/wallet';
 import { signMessage } from '../../lib/relayAuth';
 import { blockchains } from '@storage/blockchains';
@@ -44,6 +46,7 @@ interface Props {
   open: boolean;
   chain: string;
   orgIndex: number;
+  vaultIndex: number;
   vaultName: string;
   orgName: string;
   requesterInfo?: WkSignRequesterInfo | null;
@@ -54,6 +57,7 @@ function EnterpriseVaultXpub({
   open,
   chain,
   orgIndex,
+  vaultIndex,
   vaultName,
   orgName,
   requesterInfo,
@@ -177,15 +181,40 @@ function EnterpriseVaultXpub({
       throw new Error(t('home:enterpriseVaultXpub.err_decrypt_seed'));
     }
 
-    // Derive xpub at m/48'/coin'/orgIndex'/scriptType'
-    const xpub = getMasterXpub(
-      walletSeed,
-      48,
-      chainConfig.slip,
-      orgIndex,
-      chainConfig.scriptType,
-      chain as keyof cryptos,
-    );
+    // For UTXO/EVM: send the BIP32 xpub. The backend later derives child
+    // pubkeys per addressIndex on demand.
+    // For Solana: BIP32 doesn't apply to ed25519 the same way — instead we
+    // pre-derive 20 ed25519 pubkeys at HD path [vaultIndex][0..19] and send
+    // them as a JSON array. Mirrors EVM/UTXO behavior: each vault in an org
+    // gets a distinct pubkey pool because vault.vaultIndex separates the
+    // derivation tree at the typeIndex slot. The backend's parsePubkeyArray
+    // validates the JSON shape; a BIP32 xpub for a Solana vault is rejected.
+    let xpub: string;
+    if (chainConfig.chainType === 'sol') {
+      const vaultXpriv = getMasterXpriv(
+        walletSeed,
+        48,
+        chainConfig.slip,
+        orgIndex,
+        chainConfig.scriptType,
+        chain as keyof cryptos,
+      );
+      const pubkeys = generateSolanaPubkeyArray(
+        vaultXpriv,
+        chain as keyof cryptos,
+        vaultIndex,
+      );
+      xpub = JSON.stringify(pubkeys);
+    } else {
+      xpub = getMasterXpub(
+        walletSeed,
+        48,
+        chainConfig.slip,
+        orgIndex,
+        chainConfig.scriptType,
+        chain as keyof cryptos,
+      );
+    }
 
     // Clear sensitive data
     walletSeed = '';
@@ -223,10 +252,12 @@ function EnterpriseVaultXpub({
     identityKeypair.privKey = '';
 
     return { xpub, signature };
-  }, [passwordBlob, chain, orgIndex, identityChain]);
+  }, [passwordBlob, chain, orgIndex, vaultIndex, identityChain]);
 
   /**
    * Post enterprise vault xpub request to relay for Key to derive its xpub.
+   * Key needs vaultIndex to derive at the same HD typeIndex slot the wallet
+   * used — Solana xpub generation is now per-vault, not per-org.
    */
   const postVaultXpubRequest = async (walletXpub: string, reqId: string) => {
     const chainConfig = blockchains[chain];
@@ -236,6 +267,7 @@ function EnterpriseVaultXpub({
     const payload = {
       chain,
       orgIndex,
+      vaultIndex,
       vaultName,
       orgName,
       xpubWallet: walletXpub,

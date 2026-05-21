@@ -39,6 +39,10 @@ const utxoCache = new LRUCache({
   ttl: 1 * 60 * 60 * 1000, // 1 hour, just as precaution here, not really needed
 });
 
+// SPL Memo v2 program — standard on Solana for attaching arbitrary UTF-8
+// payloads to a tx, indexed by explorers and parsed by getTransaction.
+const MEMO_PROGRAM_ID_BASE58 = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
+
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
 }
@@ -1356,4 +1360,446 @@ export async function isEVMContractDeployed(
     console.error(`Error checking deployment for ${address}:`, error);
     return false; // Assume not deployed on error
   }
+}
+
+// ============================================================================
+// Solana
+// ============================================================================
+
+/**
+ * Probes on-chain state to decide:
+ *   - `needsSetup`: caller must POST /v1/sol/setup before constructAndSignSOLTransaction.
+ *     True iff multisig OR durable nonce account is missing.
+ *   - `isFirstRealSend`: charges firstSendLamports vs subsequentSendLamports.
+ *     True iff multisig is missing OR multisig.transaction_index === 0.
+ *     (The second condition captures the case where /v1/sol/setup ran
+ *     hours/days ago but the user hasn't actually sent anything yet, so the
+ *     paymaster's pre-paid setup rent still needs to be reimbursed on this send.)
+ *
+ * Uses Connection directly — no SDK client spin-up needed.
+ */
+export async function getSolanaMultisigInitState(opts: {
+  chain: keyof cryptos;
+  walletPubkeyBase58: string;
+  keyPubkeyBase58: string;
+}): Promise<{ needsSetup: boolean; isFirstRealSend: boolean }> {
+  const { Connection, PublicKey } = await import('@solana/web3.js');
+  const { SolanaMultisigClient, deriveMultisigAddress, deriveNonceAccount } =
+    await import('@runonflux/solana-multisig');
+  const backendConfig = backends()[opts.chain];
+  const blockchainConfig = blockchains[opts.chain];
+  if (!blockchainConfig.programId) {
+    throw new Error(`Chain ${opts.chain} has no programId in spec`);
+  }
+  const programId = new PublicKey(blockchainConfig.programId);
+  const connection = new Connection(`https://${backendConfig.node}`, {
+    commitment: 'confirmed',
+  });
+  const members = [
+    new PublicKey(opts.walletPubkeyBase58),
+    new PublicKey(opts.keyPubkeyBase58),
+  ];
+  const [multisigAddress] = deriveMultisigAddress(members, 2, programId);
+  const nonceAccount = await deriveNonceAccount(multisigAddress);
+
+  const client = new SolanaMultisigClient(connection, programId);
+  const [multisigState, nonceAccountInfo] = await Promise.all([
+    client.getMultisig(multisigAddress),
+    connection.getAccountInfo(nonceAccount),
+  ]);
+
+  const needsSetup = !multisigState || !nonceAccountInfo;
+  // SDK's MultisigConfig.transactionIndex is typed as bigint but anchor's
+  // u64 deserialization actually returns BN at runtime. Normalize via
+  // .toString() so the BigInt comparison is correct either way.
+  const isFirstRealSend =
+    !multisigState ||
+    BigInt(multisigState.transactionIndex.toString()) === BigInt(0);
+  return { needsSetup, isFirstRealSend };
+}
+
+/**
+ * Build a Solana 2-of-2 send transaction, wallet-leaf-signed and ready for
+ * the SSP relay → Key co-sign → broadcast flow.
+ *
+ * When the multisig PDA isn't yet initialized on-chain, prepends a single
+ * permissionless `initialize_multisig` ix. No member signatures are needed
+ * for init — the PDA is fully determined by `(sorted_members, threshold)`,
+ * so initializing with the canonical inputs is the only way to land at the
+ * canonical address.
+ *
+ * Layout (when needsInit=true):
+ *   [initialize_multisig, ...extraOuterIxs, create, approve×2, execute, close]
+ * Layout (when needsInit=false):
+ *   [...extraOuterIxs, create, approve×2, execute, close]
+ *
+ * Wallet leaf-signs in place and returns the partially-signed tx as base64.
+ * Identical wire format for first / subsequent sends — Key co-signs + posts
+ * to /v1/sol/broadcast.
+ */
+export async function constructAndSignSOLTransaction(opts: {
+  chain: keyof cryptos;
+  recipient: string; // base58 Solana address (recipient OWNER for SPL)
+  amount: string; // amount in base units (lamports for SOL, raw token units for SPL)
+  walletPubkeyBase58: string;
+  keyPubkeyBase58: string;
+  walletPrivKeyHex: string;
+  // Fetched from GET /v1/sol/paymaster — the relay's paymaster signs feePayer.
+  paymasterPubkeyBase58: string;
+  // Vault → paymaster reimbursement, embedded in the proposal. Relay
+  // rejects txs below FEE_SCHEDULE.minReimbursementLamports.
+  paymasterFeeLamports: string;
+  // SPL transfer if set; otherwise native SOL. Recipient ATA is auto-created
+  // (idempotent ix).
+  tokenMintBase58?: string;
+  // Required when tokenMintBase58 is set. Embedded in the SPL TransferChecked
+  // instruction so the signed bytes carry the decimals — ssp-key verifies this
+  // against its wallet-supplied tokenMeta.decimals, and the on-chain SPL Token
+  // program rejects the tx if it doesn't match the mint's actual decimals.
+  tokenDecimals?: number;
+  // Optional memo embedded as an SPL Memo v2 instruction inside the proposal.
+  // Shows up on explorers and is parsed back into history's note field.
+  memo?: string;
+}): Promise<string> {
+  const { Connection, PublicKey, SystemProgram, Transaction, Keypair } =
+    await import('@solana/web3.js');
+  const { SolanaMultisigClient, deriveMultisigAddress, deriveVaultAddress } =
+    await import('@runonflux/solana-multisig');
+  const backendConfig = backends()[opts.chain];
+  const blockchainConfig = blockchains[opts.chain];
+  if (!blockchainConfig.programId) {
+    throw new Error(`Chain ${opts.chain} has no programId in spec`);
+  }
+  const programId = new PublicKey(blockchainConfig.programId);
+  const connection = new Connection(`https://${backendConfig.node}`, {
+    commitment: 'confirmed',
+  });
+
+  // Reconstruct wallet keypair from hex secretKey for partial-signing.
+  const walletSecretKey = new Uint8Array(
+    Buffer.from(opts.walletPrivKeyHex, 'hex'),
+  );
+  const walletKeypair = Keypair.fromSecretKey(walletSecretKey);
+  if (walletKeypair.publicKey.toBase58() !== opts.walletPubkeyBase58) {
+    throw new Error(
+      'Wallet privkey/pubkey mismatch — secretKey does not match expected pubkey',
+    );
+  }
+
+  const walletPubkey = walletKeypair.publicKey;
+  const keyPubkey = new PublicKey(opts.keyPubkeyBase58);
+  const paymasterPubkey = new PublicKey(opts.paymasterPubkeyBase58);
+
+  // Compute multisig + vault PDAs from the two member pubkeys.
+  const members = [walletPubkey, keyPubkey];
+  const threshold = 2;
+  const [multisigAddress] = deriveMultisigAddress(
+    members,
+    threshold,
+    programId,
+  );
+  const [vaultAddress] = deriveVaultAddress(multisigAddress, 0, programId);
+
+  // The multisig must already be initialized AND its durable nonce account
+  // must already be provisioned by the time this function is called.
+  // SendSOL.tsx is responsible for calling /v1/sol/setup on the relay
+  // before invoking us when either is missing — that endpoint atomically
+  // sets up both via a paymaster-signed tx with vault-balance gating.
+  //
+  // We can therefore assume here that:
+  //   - `client.getMultisig(multisigAddress)` returns non-null
+  //   - `connection.getAccountInfo(nonceAccount)` returns non-null
+  //   - We can always use the durable-nonce flow (nonceAdvance at ix[0])
+  const client = new SolanaMultisigClient(connection, programId);
+  const multisigState = await client.getMultisig(multisigAddress);
+  if (!multisigState) {
+    throw new Error(
+      'Multisig not initialized on-chain — caller must POST /v1/sol/setup first',
+    );
+  }
+  // First *real* send is detected by transactionIndex===0 (not by needsInit)
+  // because pre-setup leaves multisig.transaction_index at 0 even after
+  // initialize_multisig has run. This means the wallet's fee calculator
+  // correctly charges firstSendLamports on the first send even when the
+  // multisig was pre-initialized by /v1/sol/setup hours/days earlier.
+  const currentTxIndex = multisigState.transactionIndex;
+
+  // Determine the durable nonce account for this multisig. Pure deterministic
+  // derivation — paymaster-independent, no DB lookup needed.
+  const { deriveNonceAccount } = await import('@runonflux/solana-multisig');
+  const nonceAccount = await deriveNonceAccount(multisigAddress);
+
+  const recipientPubkey = new PublicKey(opts.recipient);
+
+  // Build the inner transfer instruction + V0-style proposal message.
+  // For SPL: account_keys = [vault (signer), sourceAta, destAta, TOKEN_PROGRAM]
+  // For SOL: account_keys = [vault (signer), recipient, SystemProgram]
+  let message: import('@runonflux/solana-multisig').TransactionMessage;
+  let extraOuterIxs: import('@solana/web3.js').TransactionInstruction[] = [];
+  let executeRemainingAccounts: Array<{
+    pubkey: import('@solana/web3.js').PublicKey;
+    isSigner: boolean;
+    isWritable: boolean;
+  }>;
+
+  if (opts.tokenMintBase58) {
+    const splToken = await import('@solana/spl-token');
+    const mint = new PublicKey(opts.tokenMintBase58);
+    // Vault's ATA is the source. allowOwnerOffCurve=true since vault is a PDA.
+    const sourceAta = splToken.getAssociatedTokenAddressSync(
+      mint,
+      vaultAddress,
+      true,
+    );
+    const destAta = splToken.getAssociatedTokenAddressSync(
+      mint,
+      recipientPubkey,
+      true,
+    );
+    // Idempotent ATA creation for recipient's ATA (paymaster pays rent if
+    // it doesn't exist). Goes outside the multisig proposal since it
+    // doesn't need vault authorization.
+    extraOuterIxs = [
+      splToken.createAssociatedTokenAccountIdempotentInstruction(
+        paymasterPubkey, // payer
+        destAta,
+        recipientPubkey, // owner of new ATA
+        mint,
+      ),
+    ];
+    if (opts.tokenDecimals == null) {
+      throw new Error('tokenDecimals is required for SPL transfers');
+    }
+    // TransferChecked (tag 12) embeds the mint pubkey + decimals byte into the
+    // signed instruction bytes. ssp-key can then verify wallet-supplied
+    // tokenMeta.{mint,decimals} against the bytes it's about to sign, and the
+    // on-chain SPL Token program double-checks decimals against the mint —
+    // wrong decimals = automatic on-chain rejection.
+    const transferIx = splToken.createTransferCheckedInstruction(
+      sourceAta,
+      mint,
+      destAta,
+      vaultAddress, // authority
+      BigInt(opts.amount),
+      opts.tokenDecimals,
+    );
+    // Paymaster reimbursement, validated by the relay against its floor.
+    const reimburseIx = SystemProgram.transfer({
+      fromPubkey: vaultAddress,
+      toPubkey: paymasterPubkey,
+      lamports: BigInt(opts.paymasterFeeLamports),
+    });
+    const memoText = opts.memo?.trim() ?? '';
+    const memoProgramId = new PublicKey(MEMO_PROGRAM_ID_BASE58);
+    // account_keys MUST be ordered: [writable_signers, readonly_signers,
+    // writable_non_signers, readonly_non_signers]. paymaster is credited by
+    // the reimbursement transfer, so it must sit in the writable_non_signers
+    // zone BEFORE the mint / TOKEN_PROGRAM_ID / SystemProgram — otherwise
+    // execute fails with "instruction changed the balance of a read-only
+    // account". The mint is referenced read-only by TransferChecked.
+    const splAccountKeys = [
+      vaultAddress,
+      sourceAta,
+      destAta,
+      paymasterPubkey,
+      mint,
+      splToken.TOKEN_PROGRAM_ID,
+      SystemProgram.programId,
+    ];
+    const splInstructions = [
+      {
+        programIdIndex: 5, // TOKEN_PROGRAM_ID
+        // TransferChecked: [source, mint, dest, authority]
+        accountIndexes: new Uint8Array([1, 4, 2, 0]),
+        data: new Uint8Array(transferIx.data),
+      },
+      {
+        programIdIndex: 6, // SystemProgram for reimbursement
+        accountIndexes: new Uint8Array([0, 3]), // [vault, paymaster]
+        data: new Uint8Array(reimburseIx.data),
+      },
+    ];
+    if (memoText) {
+      splAccountKeys.push(memoProgramId);
+      splInstructions.push({
+        programIdIndex: splAccountKeys.length - 1,
+        accountIndexes: new Uint8Array([]),
+        data: new Uint8Array(Buffer.from(memoText, 'utf8')),
+      });
+    }
+    message = {
+      numSigners: 1,
+      numWritableSigners: 1,
+      numWritableNonSigners: 3,
+      accountKeys: splAccountKeys,
+      instructions: splInstructions,
+      addressTableLookups: [],
+    };
+    executeRemainingAccounts = [
+      { pubkey: vaultAddress, isSigner: false, isWritable: true },
+      { pubkey: sourceAta, isSigner: false, isWritable: true },
+      { pubkey: destAta, isSigner: false, isWritable: true },
+      { pubkey: paymasterPubkey, isSigner: false, isWritable: true },
+      { pubkey: mint, isSigner: false, isWritable: false },
+      { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ];
+    if (memoText) {
+      executeRemainingAccounts.push({
+        pubkey: memoProgramId,
+        isSigner: false,
+        isWritable: false,
+      });
+    }
+  } else {
+    // Native SOL transfer + paymaster reimbursement.
+    const transferIx = SystemProgram.transfer({
+      fromPubkey: vaultAddress,
+      toPubkey: recipientPubkey,
+      lamports: BigInt(opts.amount),
+    });
+    const reimburseIx = SystemProgram.transfer({
+      fromPubkey: vaultAddress,
+      toPubkey: paymasterPubkey,
+      lamports: BigInt(opts.paymasterFeeLamports),
+    });
+    // account_keys MUST be ordered: [writable_signers, readonly_signers,
+    // writable_non_signers, readonly_non_signers]. Putting SystemProgram
+    // before paymaster pushes paymaster into the readonly zone — execute
+    // then fails with "instruction changed the balance of a read-only
+    // account" when the reimbursement transfer credits paymaster.
+    const memoText = opts.memo?.trim() ?? '';
+    const memoProgramId = new PublicKey(MEMO_PROGRAM_ID_BASE58);
+    const solAccountKeys = [
+      vaultAddress,
+      recipientPubkey,
+      paymasterPubkey,
+      SystemProgram.programId,
+    ];
+    const solInstructions = [
+      {
+        programIdIndex: 3,
+        accountIndexes: new Uint8Array([0, 1]), // [vault, recipient]
+        data: new Uint8Array(transferIx.data),
+      },
+      {
+        programIdIndex: 3,
+        accountIndexes: new Uint8Array([0, 2]), // [vault, paymaster]
+        data: new Uint8Array(reimburseIx.data),
+      },
+    ];
+    if (memoText) {
+      solAccountKeys.push(memoProgramId);
+      solInstructions.push({
+        programIdIndex: solAccountKeys.length - 1,
+        accountIndexes: new Uint8Array([]),
+        data: new Uint8Array(Buffer.from(memoText, 'utf8')),
+      });
+    }
+    message = {
+      numSigners: 1,
+      numWritableSigners: 1,
+      numWritableNonSigners: 2,
+      accountKeys: solAccountKeys,
+      instructions: solInstructions,
+      addressTableLookups: [],
+    };
+    executeRemainingAccounts = [
+      { pubkey: vaultAddress, isSigner: false, isWritable: true },
+      { pubkey: recipientPubkey, isSigner: false, isWritable: true },
+      { pubkey: paymasterPubkey, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ];
+    if (memoText) {
+      executeRemainingAccounts.push({
+        pubkey: memoProgramId,
+        isSigner: false,
+        isWritable: false,
+      });
+    }
+  }
+
+  const {
+    instruction: createIx,
+    transactionAddress,
+    transactionIndex,
+  } = await client.buildCreateTransactionInstruction({
+    multisigAddress,
+    currentTransactionIndex: currentTxIndex,
+    vaultIndex: 0,
+    message,
+    creator: walletPubkey,
+    // Paymaster funds the proposal rent — leaf doesn't need a SOL balance.
+    // close_transaction below refunds rent back to the same paymaster.
+    payer: paymasterPubkey,
+  });
+  const approveWalletIx = await client.buildApproveTransactionInstruction({
+    multisigAddress,
+    transactionAddress,
+    transactionIndex,
+    member: walletPubkey,
+  });
+  const approveKeyIx = await client.buildApproveTransactionInstruction({
+    multisigAddress,
+    transactionAddress,
+    transactionIndex,
+    member: keyPubkey,
+  });
+  const executeIx = await client.buildExecuteTransactionInstruction({
+    multisigAddress,
+    transactionAddress,
+    transactionIndex,
+    executor: walletPubkey,
+    remainingAccounts: executeRemainingAccounts,
+  });
+  // Close refunds proposal rent to the original payer (paymaster);
+  // bundled with execute so it's atomic.
+  const closeIx = await client.buildCloseTransactionInstruction({
+    multisigAddress,
+    transactionAddress,
+    transactionIndex,
+    payer: paymasterPubkey,
+  });
+
+  // Durable nonce flow. Multisig + nonce account are guaranteed to exist
+  // at this point (caller ran /v1/sol/setup first if needed). Fetch the
+  // current nonce value, use it as `recentBlockhash`, and prepend
+  // SystemProgram.nonceAdvance at ix[0]. Wallet's signature then survives
+  // the full wallet→relay→push→user-approve→key-sign round trip without
+  // expiring — durable nonces don't have the 60s blockhash window.
+  const nonceState = await connection.getNonceAndContext(nonceAccount);
+  if (!nonceState.value) {
+    throw new Error(
+      `Durable nonce at ${nonceAccount.toBase58()} not initialized — caller must POST /v1/sol/setup first`,
+    );
+  }
+  const nonceAdvanceIx = SystemProgram.nonceAdvance({
+    noncePubkey: nonceAccount,
+    authorizedPubkey: paymasterPubkey,
+  });
+
+  const tx = new Transaction().add(
+    nonceAdvanceIx, // ix[0] — MUST be first for Solana to recognize durable-nonce semantics
+    ...extraOuterIxs,
+    createIx,
+    approveWalletIx,
+    approveKeyIx,
+    executeIx,
+    closeIx,
+  );
+  tx.recentBlockhash = nonceState.value.nonce;
+  tx.feePayer = paymasterPubkey;
+  tx.partialSign(walletKeypair);
+
+  // Serialize without verifying signatures (key's slot is still unsigned).
+  const serialized = tx
+    .serialize({ requireAllSignatures: false, verifySignatures: false })
+    .toString('base64');
+  // Zero the raw 64-byte ed25519 secret-key buffer once we're done signing.
+  // JS GC doesn't promise prompt zeroing; explicit wipe defends against
+  // memory inspection / heap dumps surfacing the wallet's vault privkey.
+  // Keypair.fromSecretKey holds an internal reference too — we can't reach
+  // into it, but zeroing the source buffer is still meaningful.
+  walletSecretKey.fill(0);
+  return serialized;
 }
