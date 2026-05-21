@@ -63,11 +63,71 @@ export default defineConfig(({ command, mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        // No manualChunks — vite-plugin-node-polyfills injects imports of
-        // process/Buffer/global plus CJS interop helpers, and Rollup's
-        // placement of those across hand-named chunks created circular
-        // imports (vendor-react ↔ vendor-utils) that crashed at module
-        // init via TDZ undefined. Auto-chunking produces a clean DAG.
+        // Function-form manualChunks (Vite 8 / Rolldown compatible).
+        //
+        // Each chunk matches packages by node_modules path. No fallback
+        // bucket — anything unmatched falls to the entry chunk, where it's
+        // guaranteed to be evaluated before any named chunk runs. That's
+        // what prevents the vendor↔topical TDZ cycles we hit earlier.
+        //
+        // Polyfilled packages (buffer/crypto-browserify/stream-browserify/
+        // process/etc.) are deliberately not matched — they stay in entry
+        // because vite-plugin-node-polyfills injects cross-chunk imports
+        // of them.
+        //
+        // React's full ecosystem (react-redux, react-router, react-i18next,
+        // i18next, scheduler, use-sync-external-store) lives in one chunk
+        // because react-redux's CJS internals call into React at module
+        // init — cross-chunk lookups would TDZ.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          if (
+            /node_modules[\\/](react|react-dom|react-router|react-redux|react-i18next|i18next|react-secure-storage|react-countdown-circle-timer|scheduler|use-sync-external-store)[\\/]/.test(
+              id,
+            )
+          )
+            return 'vendor-react';
+          if (/node_modules[\\/]@reduxjs[\\/]/.test(id)) return 'vendor-react';
+
+          if (/node_modules[\\/](antd|rc-[a-z-]+)[\\/]/.test(id))
+            return 'vendor-ui';
+          if (/node_modules[\\/]@ant-design[\\/]/.test(id)) return 'vendor-ui';
+
+          if (/node_modules[\\/](bchaddrjs)[\\/]/.test(id))
+            return 'vendor-crypto';
+          if (/node_modules[\\/]@scure[\\/](bip32|bip39)[\\/]/.test(id))
+            return 'vendor-crypto';
+
+          if (/node_modules[\\/]@runonflux[\\/](utxo-lib|flux-sdk)[\\/]/.test(id))
+            return 'vendor-utxo';
+
+          if (/node_modules[\\/](viem|ethers)[\\/]/.test(id)) return 'vendor-eth';
+          if (
+            /node_modules[\\/]@runonflux[\\/]aa-schnorr-multisig-sdk[\\/]/.test(
+              id,
+            )
+          )
+            return 'vendor-eth';
+          if (/node_modules[\\/]@alchemy[\\/]/.test(id)) return 'vendor-eth';
+
+          if (/node_modules[\\/]@solana[\\/]/.test(id)) return 'vendor-solana';
+          if (/node_modules[\\/]@coral-xyz[\\/]/.test(id)) return 'vendor-solana';
+          if (
+            /node_modules[\\/]@runonflux[\\/]solana-multisig[\\/]/.test(id)
+          )
+            return 'vendor-solana';
+
+          // NOTE: vendor-wc (@reown/@walletconnect) was attempted but
+          // crashed at runtime — shared transitive subdeps (safe-buffer)
+          // shifted into vendor-wc and broke utxo-lib's init order.
+          // Function form doesn't track transitive deps the way object
+          // form does, so we keep WC in entry to preserve utxo's
+          // safe-buffer placement.
+
+          // Unmatched node_modules → entry (no fallback chunk).
+          return;
+        },
         entryFileNames: 'assets/[name]-[hash:8].js',
         chunkFileNames: 'assets/[name]-[hash:8].js',
         assetFileNames: 'assets/[name]-[hash:8].[ext]',
