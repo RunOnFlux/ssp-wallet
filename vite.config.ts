@@ -1,11 +1,26 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { viteLavaMoat } from 'vite-plugin-lavamoat';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => ({
   plugins: [
     react(),
+    // Inject Node-style globals (Buffer, process, global) into chunks that
+    // reference them bare. Build-time injection via @rollup/plugin-inject,
+    // so vendor chunks no longer race against runtime window.process =
+    // assignment. Replaces the hand-rolled polyfill <script> blocks that
+    // used to live in index.html. resolve.alias entries below still apply
+    // to explicit imports — this plugin only adds the global layer.
+    nodePolyfills({
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
+      protocolImports: true,
+    }),
     // Only enable LavaMoat in production builds
     ...(command === 'build'
       ? [
@@ -48,45 +63,11 @@ export default defineConfig(({ command, mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        // Enable code splitting.
-        // Vite 8 (Rolldown) requires manualChunks to be a function; the
-        // Rollup-style object form is no longer accepted.
-        manualChunks: (id: string) => {
-          const groups: Record<string, string[]> = {
-            'vendor-react': [
-              'react',
-              'react-dom',
-              'react-router',
-              'react-redux',
-              'react-i18next',
-              'react-secure-storage',
-            ],
-            'vendor-ui': ['antd', '@ant-design/icons'],
-            'vendor-runonflux': ['@runonflux/utxo-lib', '@runonflux/flux-sdk'],
-            'vendor-crypto': ['@scure/bip32', '@scure/bip39', 'bchaddrjs'],
-            'vendor-eth': [
-              '@runonflux/aa-schnorr-multisig-sdk',
-              '@alchemy/aa-core',
-              'viem',
-            ],
-            'vendor-utils': [
-              'axios',
-              'localforage',
-              'i18next',
-              'buffer',
-              'crypto-browserify',
-              'stream-browserify',
-              'bignumber.js',
-            ],
-          };
-          for (const [chunk, packages] of Object.entries(groups)) {
-            if (packages.some((pkg) => id.includes(`/node_modules/${pkg}/`))) {
-              return chunk;
-            }
-          }
-          return undefined;
-        },
-        // Ensure consistent chunk naming for extension with fixed hash length
+        // No manualChunks — vite-plugin-node-polyfills injects imports of
+        // process/Buffer/global plus CJS interop helpers, and Rollup's
+        // placement of those across hand-named chunks created circular
+        // imports (vendor-react ↔ vendor-utils) that crashed at module
+        // init via TDZ undefined. Auto-chunking produces a clean DAG.
         entryFileNames: 'assets/[name]-[hash:8].js',
         chunkFileNames: 'assets/[name]-[hash:8].js',
         assetFileNames: 'assets/[name]-[hash:8].[ext]',
@@ -98,10 +79,6 @@ export default defineConfig(({ command, mode }) => ({
     },
   },
   define: {
-    // Some Node-style deps (viem, @alchemy/aa-core) reference `global`.
-    // Vite 8/Rolldown no longer polyfills this implicitly — must replace
-    // at build time for the bundle to run in the browser.
-    global: 'globalThis',
     'process.env': {
       // mainly disable user agent to prevent, we use static canvas
       VITE_SECURE_LOCAL_STORAGE_DISABLED_KEYS:
