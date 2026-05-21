@@ -269,6 +269,7 @@ describe('Solana constructTx', () => {
         paymasterPubkeyBase58: paymasterPub,
         paymasterFeeLamports: '100000',
         tokenMintBase58: usdcMint,
+        tokenDecimals: 6,
       });
       const tx = Transaction.from(Buffer.from(txB64, 'base64'));
       // nonceAdvance + idempotentCreateATA + create + approve wallet + approve key + execute + close
