@@ -48,37 +48,43 @@ export default defineConfig(({ command, mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        // Enable code splitting
-        manualChunks: {
-          // Group React and related packages
-          'vendor-react': [
-            'react',
-            'react-dom',
-            'react-router',
-            'react-redux',
-            'react-i18next',
-            'react-secure-storage',
-          ],
-          // Group UI framework
-          'vendor-ui': ['antd', '@ant-design/icons'],
-          // Group blockchain/crypto libraries
-          'vendor-runonflux': ['@runonflux/utxo-lib', '@runonflux/flux-sdk'],
-          'vendor-crypto': ['@scure/bip32', '@scure/bip39', 'bchaddrjs'],
-          'vendor-eth': [
-            '@runonflux/aa-schnorr-multisig-sdk',
-            '@alchemy/aa-core',
-            'viem',
-          ],
-          // Group utilities
-          'vendor-utils': [
-            'axios',
-            'localforage',
-            'i18next',
-            'buffer',
-            'crypto-browserify',
-            'stream-browserify',
-            'bignumber.js',
-          ],
+        // Enable code splitting.
+        // Vite 8 (Rolldown) requires manualChunks to be a function; the
+        // Rollup-style object form is no longer accepted.
+        manualChunks: (id: string) => {
+          const groups: Record<string, string[]> = {
+            'vendor-react': [
+              'react',
+              'react-dom',
+              'react-router',
+              'react-redux',
+              'react-i18next',
+              'react-secure-storage',
+            ],
+            'vendor-ui': ['antd', '@ant-design/icons'],
+            'vendor-runonflux': ['@runonflux/utxo-lib', '@runonflux/flux-sdk'],
+            'vendor-crypto': ['@scure/bip32', '@scure/bip39', 'bchaddrjs'],
+            'vendor-eth': [
+              '@runonflux/aa-schnorr-multisig-sdk',
+              '@alchemy/aa-core',
+              'viem',
+            ],
+            'vendor-utils': [
+              'axios',
+              'localforage',
+              'i18next',
+              'buffer',
+              'crypto-browserify',
+              'stream-browserify',
+              'bignumber.js',
+            ],
+          };
+          for (const [chunk, packages] of Object.entries(groups)) {
+            if (packages.some((pkg) => id.includes(`/node_modules/${pkg}/`))) {
+              return chunk;
+            }
+          }
+          return undefined;
         },
         // Ensure consistent chunk naming for extension with fixed hash length
         entryFileNames: 'assets/[name]-[hash:8].js',
@@ -92,6 +98,10 @@ export default defineConfig(({ command, mode }) => ({
     },
   },
   define: {
+    // Some Node-style deps (viem, @alchemy/aa-core) reference `global`.
+    // Vite 8/Rolldown no longer polyfills this implicitly — must replace
+    // at build time for the bundle to run in the browser.
+    global: 'globalThis',
     'process.env': {
       // mainly disable user agent to prevent, we use static canvas
       VITE_SECURE_LOCAL_STORAGE_DISABLED_KEYS:
