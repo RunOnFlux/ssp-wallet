@@ -1050,6 +1050,18 @@
       "packages": {},
       "builtins": {}
     },
+    "vite-plugin-node-polyfills": {
+      "packageName": "vite-plugin-node-polyfills",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
     "vitest": {
       "packageName": "vitest",
       "globals": {

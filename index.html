@@ -5,15 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/ssp-logo-black.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SSP Wallet</title>
-    <script type="module">
-      import { Buffer } from 'buffer';
-      import EventEmitter from 'events';
-      import process from 'process';
+    <!--
+      Node-style globals (Buffer, process, global) are injected into chunks
+      that reference them bare via vite-plugin-node-polyfills at build time.
+      No runtime polyfill setup is needed in this file.
+    -->
 
-      window.Buffer = Buffer;
-      window.EventEmitter = EventEmitter;
-      window.process = process;
-    </script>
   </head>
   <body>
     <div id="root"></div>
