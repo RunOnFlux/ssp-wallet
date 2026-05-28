@@ -7318,9 +7318,9 @@ tldts@^7.0.5:
     tldts-core "^7.0.30"
 
 tmp@^0.2.4:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.2.5.tgz#b06bcd23f0f3c8357b426891726d16015abfd8f8"
-  integrity sha512-voyz6MApa1rQGUxT3E+BK7/ROe8itEx7vD8/HEvt4xwXucvQ5G5oeEiHkmHZJuBO21RpOf+YYm9MOivj709jow==
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/tmp/-/tmp-0.2.7.tgz#26f4db11d1601ce8012dcb8a798ece1c06a99059"
+  integrity sha512-e0votIpp4Uo2AJYSzVHV6xCcawuiez3DzqDAbrTc3YxBkplN6e+dM13ZeIcZnDg/QpSuU2zfZ3rzwY8ukEnaXw==
 
 to-buffer@^1.2.0, to-buffer@^1.2.1, to-buffer@^1.2.2:
   version "1.2.2"
@@ -7674,8 +7674,13 @@ viem@2.50.4, viem@2.8.6:
     ws "8.20.1"
 
 "vite-plugin-lavamoat@link:packages/vite-plugin-lavamoat":
-  version "0.0.0"
-  uid ""
+  version "1.1.0"
+  dependencies:
+    "@lavamoat/aa" "4.3.6"
+    lavamoat-core "17.1.3"
+    ses "1.15.0"
+    tsup "8.5.1"
+    typescript "6.0.3"
 
 vite-plugin-node-polyfills@0.28.0:
   version "0.28.0"
