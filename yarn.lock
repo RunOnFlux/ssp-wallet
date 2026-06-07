@@ -851,20 +851,27 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@lavamoat/aa@4.3.6", "@lavamoat/aa@^4.3.6":
+"@lavamoat/aa@4.3.6":
   version "4.3.6"
   resolved "https://registry.yarnpkg.com/@lavamoat/aa/-/aa-4.3.6.tgz#e0b4e0ac4cffafcc716b9da62faf331357221e6f"
   integrity sha512-7PHRcAPS1xpexffdWh3AyW2hQ+DS2CYvblzOlP3yM8i7gAEtVIXK6o0BqVSNAJwgMyneaaWeObhyMTT+xSJE6A==
   dependencies:
     resolve "1.22.10"
 
-"@lavamoat/allow-scripts@3.4.3":
-  version "3.4.3"
-  resolved "https://registry.yarnpkg.com/@lavamoat/allow-scripts/-/allow-scripts-3.4.3.tgz#6c2c95e80ed81d20ea3bbe551b894801636cb594"
-  integrity sha512-BW8k2yslOLpI8M4C+D/SsWJ1l854Wyxh+1E2ItcJnyw+nwDwDsdwfh7g6r6AVaMrvjc+UBEkjFeUiuohnoA+0A==
+"@lavamoat/aa@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@lavamoat/aa/-/aa-5.0.1.tgz#cdbda3c5ea2594138d14a74235ceae555f341679"
+  integrity sha512-wO6gyVFYlart7QiCQ3mgmcrYBEKUz1ip95/4DwL2/9rGvtdfbNR1Be+F+moA5RpueX26byFkLAHvntSlyXuGfQ==
   dependencies:
-    "@lavamoat/aa" "^4.3.6"
-    "@npmcli/run-script" "10.0.3"
+    resolve "1.22.12"
+
+"@lavamoat/allow-scripts@5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@lavamoat/allow-scripts/-/allow-scripts-5.0.2.tgz#b18e05ec6b0625a46d4a182938e1303beffc8628"
+  integrity sha512-noHRa1kWXXXpi9a5tBDpNCNAkhPt1lIVQ3p4GhRKMsPRR19EeLV18/iXDuQVLAYIgX6CHm52I6MlN6olF2sI5w==
+  dependencies:
+    "@lavamoat/aa" "^5.0.1"
+    "@npmcli/run-script" "10.0.4"
     bin-links "4.0.4"
     npm-normalize-package-bin "3.0.1"
     type-fest "4.41.0"
@@ -1029,17 +1036,16 @@
   dependencies:
     which "^6.0.0"
 
-"@npmcli/run-script@10.0.3":
-  version "10.0.3"
-  resolved "https://registry.yarnpkg.com/@npmcli/run-script/-/run-script-10.0.3.tgz#85c16cd893e44cad5edded441b002d8a1d3a8a8e"
-  integrity sha512-ER2N6itRkzWbbtVmZ9WKaWxVlKlOeBFF1/7xx+KA5J1xKa4JjUwBdb6tDpk0v1qA+d+VDwHI9qmLcXSWcmi+Rw==
+"@npmcli/run-script@10.0.4":
+  version "10.0.4"
+  resolved "https://registry.yarnpkg.com/@npmcli/run-script/-/run-script-10.0.4.tgz#99cddae483ce3dbf1a10f5683a4e6aaa02345ac0"
+  integrity sha512-mGUWr1uMnf0le2TwfOZY4SFxZGXGfm4Jtay/nwAa2FLNAKXUoUwaGwBMNH36UHPtinWfTSJ3nqFQr0091CxVGg==
   dependencies:
     "@npmcli/node-gyp" "^5.0.0"
     "@npmcli/package-json" "^7.0.0"
     "@npmcli/promise-spawn" "^9.0.0"
     node-gyp "^12.1.0"
     proc-log "^6.0.0"
-    which "^6.0.0"
 
 "@oxc-project/types@=0.133.0":
   version "0.133.0"
@@ -6581,7 +6587,7 @@ resolve@1.22.10:
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
 
-resolve@^1.17.0:
+resolve@1.22.12, resolve@^1.17.0:
   version "1.22.12"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.22.12.tgz#f5b2a680897c69c238a13cd16b15671f8b73549f"
   integrity sha512-TyeJ1zif53BPfHootBGwPRYT1RUt6oGWsaQr8UyZW/eAm9bKoijtvruSDEmZHm92CwS9nj7/fWttqPCgzep8CA==
@@ -7670,8 +7676,13 @@ viem@2.52.2, viem@2.8.6:
     ws "8.20.1"
 
 "vite-plugin-lavamoat@link:packages/vite-plugin-lavamoat":
-  version "0.0.0"
-  uid ""
+  version "1.1.0"
+  dependencies:
+    "@lavamoat/aa" "4.3.6"
+    lavamoat-core "17.1.3"
+    ses "1.15.0"
+    tsup "8.5.1"
+    typescript "6.0.3"
 
 vite-plugin-node-polyfills@0.28.0:
   version "0.28.0"
