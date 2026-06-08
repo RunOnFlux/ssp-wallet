@@ -6787,10 +6787,10 @@ ses@1.14.0:
     "@endo/env-options" "^1.1.11"
     "@endo/immutable-arraybuffer" "^1.1.2"
 
-ses@1.15.0:
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/ses/-/ses-1.15.0.tgz#90632707c654515da8668a47ce4a204ec321d4a4"
-  integrity sha512-Y7RvgVXhkwQEqVActNn44QBxB2BCUbPfexAaMiUFjbJkDXDnxPisQC5jYQeWOZ3QBOfecnmLfPn0sQKLiYGBAQ==
+ses@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/ses/-/ses-2.1.0.tgz#625eed96658c2fc52034e6f839ff33c1b770efc8"
+  integrity sha512-mM3s60n24C42W5Q14vTBM9h9l2lfcUEtvoFSFkHSF8hMjMSDjLFObn8COjNbDfsRRS2gePkMves3GR2LPAEMKQ==
   dependencies:
     "@endo/cache-map" "^1.1.0"
     "@endo/env-options" "^1.1.11"
@@ -7670,8 +7670,13 @@ viem@2.52.2, viem@2.8.6:
     ws "8.20.1"
 
 "vite-plugin-lavamoat@link:packages/vite-plugin-lavamoat":
-  version "0.0.0"
-  uid ""
+  version "1.1.0"
+  dependencies:
+    "@lavamoat/aa" "4.3.6"
+    lavamoat-core "17.1.3"
+    ses "2.1.0"
+    tsup "8.5.1"
+    typescript "6.0.3"
 
 vite-plugin-node-polyfills@0.28.0:
   version "0.28.0"
