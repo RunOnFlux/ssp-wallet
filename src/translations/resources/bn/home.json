@@ -218,7 +218,14 @@
   "confirmTxKey": {
     "confirm_tx_key": "SSP কী-তে লেনদেন নিশ্চিত করুন",
     "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
-    "info_2": "আপনার SSP কী-তে লেনদেন নিশ্চিত করতে, আপনার SSP কী আপনার মোবাইল ফোনে খুলুন এবং কার্যটি নিশ্চিত করুন. আপনি রিফ্রেশ করতে ট্যাপ করতে পারেন অথবা ম্যানুয়াল ইনপুট ব্যবহার করতে পারেন."
+    "info_2": "আপনার SSP কী-তে লেনদেন নিশ্চিত করতে, আপনার SSP কী আপনার মোবাইল ফোনে খুলুন এবং কার্যটি নিশ্চিত করুন. আপনি রিফ্রেশ করতে ট্যাপ করতে পারেন অথবা ম্যানুয়াল ইনপুট ব্যবহার করতে পারেন.",
+    "waiting_title": "Waiting for approval on your SSP Key…",
+    "elapsed": "Elapsed: {{time}}",
+    "step_open": "Open SSP Key on your phone",
+    "step_review": "Review the request",
+    "step_approve": "Approve",
+    "soft_timeout_title": "Taking longer than usual?",
+    "soft_timeout_description": "Make sure SSP Key is open and online. You can also scan the QR code below to load the request manually."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "SSP কী-তে পাবলিক ননস নিশ্চিত করুন",
