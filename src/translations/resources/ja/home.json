@@ -218,7 +218,14 @@
   "confirmTxKey": {
     "confirm_tx_key": "SSPキーで取引を確認",
     "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
-    "info_2": "SSPキーで取引を確認するには、モバイル端末でSSPキーを開き、アクションを確認してください。タップして更新するか、手動で入力してください."
+    "info_2": "SSPキーで取引を確認するには、モバイル端末でSSPキーを開き、アクションを確認してください。タップして更新するか、手動で入力してください.",
+    "waiting_title": "Waiting for approval on your SSP Key…",
+    "elapsed": "Elapsed: {{time}}",
+    "step_open": "Open SSP Key on your phone",
+    "step_review": "Review the request",
+    "step_approve": "Approve",
+    "soft_timeout_title": "Taking longer than usual?",
+    "soft_timeout_description": "Make sure SSP Key is open and online. You can also scan the QR code below to load the request manually."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "SSPキーで公開ノンスを確認",
