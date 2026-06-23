@@ -31,8 +31,13 @@ import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
+import QRScanner, {
+  isQrScanSupported,
+} from '../../components/QRScanner/QRScanner';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { validateReceiverAddress } from '../../lib/addressValidation';
+import { formatFiatWithSymbol } from '../../lib/currency';
+import { QuestionCircleOutlined, ScanOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
@@ -104,6 +109,7 @@ function Send() {
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txReceiver, setTxReceiver] = useState('');
+  const [openQrScanner, setOpenQrScanner] = useState(false);
   const [txMessage, setTxMessage] = useState('');
   const [txFee, setTxFee] = useState('0');
   const [feePerByte, setFeePerByte] = useState('0');
@@ -574,9 +580,21 @@ function Send() {
   };
 
   const onFinish = (values: sendForm) => {
-    console.log(values);
-    if (values.receiver.length < 8) {
-      displayMessage('error', t('send:err_invalid_receiver'));
+    const receiverValidation = validateReceiverAddress(
+      values.receiver,
+      activeChain,
+    );
+    if (!receiverValidation.valid) {
+      if (receiverValidation.warningChainType) {
+        displayMessage(
+          'error',
+          t('send:err_wrong_chain_address', {
+            chain: blockchainConfig.name,
+          }),
+        );
+      } else {
+        displayMessage('error', t('send:err_invalid_receiver'));
+      }
       return;
     }
     if (!values.amount || +values.amount <= 0 || isNaN(+values.amount)) {
@@ -814,6 +832,29 @@ function Send() {
     );
   };
 
+  // Inline, chain-aware receiver-address validation for live feedback. Empty
+  // input is treated as neutral so we don't show an error before the user types.
+  const receiverValidation = txReceiver.trim()
+    ? validateReceiverAddress(txReceiver, activeChain)
+    : { valid: true };
+  const showReceiverError =
+    !!txReceiver.trim() && !receiverValidation.valid && !state.swap;
+
+  // Live fiat estimate under the amount field, using the same rate path as the
+  // balance display (crypto rate * fiat rate).
+  const amountFiatValue = (() => {
+    const numericAmount = new BigNumber(sendingAmount || '0');
+    if (!numericAmount.isFinite() || numericAmount.lte(0)) {
+      return null;
+    }
+    const cr = cryptoRates[activeChain] ?? 0;
+    const fi = fiatRates[sspConfig().fiatCurrency] ?? 0;
+    if (!cr || !fi) {
+      return null;
+    }
+    return numericAmount.multipliedBy(cr).multipliedBy(fi);
+  })();
+
   return (
     <>
       {contextHolder}
@@ -843,6 +884,16 @@ function Send() {
           rules={[
             { required: true, message: t('send:input_receiver_address') },
           ]}
+          validateStatus={showReceiverError ? 'error' : undefined}
+          help={
+            showReceiverError
+              ? receiverValidation.warningChainType
+                ? t('send:err_wrong_chain_address', {
+                    chain: blockchainConfig.name,
+                  })
+                : t('send:err_invalid_receiver')
+              : undefined
+          }
         >
           <Space.Compact style={{ width: '100%' }}>
             <Input
@@ -856,6 +907,14 @@ function Send() {
                   form.setFieldValue('receiver', e.target.value));
               }}
             />
+            {isQrScanSupported() && !state.swap && (
+              <Button
+                size="large"
+                icon={<ScanOutlined />}
+                onClick={() => setOpenQrScanner(true)}
+                title={t('send:scan_qr')}
+              />
+            )}
             <Select
               size="large"
               className="no-text-select"
@@ -892,6 +951,21 @@ function Send() {
             disabled={!!state.swap}
           />
         </Form.Item>
+        {amountFiatValue && (
+          <div
+            style={{
+              marginTop: '-22px',
+              float: 'left',
+              marginLeft: 3,
+              fontSize: 12,
+              color: 'grey',
+              zIndex: 2,
+              position: 'relative',
+            }}
+          >
+            ≈ {formatFiatWithSymbol(amountFiatValue)}
+          </div>
+        )}
         <Button
           type="text"
           size="small"
@@ -1045,6 +1119,22 @@ function Send() {
         chain={txChain}
       />
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
+      <QRScanner
+        open={openQrScanner}
+        onClose={() => setOpenQrScanner(false)}
+        onResult={(value) => {
+          // QR payloads may be a bare address or a chain URI like
+          // "bitcoin:<address>?amount=..." — take the address portion only.
+          let scanned = value.trim();
+          const schemeMatch = scanned.match(/^[a-zA-Z]+:([^?]+)/);
+          if (schemeMatch) {
+            scanned = schemeMatch[1];
+          }
+          setTxReceiver(scanned);
+          form.setFieldValue('receiver', scanned);
+          setOpenQrScanner(false);
+        }}
+      />
       <SspConnect />
       <PoweredByFlux />
     </>

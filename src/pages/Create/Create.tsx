@@ -122,7 +122,6 @@ function Create() {
   useEffect(() => {
     if (temporaryPassword) {
       warningWeakPassword();
-      console.log('warningWeakPassword');
     }
   }, [temporaryPassword]);
 
@@ -148,10 +147,10 @@ function Create() {
           {t('cr:weak_password_confirm')}
         </>
       ),
-      okText: t('cr:weak_password_confirm_cancel'),
-      cancelText: t('cr:weak_password_confirm_ok'),
+      okText: t('cr:weak_password_change'),
+      cancelText: t('cr:weak_password_keep'),
       onOk() {
-        // close dialog
+        // SAFE choice (primary): discard and let the user pick a stronger password
         setTemporaryPassword('');
       },
       onCancel() {

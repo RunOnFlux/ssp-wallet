@@ -54,6 +54,10 @@ declare module '@runonflux/utxo-lib' {
   type networks = Record<string, network>;
   let address: {
     fromOutputScript: (scriptPubKey: Uint8Array, network: network) => string;
+    // Decodes a base58check / bech32 address to its output script for the
+    // given network, throwing on an invalid address. Used for receiver-address
+    // validation.
+    toOutputScript: (address: string, network: network) => Uint8Array;
   };
   let script: {
     multisig: {

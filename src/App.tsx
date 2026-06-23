@@ -40,6 +40,9 @@ function App() {
     <ConfigProvider
       theme={{
         algorithm: themeStyle === 'dark' ? darkAlgorithm : defaultAlgorithm,
+        token: {
+          colorPrimary: '#fbbf24',
+        },
       }}
     >
       <ErrorBoundary>

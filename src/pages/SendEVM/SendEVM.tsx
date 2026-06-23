@@ -51,7 +51,12 @@ import {
   fetchAddressBalance,
   fetchAddressTokenBalances,
 } from '../../lib/balances.ts';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import QRScanner, {
+  isQrScanSupported,
+} from '../../components/QRScanner/QRScanner';
+import { validateReceiverAddress } from '../../lib/addressValidation';
+import { formatFiatWithSymbol } from '../../lib/currency';
+import { QuestionCircleOutlined, ScanOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
@@ -160,6 +165,7 @@ function SendEVM() {
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txReceiver, setTxReceiver] = useState('');
+  const [openQrScanner, setOpenQrScanner] = useState(false);
   const [txToken, setTxToken] = useState('');
   const blockchainConfig = blockchains[activeChain];
   const [txFee, setTxFee] = useState('0');
@@ -191,6 +197,9 @@ function SendEVM() {
   const [tokenItems, setTokenItems] = useState<tokenOption[]>([]);
   const { networkFees } = useAppSelector((state) => state.networkFees);
   const { contacts } = useAppSelector((state) => state.contacts);
+  const { cryptoRates, fiatRates } = useAppSelector(
+    (state) => state.fiatCryptoRates,
+  );
 
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const browser = window.chrome || window.browser;
@@ -875,12 +884,21 @@ function SendEVM() {
   };
 
   const onFinish = (values: sendForm) => {
-    console.log('🔗 SendEVM onFinish values:', values);
-    console.log('🔗 SendEVM walletConnectMode:', values.walletConnectMode);
-    console.log('🔗 SendEVM amount:', values.amount, 'parsed:', +values.amount);
-
-    if (values.receiver.length < 8 || !values.receiver.startsWith('0x')) {
-      displayMessage('error', t('send:err_invalid_receiver'));
+    const receiverValidation = validateReceiverAddress(
+      values.receiver,
+      activeChain,
+    );
+    if (!receiverValidation.valid) {
+      if (receiverValidation.warningChainType) {
+        displayMessage(
+          'error',
+          t('send:err_wrong_chain_address', {
+            chain: blockchainConfig.name,
+          }),
+        );
+      } else {
+        displayMessage('error', t('send:err_invalid_receiver'));
+      }
       return;
     }
     // For WalletConnect transactions, allow 0 value (smart contract interactions)
@@ -1155,6 +1173,32 @@ function SendEVM() {
     return `Contract Call (${signature})`;
   };
 
+  // Inline, chain-aware receiver-address validation for live feedback.
+  const receiverValidation = txReceiver.trim()
+    ? validateReceiverAddress(txReceiver, activeChain)
+    : { valid: true };
+  const showReceiverError =
+    !!txReceiver.trim() && !receiverValidation.valid && !state.swap;
+
+  // Live fiat estimate under the amount field. Only shown for the native asset
+  // (token 0), since per-token USD rates are not loaded in this view.
+  const isNativeAsset = txToken === blockchainConfig.tokens[0].contract;
+  const amountFiatValue = (() => {
+    if (!isNativeAsset) {
+      return null;
+    }
+    const numericAmount = new BigNumber(sendingAmount || '0');
+    if (!numericAmount.isFinite() || numericAmount.lte(0)) {
+      return null;
+    }
+    const cr = cryptoRates[activeChain] ?? 0;
+    const fi = fiatRates[sspConfig().fiatCurrency] ?? 0;
+    if (!cr || !fi) {
+      return null;
+    }
+    return numericAmount.multipliedBy(cr).multipliedBy(fi);
+  })();
+
   return (
     <>
       {contextHolder}
@@ -1206,6 +1250,16 @@ function SendEVM() {
           rules={[
             { required: true, message: t('send:input_receiver_address') },
           ]}
+          validateStatus={showReceiverError ? 'error' : undefined}
+          help={
+            showReceiverError
+              ? receiverValidation.warningChainType
+                ? t('send:err_wrong_chain_address', {
+                    chain: blockchainConfig.name,
+                  })
+                : t('send:err_invalid_receiver')
+              : undefined
+          }
         >
           <Space.Compact style={{ width: '100%' }}>
             <Input
@@ -1219,6 +1273,15 @@ function SendEVM() {
               }}
               disabled={!!(state?.walletConnectMode && state?.receiver)}
             />
+            {isQrScanSupported() &&
+              !(state?.walletConnectMode && state?.receiver) && (
+                <Button
+                  size="large"
+                  icon={<ScanOutlined />}
+                  onClick={() => setOpenQrScanner(true)}
+                  title={t('send:scan_qr')}
+                />
+              )}
             <Select
               size="large"
               className="no-text-select"
@@ -1262,6 +1325,21 @@ function SendEVM() {
             }
           />
         </Form.Item>
+        {amountFiatValue && (
+          <div
+            style={{
+              marginTop: '-22px',
+              float: 'left',
+              marginLeft: 3,
+              fontSize: 12,
+              color: 'grey',
+              zIndex: 2,
+              position: 'relative',
+            }}
+          >
+            ≈ {formatFiatWithSymbol(amountFiatValue)}
+          </div>
+        )}
         <Button
           type="text"
           size="small"
@@ -1752,6 +1830,22 @@ function SendEVM() {
       <PublicNoncesReceived
         open={openPublicNoncsReceived}
         openAction={publicNoncesReceivedAction}
+      />
+      <QRScanner
+        open={openQrScanner}
+        onClose={() => setOpenQrScanner(false)}
+        onResult={(value) => {
+          // QR payloads may be a bare address or a chain URI such as
+          // "ethereum:<address>@1?value=..." — take the address portion only.
+          let scanned = value.trim();
+          const schemeMatch = scanned.match(/^[a-zA-Z]+:([^@?]+)/);
+          if (schemeMatch) {
+            scanned = schemeMatch[1];
+          }
+          setTxReceiver(scanned);
+          form.setFieldValue('receiver', scanned);
+          setOpenQrScanner(false);
+        }}
       />
       <SspConnect />
       <PoweredByFlux />

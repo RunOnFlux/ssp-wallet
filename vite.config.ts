@@ -99,10 +99,13 @@ export default defineConfig(({ command, mode }) => ({
           if (/node_modules[\\/]@scure[\\/](bip32|bip39)[\\/]/.test(id))
             return 'vendor-crypto';
 
-          if (/node_modules[\\/]@runonflux[\\/](utxo-lib|flux-sdk)[\\/]/.test(id))
+          if (
+            /node_modules[\\/]@runonflux[\\/](utxo-lib|flux-sdk)[\\/]/.test(id)
+          )
             return 'vendor-utxo';
 
-          if (/node_modules[\\/](viem|ethers)[\\/]/.test(id)) return 'vendor-eth';
+          if (/node_modules[\\/](viem|ethers)[\\/]/.test(id))
+            return 'vendor-eth';
           if (
             /node_modules[\\/]@runonflux[\\/]aa-schnorr-multisig-sdk[\\/]/.test(
               id,
@@ -112,10 +115,9 @@ export default defineConfig(({ command, mode }) => ({
           if (/node_modules[\\/]@alchemy[\\/]/.test(id)) return 'vendor-eth';
 
           if (/node_modules[\\/]@solana[\\/]/.test(id)) return 'vendor-solana';
-          if (/node_modules[\\/]@coral-xyz[\\/]/.test(id)) return 'vendor-solana';
-          if (
-            /node_modules[\\/]@runonflux[\\/]solana-multisig[\\/]/.test(id)
-          )
+          if (/node_modules[\\/]@coral-xyz[\\/]/.test(id))
+            return 'vendor-solana';
+          if (/node_modules[\\/]@runonflux[\\/]solana-multisig[\\/]/.test(id))
             return 'vendor-solana';
 
           // NOTE: vendor-wc (@reown/@walletconnect) was attempted but
@@ -173,7 +175,9 @@ export default defineConfig(({ command, mode }) => ({
   },
   esbuild: {
     keepNames: true, // Preserve class and function names,
-    // disable console and debugger in production
-    // drop: ['console', 'debugger'],
+    // Strip console.* and debugger statements from production builds only so
+    // no sensitive runtime data (xpubs, nonces, signatures) can leak to the
+    // console in shipped extensions. Dev builds keep logging intact.
+    ...(command === 'build' ? { drop: ['console', 'debugger'] as const } : {}),
   },
 }));

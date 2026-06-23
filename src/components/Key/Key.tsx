@@ -112,7 +112,6 @@ function Key(props: { synchronised: (status: boolean) => void }) {
           if (res.data.chain !== activeChain) {
             return;
           }
-          console.log(res);
           const xpubKey = res.data.keyXpub;
           const wkIdentity = res.data.wkIdentity;
           const sspKeyWalletXpub = res.data.walletXpub;
@@ -288,14 +287,12 @@ function Key(props: { synchronised: (status: boolean) => void }) {
 
   useEffect(() => {
     if (keyAutomaticInput) {
-      console.log('keyAutomaticInput', keyAutomaticInput);
       handleOkModalKey();
     }
   }, [keyAutomaticInput]);
 
   const handleOkModalKey = () => {
     // display dialog awaiting synchronisation. This is automatic stuff
-    console.log(keyAutomaticInput);
     if (!keyInput && !keyAutomaticInput) {
       displayMessage(
         'warning',

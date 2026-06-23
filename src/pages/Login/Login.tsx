@@ -399,13 +399,6 @@ function Login() {
       )}-${blockchainConfig.id}`,
     ); // key xpub
     if (!xpubEncrypted || !xpubEncryptedIdentity) {
-      console.log(xpubEncrypted);
-      console.log(xpubEncryptedIdentity);
-      console.log(
-        `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
-          blockchainConfig.scriptType,
-        )}-${blockchainConfig.id}`,
-      );
       displayMessage('error', t('login:err_lx', { code: 'L3' }));
       setIsLoading(false);
       return;
@@ -423,10 +416,7 @@ function Login() {
           // set xpubs of chains
           if (typeof xpub === 'string' && typeof xpubIdentity === 'string') {
             console.log('Wallet unlocked for chain:', activeChain);
-            console.log('xpub:', xpub);
-            console.log('activeChain:', activeChain);
             setXpubWallet(activeChain, xpub);
-            console.log('xpubIdentity:', xpubIdentity);
             setXpubWalletIdentity(xpubIdentity);
             const fingerprint: string = getFingerprint();
             const pwBlob = await passworderEncrypt(fingerprint, password);
