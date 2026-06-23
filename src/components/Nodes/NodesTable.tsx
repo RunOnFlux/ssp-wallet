@@ -4,6 +4,7 @@ import {
   Button,
   Flex,
   Popconfirm,
+  Modal,
   message,
   Typography,
 } from 'antd';
@@ -37,7 +38,8 @@ import {
 import { setNodes } from '../../store';
 import SetupNode from './SetupNode.tsx';
 import WordsDialog from './WordsDialog.tsx';
-import { getDelegates } from './ConfigureDelegates';
+import { getNamedDelegates, NamedDelegate } from './ConfigureDelegates';
+import SelectDelegates from './SelectDelegates';
 
 // name, ip, tier, status
 function NodesTable(props: {
@@ -69,6 +71,15 @@ function NodesTable(props: {
   const [phraseDialogOpen, setPhraseDialogOpen] = useState(false);
   const [editNodeOpen, setEditNodeOpen] = useState(false);
   const [redeemScriptVisible, setRedeemScriptVisible] = useState(false);
+  const [startModalOpen, setStartModalOpen] = useState(false);
+  const [pendingStart, setPendingStart] = useState<{
+    txid: string;
+    vout: number;
+  } | null>(null);
+  const [startDelegates, setStartDelegates] = useState<NamedDelegate[]>([]);
+  const [selectedDelegateKeys, setSelectedDelegateKeys] = useState<string[]>(
+    [],
+  );
   const displayMessage = (type: NoticeType, content: string) => {
     void messageApi.open({
       type,
@@ -76,17 +87,20 @@ function NodesTable(props: {
     });
   };
 
-  const startNode = async (txhash: string, vout: number) => {
+  const startNode = async (
+    txhash: string,
+    vout: number,
+    delegateKeys: string[],
+  ) => {
     try {
       console.log(fluxnode);
       const timestamp = Math.round(new Date().getTime() / 1000).toString();
 
-      // Get configured delegates for this wallet
-      const delegates = await getDelegates(chain, props.walletInUse);
+      // Apply the delegates the user selected in the start dialog (defaults to all).
       // type 1 = DELEGATE_TYPE_UPDATE (owner grants delegate permissions)
       const delegateData =
-        delegates.length > 0
-          ? { version: 1, type: 1, delegatePublicKeys: delegates }
+        delegateKeys.length > 0
+          ? { version: 1, type: 1, delegatePublicKeys: delegateKeys }
           : undefined;
 
       // collateralPK, redeemScript
@@ -133,6 +147,26 @@ function NodesTable(props: {
         }),
       );
     }
+  };
+
+  const openStartModal = async (txhash: string, vout: number) => {
+    const named = await getNamedDelegates(chain, props.walletInUse);
+    setStartDelegates(named);
+    setSelectedDelegateKeys(named.map((d) => d.key)); // default to all
+    setPendingStart({ txid: txhash, vout });
+    setStartModalOpen(true);
+  };
+
+  const confirmStart = () => {
+    if (pendingStart) {
+      void startNode(
+        pendingStart.txid,
+        pendingStart.vout,
+        selectedDelegateKeys,
+      );
+    }
+    setStartModalOpen(false);
+    setPendingStart(null);
   };
 
   useEffect(() => {
@@ -460,41 +494,18 @@ function NodesTable(props: {
                 )}
                 {record.name && (
                   <Flex wrap gap="small">
-                    <Popconfirm
-                      title={t('home:nodesTable.start_node', {
-                        chainName: blockchainConfig.name,
-                      })}
-                      description={
-                        <>
-                          {t('home:nodesTable.start_node_info', {
-                            chainName: blockchainConfig.name,
-                          })}
-                          <br />
-                          {t('home:nodesTable.start_node_info_2', {
-                            chainName: blockchainConfig.name,
-                          })}
-                        </>
+                    <Button
+                      size="middle"
+                      disabled={
+                        record.status !== 'offline' &&
+                        record.status !== t('home:nodesTable.offline')
                       }
-                      overlayStyle={{ maxWidth: 360, margin: 10 }}
-                      okText={t('common:start')}
-                      cancelText={t('common:cancel')}
-                      onConfirm={() => {
-                        void startNode(record.txid, record.vout);
+                      onClick={() => {
+                        void openStartModal(record.txid, record.vout);
                       }}
-                      icon={
-                        <QuestionCircleOutlined style={{ color: 'green' }} />
-                      }
                     >
-                      <Button
-                        size="middle"
-                        disabled={
-                          record.status !== 'offline' &&
-                          record.status !== t('home:nodesTable.offline')
-                        }
-                      >
-                        {t('common:start')}
-                      </Button>
-                    </Popconfirm>
+                      {t('common:start')}
+                    </Button>
                     <Popconfirm
                       title={t('home:nodesTable.open_fluxos')}
                       description={<>{t('home:nodesTable.open_fluxos_info')}</>}
@@ -627,6 +638,35 @@ function NodesTable(props: {
           openAction={wordsDialogAction}
         />
       )}
+      <Modal
+        title={t('home:nodesTable.start_node', {
+          chainName: blockchainConfig.name,
+        })}
+        open={startModalOpen}
+        onOk={confirmStart}
+        onCancel={() => {
+          setStartModalOpen(false);
+          setPendingStart(null);
+        }}
+        okText={t('common:start')}
+        cancelText={t('common:cancel')}
+      >
+        <p>
+          {t('home:nodesTable.start_node_info', {
+            chainName: blockchainConfig.name,
+          })}
+        </p>
+        <p>
+          {t('home:nodesTable.start_node_info_2', {
+            chainName: blockchainConfig.name,
+          })}
+        </p>
+        <SelectDelegates
+          delegates={startDelegates}
+          selectedKeys={selectedDelegateKeys}
+          onChange={setSelectedDelegateKeys}
+        />
+      </Modal>
     </>
   );
 }

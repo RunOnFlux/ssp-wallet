@@ -11,9 +11,28 @@ const { Text } = Typography;
 
 const MAX_DELEGATES = 4;
 const DELEGATE_KEY_LENGTH = 66;
+const DELEGATE_NAME_MAX_LENGTH = 24;
+
+export interface NamedDelegate {
+  name: string;
+  key: string;
+}
 
 const getDelegatesStorageKey = (chain: keyof cryptos, walletInUse: string) =>
   `node-delegates-${chain}-${walletInUse}`;
+
+// Normalises stored delegates, migrating the legacy `string[]` format (keys
+// only) to the named `{ name, key }` format on the fly.
+const normaliseDelegates = (stored: unknown): NamedDelegate[] => {
+  if (!Array.isArray(stored)) return [];
+  return stored
+    .map((item): NamedDelegate => {
+      if (typeof item === 'string') return { name: '', key: item };
+      const d = item as Partial<NamedDelegate>;
+      return { name: d.name ?? '', key: d.key ?? '' };
+    })
+    .filter((d) => d.key);
+};
 
 function ConfigureDelegates(props: {
   open: boolean;
@@ -22,18 +41,16 @@ function ConfigureDelegates(props: {
   walletInUse: string;
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const [delegates, setDelegates] = useState<string[]>([]);
+  const [delegates, setDelegates] = useState<NamedDelegate[]>([]);
   const [newDelegate, setNewDelegate] = useState('');
+  const [newDelegateName, setNewDelegateName] = useState('');
   const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[props.chain];
   const storageKey = getDelegatesStorageKey(props.chain, props.walletInUse);
   const walletNumber = Number(props.walletInUse.split('-')[1]) + 1;
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
-      type,
-      content,
-    });
+    void messageApi.open({ type, content });
   };
 
   useEffect(() => {
@@ -43,15 +60,11 @@ function ConfigureDelegates(props: {
   }, [props.open, props.chain, props.walletInUse]);
 
   const loadDelegates = async () => {
-    const stored = await localForage.getItem<string[]>(storageKey);
-    if (stored) {
-      setDelegates(stored);
-    } else {
-      setDelegates([]);
-    }
+    const stored = await localForage.getItem<unknown>(storageKey);
+    setDelegates(normaliseDelegates(stored));
   };
 
-  const saveDelegates = async (newDelegates: string[]) => {
+  const saveDelegates = async (newDelegates: NamedDelegate[]) => {
     await localForage.setItem(storageKey, newDelegates);
     setDelegates(newDelegates);
   };
@@ -66,6 +79,7 @@ function ConfigureDelegates(props: {
 
   const handleAddDelegate = async () => {
     const trimmedKey = newDelegate.trim();
+    const trimmedName = newDelegateName.trim();
 
     if (!isValidPublicKey(trimmedKey)) {
       displayMessage('error', t('home:nodesTable.err_invalid_delegate_key'));
@@ -77,14 +91,15 @@ function ConfigureDelegates(props: {
       return;
     }
 
-    if (delegates.includes(trimmedKey)) {
+    if (delegates.some((d) => d.key === trimmedKey)) {
       displayMessage('error', t('home:nodesTable.err_duplicate_delegate'));
       return;
     }
 
-    const newDelegates = [...delegates, trimmedKey];
+    const newDelegates = [...delegates, { name: trimmedName, key: trimmedKey }];
     await saveDelegates(newDelegates);
     setNewDelegate('');
+    setNewDelegateName('');
     displayMessage('success', t('home:nodesTable.delegates_saved'));
   };
 
@@ -96,6 +111,7 @@ function ConfigureDelegates(props: {
 
   const handleClose = () => {
     setNewDelegate('');
+    setNewDelegateName('');
     props.onClose();
   };
 
@@ -117,22 +133,41 @@ function ConfigureDelegates(props: {
       >
         <p>{t('home:nodesTable.configure_delegates_info')}</p>
 
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            marginBottom: 16,
+          }}
+        >
           <Input
-            placeholder={t('home:nodesTable.delegate_public_key')}
-            value={newDelegate}
-            onChange={(e) => setNewDelegate(e.target.value)}
+            placeholder={t('home:nodesTable.delegate_name')}
+            value={newDelegateName}
+            onChange={(e) => setNewDelegateName(e.target.value)}
             onPressEnter={() => void handleAddDelegate()}
             disabled={delegates.length >= MAX_DELEGATES}
-            maxLength={DELEGATE_KEY_LENGTH}
-            style={{ flex: 1 }}
+            maxLength={DELEGATE_NAME_MAX_LENGTH}
           />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => void handleAddDelegate()}
-            disabled={delegates.length >= MAX_DELEGATES || !newDelegate.trim()}
-          />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Input
+              placeholder={t('home:nodesTable.delegate_public_key')}
+              value={newDelegate}
+              onChange={(e) => setNewDelegate(e.target.value)}
+              onPressEnter={() => void handleAddDelegate()}
+              disabled={delegates.length >= MAX_DELEGATES}
+              maxLength={DELEGATE_KEY_LENGTH}
+              style={{ flex: 1 }}
+            />
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => void handleAddDelegate()}
+              disabled={
+                delegates.length >= MAX_DELEGATES || !newDelegate.trim()
+              }
+            />
+          </div>
         </div>
 
         {delegates.length === 0 ? (
@@ -150,13 +185,14 @@ function ConfigureDelegates(props: {
               >
                 <div style={{ flex: 1 }}>
                   <Text
-                    type="secondary"
                     style={{ fontSize: 12, marginBottom: 4, display: 'block' }}
                   >
-                    Delegate {index + 1}
+                    {item.name ||
+                      t('home:nodesTable.delegate_n', { index: index + 1 })}
                   </Text>
                   <Text
                     copyable
+                    type="secondary"
                     style={{
                       fontSize: 11,
                       fontFamily: 'monospace',
@@ -164,7 +200,7 @@ function ConfigureDelegates(props: {
                       display: 'block',
                     }}
                   >
-                    {item}
+                    {item.key}
                   </Text>
                 </div>
                 <Button
@@ -196,11 +232,22 @@ function ConfigureDelegates(props: {
 
 export default ConfigureDelegates;
 
+// Returns the full named delegate list (migration-aware).
+export const getNamedDelegates = async (
+  chain: keyof cryptos,
+  walletInUse: string,
+): Promise<NamedDelegate[]> => {
+  const storageKey = getDelegatesStorageKey(chain, walletInUse);
+  const stored = await localForage.getItem<unknown>(storageKey);
+  return normaliseDelegates(stored);
+};
+
+// Returns just the delegate public keys (migration-aware). Kept for callers
+// that only need the keys.
 export const getDelegates = async (
   chain: keyof cryptos,
   walletInUse: string,
 ): Promise<string[]> => {
-  const storageKey = getDelegatesStorageKey(chain, walletInUse);
-  const stored = await localForage.getItem<string[]>(storageKey);
-  return stored || [];
+  const named = await getNamedDelegates(chain, walletInUse);
+  return named.map((d) => d.key);
 };

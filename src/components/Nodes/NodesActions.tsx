@@ -9,7 +9,11 @@ import { blockchains } from '@storage/blockchains';
 import { setNodes } from '../../store';
 import { broadcastTx } from '../../lib/constructTx';
 import { NoticeType } from 'antd/es/message/interface';
-import ConfigureDelegates, { getDelegates } from './ConfigureDelegates';
+import ConfigureDelegates, {
+  getNamedDelegates,
+  NamedDelegate,
+} from './ConfigureDelegates';
+import SelectDelegates from './SelectDelegates';
 
 function NodesActions(props: {
   nodes: node[];
@@ -23,6 +27,10 @@ function NodesActions(props: {
   const [startingAllNodes, setStartingAllNodes] = useState(false);
   const [startAllModalOpen, setStartAllModalOpen] = useState(false);
   const [delegatesModalOpen, setDelegatesModalOpen] = useState(false);
+  const [namedDelegates, setNamedDelegates] = useState<NamedDelegate[]>([]);
+  const [selectedDelegateKeys, setSelectedDelegateKeys] = useState<string[]>(
+    [],
+  );
   const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[props.chain];
 
@@ -47,12 +55,11 @@ function NodesActions(props: {
     setStartingAllNodes(true);
     displayMessage('info', t('home:nodesTable.starting_all_nodes'));
 
-    // Get configured delegates for this wallet
-    const delegates = await getDelegates(props.chain, props.walletInUse);
+    // Apply the delegates the user selected in the start dialog (defaults to all).
     // type 1 = DELEGATE_TYPE_UPDATE (owner grants delegate permissions)
     const delegateData =
-      delegates.length > 0
-        ? { version: 1, type: 1, delegatePublicKeys: delegates }
+      selectedDelegateKeys.length > 0
+        ? { version: 1, type: 1, delegatePublicKeys: selectedDelegateKeys }
         : undefined;
 
     let successCount = 0;
@@ -113,6 +120,13 @@ function NodesActions(props: {
     }
   };
 
+  const openStartAllModal = async () => {
+    const named = await getNamedDelegates(props.chain, props.walletInUse);
+    setNamedDelegates(named);
+    setSelectedDelegateKeys(named.map((d) => d.key)); // default to all
+    setStartAllModalOpen(true);
+  };
+
   const startableNodesCount = getStartableNodes().length;
 
   if (startingAllNodes) {
@@ -134,7 +148,9 @@ function NodesActions(props: {
               key: 'start-all',
               label: `${t('home:nodesTable.start_all_nodes')} (${startableNodesCount})`,
               disabled: startableNodesCount === 0,
-              onClick: () => setStartAllModalOpen(true),
+              onClick: () => {
+                void openStartAllModal();
+              },
             },
             {
               type: 'divider',
@@ -178,6 +194,11 @@ function NodesActions(props: {
             })}
           </strong>
         </p>
+        <SelectDelegates
+          delegates={namedDelegates}
+          selectedKeys={selectedDelegateKeys}
+          onChange={setSelectedDelegateKeys}
+        />
       </Modal>
       <ConfigureDelegates
         open={delegatesModalOpen}
