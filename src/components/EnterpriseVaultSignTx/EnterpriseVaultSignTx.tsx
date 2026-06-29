@@ -18,6 +18,16 @@ import {
   decodeVaultTransaction,
   type VaultDecodedTx,
 } from '../../lib/transactions';
+import VaultRiskStrip from './VaultRiskStrip';
+import {
+  parseProposalSimulation,
+  type ProposalSimulation,
+  type SimWarning,
+} from '../../types/simulation';
+import {
+  detectDecodeMismatch,
+  buildDecodeMismatchWarning,
+} from '../../lib/simulationMismatch';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import axios from 'axios';
@@ -97,6 +107,9 @@ interface Props {
   evmUserOp?: string;
   // Vault signing mode (dual, key_only, wallet_only)
   signingMode?: string;
+  // Server-computed advisory transaction simulation (JSON string).
+  // DISPLAY-ONLY — never gates signing. The device decode stays authoritative.
+  simulation?: string;
 }
 
 /**
@@ -145,6 +158,7 @@ function EnterpriseVaultSignTx({
   sourceAddress,
   evmUserOp,
   signingMode,
+  simulation: simulationJson,
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
@@ -274,6 +288,34 @@ function EnterpriseVaultSignTx({
     parsedRecipients,
     fee,
   ]);
+
+  // Parse the server-computed advisory simulation, if present. Defensive: a
+  // malformed/absent simulation must NEVER break the sign screen
+  // (never-strand-funds invariant). Returns null on any structural problem.
+  const simulation = useMemo<ProposalSimulation | null>(() => {
+    if (!simulationJson) return null;
+    try {
+      return parseProposalSimulation(JSON.parse(simulationJson));
+    } catch {
+      return null;
+    }
+  }, [simulationJson]);
+
+  // SIMULATION_DECODE_MISMATCH: compare the server simulation to THIS device's
+  // own trustless decode. On divergence, prepend a synthetic critical warning
+  // and visually downrank the server preview. This NEVER blocks signing — the
+  // device decode below remains authoritative.
+  const decodeMismatch = useMemo(
+    () => detectDecodeMismatch(simulation, decodedTx),
+    [simulation, decodedTx],
+  );
+
+  const localWarnings = useMemo<SimWarning[]>(() => {
+    if (decodeMismatch.mismatch) {
+      return [buildDecodeMismatchWarning(decodeMismatch)];
+    }
+    return [];
+  }, [decodeMismatch]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -585,6 +627,13 @@ function EnterpriseVaultSignTx({
     // Include EVM UserOp for Key's trustless decode
     if (evmUserOp) {
       payload.evmUserOp = evmUserOp;
+    }
+
+    // Include the advisory server-computed simulation (JSON string) so the Key's
+    // approve screen can render the same advisory risk strip. Display-only — the
+    // Key's own trustless decode stays authoritative and signing is never gated.
+    if (simulationJson) {
+      payload.simulation = simulationJson;
     }
 
     // Include all signer keys/nonces for EVM signing
@@ -1068,7 +1117,9 @@ function EnterpriseVaultSignTx({
           />
         )}
 
-        {/* Recipients — decoded from raw transaction */}
+        {/* Recipients — decoded from raw transaction (AUTHORITATIVE).
+            This device's own trustless decode is the primary source of truth
+            for what is being signed. The advisory risk strip below is secondary. */}
         <Space direction="vertical" size="small" style={{ width: '100%' }}>
           <Text type="secondary" strong>
             {t('home:enterpriseVaultSignTx.recipients')}:
@@ -1118,6 +1169,21 @@ function EnterpriseVaultSignTx({
               {memo}
             </Text>
           </Space>
+        )}
+
+        {/* Advisory risk strip (server-computed simulation). DISPLAY-ONLY —
+            never gates signing. Renders critical/high warnings prominently
+            above the sign control; medium/info collapse. localWarnings carries
+            the device-side SIMULATION_DECODE_MISMATCH when the server preview
+            disagrees with the authoritative device decode above. */}
+        {(simulation || localWarnings.length > 0) && (
+          <>
+            <Divider style={{ margin: '8px 0' }} />
+            <VaultRiskStrip
+              simulation={simulation}
+              extraWarnings={localWarnings}
+            />
+          </>
         )}
 
         <Divider style={{ margin: '8px 0' }} />

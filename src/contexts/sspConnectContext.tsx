@@ -44,6 +44,9 @@ interface SspConnectContextType {
   evmUserOp?: string;
   // Vault signing mode (dual, key_only, wallet_only)
   signingMode?: string;
+  // Server-computed advisory transaction simulation (JSON string).
+  // DISPLAY-ONLY — never gates signing; the device decode stays authoritative.
+  simulation?: string;
   clearRequest?: () => void;
 }
 
@@ -106,6 +109,8 @@ interface dataBgParams {
   evmUserOp?: string;
   // Vault signing mode (dual, key_only, wallet_only)
   signingMode?: string;
+  // Server-computed advisory transaction simulation (JSON string)
+  simulation?: string;
   // Enterprise Flux Node Start params
   addressIndex?: number;
   collateralTxid?: string;
@@ -185,6 +190,7 @@ export const SspConnectProvider = ({
   );
   const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
   const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
+  const [simulation, setSimulation] = useState<string | undefined>(undefined);
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
 
@@ -910,6 +916,16 @@ export const SspConnectProvider = ({
               : undefined,
           );
 
+          // Server-computed advisory simulation (optional JSON string).
+          // DISPLAY-ONLY — passed straight through to the sign screen, which
+          // parses it defensively. Never gates signing.
+          const signSimulation = request.data.params.simulation;
+          setSimulation(
+            typeof signSimulation === 'string' && signSimulation
+              ? signSimulation
+              : undefined,
+          );
+
           setType('enterprise_vault_sign_tx');
 
           // Capture requester info
@@ -1183,6 +1199,7 @@ export const SspConnectProvider = ({
     setSourceAddress(undefined);
     setEvmUserOp(undefined);
     setSigningMode(undefined);
+    setSimulation(undefined);
   };
 
   return (
@@ -1216,6 +1233,7 @@ export const SspConnectProvider = ({
         sourceAddress,
         evmUserOp,
         signingMode,
+        simulation,
         clearRequest,
       }}
     >

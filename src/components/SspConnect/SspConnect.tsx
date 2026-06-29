@@ -102,6 +102,7 @@ function SspConnect() {
     sourceAddress: sspConnectSourceAddress,
     evmUserOp: sspConnectEvmUserOp,
     signingMode: sspConnectSigningMode,
+    simulation: sspConnectSimulation,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common', 'home']);
@@ -162,6 +163,7 @@ function SspConnect() {
   );
   const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
   const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
+  const [simulation, setSimulation] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -238,6 +240,7 @@ function SspConnect() {
         setSourceAddress(sspConnectSourceAddress);
         setEvmUserOp(sspConnectEvmUserOp);
         setSigningMode(sspConnectSigningMode);
+        setSimulation(sspConnectSimulation);
         setOpenEnterpriseVaultSignTx(true);
       } else if (sspConnectType === 'enterprise_flux_node_start') {
         // Enterprise Flux node start request
@@ -518,6 +521,7 @@ function SspConnect() {
         sourceAddress={sourceAddress}
         evmUserOp={evmUserOp}
         signingMode={signingMode}
+        simulation={simulation}
       />
       <EnterpriseNonceSync
         open={openEnterpriseNonceSync}
