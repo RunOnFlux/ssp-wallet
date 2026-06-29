@@ -1,5 +1,10 @@
 {
   "err_invalid_receiver": "Alamat penerima tidak valid.",
+  "err_wrong_chain_address": "Ini sepertinya bukan alamat {{chain}} yang valid. Periksa kembali apakah Anda mengirim melalui jaringan yang tepat.",
+  "scan_qr": "Pindai kode QR",
+  "qr_hint": "Arahkan kamera Anda ke kode QR untuk mengisi alamat.",
+  "qr_not_supported": "Pemindaian QR tidak didukung di peramban ini.",
+  "qr_camera_error": "Tidak dapat mengakses kamera. Mohon berikan izin akses kamera dan coba lagi.",
   "err_invalid_amount": "Jumlah tidak valid.",
   "err_invalid_fee": "Biaya tidak valid.",
   "err_invalid_message": "Pesan terlalu panjang.  {{characters}} karakter.",

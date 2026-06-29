@@ -1,5 +1,10 @@
 {
   "err_invalid_receiver": "অবৈধ প্রাপকের ঠিকানা.",
+  "err_wrong_chain_address": "This does not look like a valid {{chain}} address. Double-check you are sending on the right network.",
+  "scan_qr": "Scan QR code",
+  "qr_hint": "Point your camera at the QR code to fill in the address.",
+  "qr_not_supported": "QR scanning is not supported in this browser.",
+  "qr_camera_error": "Could not access the camera. Please grant camera permission and try again.",
   "err_invalid_amount": "অবৈধ পরিমাণ.",
   "err_invalid_fee": "অবৈধ ফি.",
   "err_invalid_message": "বার্তা অতি দীর্ঘ. সর্বোচ্চ {{characters}} অক্ষর.",

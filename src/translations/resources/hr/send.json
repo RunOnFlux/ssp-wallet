@@ -1,5 +1,10 @@
 {
   "err_invalid_receiver": "Nevažeća adresa primatelja.",
+  "err_wrong_chain_address": "This does not look like a valid {{chain}} address. Double-check you are sending on the right network.",
+  "scan_qr": "Scan QR code",
+  "qr_hint": "Point your camera at the QR code to fill in the address.",
+  "qr_not_supported": "QR scanning is not supported in this browser.",
+  "qr_camera_error": "Could not access the camera. Please grant camera permission and try again.",
   "err_invalid_amount": "Nevažeći iznos.",
   "err_invalid_fee": "Nevažeća naknada.",
   "err_invalid_message": "Poruka je preduga. Maksimalno je {{characters}} znakova.",

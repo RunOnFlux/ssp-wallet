@@ -98,6 +98,9 @@
     "configure_delegates_title": "Konfigurasi {{chainName}} Delegasi {{wallet}} Dompet",
     "configure_delegates_info": "Tambahkan hingga 4 kunci publik delegasi yang dapat memulai node Anda atas nama Anda.",
     "delegate_public_key": "Delegasi Kunci Publik",
+    "delegate_name": "Nama (opsional)",
+    "delegate_n": "Delegasi {{index}}",
+    "select_delegates": "Para delegasi diharapkan mendaftar",
     "add_delegate": "Tambahkan Delegasi",
     "remove_delegate": "Hapus",
     "no_delegates": "Tidak ada delegasi yang dikonfigurasi",
@@ -215,7 +218,14 @@
   "confirmTxKey": {
     "confirm_tx_key": "Konfirmasi Transaksi pada Kunci SSP",
     "info_1": "Untuk dapat mengonfirmasi transaksi pada Kunci SSP milik Anda, buka Kunci SSP di ponsel milik Anda dan konfirmasikan tindakan tersebut. Anda dapat mengetuk untuk menyegarkan atau memindai kode QR berikut ini.",
-    "info_2": "Untuk mengonfirmasi transaksi pada Kunci SSP Anda, buka Kunci SSP di ponsel Anda dan konfirmasikan tindakannya."
+    "info_2": "Untuk mengonfirmasi transaksi pada Kunci SSP Anda, buka Kunci SSP di ponsel Anda dan konfirmasikan tindakannya.",
+    "waiting_title": "Menunggu persetujuan untuk SSP Key milik Anda…",
+    "elapsed": "Waktu yang telah berlalu: {{time}}",
+    "step_open": "Buka SSP Key di ponsel Anda",
+    "step_review": "Tinjau permintaan tersebut",
+    "step_approve": "Setujui",
+    "soft_timeout_title": "Memakan waktu lebih lama dari biasanya?",
+    "soft_timeout_description": "Pastikan SSP Key terbuka dan online. Anda juga dapat memindai kode QR di bawah ini untuk memuat permintaan secara manual."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "Konfirmasikan Nonce Publik pada Kunci SSP",
@@ -381,7 +391,38 @@
     "err_no_nonces": "Tidak ada nonce perusahaan yang tersedia",
     "err_nonce_not_found": "Nonce perusahaan yang dicadangkan tidak ditemukan secara lokal. Harap sinkronkan nonce dan buat ulang proposalnya.",
     "err_nonce_retry_not_found": "Nonce tidak ditemukan setelah percobaan ulang. Harap sinkronkan nonce dan buat ulang proposal.",
-    "err_password_unavailable": "Kata sandi tidak tersedia"
+    "err_password_unavailable": "Kata sandi tidak tersedia",
+    "risk": {
+      "heading": "Pemeriksaan risiko (saran)",
+      "advisory_footnote": "Pemeriksaan ini bersifat saran dan tidak menghalangi proses penandatanganan. Selalu verifikasi penerima dan jumlah yang telah didekodekan di atas, karena itulah yang menjadi acuan resmi.",
+      "pending": "Sedang melakukan pemeriksaan risiko…",
+      "unavailable": "Tidak dapat melakukan pemeriksaan risiko untuk transaksi ini. Periksa kembali penerima dan jumlahnya di atas dengan cermat sebelum menyetujuinya.",
+      "reverted": "Transaksi ini diperkirakan akan gagal di dalam rantai blok (dalam simulasi, transaksi ini dibatalkan). Menandatanganinya mungkin akan membuang-buang biaya jaringan.",
+      "more_one": "Tampilkan {{count}} pemeriksaan risiko lainnya",
+      "more_other": "Tampilkan {{count}} pemeriksaan risiko lainnya",
+      "severity": {
+        "critical": "Kritis",
+        "high": "Tinggi",
+        "medium": "Sedang",
+        "info": "Info"
+      },
+      "codes": {
+        "UNLIMITED_APPROVAL": "Persetujuan token tanpa batas — hal ini memberikan akses tanpa batas kepada pengguna atas token di brankas ini.",
+        "NON_ZERO_APPROVAL": "Persetujuan pengeluaran token ke alamat yang tidak tercantum dalam daftar izin milik Anda.",
+        "APPROVAL_TO_EOA": "Persetujuan token ke alamat dompet (bukan kontrak) — hal ini hampir selalu merupakan penipuan.",
+        "RECIPIENT_NOT_ALLOWLISTED": "Penerima tidak ada di daftar kontak atau daftar putih milik Anda.",
+        "ADDRESS_POISONING": "Penerima tampak seperti alamat yang dikenal tetapi bukan — kemungkinan upaya pemalsuan alamat.",
+        "NEW_RECIPIENT": "Brankas ini belum pernah mengirimkan dana ke alamat ini sebelumnya.",
+        "UNVERIFIED_CONTRACT": "Kontrak tujuan belum diverifikasi atau tidak memiliki ABI yang diketahui.",
+        "NEW_CONTRACT": "Kontrak tujuan baru saja diterapkan.",
+        "VALUE_TO_CONTRACT": "Nilai asli sedang dikirim ke kontrak.",
+        "KNOWN_MALICIOUS": "Alamat atau kontrak ini ditandai sebagai berbahaya.",
+        "SIMULATION_REVERTED": "Transaksi ini dibatalkan dalam simulasi dan kemungkinan besar akan gagal di blockchain.",
+        "BALANCE_MISMATCH": "Simulasi arus keluar tidak sesuai dengan penerima atau jumlah yang dinyatakan.",
+        "SIMULATION_DECODE_MISMATCH": "Pratinjau risiko yang ditampilkan tidak sesuai dengan hasil dekode transaksi yang dilakukan oleh perangkat ini sendiri. Percayalah pada penerima dan jumlah yang telah didekode di atas, bukan pada pratinjau tersebut.",
+        "SIMULATION_UNAVAILABLE": "Pemeriksaan risiko tidak dapat diselesaikan; pratinjau ini merupakan upaya terbaik."
+      }
+    }
   },
   "enterpriseFluxNodeStart": {
     "title": "Mulai Node Flux",
