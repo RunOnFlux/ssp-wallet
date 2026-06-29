@@ -391,7 +391,38 @@
     "err_no_nonces": "Nejsou k dispozici žádné enterprise nonce",
     "err_nonce_not_found": "Rezervovaná enterprise nonce nebyla nalezena. Prosím synchronizujte je a znovu vytvořte transakci.",
     "err_nonce_retry_not_found": "Nonce se nepodařilo najít. Prosím synchronizujte nanoce a znovu vytvořte transakci.",
-    "err_password_unavailable": "Heslo není k dispozici"
+    "err_password_unavailable": "Heslo není k dispozici",
+    "risk": {
+      "heading": "Risk checks (advisory)",
+      "advisory_footnote": "These checks are advisory and do not block signing. Always verify the recipients and amounts decoded above, which are authoritative.",
+      "pending": "Running risk checks…",
+      "unavailable": "Couldn't run risk checks for this transaction. Review the recipients and amounts above carefully before approving.",
+      "reverted": "This transaction is expected to fail on-chain (it reverts in simulation). Signing it may waste the network fee.",
+      "more_one": "Show {{count}} more risk check",
+      "more_other": "Show {{count}} more risk checks",
+      "severity": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "info": "Info"
+      },
+      "codes": {
+        "UNLIMITED_APPROVAL": "Unlimited token approval — this grants the spender unbounded access to a token in this vault.",
+        "NON_ZERO_APPROVAL": "Token spend approval to an address that is not on your allowlist.",
+        "APPROVAL_TO_EOA": "Token approval to a wallet address (not a contract) — this is almost always a scam.",
+        "RECIPIENT_NOT_ALLOWLISTED": "Recipient is not on your contacts or allowlist.",
+        "ADDRESS_POISONING": "Recipient looks like a known address but is not — possible address-poisoning attempt.",
+        "NEW_RECIPIENT": "This vault has never sent funds to this address before.",
+        "UNVERIFIED_CONTRACT": "Destination contract is unverified or has no known ABI.",
+        "NEW_CONTRACT": "Destination contract was deployed very recently.",
+        "VALUE_TO_CONTRACT": "Native value is being sent to a contract.",
+        "KNOWN_MALICIOUS": "This address or contract is flagged as malicious.",
+        "SIMULATION_REVERTED": "This transaction reverts in simulation and will likely fail on-chain.",
+        "BALANCE_MISMATCH": "Simulated outflow does not match the stated recipients or amounts.",
+        "SIMULATION_DECODE_MISMATCH": "The advisory risk preview disagrees with this device's own decode of the transaction. Trust the recipients and amounts decoded above, not the preview.",
+        "SIMULATION_UNAVAILABLE": "Risk checks could not be completed; the preview is best-effort."
+      }
+    }
   },
   "enterpriseFluxNodeStart": {
     "title": "Spustit Flux Node",
