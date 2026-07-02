@@ -1718,10 +1718,10 @@
     create-hash "^1.2.0"
     secp256k1 "^5.0.1"
 
-"@runonflux/solana-multisig@0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@runonflux/solana-multisig/-/solana-multisig-0.9.0.tgz#e8f1e300b0b2ee56e4fa9a6eb841aa5a6f56d1e2"
-  integrity sha512-9ybmh4fTkPCvUzbQ6u1oTOtZa7WJHYG4vIKM22EJXfSg2T3etgEHWMUgIS9sgzEkNL6LV8fcz1jPZL4mtub0Dg==
+"@runonflux/solana-multisig@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@runonflux/solana-multisig/-/solana-multisig-0.10.0.tgz#3f4a6ad237ae7b37d02f75889bd2b351ec188dfc"
+  integrity sha512-xJcs2Fdfakw1PUAnSCCue+aq5nHZPFpy+1ILpSsvf1OW3TJ8zMGSmF9i80ccdeE91wWUlZdRRm7tNV0DX2Q69Q==
   dependencies:
     "@coral-xyz/anchor" "^0.31.1"
     "@solana/web3.js" "^1.98.4"

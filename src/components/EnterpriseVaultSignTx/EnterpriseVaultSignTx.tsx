@@ -28,6 +28,7 @@ import {
   detectDecodeMismatch,
   buildDecodeMismatchWarning,
 } from '../../lib/simulationMismatch';
+import type { VaultSolDecodeResult } from '../../lib/vaultSolanaDecode';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import axios from 'axios';
@@ -217,6 +218,60 @@ function EnterpriseVaultSignTx({
   // For token transfers, use token decimals/symbol for amounts; fee always uses chain decimals/symbol
   const amountDecimals = tokenDecimals != null ? tokenDecimals : chainDecimals;
   const amountSymbol = tokenSymbol || chainSymbol;
+  const isSolChain = chainConfig?.chainType === 'sol';
+
+  // Solana trustless decode — async (dynamic import of @solana/web3.js), so
+  // it lives in state rather than the sync useMemo below. null = decode in
+  // progress (Sign stays disabled until it resolves — fail-closed).
+  const [solDecodeState, setSolDecodeState] =
+    useState<VaultSolDecodeResult | null>(null);
+
+  useEffect(() => {
+    if (!isSolChain || !rawUnsignedTx) {
+      setSolDecodeState(null);
+      return;
+    }
+    let cancelled = false;
+    setSolDecodeState(null);
+    void (async () => {
+      // decodeVaultSolTransaction never throws/rejects — failures map to
+      // kind 'undecodable' so the sign screen always renders.
+      const { decodeVaultSolTransaction } =
+        await import('../../lib/vaultSolanaDecode');
+      const result = await decodeVaultSolTransaction(
+        rawUnsignedTx,
+        chain as keyof cryptos,
+        {
+          recipients: parsedRecipients,
+          tokenMint: tokenContract,
+          tokenSymbol,
+          tokenDecimals,
+        },
+      );
+      if (!cancelled) {
+        setSolDecodeState(result);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isSolChain,
+    rawUnsignedTx,
+    chain,
+    parsedRecipients,
+    tokenContract,
+    tokenSymbol,
+    tokenDecimals,
+  ]);
+
+  // HARD BLOCK: a successful byte decode that contradicts the relay payload
+  // (kind 'create' + mismatch) is an active-attack indicator — signing those
+  // bytes IS the fund loss, so never-strand-funds does not apply. An approve
+  // -kind tx with outer instructions outside the allowlist (leaf-key-drain
+  // attempt) blocks for the same reason. 'undecodable' only WARNS.
+  const solSignBlocked = !!solDecodeState?.mismatch;
+  const solDecodePending = isSolChain && !solDecodeState;
 
   // Independently decode raw transaction — trustless verification
   // For EVM: rawUnsignedTx is a hash (not decodable), use evmUserOp JSON instead
@@ -245,10 +300,25 @@ function EnterpriseVaultSignTx({
       }
     }
     if (isSol) {
-      // Solana: rawUnsignedTx is base64 of a Solana bundled tx — not parseable
-      // as UTXO hex. Construct the decoded view directly from props (the
-      // enterprise app already shows recipient + amount + source from the
-      // proposal record, no need to re-parse the on-the-wire bytes).
+      // Solana: trustless byte-level decode of the raw base64 bundle
+      // (async — see the solDecodeState effect above). null while decoding.
+      if (!solDecodeState) return null;
+      if (solDecodeState.kind === 'create') {
+        // Byte-decoded recipients/amounts/fee are AUTHORITATIVE.
+        return solDecodeState.decoded;
+      }
+      if (solDecodeState.kind === 'approve') {
+        // Split-flow approval: amounts come from the proposal record
+        // (verified at creation) — surface source/fee from the payload,
+        // with the sol_approve_only_notice banner rendered below.
+        return {
+          ...solDecodeState.decoded,
+          sender: sourceAddress ?? '',
+          fee: fee || '0',
+        };
+      }
+      // 'undecodable': degrade to the relay-payload view; the
+      // sol_undecodable_warning banner marks the data as NOT verified.
       return {
         sender: sourceAddress ?? '',
         recipients: parsedRecipients.map((r) => ({
@@ -287,6 +357,7 @@ function EnterpriseVaultSignTx({
     sourceAddress,
     parsedRecipients,
     fee,
+    solDecodeState,
   ]);
 
   // Parse the server-computed advisory simulation, if present. Defensive: a
@@ -677,6 +748,9 @@ function EnterpriseVaultSignTx({
    * Handle sign button click.
    */
   const handleSign = async () => {
+    // Solana hard block: never sign bytes that contradict the displayed
+    // payload, and never sign before the trustless decode has resolved.
+    if (solSignBlocked || solDecodePending) return;
     if (signingRef.current) return;
     signingRef.current = true;
     setLoading(true);
@@ -1117,6 +1191,44 @@ function EnterpriseVaultSignTx({
           />
         )}
 
+        {/* Solana byte-vs-payload contradiction — HARD BLOCK. A successful
+            decode that disagrees with the relay-supplied display payload is
+            an active-attack indicator; the Sign button below is disabled. */}
+        {solSignBlocked && solDecodeState && (
+          <Alert
+            type="error"
+            message={t(
+              'home:enterpriseVaultSignTx.sol_decode_mismatch_blocked',
+            )}
+            description={solDecodeState.mismatchReasons.join('; ')}
+            showIcon
+            style={{ textAlign: 'left' }}
+          />
+        )}
+
+        {/* Solana undecodable bytes — warn but allow (availability). */}
+        {isSolChain && solDecodeState?.kind === 'undecodable' && (
+          <Alert
+            type="warning"
+            message={t('home:enterpriseVaultSignTx.sol_undecodable_warning')}
+            showIcon
+            style={{ textAlign: 'left' }}
+          />
+        )}
+
+        {/* Solana split-flow approval — amounts are from the proposal record
+            (byte-verified at creation), not re-verifiable from these bytes. */}
+        {isSolChain &&
+          solDecodeState?.kind === 'approve' &&
+          !solSignBlocked && (
+            <Alert
+              type="info"
+              message={t('home:enterpriseVaultSignTx.sol_approve_only_notice')}
+              showIcon
+              style={{ textAlign: 'left' }}
+            />
+          )}
+
         {/* Recipients — decoded from raw transaction (AUTHORITATIVE).
             This device's own trustless decode is the primary source of truth
             for what is being signed. The advisory risk strip below is secondary. */}
@@ -1235,7 +1347,9 @@ function EnterpriseVaultSignTx({
             size="large"
             onClick={handleSign}
             loading={loading}
-            disabled={loading || waitingForKey}
+            disabled={
+              loading || waitingForKey || solSignBlocked || solDecodePending
+            }
           >
             {waitingForKey
               ? t('home:enterpriseVaultSignTx.awaiting_key')
