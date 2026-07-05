@@ -477,6 +477,8 @@ describe('@runonflux/solana-multisig decoder', () => {
       recipients: [
         { address: recipientKp.publicKey.toBase58(), amount: '999999999' },
       ],
+      // Cap the legit paymaster fee so it is not itself counted as a mismatch.
+      maxFeeLamports: FEE_LAMPORTS,
     });
     expect(tamperedAmount.ok).toBe(false);
     expect(tamperedAmount.mismatches.length).toBeGreaterThan(0);
@@ -488,6 +490,7 @@ describe('@runonflux/solana-multisig decoder', () => {
           amount: SOL_AMOUNT,
         },
       ],
+      maxFeeLamports: FEE_LAMPORTS,
     });
     expect(tamperedRecipient.ok).toBe(false);
     // Both directions: expected-not-found AND extra-decoded-recipient.

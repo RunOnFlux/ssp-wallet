@@ -20,6 +20,15 @@ import { blockchains } from '@storage/blockchains';
 import type { VaultDecodedTx } from './transactions';
 import type { cryptos } from '../types';
 
+/**
+ * Hard ceiling (lamports) on the vault->paymaster fee reimbursement the wallet
+ * accepts without hard-blocking. The relay is untrusted, so this independently
+ * bounds any fee-routed vault drain regardless of what the relay claims; a
+ * legitimate paymaster fee (proposal + ATA rent + network fees) is well under
+ * it. The exact decoded fee is still surfaced to the user. Tunable — 0.05 SOL.
+ */
+const SOL_VAULT_MAX_FEE_LAMPORTS = '50000000';
+
 export interface VaultSolExpectedPayload {
   recipients: Array<{ address: string; amount: string }>;
   tokenMint?: string;
@@ -128,16 +137,16 @@ export async function decodeVaultSolTransaction(
       }
     }
 
-    const comparison = compareDecodedToExpected(decoded, {
-      recipients: expected.recipients,
-      tokenMint: expected.tokenMint,
-    });
-
     if (decoded.kind === 'approve') {
       // Split-flow subsequent-signer tx: recipients/amounts live in the
       // on-chain proposal account (created and byte-verified by the first
-      // signer) — not re-verifiable from these bytes. Display the proposal
-      // record honestly; the outer-instruction allowlist is still enforced.
+      // signer) — not re-verifiable from these bytes. Preserve that posture:
+      // enforce ONLY the outer-instruction allowlist (leaf-key-drain guard). We
+      // deliberately do NOT run the SDK fund comparison here — its v0.11.0
+      // fail-closed default (approve-only -> ok:false) would hard-block every
+      // legitimate subsequent-signer tx. (Full on-chain proposal
+      // re-verification is a planned follow-up.)
+      const outerMismatch = decoded.unknownOuterPrograms.length > 0;
       return {
         decoded: {
           sender: '',
@@ -154,13 +163,28 @@ export async function decodeVaultSolTransaction(
               }
             : {}),
         },
-        mismatch: !comparison.ok,
-        mismatchReasons: comparison.mismatches,
+        mismatch: outerMismatch,
+        mismatchReasons: outerMismatch
+          ? [
+              `unknown outer program instruction(s): ${decoded.unknownOuterPrograms.join(
+                ', ',
+              )}`,
+            ]
+          : [],
         kind: 'approve',
       };
     }
 
-    // kind 'create' — byte-decoded recipients/amounts are authoritative.
+    // kind 'create' — byte-decoded recipients/amounts are authoritative. Bound
+    // the vault->fee-payer reimbursement to an independent hard ceiling (the
+    // relay is untrusted): a legit paymaster fee is a few thousandths of a SOL,
+    // so a fee near this ceiling is rejected. The exact fee is still shown to
+    // the user from the decoded bytes below.
+    const comparison = compareDecodedToExpected(decoded, {
+      recipients: expected.recipients,
+      tokenMint: expected.tokenMint,
+      maxFeeLamports: SOL_VAULT_MAX_FEE_LAMPORTS,
+    });
     const splRecipient = decoded.recipients.find((r) => r.asset === 'spl');
     const isToken = !!splRecipient || !!expected.tokenMint;
     return {
