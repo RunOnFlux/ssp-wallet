@@ -1280,6 +1280,7 @@ function SendEVM() {
                   icon={<ScanOutlined />}
                   onClick={() => setOpenQrScanner(true)}
                   title={t('send:scan_qr')}
+                  aria-label={t('send:scan_qr')}
                 />
               )}
             <Select
