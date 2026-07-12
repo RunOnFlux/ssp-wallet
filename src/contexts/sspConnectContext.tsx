@@ -47,6 +47,9 @@ interface SspConnectContextType {
   // Server-computed advisory transaction simulation (JSON string).
   // DISPLAY-ONLY — never gates signing; the device decode stays authoritative.
   simulation?: string;
+  // WalletConnect Phase 2 — vault message signing (personal_sign).
+  signMessage?: string; // human-readable message text (display + Key)
+  dappOrigin?: string; // requesting dApp name/url
   clearRequest?: () => void;
 }
 
@@ -111,6 +114,9 @@ interface dataBgParams {
   signingMode?: string;
   // Server-computed advisory transaction simulation (JSON string)
   simulation?: string;
+  // WalletConnect Phase 2 — vault message signing (personal_sign)
+  digest?: string; // 0x 32-byte EIP-191 message digest to sign
+  dappOrigin?: string; // requesting dApp name/url
   // Enterprise Flux Node Start params
   addressIndex?: number;
   collateralTxid?: string;
@@ -165,6 +171,9 @@ export const SspConnectProvider = ({
   const [memo, setMemo] = useState('');
   const [rawUnsignedTx, setRawUnsignedTx] = useState('');
   const [inputDetails, setInputDetails] = useState('');
+  // WalletConnect Phase 2 — vault message signing (personal_sign).
+  const [signMessage, setSignMessage] = useState<string | undefined>(undefined);
+  const [dappOrigin, setDappOrigin] = useState<string | undefined>(undefined);
   const [reservedNonce, setReservedNonce] = useState<
     { kPublic: string; kTwoPublic: string } | undefined
   >(undefined);
@@ -943,6 +952,189 @@ export const SspConnectProvider = ({
           } else {
             setRequesterInfo({ origin: 'Unknown' });
           }
+        } else if (request.data.method === 'enterprise_vault_sign_message') {
+          // WalletConnect Phase 2 — vault MESSAGE signing (personal_sign). Reuses
+          // the enterprise-vault-sign-tx modal/flow: the digest is signed exactly
+          // like a UserOp hash, but the UI shows the message and there is no tx.
+          if (!wkIdentity) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result:
+                  t('common:request_rejected') +
+                  ': ' +
+                  t('home:enterpriseVaultXpub.err_not_synced'),
+              },
+            });
+            return;
+          }
+          const p = request.data.params;
+          const mChain = p.chain;
+          const mOrgIndex = p.orgIndex;
+          const mVaultIndex = p.vaultIndex;
+          const mDigest = p.digest;
+          const mMessage = p.message;
+          const mDappOrigin = p.dappOrigin;
+          const tr = t as unknown as (key: string) => string;
+          const invalid = (key: string) => {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result: t('common:request_rejected') + ': ' + tr(key),
+              },
+            });
+          };
+          if (
+            !mChain ||
+            !blockchains[mChain] ||
+            blockchains[mChain].chainType !== 'evm'
+          ) {
+            invalid('home:sspConnect.invalid_chain');
+            return;
+          }
+          if (
+            typeof mOrgIndex !== 'number' ||
+            !Number.isInteger(mOrgIndex) ||
+            mOrgIndex < 100 ||
+            mOrgIndex > 99999
+          ) {
+            invalid('home:sspConnect.invalid_request');
+            return;
+          }
+          if (
+            typeof mVaultIndex !== 'number' ||
+            !Number.isInteger(mVaultIndex) ||
+            mVaultIndex < 0
+          ) {
+            invalid('home:sspConnect.invalid_request');
+            return;
+          }
+          if (
+            typeof mDigest !== 'string' ||
+            !/^0x[0-9a-fA-F]{64}$/.test(mDigest)
+          ) {
+            invalid('home:sspConnect.invalid_request');
+            return;
+          }
+          if (typeof mMessage !== 'string' || !mMessage) {
+            invalid('home:sspConnect.invalid_request');
+            return;
+          }
+          const mAddrIdx =
+            typeof p.addressIndex === 'number' &&
+            Number.isInteger(p.addressIndex) &&
+            p.addressIndex >= 0
+              ? p.addressIndex
+              : 0;
+
+          setChain(mChain);
+          setOrgIndex(mOrgIndex);
+          setVaultIndex(mVaultIndex);
+          setRecipients('[]');
+          setFee('0');
+          setMemo('');
+          setRawUnsignedTx(mDigest);
+          setInputDetails(
+            JSON.stringify([{ index: 0, addressIndex: mAddrIdx, amount: '0' }]),
+          );
+          setSignMessage(mMessage);
+          setDappOrigin(
+            typeof mDappOrigin === 'string' && mDappOrigin
+              ? mDappOrigin
+              : undefined,
+          );
+          setVaultName(typeof p.vaultName === 'string' ? p.vaultName : '');
+          setOrgName(typeof p.orgName === 'string' ? p.orgName : '');
+          const rN = p.reservedNonce;
+          setReservedNonce(
+            rN &&
+              typeof rN === 'object' &&
+              typeof rN.kPublic === 'string' &&
+              typeof rN.kTwoPublic === 'string'
+              ? rN
+              : undefined,
+          );
+          const rKN = p.reservedKeyNonce;
+          setReservedKeyNonce(
+            rKN &&
+              typeof rKN === 'object' &&
+              typeof rKN.kPublic === 'string' &&
+              typeof rKN.kTwoPublic === 'string'
+              ? rKN
+              : undefined,
+          );
+          setKeyXpub(undefined);
+          const aK = p.allSignerKeys;
+          if (typeof aK === 'string' && aK) {
+            try {
+              const parsed = JSON.parse(aK) as string[];
+              setAllSignerKeys(
+                Array.isArray(parsed) &&
+                  parsed.every((k) => typeof k === 'string')
+                  ? parsed
+                  : undefined,
+              );
+            } catch {
+              setAllSignerKeys(undefined);
+            }
+          } else {
+            setAllSignerKeys(undefined);
+          }
+          const aN = p.allSignerNonces;
+          if (typeof aN === 'string' && aN) {
+            try {
+              const parsed = JSON.parse(aN) as unknown;
+              const valid =
+                Array.isArray(parsed) &&
+                parsed.every(
+                  (n) =>
+                    typeof n === 'object' &&
+                    n !== null &&
+                    typeof (n as Record<string, unknown>).kPublic ===
+                      'string' &&
+                    typeof (n as Record<string, unknown>).kTwoPublic ===
+                      'string',
+                );
+              setAllSignerNonces(
+                valid
+                  ? (parsed as Array<{ kPublic: string; kTwoPublic: string }>)
+                  : undefined,
+              );
+            } catch {
+              setAllSignerNonces(undefined);
+            }
+          } else {
+            setAllSignerNonces(undefined);
+          }
+          setTokenContract(undefined);
+          setTokenSymbol(undefined);
+          setTokenDecimals(undefined);
+          setSourceAddress(undefined);
+          setEvmUserOp(undefined);
+          setSimulation(undefined);
+          setSigningMode(
+            typeof p.signingMode === 'string' && p.signingMode
+              ? p.signingMode
+              : undefined,
+          );
+          setType('enterprise_vault_sign_tx');
+          const mOrigin = p.origin;
+          if (mOrigin && typeof mOrigin === 'string' && mOrigin.length <= 100) {
+            setRequesterInfo({
+              origin: mOrigin,
+              siteName: p.siteName?.substring(0, 100),
+              iconUrl: sanitizeIconUrl(p.iconUrl),
+            });
+          } else {
+            setRequesterInfo({
+              origin:
+                typeof mDappOrigin === 'string' && mDappOrigin
+                  ? mDappOrigin.substring(0, 100)
+                  : 'Unknown',
+            });
+          }
         } else if (request.data.method === 'enterprise_flux_node_start') {
           // Wallet must be synced with Key before enterprise operations
           if (!wkIdentity) {
@@ -1188,6 +1380,8 @@ export const SspConnectProvider = ({
     setMemo('');
     setRawUnsignedTx('');
     setInputDetails('');
+    setSignMessage(undefined);
+    setDappOrigin(undefined);
     setReservedNonce(undefined);
     setReservedKeyNonce(undefined);
     setKeyXpub(undefined);
@@ -1234,6 +1428,8 @@ export const SspConnectProvider = ({
         evmUserOp,
         signingMode,
         simulation,
+        signMessage,
+        dappOrigin,
         clearRequest,
       }}
     >

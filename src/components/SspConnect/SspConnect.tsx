@@ -103,6 +103,8 @@ function SspConnect() {
     evmUserOp: sspConnectEvmUserOp,
     signingMode: sspConnectSigningMode,
     simulation: sspConnectSimulation,
+    signMessage: sspConnectSignMessage,
+    dappOrigin: sspConnectDappOrigin,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common', 'home']);
@@ -138,6 +140,9 @@ function SspConnect() {
   const [txMemo, setTxMemo] = useState('');
   const [rawUnsignedTx, setRawUnsignedTx] = useState('');
   const [inputDetails, setInputDetails] = useState('');
+  // WalletConnect Phase 2 — vault message signing (reuses the sign-tx modal).
+  const [signMessage, setSignMessage] = useState<string | undefined>(undefined);
+  const [dappOrigin, setDappOrigin] = useState<string | undefined>(undefined);
   const [reservedNonce, setReservedNonce] = useState<
     { kPublic: string; kTwoPublic: string } | undefined
   >(undefined);
@@ -241,6 +246,8 @@ function SspConnect() {
         setEvmUserOp(sspConnectEvmUserOp);
         setSigningMode(sspConnectSigningMode);
         setSimulation(sspConnectSimulation);
+        setSignMessage(sspConnectSignMessage);
+        setDappOrigin(sspConnectDappOrigin);
         setOpenEnterpriseVaultSignTx(true);
       } else if (sspConnectType === 'enterprise_flux_node_start') {
         // Enterprise Flux node start request
@@ -522,6 +529,8 @@ function SspConnect() {
         evmUserOp={evmUserOp}
         signingMode={signingMode}
         simulation={simulation}
+        signMessage={signMessage}
+        dappOrigin={dappOrigin}
       />
       <EnterpriseNonceSync
         open={openEnterpriseNonceSync}

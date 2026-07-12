@@ -111,6 +111,12 @@ interface Props {
   // Server-computed advisory transaction simulation (JSON string).
   // DISPLAY-ONLY — never gates signing. The device decode stays authoritative.
   simulation?: string;
+  // WalletConnect Phase 2 — vault MESSAGE signing (personal_sign). When set, the
+  // component signs `rawUnsignedTx` (the EIP-191 message digest) exactly as it
+  // signs a UserOp hash, but shows the message text instead of a tx decode and
+  // never involves recipients/fees. dappOrigin is the requesting dApp (display).
+  signMessage?: string;
+  dappOrigin?: string;
 }
 
 /**
@@ -160,8 +166,12 @@ function EnterpriseVaultSignTx({
   evmUserOp,
   signingMode,
   simulation: simulationJson,
+  signMessage,
+  dappOrigin,
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
+  // WalletConnect Phase 2: message-signing mode (vs the default transaction mode).
+  const isMessageSign = !!signMessage;
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { sspWalletKeyInternalIdentity: wkIdentity } = useAppSelector(
     (state) => state.sspState,
@@ -700,6 +710,13 @@ function EnterpriseVaultSignTx({
       payload.evmUserOp = evmUserOp;
     }
 
+    // Message signing (WalletConnect Phase 2): forward the message text + dApp so
+    // Key shows what is being signed instead of a (non-existent) transaction.
+    if (signMessage) {
+      payload.signMessage = signMessage;
+      if (dappOrigin) payload.dappOrigin = dappOrigin;
+    }
+
     // Include the advisory server-computed simulation (JSON string) so the Key's
     // approve screen can render the same advisory risk strip. Display-only — the
     // Key's own trustless decode stays authoritative and signing is never gated.
@@ -768,7 +785,9 @@ function EnterpriseVaultSignTx({
       if (!wkIdentity) {
         throw new Error(t('home:enterpriseVaultXpub.err_not_synced'));
       }
-      if (parsedRecipients.length === 0) {
+      // Message signing carries no recipients (it signs a message digest, not a
+      // transfer) — only transactions require recipients.
+      if (!isMessageSign && parsedRecipients.length === 0) {
         throw new Error('No recipients found');
       }
       if (parsedInputDetails.length === 0) {
@@ -1171,130 +1190,180 @@ function EnterpriseVaultSignTx({
           </div>
         </Space>
 
-        <Divider style={{ margin: '8px 0' }} />
-
-        {/* Decoded transaction data notice */}
-        <Text
-          type="secondary"
-          style={{ fontSize: '12px', textAlign: 'center' }}
-        >
-          {t('home:enterpriseVaultSignTx.decoded_notice')}
-        </Text>
-
-        {decodedTx?.error && (
-          <Alert
-            type="error"
-            message={t('home:enterpriseVaultSignTx.decode_error')}
-            description={decodedTx.error}
-            showIcon
-            style={{ textAlign: 'left' }}
-          />
-        )}
-
-        {/* Solana byte-vs-payload contradiction — HARD BLOCK. A successful
-            decode that disagrees with the relay-supplied display payload is
-            an active-attack indicator; the Sign button below is disabled. */}
-        {solSignBlocked && solDecodeState && (
-          <Alert
-            type="error"
-            message={t(
-              'home:enterpriseVaultSignTx.sol_decode_mismatch_blocked',
+        {/* WalletConnect Phase 2 — message-signing mode: show the message text +
+            dApp, NOT a transaction decode (there is no transaction). */}
+        {isMessageSign && (
+          <>
+            <Divider style={{ margin: '8px 0' }} />
+            {dappOrigin && (
+              <div>
+                <Text type="secondary">
+                  {t('home:enterpriseVaultSignTx.sign_dapp')}:{' '}
+                </Text>
+                <Text strong>{dappOrigin}</Text>
+              </div>
             )}
-            description={solDecodeState.mismatchReasons.join('; ')}
-            showIcon
-            style={{ textAlign: 'left' }}
-          />
-        )}
-
-        {/* Solana undecodable bytes — warn but allow (availability). */}
-        {isSolChain && solDecodeState?.kind === 'undecodable' && (
-          <Alert
-            type="warning"
-            message={t('home:enterpriseVaultSignTx.sol_undecodable_warning')}
-            showIcon
-            style={{ textAlign: 'left' }}
-          />
-        )}
-
-        {/* Solana split-flow approval — amounts are from the proposal record
-            (byte-verified at creation), not re-verifiable from these bytes. */}
-        {isSolChain &&
-          solDecodeState?.kind === 'approve' &&
-          !solSignBlocked && (
-            <Alert
-              type="info"
-              message={t('home:enterpriseVaultSignTx.sol_approve_only_notice')}
-              showIcon
-              style={{ textAlign: 'left' }}
-            />
-          )}
-
-        {/* Recipients — decoded from raw transaction (AUTHORITATIVE).
-            This device's own trustless decode is the primary source of truth
-            for what is being signed. The advisory risk strip below is secondary. */}
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
-          <Text type="secondary" strong>
-            {t('home:enterpriseVaultSignTx.recipients')}:
-          </Text>
-          {(decodedTx?.recipients ?? []).map((recipient, index) => (
-            <div key={index} className="vault-sign-recipient-box">
-              <Text
-                copyable={{ text: recipient.address }}
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Text type="secondary" strong>
+                {t('home:enterpriseVaultSignTx.sign_message')}:
+              </Text>
+              <div
+                className="vault-sign-recipient-box"
                 style={{
+                  textAlign: 'left',
+                  maxHeight: 220,
+                  overflow: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
                   fontFamily: 'monospace',
-                  fontSize: '13px',
-                  wordBreak: 'break-all',
-                  display: 'block',
+                  fontSize: '12px',
                 }}
               >
-                {recipient.address}
-              </Text>
-              <Text
-                strong
-                style={{ fontSize: '17px', marginTop: 6, display: 'block' }}
-              >
-                {formatAmount(
-                  recipient.amount,
-                  decodedTx?.tokenDecimals ?? amountDecimals,
-                )}{' '}
-                {decodedTx?.tokenSymbol || amountSymbol}
-              </Text>
-            </div>
-          ))}
-        </Space>
-
-        {/* Fee — decoded from raw transaction */}
-        <Space direction="vertical" size="small">
-          <Text type="secondary">{t('home:enterpriseVaultSignTx.fee')}: </Text>
-          <Text strong>
-            {formatAmount(decodedTx?.fee ?? fee, chainDecimals)} {chainSymbol}
-          </Text>
-        </Space>
-
-        {/* Memo — from metadata (not in raw transaction) */}
-        {memo && (
-          <Space direction="vertical" size="small" style={{ width: '100%' }}>
-            <Text type="secondary">
-              {t('home:enterpriseVaultSignTx.memo')}:{' '}
-            </Text>
-            <Text style={{ fontFamily: 'monospace', fontSize: '12px' }}>
-              {memo}
-            </Text>
-          </Space>
+                {signMessage}
+              </div>
+            </Space>
+          </>
         )}
 
-        {/* Advisory risk strip (server-computed simulation). DISPLAY-ONLY —
+        {!isMessageSign && (
+          <>
+            <Divider style={{ margin: '8px 0' }} />
+
+            {/* Decoded transaction data notice */}
+            <Text
+              type="secondary"
+              style={{ fontSize: '12px', textAlign: 'center' }}
+            >
+              {t('home:enterpriseVaultSignTx.decoded_notice')}
+            </Text>
+
+            {decodedTx?.error && (
+              <Alert
+                type="error"
+                message={t('home:enterpriseVaultSignTx.decode_error')}
+                description={decodedTx.error}
+                showIcon
+                style={{ textAlign: 'left' }}
+              />
+            )}
+
+            {/* Solana byte-vs-payload contradiction — HARD BLOCK. A successful
+            decode that disagrees with the relay-supplied display payload is
+            an active-attack indicator; the Sign button below is disabled. */}
+            {solSignBlocked && solDecodeState && (
+              <Alert
+                type="error"
+                message={t(
+                  'home:enterpriseVaultSignTx.sol_decode_mismatch_blocked',
+                )}
+                description={solDecodeState.mismatchReasons.join('; ')}
+                showIcon
+                style={{ textAlign: 'left' }}
+              />
+            )}
+
+            {/* Solana undecodable bytes — warn but allow (availability). */}
+            {isSolChain && solDecodeState?.kind === 'undecodable' && (
+              <Alert
+                type="warning"
+                message={t(
+                  'home:enterpriseVaultSignTx.sol_undecodable_warning',
+                )}
+                showIcon
+                style={{ textAlign: 'left' }}
+              />
+            )}
+
+            {/* Solana split-flow approval — amounts are from the proposal record
+            (byte-verified at creation), not re-verifiable from these bytes. */}
+            {isSolChain &&
+              solDecodeState?.kind === 'approve' &&
+              !solSignBlocked && (
+                <Alert
+                  type="info"
+                  message={t(
+                    'home:enterpriseVaultSignTx.sol_approve_only_notice',
+                  )}
+                  showIcon
+                  style={{ textAlign: 'left' }}
+                />
+              )}
+
+            {/* Recipients — decoded from raw transaction (AUTHORITATIVE).
+            This device's own trustless decode is the primary source of truth
+            for what is being signed. The advisory risk strip below is secondary. */}
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Text type="secondary" strong>
+                {t('home:enterpriseVaultSignTx.recipients')}:
+              </Text>
+              {(decodedTx?.recipients ?? []).map((recipient, index) => (
+                <div key={index} className="vault-sign-recipient-box">
+                  <Text
+                    copyable={{ text: recipient.address }}
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: '13px',
+                      wordBreak: 'break-all',
+                      display: 'block',
+                    }}
+                  >
+                    {recipient.address}
+                  </Text>
+                  <Text
+                    strong
+                    style={{ fontSize: '17px', marginTop: 6, display: 'block' }}
+                  >
+                    {formatAmount(
+                      recipient.amount,
+                      decodedTx?.tokenDecimals ?? amountDecimals,
+                    )}{' '}
+                    {decodedTx?.tokenSymbol || amountSymbol}
+                  </Text>
+                </div>
+              ))}
+            </Space>
+
+            {/* Fee — decoded from raw transaction */}
+            <Space direction="vertical" size="small">
+              <Text type="secondary">
+                {t('home:enterpriseVaultSignTx.fee')}:{' '}
+              </Text>
+              <Text strong>
+                {formatAmount(decodedTx?.fee ?? fee, chainDecimals)}{' '}
+                {chainSymbol}
+              </Text>
+            </Space>
+
+            {/* Memo — from metadata (not in raw transaction) */}
+            {memo && (
+              <Space
+                direction="vertical"
+                size="small"
+                style={{ width: '100%' }}
+              >
+                <Text type="secondary">
+                  {t('home:enterpriseVaultSignTx.memo')}:{' '}
+                </Text>
+                <Text style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                  {memo}
+                </Text>
+              </Space>
+            )}
+
+            {/* Advisory risk strip (server-computed simulation). DISPLAY-ONLY —
             never gates signing. Renders critical/high warnings prominently
             above the sign control; medium/info collapse. localWarnings carries
             the device-side SIMULATION_DECODE_MISMATCH when the server preview
             disagrees with the authoritative device decode above. */}
-        {(simulation || localWarnings.length > 0) && (
-          <>
-            <Divider style={{ margin: '8px 0' }} />
-            <VaultRiskStrip
-              simulation={simulation}
-              extraWarnings={localWarnings}
-            />
+            {(simulation || localWarnings.length > 0) && (
+              <>
+                <Divider style={{ margin: '8px 0' }} />
+                <VaultRiskStrip
+                  simulation={simulation}
+                  extraWarnings={localWarnings}
+                />
+              </>
+            )}
           </>
         )}
 
