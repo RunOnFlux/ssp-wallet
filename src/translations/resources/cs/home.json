@@ -381,6 +381,8 @@
     "recipients": "Příjemci",
     "fee": "Poplatek sítě",
     "memo": "Poznámka",
+    "sign_message": "Message to sign",
+    "sign_dapp": "Requested by",
     "decoded_notice": "Níže uvedené údaje jsou dekódovány přímo z transakce, kterou podepíšete. Před schválením vždy ověřujte příjemce a částky.",
     "decode_error": "Nelze plně dekódovat data transakce. Pokračujte s opatrností.",
     "sol_decode_mismatch_blocked": "The raw transaction bytes do NOT match the displayed recipients and amounts. This may be an attack — signing is blocked.",
