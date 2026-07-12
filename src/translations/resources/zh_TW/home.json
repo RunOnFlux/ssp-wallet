@@ -381,6 +381,8 @@
     "recipients": "Recipients",
     "fee": "Network Fee",
     "memo": "Memo",
+    "sign_message": "Message to sign",
+    "sign_dapp": "Requested by",
     "decoded_notice": "The data below is decoded directly from the raw transaction you are signing. Always verify recipients and amounts before approving.",
     "decode_error": "Could not fully decode transaction data. Proceed with caution.",
     "sol_decode_mismatch_blocked": "The raw transaction bytes do NOT match the displayed recipients and amounts. This may be an attack — signing is blocked.",
