@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { toast } from '../../lib/toast';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import {
   Typography,
   Button,
   Modal,
-  message,
   Space,
   QRCode,
   Popconfirm,
@@ -12,6 +13,7 @@ import {
 import { NoticeType } from 'antd/es/message/interface';
 const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
+import { useThemeMode } from '../../contexts/ThemeContext';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
@@ -31,7 +33,7 @@ function SSPWalletDetails(props: {
 }) {
   const { activeChain, identityChain, sspWalletKeyInternalIdentity } =
     useAppSelector((state) => state.sspState);
-  const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+  const { isDark } = useThemeMode();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isNarrowScreen, setIsNarrowScreen] = useState(window.innerWidth < 420);
   const canvasWidth = isNarrowScreen ? 290 : 366;
@@ -41,6 +43,7 @@ function SSPWalletDetails(props: {
   const blockchainConfig = blockchains[activeChain];
   const identityChainConfig = blockchains[identityChain];
   const { t } = useTranslation(['home', 'common', 'cr']);
+  const sspLogo = useSspLogo();
   const [xpriv, setXpriv] = useState('');
   const [xpub, setXpub] = useState('');
   const [xpubIdentity, setXpubIdentity] = useState('');
@@ -56,12 +59,11 @@ function SSPWalletDetails(props: {
   const [seedPhraseCopyingVisible, setSeedPhraseCopyingVisible] =
     useState(false);
   const [xprivCopyingVisible, setXprivCopyingVisible] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
   // SSP is seedPhrase, xpub, xpriv
   const { open, openAction } = props;
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -92,7 +94,7 @@ function SSPWalletDetails(props: {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font =
           '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
-        ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
+        ctx.fillStyle = isDark ? '#fff' : '#000';
         new TextDecoder()
           .decode(seedPhrase)
           .split(' ')
@@ -108,7 +110,7 @@ function SSPWalletDetails(props: {
           });
       }
     }
-  }, [seedPhrase, seedPhraseVisible, open, isNarrowScreen]);
+  }, [seedPhrase, seedPhraseVisible, open, isNarrowScreen, isDark]);
 
   useEffect(() => {
     if (open) {
@@ -205,7 +207,6 @@ function SSPWalletDetails(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:sspWalletDetails.ssp_bip', {
           chain: blockchainConfig.symbol,
@@ -254,7 +255,7 @@ function SSPWalletDetails(props: {
                 <QRCode
                   errorLevel={qrErrorLevel}
                   value={qrValue}
-                  icon="/ssp-logo-black.svg"
+                  icon={sspLogo}
                   size={256}
                   style={{ margin: '0 auto' }}
                 />
@@ -390,7 +391,7 @@ function SSPWalletDetails(props: {
             <QRCode
               errorLevel="H"
               value={xpubIdentity}
-              icon="/ssp-logo-black.svg"
+              icon={sspLogo}
               size={256}
               style={{ margin: '0 auto' }}
             />
@@ -427,7 +428,7 @@ function SSPWalletDetails(props: {
                 <QRCode
                   errorLevel="H"
                   value={sspWalletKeyInternalIdentity}
-                  icon="/ssp-logo-black.svg"
+                  icon={sspLogo}
                   size={256}
                   style={{ margin: '0 auto' }}
                 />
@@ -485,9 +486,7 @@ function SSPWalletDetails(props: {
             width={canvasWidth}
             height={canvasHeight}
             style={{
-              border: `0.5px solid ${
-                darkModePreference.matches ? '#fff' : '#000'
-              }`,
+              border: `0.5px solid ${isDark ? '#fff' : '#000'}`,
               maxWidth: '100%',
             }}
           />

@@ -149,7 +149,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                 <PlayCircleOutlined
                   style={{
                     fontSize: '48px',
-                    color: '#1890ff',
+                    color: '#fbbf24',
                     marginBottom: '16px',
                   }}
                 />

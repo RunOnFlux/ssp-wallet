@@ -1,4 +1,5 @@
-import { Typography, Button, Space, Modal, message } from 'antd';
+import { Typography, Button, Space, Modal } from 'antd';
+import { toast } from '../../lib/toast';
 import { useState, useEffect } from 'react';
 import localForage from 'localforage';
 const { Text } = Typography;
@@ -76,9 +77,8 @@ function PaymentRequest(props: {
     (state) => state[(chainToSwitch as keyof cryptos) || identityChain],
   );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -415,7 +415,6 @@ function PaymentRequest(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:payment_request.payment_request')}
         open={open}

@@ -249,9 +249,9 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
                 {dappInfo.dappName}
               </Tag>
               {dappInfo.isVerified ? (
-                <InfoCircleOutlined style={{ color: '#52c41a' }} />
+                <InfoCircleOutlined style={{ color: '#22c55e' }} />
               ) : (
-                <ExclamationCircleOutlined style={{ color: '#faad14' }} />
+                <ExclamationCircleOutlined style={{ color: '#f59e0b' }} />
               )}
             </div>
             {dappInfo.dappUrl && (
@@ -271,7 +271,7 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
           <Card
             size="small"
             style={{
-              border: decodedData.warning ? '1px solid #faad14' : undefined,
+              border: decodedData.warning ? '1px solid #f59e0b' : undefined,
             }}
           >
             <Space direction="vertical" size="small" style={{ width: '100%' }}>

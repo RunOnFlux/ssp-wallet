@@ -1,4 +1,5 @@
-import { Table, Empty, message, Flex, Popconfirm, Button } from 'antd';
+import { Table, Empty, Flex, Popconfirm, Button } from 'antd';
+import { toast } from '../../lib/toast';
 import { NoticeType } from 'antd/es/message/interface';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
@@ -21,9 +22,8 @@ function ContactsTable() {
   const [manageOpen, setManageOpen] = useState(false);
   const [manageContactId, setManageContactId] = useState<number>(-1);
 
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -106,7 +106,6 @@ function ContactsTable() {
 
   return (
     <>
-      {contextHolder}
       <Table
         className="adjustedWidth"
         locale={{

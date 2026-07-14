@@ -67,7 +67,7 @@ function RecoveryDialog({
         {status === 'approved' && (
           <>
             <CheckCircleOutlined
-              style={{ fontSize: '48px', color: '#52c41a' }}
+              style={{ fontSize: '48px', color: '#22c55e' }}
             />
             <Text>{t('login:recovery_approved')}</Text>
           </>

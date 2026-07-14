@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button, Modal, Input, Space, message } from 'antd';
+import { toast } from '../../lib/toast';
+import { Button, Modal, Input, Space } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import { useTranslation } from 'react-i18next';
@@ -17,7 +18,6 @@ function ManageContact({ openAction, contactId = -1 }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { contacts } = useAppSelector((state) => state.contacts);
-  const [messageApi, contextHolder] = message.useMessage();
   const editedContact: contact = contacts[activeChain]?.find(
     (contact) => contact.id === contactId,
   ) ?? {
@@ -31,7 +31,7 @@ function ManageContact({ openAction, contactId = -1 }: Props) {
   );
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -91,7 +91,6 @@ function ManageContact({ openAction, contactId = -1 }: Props) {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={
           editedContact.id > -1

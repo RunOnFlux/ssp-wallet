@@ -1,4 +1,5 @@
 import { QRCode, Typography, Button, Space, Modal } from 'antd';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import { explorerTxUrl } from '../../lib/explorerUrl';
 const { Paragraph, Text } = Typography;
 import { useTranslation } from 'react-i18next';
@@ -10,6 +11,7 @@ function TxSent(props: {
   chain: string;
 }) {
   const { t } = useTranslation(['home', 'common']);
+  const sspLogo = useSspLogo();
   const { open, openAction, chain } = props;
 
   const handleOk = () => {
@@ -37,7 +39,7 @@ function TxSent(props: {
           <QRCode
             errorLevel="H"
             value={props.txid}
-            icon="/ssp-logo-black.svg"
+            icon={sspLogo}
             size={256}
             style={{ margin: '0 auto' }}
           />

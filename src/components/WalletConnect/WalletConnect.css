@@ -46,7 +46,7 @@
 }
 
 .address-deployment-status .deployed-icon:hover {
-  color: #389e0d !important;
+  color: #22c55e !important;
 }
 
 .address-deployment-status .not-deployed-icon {
@@ -55,5 +55,5 @@
 }
 
 .address-deployment-status .not-deployed-icon:hover {
-  color: #d48806 !important;
+  color: #f59e0b !important;
 }

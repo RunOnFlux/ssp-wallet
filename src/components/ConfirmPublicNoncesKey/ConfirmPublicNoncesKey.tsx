@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { QRCode, Typography, Button, Space, Modal, Input, message } from 'antd';
+import { toast } from '../../lib/toast';
+import { useSspLogo } from '../../hooks/useSspLogo';
+import { QRCode, Typography, Button, Space, Modal, Input } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { TextArea } = Input;
 import { useTranslation } from 'react-i18next';
@@ -16,12 +18,12 @@ function ConfirmPublicNoncesKey(props: {
   openAction: (status: boolean) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
+  const sspLogo = useSspLogo();
   const { open, openAction } = props;
   const [keyInput, setKeyInput] = useState('');
 
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -77,7 +79,6 @@ function ConfirmPublicNoncesKey(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:confirmPublicNoncesKey.confirm_public_nonces_key')}
         open={open}
@@ -99,7 +100,7 @@ function ConfirmPublicNoncesKey(props: {
             <QRCode
               errorLevel="M"
               value="publicnonces"
-              icon="/ssp-logo-black.svg"
+              icon={sspLogo}
               size={240}
               style={{ margin: '0 auto 15px auto' }}
             />

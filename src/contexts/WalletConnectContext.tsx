@@ -7,6 +7,7 @@ import React, {
   ReactNode,
 } from 'react';
 import { Core } from '@walletconnect/core';
+import { toast } from '../lib/toast';
 import { WalletKit, WalletKitTypes } from '@reown/walletkit';
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils';
 import {
@@ -18,7 +19,6 @@ import { useRelayAuth } from '../hooks/useRelayAuth';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../types';
 import localForage from 'localforage';
-import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
 import {
@@ -197,7 +197,6 @@ interface WalletConnectContextType {
   handleSessionRequest: (event: SessionRequest) => Promise<void>;
   approveRequest: (request: SessionRequest) => Promise<void>;
   rejectRequest: (request: SessionRequest) => Promise<void>;
-  contextHolder: React.ReactElement;
   debugInitialize: () => Promise<void>;
   handleWalletConnectTxCompletion: (txid: string) => Promise<void>;
   handleWalletConnectTxRejection: (error?: string) => Promise<void>;
@@ -227,7 +226,6 @@ interface WalletConnectProviderProps {
 export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   children,
 }) => {
-  const [messageApi, contextHolder] = message.useMessage();
   const { t } = useTranslation(['common', 'home', 'send']);
   const { sspWalletKeyInternalIdentity, activeChain } = useAppSelector(
     (state) => ({
@@ -276,7 +274,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
 
     if (type === 'loading') {
       activeLoadingMessagesRef.current.add(content);
-      const hideMessage = messageApi.loading(content, duration || 0);
+      const hideMessage = toast.loading(content, duration || 0);
 
       // Return a function that clears the message and removes it from active set
       return () => {
@@ -285,7 +283,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       };
     }
 
-    void messageApi.open({
+    void toast.open({
       type,
       content,
       duration: duration ? duration : type === 'error' ? 5 : 4, // Ensure all messages have duration
@@ -2759,7 +2757,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       });
 
       // Show user which networks they're connecting (with auto-dismiss)
-      const hideConnectingMessage = messageApi.loading(
+      const hideConnectingMessage = toast.loading(
         t('home:walletconnect.connecting_to_dapp', {
           dappName: proposal.params.proposer.metadata.name,
           chains: connectingChains.join(', '),
@@ -2959,7 +2957,6 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     handleSessionRequest,
     approveRequest,
     rejectRequest,
-    contextHolder,
     debugInitialize: () => {
       console.log(
         '🔗 WalletConnect: Manual initialization triggered from debug',
@@ -2976,7 +2973,6 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
 
   return (
     <WalletConnectContext.Provider value={contextValue}>
-      {contextHolder}
       {children}
     </WalletConnectContext.Provider>
   );

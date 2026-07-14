@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+import { toast } from '../../lib/toast';
 import { useNavigate, useLocation } from 'react-router';
 import {
   Form,
-  message,
   Divider,
   Button,
   Input,
@@ -10,6 +10,7 @@ import {
   Popconfirm,
   Popover,
   Select,
+  theme,
 } from 'antd';
 import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
@@ -75,6 +76,7 @@ let txSentInterval: string | number | NodeJS.Timeout | undefined;
 let alreadyRunning = false;
 
 function Send() {
+  const { token } = theme.useToken();
   const dispatch = useAppDispatch();
   const location = useLocation();
   const state = location.state as sendForm;
@@ -88,7 +90,6 @@ function Send() {
   const { t } = useTranslation(['send', 'common', 'home']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
   const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
@@ -349,7 +350,7 @@ function Send() {
   }, [txRejected]);
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -857,7 +858,6 @@ function Send() {
 
   return (
     <>
-      {contextHolder}
       <Navbar
         refresh={refresh}
         hasRefresh={false}
@@ -975,7 +975,7 @@ function Send() {
             float: 'right',
             marginRight: 3,
             fontSize: 12,
-            color: '#4096ff',
+            color: token.colorPrimary,
             cursor: state.swap ? 'not-allowed' : 'pointer',
             zIndex: 2,
           }}
@@ -1025,7 +1025,7 @@ function Send() {
             float: 'left',
             marginLeft: 3,
             fontSize: 12,
-            color: '#4096ff',
+            color: token.colorPrimary,
             cursor: 'pointer',
             zIndex: 2,
           }}

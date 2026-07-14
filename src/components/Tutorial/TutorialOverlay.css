@@ -9,7 +9,7 @@
 }
 
 .tutorial-highlight {
-  border: 2px solid #1890ff;
+  border: 2px solid #fbbf24;
   border-radius: 6px;
   background-color: transparent;
   animation: tutorial-pulse 3s infinite;
@@ -72,7 +72,7 @@
 
 .tutorial-click-hint {
   font-size: 11px;
-  color: #faad14;
+  color: #f59e0b;
   margin-top: 6px;
   display: block;
   font-style: italic;
@@ -88,12 +88,12 @@
 @keyframes tutorial-pulse {
   0%,
   100% {
-    border-color: #1890ff;
+    border-color: #fbbf24;
     box-shadow: 0 0 0 1px rgba(24, 144, 255, 0.2);
     opacity: 1;
   }
   50% {
-    border-color: #40a9ff;
+    border-color: #fbbf24;
     box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.4);
     opacity: 0.8;
   }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import { Link, useNavigate } from 'react-router';
 import secureLocalStorage from 'react-secure-storage';
 import { Button, Image, Space, Spin } from 'antd';
@@ -10,6 +11,7 @@ import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
 
 function Welcome() {
   const { t } = useTranslation(['welcome', 'common']);
+  const sspLogo = useSspLogo();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
@@ -30,7 +32,7 @@ function Welcome() {
           <Image
             width={120}
             preview={false}
-            src="/ssp-logo-black.svg"
+            src={sspLogo}
             style={{ paddingTop: 70 }}
           />
           <h1>{t('welcome:welcome_to')}</h1>

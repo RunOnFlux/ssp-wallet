@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import {
   Typography,
   Button,
@@ -47,6 +48,7 @@ interface Props {
 
 function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
   const { t } = useTranslation(['home', 'common']);
+  const sspLogo = useSspLogo();
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const {
     identityChain,
@@ -440,7 +442,7 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
                             <QRCode
                               errorLevel="L"
                               value={qrPayload}
-                              icon="/ssp-logo-black.svg"
+                              icon={sspLogo}
                               size={qrSize}
                               style={{ margin: '0 auto' }}
                             />

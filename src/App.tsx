@@ -1,52 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { RouterProvider } from 'react-router';
-import { ConfigProvider, theme, App as AntApp } from 'antd';
+import { ConfigProvider, App as AntApp } from 'antd';
 import WalletConnectModals from './components/WalletConnect/WalletConnectModals';
 import TutorialProvider from './components/Tutorial/TutorialProvider';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
+import { ThemeProvider, useThemeMode } from './contexts/ThemeContext';
+import { lightTheme, darkTheme } from './styles/theme';
+import { setToastInstance } from './lib/toast';
 import router from './router';
 
-function App() {
-  const { defaultAlgorithm, darkAlgorithm } = theme;
-  const [themeStyle, setThemeStyle] = useState(() => {
-    const darkModePreference = window.matchMedia(
-      '(prefers-color-scheme: dark)',
-    );
-    return darkModePreference.matches ? 'dark' : 'light';
-  });
-
-  const changeTheme = (isDark: boolean) => {
-    if (isDark) {
-      setThemeStyle('dark');
-    } else {
-      setThemeStyle('light');
-    }
-  };
+// Bridges the antd App message instance to the centralized toast service
+function ToastBridge() {
+  const { message } = AntApp.useApp();
 
   useEffect(() => {
-    const darkModePreference = window.matchMedia(
-      '(prefers-color-scheme: dark)',
-    );
-    const handleChange = (e: MediaQueryListEvent) => changeTheme(e.matches);
+    setToastInstance(message);
+  }, [message]);
 
-    darkModePreference.addEventListener('change', handleChange);
+  return null;
+}
 
-    return () => {
-      darkModePreference.removeEventListener('change', handleChange);
-    };
-  }, []);
+function ThemedApp() {
+  const { isDark } = useThemeMode();
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: themeStyle === 'dark' ? darkAlgorithm : defaultAlgorithm,
-        token: {
-          colorPrimary: '#fbbf24',
-        },
-      }}
-    >
+    <ConfigProvider theme={isDark ? darkTheme : lightTheme}>
       <ErrorBoundary>
         <AntApp>
+          <ToastBridge />
           <TutorialProvider>
             <WalletConnectModals />
             <RouterProvider router={router} />
@@ -54,6 +35,14 @@ function App() {
         </AntApp>
       </ErrorBoundary>
     </ConfigProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <ThemedApp />
+    </ThemeProvider>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from '../../lib/toast';
 import { useNavigate } from 'react-router';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
@@ -16,7 +17,7 @@ import {
   setSspWalletExternalIdentity,
   setInitialContactsState,
 } from '../../store';
-import { Spin, Divider, message, Space, Tabs } from 'antd';
+import { Spin, Divider, Space, Tabs } from 'antd';
 import './Home.css';
 import Key from '../../components/Key/Key';
 import Navigation from '../../components/Navigation/Navigation';
@@ -59,14 +60,13 @@ function Home() {
   const { xpubKey, xpubWallet, walletInUse, wallets } = useAppSelector(
     (state) => state[activeChain],
   );
-  const [messageApi, contextHolder] = message.useMessage();
   const browser = window.chrome || window.browser;
 
   // Sync SSP Enterprise notification status on login (checks subscription, syncs)
   useEnterpriseNotificationSync();
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -267,7 +267,6 @@ function Home() {
   };
   return (
     <>
-      {contextHolder}
       {isLoading && <Spin size="large" />}
       {!isLoading && (
         <div style={{ paddingBottom: '43px' }}>

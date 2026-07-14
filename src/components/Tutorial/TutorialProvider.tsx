@@ -6,7 +6,7 @@ import React, {
   ReactNode,
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { message } from 'antd';
+import { toast } from '../../lib/toast';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
@@ -76,7 +76,6 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { createWkIdentityAuth } = useRelayAuth();
   const [currentSteps, setCurrentSteps] = useState<TutorialStep[]>([]);
-  const [messageApi, contextHolder] = message.useMessage();
   const [expectedChain, setExpectedChain] = useState<string>('');
   const [pendingTutorialType, setPendingTutorialType] = useState<string>('');
 
@@ -138,7 +137,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
         setEnterpriseSubscriptionStep('verification');
         setEnterpriseVerificationCode('');
         setRemainingAttempts(null);
-        messageApi.success(t('home:settings.sspEnterprise.code_sent'));
+        toast.success(t('home:settings.sspEnterprise.code_sent'));
         return true;
       } else {
         setEnterpriseError(
@@ -195,7 +194,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
       if (response.data?.status === 'success' && response.data?.data?.success) {
         setVerifiedEmail(email);
         setEnterpriseSubscriptionStep('signing');
-        messageApi.success(t('home:settings.sspEnterprise.email_verified'));
+        toast.success(t('home:settings.sspEnterprise.email_verified'));
         return true;
       } else {
         if (response.data?.data?.remainingAttempts !== undefined) {
@@ -297,7 +296,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
       if (response.data?.status === 'success' && response.data?.data?.success) {
         await subscribeToEnterpriseNotifications(verifiedEmail);
         setEnterpriseSubscribed(true);
-        messageApi.success(t('home:settings.sspEnterprise.subscribe_success'));
+        toast.success(t('home:settings.sspEnterprise.subscribe_success'));
       } else {
         setEnterpriseError(
           response.data?.data?.message ||
@@ -351,7 +350,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
   const startTutorial = (tutorialType: string = 'onboarding') => {
     // Ensure we're on the home page
     if (window.location.pathname !== '/home') {
-      messageApi.info({
+      toast.info({
         content: t('home:tutorial.navigating_to_home'),
         duration: 2,
         style: { zIndex: 99999 },
@@ -373,7 +372,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
 
     // Ensure we're on Bitcoin blockchain for the tutorial
     if (activeChain !== 'btc') {
-      messageApi.warning({
+      toast.warning({
         content: t('home:tutorial.switch_to_bitcoin_first'),
         duration: 5,
         style: { zIndex: 99999 },
@@ -387,7 +386,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
       startTutorialInternal(tutorialType);
     } else {
       // Wallet data not ready yet - wait for it
-      messageApi.info({
+      toast.info({
         content: t('home:tutorial.waiting_wallet_data'),
         duration: 2,
         style: { zIndex: 99999 },
@@ -400,7 +399,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     // Final safety check - ensure we have wallet data
     if (!wallets || !walletInUse || !wallets[walletInUse]) {
       console.error('Cannot start tutorial - wallet data not available');
-      messageApi.error({
+      toast.error({
         content: t('home:tutorial.err_tutorial_wallet_data'),
         duration: 5,
         style: { zIndex: 99999 },
@@ -502,7 +501,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
 
   const closeTutorial = async () => {
     // Show cancellation message
-    messageApi.info({
+    toast.info({
       content: t('home:tutorial.tutorial_cancelled'),
       duration: 5,
       style: {
@@ -554,7 +553,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
         activeChain !== 'btc'
       ) {
         // User selected wrong chain - cancel tutorial
-        messageApi.error({
+        toast.error({
           content: t('home:tutorial.tutorial_cancelled_wrong_chain'),
           duration: 8,
           style: {
@@ -593,7 +592,6 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     tutorialState.currentStep,
     tutorialState.tutorialType,
     expectedChain,
-    messageApi,
     dispatch,
   ]);
 
@@ -676,7 +674,6 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
 
   return (
     <TutorialContext.Provider value={contextValue}>
-      {contextHolder}
       {children}
       <TutorialOverlay
         steps={currentSteps}

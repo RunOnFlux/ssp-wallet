@@ -539,7 +539,7 @@ const SecurityTest: React.FC = () => {
           <br />
           <br />
           <Title level={2}>
-            <SafetyOutlined style={{ color: '#52c41a' }} /> LavaMoat Security
+            <SafetyOutlined style={{ color: '#22c55e' }} /> LavaMoat Security
             Test
           </Title>
           <Paragraph>
@@ -589,11 +589,11 @@ const SecurityTest: React.FC = () => {
                           : 'normal',
                       color:
                         result.type === 'pass'
-                          ? '#52c41a'
+                          ? '#22c55e'
                           : result.type === 'fail'
-                            ? '#ff4d4f'
+                            ? '#ef4444'
                             : result.type === 'warning'
-                              ? '#faad14'
+                              ? '#f59e0b'
                               : '#666',
                     }}
                   >

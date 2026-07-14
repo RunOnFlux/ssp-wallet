@@ -1,6 +1,7 @@
 import { Image } from 'antd';
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { useNavigate } from 'react-router';
+import { useThemeMode } from '../../contexts/ThemeContext';
 import { version } from '../../../package.json';
 
 interface Props {
@@ -10,24 +11,9 @@ function PoweredByFlux({ isClickeable = false }: Props) {
   const navigate = useNavigate();
   const clickCountRef = useRef(0);
   const lastClickTimeRef = useRef(0);
-  const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
-  darkModePreference.addEventListener('change', (e) => changeTheme(e.matches));
-  const [themeStyle, setThemeStyle] = useState(
-    darkModePreference.matches ? 'light' : 'dark',
-  );
-  const [colorBox, setColorBox] = useState(
-    darkModePreference.matches ? '#333' : '#ddd',
-  );
-
-  const changeTheme = (isDark: boolean) => {
-    if (isDark) {
-      setThemeStyle('light');
-      setColorBox('#333');
-    } else {
-      setThemeStyle('dark');
-      setColorBox('#ddd');
-    }
-  };
+  const { isDark } = useThemeMode();
+  const themeStyle = isDark ? 'light' : 'dark'; // powered_by asset variant (light art on dark bg)
+  const colorBox = isDark ? '#333' : '#ddd';
 
   const open = (url: string) => {
     window.open(url, '_blank');

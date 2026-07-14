@@ -1,16 +1,9 @@
 import { useEffect, useState } from 'react';
+import { toast } from '../../lib/toast';
 import axios from 'axios';
 import { useAppSelector } from '../../hooks';
 import { useTranslation } from 'react-i18next';
-import {
-  Button,
-  Space,
-  Popconfirm,
-  message,
-  Spin,
-  Typography,
-  Tooltip,
-} from 'antd';
+import { Button, Space, Popconfirm, Spin, Typography, Tooltip } from 'antd';
 const { Paragraph } = Typography;
 import { fusionPAavailable, fusionMessage, errorResponse } from '../../types';
 import { blockchains } from '@storage/blockchains';
@@ -38,7 +31,6 @@ function PArewards(props: {
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[activeChain],
   );
-  const [messageApi, contextHolder] = message.useMessage();
   const address = wallets[walletInUse].address;
   const blockchainConfig = blockchains[activeChain];
 
@@ -83,7 +75,7 @@ function PArewards(props: {
   };
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -193,7 +185,6 @@ function PArewards(props: {
 
   return (
     <>
-      {contextHolder}
       {claimInProgress && (
         <Spin size="large" style={{ marginTop: 14, marginBottom: 14 }} />
       )}

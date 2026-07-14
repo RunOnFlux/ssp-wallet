@@ -13,6 +13,10 @@ import NetworkFeeController from './components/NetworkFeeController/NetworkFeeCo
 import ServicesAvailabilityController from './components/ServicesAvailabilityController/ServicesAvailabilityController.tsx';
 import ABEController from './components/ABEController/ABEController.tsx';
 import './translations';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
 import './index.css';
 
 // Popup vs Side Panel detection

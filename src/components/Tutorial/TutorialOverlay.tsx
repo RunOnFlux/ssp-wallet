@@ -590,7 +590,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             <CheckCircleOutlined
               style={{
                 fontSize: '48px',
-                color: '#52c41a',
+                color: '#22c55e',
                 marginBottom: '16px',
               }}
             />
@@ -804,7 +804,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <div style={{ textAlign: 'center' }}>
               <MailOutlined
-                style={{ fontSize: 32, color: '#1890ff', marginBottom: 12 }}
+                style={{ fontSize: 32, color: '#fbbf24', marginBottom: 12 }}
               />
               <Typography.Title level={5} style={{ margin: 0 }}>
                 {t('home:tutorial.skip_enterprise_title')}

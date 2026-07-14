@@ -35,7 +35,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
     } else if (remainingTimeInSeconds > 8 * 60) {
       return '#63A375'; // green
     } else if (remainingTimeInSeconds > 4 * 60) {
-      return '#F5A905'; // yellow
+      return '#f59e0b'; // yellow
     } else {
       return '#E03109'; // red
     }

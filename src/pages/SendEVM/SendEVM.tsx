@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+import { toast } from '../../lib/toast';
 import { useNavigate, useLocation } from 'react-router';
 import {
   Form,
-  message,
   Divider,
   Button,
   Input,
@@ -142,7 +142,6 @@ function SendEVM() {
   const { t } = useTranslation(['send', 'common', 'home']);
   const [form] = Form.useForm();
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
   const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
     (state) => state.sspState,
   );
@@ -622,7 +621,7 @@ function SendEVM() {
   }, [publicNoncesRejected]);
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -1201,7 +1200,6 @@ function SendEVM() {
 
   return (
     <>
-      {contextHolder}
       <Navbar
         refresh={refresh}
         hasRefresh={false}

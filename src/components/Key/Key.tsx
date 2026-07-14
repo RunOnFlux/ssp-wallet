@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { toast } from '../../lib/toast';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import { ExclamationCircleFilled } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
-import { Modal, QRCode, Button, Input, message, Space, Typography } from 'antd';
+import { Modal, QRCode, Button, Input, Space, Typography } from 'antd';
 const { Paragraph, Text } = Typography;
 import { NoticeType } from 'antd/es/message/interface';
 import secureLocalStorage from 'react-secure-storage';
@@ -62,6 +64,7 @@ let nonceReplenishRunning = false;
 
 function Key(props: { synchronised: (status: boolean) => void }) {
   const { t } = useTranslation(['home', 'common']);
+  const sspLogo = useSspLogo();
   const { synchronised } = props;
   const [isModalKeyOpen, setIsModalKeyOpen] = useState(false);
   const [keyInput, setKeyInput] = useState('');
@@ -73,14 +76,13 @@ function Key(props: { synchronised: (status: boolean) => void }) {
   const { xpubKey, xpubWallet } = useAppSelector((state) => state[activeChain]);
   const [isSSPKeyDownloadOpen, setIsSSPKeyDownloadOpen] = useState(false);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
-  const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[activeChain];
   const derivationPath = `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
     blockchainConfig.scriptType,
   )}-${blockchainConfig.id}`;
   const isIdentityChain = activeChain === identityChain;
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -420,7 +422,6 @@ function Key(props: { synchronised: (status: boolean) => void }) {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={
           isIdentityChain
@@ -471,7 +472,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
               <QRCode
                 errorLevel={qrErrorLevel}
                 value={qrValue}
-                icon="/ssp-logo-black.svg"
+                icon={sspLogo}
                 size={256}
                 style={{ margin: '0 auto' }}
               />
@@ -550,7 +551,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
           <QRCode
             errorLevel="H"
             value="https://sspwallet.io/download/ssp-key"
-            icon="/ssp-logo-black.svg"
+            icon={sspLogo}
             size={256}
             style={{ margin: '0 auto' }}
           />

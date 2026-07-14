@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router';
 import { Row, Col, Image } from 'antd';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import './Headerbar.css';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 function Headerbar({ headerTitle, navigateTo }: Props) {
   const navigate = useNavigate();
+  const sspLogo = useSspLogo();
 
   return (
     <>
@@ -18,7 +20,7 @@ function Headerbar({ headerTitle, navigateTo }: Props) {
             <Image
               height={30}
               preview={false}
-              src="/ssp-logo-black.svg"
+              src={sspLogo}
               onClick={() => navigate(navigateTo)}
               style={{ cursor: 'pointer' }}
             />

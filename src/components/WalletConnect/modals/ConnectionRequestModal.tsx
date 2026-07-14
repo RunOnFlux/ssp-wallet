@@ -100,7 +100,7 @@ const AddressDeploymentStatus: React.FC<AddressDeploymentStatusProps> = ({
           >
             <CheckCircleOutlined
               className="deployed-icon"
-              style={{ color: '#52c41a', fontSize: '14px' }}
+              style={{ color: '#22c55e', fontSize: '14px' }}
             />
           </Tooltip>
         );
@@ -113,7 +113,7 @@ const AddressDeploymentStatus: React.FC<AddressDeploymentStatusProps> = ({
           >
             <ExclamationCircleOutlined
               className="not-deployed-icon"
-              style={{ color: '#faad14', fontSize: '14px' }}
+              style={{ color: '#f59e0b', fontSize: '14px' }}
             />
           </Tooltip>
         );
@@ -589,28 +589,28 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
               <span key={chain.chainId}>
                 {chain.chainName}
                 {chain.isRequired && (
-                  <span style={{ color: '#ff4d4f' }}> *</span>
+                  <span style={{ color: '#ef4444' }}> *</span>
                 )}
                 {chain.isOriginalUnsupported && (
-                  <span style={{ color: '#faad14' }}>
+                  <span style={{ color: '#f59e0b' }}>
                     {' '}
                     ({t('home:walletconnect.unsupported')})
                   </span>
                 )}
                 {chain.isDefault && (
-                  <span style={{ color: '#52c41a' }}>
+                  <span style={{ color: '#22c55e' }}>
                     {' '}
                     ({t('home:walletconnect.defaulting')})
                   </span>
                 )}
                 {!chain.isSupported && !chain.isOriginalUnsupported && (
-                  <span style={{ color: '#faad14' }}>
+                  <span style={{ color: '#f59e0b' }}>
                     {' '}
                     ({t('home:walletconnect.unsupported')})
                   </span>
                 )}
                 {chain.isSupported && !chain.isSynced && !chain.isDefault && (
-                  <span style={{ color: '#1890ff' }}>
+                  <span style={{ color: '#3b82f6' }}>
                     {' '}
                     ({t('home:walletconnect.unsynced')})
                   </span>
@@ -620,8 +620,8 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
             ))}
           </div>
           {requestedChains.some((chain) => chain.isRequired) && (
-            <div style={{ fontSize: '11px', color: '#ff4d4f', marginTop: 8 }}>
-              <span style={{ color: '#ff4d4f' }}>*</span>{' '}
+            <div style={{ fontSize: '11px', color: '#ef4444', marginTop: 8 }}>
+              <span style={{ color: '#ef4444' }}>*</span>{' '}
               {t('home:walletconnect.required_explanation')}
             </div>
           )}
@@ -680,7 +680,7 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
                           <span style={{ fontWeight: 'bold' }}>
                             {chainInfo.chainName}
                             {chainInfo.isRequired && (
-                              <span style={{ color: '#ff4d4f' }}> *</span>
+                              <span style={{ color: '#ef4444' }}> *</span>
                             )}
                           </span>
                         </Checkbox>

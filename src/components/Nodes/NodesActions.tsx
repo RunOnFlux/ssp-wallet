@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button, Dropdown, Modal, message, Spin } from 'antd';
+import { toast } from '../../lib/toast';
+import { Button, Dropdown, Modal, Spin } from 'antd';
 import { MoreOutlined, SettingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
@@ -31,11 +32,10 @@ function NodesActions(props: {
   const [selectedDelegateKeys, setSelectedDelegateKeys] = useState<string[]>(
     [],
   );
-  const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[props.chain];
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -132,7 +132,6 @@ function NodesActions(props: {
   if (startingAllNodes) {
     return (
       <>
-        {contextHolder}
         <Spin size="small" style={{ marginLeft: 8 }} />
       </>
     );
@@ -140,7 +139,6 @@ function NodesActions(props: {
 
   return (
     <>
-      {contextHolder}
       <Dropdown
         menu={{
           items: [

@@ -1,4 +1,6 @@
-import { Image, Button, Form, Modal, message, Input, Space } from 'antd';
+import { Image, Button, Form, Modal, Input, Space } from 'antd';
+import { toast } from '../../lib/toast';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import { NoticeType } from 'antd/es/message/interface';
 
 import {
@@ -29,11 +31,11 @@ function PasswordConfirm(props: {
   const { activeChain } = useAppSelector((state) => state.sspState);
   const blockchainConfig = blockchains[activeChain];
   const { t } = useTranslation(['home', 'common', 'login', 'cr']);
+  const sspLogo = useSspLogo();
   const [form] = Form.useForm();
   const { open, openAction } = props;
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -100,7 +102,6 @@ function PasswordConfirm(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('cr:confirm_password')}
         open={open}
@@ -109,7 +110,7 @@ function PasswordConfirm(props: {
         footer={[]}
       >
         <Space direction="vertical" size="large">
-          <Image width={50} preview={false} src="/ssp-logo-black.svg" />
+          <Image width={50} preview={false} src={sspLogo} />
           <p>
             {t('home:passwordConfirm.grant_access_info_1')}
             <br />

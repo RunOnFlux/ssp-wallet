@@ -1,4 +1,5 @@
 import { QRCode, Typography, Button, Space, Modal, Alert, Divider } from 'antd';
+import { useSspLogo } from '../../hooks/useSspLogo';
 const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +11,7 @@ function Receive(props: {
   openAction: (status: boolean) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
+  const sspLogo = useSspLogo();
   const { open, openAction } = props;
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse } = useAppSelector(
@@ -60,7 +62,7 @@ function Receive(props: {
             <QRCode
               errorLevel="H"
               value={wallets[walletInUse].address}
-              icon="/ssp-logo-black.svg"
+              icon={sspLogo}
               size={256}
               style={{ margin: '0 auto' }}
             />

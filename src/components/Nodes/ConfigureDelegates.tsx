@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Modal, Input, Button, message, Typography } from 'antd';
+import { toast } from '../../lib/toast';
+import { Modal, Input, Button, Typography } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
@@ -44,13 +45,12 @@ function ConfigureDelegates(props: {
   const [delegates, setDelegates] = useState<NamedDelegate[]>([]);
   const [newDelegate, setNewDelegate] = useState('');
   const [newDelegateName, setNewDelegateName] = useState('');
-  const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[props.chain];
   const storageKey = getDelegatesStorageKey(props.chain, props.walletInUse);
   const walletNumber = Number(props.walletInUse.split('-')[1]) + 1;
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({ type, content });
+    void toast.open({ type, content });
   };
 
   useEffect(() => {
@@ -117,7 +117,6 @@ function ConfigureDelegates(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:nodesTable.configure_delegates_title', {
           chainName: blockchainConfig.name,

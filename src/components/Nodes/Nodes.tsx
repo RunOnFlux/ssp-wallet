@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { message } from 'antd';
+import { toast } from '../../lib/toast';
+import {} from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import secureLocalStorage from 'react-secure-storage';
 import { blockchains } from '@storage/blockchains';
@@ -43,9 +44,8 @@ function Nodes() {
   const [nodeIdentityPK, setNodeIdentityPK] = useState('');
   const [collateralPrivKey, setCollateralPrivKey] = useState('');
   const [collateralPublicKey, setCollateralPublicKey] = useState('');
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -255,7 +255,6 @@ function Nodes() {
   };
   return (
     <div>
-      {contextHolder}
       <div
         style={{
           display: 'flex',

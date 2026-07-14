@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import { QRCode, Typography, Button, Space, Modal, Spin, Alert } from 'antd';
 import {
   LoadingOutlined,
@@ -19,6 +20,7 @@ function ConfirmTxKey(props: {
   openAction: (status: boolean) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
+  const sspLogo = useSspLogo();
   const { open, openAction, txHex, chain, wallet } = props;
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -142,7 +144,7 @@ function ConfirmTxKey(props: {
               <QRCode
                 errorLevel="M"
                 value={`${chain}:${wallet}:${txHex}`}
-                icon="/ssp-logo-black.svg"
+                icon={sspLogo}
                 size={qrSize}
                 style={{ margin: '0 auto' }}
               />

@@ -35,7 +35,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
             key: 'guide',
             label: (
               <Space>
-                <BookOutlined style={{ color: '#52c41a' }} />
+                <BookOutlined style={{ color: '#22c55e' }} />
                 <div>
                   <div>{t('welcome:watch_guide')}</div>
                   <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -67,7 +67,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
       key: 'support',
       label: (
         <Space>
-          <CustomerServiceOutlined style={{ color: '#fa8c16' }} />
+          <CustomerServiceOutlined style={{ color: '#f97316' }} />
           <div>
             <div>{t('welcome:help.support')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, JSX } from 'react';
+import { toast } from '../../lib/toast';
 import { useNavigate } from 'react-router';
 import {
   Input,
@@ -6,7 +7,6 @@ import {
   Checkbox,
   Form,
   Divider,
-  message,
   Modal,
   Popover,
   Popconfirm,
@@ -29,6 +29,7 @@ import {
 import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch, useAppSelector } from '../../hooks';
+import { useThemeMode } from '../../contexts/ThemeContext';
 
 import { setXpubWallet, setPasswordBlob } from '../../store';
 
@@ -79,9 +80,8 @@ function Create() {
     setIsModalOpen(true);
   };
 
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -417,9 +417,7 @@ function Create() {
     };
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const darkModePreference = window.matchMedia(
-      '(prefers-color-scheme: dark)',
-    );
+    const { isDark } = useThemeMode();
     const [isNarrowScreen, setIsNarrowScreen] = useState(
       window.innerWidth < 420,
     );
@@ -443,7 +441,7 @@ function Create() {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.font =
             '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
-          ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
+          ctx.fillStyle = isDark ? '#fff' : '#000';
           new TextDecoder()
             .decode(mnemonic)
             .split(' ')
@@ -459,7 +457,7 @@ function Create() {
             });
         }
       }
-    }, [mnemonic, mnemonicShow, isNarrowScreen]);
+    }, [mnemonic, mnemonicShow, isNarrowScreen, isDark]);
 
     return (
       <>
@@ -484,7 +482,7 @@ function Create() {
             width={canvasWidth}
             height={canvasHeight}
             style={{
-              border: `0.5px solid ${darkModePreference.matches ? '#fff' : '#000'}`,
+              border: `0.5px solid ${isDark ? '#fff' : '#000'}`,
               marginLeft: '-15px',
               marginRight: '-15px',
             }}
@@ -768,7 +766,6 @@ function Create() {
 
   return (
     <>
-      {contextHolder}
       <PasswordForm />
       <BackupConfirmModal />
       <ConfirmWordsModal />

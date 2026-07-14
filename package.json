@@ -34,6 +34,7 @@
   "dependencies": {
     "@alchemy/aa-core": "3.19.0",
     "@ant-design/icons": "6.2.5",
+    "@fontsource/inter": "5.2.8",
     "@metamask/browser-passworder": "6.0.0",
     "@noble/hashes": "2.2.0",
     "@reduxjs/toolkit": "2.12.0",

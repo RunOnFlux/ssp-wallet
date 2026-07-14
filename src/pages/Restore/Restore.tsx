@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { toast } from '../../lib/toast';
 import { useNavigate } from 'react-router';
 import {
   Input,
@@ -6,7 +7,6 @@ import {
   Checkbox,
   Form,
   Divider,
-  message,
   Modal,
   Popover,
   Popconfirm,
@@ -29,6 +29,7 @@ import {
 import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch } from '../../hooks';
+import { useThemeMode } from '../../contexts/ThemeContext';
 
 import {
   setSSPInitialState,
@@ -90,7 +91,7 @@ function Restore() {
   const [seedPhraseCopyingVisible, setSeedPhraseCopyingVisible] =
     useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+  const { isDark } = useThemeMode();
   const [isNarrowScreen, setIsNarrowScreen] = useState(window.innerWidth < 420);
   const canvasWidth = isNarrowScreen ? 290 : 366;
   const canvasHeight = isNarrowScreen ? 240 : 180;
@@ -129,9 +130,8 @@ function Restore() {
     setMnemonicShow(false);
   };
 
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -168,7 +168,7 @@ function Restore() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font =
           '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
-        ctx.fillStyle = darkModePreference.matches ? '#fff' : '#000';
+        ctx.fillStyle = isDark ? '#fff' : '#000';
         new TextDecoder()
           .decode(mnemonic)
           .split(' ')
@@ -184,7 +184,7 @@ function Restore() {
           });
       }
     }
-  }, [mnemonic, mnemonicShow, isModalOpen, isNarrowScreen]);
+  }, [mnemonic, mnemonicShow, isModalOpen, isNarrowScreen, isDark]);
 
   const isPasswordStrong = (password: string) => {
     return (
@@ -405,7 +405,6 @@ function Restore() {
 
   return (
     <>
-      {contextHolder}
       <div style={{ paddingBottom: '63px' }}>
         <Headerbar
           headerTitle={t('cr:import_seed')}
@@ -543,7 +542,7 @@ function Restore() {
           width={canvasWidth}
           height={canvasHeight}
           style={{
-            border: `0.5px solid ${darkModePreference.matches ? '#fff' : '#000'}`,
+            border: `0.5px solid ${isDark ? '#fff' : '#000'}`,
             marginLeft: '-15px',
             marginRight: '-15px',
           }}

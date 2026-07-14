@@ -47,6 +47,18 @@
       },
       "builtins": {}
     },
+    "@fontsource/inter": {
+      "packageName": "@fontsource/inter",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
     "@metamask/browser-passworder": {
       "packageName": "@metamask/browser-passworder",
       "globals": {

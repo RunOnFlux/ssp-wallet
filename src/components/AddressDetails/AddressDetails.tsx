@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { toast } from '../../lib/toast';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import {
   Typography,
   Button,
   Modal,
-  message,
   QRCode,
   Space,
   Popconfirm,
@@ -30,12 +31,12 @@ function AddressDetails(props: {
   openAction: (status: boolean) => void;
 }) {
   const { t } = useTranslation(['home', 'common', 'cr']);
+  const sspLogo = useSspLogo();
   const [privKey, setPrivKey] = useState('');
   const [redeemScriptVisible, setRedeemScriptVisible] = useState(false);
   const [witnessScriptVisible, setWitnessScriptVisible] = useState(false);
   const [privateKeyVisible, setPrivateKeyVisible] = useState(false);
   const [privKeyCopyingVisible, setPrivKeyCopyingVisible] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
   // private key, redeemScript, address
   const { open, openAction } = props;
   const { activeChain } = useAppSelector((state) => state.sspState);
@@ -45,7 +46,7 @@ function AddressDetails(props: {
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const blockchainConfig = blockchains[activeChain];
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -121,7 +122,6 @@ function AddressDetails(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:addressDetails.chain_bip', {
           chain: blockchainConfig.symbol,
@@ -146,7 +146,7 @@ function AddressDetails(props: {
           <QRCode
             errorLevel="H"
             value={wallets[walletInUse].address}
-            icon="/ssp-logo-black.svg"
+            icon={sspLogo}
             size={256}
             style={{ margin: '0 auto' }}
           />

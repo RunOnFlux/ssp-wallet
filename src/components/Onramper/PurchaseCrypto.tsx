@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Button, Modal, Space, Typography, message } from 'antd';
+import { toast } from '../../lib/toast';
+import { Button, Modal, Space, Typography } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Text } = Typography;
 import { useTranslation } from 'react-i18next';
@@ -10,6 +11,7 @@ import axios from 'axios';
 import './PurchaseCrypto.css';
 
 import { sspConfig } from '@storage/ssp';
+import { useThemeMode } from '../../contexts/ThemeContext';
 
 import { onramperSignatureSSPRelay } from '../../types';
 
@@ -22,16 +24,15 @@ function PurchaseCrypto(props: {
 }) {
   const { open, openAction } = props;
   const { t } = useTranslation(['home', 'common']);
-  const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
+  const { isDark } = useThemeMode();
   const [userConsentBuy, setUserConsentBuy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signature, setSignature] = useState('');
   const [payloadToSign, setPayloadToSign] = useState(
     `networkWallets=${props.cryptoNetwork}:${props.wInUse}`,
   );
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -76,7 +77,6 @@ function PurchaseCrypto(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={null}
         open={open}
@@ -97,7 +97,7 @@ function PurchaseCrypto(props: {
                We accept this risk as we already trust Onramper with payment processing.
                Mitigations: user consent, extension isolation, referrer policy, HTTPS-only. */}
             <iframe
-              src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy,sell&defaultCrypto=${props.cryptoAsset}&sell_onlyCryptoNetworks=${props.cryptoNetwork}&sell_defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&successRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_success&failureRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_failure&themeName=${darkModePreference.matches ? 'dark' : 'light'}&containerColor=${darkModePreference.matches ? '1f1f1f' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}&signature=${signature}`}
+              src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy,sell&defaultCrypto=${props.cryptoAsset}&sell_onlyCryptoNetworks=${props.cryptoNetwork}&sell_defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&successRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_success&failureRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_failure&themeName=${isDark ? 'dark' : 'light'}&containerColor=${isDark ? '1a1918' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}&signature=${signature}`}
               title="Onramper"
               allow="accelerometer; autoplay; camera; gyroscope; payment; microphone"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"

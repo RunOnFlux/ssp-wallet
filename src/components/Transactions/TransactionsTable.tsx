@@ -1,13 +1,6 @@
-import {
-  Table,
-  Empty,
-  Tooltip,
-  Popconfirm,
-  Button,
-  Space,
-  message,
-} from 'antd';
+import { Table, Empty, Tooltip, Popconfirm, Button, Space } from 'antd';
 import { sspConfig } from '@storage/ssp';
+import { toast } from '../../lib/toast';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -44,13 +37,12 @@ function TransactionsTable(props: {
   const { chain } = props;
   const [fiatRate, setFiatRate] = useState(0);
   const blockchainConfig = blockchains[chain];
-  const [messageApi, contextHolder] = message.useMessage();
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -109,7 +101,6 @@ function TransactionsTable(props: {
 
   return (
     <>
-      {contextHolder}
       <Table
         className="adjustedWidth"
         locale={{

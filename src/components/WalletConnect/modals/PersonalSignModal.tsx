@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSspLogo } from '../../../hooks/useSspLogo';
 import { Modal, Typography, Divider, Card, Alert, QRCode, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { ethers } from 'ethers';
@@ -23,6 +24,7 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
   externalSigningRequest,
 }) => {
   const { t } = useTranslation(['home', 'common']);
+  const sspLogo = useSspLogo();
   const { chainSwitchInfo } = useWalletConnect();
   const { activeChain } = useAppSelector((state) => state.sspState);
   const [step, setStep] = useState<'approval' | 'qr'>('approval');
@@ -266,7 +268,7 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
             <QRCode
               errorLevel="M"
               value={qrString}
-              icon="/ssp-logo-black.svg"
+              icon={sspLogo}
               size={280}
               style={{ margin: '0 auto' }}
             />

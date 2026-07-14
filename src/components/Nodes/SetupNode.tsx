@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button, Modal, Input, Space, message } from 'antd';
+import { toast } from '../../lib/toast';
+import { Button, Modal, Input, Space } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +19,6 @@ function SetupNode(props: {
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { open, openAction } = props;
-  const [messageApi, contextHolder] = message.useMessage();
   const blockchainConfig = blockchains[props.chain];
   const editedNode: node = props.nodes.find(
     (node) => node.txid === props.txid && node.vout === props.vout,
@@ -34,7 +34,7 @@ function SetupNode(props: {
   const [nodeIP, setNodeIP] = useState<string>(editedNode.ip);
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -88,7 +88,6 @@ function SetupNode(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:setupNode.setup_node', {
           chainName: blockchainConfig.name,

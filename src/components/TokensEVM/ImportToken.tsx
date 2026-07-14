@@ -1,4 +1,5 @@
-import { Button, Modal, Flex, Space, Input, Divider, message } from 'antd';
+import { Button, Modal, Flex, Space, Input, Divider } from 'antd';
+import { toast } from '../../lib/toast';
 import { NoticeType } from 'antd/es/message/interface';
 import { useState, useEffect } from 'react';
 import { blockchains } from '@storage/blockchains';
@@ -18,7 +19,6 @@ function ImportToken(props: {
   contracts: string[]; // contracts that are already imported
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const [messageApi, contextHolder] = message.useMessage();
   const { open, openAction } = props;
   const blockchainConfig = blockchains[props.chain];
 
@@ -36,7 +36,7 @@ function ImportToken(props: {
     useState(false);
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -113,7 +113,6 @@ function ImportToken(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:tokens.import_token')}
         open={open && !openCustomImportTokenDialog}

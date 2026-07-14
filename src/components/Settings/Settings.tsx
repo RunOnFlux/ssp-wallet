@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
+import { toast } from '../../lib/toast';
 import { Link } from 'react-router';
-import {
-  Button,
-  Modal,
-  Input,
-  Space,
-  message,
-  Select,
-  Tooltip,
-  theme,
-} from 'antd';
+import { Button, Modal, Input, Space, Select, Tooltip, theme } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import {
@@ -29,6 +21,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector, useAppDispatch } from '../../hooks';
+import { useThemeMode } from '../../contexts/ThemeContext';
+import type { ThemeMode } from '../../contexts/ThemeContext';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 import { currency, cryptos } from '../../types';
@@ -69,6 +63,7 @@ function Settings(props: {
     sspWalletInternalIdentity,
   } = useAppSelector((state) => state.sspState);
   const { createWkIdentityAuth } = useRelayAuth();
+  const { mode: themeMode, setMode: setThemeMode } = useThemeMode();
   const { fiatRates } = useAppSelector((state) => state.fiatCryptoRates);
   const { t } = useTranslation(['home', 'common']);
   const NC = backends()[activeChain].node;
@@ -83,7 +78,6 @@ function Settings(props: {
   const [explorerConfig, setExplorerConfig] = useState(EXPLORER);
   const [publicNoncesModalOpen, setPublicNoncesModalOpen] = useState(false);
   const { open, openAction } = props;
-  const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const blockchainConfig = blockchains[activeChain];
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
@@ -289,7 +283,7 @@ function Settings(props: {
   };
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -667,7 +661,6 @@ function Settings(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:settings.settings')}
         open={open}
@@ -692,6 +685,22 @@ function Settings(props: {
             dropdownStyle={{ minWidth: '130px' }}
             options={fiatOptions()}
             optionRender={(option) => <>{option.data.desc}</>}
+          />
+        </Space>
+        <h3>{t('home:settings.theme')}</h3>
+        <Space direction="vertical" size="large">
+          <Select
+            popupMatchSelectWidth={false}
+            variant={'outlined'}
+            value={themeMode}
+            onChange={(value: ThemeMode) => setThemeMode(value)}
+            style={{ width: 'fit-content' }}
+            dropdownStyle={{ minWidth: '130px' }}
+            options={[
+              { value: 'system', label: t('home:settings.theme_system') },
+              { value: 'light', label: t('home:settings.theme_light') },
+              { value: 'dark', label: t('home:settings.theme_dark') },
+            ]}
           />
         </Space>
         <h3>{t('home:settings.change_pw')}</h3>

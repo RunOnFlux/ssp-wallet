@@ -1,4 +1,5 @@
-import { Button, Modal, Flex, Space, Input, message } from 'antd';
+import { Button, Modal, Flex, Space, Input } from 'antd';
+import { toast } from '../../lib/toast';
 import { NoticeType } from 'antd/es/message/interface';
 import { useState } from 'react';
 import { blockchains, Token } from '@storage/blockchains';
@@ -16,12 +17,11 @@ function ImportCustomToken(props: {
 }) {
   const { t } = useTranslation(['home', 'common']);
   const { open, openAction } = props;
-  const [messageApi, contextHolder] = message.useMessage();
 
   const [contractAddress, setContractAddress] = useState('');
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -133,7 +133,6 @@ function ImportCustomToken(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('common:add_custom_token')}
         open={open}

@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
+import { toast } from '../../lib/toast';
 import { useNavigate, useLocation } from 'react-router';
 import {
   Form,
-  message,
   Divider,
   Button,
   Input,
@@ -96,7 +96,6 @@ function SendSOL() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = (location.state || {}) as LocationState;
-  const [messageApi, contextHolder] = message.useMessage();
   const dispatch = useAppDispatch();
 
   const { activeChain, sspWalletKeyInternalIdentity } = useAppSelector(
@@ -155,7 +154,7 @@ function SendSOL() {
   const [submitting, setSubmitting] = useState(false);
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({ type, content });
+    void toast.open({ type, content });
   };
 
   // Socket-delivered txid (subsequent-send path — Key broadcasts and posts
@@ -797,7 +796,6 @@ function SendSOL() {
 
   return (
     <>
-      {contextHolder}
       <Navbar refresh={refresh} hasRefresh={false} allowChainSwitch={false} />
       <Divider />
       <Form
@@ -935,7 +933,7 @@ function SendSOL() {
             float: 'left',
             marginLeft: 3,
             fontSize: 12,
-            color: '#4096ff',
+            color: token.colorPrimary,
             cursor: 'pointer',
             zIndex: 2,
           }}

@@ -6,6 +6,7 @@ import Receive from '../Receive/Receive';
 import PurchaseCrypto from '../Onramper/PurchaseCrypto';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
+import { useThemeMode } from '../../contexts/ThemeContext';
 import { blockchains } from '@storage/blockchains';
 
 import './Navigation.css';
@@ -20,19 +21,7 @@ function Navigation() {
   };
   const firstSpaceRef = useRef<HTMLDivElement>(null);
   const [isOverflow, setIsOverflow] = useState(true); // always use overflow design
-  const darkModePreference = window.matchMedia('(prefers-color-scheme: dark)');
-  darkModePreference.addEventListener('change', (e) => changeTheme(e.matches));
-  const [themeStyle, setThemeStyle] = useState(
-    darkModePreference.matches ? 'light' : 'dark',
-  );
-
-  const changeTheme = (isDark: boolean) => {
-    if (isDark) {
-      setThemeStyle('light');
-    } else {
-      setThemeStyle('dark');
-    }
-  };
+  const { isDark } = useThemeMode();
 
   useEffect(() => {
     const checkOverflow = () => {
@@ -115,12 +104,10 @@ function Navigation() {
           {servicesAvailability.swap && (
             <Button
               type="default"
-              className={
-                themeStyle === 'light' ? 'buttonSwapLight' : 'buttonSwap'
-              }
+              className={isDark ? 'buttonSwapLight' : 'buttonSwap'}
               size={'small'}
               variant="filled"
-              color={themeStyle === 'light' ? 'yellow' : 'purple'}
+              color={isDark ? 'yellow' : 'purple'}
               onClick={() => {
                 navigate('/swap', { state: { buyAsset: activeChain } });
               }}

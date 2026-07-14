@@ -13,24 +13,20 @@
   margin-bottom: 4px;
 }
 
-@media (prefers-color-scheme: light) {
-  .vault-sign-info-box {
-    background-color: #f5f5f5;
-  }
-
-  .vault-sign-recipient-box {
-    background-color: #fffbeb;
-    border: 1.5px solid #fbbf24;
-  }
+:root[data-theme='light'] .vault-sign-info-box {
+  background-color: #f5f5f4;
 }
 
-@media (prefers-color-scheme: dark) {
-  .vault-sign-info-box {
-    background-color: #292929;
-  }
+:root[data-theme='light'] .vault-sign-recipient-box {
+  background-color: #fffbeb;
+  border: 1.5px solid #fbbf24;
+}
 
-  .vault-sign-recipient-box {
-    background-color: #1a1708;
-    border: 1.5px solid #b8860b;
-  }
+:root[data-theme='dark'] .vault-sign-info-box {
+  background-color: #272524;
+}
+
+:root[data-theme='dark'] .vault-sign-recipient-box {
+  background-color: #1a1708;
+  border: 1.5px solid #d97706;
 }

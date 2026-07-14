@@ -29,7 +29,7 @@
 }
 
 .wallet-name-edit-icon:hover {
-  color: #1890ff;
+  color: #fbbf24;
   opacity: 1;
   background-color: rgba(24, 144, 255, 0.1);
 }
@@ -44,12 +44,12 @@
 
 .wallet-name-edit .ant-input {
   font-size: 13px;
-  border-color: #1890ff;
+  border-color: #fbbf24;
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
 }
 
 .wallet-name-edit .ant-input:focus {
-  border-color: #1890ff;
+  border-color: #fbbf24;
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
 }
 
@@ -60,7 +60,7 @@
 }
 
 .wallet-name-save {
-  color: #52c41a;
+  color: #22c55e;
   cursor: pointer;
   font-size: 14px;
   padding: 2px;
@@ -69,12 +69,12 @@
 }
 
 .wallet-name-save:hover {
-  color: #389e0d;
+  color: #22c55e;
   background-color: rgba(82, 196, 26, 0.1);
 }
 
 .wallet-name-cancel {
-  color: #ff4d4f;
+  color: #ef4444;
   cursor: pointer;
   font-size: 14px;
   padding: 2px;

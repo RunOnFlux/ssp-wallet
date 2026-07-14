@@ -1,4 +1,5 @@
-import { Card, Avatar, Checkbox, Badge, Button, message } from 'antd';
+import { Card, Avatar, Checkbox, Badge, Button } from 'antd';
+import { toast } from '../../lib/toast';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import { DeleteOutlined } from '@ant-design/icons';
@@ -21,7 +22,6 @@ function TokenBoxImport(props: {
   deletePossible?: boolean;
 }) {
   const { t } = useTranslation(['home']);
-  const [messageApi, contextHolder] = message.useMessage();
   const triggerAction = (contract: string, value: boolean) => {
     if (props.notSelectable) {
       return;
@@ -30,7 +30,7 @@ function TokenBoxImport(props: {
   };
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -89,7 +89,6 @@ function TokenBoxImport(props: {
 
   return (
     <div className="token-box-import-container">
-      {contextHolder}
       {props.deletePossible && (
         <Button
           type="default"

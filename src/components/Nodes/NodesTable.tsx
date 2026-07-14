@@ -5,11 +5,11 @@ import {
   Flex,
   Popconfirm,
   Modal,
-  message,
   Typography,
 } from 'antd';
 const { Text } = Typography;
 import axios from 'axios';
+import { toast } from '../../lib/toast';
 import { NoticeType } from 'antd/es/message/interface';
 import { useEffect, useState } from 'react';
 import localForage from 'localforage';
@@ -64,7 +64,6 @@ function NodesTable(props: {
   });
   const blockchainConfig = blockchains[chain];
   const identityChainConfig = blockchains[props.identityChain];
-  const [messageApi, contextHolder] = message.useMessage();
   const [editedTxid, setEditedTxid] = useState('');
   const [editedVout, setEditedVout] = useState(0);
   const [wordsPhrase, setWordsPhrase] = useState('');
@@ -81,7 +80,7 @@ function NodesTable(props: {
     [],
   );
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -364,7 +363,6 @@ function NodesTable(props: {
 
   return (
     <>
-      {contextHolder}
       <Table
         className="adjustedWidth"
         locale={{

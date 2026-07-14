@@ -62,6 +62,13 @@ export default defineConfig(({ command, mode }) => ({
   },
   build: {
     rollupOptions: {
+      input: {
+        index: 'index.html',
+        // Standalone camera-permission grant page — Chrome can't show the
+        // getUserMedia prompt anchored to the extension popup, so QRScanner
+        // opens this page in a full tab.
+        'camera-permission': 'camera-permission.html',
+      },
       output: {
         // Function-form manualChunks (Vite 8 / Rolldown compatible).
         //

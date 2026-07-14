@@ -24,13 +24,13 @@ export const PasswordStrengthMeter: React.FC<PasswordStrengthMeterProps> = ({
 
     // Determine color based on strength
     if (score < 25) {
-      return { score: Math.min(score, 100), color: '#ff4d4f' };
+      return { score: Math.min(score, 100), color: '#ef4444' };
     } else if (score < 60) {
-      return { score: Math.min(score, 100), color: '#faad14' };
+      return { score: Math.min(score, 100), color: '#f59e0b' };
     } else if (score < 85) {
-      return { score: Math.min(score, 100), color: '#52c41a' };
+      return { score: Math.min(score, 100), color: '#22c55e' };
     } else {
-      return { score: Math.min(score, 100), color: '#389e0d' };
+      return { score: Math.min(score, 100), color: '#22c55e' };
     }
   };
 

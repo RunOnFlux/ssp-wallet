@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { toast } from '../../lib/toast';
 import axios from 'axios';
 import {
   Divider,
@@ -11,7 +12,6 @@ import {
   Spin,
   Modal,
   Input,
-  message,
   Popover,
   Tooltip,
 } from 'antd';
@@ -144,7 +144,6 @@ function Swap() {
   const [amountExceedsBalance, setAmountExceedsBalance] = useState(false);
   const { networkFees } = useAppSelector((state) => state.networkFees);
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
   const { sspWalletKeyInternalIdentity: sspwkid } = useAppSelector(
     (state) => state.sspState,
   );
@@ -170,7 +169,7 @@ function Swap() {
   };
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -906,7 +905,6 @@ function Swap() {
 
   return (
     <>
-      {contextHolder}
       {loadingSwap && <Spin size="large" fullscreen />}
       <Navbar
         refresh={refresh}
@@ -1012,7 +1010,7 @@ function Swap() {
                 >
                   <InfoCircleOutlined
                     style={{
-                      color: amountExceedsBalance ? '#ff4d4f' : 'inherit',
+                      color: amountExceedsBalance ? '#ef4444' : 'inherit',
                       cursor: 'help',
                       fontSize: 10,
                       marginTop: 1,

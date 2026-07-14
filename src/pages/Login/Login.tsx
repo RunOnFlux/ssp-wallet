@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
+import { toast } from '../../lib/toast';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import { useNavigate } from 'react-router';
-import { Input, Image, Button, Form, message, Spin } from 'antd';
+import { Input, Image, Button, Form, Spin } from 'antd';
 import localForage from 'localforage';
 import {
   EyeInvisibleOutlined,
@@ -87,6 +89,7 @@ const tenMins = 10 * 60 * 1000;
 
 function Login() {
   const { t, i18n } = useTranslation(['login', 'common']);
+  const sspLogo = useSspLogo();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [password, setPassword] = useState('');
@@ -214,9 +217,8 @@ function Login() {
     })();
   }, []); // Empty dependency array ensures this runs only once on mount
 
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -552,14 +554,13 @@ function Login() {
 
   return (
     <>
-      {contextHolder}
       {isLoading && <Spin size="large" />}
       {!isLoading && (
         <div style={{ paddingBottom: '43px' }}>
           <Image
             width={80}
             preview={false}
-            src="/ssp-logo-black.svg"
+            src={sspLogo}
             style={{ paddingTop: 70 }}
           />
           <h2>{t('login:welcome_back')}</h2>

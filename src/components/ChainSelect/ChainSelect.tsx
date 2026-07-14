@@ -1,5 +1,6 @@
 import { Fragment, useState, useEffect } from 'react';
-import { Button, Modal, message, Image, Row, Col } from 'antd';
+import { toast } from '../../lib/toast';
+import { Button, Modal, Image, Row, Col } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import { useAppSelector } from '../../hooks';
 import { useTranslation } from 'react-i18next';
@@ -13,13 +14,12 @@ function ChainSelect(props: {
 }) {
   const blockchainKeys = Object.keys(blockchains);
   const { t } = useTranslation(['home', 'common']);
-  const [messageApi, contextHolder] = message.useMessage();
   const { open, openAction } = props;
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const [chainToSwitch, setChainToSwitch] = useState<keyof cryptos | ''>('');
 
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -54,7 +54,6 @@ function ChainSelect(props: {
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t('home:chainSelect.select_chain')}
         open={open}

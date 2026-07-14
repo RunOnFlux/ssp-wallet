@@ -1,13 +1,11 @@
 .onramper-modal {
-  background-color: #1f1f1f;
+  background-color: #1a1918;
   display: block;
   margin-bottom: -20px;
 }
 
-@media (prefers-color-scheme: light) {
-  .onramper-modal {
-    background-color: #ffffff;
-  }
+:root[data-theme='light'] .onramper-modal {
+  background-color: #ffffff;
 }
 
 .onramper-modal .ant-modal-content,

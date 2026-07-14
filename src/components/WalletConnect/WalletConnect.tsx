@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from '../../lib/toast';
 import {
   Modal,
   Button,
   Input,
   Typography,
-  message,
   List,
   Card,
   Tag,
@@ -27,7 +27,6 @@ interface Props {
 
 const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
   const { t } = useTranslation(['home', 'common']);
-  const [messageApi, contextHolder] = message.useMessage();
   const [activeTab, setActiveTab] = useState('connect');
   const [uri, setUri] = useState('');
   const [connecting, setConnecting] = useState(false);
@@ -39,7 +38,7 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
     content: string,
     duration?: number,
   ) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
       duration: duration ? duration : type === 'error' ? 5 : 4,
@@ -219,7 +218,6 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
       footer={null}
       style={{ textAlign: 'center', top: 60 }}
     >
-      {contextHolder}
       <div style={{ textAlign: 'left' }}>
         <Tabs
           activeKey={activeTab}

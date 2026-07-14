@@ -1,8 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
-import { Modal, Alert, Typography } from 'antd';
+import { Modal, Alert, Button, Space, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 
 const { Text } = Typography;
+
+/**
+ * Chrome cannot anchor the getUserMedia permission prompt to an extension
+ * popup — the grant must happen on a full page. This opens the dedicated
+ * permission page in a tab; once granted there, scanning works everywhere.
+ */
+function openCameraPermissionPage() {
+  const url =
+    typeof chrome !== 'undefined' && chrome.runtime?.getURL
+      ? chrome.runtime.getURL('camera-permission.html')
+      : '/camera-permission.html';
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
 
 // Minimal typings for the experimental BarcodeDetector API, which is not yet
 // part of the TS DOM lib. We only use the small surface we need.
@@ -42,11 +55,15 @@ function QRScanner(props: {
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [permissionDenied, setPermissionDenied] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
     if (!open) {
       return;
     }
+    setPermissionDenied(false);
+    setError(null);
     let cancelled = false;
 
     const stop = () => {
@@ -109,9 +126,17 @@ function QRScanner(props: {
         rafRef.current = requestAnimationFrame(() => {
           void scan();
         });
-      } catch {
+      } catch (err) {
         if (!cancelled) {
-          setError(t('send:qr_camera_error'));
+          if (
+            err instanceof DOMException &&
+            (err.name === 'NotAllowedError' ||
+              err.name === 'PermissionDeniedError')
+          ) {
+            setPermissionDenied(true);
+          } else {
+            setError(t('send:qr_camera_error'));
+          }
         }
       }
     };
@@ -122,7 +147,7 @@ function QRScanner(props: {
       cancelled = true;
       stop();
     };
-  }, [open, onResult, t]);
+  }, [open, onResult, t, retryNonce]);
 
   return (
     <Modal
@@ -132,7 +157,28 @@ function QRScanner(props: {
       footer={null}
       destroyOnClose
     >
-      {error ? (
+      {permissionDenied ? (
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Alert
+            type="warning"
+            showIcon
+            message={t('send:qr_permission_needed')}
+          />
+          <Space>
+            <Button type="primary" onClick={openCameraPermissionPage}>
+              {t('send:qr_grant_camera')}
+            </Button>
+            <Button
+              onClick={() => {
+                setPermissionDenied(false);
+                setRetryNonce((n) => n + 1);
+              }}
+            >
+              {t('send:qr_try_again')}
+            </Button>
+          </Space>
+        </Space>
+      ) : error ? (
         <Alert type="warning" showIcon message={error} />
       ) : (
         <>

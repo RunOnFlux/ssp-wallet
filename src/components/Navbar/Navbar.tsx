@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { toast } from '../../lib/toast';
+import { useSspLogo } from '../../hooks/useSspLogo';
 import { useNavigate, useLocation } from 'react-router';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
@@ -29,7 +31,6 @@ import {
   Select,
   Divider,
   Button,
-  message,
   Popconfirm,
   Tooltip,
 } from 'antd';
@@ -97,12 +98,11 @@ function Navbar({
   header,
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
+  const sspLogo = useSspLogo();
   const location = useLocation();
   const { activeChain } = useAppSelector((state) => state.sspState);
   const isSwapPage = location.pathname === '/swap';
-  const logoSrc = isSwapPage
-    ? '/ssp-logo-black.svg'
-    : blockchains[activeChain]?.logo;
+  const logoSrc = isSwapPage ? sspLogo : blockchains[activeChain]?.logo;
   const logoSize = isSwapPage ? 30 : 24;
 
   const [triggerTutorialWelcome, setTriggerTutorialWelcome] = useState(false);
@@ -124,9 +124,8 @@ function Navbar({
     ),
   });
   const [walletItems, setWalletItems] = useState<walletOption[]>([]);
-  const [messageApi, contextHolder] = message.useMessage();
   const displayMessage = (type: NoticeType, content: string) => {
-    void messageApi.open({
+    void toast.open({
       type,
       content,
     });
@@ -529,7 +528,6 @@ function Navbar({
 
   return (
     <>
-      {contextHolder}
       <div className="navbar">
         <Row justify="space-evenly">
           <Col span={4}>

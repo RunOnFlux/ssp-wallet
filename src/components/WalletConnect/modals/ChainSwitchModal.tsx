@@ -85,7 +85,7 @@ const ChainSwitchModal: React.FC<ChainSwitchModalProps> = ({
           {targetChain[1].name}
         </div>
 
-        <p style={{ color: '#faad14', marginTop: '12px' }}>
+        <p style={{ color: '#f59e0b', marginTop: '12px' }}>
           {t('home:walletconnect.switch_chain_warning')}
         </p>
       </div>
