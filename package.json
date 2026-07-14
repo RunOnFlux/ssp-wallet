@@ -84,7 +84,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.3",
-    "@lavamoat/allow-scripts": "3.4.3",
+    "@lavamoat/allow-scripts": "5.0.2",
     "@types/bchaddrjs": "0.4.3",
     "@types/chrome": "0.1.43",
     "@types/firefox-webext-browser": "143.0.0",
