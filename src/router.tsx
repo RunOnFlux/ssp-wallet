@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, createBrowserRouter } from 'react-router';
-import { Spin } from 'antd';
+import PillarLoader from './components/PillarLoader/PillarLoader.tsx';
 
 import Welcome from './pages/Welcome/Welcome.tsx';
 import Create from './pages/Create/Create.tsx';
@@ -29,7 +29,7 @@ const RouteFallback = () => (
       minHeight: '60vh',
     }}
   >
-    <Spin size="large" />
+    <PillarLoader size={44} />
   </div>
 );
 

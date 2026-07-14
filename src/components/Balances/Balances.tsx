@@ -16,6 +16,7 @@ import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency';
+import { usePrivacyMode } from '../../contexts/PrivacyContext';
 
 interface balancesObj {
   confirmed: string;
@@ -29,6 +30,7 @@ const balancesObject = {
 
 function Balances() {
   const { t } = useTranslation(['home']);
+  const { hidden, togglePrivacy } = usePrivacyMode();
   const [fiatRate, setFiatRate] = useState(0);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse } = useAppSelector(
@@ -170,28 +172,48 @@ function Balances() {
 
   return (
     <>
-      <h3
-        style={{ marginTop: 0, marginBottom: 0 }}
-        data-tutorial="balance-overview"
+      <div
+        role="button"
+        tabIndex={0}
+        title={hidden ? t('home:balances.show') : t('home:balances.hide')}
+        aria-pressed={hidden}
+        style={{ cursor: 'pointer' }}
+        onClick={togglePrivacy}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            togglePrivacy();
+          }
+        }}
       >
-        {formatCrypto(totalBalance)} {blockchainConfig.symbol}
-      </h3>
-      {+lockedBalance > 0 && (
-        <div
-          style={{
-            fontSize: 12,
-            color: 'grey',
-          }}
+        <h3
+          style={{ marginTop: 0, marginBottom: 0 }}
+          data-tutorial="balance-overview"
         >
-          {t('home:balances.locked', {
-            balance: formatCrypto(lockedBalance),
-            symbol: blockchainConfig.symbol,
-          })}
-        </div>
-      )}
-      <h4 style={{ marginTop: 10, marginBottom: 15 }}>
-        {formatFiatWithSymbol(balanceFIAT)}
-      </h4>
+          <span className="privacy-sensitive">
+            {formatCrypto(totalBalance)} {blockchainConfig.symbol}
+          </span>
+        </h3>
+        {+lockedBalance > 0 && (
+          <div
+            style={{
+              fontSize: 12,
+              color: 'grey',
+            }}
+          >
+            <span className="privacy-sensitive">
+              {t('home:balances.locked', {
+                balance: formatCrypto(lockedBalance),
+                symbol: blockchainConfig.symbol,
+              })}
+            </span>
+          </div>
+        )}
+        <h4 style={{ marginTop: 10, marginBottom: 15 }}>
+          <span className="privacy-sensitive">
+            {formatFiatWithSymbol(balanceFIAT)}
+          </span>
+        </h4>
+      </div>
       <SocketListener txRejectedProp={onTxRejected} txSentProp={onTxSent} />
     </>
   );

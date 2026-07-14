@@ -99,7 +99,7 @@ function TokenBox(props: {
           title={
             <>
               <div style={{ float: 'left' }}>{props.tokenInfo.symbol}</div>
-              <div style={{ float: 'right' }}>
+              <div style={{ float: 'right' }} className="privacy-sensitive">
                 {formatCrypto(
                   new BigNumber(balance).dividedBy(
                     10 ** props.tokenInfo.decimals,
@@ -116,7 +116,7 @@ function TokenBox(props: {
               <Flex vertical>
                 <div>
                   <div style={{ float: 'left' }}>{props.tokenInfo.name}</div>
-                  <div style={{ float: 'right' }}>
+                  <div style={{ float: 'right' }} className="privacy-sensitive">
                     {formatFiatWithSymbol(balanceUsd)}
                   </div>
                 </div>

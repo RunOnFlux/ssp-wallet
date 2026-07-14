@@ -5,6 +5,7 @@ import WalletConnectModals from './components/WalletConnect/WalletConnectModals'
 import TutorialProvider from './components/Tutorial/TutorialProvider';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import { ThemeProvider, useThemeMode } from './contexts/ThemeContext';
+import { PrivacyProvider } from './contexts/PrivacyContext';
 import { lightTheme, darkTheme } from './styles/theme';
 import { setToastInstance } from './lib/toast';
 import router from './router';
@@ -41,7 +42,9 @@ function ThemedApp() {
 function App() {
   return (
     <ThemeProvider>
-      <ThemedApp />
+      <PrivacyProvider>
+        <ThemedApp />
+      </PrivacyProvider>
     </ThemeProvider>
   );
 }

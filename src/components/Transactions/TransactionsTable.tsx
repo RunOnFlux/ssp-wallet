@@ -239,7 +239,7 @@ function TransactionsTable(props: {
           className="table-amount"
           dataIndex="amount"
           render={(amnt: string, record: transaction) => (
-            <>
+            <span className="privacy-sensitive">
               {formatCrypto(
                 new BigNumber(amnt).dividedBy(
                   10 ** (record.decimals ?? blockchainConfig.decimals),
@@ -266,7 +266,7 @@ function TransactionsTable(props: {
                     ),
                 )}
               </div>
-            </>
+            </span>
           )}
         />
         <Column

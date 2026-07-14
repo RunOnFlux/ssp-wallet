@@ -141,3 +141,14 @@ body.extension-sidepanel .adjustedWidth {
 .sign-message-text-area {
   width: min(350px, calc(100vw - 70px));
 }
+
+/* Privacy mode: blur opted-in amounts when <html> carries .privacy-hidden */
+.privacy-sensitive {
+  transition: filter 0.15s ease;
+  border-radius: 4px;
+}
+
+:root.privacy-hidden .privacy-sensitive {
+  filter: blur(8px);
+  user-select: none;
+}
