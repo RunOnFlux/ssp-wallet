@@ -98,6 +98,9 @@
     "configure_delegates_title": "Konfigurace {{chainName}} peněženky {{wallet}} delegátů",
     "configure_delegates_info": "Přidejte až 4 delegované veřejné klíče, které mohou spustit vaše nody místo vás.",
     "delegate_public_key": "Delegovat veřejný klíč",
+    "delegate_name": "Name (optional)",
+    "delegate_n": "Delegate {{index}}",
+    "select_delegates": "Delegates to apply",
     "add_delegate": "Přidat delegát",
     "remove_delegate": "Odebrat",
     "no_delegates": "Žádní delegáti nenastaveni",
@@ -164,6 +167,10 @@
     "chain_explorer_service": "{{chain}} Explorer Služba",
     "language": "Jazyk",
     "fiat_currency": "Měna",
+    "theme": "Theme",
+    "theme_system": "System",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
     "use_system_language": "Použít Systémový Jazyk",
     "public_nonces_sync": "Veřejná nonce",
     "sync_public_nonces": "Synchronizovat veřejné nonce",
@@ -215,7 +222,14 @@
   "confirmTxKey": {
     "confirm_tx_key": "Potvrďte Transakci na SSP Klíči",
     "info_1": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo naskenovat následující QR Kód.",
-    "info_2": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo použít ruční zadání."
+    "info_2": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo použít ruční zadání.",
+    "waiting_title": "Waiting for approval on your SSP Key…",
+    "elapsed": "Elapsed: {{time}}",
+    "step_open": "Open SSP Key on your phone",
+    "step_review": "Review the request",
+    "step_approve": "Approve",
+    "soft_timeout_title": "Taking longer than usual?",
+    "soft_timeout_description": "Make sure SSP Key is open and online. You can also scan the QR code below to load the request manually."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "Potvrďte Veřejné Nonce na SSP Klíči",
@@ -371,8 +385,13 @@
     "recipients": "Příjemci",
     "fee": "Poplatek sítě",
     "memo": "Poznámka",
+    "sign_message": "Message to sign",
+    "sign_dapp": "Requested by",
     "decoded_notice": "Níže uvedené údaje jsou dekódovány přímo z transakce, kterou podepíšete. Před schválením vždy ověřujte příjemce a částky.",
     "decode_error": "Nelze plně dekódovat data transakce. Pokračujte s opatrností.",
+    "sol_decode_mismatch_blocked": "The raw transaction bytes do NOT match the displayed recipients and amounts. This may be an attack — signing is blocked.",
+    "sol_undecodable_warning": "This device could not independently verify the transaction bytes. Amounts shown come from the relay and are NOT verified.",
+    "sol_approve_only_notice": "This is an on-chain approval of an existing proposal. Amounts shown are from the proposal record, verified when the proposal was created.",
     "partial_signature_notice": "Jedná se o transakci s multisig vaultu. Bude odeslána až po schválení všech požadovaných podpisů.",
     "sign": "Podepsat transakci",
     "awaiting_key": "Čeká se na klíč...",
@@ -381,7 +400,38 @@
     "err_no_nonces": "Nejsou k dispozici žádné enterprise nonce",
     "err_nonce_not_found": "Rezervovaná enterprise nonce nebyla nalezena. Prosím synchronizujte je a znovu vytvořte transakci.",
     "err_nonce_retry_not_found": "Nonce se nepodařilo najít. Prosím synchronizujte nanoce a znovu vytvořte transakci.",
-    "err_password_unavailable": "Heslo není k dispozici"
+    "err_password_unavailable": "Heslo není k dispozici",
+    "risk": {
+      "heading": "Risk checks (advisory)",
+      "advisory_footnote": "These checks are advisory and do not block signing. Always verify the recipients and amounts decoded above, which are authoritative.",
+      "pending": "Running risk checks…",
+      "unavailable": "Couldn't run risk checks for this transaction. Review the recipients and amounts above carefully before approving.",
+      "reverted": "This transaction is expected to fail on-chain (it reverts in simulation). Signing it may waste the network fee.",
+      "more_one": "Show {{count}} more risk check",
+      "more_other": "Show {{count}} more risk checks",
+      "severity": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "info": "Info"
+      },
+      "codes": {
+        "UNLIMITED_APPROVAL": "Unlimited token approval — this grants the spender unbounded access to a token in this vault.",
+        "NON_ZERO_APPROVAL": "Token spend approval to an address that is not on your allowlist.",
+        "APPROVAL_TO_EOA": "Token approval to a wallet address (not a contract) — this is almost always a scam.",
+        "RECIPIENT_NOT_ALLOWLISTED": "Recipient is not on your contacts or allowlist.",
+        "ADDRESS_POISONING": "Recipient looks like a known address but is not — possible address-poisoning attempt.",
+        "NEW_RECIPIENT": "This vault has never sent funds to this address before.",
+        "UNVERIFIED_CONTRACT": "Destination contract is unverified or has no known ABI.",
+        "NEW_CONTRACT": "Destination contract was deployed very recently.",
+        "VALUE_TO_CONTRACT": "Native value is being sent to a contract.",
+        "KNOWN_MALICIOUS": "This address or contract is flagged as malicious.",
+        "SIMULATION_REVERTED": "This transaction reverts in simulation and will likely fail on-chain.",
+        "BALANCE_MISMATCH": "Simulated outflow does not match the stated recipients or amounts.",
+        "SIMULATION_DECODE_MISMATCH": "The advisory risk preview disagrees with this device's own decode of the transaction. Trust the recipients and amounts decoded above, not the preview.",
+        "SIMULATION_UNAVAILABLE": "Risk checks could not be completed; the preview is best-effort."
+      }
+    }
   },
   "enterpriseFluxNodeStart": {
     "title": "Spustit Flux Node",

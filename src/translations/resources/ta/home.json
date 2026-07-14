@@ -98,6 +98,9 @@
     "configure_delegates_title": "Configure {{chainName}} Wallet {{wallet}} Delegates",
     "configure_delegates_info": "Add up to 4 delegate public keys that can start your nodes on your behalf.",
     "delegate_public_key": "Delegate Public Key",
+    "delegate_name": "Name (optional)",
+    "delegate_n": "Delegate {{index}}",
+    "select_delegates": "Delegates to apply",
     "add_delegate": "Add Delegate",
     "remove_delegate": "Remove",
     "no_delegates": "No delegates configured",
@@ -164,6 +167,10 @@
     "chain_explorer_service": "{{chain}} Explorer Service",
     "language": "மொழி",
     "fiat_currency": "புதிய நாணய",
+    "theme": "Theme",
+    "theme_system": "System",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
     "use_system_language": "Use System Language",
     "public_nonces_sync": "Public Nonces",
     "sync_public_nonces": "Sync Public Nonces",
@@ -215,7 +222,14 @@
   "confirmTxKey": {
     "confirm_tx_key": "SSP முக்கியத்தில் பரிவர்த்தனை உறுதிப்படுத்தவும்",
     "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
-    "info_2": "உங்கள் SSP முக்கியத்தில் பரிவர்த்தனையை உறுதிப்படுத்த, உங்கள் SSP முக்கியத்தை மொபைல் போனில் திறந்து, செயல்திறன் உறுதிப்படுத்தவும். புதுப்பிக்கக் கிளிக் செய்யலாம் அல்லது கைமுறை உள்ளீட்டைப் பயன்படுத்தலாம்."
+    "info_2": "உங்கள் SSP முக்கியத்தில் பரிவர்த்தனையை உறுதிப்படுத்த, உங்கள் SSP முக்கியத்தை மொபைல் போனில் திறந்து, செயல்திறன் உறுதிப்படுத்தவும். புதுப்பிக்கக் கிளிக் செய்யலாம் அல்லது கைமுறை உள்ளீட்டைப் பயன்படுத்தலாம்.",
+    "waiting_title": "Waiting for approval on your SSP Key…",
+    "elapsed": "Elapsed: {{time}}",
+    "step_open": "Open SSP Key on your phone",
+    "step_review": "Review the request",
+    "step_approve": "Approve",
+    "soft_timeout_title": "Taking longer than usual?",
+    "soft_timeout_description": "Make sure SSP Key is open and online. You can also scan the QR code below to load the request manually."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "SSP முக்கியத்தில் பொதுவான நான்சுகளை உறுதிப்படுத்தவும்",
@@ -371,8 +385,13 @@
     "recipients": "Recipients",
     "fee": "Network Fee",
     "memo": "Memo",
+    "sign_message": "Message to sign",
+    "sign_dapp": "Requested by",
     "decoded_notice": "The data below is decoded directly from the raw transaction you are signing. Always verify recipients and amounts before approving.",
     "decode_error": "Could not fully decode transaction data. Proceed with caution.",
+    "sol_decode_mismatch_blocked": "The raw transaction bytes do NOT match the displayed recipients and amounts. This may be an attack — signing is blocked.",
+    "sol_undecodable_warning": "This device could not independently verify the transaction bytes. Amounts shown come from the relay and are NOT verified.",
+    "sol_approve_only_notice": "This is an on-chain approval of an existing proposal. Amounts shown are from the proposal record, verified when the proposal was created.",
     "partial_signature_notice": "This is a multisig vault transaction. It will only be broadcast once all required signers have approved.",
     "sign": "Sign Transaction",
     "awaiting_key": "Awaiting Key...",
@@ -381,7 +400,38 @@
     "err_no_nonces": "No enterprise nonces available",
     "err_nonce_not_found": "Reserved enterprise nonce not found locally. Please sync nonces and recreate the proposal.",
     "err_nonce_retry_not_found": "Nonce not found after retry. Please sync nonces and recreate the proposal.",
-    "err_password_unavailable": "Password not available"
+    "err_password_unavailable": "Password not available",
+    "risk": {
+      "heading": "Risk checks (advisory)",
+      "advisory_footnote": "These checks are advisory and do not block signing. Always verify the recipients and amounts decoded above, which are authoritative.",
+      "pending": "Running risk checks…",
+      "unavailable": "Couldn't run risk checks for this transaction. Review the recipients and amounts above carefully before approving.",
+      "reverted": "This transaction is expected to fail on-chain (it reverts in simulation). Signing it may waste the network fee.",
+      "more_one": "Show {{count}} more risk check",
+      "more_other": "Show {{count}} more risk checks",
+      "severity": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "info": "Info"
+      },
+      "codes": {
+        "UNLIMITED_APPROVAL": "Unlimited token approval — this grants the spender unbounded access to a token in this vault.",
+        "NON_ZERO_APPROVAL": "Token spend approval to an address that is not on your allowlist.",
+        "APPROVAL_TO_EOA": "Token approval to a wallet address (not a contract) — this is almost always a scam.",
+        "RECIPIENT_NOT_ALLOWLISTED": "Recipient is not on your contacts or allowlist.",
+        "ADDRESS_POISONING": "Recipient looks like a known address but is not — possible address-poisoning attempt.",
+        "NEW_RECIPIENT": "This vault has never sent funds to this address before.",
+        "UNVERIFIED_CONTRACT": "Destination contract is unverified or has no known ABI.",
+        "NEW_CONTRACT": "Destination contract was deployed very recently.",
+        "VALUE_TO_CONTRACT": "Native value is being sent to a contract.",
+        "KNOWN_MALICIOUS": "This address or contract is flagged as malicious.",
+        "SIMULATION_REVERTED": "This transaction reverts in simulation and will likely fail on-chain.",
+        "BALANCE_MISMATCH": "Simulated outflow does not match the stated recipients or amounts.",
+        "SIMULATION_DECODE_MISMATCH": "The advisory risk preview disagrees with this device's own decode of the transaction. Trust the recipients and amounts decoded above, not the preview.",
+        "SIMULATION_UNAVAILABLE": "Risk checks could not be completed; the preview is best-effort."
+      }
+    }
   },
   "enterpriseFluxNodeStart": {
     "title": "Start Flux Node",
