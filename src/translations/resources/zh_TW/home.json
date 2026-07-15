@@ -2,6 +2,8 @@
   "err_panic": "錯誤：無效的 SSP 金鑰.",
   "balances": {
     "locked": "已鎖定：{{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
