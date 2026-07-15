@@ -22,6 +22,7 @@ import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import HandshakeAnimation from '../HandshakeAnimation/HandshakeAnimation';
 import {
   validateWkSignMessage,
   signWkMessage,
@@ -413,9 +414,14 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
           />
         )}
 
-        {/* Waiting for Key indicator */}
+        {/* Waiting for Key indicator — 2-of-2 handshake motif */}
         {waitingForKey && (
           <>
+            <HandshakeAnimation
+              state="waiting"
+              size={56}
+              ariaLabel={t('home:wkSign.waiting_for_key')}
+            />
             <Alert
               type="info"
               message={t('home:wkSign.waiting_for_key')}

@@ -1,17 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSspLogo } from '../../hooks/useSspLogo';
-import { QRCode, Typography, Button, Space, Modal, Spin, Alert } from 'antd';
-import {
-  LoadingOutlined,
-  MobileOutlined,
-  FileSearchOutlined,
-  CheckCircleOutlined,
-} from '@ant-design/icons';
+import { QRCode, Typography, Button, Space, Modal, Steps, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
+import HandshakeAnimation from '../HandshakeAnimation/HandshakeAnimation';
+import { useSocket } from '../../hooks/useSocket';
+import {
+  deriveHandshakePhase,
+  handshakeTimeline,
+  formatCountdown,
+  ACTION_EXPIRY_SECONDS,
+  type HandshakePhase,
+} from '../../lib/handshake';
 const { Paragraph, Text } = Typography;
 
 const SOFT_TIMEOUT_SECONDS = 30;
 
+/**
+ * "Approve on your SSP Key" — the handshake experience while the mobile
+ * Key co-signs a transaction. Presentation-only rebuild: the QR payload,
+ * the open/close contract with the Send pages / Home, and the socket
+ * success/rejection handoff (handled by the parents) are untouched.
+ *
+ * The terminal Approved/Rejected states are latched from the same socket
+ * signals the parents already consume (txid / txrejected) — read-only,
+ * nothing is cleared here.
+ */
 function ConfirmTxKey(props: {
   open: boolean;
   txHex: string;
@@ -22,8 +35,14 @@ function ConfirmTxKey(props: {
   const { t } = useTranslation(['home', 'common']);
   const sspLogo = useSspLogo();
   const { open, openAction, txHex, chain, wallet } = props;
+  const { txid: socketTxid, txRejected } = useSocket();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [phase, setPhase] = useState<HandshakePhase>('waiting');
+  const [showFallback, setShowFallback] = useState(false);
+  // socket signal values present when the modal opened — a stale signal
+  // from a previous flow must never resolve a fresh request
+  const baselines = useRef({ approved: '', rejected: '' });
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -31,97 +50,65 @@ function ConfirmTxKey(props: {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Track elapsed time while waiting for the SSP Key approval. Resets each
-  // time the modal opens. This is purely presentational — the signature is
-  // still received/transmitted via the existing relay flow which closes the
-  // modal externally.
+  // Reset per open. The countdown mirrors the relay action validity
+  // (15 min) — informational only, expiry is enforced by the relay.
   useEffect(() => {
+    setElapsedSeconds(0);
+    setPhase('waiting');
+    setShowFallback(false);
     if (!open) {
-      setElapsedSeconds(0);
       return;
     }
-    setElapsedSeconds(0);
+    baselines.current = { approved: socketTxid, rejected: txRejected };
     const interval = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
   }, [open]);
 
-  const qrSize = windowWidth < 420 ? 290 : 340;
+  // Latch terminal phase from the existing socket events. The parent still
+  // owns the close + TxSent/TxRejected handoff; this only drives the visual.
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    setPhase((current) =>
+      deriveHandshakePhase(current, {
+        approvedSignal: socketTxid,
+        rejectedSignal: txRejected,
+        baselineApproved: baselines.current.approved,
+        baselineRejected: baselines.current.rejected,
+      }),
+    );
+  }, [open, socketTxid, txRejected]);
+
+  const qrSize = windowWidth < 420 ? 240 : 280;
+  const qrPayload = `${chain}:${wallet}:${txHex}`;
 
   const handleOk = () => {
     openAction(false);
   };
 
-  const formatElapsed = (totalSeconds: number) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  const stepTitles: Record<string, string> = {
+    sent: t('home:keyHandshake.step_sent'),
+    awaiting: t('home:keyHandshake.step_awaiting'),
+    result:
+      phase === 'rejected'
+        ? t('home:keyHandshake.step_rejected')
+        : t('home:keyHandshake.step_approved'),
   };
 
-  const checklistItems = [
-    {
-      icon: <MobileOutlined />,
-      label: t('home:confirmTxKey.step_open'),
-    },
-    {
-      icon: <FileSearchOutlined />,
-      label: t('home:confirmTxKey.step_review'),
-    },
-    {
-      icon: <CheckCircleOutlined />,
-      label: t('home:confirmTxKey.step_approve'),
-    },
-  ];
+  const timelineItems = handshakeTimeline(phase).map((step) => ({
+    title: stepTitles[step.key],
+    status: step.status,
+  }));
 
-  const waitingState = (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-      <Space direction="vertical" size="small" style={{ width: '100%' }}>
-        <Spin indicator={<LoadingOutlined style={{ fontSize: 32 }} spin />} />
-        <Text strong style={{ fontSize: 16 }}>
-          {t('home:confirmTxKey.waiting_title')}
-        </Text>
-        <Text type="secondary">
-          {t('home:confirmTxKey.elapsed', {
-            time: formatElapsed(elapsedSeconds),
-          })}
-        </Text>
-      </Space>
-      <Space
-        direction="vertical"
-        size="small"
-        style={{
-          width: '100%',
-          maxWidth: 320,
-          margin: '0 auto',
-          textAlign: 'left',
-        }}
-      >
-        {checklistItems.map((item, index) => (
-          <Space key={index} align="start">
-            <Text type="secondary">{item.icon}</Text>
-            <Text>
-              <Text type="secondary">{index + 1}.</Text> {item.label}
-            </Text>
-          </Space>
-        ))}
-      </Space>
-      {elapsedSeconds >= SOFT_TIMEOUT_SECONDS && (
-        <Alert
-          type="warning"
-          showIcon
-          message={t('home:confirmTxKey.soft_timeout_title')}
-          description={t('home:confirmTxKey.soft_timeout_description')}
-          style={{ textAlign: 'left' }}
-        />
-      )}
-    </Space>
-  );
+  const remainingSeconds = ACTION_EXPIRY_SECONDS - elapsedSeconds;
 
   return (
     <>
       <Modal
-        title={t('home:confirmTxKey.confirm_tx_key')}
+        title={t('home:keyHandshake.title')}
         open={open}
         onOk={handleOk}
         style={{ textAlign: 'center', top: 60 }}
@@ -132,10 +119,62 @@ function ConfirmTxKey(props: {
           </Button>,
         ]}
       >
-        {waitingState}
-        {txHex.length < 1250 && (
+        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          <HandshakeAnimation
+            state={phase}
+            ariaLabel={stepTitles[phase === 'waiting' ? 'awaiting' : 'result']}
+          />
+          <Steps
+            direction="vertical"
+            size="small"
+            className="keyHandshakeTimeline"
+            items={timelineItems}
+          />
+          {phase === 'waiting' && remainingSeconds > 0 && (
+            <Text
+              type="secondary"
+              style={{ fontVariantNumeric: 'tabular-nums' }}
+            >
+              {t('home:keyHandshake.expires_in')}{' '}
+              <Text
+                strong
+                style={{
+                  color: remainingSeconds <= 60 ? '#ef4444' : '#f59e0b',
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {formatCountdown(remainingSeconds)}
+              </Text>
+            </Text>
+          )}
+          {phase === 'waiting' && remainingSeconds <= 0 && (
+            <Alert
+              type="error"
+              showIcon
+              message={t('home:keyHandshake.expired')}
+            />
+          )}
+          {phase === 'waiting' &&
+            elapsedSeconds >= SOFT_TIMEOUT_SECONDS &&
+            !showFallback && (
+              <Alert
+                type="warning"
+                showIcon
+                message={t('home:confirmTxKey.soft_timeout_title')}
+                description={t('home:confirmTxKey.soft_timeout_description')}
+                style={{ textAlign: 'left' }}
+              />
+            )}
+          {/* QR fallback — payload generation untouched, presentation only */}
+          <Button type="link" onClick={() => setShowFallback(!showFallback)}>
+            {showFallback
+              ? t('home:keyHandshake.hide_qr')
+              : t('home:keyHandshake.show_qr')}
+          </Button>
+        </Space>
+        {showFallback && txHex.length < 1250 && (
           <>
-            <p style={{ marginTop: 20 }}>{t('home:confirmTxKey.info_1')}</p>
+            <p style={{ marginTop: 8 }}>{t('home:confirmTxKey.info_1')}</p>
             <Space
               direction="vertical"
               size="large"
@@ -143,33 +182,33 @@ function ConfirmTxKey(props: {
             >
               <QRCode
                 errorLevel="M"
-                value={`${chain}:${wallet}:${txHex}`}
+                value={qrPayload}
                 icon={sspLogo}
                 size={qrSize}
                 style={{ margin: '0 auto' }}
               />
               <Paragraph
-                copyable={{ text: `${chain}:${wallet}:${txHex}` }}
+                copyable={{ text: qrPayload }}
                 className="copyableAddress"
               >
-                <Text>{`${chain}:${wallet}:${txHex}`}</Text>
+                <Text>{qrPayload}</Text>
               </Paragraph>
             </Space>
           </>
         )}
-        {txHex.length >= 1250 && (
+        {showFallback && txHex.length >= 1250 && (
           <>
-            <p style={{ marginTop: 20 }}>{t('home:confirmTxKey.info_2')}</p>
+            <p style={{ marginTop: 8 }}>{t('home:confirmTxKey.info_2')}</p>
             <Space
               direction="vertical"
               size="large"
               style={{ marginBottom: 15 }}
             >
               <Paragraph
-                copyable={{ text: `${chain}:${wallet}:${txHex}` }}
+                copyable={{ text: qrPayload }}
                 className="copyableAddress"
               >
-                <Text>{`${chain}:${wallet}:${txHex}`}</Text>
+                <Text>{qrPayload}</Text>
               </Paragraph>
             </Space>
           </>

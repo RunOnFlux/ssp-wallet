@@ -130,7 +130,7 @@ export async function estimateGas(
   };
 }
 
-// 🎯 UI level gas management (src/pages/SendEVM/SendEVM.tsx)
+// 🎯 UI level gas management (src/pages/SendFlow/useEvmSendStrategy.tsx)
 const calculateGasBreakdown = () => {
   // Same dynamic scaling logic applied at UI level
   // Components are then passed directly to constructAndSignEVMTransaction
@@ -313,7 +313,7 @@ export async function constructAndSignEVMTransaction(
   customData?: string,
 ): Promise<string>
 
-// src/pages/SendEVM/SendEVM.tsx - Real-time integration
+// src/pages/SendFlow/useEvmSendStrategy.tsx - Real-time integration
 const getTotalGasLimit = async () => {
   const gasEstimate = await estimateGas(activeChain, sender, token, txData);
   // Individual components are calculated at UI level

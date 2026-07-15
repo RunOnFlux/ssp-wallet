@@ -4,6 +4,7 @@ import { useAppSelector } from '../../hooks';
 import './EnterpriseVaultSignTx.css';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { useSocket } from '../../hooks/useSocket';
+import HandshakeAnimation from '../HandshakeAnimation/HandshakeAnimation';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { getFingerprint } from '../../lib/fingerprint';
@@ -1398,15 +1399,22 @@ function EnterpriseVaultSignTx({
           />
         )}
 
-        {/* Waiting for Key indicator */}
+        {/* Waiting for Key indicator — 2-of-2 handshake motif */}
         {waitingForKey && (
-          <Alert
-            type="info"
-            message={t('home:enterpriseVaultSignTx.waiting_for_key')}
-            icon={<Spin size="small" />}
-            showIcon
-            style={{ textAlign: 'left' }}
-          />
+          <>
+            <HandshakeAnimation
+              state="waiting"
+              size={56}
+              ariaLabel={t('home:enterpriseVaultSignTx.waiting_for_key')}
+            />
+            <Alert
+              type="info"
+              message={t('home:enterpriseVaultSignTx.waiting_for_key')}
+              icon={<Spin size="small" />}
+              showIcon
+              style={{ textAlign: 'left' }}
+            />
+          </>
         )}
 
         {/* Action buttons */}
