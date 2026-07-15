@@ -12,9 +12,10 @@ import { RouterErrorBoundary } from './components/ErrorBoundary/ErrorBoundary.ts
 // Code-split the heavier flows (and the chain SDKs they pull in) so the popup
 // only loads Login/Home to first paint. These are lazily fetched on first
 // navigation.
-const Send = lazy(() => import('./pages/Send/Send.tsx'));
-const SendEVM = lazy(() => import('./pages/SendEVM/SendEVM.tsx'));
-const SendSOL = lazy(() => import('./pages/SendSOL/SendSOL.tsx'));
+// Unified 3-step send flow — /send, /sendevm and /sendsol are aliases so
+// every existing navigate() + location.state contract keeps working; the
+// per-chain strategy is picked internally by the active chain's chainType.
+const SendFlow = lazy(() => import('./pages/SendFlow/SendFlow.tsx'));
 const Swap = lazy(() => import('./pages/Swap/Swap.tsx'));
 const SecurityTest = lazy(
   () => import('./pages/SecurityTest/SecurityTest.tsx'),
@@ -65,17 +66,17 @@ const router = createBrowserRouter([
   },
   {
     path: '/send',
-    element: withSuspense(<Send />),
+    element: withSuspense(<SendFlow />),
     errorElement: <RouterErrorBoundary />,
   },
   {
     path: '/sendevm',
-    element: withSuspense(<SendEVM />),
+    element: withSuspense(<SendFlow />),
     errorElement: <RouterErrorBoundary />,
   },
   {
     path: '/sendsol',
-    element: withSuspense(<SendSOL />),
+    element: withSuspense(<SendFlow />),
     errorElement: <RouterErrorBoundary />,
   },
   {

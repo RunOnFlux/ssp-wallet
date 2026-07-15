@@ -1,23 +1,24 @@
-import { useEffect, useState } from 'react';
+/**
+ * EVM send strategy hook — the stateful half of the strategy.
+ *
+ * ALL state, effects, gas estimation, WalletConnect integration, public-nonce
+ * handling and the onFinish submit handler are lifted from the legacy
+ * src/pages/SendEVM/SendEVM.tsx (deleted with this unification). Transaction
+ * construction still goes through the unchanged lib/constructTx functions
+ * (estimateGas, constructAndSignEVMTransaction) with identical inputs —
+ * invariant 1.
+ *
+ * The only adaptation: the automatic fee can be one of three presets
+ * (slow/normal/fast) that vary the priority tip over the same relay fee data;
+ * "normal" is bit-identical to the legacy automatic mode and "custom" is the
+ * legacy manual mode exposing the exact same five gas inputs.
+ */
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from '../../lib/toast';
 import { useNavigate, useLocation } from 'react-router';
-import {
-  Form,
-  Divider,
-  Button,
-  Input,
-  Space,
-  Popconfirm,
-  Popover,
-  Select,
-  Collapse,
-  Tooltip,
-  Alert,
-  theme,
-} from 'antd';
+import { Form, Input, Divider, Collapse, Tooltip, Alert, theme } from 'antd';
 import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
-import Navbar from '../../components/Navbar/Navbar';
 import {
   constructAndSignEVMTransaction,
   estimateGas,
@@ -43,53 +44,32 @@ import BigNumber from 'bignumber.js';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
 import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
-import ConfirmPublicNoncesKey from '../../components/ConfirmPublicNoncesKey/ConfirmPublicNoncesKey.tsx';
+import ConfirmPublicNoncesKey from '../../components/ConfirmPublicNoncesKey/ConfirmPublicNoncesKey';
 import PublicNoncesRejected from '../../components/PublicNoncesRejected/PublicNoncesRejected';
 import PublicNoncesReceived from '../../components/PublicNoncesReceived/PublicNoncesReceived';
-import { fetchAddressTransactions } from '../../lib/transactions.ts';
+import { fetchAddressTransactions } from '../../lib/transactions';
 import {
   fetchAddressBalance,
   fetchAddressTokenBalances,
-} from '../../lib/balances.ts';
-import QRScanner, {
-  isQrScanSupported,
-} from '../../components/QRScanner/QRScanner';
+} from '../../lib/balances';
 import { validateReceiverAddress } from '../../lib/addressValidation';
 import { formatFiatWithSymbol } from '../../lib/currency';
-import { QuestionCircleOutlined, ScanOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
 import { blockchains } from '@storage/blockchains';
 import { setContacts } from '../../store';
 import { useWalletConnect } from '../../contexts/WalletConnectContext';
-
 import {
   transaction,
   utxo,
   swapResponseData,
   tokenBalanceEVM,
 } from '../../types';
-import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
-import SspConnect from '../../components/SspConnect/SspConnect.tsx';
-import { getDisplayName } from '../../storage/walletNames';
-import './SendEVM.css';
-
-interface contactOption {
-  label: string;
-  index?: string;
-  value: string;
-}
-
-interface contactsInterface {
-  label: string;
-  options: contactOption[];
-}
-
-interface tokenOption {
-  label: string;
-  value: string;
-}
+import { presetGasEvm, evmFeeTotalEth } from '../../lib/sendStrategies/evm';
+import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
+import type { SendStrategyView, FeePresetView } from './types';
 
 interface sendForm {
   receiver: string;
@@ -121,13 +101,18 @@ interface publicNonces {
   kTwoPublic: string;
 }
 
+interface tokenOption {
+  label: string;
+  value: string;
+}
+
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
 
-function SendEVM() {
+export function useEvmSendStrategy(): SendStrategyView {
   const { token } = theme.useToken();
   const dispatch = useAppDispatch();
   const location = useLocation();
-  const state = location.state as sendForm;
+  const state = (location.state ?? {}) as sendForm;
   const {
     txid: socketTxid,
     clearTxid,
@@ -164,18 +149,12 @@ function SendEVM() {
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txReceiver, setTxReceiver] = useState('');
-  const [openQrScanner, setOpenQrScanner] = useState(false);
   const [txToken, setTxToken] = useState('');
   const blockchainConfig = blockchains[activeChain];
   const [txFee, setTxFee] = useState('0');
 
-  // Get custom wallet names for all wallets
-  const walletNames = useAppSelector(
-    (state) => state.walletNames?.chains[activeChain] || {},
-  );
   const [txData, setTxData] = useState('');
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  const [showFeeDetails, setShowFeeDetails] = useState(false);
   const [baseGasPrice, setBaseGasPrice] = useState(
     blockchainConfig.baseFee.toString(),
   );
@@ -191,8 +170,7 @@ function SendEVM() {
     '' | 'success' | 'error' | 'warning' | 'validating' | undefined
   >('success');
   const [useMaximum, setUseMaximum] = useState(false);
-  const [manualFee, setManualFee] = useState(false);
-  const [contactsItems, setContactsItems] = useState<contactsInterface[]>([]);
+  const [feePreset, setFeePreset] = useState<FeePresetKey>('normal');
   const [tokenItems, setTokenItems] = useState<tokenOption[]>([]);
   const { networkFees } = useAppSelector((state) => state.networkFees);
   const { contacts } = useAppSelector((state) => state.contacts);
@@ -204,6 +182,10 @@ function SendEVM() {
   const browser = window.chrome || window.browser;
   const { handleWalletConnectTxCompletion, handleWalletConnectTxRejection } =
     useWalletConnect();
+
+  // "custom" preset === the legacy manual-fee mode; slow/normal/fast are the
+  // automatic mode with the priority tip derived from the same relay data.
+  const manualFee = feePreset === 'custom';
 
   // Handle WalletConnect parameters from navigation state
   useEffect(() => {
@@ -304,57 +286,6 @@ function SendEVM() {
   }, [txToken]);
 
   useEffect(() => {
-    const wItems: contactOption[] = [];
-    Object.keys(wallets).forEach((wallet) => {
-      const customName = walletNames[wallet];
-      const walletName = getDisplayName(activeChain, wallet);
-
-      const wal = {
-        value: wallets[wallet].address,
-        index: wallet,
-        label: customName || walletName,
-      };
-      wItems.push(wal);
-    });
-    wItems.sort((a, b) => {
-      if (!a.index || !b.index) return 0;
-      if (+a.index.split('-')[1] < +b.index.split('-')[1]) return -1;
-      if (+a.index.split('-')[1] > +b.index.split('-')[1]) return 1;
-      return 0;
-    });
-    wItems.sort((a, b) => {
-      if (!a.index || !b.index) return 0;
-      if (+a.index.split('-')[0] < +b.index.split('-')[0]) return -1;
-      if (+a.index.split('-')[0] > +b.index.split('-')[0]) return 1;
-      return 0;
-    });
-    const sendContacts = [];
-    const contactsOptions: contactOption[] = [];
-    contacts[activeChain]?.forEach((contact) => {
-      const option = {
-        label:
-          contact.name ||
-          new Date(contact.id).toLocaleDateString() +
-            ' ' +
-            new Date(contact.id).toLocaleTimeString(),
-        value: contact.address,
-      };
-      contactsOptions.push(option);
-    });
-    if (contactsOptions.length > 0) {
-      sendContacts.push({
-        label: 'Contacts',
-        options: contactsOptions,
-      });
-    }
-    sendContacts.push({
-      label: t('common:my_wallets'),
-      options: wItems,
-    });
-    setContactsItems(sendContacts);
-  }, [wallets, activeChain]);
-
-  useEffect(() => {
     // only use activated tokens
     const activatedTokens = (
       wallets[walletInUse].activatedTokens || []
@@ -409,13 +340,20 @@ function SendEVM() {
     }
   }, [activeChain, state.contract]);
 
-  // on every chain, address adjustment, fetch utxos
-  // used to get a precise estimate of the tx size
+  // on every chain, address adjustment, refresh fees + balances
   useEffect(() => {
     refreshAutomaticFee();
     getSpendableBalance();
     void getTotalGasLimit();
-  }, [networkFees, walletInUse, activeChain, manualFee, txToken, txData]);
+  }, [
+    networkFees,
+    walletInUse,
+    activeChain,
+    manualFee,
+    feePreset,
+    txToken,
+    txData,
+  ]);
 
   useEffect(() => {
     form.setFieldValue('base_gas_price', baseGasPrice);
@@ -662,12 +600,16 @@ function SendEVM() {
 
   const refreshAutomaticFee = () => {
     if (!manualFee) {
-      // reset fee with safe fallbacks
+      // reset fee with safe fallbacks; the priority tip is scaled by the
+      // selected preset (normal = 1x, exactly the legacy automatic fee)
       const chainFees = networkFees[activeChain];
       const baseFee = chainFees?.base ?? blockchainConfig.baseFee;
       const priorityFee = chainFees?.priority ?? blockchainConfig.priorityFee;
-      setBaseGasPrice(baseFee.toString());
-      setPriorityGasPrice(priorityFee.toString());
+      // manualFee (=== feePreset 'custom') is false here, so feePreset is
+      // narrowed to slow | normal | fast
+      const presetGas = presetGasEvm(feePreset, baseFee, priorityFee);
+      setBaseGasPrice(presetGas.base);
+      setPriorityGasPrice(presetGas.priority);
       // Gas components will be recalculated by getTotalGasLimit
     }
   };
@@ -1133,20 +1075,6 @@ function SendEVM() {
     navigate('/home');
   };
 
-  const content = (
-    <div>
-      <p>{t('home:transactionsTable.replace_by_fee_desc')}</p>
-      <p>{t('home:transactionsTable.replace_by_fee_desc_b')}</p>
-      <p>{t('send:replace_by_fee_stop')}</p>
-    </div>
-  );
-
-  const refresh = () => {
-    console.log(
-      'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
-    );
-  };
-
   // Helper function to decode transaction data
   const decodeTransactionData = (data: string): string => {
     if (!data || data === '0x') return '';
@@ -1179,15 +1107,15 @@ function SendEVM() {
   const showReceiverError =
     !!txReceiver.trim() && !receiverValidation.valid && !state.swap;
 
-  // Live fiat estimate under the amount field. Only shown for the native asset
-  // (token 0), since per-token USD rates are not loaded in this view.
+  // Live fiat estimate. Only shown for the native asset (token 0), since
+  // per-token USD rates are not loaded in this view.
   const isNativeAsset = txToken === blockchainConfig.tokens[0].contract;
-  const amountFiatValue = (() => {
-    if (!isNativeAsset) {
+  const toFiat = (units: string | null): string | null => {
+    if (units === null) {
       return null;
     }
-    const numericAmount = new BigNumber(sendingAmount || '0');
-    if (!numericAmount.isFinite() || numericAmount.lte(0)) {
+    const numeric = new BigNumber(units || '0');
+    if (!numeric.isFinite() || numeric.lte(0)) {
       return null;
     }
     const cr = cryptoRates[activeChain] ?? 0;
@@ -1195,615 +1123,436 @@ function SendEVM() {
     if (!cr || !fi) {
       return null;
     }
-    return numericAmount.multipliedBy(cr).multipliedBy(fi);
-  })();
+    return formatFiatWithSymbol(numeric.multipliedBy(cr).multipliedBy(fi));
+  };
 
-  return (
-    <>
-      <Navbar
-        refresh={refresh}
-        hasRefresh={false}
-        allowChainSwitch={false}
-        header={state.swap ? t('home:swap.swap_crypto') : ''}
-      />
-      <Divider />
-      <Form
-        name="sendForm"
-        form={form}
-        onFinish={(values) => void onFinish(values as sendForm)}
-        autoComplete="off"
-        layout="vertical"
-        itemRef="txFeeRef"
-        style={{
-          paddingBottom: '43px',
-          marginTop: state.swap ? '24px' : '0',
-        }}
+  // Pre-submit gate for compose → review (same checks onFinish re-runs).
+  const validateCompose = (): string | null => {
+    const rv = validateReceiverAddress(txReceiver, activeChain);
+    if (!rv.valid) {
+      return rv.warningChainType
+        ? t('send:err_wrong_chain_address', { chain: blockchainConfig.name })
+        : t('send:err_invalid_receiver');
+    }
+    if (!sendingAmount || isNaN(+sendingAmount)) {
+      return t('send:err_invalid_amount');
+    }
+    if (!state.walletConnectMode && +sendingAmount <= 0) {
+      return t('send:err_invalid_amount');
+    }
+    return null;
+  };
+
+  const feePresets: FeePresetView[] = useMemo(() => {
+    const chainFees = networkFees[activeChain];
+    const baseFee = chainFees?.base ?? blockchainConfig.baseFee;
+    const priorityFee = chainFees?.priority ?? blockchainConfig.priorityFee;
+    const totalGas = getTotalGasFromComponents();
+    return [
+      // Automatic = recommended gas (legacy automatic); Custom = manual gas
+      // fields. Slow/Fast dropped for a simpler two-option fee choice.
+      (() => {
+        const gas = presetGasEvm('normal', baseFee, priorityFee);
+        return {
+          key: 'normal' as const,
+          feeAmount: totalGas
+            ? evmFeeTotalEth(totalGas, gas.base, gas.priority)
+            : null,
+        };
+      })(),
+      {
+        key: 'custom',
+        feeAmount: txFee !== '---' ? txFee || null : null,
+      },
+    ];
+  }, [
+    networkFees,
+    activeChain,
+    blockchainConfig,
+    preVerificationGas,
+    callGasLimit,
+    verificationGasLimit,
+    txFee,
+  ]);
+
+  const selectedTokenInfo =
+    blockchainConfig.tokens
+      .concat(importedTokens ?? [])
+      .find((tk) => tk.contract === txToken) ?? blockchainConfig.tokens[0];
+
+  const totalDisplay = isNativeAsset
+    ? new BigNumber(sendingAmount || '0')
+        .plus(txFee !== '---' ? txFee || '0' : '0')
+        .toFixed()
+    : null;
+
+  // Legacy manual gas inputs — exactly the fields the old SendEVM page
+  // exposed under "Fee Details" (base/priority gwei + the three gas
+  // components + calculated total). Editable only in custom mode.
+  const customFeeContent = (
+    <div>
+      {/* Gas Price Settings */}
+      <Form.Item
+        label={
+          <span>
+            {t('send:base_gas_price')}
+            <Tooltip title={t('send:base_gas_price_help')}>
+              <QuestionCircleOutlined
+                style={{
+                  marginLeft: 8,
+                  color: token.colorPrimary,
+                }}
+              />
+            </Tooltip>
+          </span>
+        }
+        name="base_gas_price"
+        rules={[{ required: true, message: t('send:input_gas_price') }]}
       >
-        {/* Hidden field for WalletConnect mode flag */}
-        <Form.Item name="walletConnectMode" style={{ display: 'none' }}>
-          <Input type="hidden" />
-        </Form.Item>
+        <Input
+          size="large"
+          value={baseGasPrice}
+          placeholder={t('send:input_gas_price')}
+          suffix="gwei"
+          onChange={(e) => setBaseGasPrice(e.target.value)}
+          disabled={!manualFee}
+        />
+      </Form.Item>
+      <Form.Item
+        label={
+          <span>
+            {t('send:priority_gas_price')}
+            <Tooltip title={t('send:priority_gas_price_help')}>
+              <QuestionCircleOutlined
+                style={{
+                  marginLeft: 8,
+                  color: token.colorPrimary,
+                }}
+              />
+            </Tooltip>
+          </span>
+        }
+        name="priority_gas_price"
+        rules={[
+          {
+            required: true,
+            message: t('send:input_priority_gas_price'),
+          },
+        ]}
+      >
+        <Input
+          size="large"
+          value={priorityGasPrice}
+          placeholder={t('send:input_priority_gas_price')}
+          suffix="gwei"
+          onChange={(e) => setPriorityGasPrice(e.target.value)}
+          disabled={!manualFee}
+        />
+      </Form.Item>
 
-        <Form.Item name="asset" label={t('send:asset')}>
-          <Select
-            size="large"
-            style={{ textAlign: 'left' }}
-            defaultValue={
-              blockchainConfig.name + ' (' + blockchainConfig.symbol + ')'
-            }
-            popupMatchSelectWidth={false}
-            value={txToken}
-            onChange={(value) => {
-              setTxToken(value);
-            }}
-            options={tokenItems}
-            disabled={!!state.swap}
-            dropdownRender={(menu) => <>{menu}</>}
-          />
-        </Form.Item>
-
+      {/* Gas Breakdown Section - Editable */}
+      <Divider style={{ margin: '16px 0' }} />
+      <div style={{ marginBottom: '16px' }}>
         <Form.Item
-          label={t('send:receiver_address')}
-          name="receiver"
-          rules={[
-            { required: true, message: t('send:input_receiver_address') },
-          ]}
-          validateStatus={showReceiverError ? 'error' : undefined}
-          help={
-            showReceiverError
-              ? receiverValidation.warningChainType
-                ? t('send:err_wrong_chain_address', {
-                    chain: blockchainConfig.name,
-                  })
-                : t('send:err_invalid_receiver')
-              : undefined
-          }
-        >
-          <Space.Compact style={{ width: '100%' }}>
-            <Input
-              size="large"
-              value={txReceiver}
-              placeholder={t('send:receiver_address')}
-              onChange={(e) => {
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                (setTxReceiver(e.target.value),
-                  form.setFieldValue('receiver', e.target.value));
-              }}
-              disabled={!!(state?.walletConnectMode && state?.receiver)}
-            />
-            {isQrScanSupported() &&
-              !(state?.walletConnectMode && state?.receiver) && (
-                <Button
-                  size="large"
-                  icon={<ScanOutlined />}
-                  onClick={() => setOpenQrScanner(true)}
-                  title={t('send:scan_qr')}
-                  aria-label={t('send:scan_qr')}
+          label={
+            <span>
+              {t('send:preverification_gas')}
+              <Tooltip title={t('send:preverification_gas_help')}>
+                <QuestionCircleOutlined
+                  style={{
+                    marginLeft: 8,
+                    color: token.colorPrimary,
+                  }}
                 />
-              )}
-            <Select
-              size="large"
-              className="no-text-select"
-              style={{ width: '40px' }}
-              defaultValue=""
-              value={txReceiver}
-              popupMatchSelectWidth={false}
-              onChange={(value) => {
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                (setTxReceiver(value), form.setFieldValue('receiver', value));
-              }}
-              options={contactsItems}
-              disabled={!!(state?.walletConnectMode && state?.receiver)}
-              dropdownRender={(menu) => <>{menu}</>}
-            />
-          </Space.Compact>
-        </Form.Item>
-
-        <Form.Item
-          label={t('send:amount_to_send')}
-          name="amount"
-          rules={[{ required: true, message: t('send:input_amount') }]}
-          validateStatus={validateStatusAmount}
+              </Tooltip>
+            </span>
+          }
+          name="preverification_gas"
+          rules={[
+            {
+              required: true,
+              message: t('send:input_preverification_gas'),
+            },
+          ]}
         >
           <Input
             size="large"
-            value={sendingAmount}
+            value={preVerificationGas}
+            placeholder={t('send:preverification_gas')}
+            suffix="gas"
             onChange={(e) => {
-              setSendingAmount(e.target.value);
-              setUseMaximum(false);
+              setPreVerificationGas(e.target.value);
             }}
-            placeholder={t('send:input_amount')}
-            suffix={
-              blockchainConfig.tokens
-                .concat(importedTokens ?? [])
-                .find((t) => t.contract === txToken)?.symbol ??
-              blockchainConfig.symbol
-            }
-            disabled={
-              !!state.swap || !!(state?.walletConnectMode && state?.amount)
-            }
+            disabled={!manualFee}
           />
         </Form.Item>
-        {amountFiatValue && (
+
+        <Form.Item
+          label={
+            <span>
+              {t('send:verification_gas_limit')}
+              <Tooltip title={t('send:verification_gas_limit_help')}>
+                <QuestionCircleOutlined
+                  style={{
+                    marginLeft: 8,
+                    color: token.colorPrimary,
+                  }}
+                />
+              </Tooltip>
+            </span>
+          }
+          name="verification_gas_limit"
+          rules={[
+            {
+              required: true,
+              message: t('send:input_verification_gas_limit'),
+            },
+          ]}
+        >
+          <Input
+            size="large"
+            value={verificationGasLimit}
+            placeholder={t('send:verification_gas_limit')}
+            suffix="gas"
+            onChange={(e) => {
+              setVerificationGasLimit(e.target.value);
+            }}
+            disabled={!manualFee}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label={
+            <span>
+              {t('send:call_gas_limit')}
+              <Tooltip title={t('send:call_gas_limit_help')}>
+                <QuestionCircleOutlined
+                  style={{
+                    marginLeft: 8,
+                    color: token.colorPrimary,
+                  }}
+                />
+              </Tooltip>
+            </span>
+          }
+          name="call_gas_limit"
+          rules={[
+            {
+              required: true,
+              message: t('send:input_call_gas_limit'),
+            },
+          ]}
+        >
+          <Input
+            size="large"
+            value={callGasLimit}
+            placeholder={t('send:call_gas_limit')}
+            suffix="gas"
+            onChange={(e) => {
+              setCallGasLimit(e.target.value);
+            }}
+            disabled={!manualFee}
+          />
+        </Form.Item>
+
+        {/* Gas Summary Display */}
+        <div
+          style={{
+            backgroundColor: token.colorFillQuaternary,
+            padding: '12px',
+            borderRadius: '6px',
+            fontSize: '12px',
+            marginBottom: '16px',
+          }}
+        >
           <div
             style={{
-              marginTop: '-22px',
-              float: 'left',
-              marginLeft: 3,
-              fontSize: 12,
-              color: 'grey',
-              zIndex: 2,
-              position: 'relative',
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontWeight: 'bold',
             }}
           >
-            ≈ {formatFiatWithSymbol(amountFiatValue)}
+            <span>
+              {t('send:total_gas_limit')}
+              <Tooltip title={t('send:total_gas_help')}>
+                <QuestionCircleOutlined
+                  style={{
+                    marginLeft: 8,
+                    color: token.colorPrimary,
+                  }}
+                />
+              </Tooltip>
+            </span>
+            <span style={{ fontFamily: 'monospace' }}>
+              {(
+                Number(preVerificationGas) +
+                Number(callGasLimit) +
+                Number(verificationGasLimit)
+              ).toLocaleString()}{' '}
+              gas
+            </span>
           </div>
-        )}
-        <Button
-          type="text"
-          size="small"
-          style={{
-            marginTop: '-22px',
-            float: 'right',
-            marginRight: 3,
-            fontSize: 12,
-            color: token.colorPrimary,
-            cursor:
-              !!state.swap || !!(state?.walletConnectMode && state?.amount)
-                ? 'not-allowed'
-                : 'pointer',
-            zIndex: 2,
-          }}
-          onClick={() => setUseMaximum(true)}
-          disabled={
-            !!state.swap || !!(state?.walletConnectMode && state?.amount)
-          }
-        >
-          {t('send:max')}:{' '}
-          {new BigNumber(spendableBalance)
-            .dividedBy(
-              10 **
-                (blockchainConfig.tokens
-                  .concat(importedTokens ?? [])
-                  .find((t) => t.contract === txToken)?.decimals ??
-                  blockchainConfig.decimals),
-            )
-            .toFixed()}
-        </Button>
-        <Form.Item
-          label={t('send:max_fee')}
-          name="fee"
-          style={{ paddingTop: '2px' }}
-          rules={[{ required: true, message: t('send:invalid_tx_fee') }]}
-        >
-          <Input
-            size="large"
-            value={txFee}
-            placeholder={t('send:max_tx_fee')}
-            suffix={blockchainConfig.symbol}
-            onChange={(e) => setTxFee(e.target.value)}
-            disabled={true}
-          />
-        </Form.Item>
-        <Collapse
-          size="small"
-          style={{ marginTop: '-20px', textAlign: 'left' }}
-          activeKey={[
-            ...(showAdvancedOptions || (state?.data && txData) ? ['2'] : []),
-            ...(showFeeDetails ? ['1'] : []),
-          ]}
-          onChange={(keys: string[] | string) => {
-            const keysArray = Array.isArray(keys) ? keys : [keys];
-            setShowAdvancedOptions(keysArray.includes('2'));
-            setShowFeeDetails(keysArray.includes('1'));
-          }}
-          items={[
-            {
-              key: '1',
-              label: t('send:fee_details'),
-              children: (
-                <div>
-                  {/* Gas Price Settings */}
-                  <Form.Item
-                    label={
-                      <span>
-                        {t('send:base_gas_price')}
-                        <Tooltip title={t('send:base_gas_price_help')}>
-                          <QuestionCircleOutlined
-                            style={{
-                              marginLeft: 8,
-                              color: token.colorPrimary,
-                            }}
-                          />
-                        </Tooltip>
-                      </span>
-                    }
-                    name="base_gas_price"
-                    rules={[
-                      { required: true, message: t('send:input_gas_price') },
-                    ]}
-                  >
-                    <Input
-                      size="large"
-                      value={baseGasPrice}
-                      placeholder={t('send:input_gas_price')}
-                      suffix="gwei"
-                      onChange={(e) => setBaseGasPrice(e.target.value)}
-                      disabled={!manualFee}
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    label={
-                      <span>
-                        {t('send:priority_gas_price')}
-                        <Tooltip title={t('send:priority_gas_price_help')}>
-                          <QuestionCircleOutlined
-                            style={{
-                              marginLeft: 8,
-                              color: token.colorPrimary,
-                            }}
-                          />
-                        </Tooltip>
-                      </span>
-                    }
-                    name="priority_gas_price"
-                    rules={[
-                      {
-                        required: true,
-                        message: t('send:input_priority_gas_price'),
-                      },
-                    ]}
-                  >
-                    <Input
-                      size="large"
-                      value={priorityGasPrice}
-                      placeholder={t('send:input_priority_gas_price')}
-                      suffix="gwei"
-                      onChange={(e) => setPriorityGasPrice(e.target.value)}
-                      disabled={!manualFee}
-                    />
-                  </Form.Item>
+          <div
+            style={{
+              fontSize: '11px',
+              color: token.colorTextSecondary,
+              marginTop: '4px',
+            }}
+          >
+            {t('send:calculated_gas_limit_description')}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-                  {/* Gas Breakdown Section - Editable */}
-                  <Divider style={{ margin: '16px 0' }} />
-                  <div style={{ marginBottom: '16px' }}>
-                    <Form.Item
-                      label={
-                        <span>
-                          {t('send:preverification_gas')}
-                          <Tooltip title={t('send:preverification_gas_help')}>
-                            <QuestionCircleOutlined
-                              style={{
-                                marginLeft: 8,
-                                color: token.colorPrimary,
-                              }}
-                            />
-                          </Tooltip>
-                        </span>
-                      }
-                      name="preverification_gas"
-                      rules={[
-                        {
-                          required: true,
-                          message: t('send:input_preverification_gas'),
-                        },
-                      ]}
-                    >
-                      <Input
-                        size="large"
-                        value={preVerificationGas}
-                        placeholder={t('send:preverification_gas')}
-                        suffix="gas"
-                        onChange={(e) => {
-                          setPreVerificationGas(e.target.value);
-                        }}
-                        disabled={!manualFee}
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      label={
-                        <span>
-                          {t('send:verification_gas_limit')}
-                          <Tooltip
-                            title={t('send:verification_gas_limit_help')}
-                          >
-                            <QuestionCircleOutlined
-                              style={{
-                                marginLeft: 8,
-                                color: token.colorPrimary,
-                              }}
-                            />
-                          </Tooltip>
-                        </span>
-                      }
-                      name="verification_gas_limit"
-                      rules={[
-                        {
-                          required: true,
-                          message: t('send:input_verification_gas_limit'),
-                        },
-                      ]}
-                    >
-                      <Input
-                        size="large"
-                        value={verificationGasLimit}
-                        placeholder={t('send:verification_gas_limit')}
-                        suffix="gas"
-                        onChange={(e) => {
-                          setVerificationGasLimit(e.target.value);
-                        }}
-                        disabled={!manualFee}
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      label={
-                        <span>
-                          {t('send:call_gas_limit')}
-                          <Tooltip title={t('send:call_gas_limit_help')}>
-                            <QuestionCircleOutlined
-                              style={{
-                                marginLeft: 8,
-                                color: token.colorPrimary,
-                              }}
-                            />
-                          </Tooltip>
-                        </span>
-                      }
-                      name="call_gas_limit"
-                      rules={[
-                        {
-                          required: true,
-                          message: t('send:input_call_gas_limit'),
-                        },
-                      ]}
-                    >
-                      <Input
-                        size="large"
-                        value={callGasLimit}
-                        placeholder={t('send:call_gas_limit')}
-                        suffix="gas"
-                        onChange={(e) => {
-                          setCallGasLimit(e.target.value);
-                        }}
-                        disabled={!manualFee}
-                      />
-                    </Form.Item>
-
-                    {/* Gas Summary Display */}
-                    <div
-                      style={{
-                        backgroundColor: token.colorFillQuaternary,
-                        padding: '12px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        marginBottom: '16px',
-                      }}
-                    >
-                      <div
+  // Advanced Options (transaction data) — compose-step extra, lifted from
+  // the legacy Collapse. Shown expanded automatically when a dApp provided
+  // calldata via WalletConnect.
+  const composeExtra = (
+    <Collapse
+      size="small"
+      style={{ marginTop: '4px', textAlign: 'left' }}
+      activeKey={showAdvancedOptions || (state?.data && txData) ? ['2'] : []}
+      onChange={(keys: string[] | string) => {
+        const keysArray = Array.isArray(keys) ? keys : [keys];
+        setShowAdvancedOptions(keysArray.includes('2'));
+      }}
+      items={[
+        {
+          key: '2',
+          label: t('send:advanced_options'),
+          children: (
+            <div style={{ textAlign: 'left' }}>
+              <Form.Item
+                label={
+                  <span>
+                    {t('send:transaction_data')}
+                    {state.walletConnectMode && state.data && (
+                      <span
                         style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        <span>
-                          {t('send:total_gas_limit')}
-                          <Tooltip title={t('send:total_gas_help')}>
-                            <QuestionCircleOutlined
-                              style={{
-                                marginLeft: 8,
-                                color: token.colorPrimary,
-                              }}
-                            />
-                          </Tooltip>
-                        </span>
-                        <span style={{ fontFamily: 'monospace' }}>
-                          {(
-                            Number(preVerificationGas) +
-                            Number(callGasLimit) +
-                            Number(verificationGasLimit)
-                          ).toLocaleString()}{' '}
-                          gas
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '11px',
-                          color: token.colorTextSecondary,
-                          marginTop: '4px',
-                        }}
-                      >
-                        {t('send:calculated_gas_limit_description')}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'center', marginTop: '-10px' }}>
-                    <Button
-                      type="link"
-                      size="small"
-                      style={{
-                        fontSize: 12,
-                      }}
-                      onClick={() => {
-                        setManualFee(!manualFee);
-                      }}
-                    >
-                      {manualFee
-                        ? t('send:using_manual_fee')
-                        : t('send:using_automatic_fee')}
-                    </Button>
-                  </div>
-                </div>
-              ),
-            },
-            {
-              key: '2',
-              label: t('send:advanced_options'),
-              children: (
-                <div style={{ textAlign: 'left' }}>
-                  <Form.Item
-                    label={
-                      <span>
-                        {t('send:transaction_data')}
-                        {state.walletConnectMode && state.data && (
-                          <span
-                            style={{
-                              color: token.colorPrimary,
-                              fontSize: '12px',
-                              marginLeft: '8px',
-                            }}
-                          >
-                            {t('send:data_from_dapp')}
-                          </span>
-                        )}
-                      </span>
-                    }
-                    name="data"
-                    rules={[
-                      {
-                        validator: (_, value: string) => {
-                          if (!value || value === '') return Promise.resolve();
-                          if (
-                            !value.startsWith('0x') ||
-                            !/^0x[0-9a-fA-F]*$/.test(value)
-                          ) {
-                            return Promise.reject(
-                              new Error(t('send:err_invalid_hex_data')),
-                            );
-                          }
-                          return Promise.resolve();
-                        },
-                      },
-                    ]}
-                  >
-                    <Input.TextArea
-                      size="large"
-                      value={txData}
-                      placeholder={t('send:transaction_data_placeholder')}
-                      onChange={(e) => {
-                        setTxData(e.target.value);
-                        form.setFieldValue('data', e.target.value);
-                      }}
-                      disabled={
-                        Boolean(state?.walletConnectMode && state?.data) ||
-                        Boolean(
-                          txToken &&
-                          txToken !== blockchainConfig.tokens[0].contract,
-                        )
-                      }
-                      rows={3}
-                      style={{ fontFamily: 'monospace', fontSize: '12px' }}
-                    />
-                  </Form.Item>
-                  {txData && (
-                    <div
-                      style={{
-                        fontSize: '12px',
-                        color: token.colorTextSecondary,
-                        marginTop: '-15px',
-                        marginBottom: '15px',
-                        textAlign: 'left',
-                      }}
-                    >
-                      {t('send:contract_interaction')}:{' '}
-                      {decodeTransactionData(txData)}
-                    </div>
-                  )}
-                  {txToken &&
-                    txToken !== blockchainConfig.tokens[0].contract && (
-                      <Alert
-                        message={t('send:warn_data_only_eth', {
-                          symbol: blockchainConfig.symbol,
-                        })}
-                        type="warning"
-                        showIcon
-                        style={{
-                          marginTop: '-10px',
-                          marginBottom: '15px',
+                          color: token.colorPrimary,
                           fontSize: '12px',
+                          marginLeft: '8px',
                         }}
-                      />
+                      >
+                        {t('send:data_from_dapp')}
+                      </span>
                     )}
-                  {txData && txData.startsWith('0xa9059cbb') && (
-                    <Alert
-                      message={t('send:warn_token_transfer_override')}
-                      type="warning"
-                      showIcon
-                      style={{
-                        marginTop: '-10px',
-                        marginBottom: '15px',
-                        fontSize: '12px',
-                      }}
-                    />
-                  )}
+                  </span>
+                }
+                name="data"
+                rules={[
+                  {
+                    validator: (_, value: string) => {
+                      if (!value || value === '') return Promise.resolve();
+                      if (
+                        !value.startsWith('0x') ||
+                        !/^0x[0-9a-fA-F]*$/.test(value)
+                      ) {
+                        return Promise.reject(
+                          new Error(t('send:err_invalid_hex_data')),
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  size="large"
+                  value={txData}
+                  placeholder={t('send:transaction_data_placeholder')}
+                  onChange={(e) => {
+                    setTxData(e.target.value);
+                    form.setFieldValue('data', e.target.value);
+                  }}
+                  disabled={
+                    Boolean(state?.walletConnectMode && state?.data) ||
+                    Boolean(
+                      txToken &&
+                      txToken !== blockchainConfig.tokens[0].contract,
+                    )
+                  }
+                  rows={3}
+                  style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                />
+              </Form.Item>
+              {txData && (
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: token.colorTextSecondary,
+                    marginTop: '-15px',
+                    marginBottom: '15px',
+                    textAlign: 'left',
+                  }}
+                >
+                  {t('send:contract_interaction')}:{' '}
+                  {decodeTransactionData(txData)}
                 </div>
-              ),
-            },
-          ]}
-        />
+              )}
+              {txToken && txToken !== blockchainConfig.tokens[0].contract && (
+                <Alert
+                  message={t('send:warn_data_only_eth', {
+                    symbol: blockchainConfig.symbol,
+                  })}
+                  type="warning"
+                  showIcon
+                  style={{
+                    marginTop: '-10px',
+                    marginBottom: '15px',
+                    fontSize: '12px',
+                  }}
+                />
+              )}
+              {txData && txData.startsWith('0xa9059cbb') && (
+                <Alert
+                  message={t('send:warn_token_transfer_override')}
+                  type="warning"
+                  showIcon
+                  style={{
+                    marginTop: '-10px',
+                    marginBottom: '15px',
+                    fontSize: '12px',
+                  }}
+                />
+              )}
+            </div>
+          ),
+        },
+      ]}
+    />
+  );
 
-        <Form.Item style={{ marginTop: 50 }}>
-          <Space direction="vertical" size="middle">
-            {state.utxos?.length && (
-              <div
-                style={{
-                  fontSize: 12,
-                  color: token.colorTextSecondary,
-                }}
-              >
-                <Popover content={content} title={t('send:replace_by_fee_tx')}>
-                  <QuestionCircleOutlined
-                    style={{ color: token.colorPrimary }}
-                  />{' '}
-                </Popover>{' '}
-                {t('send:replace_by_fee_tx')}
-              </div>
-            )}
-            <Popconfirm
-              title={t('send:confirm_tx')}
-              description={
-                <>
-                  {t('send:tx_to_sspkey')}
-                  <br />
-                  {t('send:double_check_tx')}
-                </>
-              }
-              overlayStyle={{ maxWidth: 360, margin: 10 }}
-              okText={t('send:send')}
-              cancelText={t('common:cancel')}
-              onConfirm={() => {
-                form.submit();
-              }}
-              icon={
-                <QuestionCircleOutlined style={{ color: token.colorSuccess }} />
-              }
-            >
-              <Button
-                type="primary"
-                size="large"
-                style={{
-                  maxWidth: '380px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {state.swap
-                  ? t('send:send_swap', {
-                      buyAsset: state.swap.buyAsset,
-                      buyAmount: new BigNumber(state.swap.buyAmount).toFixed(),
-                    })
-                  : t('send:send')}
-              </Button>
-            </Popconfirm>
-            <Button type="link" block size="small" onClick={cancelSend}>
-              {t('common:cancel')}
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
+  // Fields that must stay mounted for form values but have no visible
+  // rendering of their own in the new flow.
+  const hiddenFormContent = (
+    <>
+      {/* Hidden field for WalletConnect mode flag */}
+      <Form.Item name="walletConnectMode" style={{ display: 'none' }}>
+        <Input type="hidden" />
+      </Form.Item>
+      <Form.Item
+        label={t('send:max_fee')}
+        name="fee"
+        style={{ display: 'none' }}
+        rules={[{ required: true, message: t('send:invalid_tx_fee') }]}
+      >
+        <Input
+          size="large"
+          value={txFee}
+          placeholder={t('send:max_tx_fee')}
+          suffix={blockchainConfig.symbol}
+          onChange={(e) => setTxFee(e.target.value)}
+          disabled={true}
+        />
+      </Form.Item>
+    </>
+  );
+
+  const modals = (
+    <>
       <ConfirmTxKey
         open={openConfirmTx}
         openAction={confirmTxAction}
@@ -1830,26 +1579,81 @@ function SendEVM() {
         open={openPublicNoncsReceived}
         openAction={publicNoncesReceivedAction}
       />
-      <QRScanner
-        open={openQrScanner}
-        onClose={() => setOpenQrScanner(false)}
-        onResult={(value) => {
-          // QR payloads may be a bare address or a chain URI such as
-          // "ethereum:<address>@1?value=..." — take the address portion only.
-          let scanned = value.trim();
-          const schemeMatch = scanned.match(/^[a-zA-Z]+:([^@?]+)/);
-          if (schemeMatch) {
-            scanned = schemeMatch[1];
-          }
-          setTxReceiver(scanned);
-          form.setFieldValue('receiver', scanned);
-          setOpenQrScanner(false);
-        }}
-      />
-      <SspConnect />
-      <PoweredByFlux />
     </>
   );
-}
 
-export default SendEVM;
+  return {
+    chainType: 'evm',
+    headerTitle: state.swap ? t('home:swap.swap_crypto') : '',
+    submitLabel: state.swap
+      ? t('send:send_swap', {
+          buyAsset: state.swap.buyAsset,
+          buyAmount: new BigNumber(state.swap.buyAmount).toFixed(),
+        })
+      : t('send:send'),
+    form,
+    onFinish: (values) => onFinish(values as sendForm),
+    cancel: cancelSend,
+    submitting: false,
+    tokenSelect: {
+      items: tokenItems,
+      value: txToken,
+      onChange: (value: string) => {
+        setTxToken(value);
+      },
+      disabled: !!state.swap,
+    },
+    receiver: {
+      value: txReceiver,
+      set: (value: string) => {
+        setTxReceiver(value);
+        form.setFieldValue('receiver', value);
+      },
+      disabled: !!(state?.walletConnectMode && state?.receiver),
+      valid: !!txReceiver.trim() && receiverValidation.valid,
+      showError: showReceiverError,
+      errorText: showReceiverError
+        ? receiverValidation.warningChainType
+          ? t('send:err_wrong_chain_address', {
+              chain: blockchainConfig.name,
+            })
+          : t('send:err_invalid_receiver')
+        : null,
+      qrEnabled: !(state?.walletConnectMode && state?.receiver),
+    },
+    amount: {
+      value: sendingAmount,
+      set: (value: string) => {
+        setSendingAmount(value);
+        setUseMaximum(false);
+      },
+      status: validateStatusAmount,
+      suffix: selectedTokenInfo.symbol ?? blockchainConfig.symbol,
+      disabled: !!state.swap || !!(state?.walletConnectMode && state?.amount),
+      fiat: isNativeAsset ? toFiat(sendingAmount) : null,
+      maxDisplay: new BigNumber(spendableBalance)
+        .dividedBy(
+          10 ** (selectedTokenInfo.decimals ?? blockchainConfig.decimals),
+        )
+        .toFixed(),
+      onMax: () => setUseMaximum(true),
+      maxDisabled:
+        !!state.swap || !!(state?.walletConnectMode && state?.amount),
+    },
+    message: null,
+    composeExtra,
+    validateCompose,
+    feePresets,
+    selectedPreset: feePreset,
+    selectPreset: setFeePreset,
+    customFeeContent,
+    hiddenFormContent,
+    feeDisplay: txFee || '---',
+    feeSymbol: blockchainConfig.symbol,
+    feeFiat: txFee !== '---' ? toFiat(txFee) : null,
+    totalDisplay,
+    isRBF: !!state.utxos?.length,
+    approveActive: openConfirmTx,
+    modals,
+  };
+}

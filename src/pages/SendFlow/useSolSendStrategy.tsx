@@ -1,18 +1,23 @@
-import { useEffect, useState, useMemo } from 'react';
+/**
+ * Solana send strategy hook — the stateful half of the strategy.
+ *
+ * ALL state, effects (paymaster schedule, multisig init probe, destination
+ * ATA probe, vault balance) and the onFinish submit handler are lifted from
+ * the legacy src/pages/SendSOL/SendSOL.tsx (deleted with this unification).
+ * Transaction construction still goes through the unchanged lib/constructTx
+ * functions (getSolanaMultisigInitState, constructAndSignSOLTransaction)
+ * with identical inputs — invariant 1.
+ *
+ * Fee presets: the SOL fee is a paymaster reimbursement (not a speed
+ * market), so only Normal (schedule-derived automatic — the legacy auto
+ * mode) and Custom (legacy manual mode with the at-least-the-floor rule)
+ * are offered.
+ */
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from '../../lib/toast';
 import { useNavigate, useLocation } from 'react-router';
-import {
-  Form,
-  Divider,
-  Button,
-  Input,
-  Space,
-  Popconfirm,
-  Select,
-  theme,
-} from 'antd';
+import { Form, Input } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
-import { QuestionCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
@@ -20,12 +25,9 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { useTranslation } from 'react-i18next';
 
-import Navbar from '../../components/Navbar/Navbar';
 import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
 import ConfirmTxKey from '../../components/ConfirmTxKey/ConfirmTxKey';
-import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux';
-import SspConnect from '../../components/SspConnect/SspConnect';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { useSocket } from '../../hooks/useSocket';
 import { setContacts } from '../../store';
@@ -44,22 +46,17 @@ import {
   fetchAddressBalance,
   fetchAddressTokenBalances,
 } from '../../lib/balances';
+import { formatFiatWithSymbol } from '../../lib/currency';
 import { sspConfig } from '@storage/ssp';
 import { blockchains } from '@storage/blockchains';
 import { backends } from '@storage/backends';
-import { getDisplayName } from '../../storage/walletNames';
-import './SendSOL.css';
-
-interface contactOption {
-  label: string;
-  index?: string;
-  value: string;
-}
-
-interface contactsInterface {
-  label: string;
-  options: contactOption[];
-}
+import {
+  validateSolRecipient,
+  computeSolAutoFee,
+  type SolFeeSchedule,
+} from '../../lib/sendStrategies/sol';
+import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
+import type { SendStrategyView, FeePresetView } from './types';
 
 interface tokenOption {
   label: string;
@@ -80,17 +77,9 @@ interface LocationState {
   contract?: string;
 }
 
-interface FeeSchedule {
-  subsequentSendLamports: number;
-  firstSendLamports: number;
-  splFeeBumpLamports: number;
-  minReimbursementLamports: number;
-}
-
 let txSentInterval: ReturnType<typeof setInterval> | undefined;
 
-function SendSOL() {
-  const { token } = theme.useToken();
+export function useSolSendStrategy(): SendStrategyView {
   const { t } = useTranslation(['send', 'common', 'home']);
   const [form] = Form.useForm<sendForm>();
   const navigate = useNavigate();
@@ -105,9 +94,7 @@ function SendSOL() {
     useAppSelector((s) => s[activeChain]);
   const { passwordBlob } = useAppSelector((s) => s.passwordBlob);
   const { contacts } = useAppSelector((s) => s.contacts);
-  const walletNames = useAppSelector(
-    (s) => s.walletNames?.chains[activeChain] || {},
-  );
+  const { cryptoRates, fiatRates } = useAppSelector((s) => s.fiatCryptoRates);
 
   const blockchainConfig = blockchains[activeChain];
   const { createWkIdentityAuth } = useRelayAuth();
@@ -123,22 +110,21 @@ function SendSOL() {
     clearTxRejected,
   } = useSocket();
 
-  // Local UI state — mirrors SendEVM's pattern.
+  // Local UI state — mirrors the legacy page.
   const [txReceiver, setTxReceiver] = useState('');
   const [txToken, setTxToken] = useState(''); // mint or '' for native
   const [txMessage, setTxMessage] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
   const [txFee, setTxFee] = useState('0');
-  const [manualFee, setManualFee] = useState(false);
+  const [feePreset, setFeePreset] = useState<FeePresetKey>('normal');
   const [autoFee, setAutoFee] = useState('0'); // baseline used for floor + reset
   const [spendableBalance, setSpendableBalance] = useState('0');
   const [validateStatusAmount, setValidateStatusAmount] = useState<
     '' | 'success' | 'error' | 'warning' | 'validating' | undefined
   >('success');
   const [useMaximum, setUseMaximum] = useState(false);
-  const [contactsItems, setContactsItems] = useState<contactsInterface[]>([]);
   const [tokenItems, setTokenItems] = useState<tokenOption[]>([]);
-  const [feeSchedule, setFeeSchedule] = useState<FeeSchedule | null>(null);
+  const [feeSchedule, setFeeSchedule] = useState<SolFeeSchedule | null>(null);
   const [paymasterPubkey, setPaymasterPubkey] = useState('');
   const [needsInit, setNeedsInit] = useState(true);
   // Recipient's Associated Token Account existence — when true for an SPL
@@ -152,6 +138,9 @@ function SendSOL() {
   const [openTxRejected, setOpenTxRejected] = useState(false);
   const [txHex, setTxHex] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // "custom" preset === the legacy manual-fee mode.
+  const manualFee = feePreset === 'custom';
 
   const displayMessage = (type: NoticeType, content: string) => {
     void toast.open({ type, content });
@@ -209,47 +198,6 @@ function SendSOL() {
     form.setFieldValue('asset', initial);
   }, [activeChain, importedTokens, walletInUse, state.contract]);
 
-  // Contacts + own-wallets dropdown for receiver field.
-  useEffect(() => {
-    const wItems: contactOption[] = [];
-    Object.keys(wallets).forEach((w) => {
-      const customName = walletNames[w];
-      const walletName = getDisplayName(activeChain, w);
-      wItems.push({
-        value: wallets[w].address,
-        index: w,
-        label: customName || walletName,
-      });
-    });
-    wItems.sort((a, b) => {
-      if (!a.index || !b.index) return 0;
-      return +a.index.split('-')[1] - +b.index.split('-')[1];
-    });
-    wItems.sort((a, b) => {
-      if (!a.index || !b.index) return 0;
-      return +a.index.split('-')[0] - +b.index.split('-')[0];
-    });
-    const sendContacts: contactsInterface[] = [];
-    const contactsOptions: contactOption[] = (contacts[activeChain] ?? []).map(
-      (c) => ({
-        label:
-          c.name ||
-          new Date(c.id).toLocaleDateString() +
-            ' ' +
-            new Date(c.id).toLocaleTimeString(),
-        value: c.address,
-      }),
-    );
-    if (contactsOptions.length > 0) {
-      sendContacts.push({ label: 'Contacts', options: contactsOptions });
-    }
-    sendContacts.push({
-      label: t('common:my_wallets'),
-      options: wItems,
-    });
-    setContactsItems(sendContacts);
-  }, [wallets, activeChain, contacts, walletNames]);
-
   // Fetch paymaster pubkey + fee schedule + multisig init status.
   useEffect(() => {
     let cancelled = false;
@@ -260,7 +208,7 @@ function SendSOL() {
           data: {
             pubkey?: string;
             message?: string;
-            fees?: FeeSchedule;
+            fees?: SolFeeSchedule;
           };
         }>(
           `https://${sspConfig().relay}/v1/sol/paymaster?chain=${activeChain}`,
@@ -356,27 +304,14 @@ function SendSOL() {
   // autoFee is the schedule-derived baseline; manual fees can tip up but
   // not below it.
   useEffect(() => {
-    if (!feeSchedule) {
-      setAutoFee('0');
-      if (!manualFee) {
-        setTxFee('0');
-        form.setFieldValue('fee', '0');
-      }
-      return;
-    }
-    const baseLamports = needsInit
-      ? feeSchedule.firstSendLamports
-      : feeSchedule.subsequentSendLamports;
     const isSpl = !!txToken && txToken !== blockchainConfig.tokens[0].contract;
-    // Charge the SPL bump only when we don't know the ATA exists. Probing
-    // is defensive: an unknown state (null) keeps the bump so we don't
-    // under-pay if the probe failed.
-    const needsAtaBump = isSpl && destAtaExists !== true;
-    const totalLamports =
-      baseLamports + (needsAtaBump ? feeSchedule.splFeeBumpLamports : 0);
-    const feeSol = new BigNumber(totalLamports)
-      .dividedBy(10 ** blockchainConfig.decimals)
-      .toFixed();
+    const feeSol = computeSolAutoFee(
+      feeSchedule,
+      needsInit,
+      isSpl,
+      destAtaExists,
+      blockchainConfig.decimals,
+    );
     setAutoFee(feeSol);
     if (!manualFee) {
       setTxFee(feeSol);
@@ -484,9 +419,6 @@ function SendSOL() {
     [blockchainConfig.tokens, importedTokens, txToken],
   );
 
-  const validateRecipient = (addr: string): boolean =>
-    /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr);
-
   const postAction = async (
     action: string,
     payload: string,
@@ -511,7 +443,7 @@ function SendSOL() {
   };
 
   const onFinish = (values: sendForm) => {
-    if (!validateRecipient(values.receiver)) {
+    if (!validateSolRecipient(values.receiver)) {
       displayMessage('error', t('send:err_invalid_receiver'));
       return;
     }
@@ -790,202 +722,79 @@ function SendSOL() {
     navigate('/home');
   };
 
-  const refresh = () => {
-    /* placeholder — Navbar has refresh disabled here */
+  const isNativeAsset =
+    !txToken || txToken === blockchainConfig.tokens[0].contract;
+
+  const toFiat = (units: string | null): string | null => {
+    if (units === null) {
+      return null;
+    }
+    const numeric = new BigNumber(units || '0');
+    if (!numeric.isFinite() || numeric.lte(0)) {
+      return null;
+    }
+    const cr = cryptoRates[activeChain] ?? 0;
+    const fi = fiatRates[sspConfig().fiatCurrency] ?? 0;
+    if (!cr || !fi) {
+      return null;
+    }
+    return formatFiatWithSymbol(numeric.multipliedBy(cr).multipliedBy(fi));
   };
 
-  return (
-    <>
-      <Navbar refresh={refresh} hasRefresh={false} allowChainSwitch={false} />
-      <Divider />
-      <Form
-        name="sendSolForm"
-        form={form}
-        onFinish={(values) => void onFinish(values)}
-        autoComplete="off"
-        layout="vertical"
-        style={{ paddingBottom: '43px' }}
-        initialValues={{
-          receiver: state.receiver || '',
-          amount: state.amount || '',
-          asset: state.contract || blockchainConfig.tokens[0]?.contract || '',
+  const receiverValid = validateSolRecipient(txReceiver);
+  const showReceiverError = !!txReceiver.trim() && !receiverValid;
+
+  // Pre-submit gate for compose → review (same checks onFinish re-runs).
+  const validateCompose = (): string | null => {
+    if (!validateSolRecipient(txReceiver)) {
+      return t('send:err_invalid_receiver');
+    }
+    if (!sendingAmount || isNaN(+sendingAmount) || +sendingAmount <= 0) {
+      return t('send:input_amount');
+    }
+    return null;
+  };
+
+  // The SOL fee is a paymaster reimbursement — no speed dimension, so only
+  // Normal (automatic) + Custom (manual, floored at the schedule) exist.
+  const feePresets: FeePresetView[] = [
+    { key: 'normal', feeAmount: autoFee !== '0' ? autoFee : null },
+    { key: 'custom', feeAmount: txFee || null },
+  ];
+
+  const selectPreset = (key: FeePresetKey) => {
+    setFeePreset(key);
+    if (key !== 'custom') {
+      // Legacy toggle-back-to-automatic behavior: reset to the schedule fee.
+      setTxFee(autoFee);
+      form.setFieldValue('fee', autoFee);
+    }
+  };
+
+  const totalDisplay = isNativeAsset
+    ? new BigNumber(sendingAmount || '0').plus(txFee || '0').toFixed()
+    : null;
+
+  // Legacy manual fee input — total fee in SOL with the schedule floor
+  // enforced at submit, exactly as before.
+  const customFeeContent = (
+    <Form.Item label={t('send:max_fee')} name="fee">
+      <Input
+        size="large"
+        value={txFee}
+        placeholder={t('send:max_tx_fee')}
+        suffix={blockchainConfig.symbol}
+        onChange={(e) => {
+          setTxFee(e.target.value);
+          form.setFieldValue('fee', e.target.value);
         }}
-      >
-        <Form.Item name="asset" label={t('send:asset')}>
-          <Select
-            size="large"
-            style={{ textAlign: 'left' }}
-            popupMatchSelectWidth={false}
-            value={txToken}
-            onChange={(value) => setTxToken(value)}
-            options={tokenItems}
-            dropdownRender={(menu) => <>{menu}</>}
-          />
-        </Form.Item>
+        disabled={!manualFee}
+      />
+    </Form.Item>
+  );
 
-        <Form.Item
-          label={t('send:receiver_address')}
-          name="receiver"
-          rules={[
-            { required: true, message: t('send:input_receiver_address') },
-          ]}
-        >
-          <Space.Compact style={{ width: '100%' }}>
-            <Input
-              size="large"
-              value={txReceiver}
-              placeholder={t('send:receiver_address')}
-              onChange={(e) => {
-                setTxReceiver(e.target.value);
-                form.setFieldValue('receiver', e.target.value);
-              }}
-            />
-            <Select
-              size="large"
-              className="no-text-select"
-              style={{ width: '40px' }}
-              defaultValue=""
-              value={txReceiver}
-              popupMatchSelectWidth={false}
-              onChange={(value) => {
-                setTxReceiver(value);
-                form.setFieldValue('receiver', value);
-              }}
-              options={contactsItems}
-              dropdownRender={(menu) => <>{menu}</>}
-            />
-          </Space.Compact>
-        </Form.Item>
-
-        <Form.Item
-          label={t('send:amount_to_send')}
-          name="amount"
-          rules={[{ required: true, message: t('send:input_amount') }]}
-          validateStatus={validateStatusAmount}
-        >
-          <Input
-            size="large"
-            value={sendingAmount}
-            onChange={(e) => {
-              setSendingAmount(e.target.value);
-              setUseMaximum(false);
-            }}
-            placeholder={t('send:input_amount')}
-            suffix={selectedTokenInfo.symbol}
-          />
-        </Form.Item>
-        <Button
-          type="text"
-          size="small"
-          style={{
-            marginTop: '-22px',
-            float: 'right',
-            marginRight: 3,
-            fontSize: 12,
-            color: token.colorPrimary,
-            cursor: 'pointer',
-            zIndex: 2,
-          }}
-          onClick={() => setUseMaximum(true)}
-        >
-          {t('send:max')}:{' '}
-          {new BigNumber(spendableBalance)
-            .dividedBy(10 ** selectedTokenInfo.decimals)
-            .toFixed()}
-        </Button>
-
-        <Form.Item
-          style={{ marginTop: '26px' }}
-          label={t('send:message')}
-          name="message"
-          rules={[{ required: false, message: t('send:include_message') }]}
-        >
-          <Input
-            size="large"
-            value={txMessage}
-            placeholder={t('send:payment_note')}
-            onChange={(e) => setTxMessage(e.target.value)}
-          />
-        </Form.Item>
-
-        <Form.Item
-          label={t('send:max_fee')}
-          name="fee"
-          style={{ paddingTop: '2px' }}
-        >
-          <Input
-            size="large"
-            value={txFee}
-            placeholder={t('send:max_tx_fee')}
-            suffix={blockchainConfig.symbol}
-            onChange={(e) => {
-              setTxFee(e.target.value);
-              form.setFieldValue('fee', e.target.value);
-            }}
-            disabled={!manualFee}
-          />
-        </Form.Item>
-        <Button
-          type="text"
-          size="small"
-          style={{
-            marginTop: '-22px',
-            float: 'left',
-            marginLeft: 3,
-            fontSize: 12,
-            color: token.colorPrimary,
-            cursor: 'pointer',
-            zIndex: 2,
-          }}
-          onClick={() => {
-            const next = !manualFee;
-            setManualFee(next);
-            if (!next) {
-              setTxFee(autoFee);
-              form.setFieldValue('fee', autoFee);
-            }
-          }}
-        >
-          {manualFee
-            ? t('send:using_manual_fee')
-            : t('send:using_automatic_fee')}
-        </Button>
-
-        <Form.Item style={{ marginTop: 50 }}>
-          <Space direction="vertical" size="middle">
-            <Popconfirm
-              title={t('send:confirm_tx')}
-              description={
-                <>
-                  {t('send:tx_to_sspkey')}
-                  <br />
-                  {t('send:double_check_tx')}
-                </>
-              }
-              overlayStyle={{ maxWidth: 360, margin: 10 }}
-              okText={t('send:send')}
-              cancelText={t('common:cancel')}
-              onConfirm={() => form.submit()}
-              icon={
-                <QuestionCircleOutlined style={{ color: token.colorSuccess }} />
-              }
-            >
-              <Button
-                type="primary"
-                size="large"
-                loading={submitting}
-                style={{ maxWidth: '380px', overflow: 'scroll' }}
-              >
-                {t('send:send')}
-              </Button>
-            </Popconfirm>
-            <Button type="link" block size="small" onClick={cancelSend}>
-              {t('common:cancel')}
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
-
+  const modals = (
+    <>
       <ConfirmTxKey
         open={openConfirmTx}
         openAction={confirmTxAction}
@@ -1000,10 +809,65 @@ function SendSOL() {
         chain={activeChain}
       />
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
-      <SspConnect />
-      <PoweredByFlux />
     </>
   );
-}
 
-export default SendSOL;
+  return {
+    chainType: 'sol',
+    headerTitle: '',
+    submitLabel: t('send:send'),
+    form,
+    onFinish: (values) => onFinish(values as sendForm),
+    cancel: cancelSend,
+    submitting,
+    tokenSelect: {
+      items: tokenItems,
+      value: txToken,
+      onChange: (value: string) => setTxToken(value),
+      disabled: false,
+    },
+    receiver: {
+      value: txReceiver,
+      set: (value: string) => {
+        setTxReceiver(value);
+        form.setFieldValue('receiver', value);
+      },
+      disabled: false,
+      valid: receiverValid,
+      showError: showReceiverError,
+      errorText: showReceiverError ? t('send:err_invalid_receiver') : null,
+      qrEnabled: true,
+    },
+    amount: {
+      value: sendingAmount,
+      set: (value: string) => {
+        setSendingAmount(value);
+        setUseMaximum(false);
+      },
+      status: validateStatusAmount,
+      suffix: selectedTokenInfo.symbol,
+      disabled: false,
+      fiat: isNativeAsset ? toFiat(sendingAmount) : null,
+      maxDisplay: new BigNumber(spendableBalance)
+        .dividedBy(10 ** selectedTokenInfo.decimals)
+        .toFixed(),
+      onMax: () => setUseMaximum(true),
+      maxDisabled: false,
+    },
+    message: { value: txMessage, set: setTxMessage },
+    composeExtra: null,
+    validateCompose,
+    feePresets,
+    selectedPreset: feePreset,
+    selectPreset,
+    customFeeContent,
+    hiddenFormContent: null,
+    feeDisplay: txFee || '---',
+    feeSymbol: blockchainConfig.symbol,
+    feeFiat: toFiat(txFee),
+    totalDisplay,
+    isRBF: false,
+    approveActive: openConfirmTx,
+    modals,
+  };
+}
