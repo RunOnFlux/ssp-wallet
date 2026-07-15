@@ -36,3 +36,5 @@ coverage
 
 # nyc test coverage
 .nyc_output
+# upgrade-in-place release gate artifacts
+.upgrade-test/

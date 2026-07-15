@@ -750,6 +750,18 @@
       "packages": {},
       "builtins": {}
     },
+    "@playwright/test": {
+      "packageName": "@playwright/test",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
     "@types/bchaddrjs": {
       "packageName": "@types/bchaddrjs",
       "globals": {

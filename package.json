@@ -16,6 +16,7 @@
     "build:all": "npm run build && node scripts/build-manifests.cjs",
     "build:deterministic": "bash scripts/deterministic-build.sh",
     "test": "vitest",
+    "test:upgrade": "node scripts/upgrade-in-place.mjs",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint ./src ./public",
@@ -85,6 +86,7 @@
   "devDependencies": {
     "@eslint/js": "9.39.3",
     "@lavamoat/allow-scripts": "3.4.3",
+    "@playwright/test": "1.60.0",
     "@types/bchaddrjs": "0.4.3",
     "@types/chrome": "0.1.43",
     "@types/firefox-webext-browser": "143.0.0",
