@@ -2,6 +2,8 @@
   "err_panic": "경고: 유효하지 않은 SSP 키입니다.",
   "balances": {
     "locked": "잠김: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
