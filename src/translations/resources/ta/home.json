@@ -2,6 +2,8 @@
   "err_panic": "பேனிக்: தவறான SSP கீ.",
   "balances": {
     "locked": "பூட்டு: {{balance}}{{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {

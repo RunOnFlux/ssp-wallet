@@ -2,6 +2,8 @@
   "err_panic": "PÀNIC: Clau SSP no vàlida.",
   "balances": {
     "locked": "Bloquejat: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {

@@ -2,6 +2,8 @@
   "err_panic": "PANIK: SSP Key tidak sah.",
   "balances": {
     "locked": "Dikunci: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {

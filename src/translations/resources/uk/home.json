@@ -2,6 +2,8 @@
   "err_panic": "ПАНІКА: Недійсний SSP Ключ.",
   "balances": {
     "locked": "Заблоковано: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {

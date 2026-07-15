@@ -2,6 +2,8 @@
   "err_panic": "PANIEK: Ongeldige SSP-sleutel.",
   "balances": {
     "locked": "Vergrendeld: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {

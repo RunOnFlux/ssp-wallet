@@ -2,6 +2,8 @@
   "err_panic": "Hiba: Helytelen SSP kulcs.",
   "balances": {
     "locked": "Zárolva: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {

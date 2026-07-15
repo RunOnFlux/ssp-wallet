@@ -2,6 +2,8 @@
   "err_panic": "PANIIKKI: Virheellinen SSP Avaimen.",
   "balances": {
     "locked": "Lukittu: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
