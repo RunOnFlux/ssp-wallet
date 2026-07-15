@@ -2,6 +2,8 @@
   "err_panic": "PANIK: Kunci SSP tidak valid.",
   "balances": {
     "locked": "Terkunci: {{balance}} {{symbol}}",
+    "hide": "Sembunyikan saldo",
+    "show": "Tampilkan saldo",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
@@ -167,10 +169,10 @@
     "chain_explorer_service": "{{chain}} Layanan Penjelajah",
     "language": "Bahasa",
     "fiat_currency": "Mata Uang Fiat",
-    "theme": "Theme",
-    "theme_system": "System",
-    "theme_light": "Light",
-    "theme_dark": "Dark",
+    "theme": "Tema",
+    "theme_system": "Sistem",
+    "theme_light": "Terang",
+    "theme_dark": "Gelap",
     "use_system_language": "Gunakan Bahasa Sistem",
     "public_nonces_sync": "Nonces Publik",
     "sync_public_nonces": "Sinkronisasi Nonces Publik",
