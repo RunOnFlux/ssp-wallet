@@ -2,6 +2,8 @@
   "err_panic": "HOẢNG LOẠN: Sai Khóa SSP.",
   "balances": {
     "locked": "Đã khóa: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}}{{fiatCurrency}}"
   },
   "txSent": {
