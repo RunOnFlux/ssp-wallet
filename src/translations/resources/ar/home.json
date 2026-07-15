@@ -2,6 +2,8 @@
   "err_panic": "حالة طوارئ: مفتاح الأس ب بي غير صالح.",
   "balances": {
     "locked": "مقفل: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
