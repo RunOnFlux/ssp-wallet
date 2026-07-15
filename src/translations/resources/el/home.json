@@ -2,6 +2,8 @@
   "err_panic": "PANIC: Μη Έγκυρο Κλειδί SSP.",
   "balances": {
     "locked": "Κλειδωμένα: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
