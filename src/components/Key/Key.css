@@ -4,3 +4,105 @@
   cursor: pointer;
   text-decoration: italic;
 }
+
+/* Full-screen pairing/sync step (replaces the old modal-in-modal) */
+.keySyncView {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow-y: auto;
+  text-align: center;
+}
+
+.keySyncViewInner {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+}
+
+.keySyncChips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.keySyncChipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+
+/* compact vertical timeline — the steps are one-liners */
+.keySyncTimeline {
+  max-width: 280px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.keySyncTimeline .ant-steps-item {
+  padding-bottom: 0 !important;
+}
+
+.keySyncDownload {
+  margin-top: 8px;
+}
+
+/* Out-of-band pairing verification code — numbered word chips, rendered
+   consistently with SSP Key so a side-by-side eyeball comparison is easy. */
+.keyVerifyGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.keyVerifyChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.keyVerifyChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.keyVerifyChipIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.keyVerifyScan {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.keyVerifyScanHint {
+  font-size: 12px;
+  text-align: center;
+}
+
+.keyVerifyChipWord {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
