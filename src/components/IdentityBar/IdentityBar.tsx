@@ -10,6 +10,8 @@ import {
   setInitialContactsState,
 } from '../../store';
 import { blockchains } from '@storage/blockchains';
+import { identiconData } from '../../lib/identicon';
+import { useWalletMeta } from '../../storage/walletMeta';
 import Identicon from '../Identicon/Identicon';
 import WalletName from '../WalletName/WalletName';
 import './IdentityBar.css';
@@ -35,6 +37,10 @@ function IdentityBar({ onOpenSwitcher }: Props) {
   );
   const blockchainConfig = blockchains[activeChain];
   const address = wallets[walletInUse]?.address ?? '';
+  const meta = useWalletMeta(walletInUse);
+  // Accent = the user's chosen color, else the deterministic identicon hue so
+  // the pill always carries a stable per-wallet color cue.
+  const accentColor = meta.color ?? identiconData(address || walletInUse).color;
   const browser = window.chrome || window.browser;
 
   const logout = () => {
@@ -67,14 +73,27 @@ function IdentityBar({ onOpenSwitcher }: Props) {
         aria-label={t('home:switcher.open')}
         data-tutorial="wallet-selector"
       >
-        <Identicon value={address || walletInUse} size={26} />
+        <span
+          className="identity-pill-avatar"
+          style={{ boxShadow: `0 0 0 2px ${accentColor}` }}
+        >
+          <Identicon value={address || walletInUse} size={26} />
+        </span>
         <span className="identity-pill-text">
           <span className="identity-pill-wallet">
-            <WalletName
-              walletId={walletInUse}
-              chain={activeChain}
-              editable={false}
+            <span
+              className="identity-pill-dot"
+              style={{ background: accentColor }}
             />
+            {meta.name ? (
+              <span className="identity-pill-name">{meta.name}</span>
+            ) : (
+              <WalletName
+                walletId={walletInUse}
+                chain={activeChain}
+                editable={false}
+              />
+            )}
           </span>
           <span className="identity-pill-chain">
             <Image

@@ -7,6 +7,7 @@ import Nodes from '../../components/Nodes/Nodes';
 import Contacts from '../../components/Contacts/Contacts';
 import Tokens from '../../components/TokensEVM/Tokens';
 import Balances from '../../components/Balances/Balances';
+import BackupHealthCard from '../../components/BackupHealthCard/BackupHealthCard';
 import AddressContainer from '../../components/AddressContainer/AddressContainer.tsx';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import { useTranslation } from 'react-i18next';
@@ -55,6 +56,7 @@ function Home() {
         <AddressContainer />
         <Balances />
       </div>
+      <BackupHealthCard />
       <Navigation />
       <Divider style={{ margin: '12px 0' }} />
       <Space direction="vertical" style={{ width: '100%' }}>

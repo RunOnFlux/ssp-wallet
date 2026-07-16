@@ -34,6 +34,8 @@ import { switchToChain } from '../../lib/chainSwitching';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import { sspConfig } from '@storage/ssp';
 import { getDisplayName, removeWalletName } from '../../storage/walletNames';
+import { useWalletMetaMap } from '../../storage/walletMeta';
+import { identiconData } from '../../lib/identicon';
 import Identicon from '../Identicon/Identicon';
 import WalletName from '../WalletName/WalletName';
 import {
@@ -76,6 +78,7 @@ function WalletSwitcher({ open, openAction }: Props) {
   const walletNamesForChain = useAppSelector(
     (state) => state.walletNames?.chains[activeChain],
   );
+  const walletMetaMap = useWalletMetaMap();
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -287,32 +290,55 @@ function WalletSwitcher({ open, openAction }: Props) {
         {blockchainConfig.name} {t('home:switcher.wallets', 'wallets')}
       </div>
       <div className="switcher-wallet-list" data-tutorial="wallet-list">
-        {filteredWalletIds.map((id) => (
-          <button
-            key={id}
-            type="button"
-            className={`switcher-wallet${id === walletInUse ? ' switcher-wallet-active' : ''}`}
-            onClick={() => selectWallet(id)}
-          >
-            <Identicon value={wallets[id]?.address || id} size={30} />
-            <span className="switcher-wallet-meta">
-              <span className="switcher-wallet-name">
-                <WalletName
-                  walletId={id}
-                  chain={activeChain}
-                  editable={false}
-                />
+        {filteredWalletIds.map((id) => {
+          const accent =
+            walletMetaMap[id]?.color ??
+            identiconData(wallets[id]?.address || id).color;
+          const metaName = walletMetaMap[id]?.name;
+          return (
+            <button
+              key={id}
+              type="button"
+              className={`switcher-wallet${id === walletInUse ? ' switcher-wallet-active' : ''}`}
+              onClick={() => selectWallet(id)}
+            >
+              <span
+                className="switcher-wallet-avatar"
+                style={{ boxShadow: `0 0 0 2px ${accent}` }}
+              >
+                <Identicon value={wallets[id]?.address || id} size={30} />
               </span>
-              <span className="switcher-wallet-crypto">{walletCrypto(id)}</span>
-            </span>
-            <span className="switcher-wallet-right">
-              <span className="switcher-wallet-fiat">{walletFiat(id)}</span>
-              {id === walletInUse && (
-                <CheckOutlined className="switcher-wallet-check" />
-              )}
-            </span>
-          </button>
-        ))}
+              <span className="switcher-wallet-meta">
+                <span className="switcher-wallet-name">
+                  <span
+                    className="switcher-wallet-dot"
+                    style={{ background: accent }}
+                  />
+                  {metaName ? (
+                    <span className="switcher-wallet-name-text">
+                      {metaName}
+                    </span>
+                  ) : (
+                    <WalletName
+                      walletId={id}
+                      chain={activeChain}
+                      editable={false}
+                    />
+                  )}
+                </span>
+                <span className="switcher-wallet-crypto">
+                  {walletCrypto(id)}
+                </span>
+              </span>
+              <span className="switcher-wallet-right">
+                <span className="switcher-wallet-fiat">{walletFiat(id)}</span>
+                {id === walletInUse && (
+                  <CheckOutlined className="switcher-wallet-check" />
+                )}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {!query && (

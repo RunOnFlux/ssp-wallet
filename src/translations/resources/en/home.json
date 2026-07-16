@@ -1,5 +1,16 @@
 {
   "err_panic": "PANIC: Invalid SSP Key.",
+  "backupHealth": {
+    "title_amount": "{{amount}} protected by one device",
+    "title_generic": "Protect your wallet",
+    "body_one_device": "Verify your seed backup and pair your SSP Key — it's your only way back in.",
+    "body_unverified": "You haven't verified your seed backup. Confirm it now so you never lose access.",
+    "verify": "Verify",
+    "verify_title": "Verify your backup",
+    "verify_lead": "Confirm you still have your seed phrase backup. No one can recover it for you.",
+    "verify_decrypt_error": "Could not read your wallet. Please try again.",
+    "verified_toast": "Backup verified. Your wallet is safe."
+  },
   "balances": {
     "locked": "Locked: {{balance}} {{symbol}}",
     "hide": "Hide balances",

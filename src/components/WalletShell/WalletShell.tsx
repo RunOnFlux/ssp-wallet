@@ -244,7 +244,12 @@ function WalletShell() {
       <div className="wallet-shell-main">
         <IdentityBar onOpenSwitcher={() => setSwitcherOpen(true)} />
         <main className="wallet-shell-content">
-          <Outlet />
+          {/* Pillar-motion: a calm, CSS-only enter on each tab change. Keyed by
+              route so React remounts the wrapper and replays the animation.
+              prefers-reduced-motion is honored in CSS. */}
+          <div key={activeTab} className="wallet-shell-page">
+            <Outlet />
+          </div>
         </main>
       </div>
       <WalletSwitcher open={switcherOpen} openAction={setSwitcherOpen} />

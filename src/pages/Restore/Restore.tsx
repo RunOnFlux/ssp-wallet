@@ -57,6 +57,13 @@ import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter/PasswordStrengthMeter.tsx';
+import OnboardingPersonalize from '../../components/OnboardingPersonalize/OnboardingPersonalize.tsx';
+import PillarCelebration from '../../components/PillarCelebration/PillarCelebration.tsx';
+import { setWalletMeta } from '../../storage/walletMeta';
+import { generateDefaultWalletName } from '../../storage/walletNames';
+
+// The wallet restored by onboarding is always index 0-0.
+const ONBOARDING_WALLET_ID = '0-0';
 
 interface passwordForm {
   mnemonic: string;
@@ -90,6 +97,8 @@ function Restore() {
   const [wpCopied, setWpCopied] = useState(false);
   const [seedPhraseCopyingVisible, setSeedPhraseCopyingVisible] =
     useState(false);
+  const [personalizeOpen, setPersonalizeOpen] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { isDark } = useThemeMode();
   const [isNarrowScreen, setIsNarrowScreen] = useState(window.innerWidth < 420);
@@ -112,7 +121,7 @@ function Restore() {
   const handleOk = () => {
     if (WSPbackedUp && (wspWasShown || wpCopied)) {
       setIsModalOpen(false);
-      storeMnemonic(mnemonic);
+      setPersonalizeOpen(true);
     } else {
       displayMessage('info', t('cr:info_backup_needed'));
     }
@@ -306,7 +315,10 @@ function Restore() {
     }
   };
 
-  const storeMnemonic = (mnemonicPhrase: Uint8Array) => {
+  const storeMnemonic = (
+    mnemonicPhrase: Uint8Array,
+    meta?: { name: string; color: string },
+  ) => {
     if (!mnemonicPhrase.length) {
       displayMessage('error', t('cr:err_wallet_phrase_invalid'));
       return;
@@ -387,7 +399,26 @@ function Restore() {
         }
         setXpubWallet(identityChain, xpub);
         dispatch(setPasswordBlob(pwBlob));
-        navigate('/login');
+        // Append-only personalization key (written after any localForage.clear()
+        // above). We intentionally do NOT mark the backup verified here: restore
+        // never runs the word challenge, so the Home backup-health nudge should
+        // still invite the user to verify (loss aversion, plan Part 0/4).
+        if (meta) {
+          setWalletMeta(ONBOARDING_WALLET_ID, {
+            name: meta.name,
+            color: meta.color,
+          });
+        }
+        const reduceMotion = window.matchMedia(
+          '(prefers-reduced-motion: reduce)',
+        ).matches;
+        setCelebrating(true);
+        setTimeout(
+          () => {
+            navigate('/login');
+          },
+          reduceMotion ? 900 : 2100,
+        );
       })
       .catch((error) => {
         displayMessage('error', t('cr:err_r1'));
@@ -701,6 +732,26 @@ function Restore() {
           </Button>
         </Space>
       </Modal>
+      <OnboardingPersonalize
+        open={personalizeOpen}
+        defaultName={generateDefaultWalletName(ONBOARDING_WALLET_ID)}
+        identiconSeed={ONBOARDING_WALLET_ID}
+        isImport={true}
+        onContinue={(name, color) => {
+          setPersonalizeOpen(false);
+          storeMnemonic(mnemonic, { name, color });
+        }}
+        onBack={() => {
+          setPersonalizeOpen(false);
+          setIsModalOpen(true);
+        }}
+      />
+      {celebrating && (
+        <PillarCelebration
+          title={t('cr:ready.title')}
+          subtitle={t('cr:ready.subtitle')}
+        />
+      )}
       <PoweredByFlux />
     </>
   );

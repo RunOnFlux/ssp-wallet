@@ -23,6 +23,29 @@
   min-height: 0;
 }
 
+/* Pillar-motion tab transition — the content settles up with the same slight
+   skew as the pillar mark, calm (200 ms) and CSS-only. */
+.wallet-shell-page {
+  animation: wallet-shell-enter 200ms ease-out;
+}
+
+@keyframes wallet-shell-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) skewY(-0.6deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wallet-shell-page {
+    animation: none;
+  }
+}
+
 /* ---- Side-panel mode: two-column layout (left nav rail + right column) ---- */
 body.extension-sidepanel .wallet-shell {
   flex-direction: row;

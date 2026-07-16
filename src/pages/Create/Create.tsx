@@ -50,7 +50,14 @@ import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
 import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter/PasswordStrengthMeter.tsx';
+import OnboardingPersonalize from '../../components/OnboardingPersonalize/OnboardingPersonalize.tsx';
+import PillarCelebration from '../../components/PillarCelebration/PillarCelebration.tsx';
+import { setWalletMeta, setBackupVerified } from '../../storage/walletMeta';
+import { generateDefaultWalletName } from '../../storage/walletNames';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
+
+// The first wallet created by onboarding is always index 0-0.
+const ONBOARDING_WALLET_ID = '0-0';
 
 interface passwordForm {
   password: string;
@@ -74,6 +81,8 @@ function Create() {
   const [mnemonic, setMnemonic] = useState<Uint8Array>(new Uint8Array());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfrimModalOpen, setIsConfrimModalOpen] = useState(false);
+  const [personalizeOpen, setPersonalizeOpen] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
   const browser = window.chrome || window.browser;
 
   const showModal = () => {
@@ -203,7 +212,10 @@ function Create() {
     generatedMnemonic = null;
   };
 
-  const storeMnemonic = (mnemonicPhrase: Uint8Array) => {
+  const storeMnemonic = (
+    mnemonicPhrase: Uint8Array,
+    meta?: { name: string; color: string },
+  ) => {
     if (!mnemonicPhrase.length) {
       displayMessage('error', t('cr:err_wallet_phrase_invalid_login'));
       return;
@@ -269,7 +281,27 @@ function Create() {
           });
         }
         dispatch(setPasswordBlob(pwBlob));
-        navigate('/login');
+        // Persist personalization + backup-verified AFTER the localForage.clear()
+        // above (append-only keys, never touch seed/config/wallet state).
+        if (meta) {
+          setWalletMeta(ONBOARDING_WALLET_ID, {
+            name: meta.name,
+            color: meta.color,
+          });
+        }
+        // Word verification just completed successfully — the seed is verified.
+        setBackupVerified(true);
+        // Brief pillar-assembly celebration, then continue to unlock/pairing.
+        const reduceMotion = window.matchMedia(
+          '(prefers-reduced-motion: reduce)',
+        ).matches;
+        setCelebrating(true);
+        setTimeout(
+          () => {
+            navigate('/login');
+          },
+          reduceMotion ? 900 : 2100,
+        );
       })
       .catch((error) => {
         displayMessage('error', t('cr:err_c1'));
@@ -730,7 +762,8 @@ function Create() {
     const handleOK = () => {
       setIsConfrimModalOpen(false);
       setIsConfirmed(false);
-      storeMnemonic(mnemonic);
+      // Seed backup verified via the word challenge — now personalize.
+      setPersonalizeOpen(true);
     };
 
     return (
@@ -769,6 +802,26 @@ function Create() {
       <PasswordForm />
       <BackupConfirmModal />
       <ConfirmWordsModal />
+      <OnboardingPersonalize
+        open={personalizeOpen}
+        defaultName={generateDefaultWalletName(ONBOARDING_WALLET_ID)}
+        identiconSeed={ONBOARDING_WALLET_ID}
+        isImport={false}
+        onContinue={(name, color) => {
+          setPersonalizeOpen(false);
+          storeMnemonic(mnemonic, { name, color });
+        }}
+        onBack={() => {
+          setPersonalizeOpen(false);
+          setIsConfrimModalOpen(true);
+        }}
+      />
+      {celebrating && (
+        <PillarCelebration
+          title={t('cr:ready.title')}
+          subtitle={t('cr:ready.subtitle')}
+        />
+      )}
       <FloatingHelp showGuide={true} />
       <PoweredByFlux />
     </>

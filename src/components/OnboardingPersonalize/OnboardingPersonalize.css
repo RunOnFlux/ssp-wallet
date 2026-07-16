@@ -1,0 +1,102 @@
+.personalize-lead {
+  margin: 16px 0 20px;
+  font-size: 13px;
+  color: #78716c;
+}
+
+:root[data-theme='dark'] .personalize-lead {
+  color: #a8a29e;
+}
+
+.personalize-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.personalize-identicon-ring {
+  position: relative;
+  display: inline-flex;
+  border-radius: 16px;
+  transition: box-shadow 200ms ease-out;
+}
+
+.personalize-accent-dot {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fafaf9;
+  transition: background 200ms ease-out;
+}
+
+:root[data-theme='dark'] .personalize-accent-dot {
+  border-color: #1a1918;
+}
+
+.personalize-preview-name {
+  font-size: 16px;
+  font-weight: 600;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.personalize-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.personalize-swatch {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-size: 14px;
+  padding: 0;
+  transition:
+    transform 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+.personalize-swatch .anticon {
+  color: rgba(0, 0, 0, 0.82);
+}
+
+.personalize-swatch:hover {
+  transform: scale(1.08);
+}
+
+.personalize-swatch.selected {
+  box-shadow:
+    0 0 0 2px #fafaf9,
+    0 0 0 4px currentColor;
+  transform: scale(1.08);
+}
+
+:root[data-theme='dark'] .personalize-swatch.selected {
+  box-shadow:
+    0 0 0 2px #1a1918,
+    0 0 0 4px currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .personalize-identicon-ring,
+  .personalize-accent-dot,
+  .personalize-swatch {
+    transition: none;
+  }
+}

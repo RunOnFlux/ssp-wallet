@@ -33,9 +33,31 @@
   line-height: 1.25;
 }
 
+.identity-pill-avatar {
+  display: inline-flex;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
 .identity-pill-wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.identity-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.identity-pill-name {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

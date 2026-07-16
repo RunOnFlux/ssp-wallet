@@ -38,6 +38,15 @@
   "backup_confirmed": "Backup Confirmed!",
   "confirm_wallet_seed_word": "Confirm Wallet Seed",
   "word_number": "Word #{{number}}",
+  "personalize": {
+    "title": "Make it yours",
+    "lead": "Give your wallet a name and a color so you can spot it at a glance.",
+    "name_label": "Wallet name"
+  },
+  "ready": {
+    "title": "Your wallet is ready.",
+    "subtitle": "Pair your SSP Key next to unlock secure sending."
+  },
   "incorrect_backup_confirmation": "Incorrect Word",
   "strong_password": "Strong password should contain at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.",
   "weak_password": "Weak Password Used",

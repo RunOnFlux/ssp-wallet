@@ -1,0 +1,158 @@
+/*
+ * Pillar-assembly celebration overlay. Colors follow the logo + DESIGN_TOKENS.
+ * The right pillar is theme-neutral via [data-theme] (PillarLoader pattern).
+ * Motion: pillars rise in sequence (220 ms each, calm ease-out), a soft ring
+ * flashes on completion, then the copy fades up. prefers-reduced-motion gets a
+ * static assembled mark with no animation.
+ */
+
+.pillar-celebration {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 24px;
+  text-align: center;
+  background: var(--pc-bg, #fafaf9);
+  animation: pc-fade-in 200ms ease-out;
+}
+
+:root[data-theme='dark'] .pillar-celebration {
+  --pc-bg: #14110f;
+}
+
+.pc-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 108px;
+  margin-bottom: 20px;
+}
+
+.pc-mark {
+  height: 100px;
+  width: auto;
+}
+
+.pc-pillar-left {
+  fill: #f59e0b;
+}
+.pc-pillar-center {
+  fill: #fcd34d;
+}
+.pc-pillar-right {
+  fill: #595a5a;
+}
+:root[data-theme='dark'] .pc-pillar-right {
+  fill: #fafbfb;
+}
+
+.pc-mark path {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: pc-rise 260ms ease-out backwards;
+}
+.pc-mark .pc-pillar-center {
+  animation-delay: 90ms;
+}
+.pc-mark .pc-pillar-right {
+  animation-delay: 180ms;
+}
+
+@keyframes pc-rise {
+  from {
+    transform: translateY(16%) scaleY(0.82);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* soft success ring flashing out once the mark is assembled */
+.pc-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 2px solid #22c55e;
+  transform: translate(-50%, -50%) scale(0.55);
+  opacity: 0;
+  animation: pc-ring 620ms ease-out forwards;
+  animation-delay: 300ms;
+}
+
+@keyframes pc-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(0.55);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 0;
+  }
+}
+
+.pc-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  opacity: 0;
+  animation: pc-copy 320ms ease-out forwards;
+  animation-delay: 360ms;
+}
+
+.pc-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #78716c;
+  opacity: 0;
+  animation: pc-copy 320ms ease-out forwards;
+  animation-delay: 460ms;
+}
+
+:root[data-theme='dark'] .pc-subtitle {
+  color: #a8a29e;
+}
+
+@keyframes pc-copy {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes pc-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillar-celebration,
+  .pillar-celebration * {
+    animation: none !important;
+  }
+  .pc-title,
+  .pc-subtitle {
+    opacity: 1;
+  }
+  .pc-ring {
+    display: none;
+  }
+}

@@ -1,0 +1,95 @@
+/*
+ * Backup-health card — loss-aversion nudge. Warm warning tokens (amber), never
+ * alarm red; it reads as guidance, not error. Theme-aware via [data-theme].
+ */
+.backup-health-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 4px;
+  padding: 10px 12px;
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.12);
+  text-align: left;
+}
+
+:root[data-theme='dark'] .backup-health-card {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.backup-health-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
+  font-size: 15px;
+}
+
+:root[data-theme='dark'] .backup-health-icon {
+  color: #fcd34d;
+}
+
+.backup-health-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.backup-health-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.backup-health-body {
+  font-size: 11.5px;
+  line-height: 1.3;
+  opacity: 0.75;
+  margin-top: 1px;
+}
+
+.backup-health-action {
+  flex-shrink: 0;
+}
+
+/* verify modal */
+.backup-verify-body {
+  padding: 4px 0 8px;
+}
+
+.backup-verify-shield {
+  font-size: 34px;
+  color: #f59e0b;
+}
+
+.backup-verify-lead {
+  margin: 12px 0 8px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.backup-verify-question {
+  margin: 14px 0 6px;
+}
+
+.backup-verify-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.backup-verify-error {
+  color: #dc2626;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+:root[data-theme='dark'] .backup-verify-error {
+  color: #f87171;
+}
