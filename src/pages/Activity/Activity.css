@@ -1,0 +1,38 @@
+.activity-tab {
+  text-align: left;
+  padding: 4px 2px;
+}
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.activity-header-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.activity-header-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.activity-header-sub {
+  font-size: 12px;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-header-sub .ant-input {
+  display: none;
+}

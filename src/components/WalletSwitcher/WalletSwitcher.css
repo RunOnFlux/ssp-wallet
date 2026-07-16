@@ -1,0 +1,124 @@
+.switcher-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.55;
+  margin: 4px 0 8px 2px;
+}
+
+.switcher-wallet-list,
+.switcher-chain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.switcher-wallet {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  transition: background 0.12s ease;
+}
+
+.switcher-wallet:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.switcher-wallet-active {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.switcher-wallet-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+  line-height: 1.3;
+}
+
+.switcher-wallet-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.switcher-wallet-crypto {
+  font-size: 12px;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.switcher-wallet-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.switcher-wallet-fiat {
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.switcher-wallet-check {
+  color: #f59e0b;
+  font-size: 13px;
+}
+
+.switcher-wallet-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 4px;
+}
+
+.switcher-wallet-actions .ant-btn {
+  padding-left: 10px;
+}
+
+.switcher-chain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  transition: background 0.12s ease;
+}
+
+.switcher-chain:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.switcher-chain-active {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.switcher-chain-name {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1 1 auto;
+}
+
+/* Hide WalletName's inline editor inside the compact switcher rows */
+.switcher-wallet-name .ant-input {
+  display: none;
+}

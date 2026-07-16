@@ -202,7 +202,10 @@
       "email_verified": "Email verified!",
       "sign_and_subscribe": "Sign & Subscribe",
       "waiting_signature": "Awaiting SSP Key..."
-    }
+    },
+    "general": "General",
+    "security": "Security",
+    "networks": "Networks"
   },
   "receive": {
     "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
@@ -258,7 +261,8 @@
     "switch_chain": "Switch Chain",
     "max_wallets": "42. The answer to the ultimate question of life, the universe, and everything. You have reached the maximum number of wallets.",
     "ssp_message_sign": "Message Signing",
-    "swap_history": "Swap History"
+    "swap_history": "Swap History",
+    "lock": "Lock"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Password is not valid. Please try again.",
@@ -770,7 +774,8 @@
     "redirected_to_send_page": "Redirected to send page",
     "walletconnect_transaction_approved": "Transaction approved and sent successfully!",
     "eth_sign_transaction_not_supported": "eth_signTransaction is not supported by Account Abstraction wallets. Please use eth_sendTransaction instead.",
-    "eth_sign_transaction_error": "eth_signTransaction is not supported by Account Abstraction wallets. Account Abstraction wallets use UserOperations instead of traditional transactions. Please use eth_sendTransaction to execute the transaction directly."
+    "eth_sign_transaction_error": "eth_signTransaction is not supported by Account Abstraction wallets. Account Abstraction wallets use UserOperations instead of traditional transactions. Please use eth_sendTransaction to execute the transaction directly.",
+    "evm_only": "EVM chains only"
   },
   "walletconnect_tx_modal": {
     "simple_transfer": "Simple Transfer",
@@ -917,5 +922,21 @@
         "content": "Congratulations! You now know how to use all major features of SSP Wallet. Explore confidently and manage your crypto securely."
       }
     }
+  },
+  "tabs": {
+    "home": "Home",
+    "portfolio": "Portfolio",
+    "nav": "Wallet sections"
+  },
+  "switcher": {
+    "open": "Switch wallet or network",
+    "title": "Wallets & networks",
+    "search": "Search wallets or networks",
+    "wallets": "wallets",
+    "networks": "Networks"
+  },
+  "portfolio": {
+    "not_activated": "Not yet activated",
+    "tap_to_activate": "Tap to activate"
   }
 }

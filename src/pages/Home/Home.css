@@ -7,6 +7,19 @@
   overflow: 'visible';
 }
 
+.home-tab {
+  text-align: center;
+}
+
+.home-hero {
+  margin-top: 4px;
+}
+
+.home-loading {
+  padding: 24px 8px;
+  text-align: center;
+}
+
 .detailsDescription {
   font-size: 11px;
 }

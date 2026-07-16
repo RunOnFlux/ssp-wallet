@@ -6,8 +6,15 @@ import { version } from '../../../package.json';
 
 interface Props {
   isClickeable?: boolean;
+  /**
+   * Render in normal document flow instead of fixed to the viewport bottom.
+   * Used inside the Phase 3 WalletShell where the bottom tab bar owns the
+   * fixed footer slot; the brand strip (and the 5-click version easter egg)
+   * then scrolls at the end of the content.
+   */
+  inline?: boolean;
 }
-function PoweredByFlux({ isClickeable = false }: Props) {
+function PoweredByFlux({ isClickeable = false, inline = false }: Props) {
   const navigate = useNavigate();
   const clickCountRef = useRef(0);
   const lastClickTimeRef = useRef(0);
@@ -38,19 +45,29 @@ function PoweredByFlux({ isClickeable = false }: Props) {
   };
   return (
     <div
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        zIndex: 1000,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        boxShadow: `0 -7px 7px -7px ${colorBox}`,
-        padding: 10,
-        paddingBottom: 14,
-      }}
+      style={
+        inline
+          ? {
+              position: 'relative',
+              marginTop: 16,
+              textAlign: 'center',
+              padding: 10,
+              paddingBottom: 14,
+            }
+          : {
+              position: 'fixed',
+              bottom: 0,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              zIndex: 1000,
+              left: 0,
+              right: 0,
+              textAlign: 'center',
+              boxShadow: `0 -7px 7px -7px ${colorBox}`,
+              padding: 10,
+              paddingBottom: 14,
+            }
+      }
       className="powered-by-flux"
     >
       {isClickeable && (

@@ -48,5 +48,7 @@
   "terms_of_service": "Terms of Service",
   "my_wallets": "My Wallets",
   "rename_wallet": "Rename wallet",
-  "retry": "Retry"
+  "retry": "Retry",
+  "done": "Done",
+  "saved": "Saved"
 }

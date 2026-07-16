@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { toast } from '../../lib/toast';
 import { useSspLogo } from '../../hooks/useSspLogo';
 import { useNavigate } from 'react-router';
+import { getLastTab, tabToPath } from '../../storage/navPrefs';
 import { Input, Image, Button, Form, Spin } from 'antd';
 import localForage from 'localforage';
 import {
@@ -530,7 +531,14 @@ function Login() {
                 setContacts(contacts as Record<keyof cryptos, contact[]>),
               );
             }
-            navigate('/home');
+            // Open where the user left off (append-only navPrefs; defaults to
+            // Home for fresh profiles — keeps the upgrade-in-place gate green).
+            try {
+              const lastTab = await getLastTab();
+              navigate(tabToPath(lastTab));
+            } catch {
+              navigate('/home');
+            }
           } else {
             displayMessage('error', t('login:err_lx', { code: 'L2' }));
             setIsLoading(false);

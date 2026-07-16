@@ -1,0 +1,91 @@
+.identity-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 4px 10px 4px;
+  width: 100%;
+}
+
+.identity-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid var(--ssp-border, #e7e5e4);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.identity-pill:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.identity-pill-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.identity-pill-wallet {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.identity-pill-chain {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  opacity: 0.65;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.identity-pill-caret {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.identity-lock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid var(--ssp-border, #e7e5e4);
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.15s ease;
+}
+
+.identity-lock:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+/* Prevent WalletName's inline edit affordance from disturbing the pill layout */
+.identity-pill-wallet .ant-input {
+  display: none;
+}
+
+/* Side-panel: identity bar sits atop the content column, full width of it */
+body.extension-sidepanel .identity-bar {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px 8px;
+}

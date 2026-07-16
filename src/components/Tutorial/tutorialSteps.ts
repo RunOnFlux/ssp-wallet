@@ -145,10 +145,13 @@ export const getTutorialSteps = (
     },
     {
       id: 'extended-menu-intro',
-      target: '[data-tutorial="extended-menu"]',
+      // Phase 3 IA: the old header burger ("extended-menu") is gone — its
+      // contents (settings, address/SSP details, sign message, WalletConnect,
+      // tutorial) now live under the Settings tab.
+      target: '[data-tutorial="tab-settings"]',
       title: t('home:tutorial.steps.extended_menu_intro.title'),
       content: t('home:tutorial.steps.extended_menu_intro.content'),
-      position: 'left',
+      position: 'top',
       action: 'none',
       skipable: false,
     },

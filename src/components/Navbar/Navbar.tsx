@@ -48,7 +48,6 @@ import SspWalletDetails from '../SspWalletDetails/SspWalletDetails';
 import AddressDetails from '../AddressDetails/AddressDetails';
 import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
 import ChainSelect from '../ChainSelect/ChainSelect';
-import Settings from '../Settings/Settings';
 import AutoLogout from '../AutoLogout/AutoLogout';
 import WalletConnect from '../WalletConnect/WalletConnect';
 import { useTranslation } from 'react-i18next';
@@ -361,11 +360,6 @@ function Navbar({
   const addressDetailsAction = (status: boolean) => {
     setOpenAddressDetails(status);
   };
-  const [openSettingsDialogVisilbe, setOpenSettingsDialogVisible] =
-    useState(false);
-  const settingsDialogAction = (status: boolean) => {
-    setOpenSettingsDialogVisible(status);
-  };
   const selectChainAction = (status: boolean) => {
     setSelectChainOpen(status);
   };
@@ -395,7 +389,7 @@ function Navbar({
       setActionToPerform('sspwallet');
     }
     if (e.key === 'manualsign') setOpenManualSign(true);
-    if (e.key === 'settings') setOpenSettingsDialogVisible(true);
+    if (e.key === 'settings') navigate('/settings');
     if (e.key === 'tutorial') setTriggerTutorialWelcome(true);
     if (e.key === 'history') interactWithSwapHistory();
   };
@@ -695,10 +689,6 @@ function Navbar({
       <PasswordConfirm
         open={passwordConfirmDialogVisilbe}
         openAction={passwordConfirmDialogAction}
-      />
-      <Settings
-        open={openSettingsDialogVisilbe}
-        openAction={settingsDialogAction}
       />
       <ChainSelect open={selectChainOpen} openAction={selectChainAction} />
       <SwapHistory open={openSwapHistory} openAction={swapHistoryAction} />
