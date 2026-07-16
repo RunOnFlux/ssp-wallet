@@ -948,6 +948,7 @@
   },
   "portfolio": {
     "not_activated": "Not yet activated",
-    "tap_to_activate": "Tap to activate"
+    "tap_to_activate": "Tap to activate",
+    "incl_tokens": "incl. {{amount}} tokens"
   }
 }

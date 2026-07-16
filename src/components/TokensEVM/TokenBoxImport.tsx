@@ -2,7 +2,7 @@ import { Card, Avatar, Checkbox, Badge, Button } from 'antd';
 import { toast } from '../../lib/toast';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
-import { DeleteOutlined } from '@ant-design/icons';
+import { Trash2 as Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Token, blockchains } from '@storage/blockchains';
 import { cryptos } from '../../types';
@@ -103,7 +103,7 @@ function TokenBoxImport(props: {
             zIndex: 10,
           }}
         >
-          <DeleteOutlined />
+          <Trash2Icon />
         </Button>
       )}
       <Card

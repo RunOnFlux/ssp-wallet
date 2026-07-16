@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, Input, Button } from 'antd';
-import { CheckOutlined } from '@ant-design/icons';
+import { Check as CheckIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Identicon from '../Identicon/Identicon';
 import CreationSteps from '../CreationSteps/CreationSteps';
@@ -98,7 +98,11 @@ function OnboardingPersonalize({
         style={{ marginBottom: 18 }}
       />
 
-      <div className="personalize-swatches" role="radiogroup">
+      <div
+        className="personalize-swatches"
+        role="radiogroup"
+        aria-label={t('cr:personalize.color_label', 'Accent color')}
+      >
         {ACCENT_COLORS.map((c) => (
           <button
             key={c}
@@ -110,7 +114,7 @@ function OnboardingPersonalize({
             style={{ background: c, color: c }}
             onClick={() => setColor(c)}
           >
-            {c === color && <CheckOutlined />}
+            {c === color && <CheckIcon />}
           </button>
         ))}
       </div>

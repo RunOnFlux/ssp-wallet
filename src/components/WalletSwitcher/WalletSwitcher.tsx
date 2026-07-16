@@ -4,12 +4,12 @@ import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
 import { Drawer, Input, Button, Popconfirm, Divider, Image } from 'antd';
 import {
-  PlusOutlined,
-  MinusOutlined,
-  SearchOutlined,
-  CheckOutlined,
-  QuestionCircleOutlined,
-} from '@ant-design/icons';
+  Check as CheckIcon,
+  CircleHelp as CircleHelpIcon,
+  Minus as MinusIcon,
+  Plus as PlusIcon,
+  Search as SearchIcon,
+} from 'lucide-react';
 import { NoticeType } from 'antd/es/message/interface';
 import { toast } from '../../lib/toast';
 import { useTranslation } from 'react-i18next';
@@ -279,7 +279,7 @@ function WalletSwitcher({ open, openAction }: Props) {
     >
       <Input
         allowClear
-        prefix={<SearchOutlined />}
+        prefix={<SearchIcon />}
         placeholder={t('home:switcher.search', 'Search wallets or networks')}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -333,7 +333,7 @@ function WalletSwitcher({ open, openAction }: Props) {
               <span className="switcher-wallet-right">
                 <span className="switcher-wallet-fiat">{walletFiat(id)}</span>
                 {id === walletInUse && (
-                  <CheckOutlined className="switcher-wallet-check" />
+                  <CheckIcon className="switcher-wallet-check" />
                 )}
               </span>
             </button>
@@ -345,7 +345,7 @@ function WalletSwitcher({ open, openAction }: Props) {
         <div className="switcher-wallet-actions">
           <Button
             type="text"
-            icon={<PlusOutlined />}
+            icon={<PlusIcon />}
             onClick={addWallet}
             disabled={walletIds.length >= 20}
             data-tutorial="add-wallet-button"
@@ -359,11 +359,11 @@ function WalletSwitcher({ open, openAction }: Props) {
               okText={t('home:navbar.remove')}
               cancelText={t('common:cancel')}
               onConfirm={removeLastWallet}
-              icon={<QuestionCircleOutlined style={{ color: '#f59e0b' }} />}
+              icon={<CircleHelpIcon style={{ color: '#f59e0b' }} />}
             >
               <Button
                 type="text"
-                icon={<MinusOutlined />}
+                icon={<MinusIcon />}
                 data-tutorial="remove-wallet-button"
               >
                 {t('home:navbar.remove_last_wallet')}
@@ -392,12 +392,13 @@ function WalletSwitcher({ open, openAction }: Props) {
               width={24}
               preview={false}
               src={blockchains[chain].logo}
+              alt=""
             />
             <span className="switcher-chain-name">
               {blockchains[chain].name}
             </span>
             {chain === activeChain && (
-              <CheckOutlined className="switcher-wallet-check" />
+              <CheckIcon className="switcher-wallet-check" />
             )}
           </button>
         ))}

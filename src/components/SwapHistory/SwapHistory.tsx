@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { getSwapHistory } from '../../lib/ABEController';
 import { swapHistoryOrder } from '../../types';
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoaderCircle as LoaderCircleIcon } from 'lucide-react';
 import SwapBox from './SwapBox';
 
 function SwapHistory(props: {
@@ -77,7 +77,10 @@ function SwapHistory(props: {
         >
           {loading ? (
             <>
-              <LoadingOutlined style={{ fontSize: '24px' }} />
+              <LoaderCircleIcon
+                className="lucide-spin"
+                style={{ fontSize: '24px' }}
+              />
               <Text strong style={{ fontSize: '16px' }}>
                 {t('common:loading')}
               </Text>

@@ -54,7 +54,7 @@ import {
 } from '../../lib/balances';
 import { validateReceiverAddress } from '../../lib/addressValidation';
 import { formatFiatWithSymbol } from '../../lib/currency';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { CircleHelp as CircleHelpIcon } from 'lucide-react';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { useSocket } from '../../hooks/useSocket';
@@ -1197,7 +1197,7 @@ export function useEvmSendStrategy(): SendStrategyView {
           <span>
             {t('send:base_gas_price')}
             <Tooltip title={t('send:base_gas_price_help')}>
-              <QuestionCircleOutlined
+              <CircleHelpIcon
                 style={{
                   marginLeft: 8,
                   color: token.colorPrimary,
@@ -1223,7 +1223,7 @@ export function useEvmSendStrategy(): SendStrategyView {
           <span>
             {t('send:priority_gas_price')}
             <Tooltip title={t('send:priority_gas_price_help')}>
-              <QuestionCircleOutlined
+              <CircleHelpIcon
                 style={{
                   marginLeft: 8,
                   color: token.colorPrimary,
@@ -1258,7 +1258,7 @@ export function useEvmSendStrategy(): SendStrategyView {
             <span>
               {t('send:preverification_gas')}
               <Tooltip title={t('send:preverification_gas_help')}>
-                <QuestionCircleOutlined
+                <CircleHelpIcon
                   style={{
                     marginLeft: 8,
                     color: token.colorPrimary,
@@ -1292,7 +1292,7 @@ export function useEvmSendStrategy(): SendStrategyView {
             <span>
               {t('send:verification_gas_limit')}
               <Tooltip title={t('send:verification_gas_limit_help')}>
-                <QuestionCircleOutlined
+                <CircleHelpIcon
                   style={{
                     marginLeft: 8,
                     color: token.colorPrimary,
@@ -1326,7 +1326,7 @@ export function useEvmSendStrategy(): SendStrategyView {
             <span>
               {t('send:call_gas_limit')}
               <Tooltip title={t('send:call_gas_limit_help')}>
-                <QuestionCircleOutlined
+                <CircleHelpIcon
                   style={{
                     marginLeft: 8,
                     color: token.colorPrimary,
@@ -1375,7 +1375,7 @@ export function useEvmSendStrategy(): SendStrategyView {
             <span>
               {t('send:total_gas_limit')}
               <Tooltip title={t('send:total_gas_help')}>
-                <QuestionCircleOutlined
+                <CircleHelpIcon
                   style={{
                     marginLeft: 8,
                     color: token.colorPrimary,
@@ -1383,7 +1383,7 @@ export function useEvmSendStrategy(): SendStrategyView {
                 />
               </Tooltip>
             </span>
-            <span style={{ fontFamily: 'monospace' }}>
+            <span style={{ fontFamily: 'var(--ssp-mono)' }}>
               {(
                 Number(preVerificationGas) +
                 Number(callGasLimit) +
@@ -1475,7 +1475,7 @@ export function useEvmSendStrategy(): SendStrategyView {
                     )
                   }
                   rows={3}
-                  style={{ fontFamily: 'monospace', fontSize: '12px' }}
+                  style={{ fontFamily: 'var(--ssp-mono)', fontSize: '12px' }}
                 />
               </Form.Item>
               {txData && (

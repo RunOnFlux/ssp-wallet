@@ -1,18 +1,18 @@
 import { Table, Empty, Tooltip, Popconfirm, Button, Space } from 'antd';
 import { sspConfig } from '@storage/ssp';
 import { toast } from '../../lib/toast';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import {
+  ArrowDownToLine as ArrowDownToLineIcon,
+  ArrowUpToLine as ArrowUpToLineIcon,
+  CircleCheck as CircleCheckIcon,
+  CircleHelp as CircleHelpIcon,
+  Clock as ClockIcon,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import { NoticeType } from 'antd/es/message/interface';
-import {
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  VerticalAlignTopOutlined,
-  VerticalAlignBottomOutlined,
-} from '@ant-design/icons';
 import { transaction } from '../../types';
 import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
@@ -193,9 +193,7 @@ function TransactionsTable(props: {
                       onConfirm={() => {
                         proceedToRBF(record);
                       }}
-                      icon={
-                        <QuestionCircleOutlined style={{ color: 'green' }} />
-                      }
+                      icon={<CircleHelpIcon style={{ color: 'green' }} />}
                     >
                       <Button size="small">
                         {t('home:transactionsTable.replace_by_fee')}
@@ -215,9 +213,9 @@ function TransactionsTable(props: {
           render={(amnt: string) => (
             <>
               {+amnt > 0 ? (
-                <VerticalAlignBottomOutlined style={{ fontSize: '16px' }} />
+                <ArrowDownToLineIcon style={{ fontSize: '16px' }} />
               ) : (
-                <VerticalAlignTopOutlined style={{ fontSize: '16px' }} />
+                <ArrowUpToLineIcon style={{ fontSize: '16px' }} />
               )}
             </>
           )}
@@ -277,11 +275,11 @@ function TransactionsTable(props: {
             <>
               {height <= 0 || !height ? (
                 <Tooltip title={t('home:transactionsTable.tx_unconfirmed')}>
-                  <ClockCircleOutlined style={{ fontSize: '18px' }} />
+                  <ClockIcon style={{ fontSize: '18px' }} />
                 </Tooltip>
               ) : (
                 <Tooltip title={t('home:transactionsTable.tx_confirmed')}>
-                  <CheckCircleOutlined style={{ fontSize: '18px' }} />
+                  <CircleCheckIcon style={{ fontSize: '18px' }} />
                 </Tooltip>
               )}
             </>

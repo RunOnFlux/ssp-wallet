@@ -41,7 +41,8 @@
   "personalize": {
     "title": "Make it yours",
     "lead": "Give your wallet a name and a color so you can spot it at a glance.",
-    "name_label": "Wallet name"
+    "name_label": "Wallet name",
+    "color_label": "Accent color"
   },
   "ready": {
     "title": "Your wallet is ready.",

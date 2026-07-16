@@ -46,7 +46,7 @@
 .node-detail-value-mono {
   display: block;
   font-size: 11px;
-  font-family: monospace;
+  font-family: var(--ssp-mono);
   word-break: break-all;
 }
 

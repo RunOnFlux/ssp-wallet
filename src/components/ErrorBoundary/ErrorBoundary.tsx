@@ -9,12 +9,12 @@ import {
   theme,
 } from 'antd';
 import {
-  ExceptionOutlined,
-  RedoOutlined,
-  CopyOutlined,
-  BugOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+  Bug as BugIcon,
+  Copy as CopyIcon,
+  FileWarning as FileWarningIcon,
+  Info as InfoIcon,
+  RotateCw as RotateCwIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRouteError } from 'react-router';
 
@@ -180,7 +180,7 @@ function ErrorBoundaryUI({
   return (
     <div style={containerStyle}>
       <Result
-        icon={<ExceptionOutlined />}
+        icon={<FileWarningIcon />}
         title={t('title')}
         subTitle={t('subtitle')}
         style={{
@@ -198,13 +198,13 @@ function ErrorBoundaryUI({
           >
             <Button
               type="primary"
-              icon={<RedoOutlined />}
+              icon={<RotateCwIcon />}
               onClick={onRestart}
               block
             >
               {t('restart_button')}
             </Button>
-            <Button icon={<CopyOutlined />} onClick={onCopyError} block>
+            <Button icon={<CopyIcon />} onClick={onCopyError} block>
               {t('copy_button')}
             </Button>
           </div>
@@ -214,7 +214,7 @@ function ErrorBoundaryUI({
       <Card
         title={
           <span>
-            <InfoCircleOutlined
+            <InfoIcon
               style={{ marginRight: '8px', color: token.colorSuccess }}
             />
             {t('help_title')}
@@ -256,7 +256,7 @@ function ErrorBoundaryUI({
               key: 'error-details',
               label: (
                 <span>
-                  <BugOutlined style={{ marginRight: '6px' }} />
+                  <BugIcon style={{ marginRight: '6px' }} />
                   {t('technical_details')}
                 </span>
               ),

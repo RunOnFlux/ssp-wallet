@@ -22,31 +22,6 @@
       "packages": {},
       "builtins": {}
     },
-    "@ant-design/icons": {
-      "packageName": "@ant-design/icons",
-      "globals": {
-        "console": true,
-        "Object": true,
-        "Array": true,
-        "Error": true,
-        "TypeError": true,
-        "String": true,
-        "Number": true,
-        "Boolean": true,
-        "Date": true,
-        "Math": true,
-        "JSON": true,
-        "parseInt": true,
-        "parseFloat": true,
-        "isNaN": true,
-        "RegExp": true,
-        "Promise": true
-      },
-      "packages": {
-        "antd": true
-      },
-      "builtins": {}
-    },
     "@fontsource/inter": {
       "packageName": "@fontsource/inter",
       "globals": {
@@ -483,6 +458,18 @@
     },
     "lru-cache": {
       "packageName": "lru-cache",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
+    "lucide-react": {
+      "packageName": "lucide-react",
       "globals": {
         "console": true,
         "Object": true,

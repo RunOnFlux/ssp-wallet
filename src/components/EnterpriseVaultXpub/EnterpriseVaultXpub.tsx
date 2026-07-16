@@ -387,7 +387,7 @@ function EnterpriseVaultXpub({
             )}
             <Text
               type="secondary"
-              style={{ fontSize: '12px', fontFamily: 'monospace' }}
+              style={{ fontSize: '12px', fontFamily: 'var(--ssp-mono)' }}
             >
               {requesterInfo.origin}
             </Text>
@@ -432,7 +432,7 @@ function EnterpriseVaultXpub({
           <Text
             strong
             style={{
-              fontFamily: 'monospace',
+              fontFamily: 'var(--ssp-mono)',
               fontSize: '12px',
               wordBreak: 'break-all',
             }}

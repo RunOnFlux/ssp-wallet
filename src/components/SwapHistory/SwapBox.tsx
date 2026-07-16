@@ -6,11 +6,11 @@ import { blockchains } from '@storage/blockchains';
 import './SwapBox.css';
 import { exchangeProvider, swapHistoryOrder } from '../../types';
 import {
-  SwapLeftOutlined,
-  SwapRightOutlined,
-  CaretDownOutlined,
-  CaretUpOutlined,
-} from '@ant-design/icons';
+  ChevronDown as ChevronDownIcon,
+  ChevronUp as ChevronUpIcon,
+  MoveLeft as MoveLeftIcon,
+  MoveRight as MoveRightIcon,
+} from 'lucide-react';
 import { useAppSelector } from '../../hooks';
 
 function SwapBox(props: {
@@ -176,7 +176,7 @@ function SwapBox(props: {
                     top: '40px',
                   }}
                 >
-                  <SwapRightOutlined style={{ fontSize: '31px' }} />
+                  <MoveRightIcon style={{ fontSize: '31px' }} />
                 </div>
                 <div
                   style={{
@@ -186,7 +186,7 @@ function SwapBox(props: {
                     top: '47px',
                   }}
                 >
-                  <SwapLeftOutlined
+                  <MoveLeftIcon
                     style={{ rotate: '180deg', fontSize: '31px' }}
                   />
                 </div>
@@ -237,7 +237,7 @@ function SwapBox(props: {
               <Flex vertical>
                 <div>
                   <div className="swap-box-sell-amount">
-                    {infoExpanded ? <CaretUpOutlined /> : <CaretDownOutlined />}
+                    {infoExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
                     <span style={{ paddingLeft: '20px' }}>
                       {Number(swap.sellAmount)}
                     </span>

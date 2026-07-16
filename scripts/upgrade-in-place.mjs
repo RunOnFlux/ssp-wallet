@@ -223,10 +223,13 @@ async function readHomeAddress(page) {
   const container = page.locator('[data-tutorial="wallet-address"]');
   await container.waitFor({ timeout: NAV_TIMEOUT });
   const text = (await container.innerText()).trim();
-  // Displayed as "xxxxxxxx...yyyyyy" (first 8 + last 6 chars of the address).
-  const match = text.match(/\S{8}\.\.\.\S{6}/);
+  // Old builds display "xxxxxxxx...yyyyyy" (first 8 + last 6); new builds use
+  // the shared addressDisplay helper: "xxxxxx…yyyyyy" (first 6 + last 6).
+  // Normalize both to first-6 + last-6 so the SAME-address assertion is
+  // display-format agnostic across the upgrade boundary.
+  const match = text.match(/([^\s.…]{6,10})(?:\.\.\.|…)([^\s.…]{6})/);
   if (!match) throw new Error(`Could not parse address from Home: "${text}"`);
-  return match[0];
+  return `${match[1].slice(0, 6)}…${match[2].slice(-6)}`;
 }
 
 async function dismissTutorialIfShown(page) {

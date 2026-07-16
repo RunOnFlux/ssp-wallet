@@ -72,12 +72,18 @@
     box-shadow 150ms ease-out;
 }
 
-.personalize-swatch .anticon {
+.personalize-swatch .anticon,
+.personalize-swatch .lucide {
   color: rgba(0, 0, 0, 0.82);
 }
 
 .personalize-swatch:hover {
   transform: scale(1.08);
+}
+
+.personalize-swatch:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
 }
 
 .personalize-swatch.selected {

@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Button, Space, Tooltip } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import {
+  ArrowDown as ArrowDownIcon,
+  ArrowUp as ArrowUpIcon,
+} from 'lucide-react';
 import Receive from '../Receive/Receive';
 import PurchaseCrypto from '../Onramper/PurchaseCrypto';
 import { useTranslation } from 'react-i18next';
@@ -63,7 +66,7 @@ function Navigation() {
       <Space direction="horizontal" size="small" style={{ marginBottom: 10 }}>
         <Button
           type="default"
-          icon={<ArrowUpOutlined />}
+          icon={<ArrowUpIcon />}
           size={'middle'}
           style={{ minWidth: '105px' }}
           onClick={() =>
@@ -119,7 +122,7 @@ function Navigation() {
         </Space>
         <Button
           type="default"
-          icon={<ArrowDownOutlined />}
+          icon={<ArrowDownIcon />}
           size={'middle'}
           style={{ minWidth: '105px' }}
           onClick={() => {

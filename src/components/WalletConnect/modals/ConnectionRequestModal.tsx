@@ -12,14 +12,15 @@ import {
   Space,
 } from 'antd';
 import {
-  CheckCircleOutlined,
-  ExclamationCircleOutlined,
-} from '@ant-design/icons';
+  CircleAlert as CircleAlertIcon,
+  CircleCheck as CircleCheckIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { SessionProposal } from '../types/modalTypes';
 import localForage from 'localforage';
 import { isEVMContractDeployed } from '../../../lib/constructTx';
+import { truncateAddress } from '../../../lib/addressDisplay';
 import { cryptos } from '../../../types';
 import { useAppSelector } from '../../../hooks';
 
@@ -98,7 +99,7 @@ const AddressDeploymentStatus: React.FC<AddressDeploymentStatusProps> = ({
             mouseEnterDelay={0}
             mouseLeaveDelay={0}
           >
-            <CheckCircleOutlined
+            <CircleCheckIcon
               className="deployed-icon"
               style={{ color: '#22c55e', fontSize: '14px' }}
             />
@@ -111,7 +112,7 @@ const AddressDeploymentStatus: React.FC<AddressDeploymentStatusProps> = ({
             mouseEnterDelay={0}
             mouseLeaveDelay={0}
           >
-            <ExclamationCircleOutlined
+            <CircleAlertIcon
               className="not-deployed-icon"
               style={{ color: '#f59e0b', fontSize: '14px' }}
             />
@@ -715,12 +716,11 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
                                   >
                                     <Text
                                       style={{
-                                        fontFamily: 'monospace',
+                                        fontFamily: 'var(--ssp-mono)',
                                         fontSize: '12px',
                                       }}
                                     >
-                                      {account.substring(0, 6)}...
-                                      {account.substring(account.length - 4)}
+                                      {truncateAddress(account)}
                                     </Text>
                                     {chainInfo.sspChainKey && (
                                       <AddressDeploymentStatus

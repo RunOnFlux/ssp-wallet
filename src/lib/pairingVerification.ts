@@ -31,11 +31,11 @@ export const VERIFY_QR_PREFIX = 'sspverify:';
 // eyeball comparison fast. Applied to the small index badge only (subtle).
 export const VERIFY_ACCENTS = [
   '#f59e0b',
-  '#10b981',
+  '#22c55e',
   '#3b82f6',
-  '#8b5cf6',
+  '#a855f7',
   '#ec4899',
-  '#06b6d4',
+  '#14b8a6',
 ];
 
 /**

@@ -15,10 +15,7 @@ import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../../../types';
 import { SessionRequest, EthereumTransaction } from '../types/modalTypes';
 import { useWalletConnect } from '../../../contexts/WalletConnectContext';
-import {
-  ExclamationCircleOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+import { CircleAlert as CircleAlertIcon, Info as InfoIcon } from 'lucide-react';
 
 const { Text } = Typography;
 
@@ -249,9 +246,9 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
                 {dappInfo.dappName}
               </Tag>
               {dappInfo.isVerified ? (
-                <InfoCircleOutlined style={{ color: '#22c55e' }} />
+                <InfoIcon style={{ color: '#22c55e' }} />
               ) : (
-                <ExclamationCircleOutlined style={{ color: '#f59e0b' }} />
+                <CircleAlertIcon style={{ color: '#f59e0b' }} />
               )}
             </div>
             {dappInfo.dappUrl && (

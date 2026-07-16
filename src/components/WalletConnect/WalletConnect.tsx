@@ -11,7 +11,7 @@ import {
   Space,
   Tabs,
 } from 'antd';
-import { LinkOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Link as LinkIcon, Trash2 as Trash2Icon } from 'lucide-react';
 import { useWalletConnect } from '../../contexts/WalletConnectContext';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
@@ -129,7 +129,7 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
           {Object.values(blockchains)
             .filter((chain) => chain.chainType === 'evm')
             .map((chain) => (
-              <Tag key={chain.chainId} icon={<LinkOutlined />}>
+              <Tag key={chain.chainId} icon={<LinkIcon />}>
                 {chain.name}
               </Tag>
             ))}
@@ -142,7 +142,7 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       {Object.keys(activeSessions).length === 0 ? (
         <div className="empty-sessions">
-          <LinkOutlined
+          <LinkIcon
             style={{ fontSize: 48, color: '#d9d9d9', marginBottom: 16 }}
           />
           <Title level={4} type="secondary">
@@ -165,7 +165,7 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
                     key="disconnect"
                     type="text"
                     danger
-                    icon={<DeleteOutlined />}
+                    icon={<Trash2Icon />}
                     onClick={() => handleDisconnect(session.topic)}
                   >
                     {t('home:walletconnect.disconnect')}

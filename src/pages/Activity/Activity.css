@@ -24,7 +24,7 @@
 
 .activity-header-sub {
   font-size: 12px;
-  opacity: 0.6;
+  opacity: 0.65; /* contrast: 0.6 on light was ~4.4:1, just under 4.5 */
   display: flex;
   align-items: center;
   gap: 4px;

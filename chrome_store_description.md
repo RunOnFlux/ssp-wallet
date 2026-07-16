@@ -2,84 +2,43 @@ SSP Wallet – Secure. Simple. Powerful.
 The Next Generation of Crypto Security.
 Multi-Asset Multi-Signature Crypto Currency Wallet.
 
-SSP Wallet is a groundbreaking, open-source, fully security audited, multi-signature cryptocurrency wallet that provides the highest level of security and self-custody. Unlike traditional wallets, SSP Wallet utilizes true two-factor authentication (2FA) through a 2-of-2 multi-signature system, ensuring that no transaction can be executed without authorization from both your SSP Wallet and SSP Key.
+SSP Wallet is an open-source, security-audited, multi-signature cryptocurrency wallet built around true two-factor authentication: a 2-of-2 multisig system where your browser extension holds one private key and the SSP Key mobile app holds the second. Every transaction must be signed by both, so there is no single point of failure and no seed phrase that can be stolen from one device.
 
-With state-of-the-art encryption, hardware-grade security, and a seamless user experience, SSP Wallet is designed to be the most secure way to store, send, receive, buy, sell, and swap cryptocurrencies.
+🔒 How it works
 
-🔒 Why Choose SSP Wallet?
-✅ The Most Secure, Open-Source Crypto Wallet
-Unlike standard wallets that rely on a single private key, SSP Wallet operates using a true 2-of-2 multi-signature system:
+Unlike wallets that rely on a single private key, SSP splits control between two devices you own:
 
-🔑 Your SSP Wallet (browser extension) holds one private key.
-📱 Your SSP Key (mobile app) holds the second private key.
-✅ Every transaction requires both keys to sign, making unauthorized access virtually impossible.
-This ensures no single point of failure and true self-custody of your assets.
+- SSP Wallet (this browser extension) holds one key.
+- SSP Key (mobile app for iOS and Android) holds the other.
+- Both must approve every transaction — unauthorized access from either device alone is impossible.
 
-✅ Fully Open-Source & Transparent
-SSP Wallet is 100% open-source, allowing anyone to review, audit, and contribute to the code. No hidden vulnerabilities, no backdoors—just fully transparent security.
+🔍 Open source and verifiable
 
-By being open-source, SSP Wallet ensures that your funds remain under your control, with no centralized authority or third-party risk.
+The entire codebase is public, so anyone can review, audit, and contribute. Deterministic builds let you verify that the distributed extension matches the published source code exactly, and releases ship with signed hashes. SSP Wallet also integrates LavaMoat runtime protection, which compartmentalizes every dependency to defend against supply-chain attacks. SSP Wallet, SSP Key, and our smart contracts have been independently audited by Halborn.
 
-✅ Buy, Sell & Swap Crypto
-Seamlessly buy, sell, and swap supported cryptocurrencies directly within the wallet. No need for third-party exchanges—SSP Wallet simplifies crypto trading while maintaining security.
+🌐 Multi-chain, one wallet
 
-✅ First True Schnorr Multi-Signature ERC4337 Wallet on Ethereum, EVM Chains
-SSP Wallet introduces the first-ever true Schnorr multi-signature implementation of Account Abstraction (ERC4337) on Ethereum, removing the need for a standard externally owned account (EOA). This is a game-changer for security across Ethereum and the entire EVM ecosystem.
+Manage Bitcoin, Ethereum, and a broad range of other networks in one place — including major EVM chains (Polygon, Base, Arbitrum, BNB Smart Chain, Avalanche) with full support for importing custom tokens, plus popular UTXO chains such as Litecoin, Bitcoin Cash, Dogecoin, Zcash, Ravencoin, and Flux. On Ethereum and EVM chains, SSP is the first wallet to implement true Schnorr multi-signature Account Abstraction (ERC-4337), bringing smart-contract-level security without a standard externally owned account. Bitcoin support includes Native SegWit for lower fees and faster transactions.
 
-✅ Full Native SegWit & P2SH Support
-Bitcoin Native SegWit (Bech32) and P2SH (Pay-to-Script-Hash) support for enhanced security, lower fees, and faster transactions.
-Ethereum Account Abstraction (ERC4337) enables smart contract wallets with Schnorr Multi-Signature security.
+💱 Buy, sell, and swap
 
-✅ Multi-Chain Support
-SSP Wallet is compatible with multiple blockchain networks, allowing you to store and manage various assets in one secure, decentralized, and self-custodial place:
-Bitcoin (BTC)
-Ethereum (ETH) & ERC20 Tokens
-Polygon (POL) & ERC20 Tokens
-Base (BASE) & ERC20 Tokens
-Arbitrum (ARB) & ERC20 Tokens
-Binance Smart Chain (BSC) & BEP20 Tokens
-Avalanche (AVAX) & Native Tokens
-Litecoin (LTC)
-Flux (FLUX)
-Zcash (ZEC)
-Bitcoin Cash (BCH)
-Ravencoin (RVN)
-Dogecoin (DOGE)
-Testnet Networks
+Trade supported assets directly inside the wallet — no third-party exchange accounts needed.
 
-✅ Custom ERC20 Token Support
-Easily import and manage any ERC20 token on Ethereum, Polygon, Base, Arbitrum, BSC, and other EVM chains, ensuring full compatibility with hundreds of digital assets.
+⚡ Web3 ready
 
-✅ Web3 & DeFi Ready via WalletConnect Reown Integration
-Seamlessly connect to thousands of decentralized applications (dApps) with industry-standard WalletConnect v2 protocol:
-🌐 Universal dApp Compatibility - Connect to any WalletConnect-enabled dApp including DeFi protocols, NFT marketplaces, DEXs, and gaming platforms
-🔗 Real-Time Communication - Instant connection and transaction requests through secure WebSocket connections
-⚡ Dynamic Gas Optimization - Intelligent gas allocation for complex DeFi operations like Uniswap swaps
-🔐 Secure dApp Interactions - All dApp transactions still require authorization from both SSP Wallet and SSP Key
-📝 EIP-712 Message Signing - Full support for typed structured data signing used by modern dApps
-🔄 Session Management - Easy management of active dApp connections with one-click disconnect
+Connect to thousands of dApps through WalletConnect v2 (Reown): DeFi protocols, NFT marketplaces, DEXs, and games. Full EIP-712 typed-data signing, intelligent gas allocation for complex operations, and simple session management. Every dApp transaction still requires approval from both your wallet and your SSP Key.
 
-✅ Security Audited by Halborn
-SSP Wallet, SSP Key, and our Schnorr Multi-Signature Account Abstraction smart contracts have been rigorously audited by Halborn, a leading blockchain security firm.
+📴 Works offline too
 
-✅ Robust Documentation
-SSP has comprehensive documentation including many guides at docs.sspwallet.io. Get started with ease!
+Sign transactions entirely offline using QR-code synchronization between your devices — security even in restricted or air-gapped environments.
 
-🛡️ Uncompromised Security
-🔑 True 2FA with Multi-Signature Technology
-SSP Wallet eliminates single points of failure by requiring both your SSP Wallet (browser extension) and SSP Key (mobile app) to sign every transaction.
+🚀 Getting started
 
-🔄 Offline Transaction Signing & QR Sync
-SSP Wallet supports offline transaction signing, allowing users to sign transactions via QR code synchronization, ensuring security even in restricted or offline environments.
+1. Install SSP Wallet (this extension).
+2. Install SSP Key on your phone (iOS or Android).
+3. Follow the quick setup — a video guide is available at sspwallet.io.
+4. Send, receive, buy, swap, and connect to Web3.
 
-🔧 How to Get Started with SSP Wallet
-- Download SSP Wallet (Chrome Extension)
-- Download SSP Key (Mobile App - iOS, Android)
-- Set Up Your Secure Wallet – Follow a quick and simple setup process, video guide available on website sspwallet.io
-- Start Using Your Wallet – Buy, sell, swap, send, and receive crypto with the most secure, open-source, and user-friendly wallet available
-- Connect to Web3 – Use WalletConnect to access thousands of dApps with industry-leading security
+Comprehensive guides and documentation are available at docs.sspwallet.io.
 
-🌎 Join the Future of Secure Crypto Storage
-SSP Wallet is designed for users who value security, transparency, and self-custody. Whether you're a beginner or an experienced crypto holder, SSP Wallet provides the best security features without sacrificing usability or Web3 compatibility.
-
-🚀 Experience the most secure and transparent crypto wallet today! 🚀 
+SSP Wallet is built for people who value security, transparency, and real self-custody — whether you're new to crypto or managing serious holdings.

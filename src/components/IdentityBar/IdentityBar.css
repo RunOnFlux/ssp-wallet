@@ -14,12 +14,16 @@
   flex: 1 1 auto;
   min-width: 0;
   padding: 5px 10px 5px 6px;
-  border: 1px solid var(--ssp-border, #e7e5e4);
+  border: 1px solid #e7e5e4;
   border-radius: 999px;
   background: transparent;
   cursor: pointer;
   text-align: left;
   transition: background 0.15s ease;
+}
+
+:root[data-theme='dark'] .identity-pill {
+  border-color: #272524;
 }
 
 .identity-pill:hover {
@@ -88,16 +92,26 @@
   width: 36px;
   height: 36px;
   flex-shrink: 0;
-  border: 1px solid var(--ssp-border, #e7e5e4);
-  border-radius: 10px;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
   background: transparent;
   cursor: pointer;
   font-size: 16px;
   transition: background 0.15s ease;
 }
 
+:root[data-theme='dark'] .identity-lock {
+  border-color: #272524;
+}
+
 .identity-lock:hover {
   background: rgba(128, 128, 128, 0.1);
+}
+
+.identity-pill:focus-visible,
+.identity-lock:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
 }
 
 /* Prevent WalletName's inline edit affordance from disturbing the pill layout */

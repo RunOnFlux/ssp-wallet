@@ -1,7 +1,7 @@
 import { Card, Avatar, Flex, Button, Popconfirm, Badge } from 'antd';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { CircleHelp as CircleHelpIcon } from 'lucide-react';
 import { MouseEvent, useEffect, useState } from 'react';
 import { Token, blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
@@ -149,11 +149,7 @@ function TokenBox(props: {
                           onConfirm={() => {
                             void removeToken();
                           }}
-                          icon={
-                            <QuestionCircleOutlined
-                              style={{ color: 'orange' }}
-                            />
-                          }
+                          icon={<CircleHelpIcon style={{ color: 'orange' }} />}
                         >
                           <Button type="default" danger size="small">
                             {t('home:tokens.remove_token')}

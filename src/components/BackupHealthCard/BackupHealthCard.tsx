@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import { Modal, Button } from 'antd';
-import { SafetyOutlined, WarningOutlined } from '@ant-design/icons';
+import {
+  ShieldCheck as ShieldCheckIcon,
+  TriangleAlert as TriangleAlertIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import secureLocalStorage from 'react-secure-storage';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
@@ -81,7 +84,7 @@ function BackupHealthCard() {
     <>
       <div className="backup-health-card" role="status">
         <span className="backup-health-icon" aria-hidden="true">
-          <WarningOutlined />
+          <TriangleAlertIcon />
         </span>
         <div className="backup-health-text">
           <div className="backup-health-title">{headline}</div>
@@ -203,7 +206,7 @@ function VerifyBackupModal({
       style={{ textAlign: 'center', top: 60 }}
     >
       <div className="backup-verify-body">
-        <SafetyOutlined className="backup-verify-shield" />
+        <ShieldCheckIcon className="backup-verify-shield" />
         <p className="backup-verify-lead">
           {t(
             'home:backupHealth.verify_lead',

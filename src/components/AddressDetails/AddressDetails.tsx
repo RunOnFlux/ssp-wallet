@@ -18,11 +18,11 @@ import { generateAddressKeypair, getScriptType } from '../../lib/wallet';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-  ExclamationCircleFilled,
-  CopyOutlined,
-} from '@ant-design/icons';
+  CircleAlert as CircleAlertIcon,
+  Copy as CopyIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 
@@ -161,12 +161,10 @@ function AddressDetails(props: {
           <>
             <h3 className="detailsTitleWithDescription">
               {redeemScriptVisible && (
-                <EyeTwoTone onClick={() => setRedeemScriptVisible(false)} />
+                <EyeIcon onClick={() => setRedeemScriptVisible(false)} />
               )}
               {!redeemScriptVisible && (
-                <EyeInvisibleOutlined
-                  onClick={() => setRedeemScriptVisible(true)}
-                />
+                <EyeOffIcon onClick={() => setRedeemScriptVisible(true)} />
               )}{' '}
               {t('home:addressDetails.wallet_redeem_script')}:
             </h3>
@@ -193,12 +191,10 @@ function AddressDetails(props: {
           <>
             <h3 className="detailsTitleWithDescription">
               {witnessScriptVisible && (
-                <EyeTwoTone onClick={() => setWitnessScriptVisible(false)} />
+                <EyeIcon onClick={() => setWitnessScriptVisible(false)} />
               )}
               {!witnessScriptVisible && (
-                <EyeInvisibleOutlined
-                  onClick={() => setWitnessScriptVisible(true)}
-                />
+                <EyeOffIcon onClick={() => setWitnessScriptVisible(true)} />
               )}{' '}
               {t('home:addressDetails.wallet_witness_script')}:
             </h3>
@@ -223,7 +219,7 @@ function AddressDetails(props: {
         )}
         <h3 className="detailsTitleWithDescription">
           {privateKeyVisible && (
-            <EyeTwoTone onClick={() => setPrivateKeyVisible(false)} />
+            <EyeIcon onClick={() => setPrivateKeyVisible(false)} />
           )}
           {!privateKeyVisible && (
             <Popconfirm
@@ -252,9 +248,9 @@ function AddressDetails(props: {
               onConfirm={() => {
                 setPrivateKeyVisible(true);
               }}
-              icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+              icon={<CircleAlertIcon style={{ color: 'orange' }} />}
             >
-              <EyeInvisibleOutlined />
+              <EyeOffIcon />
             </Popconfirm>
           )}{' '}
           {t('home:addressDetails.wallet_priv_key')}:
@@ -274,7 +270,7 @@ function AddressDetails(props: {
                   size="small"
                   color="primary"
                   className="copyableIcon"
-                  icon={<CopyOutlined />}
+                  icon={<CopyIcon />}
                   onClick={() => {
                     setPrivKeyCopyingVisible(true);
                   }}
@@ -310,7 +306,7 @@ function AddressDetails(props: {
         <Space direction="vertical" size="middle">
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 privKey.substring(0, Math.round(privKey.length / 2)),
@@ -322,7 +318,7 @@ function AddressDetails(props: {
           </Button>
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 privKey.substring(

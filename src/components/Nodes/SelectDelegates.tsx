@@ -1,6 +1,7 @@
 import { Checkbox, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { NamedDelegate } from './ConfigureDelegates';
+import { truncateAddress } from '../../lib/addressDisplay';
 
 const { Text } = Typography;
 
@@ -43,9 +44,9 @@ function SelectDelegates(props: {
             </Text>{' '}
             <Text
               type="secondary"
-              style={{ fontSize: 11, fontFamily: 'monospace' }}
+              style={{ fontSize: 11, fontFamily: 'var(--ssp-mono)' }}
             >
-              {d.key.slice(0, 8)}…{d.key.slice(-6)}
+              {truncateAddress(d.key)}
             </Text>
           </Checkbox>
         ))}

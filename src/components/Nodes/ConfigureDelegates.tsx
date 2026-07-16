@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from '../../lib/toast';
 import { Modal, Input, Button, Typography } from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Plus as PlusIcon, Trash2 as Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
 import { blockchains } from '@storage/blockchains';
@@ -160,7 +160,7 @@ function ConfigureDelegates(props: {
             />
             <Button
               type="primary"
-              icon={<PlusOutlined />}
+              icon={<PlusIcon />}
               onClick={() => void handleAddDelegate()}
               disabled={
                 delegates.length >= MAX_DELEGATES || !newDelegate.trim()
@@ -194,7 +194,7 @@ function ConfigureDelegates(props: {
                     type="secondary"
                     style={{
                       fontSize: 11,
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--ssp-mono)',
                       wordBreak: 'break-all',
                       display: 'block',
                     }}
@@ -206,7 +206,7 @@ function ConfigureDelegates(props: {
                   type="text"
                   danger
                   size="small"
-                  icon={<DeleteOutlined />}
+                  icon={<Trash2Icon />}
                   onClick={() => void handleRemoveDelegate(index)}
                   style={{ marginTop: 18 }}
                 />

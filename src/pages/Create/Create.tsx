@@ -18,14 +18,12 @@ import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
 
 import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-  LockOutlined,
-  ExclamationCircleFilled,
-  CopyOutlined,
-  EyeInvisibleFilled,
-  EyeFilled,
-} from '@ant-design/icons';
+  CircleAlert as CircleAlertIcon,
+  Copy as CopyIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+  Lock as LockIcon,
+} from 'lucide-react';
 import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch, useAppSelector } from '../../hooks';
@@ -147,7 +145,7 @@ function Create() {
   const warningWeakPassword = () => {
     modal.confirm({
       title: t('cr:weak_password'),
-      icon: <ExclamationCircleFilled />,
+      icon: <CircleAlertIcon />,
       content: (
         <>
           {t('cr:weak_password_info')}
@@ -346,9 +344,9 @@ function Create() {
                   <Input.Password
                     size="large"
                     placeholder={t('cr:set_password')}
-                    prefix={<LockOutlined />}
+                    prefix={<LockIcon />}
                     iconRender={(visible) =>
-                      visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                      visible ? <EyeIcon /> : <EyeOffIcon />
                     }
                     className="password-input"
                     onChange={(e) => {
@@ -369,9 +367,9 @@ function Create() {
               <Input.Password
                 size="large"
                 placeholder={t('cr:confirm_password')}
-                prefix={<LockOutlined />}
+                prefix={<LockIcon />}
                 iconRender={(visible) =>
-                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                  visible ? <EyeIcon /> : <EyeOffIcon />
                 }
                 className="password-input"
               />
@@ -523,7 +521,7 @@ function Create() {
             <div className="popconfirm-button">
               <Button
                 type="dashed"
-                icon={<EyeFilled />}
+                icon={<EyeIcon />}
                 onClick={() => {
                   setMnemonicShow(!mnemonicShow);
                   setWSPwasShown(true);
@@ -553,12 +551,12 @@ function Create() {
                 setMnemonicShow(!mnemonicShow);
                 setWSPwasShown(true);
               }}
-              icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+              icon={<CircleAlertIcon style={{ color: 'orange' }} />}
             >
               <div className="popconfirm-button">
                 <Button
                   type="dashed"
-                  icon={<EyeInvisibleFilled />}
+                  icon={<EyeOffIcon />}
                   style={{ margin: 5 }}
                 >
                   {t('cr:show_mnemonic')} {t('cr:wallet_seed_phrase')}
@@ -589,14 +587,10 @@ function Create() {
               setSeedPhraseCopyingVisible(true);
               setWpCopied(true);
             }}
-            icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+            icon={<CircleAlertIcon style={{ color: 'orange' }} />}
           >
             <div className="popconfirm-button">
-              <Button
-                type="dashed"
-                icon={<CopyOutlined />}
-                style={{ margin: 5 }}
-              >
+              <Button type="dashed" icon={<CopyIcon />} style={{ margin: 5 }}>
                 {t('cr:copy_wallet_seed')}
               </Button>
             </div>
@@ -629,7 +623,7 @@ function Create() {
           <Space direction="vertical" size="middle">
             <Button
               type="dashed"
-              icon={<CopyOutlined />}
+              icon={<CopyIcon />}
               onClick={() => {
                 navigator.clipboard.writeText(
                   new TextDecoder().decode(
@@ -643,7 +637,7 @@ function Create() {
             </Button>
             <Button
               type="dashed"
-              icon={<CopyOutlined />}
+              icon={<CopyIcon />}
               onClick={() => {
                 navigator.clipboard.writeText(
                   new TextDecoder().decode(
@@ -660,7 +654,7 @@ function Create() {
             </Button>
             <Button
               type="dashed"
-              icon={<CopyOutlined />}
+              icon={<CopyIcon />}
               onClick={() => {
                 navigator.clipboard.writeText(
                   new TextDecoder().decode(

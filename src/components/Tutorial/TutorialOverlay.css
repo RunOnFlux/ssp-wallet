@@ -170,7 +170,8 @@
   overflow: hidden;
 }
 
-.tutorial-intro-button > span > .anticon {
+.tutorial-intro-button > span > .anticon,
+.tutorial-intro-button > span > .lucide {
   flex-shrink: 0;
   margin-right: 6px;
 }

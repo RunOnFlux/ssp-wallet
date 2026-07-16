@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../lib/toast';
 import { useSspLogo } from '../../hooks/useSspLogo';
-import { ExclamationCircleFilled } from '@ant-design/icons';
+import { CircleAlert as CircleAlertIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
@@ -963,7 +963,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
       title: isIdentityChain
         ? t('home:key.cancel_sync_q')
         : t('home:key.cancel_sync_q_chain', { chain: blockchainConfig.name }),
-      icon: <ExclamationCircleFilled />,
+      icon: <CircleAlertIcon />,
       okText: t('home:key.cancel_sync'),
       cancelText: t('home:key.back_to_sync'),
       content: isIdentityChain
@@ -1247,7 +1247,7 @@ function Key(props: { synchronised: (status: boolean) => void }) {
       <span
         className="keyVerifyChipIndex"
         style={{
-          color: '#fff',
+          color: '#0c0a09',
           background: VERIFY_ACCENTS[index % VERIFY_ACCENTS.length],
         }}
       >

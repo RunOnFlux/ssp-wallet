@@ -85,11 +85,7 @@
 }
 
 .backup-verify-error {
-  color: #dc2626;
+  color: #ef4444;
   font-size: 12px;
   margin: 4px 0;
-}
-
-:root[data-theme='dark'] .backup-verify-error {
-  color: #f87171;
 }

@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "@alchemy/aa-core": "3.19.0",
-    "@ant-design/icons": "6.2.5",
     "@fontsource/inter": "5.2.8",
     "@metamask/browser-passworder": "6.0.0",
     "@noble/hashes": "2.2.0",
@@ -66,6 +65,7 @@
     "i18next": "26.3.1",
     "localforage": "1.10.0",
     "lru-cache": "11.5.1",
+    "lucide-react": "1.24.0",
     "patch-package": "8.0.1",
     "postinstall-postinstall": "2.1.0",
     "process": "0.11.10",

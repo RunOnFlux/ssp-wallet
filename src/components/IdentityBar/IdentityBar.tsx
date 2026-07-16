@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { Image, Tooltip } from 'antd';
-import { LockOutlined, DownOutlined } from '@ant-design/icons';
+import { ChevronDown as ChevronDownIcon, Lock as LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import {
@@ -101,11 +101,12 @@ function IdentityBar({ onOpenSwitcher }: Props) {
               width={12}
               preview={false}
               src={blockchainConfig.logo}
+              alt=""
             />
             {chainLabel}
           </span>
         </span>
-        <DownOutlined className="identity-pill-caret" />
+        <ChevronDownIcon className="identity-pill-caret" />
       </button>
       <Tooltip title={t('home:navbar.lock', 'Lock')} placement="bottomRight">
         <button
@@ -114,7 +115,7 @@ function IdentityBar({ onOpenSwitcher }: Props) {
           onClick={logout}
           aria-label={t('home:navbar.lock', 'Lock')}
         >
-          <LockOutlined />
+          <LockIcon />
         </button>
       </Tooltip>
     </header>

@@ -23,7 +23,7 @@ import {
   Select,
   theme,
 } from 'antd';
-import { QuestionCircleOutlined, ScanOutlined } from '@ant-design/icons';
+import { CircleHelp as CircleHelpIcon, Scan as ScanIcon } from 'lucide-react';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 
@@ -46,6 +46,7 @@ import {
 } from '../../lib/sendStrategies/machine';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
 import { toast } from '../../lib/toast';
+import { truncateAddress } from '../../lib/addressDisplay';
 import type { SendStrategyView } from './types';
 import { useUtxoSendStrategy } from './useUtxoSendStrategy';
 import { useEvmSendStrategy } from './useEvmSendStrategy';
@@ -68,11 +69,6 @@ const STRATEGY_HOOKS: Record<'utxo' | 'evm' | 'sol', () => SendStrategyView> = {
   evm: useEvmSendStrategy,
   sol: useSolSendStrategy,
 };
-
-function truncateAddress(address: string): string {
-  if (address.length <= 16) return address;
-  return `${address.slice(0, 8)}…${address.slice(-6)}`;
-}
 
 function SendFlow() {
   const { activeChain } = useAppSelector((state) => state.sspState);
@@ -395,7 +391,7 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
               {isQrScanSupported() && strategy.receiver.qrEnabled && (
                 <Button
                   size="large"
-                  icon={<ScanOutlined />}
+                  icon={<ScanIcon />}
                   onClick={() => setOpenQrScanner(true)}
                   title={t('send:scan_qr')}
                   aria-label={t('send:scan_qr')}
@@ -553,14 +549,16 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                   {t('send:review_to')}
                   {recipientName ? ` · ${recipientName}` : ''}
                 </div>
+                {/* Review = where the user verifies the destination — always
+                    the FULL address (anti address-poisoning invariant). */}
                 <div
                   style={{
-                    fontFamily: 'monospace',
+                    fontFamily: 'var(--ssp-mono)',
                     fontSize: 13,
                     wordBreak: 'break-all',
                   }}
                 >
-                  {truncateAddress(strategy.receiver.value)}
+                  {strategy.receiver.value}
                 </div>
               </div>
             </div>
@@ -774,7 +772,7 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                     content={rbfContent}
                     title={t('send:replace_by_fee_tx')}
                   >
-                    <QuestionCircleOutlined
+                    <CircleHelpIcon
                       style={{ color: token.colorPrimary }}
                     />{' '}
                   </Popover>{' '}

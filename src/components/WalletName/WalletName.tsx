@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Input } from 'antd';
-import { EditOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import {
+  Check as CheckIcon,
+  Pencil as PencilIcon,
+  X as XIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
 import { getDisplayName, setWalletName } from '../../storage/walletNames';
@@ -114,16 +118,18 @@ const WalletName = ({
           size="small"
         />
         <div className="wallet-name-actions">
-          <CheckOutlined
-            onClick={(e) => void handleSave(e)}
-            className="wallet-name-save"
-            title={t('save')}
-          />
-          <CloseOutlined
-            onClick={(e) => handleCancel(e)}
-            className="wallet-name-cancel"
-            title={t('cancel')}
-          />
+          <span title={t('save')}>
+            <CheckIcon
+              onClick={(e) => void handleSave(e)}
+              className="wallet-name-save"
+            />
+          </span>
+          <span title={t('cancel')}>
+            <XIcon
+              onClick={(e) => handleCancel(e)}
+              className="wallet-name-cancel"
+            />
+          </span>
         </div>
       </div>
     );
@@ -133,11 +139,12 @@ const WalletName = ({
     <div className={`wallet-name ${className}`}>
       <span className="wallet-name-text">{displayName}</span>
       {editable && !editing && showEditIcon && (
-        <EditOutlined
-          onClick={handleStartEdit}
-          className="wallet-name-edit-icon"
-          title={t('rename_wallet')}
-        />
+        <span title={t('rename_wallet')}>
+          <PencilIcon
+            onClick={handleStartEdit}
+            className="wallet-name-edit-icon"
+          />
+        </span>
       )}
     </div>
   );

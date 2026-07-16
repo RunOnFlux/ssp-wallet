@@ -16,13 +16,13 @@ import {
   Tooltip,
 } from 'antd';
 import {
-  CaretDownOutlined,
-  LoadingOutlined,
-  PlusCircleOutlined,
-  MinusCircleOutlined,
-  SwapOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+  ArrowDownUp as ArrowDownUpIcon,
+  ChevronDown as ChevronDownIcon,
+  CircleMinus as CircleMinusIcon,
+  CirclePlus as CirclePlusIcon,
+  Info as InfoIcon,
+  LoaderCircle as LoaderCircleIcon,
+} from 'lucide-react';
 import Navbar from '../../components/Navbar/Navbar.tsx';
 import { useTranslation } from 'react-i18next';
 import { blockchains, Token } from '@storage/blockchains';
@@ -49,6 +49,7 @@ import {
 } from '../../types';
 import AddressBox from './AddressBox.tsx';
 import { getDisplayName } from '../../storage/walletNames';
+import { truncateAddress } from '../../lib/addressDisplay';
 import { NoticeType } from 'antd/es/message/interface';
 import BigNumber from 'bignumber.js';
 import {
@@ -975,7 +976,7 @@ function Swap() {
                   {blockchains[sellAsset.split('_')[0]].tokens?.find(
                     (token) => token.symbol === sellAsset.split('_')[1],
                   )?.symbol ?? blockchains[sellAsset.split('_')[0]]?.symbol}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </div>
               </Button>
             </Col>
@@ -1008,7 +1009,7 @@ function Swap() {
                   }
                   placement="bottomLeft"
                 >
-                  <InfoCircleOutlined
+                  <InfoIcon
                     style={{
                       color: amountExceedsBalance ? '#ef4444' : 'inherit',
                       cursor: 'help',
@@ -1054,17 +1055,10 @@ function Swap() {
                     sellAssetAddress,
                   )}
                   :{' '}
-                  {userAddresses[sellAsset.split('_')[0]][
-                    sellAssetAddress
-                  ].substring(0, 8)}
-                  ...
-                  {userAddresses[sellAsset.split('_')[0]][
-                    sellAssetAddress
-                  ].substring(
-                    userAddresses[sellAsset.split('_')[0]][sellAssetAddress]
-                      .length - 6,
+                  {truncateAddress(
+                    userAddresses[sellAsset.split('_')[0]][sellAssetAddress],
                   )}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </Button>
               ) : (
                 <Button
@@ -1088,7 +1082,7 @@ function Swap() {
                   className="swap-switch-button"
                   onClick={() => changeDirection()}
                 >
-                  <SwapOutlined rotate={90} />
+                  <ArrowDownUpIcon />
                 </Button>
               </div>
               {selectedExchange.exchangeId?.slice(-3) !== 'fix' ? (
@@ -1102,7 +1096,10 @@ function Swap() {
                 >
                   {t('home:swap.you_get')} ~ &nbsp;
                   {loading ? (
-                    <Spin indicator={<LoadingOutlined spin />} size="small" />
+                    <Spin
+                      indicator={<LoaderCircleIcon className="lucide-spin" />}
+                      size="small"
+                    />
                   ) : (
                     ''
                   )}
@@ -1111,7 +1108,10 @@ function Swap() {
                 <>
                   {t('home:swap.you_get')} &nbsp;
                   {loading ? (
-                    <Spin indicator={<LoadingOutlined spin />} size="small" />
+                    <Spin
+                      indicator={<LoaderCircleIcon className="lucide-spin" />}
+                      size="small"
+                    />
                   ) : (
                     ''
                   )}
@@ -1173,7 +1173,7 @@ function Swap() {
                   {blockchains[buyAsset.split('_')[0]].tokens?.find(
                     (token) => token.symbol === buyAsset.split('_')[1],
                   )?.symbol ?? blockchains[buyAsset.split('_')[0]]?.symbol}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </div>
               </Button>
             </Col>
@@ -1213,17 +1213,10 @@ function Swap() {
                     buyAssetAddress,
                   )}
                   :{' '}
-                  {userAddresses[buyAsset.split('_')[0]][
-                    buyAssetAddress
-                  ].substring(0, 8)}
-                  ...
-                  {userAddresses[buyAsset.split('_')[0]][
-                    buyAssetAddress
-                  ].substring(
-                    userAddresses[buyAsset.split('_')[0]][buyAssetAddress]
-                      .length - 6,
+                  {truncateAddress(
+                    userAddresses[buyAsset.split('_')[0]][buyAssetAddress],
                   )}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </Button>
               ) : (
                 <Button
@@ -1271,7 +1264,7 @@ function Swap() {
                       ? ` - ${t('home:swap.best_rate')}`
                       : ` - ${t('home:swap.user_choice')}`
                     : ''}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </Button>
               </Col>
             </Row>
@@ -1282,14 +1275,14 @@ function Swap() {
             <>
               {showAdvancedOptions ? (
                 <>
-                  <MinusCircleOutlined
+                  <CircleMinusIcon
                     onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
                   />
                   &nbsp;
                 </>
               ) : (
                 <>
-                  <PlusCircleOutlined
+                  <CirclePlusIcon
                     onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
                   />
                   &nbsp;

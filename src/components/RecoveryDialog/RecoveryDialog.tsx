@@ -1,5 +1,8 @@
 import { Typography, Button, Space, Modal, Spin } from 'antd';
-import { MobileOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import {
+  CircleCheck as CircleCheckIcon,
+  Smartphone as SmartphoneIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const { Text } = Typography;
@@ -58,7 +61,7 @@ function RecoveryDialog({
       >
         {status === 'waiting' && (
           <>
-            <MobileOutlined style={{ fontSize: '48px' }} />
+            <SmartphoneIcon style={{ fontSize: '48px' }} />
             <Text>{t('login:recovery_dialog_body')}</Text>
             <Spin />
             <Text type="secondary">{t('login:recovery_waiting')}</Text>
@@ -66,9 +69,7 @@ function RecoveryDialog({
         )}
         {status === 'approved' && (
           <>
-            <CheckCircleOutlined
-              style={{ fontSize: '48px', color: '#22c55e' }}
-            />
+            <CircleCheckIcon style={{ fontSize: '48px', color: '#22c55e' }} />
             <Text>{t('login:recovery_approved')}</Text>
           </>
         )}

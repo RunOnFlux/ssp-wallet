@@ -6,10 +6,10 @@ import { getLastTab, tabToPath } from '../../storage/navPrefs';
 import { Input, Image, Button, Form, Spin } from 'antd';
 import localForage from 'localforage';
 import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-  LockOutlined,
-} from '@ant-design/icons';
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+  Lock as LockIcon,
+} from 'lucide-react';
 import secureLocalStorage from 'react-secure-storage';
 import { useTranslation } from 'react-i18next';
 import {
@@ -586,9 +586,9 @@ function Login() {
                 <Input.Password
                   size="large"
                   placeholder={t('login:enter_pw')}
-                  prefix={<LockOutlined />}
+                  prefix={<LockIcon />}
                   iconRender={(visible) =>
-                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                    visible ? <EyeIcon /> : <EyeOffIcon />
                   }
                   className="password-input"
                 />

@@ -38,3 +38,8 @@ coverage
 .nyc_output
 # upgrade-in-place release gate artifacts
 .upgrade-test/
+# phase-checkpoint screenshot artifacts (dev only)
+.phase*-shots/
+scripts/phase*-screenshots.mjs
+.lucide-shots/
+scripts/lucide-screenshots.mjs

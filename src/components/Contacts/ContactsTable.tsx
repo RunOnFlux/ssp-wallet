@@ -1,7 +1,7 @@
 import { Table, Empty, Flex, Popconfirm, Button } from 'antd';
 import { toast } from '../../lib/toast';
 import { NoticeType } from 'antd/es/message/interface';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { CircleHelp as CircleHelpIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import localForage from 'localforage';
 const { Column } = Table;
@@ -11,6 +11,7 @@ import ManageContact from './ManageContact.tsx';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { contact } from '../../types';
 import { setContacts } from '../../store';
+import { truncateAddress } from '../../lib/addressDisplay';
 
 // name, ip, tier, status
 function ContactsTable() {
@@ -83,14 +84,7 @@ function ContactsTable() {
   };
 
   const renderAddress = (name: string) => {
-    if (name.length > 16)
-      return (
-        <>
-          {name.substring(0, 8)}...{name.substring(name.length - 6) || '---'}
-        </>
-      );
-
-    return <>{name || '---'}</>;
+    return <>{truncateAddress(name) || '---'}</>;
   };
 
   const renderName = (name: string, record: contact) => {
@@ -161,7 +155,7 @@ function ContactsTable() {
                   onConfirm={() => {
                     void deleteContact(record.id);
                   }}
-                  icon={<QuestionCircleOutlined style={{ color: 'orange' }} />}
+                  icon={<CircleHelpIcon style={{ color: 'orange' }} />}
                 >
                   <Button size="middle">{t('common:delete')}</Button>
                 </Popconfirm>

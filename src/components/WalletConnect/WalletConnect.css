@@ -4,7 +4,7 @@
 }
 
 .walletconnect-form .ant-input {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: var(--ssp-mono);
   font-size: 12px;
 }
 

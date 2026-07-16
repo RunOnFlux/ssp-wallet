@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router';
 import {
-  HomeOutlined,
-  PieChartOutlined,
-  HistoryOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+  ChartPie as ChartPieIcon,
+  History as HistoryIcon,
+  House as HouseIcon,
+  Settings as SettingsIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { WalletTab } from '../../storage/navPrefs';
 import { tabToPath } from '../../storage/navPrefs';
@@ -25,21 +25,21 @@ function TabBar({ activeTab }: Props) {
   const navigate = useNavigate();
 
   const tabs: { key: WalletTab; label: string; icon: React.ReactNode }[] = [
-    { key: 'home', label: t('home:tabs.home', 'Home'), icon: <HomeOutlined /> },
+    { key: 'home', label: t('home:tabs.home', 'Home'), icon: <HouseIcon /> },
     {
       key: 'portfolio',
       label: t('home:tabs.portfolio', 'Portfolio'),
-      icon: <PieChartOutlined />,
+      icon: <ChartPieIcon />,
     },
     {
       key: 'activity',
       label: t('common:activity'),
-      icon: <HistoryOutlined />,
+      icon: <HistoryIcon />,
     },
     {
       key: 'settings',
       label: t('home:settings.settings'),
-      icon: <SettingOutlined />,
+      icon: <SettingsIcon />,
     },
   ];
 

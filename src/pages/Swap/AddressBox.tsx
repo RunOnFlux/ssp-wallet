@@ -7,6 +7,7 @@ import localForage from 'localforage';
 import './AddressBox.css';
 import { tokenBalanceEVM } from '../../types';
 import { formatCrypto } from '../../lib/currency';
+import { truncateAddress } from '../../lib/addressDisplay';
 import { getDisplayName } from '../../storage/walletNames';
 import { cryptos } from '../../types';
 
@@ -123,8 +124,7 @@ function AddressBox(props: { asset: string; wallet: string; address: string }) {
                   fontSize: '12px',
                 }}
               >
-                {address.substring(0, 8)}...
-                {address.substring(address.length - 6)}
+                {truncateAddress(address)}
               </div>
               <div style={{ flexShrink: 0 }}>
                 {blockchains[asset.split('_')[0]].tokens?.find(

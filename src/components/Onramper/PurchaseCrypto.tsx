@@ -4,7 +4,10 @@ import { Button, Modal, Space, Typography } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 const { Text } = Typography;
 import { useTranslation } from 'react-i18next';
-import { WarningOutlined, LoadingOutlined } from '@ant-design/icons';
+import {
+  LoaderCircle as LoaderCircleIcon,
+  TriangleAlert as TriangleAlertIcon,
+} from 'lucide-react';
 
 import axios from 'axios';
 
@@ -108,7 +111,10 @@ function PurchaseCrypto(props: {
         ) : loading && userConsentBuy ? (
           <div className="onramper-loading">
             <Space direction="vertical" size={48}>
-              <LoadingOutlined style={{ fontSize: '36px' }} />
+              <LoaderCircleIcon
+                className="lucide-spin"
+                style={{ fontSize: '36px' }}
+              />
               <Text strong style={{ fontSize: '24px' }}>
                 {t('common:loading')}
               </Text>
@@ -136,7 +142,7 @@ function PurchaseCrypto(props: {
               <Text strong style={{ fontSize: '24px' }}>
                 {t('home:buy_sell_crypto.third_party_service')}
               </Text>
-              <WarningOutlined style={{ fontSize: '36px' }} />
+              <TriangleAlertIcon style={{ fontSize: '36px' }} />
               <Text>{t('home:buy_sell_crypto.consent_info')}</Text>
             </Space>
             <div className="onramper-consent-buttons">

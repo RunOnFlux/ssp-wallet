@@ -4,18 +4,19 @@ import './CreationSteps.css';
 
 /**
  * Onboarding wizard chrome. Goal-gradient (Phase 4): the progress readout
- * NEVER reads 0% — the first real step already shows ~22% so momentum is
+ * NEVER reads 0% — the first step already shows 22% so momentum is
  * visible from the start. The percent is presentational only; `step` still
  * drives which antd Steps node is active. A "Make it yours" personalization
  * node sits between Backup and Sync.
  */
 
 // Non-zero at every stage — the wizard should always feel underway, never at 0.
+// Goal-gradient floor: the very first step already reads 22%.
 const STEP_PERCENT: Record<number, number> = {
-  0: 8,
-  1: 22,
-  2: 45,
-  3: 70,
+  0: 22,
+  1: 40,
+  2: 58,
+  3: 76,
   4: 90,
 };
 
@@ -68,7 +69,7 @@ function CreationSteps(props: { step: number; import: boolean }) {
       ),
     },
   ];
-  const percent = STEP_PERCENT[props.step] ?? 8;
+  const percent = STEP_PERCENT[props.step] ?? 22;
   return (
     <>
       <div className="creation-progress" aria-hidden="true">

@@ -199,7 +199,7 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
                 padding: '10px',
                 borderRadius: '4px',
                 fontSize: '12px',
-                fontFamily: 'monospace',
+                fontFamily: 'var(--ssp-mono)',
               }}
             >
               <Text
@@ -271,7 +271,7 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
                 className="copyableAddress"
                 style={{
                   fontSize: 11,
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--ssp-mono)',
                   wordBreak: 'break-all',
                   marginBottom: 0,
                   textAlign: 'left',

@@ -7,8 +7,8 @@
   display: flex;
   align-items: stretch;
   height: 56px;
-  border-top: 1px solid var(--ssp-border, #e7e5e4);
-  background: var(--ssp-bg, #fafaf9);
+  border-top: 1px solid #e7e5e4;
+  background: #fafaf9;
 }
 
 :root[data-theme='dark'] .tab-bar {
@@ -28,7 +28,7 @@
   cursor: pointer;
   padding: 6px 2px;
   color: inherit;
-  opacity: 0.55;
+  opacity: 0.65;
   transition:
     opacity 0.15s ease,
     color 0.15s ease;
@@ -36,6 +36,11 @@
 
 .tab-bar-item:hover {
   opacity: 0.85;
+}
+
+.tab-bar-item:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: -2px; /* keep the ring inside the fixed bar */
 }
 
 .tab-bar-item-active {
@@ -69,7 +74,7 @@ body.extension-sidepanel .tab-bar {
   height: 100vh;
   padding-top: 16px;
   border-top: none;
-  border-right: 1px solid var(--ssp-border, #e7e5e4);
+  border-right: 1px solid #e7e5e4;
   order: 0;
 }
 
@@ -84,7 +89,7 @@ body.extension-sidepanel .tab-bar-item {
   gap: 12px;
   height: 44px;
   padding: 0 16px;
-  border-radius: 10px;
+  border-radius: 8px;
   margin: 0 8px;
 }
 

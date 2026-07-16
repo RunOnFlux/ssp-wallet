@@ -280,7 +280,7 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
               className="copyableAddress"
               style={{
                 fontSize: 11,
-                fontFamily: 'monospace',
+                fontFamily: 'var(--ssp-mono)',
                 wordBreak: 'break-all',
                 marginBottom: 0,
                 textAlign: 'left',

@@ -1134,7 +1134,7 @@ function EnterpriseVaultSignTx({
             )}
             <Text
               type="secondary"
-              style={{ fontSize: '12px', fontFamily: 'monospace' }}
+              style={{ fontSize: '12px', fontFamily: 'var(--ssp-mono)' }}
             >
               {requesterInfo.origin}
             </Text>
@@ -1178,7 +1178,7 @@ function EnterpriseVaultSignTx({
                   </Text>
                   <Text
                     style={{
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--ssp-mono)',
                       fontSize: '11px',
                       wordBreak: 'break-all',
                     }}
@@ -1216,7 +1216,7 @@ function EnterpriseVaultSignTx({
                   overflow: 'auto',
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--ssp-mono)',
                   fontSize: '12px',
                 }}
               >
@@ -1302,7 +1302,7 @@ function EnterpriseVaultSignTx({
                   <Text
                     copyable={{ text: recipient.address }}
                     style={{
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--ssp-mono)',
                       fontSize: '13px',
                       wordBreak: 'break-all',
                       display: 'block',
@@ -1345,7 +1345,9 @@ function EnterpriseVaultSignTx({
                 <Text type="secondary">
                   {t('home:enterpriseVaultSignTx.memo')}:{' '}
                 </Text>
-                <Text style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                <Text
+                  style={{ fontFamily: 'var(--ssp-mono)', fontSize: '12px' }}
+                >
                   {memo}
                 </Text>
               </Space>
@@ -1383,7 +1385,10 @@ function EnterpriseVaultSignTx({
           <Text type="secondary">
             {t('home:enterpriseVaultSignTx.ssp_identity')}:
           </Text>
-          <Text strong style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+          <Text
+            strong
+            style={{ fontFamily: 'var(--ssp-mono)', fontSize: '12px' }}
+          >
             {wkIdentity.substring(0, 12)}...
             {wkIdentity.substring(wkIdentity.length - 12)}
           </Text>

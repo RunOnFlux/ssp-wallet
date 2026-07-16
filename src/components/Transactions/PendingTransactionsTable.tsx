@@ -2,12 +2,14 @@ import { Table, Tooltip } from 'antd';
 import { useEffect, useState } from 'react';
 const { Column } = Table;
 import BigNumber from 'bignumber.js';
-import { ClockCircleOutlined } from '@ant-design/icons';
+import {
+  ArrowUpToLine as ArrowUpToLineIcon,
+  Clock as ClockIcon,
+} from 'lucide-react';
 import './Transactions.css';
 import { useTranslation } from 'react-i18next';
 import { sspConfig } from '@storage/ssp';
 import CountdownTimer from './CountDownTimer.tsx';
-import { VerticalAlignTopOutlined } from '@ant-design/icons';
 import ConfirmTxKey from '../ConfirmTxKey/ConfirmTxKey.tsx';
 import { actionSSPRelay } from '../../types';
 import { pendingTransaction } from '../../types';
@@ -84,7 +86,7 @@ function PendingTransactionsTable(props: {
             className="table-icon"
             render={() => (
               <>
-                <VerticalAlignTopOutlined style={{ fontSize: '16px' }} />
+                <ArrowUpToLineIcon style={{ fontSize: '16px' }} />
               </>
             )}
           />
@@ -143,7 +145,7 @@ function PendingTransactionsTable(props: {
                   </Tooltip>
                 ) : (
                   <Tooltip title={t('home:transactionsTable.tx_unconfirmed')}>
-                    <ClockCircleOutlined style={{ fontSize: '18px' }} />
+                    <ClockIcon style={{ fontSize: '18px' }} />
                   </Tooltip>
                 )}
               </>

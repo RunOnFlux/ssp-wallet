@@ -23,10 +23,10 @@ import { fluxnode } from '@runonflux/flux-sdk';
 import secureLocalStorage from 'react-secure-storage';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import {
-  QuestionCircleOutlined,
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-} from '@ant-design/icons';
+  CircleHelp as CircleHelpIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+} from 'lucide-react';
 import { randomBytes } from 'crypto';
 import { broadcastTx } from '../../lib/constructTx';
 import { getFingerprint } from '../../lib/fingerprint';
@@ -455,12 +455,12 @@ function NodesTable(props: {
                     className="node-detail-label-with-icon"
                   >
                     {redeemScriptVisible ? (
-                      <EyeTwoTone
+                      <EyeIcon
                         onClick={() => setRedeemScriptVisible(false)}
                         className="node-clickable-icon"
                       />
                     ) : (
-                      <EyeInvisibleOutlined
+                      <EyeOffIcon
                         onClick={() => setRedeemScriptVisible(true)}
                         className="node-clickable-icon"
                       />
@@ -513,9 +513,7 @@ function NodesTable(props: {
                       onConfirm={() => {
                         openFluxOS(record.ip);
                       }}
-                      icon={
-                        <QuestionCircleOutlined style={{ color: 'blue' }} />
-                      }
+                      icon={<CircleHelpIcon style={{ color: 'blue' }} />}
                     >
                       <Button size="middle" disabled={!record.ip}>
                         {t('common:fluxos')}
@@ -548,7 +546,7 @@ function NodesTable(props: {
                       onConfirm={() => {
                         void deleteNode(record.txid, record.vout);
                       }}
-                      icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                      icon={<CircleHelpIcon style={{ color: 'red' }} />}
                     >
                       <Button size="middle">{t('common:delete')}</Button>
                     </Popconfirm>
@@ -563,9 +561,7 @@ function NodesTable(props: {
                       onConfirm={() => {
                         void uploadToFluxStorage(record);
                       }}
-                      icon={
-                        <QuestionCircleOutlined style={{ color: 'blue' }} />
-                      }
+                      icon={<CircleHelpIcon style={{ color: 'blue' }} />}
                     >
                       <Button size="middle">
                         {t('home:nodesTable.add_to_flux_storage')}

@@ -1,8 +1,14 @@
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
 import { blockchains } from '@storage/blockchains';
-import { fetchAddressBalance } from './balances';
-import type { cryptos, currency, generatedWallets } from '../types';
+import type { Token } from '@storage/blockchains';
+import { fetchAddressBalance, fetchAddressTokenBalances } from './balances';
+import type {
+  cryptos,
+  currency,
+  generatedWallets,
+  tokenBalanceEVM,
+} from '../types';
 
 /**
  * Unified multi-chain portfolio aggregation for the Portfolio tab.
@@ -24,6 +30,14 @@ export interface WalletHolding {
   fiat: number;
 }
 
+export interface TokenHolding {
+  contract: string;
+  symbol: string;
+  name: string;
+  crypto: BigNumber; // whole units of the token
+  fiat: number;
+}
+
 export interface ChainPortfolio {
   chain: keyof cryptos;
   name: string;
@@ -31,7 +45,9 @@ export interface ChainPortfolio {
   logo: string;
   needsActivation: boolean;
   crypto: BigNumber; // whole units, native asset
-  fiat: number;
+  fiat: number; // chain total in fiat: native + activated tokens
+  tokenFiat: number; // fiat portion contributed by activated tokens
+  tokens: TokenHolding[]; // aggregated across all wallets of the chain
   walletInUse: string;
   wallets: WalletHolding[];
 }
@@ -79,6 +95,73 @@ async function discoverChains(): Promise<
   return results;
 }
 
+/** Does the chain support tokens the same way Home's Balances component does? */
+function chainSupportsTokens(chain: keyof cryptos): boolean {
+  const type = blockchains[chain]?.chainType;
+  return type === 'evm' || type === 'sol';
+}
+
+/**
+ * Value one wallet's cached/fetched token balances in fiat.
+ *
+ * Pure — mirrors exactly how Home's TokenBox prices a token:
+ * `cryptoRates[symbol.toLowerCase()] * fiatRates[fiatCurrency]`.
+ * Only tokens the user activated are counted; the contract-less "native"
+ * pseudo-token in chain specs is skipped (native is aggregated separately).
+ */
+export function valueTokenBalances(
+  balances: tokenBalanceEVM[],
+  activatedTokens: string[],
+  tokenSpecs: Token[],
+  cryptoRates: cryptos,
+  fiatRates: currency,
+  fiatCurrency: keyof currency,
+): TokenHolding[] {
+  const activated = new Set(activatedTokens.filter((c) => c.length > 0));
+  const specByContract = new Map<string, Token>();
+  tokenSpecs.forEach((spec) => {
+    if (spec.contract) specByContract.set(spec.contract, spec);
+  });
+  const holdings: TokenHolding[] = [];
+  balances.forEach((bal) => {
+    if (!activated.has(bal.contract)) return; // stale cache or deactivated
+    const spec = specByContract.get(bal.contract);
+    if (!spec) return; // no metadata — cannot value safely
+    const crypto = new BigNumber(bal.balance || '0').dividedBy(
+      10 ** spec.decimals,
+    );
+    if (crypto.isNaN()) return;
+    const rate =
+      (cryptoRates[spec.symbol.toLowerCase() as keyof cryptos] ?? 0) *
+      (fiatRates[fiatCurrency] ?? 0);
+    holdings.push({
+      contract: bal.contract,
+      symbol: spec.symbol,
+      name: spec.name,
+      crypto,
+      fiat: crypto.multipliedBy(rate).toNumber(),
+    });
+  });
+  return holdings;
+}
+
+/** Merge per-wallet token holdings into one per-contract list. Pure. */
+export function mergeTokenHoldings(lists: TokenHolding[][]): TokenHolding[] {
+  const merged = new Map<string, TokenHolding>();
+  lists.forEach((list) => {
+    list.forEach((h) => {
+      const existing = merged.get(h.contract);
+      if (existing) {
+        existing.crypto = existing.crypto.plus(h.crypto);
+        existing.fiat += h.fiat;
+      } else {
+        merged.set(h.contract, { ...h });
+      }
+    });
+  });
+  return [...merged.values()].sort((a, b) => b.fiat - a.fiat);
+}
+
 /**
  * Load the full portfolio. `live=false` returns cached balances only (instant
  * first paint); `live=true` re-fetches every synced address concurrently.
@@ -96,6 +179,18 @@ export async function loadPortfolio(
       const cfg = blockchains[chain];
       const ids = Object.keys(wallets);
       const needsActivation = ids.length === 0;
+
+      // Token specs = built-in chain tokens + user-imported tokens, exactly
+      // like Home's TokensTable.
+      const supportsTokens = chainSupportsTokens(chain);
+      const importedTokens: Token[] = supportsTokens
+        ? ((await localForage.getItem(`imported-tokens-${chain}`)) ?? [])
+        : [];
+      const tokenSpecs: Token[] = supportsTokens
+        ? cfg.tokens.concat(importedTokens)
+        : [];
+
+      const tokenHoldingLists: TokenHolding[][] = [];
 
       const holdings: WalletHolding[] = await Promise.all(
         ids.map(async (id) => {
@@ -115,6 +210,46 @@ export async function loadPortfolio(
               );
             }
           }
+          // Activated-token balances: same cached-first pattern as native.
+          // Reuses Home's fetch lib + the exact localForage keys Home writes,
+          // so no new network calls beyond what Home already makes.
+          if (supportsTokens) {
+            const activatedTokens: string[] =
+              (await localForage.getItem(`activated-tokens-${chain}-${id}`)) ??
+              [];
+            let tokenBals: tokenBalanceEVM[] =
+              (await localForage.getItem(`token-balances-${chain}-${id}`)) ??
+              [];
+            if (live && address && activatedTokens.length > 0) {
+              try {
+                tokenBals = await fetchAddressTokenBalances(
+                  address,
+                  chain,
+                  activatedTokens,
+                );
+                await localForage.setItem(
+                  `token-balances-${chain}-${id}`,
+                  tokenBals,
+                );
+              } catch (error) {
+                // Keep cached token values on network failure.
+                console.log(
+                  `[portfolio] token balance fetch failed ${chain}-${id}`,
+                  error,
+                );
+              }
+            }
+            tokenHoldingLists.push(
+              valueTokenBalances(
+                tokenBals,
+                activatedTokens,
+                tokenSpecs,
+                cryptoRates,
+                fiatRates,
+                fiatCurrency,
+              ),
+            );
+          }
           const crypto = new BigNumber(base.confirmed)
             .plus(new BigNumber(base.unconfirmed))
             .dividedBy(10 ** cfg.decimals);
@@ -131,7 +266,9 @@ export async function loadPortfolio(
         (acc, h) => acc.plus(h.crypto),
         new BigNumber(0),
       );
-      const fiat = holdings.reduce((acc, h) => acc + h.fiat, 0);
+      const nativeFiat = holdings.reduce((acc, h) => acc + h.fiat, 0);
+      const tokens = mergeTokenHoldings(tokenHoldingLists);
+      const tokenFiat = tokens.reduce((acc, h) => acc + h.fiat, 0);
 
       return {
         chain,
@@ -140,7 +277,9 @@ export async function loadPortfolio(
         logo: cfg.logo,
         needsActivation,
         crypto,
-        fiat,
+        fiat: nativeFiat + tokenFiat,
+        tokenFiat,
+        tokens,
         walletInUse,
         wallets: holdings,
       };
@@ -163,6 +302,7 @@ export async function loadPortfolio(
       byChain: chains.map((c) => ({
         chain: c.chain,
         fiat: c.fiat,
+        tokenFiat: c.tokenFiat,
         crypto: c.crypto.toString(),
         needsActivation: c.needsActivation,
       })),

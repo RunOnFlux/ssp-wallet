@@ -12,6 +12,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  /* One mono stack for every address/hash/seed-word render (DESIGN_TOKENS §3) */
+  --ssp-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Amber focus ring (primary-500) shared by all custom interactive chrome */
+  --ssp-focus: #f59e0b;
 }
 
 body {
@@ -151,4 +155,23 @@ body.extension-sidepanel .adjustedWidth {
 :root.privacy-hidden .privacy-sensitive {
   filter: blur(8px);
   user-select: none;
+}
+
+/* Lucide icons (DESIGN_TOKENS §6): match antd icon metrics so migrated
+   icons keep the exact visual scale — 1em square, baseline-aligned,
+   currentColor via lucide's own stroke inheritance. */
+svg.lucide {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
+svg.lucide-spin {
+  animation: lucide-spin 1s linear infinite;
+}
+
+@keyframes lucide-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { Button, Input, Space, Select, Tooltip, theme } from 'antd';
 import {
-  QuestionCircleOutlined,
-  RightOutlined,
-  LinkOutlined,
-} from '@ant-design/icons';
+  ChevronRight as ChevronRightIcon,
+  CircleHelp as CircleHelpIcon,
+  Link as LinkIcon,
+} from 'lucide-react';
 import { NoticeType } from 'antd/es/message/interface';
 import { toast } from '../../lib/toast';
 import localForage from 'localforage';
@@ -94,7 +94,7 @@ function Row({
         {label}
         {help && (
           <Tooltip title={help}>
-            <QuestionCircleOutlined
+            <CircleHelpIcon
               style={{ marginLeft: 6, color: token.colorPrimary }}
             />
           </Tooltip>
@@ -107,7 +107,9 @@ function Row({
 
 /**
  * Settings — Phase 3 sectioned, routed page (General / Security / Networks /
- * Advanced) replacing the old ~990-line single Settings modal. Every previous
+ * SSP Enterprise) replacing the old ~990-line single Settings modal. No
+ * separate Advanced section: every power-user item already has a home (relay +
+ * per-chain node/API/explorer endpoints live under Networks). Every previous
  * setting is preserved; the theme toggle lives under General, and the utilities
  * that used to hang off the Navbar burger (address details, SSP wallet details,
  * sign message, WalletConnect, tutorial) are relocated here so nothing became
@@ -627,13 +629,13 @@ function Settings() {
         {label}
         {help && (
           <Tooltip title={help}>
-            <QuestionCircleOutlined
+            <CircleHelpIcon
               style={{ marginLeft: 6, color: token.colorPrimary }}
             />
           </Tooltip>
         )}
       </span>
-      <RightOutlined className="settings-nav-caret" />
+      <ChevronRightIcon className="settings-nav-caret" />
     </button>
   );
 
@@ -772,7 +774,7 @@ function Settings() {
       <Section
         title={
           <span>
-            <LinkOutlined style={{ marginRight: 6 }} />
+            <LinkIcon style={{ marginRight: 6 }} />
             {t('home:settings.sspEnterprise.title')}
           </span>
         }

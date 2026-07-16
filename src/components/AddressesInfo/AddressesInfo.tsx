@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
 import { blockchains } from '@storage/blockchains';
+import { truncateAddress } from '../../lib/addressDisplay';
 import { generatedWallets } from '../../types';
 
 interface addressesInfoData {
@@ -44,7 +45,7 @@ function AddressesInfo({ open, chain, openAction }: Props) {
       }
       setOptions(
         addresses.map((address, i) => ({
-          label: `Wallet ${i + 1}: ${address.substring(0, 10)}...${address.substring(address.length - 9)}`,
+          label: `Wallet ${i + 1}: ${truncateAddress(address)}`,
           value: address,
         })),
       );

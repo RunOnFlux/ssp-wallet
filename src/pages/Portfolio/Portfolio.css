@@ -39,9 +39,24 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-refresh.spinning {
+    animation: none;
+  }
+}
+
 .portfolio-total {
   margin-top: 6px;
   cursor: pointer;
+  /* real <button> reset — keeps the block layout it had as a div */
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: 0;
 }
 
 .portfolio-total-amount {
@@ -88,7 +103,7 @@
 }
 
 .allocation-seg:not(:last-child) {
-  border-right: 1.5px solid var(--ssp-bg, #fafaf9);
+  border-right: 1.5px solid #fafaf9;
 }
 
 :root[data-theme='dark'] .allocation-seg:not(:last-child) {
@@ -122,7 +137,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  opacity: 0.5;
+  opacity: 0.65; /* ≥4.5:1 on both themes (0.5 fell to ~3.4:1 on light) */
   margin: 16px 0 6px 2px;
 }
 
@@ -151,6 +166,13 @@
   background: rgba(128, 128, 128, 0.1);
 }
 
+.portfolio-total:focus-visible,
+.portfolio-refresh:focus-visible,
+.portfolio-row:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
 .portfolio-row-inactive {
   opacity: 0.55;
 }
@@ -170,13 +192,27 @@
 
 .portfolio-row-crypto {
   font-size: 12px;
-  opacity: 0.6;
+  opacity: 0.65; /* contrast: 0.6 on light was ~4.4:1, just under 4.5 */
   font-variant-numeric: tabular-nums;
+}
+
+.portfolio-row-fiat-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.3;
 }
 
 .portfolio-row-fiat {
   font-size: 14px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.portfolio-row-tokens {
+  font-size: 11px;
+  opacity: 0.65;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }

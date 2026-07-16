@@ -186,7 +186,7 @@ function VaultRiskStrip({ simulation, extraWarnings }: Props) {
                             type="secondary"
                             style={{
                               fontSize: '11px',
-                              fontFamily: 'monospace',
+                              fontFamily: 'var(--ssp-mono)',
                               wordBreak: 'break-all',
                             }}
                           >

@@ -70,7 +70,7 @@
   align-items: center;
   gap: 6px;
   border: 1px solid;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 8px 12px;
 }
 
@@ -104,5 +104,5 @@
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--ssp-mono);
 }

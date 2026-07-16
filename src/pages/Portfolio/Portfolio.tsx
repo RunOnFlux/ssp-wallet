@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Skeleton, Image, Tooltip } from 'antd';
 import {
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
+  ArrowDown as ArrowDownIcon,
+  ArrowUp as ArrowUpIcon,
+  RefreshCw as RefreshCwIcon,
+} from 'lucide-react';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
@@ -77,9 +77,11 @@ function Portfolio() {
     };
   }, []);
 
-  // Re-value (not re-fetch) when rates change.
+  // Re-value (not re-fetch) when rates change. Also re-fires once data first
+  // loads, so rates that arrived while data was still null are applied.
+  const hasData = data !== null;
   useEffect(() => {
-    if (!data) return;
+    if (!hasData) return;
     void (async () => {
       const result = await loadPortfolio(
         cryptoRates,
@@ -89,7 +91,7 @@ function Portfolio() {
       );
       setData(result);
     })();
-  }, [cryptoRates, fiatRates, fiatCurrency]);
+  }, [hasData, cryptoRates, fiatRates, fiatCurrency]);
 
   const manualRefresh = () => {
     setRefreshing(true);
@@ -157,18 +159,17 @@ function Portfolio() {
               onClick={manualRefresh}
               aria-label={t('home:navbar.refresh')}
             >
-              <ReloadOutlined />
+              <RefreshCwIcon />
             </button>
           </Tooltip>
         </div>
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           className="portfolio-total"
           onClick={togglePrivacy}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') togglePrivacy();
-          }}
+          aria-label={
+            hidden ? t('home:balances.show') : t('home:balances.hide')
+          }
           title={hidden ? t('home:balances.show') : t('home:balances.hide')}
         >
           <span className="privacy-sensitive portfolio-total-amount">
@@ -178,11 +179,7 @@ function Portfolio() {
             <span
               className={`portfolio-change ${change.absolute >= 0 ? 'up' : 'down'}`}
             >
-              {change.absolute >= 0 ? (
-                <ArrowUpOutlined />
-              ) : (
-                <ArrowDownOutlined />
-              )}
+              {change.absolute >= 0 ? <ArrowUpIcon /> : <ArrowDownIcon />}
               <span className="privacy-sensitive">
                 {formatFiatWithSymbol(new BigNumber(Math.abs(change.absolute)))}{' '}
                 ({change.percent >= 0 ? '+' : ''}
@@ -190,12 +187,13 @@ function Portfolio() {
               </span>
             </span>
           )}
-        </div>
+        </button>
       </div>
 
       {allocation.length > 0 && (
         <div className="portfolio-allocation">
-          <div className="allocation-bar">
+          {/* Decorative for AT — the legend below carries the same data */}
+          <div className="allocation-bar" aria-hidden="true">
             {allocation.map((a) => (
               <Tooltip key={a.chain} title={`${a.name} · ${a.pct.toFixed(1)}%`}>
                 <span
@@ -227,15 +225,25 @@ function Portfolio() {
             className="portfolio-row"
             onClick={() => switchTo(c.chain)}
           >
-            <Image height={28} width={28} preview={false} src={c.logo} />
+            <Image height={28} width={28} preview={false} src={c.logo} alt="" />
             <span className="portfolio-row-meta">
               <span className="portfolio-row-name">{c.name}</span>
               <span className="portfolio-row-crypto privacy-sensitive">
                 {formatCrypto(c.crypto)} {c.symbol}
               </span>
             </span>
-            <span className="portfolio-row-fiat privacy-sensitive">
-              {formatFiatWithSymbol(new BigNumber(c.fiat))}
+            <span className="portfolio-row-fiat-col">
+              <span className="portfolio-row-fiat privacy-sensitive">
+                {formatFiatWithSymbol(new BigNumber(c.fiat))}
+              </span>
+              {c.tokenFiat > 0 && (
+                <span className="portfolio-row-tokens privacy-sensitive">
+                  {t('home:portfolio.incl_tokens', {
+                    amount: formatFiatWithSymbol(new BigNumber(c.tokenFiat)),
+                    defaultValue: 'incl. {{amount}} tokens',
+                  })}
+                </span>
+              )}
             </span>
           </button>
         ))}
@@ -254,7 +262,13 @@ function Portfolio() {
                 className="portfolio-row portfolio-row-inactive"
                 onClick={() => switchTo(c.chain)}
               >
-                <Image height={28} width={28} preview={false} src={c.logo} />
+                <Image
+                  height={28}
+                  width={28}
+                  preview={false}
+                  src={c.logo}
+                  alt=""
+                />
                 <span className="portfolio-row-meta">
                   <span className="portfolio-row-name">{c.name}</span>
                   <span className="portfolio-row-crypto">

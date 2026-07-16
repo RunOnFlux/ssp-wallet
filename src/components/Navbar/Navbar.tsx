@@ -35,13 +35,13 @@ import {
   Tooltip,
 } from 'antd';
 import {
-  LockOutlined,
-  PlusOutlined,
-  MinusOutlined,
-  NodeIndexOutlined,
-  QuestionCircleOutlined,
-  MenuOutlined,
-} from '@ant-design/icons';
+  CircleHelp as CircleHelpIcon,
+  Lock as LockIcon,
+  Menu as MenuIcon,
+  Minus as MinusIcon,
+  Network as NetworkIcon,
+  Plus as PlusIcon,
+} from 'lucide-react';
 import type { MenuProps } from 'antd';
 import './Navbar.css';
 import SspWalletDetails from '../SspWalletDetails/SspWalletDetails';
@@ -421,7 +421,7 @@ function Navbar({
   const menuItems: MenuProps['items'] = [
     {
       key: 'Menu',
-      icon: <MenuOutlined style={{ fontSize: '14px' }} />,
+      icon: <MenuIcon style={{ fontSize: '14px' }} />,
       style: {
         border: 'none',
         width: '30px',
@@ -507,7 +507,7 @@ function Navbar({
     },
     {
       key: 'Lock',
-      icon: <LockOutlined />,
+      icon: <LockIcon />,
       style: {
         border: 'none',
         width: '30px',
@@ -597,7 +597,7 @@ function Navbar({
                         <Divider style={{ margin: '8px 0' }} />
                         <Button
                           type="text"
-                          icon={<PlusOutlined />}
+                          icon={<PlusIcon />}
                           onClick={addWallet}
                           // Cap at 20 wallets per chain — the wallet count
                           // mirrors several places (see lib/wallet.ts coupling
@@ -621,15 +621,11 @@ function Navbar({
                             onConfirm={() => {
                               removeAddress();
                             }}
-                            icon={
-                              <QuestionCircleOutlined
-                                style={{ color: 'blue' }}
-                              />
-                            }
+                            icon={<CircleHelpIcon style={{ color: 'blue' }} />}
                           >
                             <Button
                               type="text"
-                              icon={<MinusOutlined />}
+                              icon={<MinusIcon />}
                               style={{ width: '100%', textAlign: 'left' }}
                               data-tutorial="remove-wallet-button"
                             >
@@ -641,7 +637,7 @@ function Navbar({
                         <Button
                           type="text"
                           style={{ width: '100%', textAlign: 'left' }}
-                          icon={<NodeIndexOutlined />}
+                          icon={<NetworkIcon />}
                           onClick={() => selectChain()}
                           data-tutorial="chain-selector"
                         >
