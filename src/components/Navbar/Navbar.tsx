@@ -455,7 +455,7 @@ function Navbar({
               key: 'manualsign',
             },
             {
-              label: t('home:settings.settings'),
+              label: t('home:tabs.menu'),
               key: 'settings',
             },
             {
@@ -496,7 +496,7 @@ function Navbar({
                 key: 'manualsign',
               },
               {
-                label: t('home:settings.settings'),
+                label: t('home:tabs.menu'),
                 key: 'settings',
               },
               {
