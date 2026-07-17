@@ -7,6 +7,9 @@ import localForage from 'localforage';
  * completely separate from `sspConfig`, wallet state, `themeMode`, etc. Nothing
  * here is required for correctness — a missing/corrupt value falls back to the
  * safe default (Home). Losing it never affects funds, keys or pairing.
+ *
+ * Note: the Menu (settings) tab is a single scrolling page, so only the last
+ * TAB is remembered — there is no per-section position to restore.
  */
 
 export type WalletTab = 'home' | 'portfolio' | 'activity' | 'settings';
@@ -16,8 +19,6 @@ const NAV_PREFS_KEY = 'navPrefs';
 interface NavPrefs {
   /** The tab the popup should re-open on ("open where you left off"). */
   lastTab: WalletTab;
-  /** Last-visited Settings section, so Settings also reopens in place. */
-  lastSettingsSection?: string;
 }
 
 const VALID_TABS: WalletTab[] = ['home', 'portfolio', 'activity', 'settings'];
@@ -36,13 +37,7 @@ export async function getNavPrefs(): Promise<NavPrefs> {
   try {
     const stored = await localForage.getItem<Partial<NavPrefs>>(NAV_PREFS_KEY);
     if (stored && isValidTab(stored.lastTab)) {
-      return {
-        lastTab: stored.lastTab,
-        lastSettingsSection:
-          typeof stored.lastSettingsSection === 'string'
-            ? stored.lastSettingsSection
-            : undefined,
-      };
+      return { lastTab: stored.lastTab };
     }
   } catch (error) {
     console.log('[navPrefs] read failed', error);
@@ -61,18 +56,6 @@ export async function setLastTab(tab: WalletTab): Promise<void> {
     await localForage.setItem<NavPrefs>(NAV_PREFS_KEY, {
       ...current,
       lastTab: tab,
-    });
-  } catch (error) {
-    console.log('[navPrefs] write failed', error);
-  }
-}
-
-export async function setLastSettingsSection(section: string): Promise<void> {
-  try {
-    const current = await getNavPrefs();
-    await localForage.setItem<NavPrefs>(NAV_PREFS_KEY, {
-      ...current,
-      lastSettingsSection: section,
     });
   } catch (error) {
     console.log('[navPrefs] write failed', error);

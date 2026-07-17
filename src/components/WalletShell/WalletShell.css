@@ -18,8 +18,8 @@
 
 .wallet-shell-content {
   flex: 1 1 auto;
-  /* Clear the fixed bottom tab bar (56px) plus breathing room. */
-  padding-bottom: 72px;
+  /* Clear the fixed bottom tab bar (44px) plus breathing room. */
+  padding-bottom: 60px;
   min-height: 0;
 }
 

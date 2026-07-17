@@ -166,6 +166,68 @@ svg.lucide {
   vertical-align: -0.125em;
 }
 
+/* antd slot icons: antd keys its confirm/popconfirm/result icon metrics and
+   severity colors to `.anticon` (token.iconCls) — lucide icons placed in
+   those slots get none of them. Mirror antd 6's own rules for `svg.lucide`
+   (which is 1em-square above, so font-size drives its size exactly like an
+   anticon). Values are the resolved antd tokens for our theme:
+   fontHeight 22px, marginSM 12px, marginXS 8px, fontSizeHeading3*3 = 72px;
+   severity colors = sharedTokens in styles/theme.ts (same in light + dark). */
+
+/* Modal.confirm — mirrors .ant-modal-confirm-body > .anticon */
+.ant-modal-confirm-body > svg.lucide {
+  flex: none;
+  font-size: 22px; /* modalConfirmIconSize = token.fontHeight */
+  margin-inline-end: 12px; /* confirmIconMarginInlineEnd = marginSM */
+  color: #f59e0b; /* Modal.confirm() default severity = warning */
+}
+.ant-modal-confirm-body-has-title > svg.lucide {
+  /* (modalTitleHeight 27px − icon 22px) / 2 — centers on the title line */
+  margin-top: 2.5px;
+}
+/* keep antd's text-width clamp when the icon is a lucide svg */
+.ant-modal-confirm-body > svg.lucide + .ant-modal-confirm-paragraph {
+  max-width: calc(100% - 34px); /* icon 22px + marginSM 12px */
+}
+.ant-modal-confirm-error .ant-modal-confirm-body > svg.lucide {
+  color: #ef4444;
+}
+.ant-modal-confirm-warning .ant-modal-confirm-body > svg.lucide,
+.ant-modal-confirm-confirm .ant-modal-confirm-body > svg.lucide {
+  color: #f59e0b;
+}
+.ant-modal-confirm-info .ant-modal-confirm-body > svg.lucide {
+  color: #3b82f6;
+}
+.ant-modal-confirm-success .ant-modal-confirm-body > svg.lucide {
+  color: #22c55e;
+}
+
+/* Popconfirm — mirrors .ant-popconfirm-message > .ant-popconfirm-message-icon .anticon */
+.ant-popconfirm-message > .ant-popconfirm-message-icon svg.lucide {
+  color: #f59e0b; /* colorWarning */
+  font-size: 14px; /* token.fontSize */
+  line-height: 1;
+  margin-inline-end: 8px; /* marginXS */
+}
+
+/* Result — mirrors .ant-result .ant-result-icon > .anticon */
+.ant-result .ant-result-icon > svg.lucide {
+  font-size: 72px; /* iconFontSize = fontSizeHeading3 * 3 */
+}
+.ant-result-success .ant-result-icon > svg.lucide {
+  color: #22c55e;
+}
+.ant-result-error .ant-result-icon > svg.lucide {
+  color: #ef4444;
+}
+.ant-result-info .ant-result-icon > svg.lucide {
+  color: #3b82f6;
+}
+.ant-result-warning .ant-result-icon > svg.lucide {
+  color: #f59e0b;
+}
+
 svg.lucide-spin {
   animation: lucide-spin 1s linear infinite;
 }
@@ -173,5 +235,11 @@ svg.lucide-spin {
 @keyframes lucide-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  svg.lucide-spin {
+    animation: none;
   }
 }

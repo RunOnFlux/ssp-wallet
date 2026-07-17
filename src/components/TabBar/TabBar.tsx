@@ -3,7 +3,7 @@ import {
   ChartPie as ChartPieIcon,
   History as HistoryIcon,
   House as HouseIcon,
-  Settings as SettingsIcon,
+  Menu as MenuIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { WalletTab } from '../../storage/navPrefs';
@@ -15,10 +15,12 @@ interface Props {
 }
 
 /**
- * Bottom tab bar = "places" (Home · Portfolio · Activity · Settings). The
+ * Bottom tab bar = "places" (Home · Portfolio · Activity · Menu). The
  * Send/Receive/Swap/Buy verbs are NOT tabs — they act on the current wallet and
- * live in Home's action row. In side-panel mode this reflows into a left rail
- * (see TabBar.css) as a first-class two-column layout.
+ * live in Home's action row. Popup mode is a compact 44px icons-only bar
+ * (labels move to title tooltips + aria-labels); in side-panel mode this
+ * reflows into a left rail with visible labels (see TabBar.css) as a
+ * first-class two-column layout.
  */
 function TabBar({ activeTab }: Props) {
   const { t } = useTranslation(['home', 'common']);
@@ -38,8 +40,8 @@ function TabBar({ activeTab }: Props) {
     },
     {
       key: 'settings',
-      label: t('home:settings.settings'),
-      icon: <SettingsIcon />,
+      label: t('home:tabs.menu', 'Menu'),
+      icon: <MenuIcon />,
     },
   ];
 
@@ -51,6 +53,8 @@ function TabBar({ activeTab }: Props) {
           type="button"
           className={`tab-bar-item${activeTab === tab.key ? ' tab-bar-item-active' : ''}`}
           aria-current={activeTab === tab.key ? 'page' : undefined}
+          aria-label={tab.label}
+          title={tab.label}
           onClick={() => navigate(tabToPath(tab.key))}
           data-tutorial={`tab-${tab.key}`}
         >

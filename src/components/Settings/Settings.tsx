@@ -641,7 +641,9 @@ function Settings() {
 
   return (
     <div className="settings-page">
-      <h1 className="settings-page-title">{t('home:settings.settings')}</h1>
+      {/* The 4th tab destination is the full extended menu (settings +
+          relocated utilities), so it is titled "Menu" everywhere user-visible. */}
+      <h1 className="settings-page-title">{t('home:tabs.menu', 'Menu')}</h1>
 
       <Section title={t('home:settings.general', 'General')}>
         <Row label={t('home:settings.language')}>

@@ -307,7 +307,9 @@ function Restore() {
 
   const handleNavigation = () => {
     if (!Object.keys(wallets).length) {
-      navigate('/home');
+      // Router state only — tells the shell's pairing screen to show the
+      // "Import Wallet" wizard labels instead of the Create ones.
+      navigate('/home', { state: { imported: true } });
     } else {
       navigate('/welcome');
     }

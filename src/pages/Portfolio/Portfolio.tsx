@@ -49,18 +49,40 @@ function Portfolio() {
 
   const fiatCurrency = sspConfig().fiatCurrency;
 
+  // Rates readiness: the fiatCryptoRates slice initializes every rate to 0 and
+  // only ever moves via setCryptoRates/setFiatRates once the controller fetch
+  // lands. Until then any fiat total computes as 0 — a state that must never
+  // be snapshotted or shown as a "-100%" 24h change.
+  const ratesLoaded = useMemo(
+    () =>
+      Object.values(cryptoRates).some(
+        (rate) => typeof rate === 'number' && rate > 0,
+      ) && (fiatRates[fiatCurrency] ?? 0) > 0,
+    [cryptoRates, fiatRates, fiatCurrency],
+  );
+
   const load = async (live: boolean) => {
-    const result = await loadPortfolio(
-      cryptoRates,
-      fiatRates,
-      fiatCurrency,
-      live,
-    );
-    setData(result);
-    setLoading(false);
-    if (live) {
-      const ch = await updatePortfolioSnapshots(result.totalFiat);
-      setChange(ch);
+    try {
+      const result = await loadPortfolio(
+        cryptoRates,
+        fiatRates,
+        fiatCurrency,
+        live,
+      );
+      setData(result);
+      // Snapshots/change only make sense once rates are in — with all-zero
+      // rates the total is 0 because of missing rates, not missing funds.
+      if (live && ratesLoaded) {
+        const ch = await updatePortfolioSnapshots(
+          result.totalFiat,
+          fiatCurrency,
+        );
+        setChange(ch);
+      }
+    } catch (error) {
+      console.log('[portfolio] load failed', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -78,20 +100,33 @@ function Portfolio() {
   }, []);
 
   // Re-value (not re-fetch) when rates change. Also re-fires once data first
-  // loads, so rates that arrived while data was still null are applied.
+  // loads, so rates that arrived while data was still null are applied. Once
+  // rates are in, the 24h change is (re)computed too — the mount-time live
+  // load may have run before rates existed and skipped it.
   const hasData = data !== null;
   useEffect(() => {
     if (!hasData) return;
     void (async () => {
-      const result = await loadPortfolio(
-        cryptoRates,
-        fiatRates,
-        fiatCurrency,
-        false,
-      );
-      setData(result);
+      try {
+        const result = await loadPortfolio(
+          cryptoRates,
+          fiatRates,
+          fiatCurrency,
+          false,
+        );
+        setData(result);
+        if (ratesLoaded) {
+          const ch = await updatePortfolioSnapshots(
+            result.totalFiat,
+            fiatCurrency,
+          );
+          setChange(ch);
+        }
+      } catch (error) {
+        console.log('[portfolio] revalue failed', error);
+      }
     })();
-  }, [hasData, cryptoRates, fiatRates, fiatCurrency]);
+  }, [hasData, cryptoRates, fiatRates, fiatCurrency, ratesLoaded]);
 
   const manualRefresh = () => {
     setRefreshing(true);

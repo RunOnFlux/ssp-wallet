@@ -89,7 +89,7 @@
 }
 
 .switcher-wallet-fiat {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -97,7 +97,7 @@
 
 .switcher-wallet-check {
   color: #f59e0b;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .switcher-wallet-actions {

@@ -63,10 +63,23 @@ interface balancesObj {
   unconfirmed: string;
 }
 
-const PORTFOLIO_CACHE_KEY = 'portfolioCache';
 const PORTFOLIO_SNAPSHOTS_KEY = 'portfolioSnapshots';
 
 const chainKeys = () => Object.keys(blockchains) as (keyof cryptos)[];
+
+/**
+ * localForage read that can never throw and never returns null — a corrupt
+ * or unreadable record falls back to the supplied safe default (mirrors the
+ * guarded-parse pattern in storage/walletMeta and storage/navPrefs).
+ */
+async function safeGetItem<T>(key: string, fallback: T): Promise<T> {
+  try {
+    return (await localForage.getItem<T>(key)) ?? fallback;
+  } catch (error) {
+    console.log(`[portfolio] read failed ${key}`, error);
+    return fallback;
+  }
+}
 
 function toFiat(
   crypto: BigNumber,
@@ -85,10 +98,14 @@ async function discoverChains(): Promise<
 > {
   const results = await Promise.all(
     chainKeys().map(async (chain) => {
-      const wallets: generatedWallets =
-        (await localForage.getItem(`wallets-${chain}`)) ?? {};
-      const walletInUse: string =
-        (await localForage.getItem(`walletInUse-${chain}`)) ?? '0-0';
+      const wallets = await safeGetItem<generatedWallets>(
+        `wallets-${chain}`,
+        {},
+      );
+      const walletInUse = await safeGetItem<string>(
+        `walletInUse-${chain}`,
+        '0-0',
+      );
       return { chain, wallets, walletInUse };
     }),
   );
@@ -184,7 +201,7 @@ export async function loadPortfolio(
       // like Home's TokensTable.
       const supportsTokens = chainSupportsTokens(chain);
       const importedTokens: Token[] = supportsTokens
-        ? ((await localForage.getItem(`imported-tokens-${chain}`)) ?? [])
+        ? await safeGetItem<Token[]>(`imported-tokens-${chain}`, [])
         : [];
       const tokenSpecs: Token[] = supportsTokens
         ? cfg.tokens.concat(importedTokens)
@@ -195,9 +212,10 @@ export async function loadPortfolio(
       const holdings: WalletHolding[] = await Promise.all(
         ids.map(async (id) => {
           const address = wallets[id];
-          let base: balancesObj = (await localForage.getItem(
-            `balances-${chain}-${id}`,
-          )) ?? { confirmed: '0', unconfirmed: '0' };
+          let base = await safeGetItem<balancesObj>(`balances-${chain}-${id}`, {
+            confirmed: '0',
+            unconfirmed: '0',
+          });
           if (live && address) {
             try {
               base = await fetchAddressBalance(address, chain);
@@ -214,12 +232,14 @@ export async function loadPortfolio(
           // Reuses Home's fetch lib + the exact localForage keys Home writes,
           // so no new network calls beyond what Home already makes.
           if (supportsTokens) {
-            const activatedTokens: string[] =
-              (await localForage.getItem(`activated-tokens-${chain}-${id}`)) ??
-              [];
-            let tokenBals: tokenBalanceEVM[] =
-              (await localForage.getItem(`token-balances-${chain}-${id}`)) ??
-              [];
+            const activatedTokens = await safeGetItem<string[]>(
+              `activated-tokens-${chain}-${id}`,
+              [],
+            );
+            let tokenBals = await safeGetItem<tokenBalanceEVM[]>(
+              `token-balances-${chain}-${id}`,
+              [],
+            );
             if (live && address && activatedTokens.length > 0) {
               try {
                 tokenBals = await fetchAddressTokenBalances(
@@ -294,23 +314,6 @@ export async function loadPortfolio(
     fetchedAt: Date.now(),
   };
 
-  // Cache a lightweight snapshot for instant next-open paint.
-  try {
-    await localForage.setItem(PORTFOLIO_CACHE_KEY, {
-      fetchedAt: result.fetchedAt,
-      totalFiat,
-      byChain: chains.map((c) => ({
-        chain: c.chain,
-        fiat: c.fiat,
-        tokenFiat: c.tokenFiat,
-        crypto: c.crypto.toString(),
-        needsActivation: c.needsActivation,
-      })),
-    });
-  } catch (error) {
-    console.log('[portfolio] cache write failed', error);
-  }
-
   return result;
 }
 
@@ -320,41 +323,93 @@ export interface PortfolioChange {
   available: boolean;
 }
 
+interface PortfolioSnapshot {
+  ts: number;
+  total: number;
+  /** Fiat currency the total was valued in. Absent on legacy records. */
+  currency?: string;
+}
+
+function isValidSnapshot(value: unknown): value is PortfolioSnapshot {
+  if (typeof value !== 'object' || value === null) return false;
+  const snap = value as Partial<PortfolioSnapshot>;
+  return (
+    typeof snap.ts === 'number' &&
+    Number.isFinite(snap.ts) &&
+    typeof snap.total === 'number' &&
+    Number.isFinite(snap.total) &&
+    (snap.currency === undefined || typeof snap.currency === 'string')
+  );
+}
+
 /**
  * Real, on-device 24h change. Keeps a small ring of timestamped total-value
  * snapshots in localForage; compares "now" against the snapshot closest to 24h
  * ago. Returns `available:false` until a ~1-day-old baseline exists (no faked
  * numbers on first run).
+ *
+ * Safety rules:
+ * - A total of 0 (or NaN) is NEVER written and NEVER produces a change figure.
+ *   An all-zero total usually means fiat/crypto rates were not loaded yet —
+ *   writing it would poison tomorrow's baseline, and comparing against a real
+ *   baseline would show a false "-100%". A genuinely empty wallet has no
+ *   meaningful 24h change either, so "unavailable" is correct there too.
+ * - Baselines only compare within the SAME fiat currency. Switching USD→CZK
+ *   reads as "no baseline yet", never as a bogus cross-currency change.
+ * - Corrupt storage never throws — invalid records are discarded.
  */
 export async function updatePortfolioSnapshots(
   totalFiat: number,
+  fiatCurrency: string,
 ): Promise<PortfolioChange> {
+  const NO_CHANGE: PortfolioChange = {
+    absolute: 0,
+    percent: 0,
+    available: false,
+  };
+  if (!Number.isFinite(totalFiat) || totalFiat <= 0) {
+    return NO_CHANGE;
+  }
+
   const DAY = 24 * 60 * 60 * 1000;
   const now = Date.now();
-  let snaps: { ts: number; total: number }[] =
-    (await localForage.getItem(PORTFOLIO_SNAPSHOTS_KEY)) ?? [];
+  const stored = await safeGetItem<unknown>(PORTFOLIO_SNAPSHOTS_KEY, []);
+  let snaps: PortfolioSnapshot[] = Array.isArray(stored)
+    ? stored.filter(isValidSnapshot)
+    : [];
 
   // Prune anything older than 48h.
   snaps = snaps.filter((s) => now - s.ts < 2 * DAY);
 
-  // Baseline = oldest snapshot that is at least ~20h old.
+  // Baseline = same-currency snapshot ~24h old. Legacy records without a
+  // recorded currency are never used as a baseline.
   const baseline = snaps
-    .filter((s) => now - s.ts >= 20 * 60 * 60 * 1000)
+    .filter(
+      (s) =>
+        s.currency === fiatCurrency &&
+        s.total > 0 &&
+        now - s.ts >= 20 * 60 * 60 * 1000,
+    )
     .sort((a, b) => Math.abs(now - a.ts - DAY) - Math.abs(now - b.ts - DAY))[0];
 
-  // Throttle: add a new snapshot at most every ~3h.
+  // Throttle: add a new snapshot at most every ~3h — but always start a fresh
+  // ring entry immediately after a fiat-currency switch.
   const last = snaps[snaps.length - 1];
-  if (!last || now - last.ts > 3 * 60 * 60 * 1000) {
-    snaps.push({ ts: now, total: totalFiat });
-  }
-  try {
-    await localForage.setItem(PORTFOLIO_SNAPSHOTS_KEY, snaps);
-  } catch (error) {
-    console.log('[portfolio] snapshot write failed', error);
+  if (
+    !last ||
+    now - last.ts > 3 * 60 * 60 * 1000 ||
+    last.currency !== fiatCurrency
+  ) {
+    snaps.push({ ts: now, total: totalFiat, currency: fiatCurrency });
+    try {
+      await localForage.setItem(PORTFOLIO_SNAPSHOTS_KEY, snaps);
+    } catch (error) {
+      console.log('[portfolio] snapshot write failed', error);
+    }
   }
 
   if (!baseline || baseline.total <= 0) {
-    return { absolute: 0, percent: 0, available: false };
+    return NO_CHANGE;
   }
   const absolute = totalFiat - baseline.total;
   const percent = (absolute / baseline.total) * 100;

@@ -73,6 +73,17 @@
   gap: 5px;
   font-size: 11px;
   opacity: 0.65;
+  min-width: 0;
+}
+
+.identity-pill-chain-logo {
+  display: block;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0; /* never squeezed (= clipped) by a long chain label */
+}
+
+.identity-pill-chain-label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

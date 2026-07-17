@@ -783,6 +783,10 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 type="primary"
                 size="large"
                 loading={strategy.submitting}
+                // Never allow sending against a fee that is still being
+                // estimated ('---'/placeholder 0) — a real computed zero fee
+                // sets feeReady and stays sendable.
+                disabled={!strategy.feeReady}
                 style={{
                   minWidth: 220,
                   maxWidth: '380px',

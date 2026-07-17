@@ -53,13 +53,11 @@ function OnboardingPersonalize({
       open={open}
       onCancel={onBack}
       maskClosable={false}
-      style={{ textAlign: 'center', top: 60 }}
+      style={{ textAlign: 'center', top: 60, padding: 10 }}
       footer={[
         <Button
           key="continue"
           type="primary"
-          block
-          size="large"
           onClick={() => onContinue(displayName, color)}
         >
           {t('common:continue')}
@@ -79,7 +77,7 @@ function OnboardingPersonalize({
           className="personalize-identicon-ring"
           style={{ boxShadow: `0 0 0 3px ${color}` }}
         >
-          <Identicon value={identiconSeed} size={64} />
+          <Identicon value={identiconSeed} size={56} />
           <span
             className="personalize-accent-dot"
             style={{ background: color }}
@@ -89,13 +87,12 @@ function OnboardingPersonalize({
       </div>
 
       <Input
-        size="large"
         value={name}
         maxLength={25}
         placeholder={defaultName}
         onChange={(e) => setName(e.target.value)}
         aria-label={t('cr:personalize.name_label', 'Wallet name')}
-        style={{ marginBottom: 18 }}
+        style={{ marginBottom: 14 }}
       />
 
       <div

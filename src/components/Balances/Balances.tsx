@@ -80,6 +80,15 @@ function Balances() {
     globalThis.refreshIntervalBalances = setInterval(() => {
       refresh();
     }, 20000);
+    // Home unmounts when switching tabs (Portfolio/Activity/Settings) — the
+    // poller must not keep firing after unmount. Login still clears the global
+    // on logout; this only adds the component-level cleanup.
+    return () => {
+      if (globalThis.refreshIntervalBalances) {
+        clearInterval(globalThis.refreshIntervalBalances);
+        globalThis.refreshIntervalBalances = undefined;
+      }
+    };
   }, [activeChain, walletInUse, walletAddress]);
 
   useEffect(() => {
@@ -185,8 +194,13 @@ function Balances() {
           }
         }}
       >
+        {/* Hero balance digits align in tabular figures (DESIGN_TOKENS §3) */}
         <h3
-          style={{ marginTop: 0, marginBottom: 0 }}
+          style={{
+            marginTop: 0,
+            marginBottom: 0,
+            fontVariantNumeric: 'tabular-nums',
+          }}
           data-tutorial="balance-overview"
         >
           <span className="privacy-sensitive">
@@ -197,7 +211,8 @@ function Balances() {
           <div
             style={{
               fontSize: 12,
-              color: 'grey',
+              opacity: 0.65 /* theme-aware secondary — no hardcoded grey */,
+              fontVariantNumeric: 'tabular-nums',
             }}
           >
             <span className="privacy-sensitive">
@@ -208,7 +223,13 @@ function Balances() {
             </span>
           </div>
         )}
-        <h4 style={{ marginTop: 10, marginBottom: 15 }}>
+        <h4
+          style={{
+            marginTop: 10,
+            marginBottom: 15,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
           <span className="privacy-sensitive">
             {formatFiatWithSymbol(balanceFIAT)}
           </span>

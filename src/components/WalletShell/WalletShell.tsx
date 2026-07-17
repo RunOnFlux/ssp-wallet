@@ -55,6 +55,14 @@ function WalletShell() {
   const { setWalletConnectNavigation } = useWalletConnect();
   const [isNewWallet, setIsNewWallet] = useState(false);
   const [walletSynced, setWalletSynced] = useState(false);
+  // Restore navigates here with { state: { imported: true } } — captured once
+  // so the pairing wizard shows the Import labels, not the Create ones.
+  const [importedWallet] = useState(() =>
+    Boolean((location.state as { imported?: boolean } | null)?.imported),
+  );
+  // True while the SSP Key full-screen sync/verification view is showing —
+  // the tutorial welcome must never pop over the anti-MITM verify screen.
+  const [keySyncViewOpen, setKeySyncViewOpen] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const { activeChain, identityChain, sspWalletKeyInternalIdentity } =
     useAppSelector((state) => state.sspState);
@@ -239,10 +247,15 @@ function WalletShell() {
   return (
     <div className="wallet-shell">
       {/* TabBar renders first so in side-panel mode it becomes the left rail;
-          in popup mode it is position:fixed so document order is irrelevant. */}
-      <TabBar activeTab={activeTab} />
+          in popup mode it is position:fixed so document order is irrelevant.
+          While the full-screen SSP Key sync/verification view is up the shell
+          chrome (tab bar + identity bar) is hidden entirely — those gate
+          screens render full-bleed, never over/under wallet chrome. */}
+      {!keySyncViewOpen && <TabBar activeTab={activeTab} />}
       <div className="wallet-shell-main">
-        <IdentityBar onOpenSwitcher={() => setSwitcherOpen(true)} />
+        {!keySyncViewOpen && (
+          <IdentityBar onOpenSwitcher={() => setSwitcherOpen(true)} />
+        )}
         <main className="wallet-shell-content">
           {/* Pillar-motion: a calm, CSS-only enter on each tab change. Keyed by
               route so React remounts the wrapper and replays the animation.
@@ -253,9 +266,16 @@ function WalletShell() {
         </main>
       </div>
       <WalletSwitcher open={switcherOpen} openAction={setSwitcherOpen} />
-      <Key synchronised={keySynchronised} />
+      <Key
+        synchronised={keySynchronised}
+        onSyncViewChange={setKeySyncViewOpen}
+        importedWallet={importedWallet}
+      />
       <SspConnect />
-      <TutorialTrigger isNewWallet={isNewWallet} walletSynced={walletSynced} />
+      <TutorialTrigger
+        isNewWallet={isNewWallet}
+        walletSynced={walletSynced && !keySyncViewOpen}
+      />
       <AutoLogout />
     </div>
   );

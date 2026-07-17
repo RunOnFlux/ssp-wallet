@@ -1,10 +1,40 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import BigNumber from 'bignumber.js';
+
+// In-memory localForage so snapshot-ring behavior is testable and corrupt
+// values / read failures can be simulated.
+const { forageStore, forageFailures } = vi.hoisted(() => ({
+  forageStore: new Map(),
+  forageFailures: new Set(),
+}));
+
+vi.mock('localforage', () => ({
+  default: {
+    getItem: vi.fn((key) => {
+      if (forageFailures.has(key)) {
+        return Promise.reject(new Error('storage read failed'));
+      }
+      return Promise.resolve(
+        forageStore.has(key) ? forageStore.get(key) : null,
+      );
+    }),
+    setItem: vi.fn((key, value) => {
+      forageStore.set(key, value);
+      return Promise.resolve(value);
+    }),
+    removeItem: vi.fn((key) => {
+      forageStore.delete(key);
+      return Promise.resolve();
+    }),
+  },
+}));
+
 import {
   valueTokenBalances,
   mergeTokenHoldings,
+  updatePortfolioSnapshots,
 } from '../../src/lib/portfolio';
 
 const usdc = {
@@ -177,6 +207,123 @@ describe('Portfolio Lib', () => {
 
     it('handles empty input', () => {
       expect(mergeTokenHoldings([])).toEqual([]);
+    });
+  });
+
+  describe('updatePortfolioSnapshots', () => {
+    const SNAP_KEY = 'portfolioSnapshots';
+    const HOUR = 60 * 60 * 1000;
+    const DAY = 24 * HOUR;
+
+    beforeEach(() => {
+      forageStore.clear();
+      forageFailures.clear();
+    });
+
+    it('reports no change and writes NOTHING when total is 0 (rates not loaded / empty wallet)', async () => {
+      const change = await updatePortfolioSnapshots(0, 'USD');
+      expect(change).toEqual({ absolute: 0, percent: 0, available: false });
+      expect(forageStore.has(SNAP_KEY)).toBe(false);
+    });
+
+    it('reports no change and writes nothing for NaN / negative / Infinity totals', async () => {
+      for (const bad of [NaN, -5, Infinity]) {
+        const change = await updatePortfolioSnapshots(bad, 'USD');
+        expect(change.available).toBe(false);
+      }
+      expect(forageStore.has(SNAP_KEY)).toBe(false);
+    });
+
+    it('never shows -100% for a zero-balance wallet even with a real baseline', async () => {
+      forageStore.set(SNAP_KEY, [
+        { ts: Date.now() - DAY, total: 500, currency: 'USD' },
+      ]);
+      const change = await updatePortfolioSnapshots(0, 'USD');
+      expect(change).toEqual({ absolute: 0, percent: 0, available: false });
+      // and the poisoning zero-snapshot was NOT appended
+      expect(forageStore.get(SNAP_KEY)).toHaveLength(1);
+    });
+
+    it('computes the 24h change against a same-currency baseline', async () => {
+      forageStore.set(SNAP_KEY, [
+        { ts: Date.now() - DAY, total: 100, currency: 'USD' },
+      ]);
+      const change = await updatePortfolioSnapshots(110, 'USD');
+      expect(change.available).toBe(true);
+      expect(change.absolute).toBeCloseTo(10, 10);
+      expect(change.percent).toBeCloseTo(10, 10);
+    });
+
+    it('treats a currency mismatch as "no baseline", not a bogus change', async () => {
+      // 100 USD yesterday vs 2300 CZK today must NOT read as +2200%.
+      forageStore.set(SNAP_KEY, [
+        { ts: Date.now() - DAY, total: 100, currency: 'USD' },
+      ]);
+      const change = await updatePortfolioSnapshots(2300, 'CZK');
+      expect(change).toEqual({ absolute: 0, percent: 0, available: false });
+      // a fresh CZK ring entry starts immediately after the switch
+      const snaps = forageStore.get(SNAP_KEY);
+      expect(snaps[snaps.length - 1]).toMatchObject({
+        total: 2300,
+        currency: 'CZK',
+      });
+    });
+
+    it('never uses legacy currency-less snapshots as a baseline', async () => {
+      forageStore.set(SNAP_KEY, [{ ts: Date.now() - DAY, total: 100 }]);
+      const change = await updatePortfolioSnapshots(110, 'USD');
+      expect(change.available).toBe(false);
+    });
+
+    it('records the fiat currency on every new snapshot', async () => {
+      await updatePortfolioSnapshots(42, 'EUR');
+      expect(forageStore.get(SNAP_KEY)).toEqual([
+        expect.objectContaining({ total: 42, currency: 'EUR' }),
+      ]);
+    });
+
+    it('does not throw on corrupt snapshot storage and recovers', async () => {
+      forageStore.set(SNAP_KEY, 'garbage-not-an-array');
+      const change = await updatePortfolioSnapshots(100, 'USD');
+      expect(change.available).toBe(false);
+      expect(forageStore.get(SNAP_KEY)).toEqual([
+        expect.objectContaining({ total: 100, currency: 'USD' }),
+      ]);
+    });
+
+    it('discards invalid entries inside a corrupt snapshot array', async () => {
+      forageStore.set(SNAP_KEY, [
+        null,
+        'junk',
+        { ts: 'yesterday', total: 100 },
+        { ts: Date.now() - DAY, total: NaN, currency: 'USD' },
+        { ts: Date.now() - DAY, total: 100, currency: 'USD' },
+      ]);
+      const change = await updatePortfolioSnapshots(150, 'USD');
+      expect(change.available).toBe(true);
+      expect(change.percent).toBeCloseTo(50, 10);
+    });
+
+    it('does not throw when the storage read itself rejects', async () => {
+      forageFailures.add(SNAP_KEY);
+      const change = await updatePortfolioSnapshots(100, 'USD');
+      expect(change.available).toBe(false);
+    });
+
+    it('throttles same-currency snapshots to one per ~3h', async () => {
+      await updatePortfolioSnapshots(100, 'USD');
+      await updatePortfolioSnapshots(101, 'USD');
+      expect(forageStore.get(SNAP_KEY)).toHaveLength(1);
+    });
+
+    it('prunes snapshots older than 48h', async () => {
+      forageStore.set(SNAP_KEY, [
+        { ts: Date.now() - 3 * DAY, total: 50, currency: 'USD' },
+        { ts: Date.now() - 5 * HOUR, total: 90, currency: 'USD' },
+      ]);
+      await updatePortfolioSnapshots(100, 'USD');
+      const snaps = forageStore.get(SNAP_KEY);
+      expect(snaps.every((s) => Date.now() - s.ts < 2 * DAY)).toBe(true);
     });
   });
 });

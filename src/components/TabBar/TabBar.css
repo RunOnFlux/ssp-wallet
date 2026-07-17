@@ -6,7 +6,7 @@
   z-index: 1001;
   display: flex;
   align-items: stretch;
-  height: 56px;
+  height: 44px;
   border-top: 1px solid #e7e5e4;
   background: #fafaf9;
 }
@@ -22,11 +22,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
   border: none;
   background: transparent;
   cursor: pointer;
-  padding: 6px 2px;
+  padding: 0 2px;
   color: inherit;
   opacity: 0.65;
   transition:
@@ -51,15 +50,31 @@
 .tab-bar-icon {
   font-size: 20px;
   line-height: 1;
+  transition: font-size 0.15s ease;
 }
 
+.tab-bar-item-active .tab-bar-icon {
+  font-size: 22px; /* slightly larger active icon — labels live in tooltips */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-bar-item,
+  .tab-bar-icon {
+    transition: none;
+  }
+}
+
+/* Compact popup bar is icons-only; the label stays in the DOM for the
+   side-panel rail (and mirrors the aria-label/tooltip). */
 .tab-bar-label {
+  display: none;
   font-size: 10px;
   font-weight: 500;
   white-space: nowrap;
 }
 
-/* ---- Side-panel: vertical left rail ---- */
+/* ---- Side-panel: vertical left rail (vertical space isn't scarce here —
+   labels stay visible) ---- */
 body.extension-sidepanel .tab-bar {
   position: sticky;
   top: 0;
@@ -97,6 +112,11 @@ body.extension-sidepanel .tab-bar-item-active {
   background: rgba(245, 158, 11, 0.12);
 }
 
+body.extension-sidepanel .tab-bar-item-active .tab-bar-icon {
+  font-size: 20px; /* rail rows keep uniform icon size — the label carries state */
+}
+
 body.extension-sidepanel .tab-bar-label {
+  display: block;
   font-size: 14px;
 }

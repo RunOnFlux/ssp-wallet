@@ -106,6 +106,10 @@ export function useUtxoSendStrategy(): SendStrategyView {
   >('success');
   const [useMaximum, setUseMaximum] = useState(false);
   const [feePreset, setFeePreset] = useState<FeePresetKey>('normal');
+  // txFee starts at '0' which is indistinguishable from a real computed fee —
+  // this flag flips true only once calculateTxFeeSize actually completed, so
+  // the review Send button is not enabled on a not-yet-estimated fee.
+  const [feeComputed, setFeeComputed] = useState(false);
   const [txSizeVBytes, setTxSize] = useState(0);
   const { networkFees } = useAppSelector((state) => state.networkFees);
   const { contacts } = useAppSelector((state) => state.contacts);
@@ -175,7 +179,8 @@ export function useUtxoSendStrategy(): SendStrategyView {
         alreadyRunning = false;
         console.log(error);
         if (!manualFee) {
-          // reset fee
+          // reset fee — estimation failed, the '0' shown is NOT a real fee
+          setFeeComputed(false);
           setFeePerByte(autoRate);
           setTxFee('0');
           form.setFieldValue('fee', '');
@@ -198,7 +203,8 @@ export function useUtxoSendStrategy(): SendStrategyView {
       .catch((error) => {
         console.log(error);
         if (!manualFee) {
-          // reset fee
+          // reset fee — estimation failed, the '0' shown is NOT a real fee
+          setFeeComputed(false);
           setFeePerByte(autoRate);
           setTxFee('0');
           form.setFieldValue('fee', '');
@@ -468,6 +474,9 @@ export function useUtxoSendStrategy(): SendStrategyView {
         setFeePerByte(fpb);
       }
     }
+    // estimation completed — whatever txFee now holds is a real fee (a
+    // computed zero is legitimate on effectively-free chains)
+    setFeeComputed(true);
   };
 
   const postAction = async (
@@ -933,6 +942,9 @@ export function useUtxoSendStrategy(): SendStrategyView {
     customFeeContent,
     hiddenFormContent: null,
     feeDisplay: txFee || '---',
+    // Custom preset = the user's own fee; otherwise require a completed
+    // estimation (txFee inits to '0' which is not a real fee).
+    feeReady: manualFee || feeComputed,
     feeSymbol: blockchainConfig.symbol,
     feeFiat: toFiat(txFee),
     totalDisplay,

@@ -1649,6 +1649,9 @@ export function useEvmSendStrategy(): SendStrategyView {
     customFeeContent,
     hiddenFormContent,
     feeDisplay: txFee || '---',
+    // '---' is the explicit "fee unknown" marker set when gas estimation
+    // produced NaN; anything else (incl. a computed zero) is a real fee.
+    feeReady: txFee !== '---' && txFee !== '',
     feeSymbol: blockchainConfig.symbol,
     feeFiat: txFee !== '---' ? toFiat(txFee) : null,
     totalDisplay,

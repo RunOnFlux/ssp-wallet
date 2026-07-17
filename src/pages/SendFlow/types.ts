@@ -75,6 +75,12 @@ export interface SendStrategyView {
   hiddenFormContent: ReactNode;
   /** Current effective fee in native units ('---' when unknown). */
   feeDisplay: string;
+  /**
+   * False while the fee is still being estimated (or estimation failed) —
+   * the review Send button stays disabled until it is true. A legitimately
+   * computed zero fee and a user-entered Custom fee both count as ready.
+   */
+  feeReady: boolean;
   feeSymbol: string;
   feeFiat: string | null;
   /** Amount + fee total in native units for native-asset sends, else null. */

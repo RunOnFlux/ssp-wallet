@@ -144,11 +144,20 @@ const initialBatchState = (): BatchState => ({
   docCheckRunning: false,
 });
 
-function Key(props: { synchronised: (status: boolean) => void }) {
+function Key(props: {
+  synchronised: (status: boolean) => void;
+  /** Fires whenever the full-screen sync/verification view opens or closes —
+   * lets the shell suppress overlays (e.g. the tutorial welcome) that would
+   * cover the anti-MITM "verify this matches your SSP Key" screen. */
+  onSyncViewChange?: (open: boolean) => void;
+  /** True when the seed was just imported/restored — the pairing wizard then
+   * shows the Import labels instead of the Create ones. */
+  importedWallet?: boolean;
+}) {
   const { t } = useTranslation(['home', 'common']);
   const sspLogo = useSspLogo();
   const { token } = theme.useToken();
-  const { synchronised } = props;
+  const { synchronised, onSyncViewChange, importedWallet = false } = props;
   const [isModalKeyOpen, setIsModalKeyOpen] = useState(false);
   const [keyInput, setKeyInput] = useState('');
   const [keyAutomaticInput, setKeyAutomaticInput] = useState('');
@@ -197,6 +206,11 @@ function Key(props: { synchronised: (status: boolean) => void }) {
   useEffect(() => {
     selectedChainsRef.current = selectedChains;
   }, [selectedChains]);
+
+  // Report sync-view visibility to the shell (tutorial suppression).
+  useEffect(() => {
+    onSyncViewChange?.(isModalKeyOpen);
+  }, [isModalKeyOpen, onSyncViewChange]);
 
   useEffect(() => {
     // check if we have 2-xpub-48-slip-0-ScriptType-coin
@@ -1273,12 +1287,12 @@ function Key(props: { synchronised: (status: boolean) => void }) {
   const verifyPanel = verifyGate && (
     <Space
       direction="vertical"
-      size="middle"
+      size="small"
       style={{ width: '100%' }}
       data-testid="key-verify-panel"
     >
       <div style={{ textAlign: 'center' }}>
-        <h3 style={{ marginBottom: 4 }}>
+        <h3 style={{ marginTop: 0, marginBottom: 4 }}>
           {t('home:key.verify_words_heading')}
         </h3>
         <Text type="secondary">{t('home:key.verify_words_body')}</Text>
@@ -1288,12 +1302,9 @@ function Key(props: { synchronised: (status: boolean) => void }) {
           errorLevel="M"
           value={verifyGate.qrValue}
           icon={sspLogo}
-          size={Math.min(200, qrSize)}
+          size={Math.min(180, qrSize)}
           style={{ margin: '0 auto' }}
         />
-        <Text type="secondary" className="keyVerifyScanHint">
-          {t('home:key.verify_scan_hint')}
-        </Text>
       </div>
       <div>
         <Text strong>
@@ -1331,14 +1342,23 @@ function Key(props: { synchronised: (status: boolean) => void }) {
           data-testid="key-sync-view"
         >
           <div className="keySyncViewInner">
-            <h2 style={{ marginBottom: 8 }}>
-              {isIdentityChain
-                ? t('home:key.dual_factor_key')
-                : t('home:key.dual_factor_key_chain', {
-                    chain: blockchainConfig.name,
-                  })}
-            </h2>
-            {isIdentityChain && <CreationSteps step={3} import={false} />}
+            {/* The verification gate is its own screen: the panel's heading is
+                the title and the wizard chrome is dropped so the whole gate
+                (QR + 6 words + both buttons) fits 420x600 without scrolling. */}
+            {!verifyGate && (
+              <>
+                <h2 style={{ marginBottom: 8 }}>
+                  {isIdentityChain
+                    ? t('home:key.dual_factor_key')
+                    : t('home:key.dual_factor_key_chain', {
+                        chain: blockchainConfig.name,
+                      })}
+                </h2>
+                {isIdentityChain && (
+                  <CreationSteps step={4} import={importedWallet} />
+                )}
+              </>
+            )}
             {verifyGate ? (
               verifyPanel
             ) : (
@@ -1362,7 +1382,13 @@ function Key(props: { synchronised: (status: boolean) => void }) {
                   ]}
                 />
                 {verified && batchActive && batch.phase !== 'done' && (
-                  <Button type="primary" block onClick={completeSync}>
+                  /* Secondary by design: one primary per screen (Sync Key
+                     stays primary), and a clear 12px gap from the tab body. */
+                  <Button
+                    block
+                    onClick={completeSync}
+                    style={{ marginTop: 12 }}
+                  >
                     {t('home:key.continue_to_wallet')}
                   </Button>
                 )}

@@ -1,5 +1,5 @@
 .personalize-lead {
-  margin: 16px 0 20px;
+  margin: 12px 0 16px;
   font-size: 13px;
   color: #78716c;
 }
@@ -12,8 +12,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 22px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .personalize-identicon-ring {
@@ -39,7 +39,7 @@
 }
 
 .personalize-preview-name {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   max-width: 240px;
   overflow: hidden;

@@ -110,10 +110,6 @@ if (typeof window !== 'undefined') {
   });
 }
 
-export function getWalletMetaFromCache(walletId: string): WalletMeta {
-  return metaCache[walletId] ?? EMPTY_META;
-}
-
 export function setWalletMeta(walletId: string, meta: WalletMeta): void {
   const merged: WalletMeta = { ...metaCache[walletId] };
   if (meta.name !== undefined) {
@@ -138,10 +134,6 @@ export function setWalletMeta(walletId: string, meta: WalletMeta): void {
     console.log('[walletMeta] write failed', error);
   }
   emit();
-}
-
-export function getBackupVerifiedFromCache(): boolean {
-  return backupCache;
 }
 
 export function setBackupVerified(verified: boolean): void {

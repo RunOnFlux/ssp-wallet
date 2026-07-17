@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { Image, Tooltip } from 'antd';
+import { Tooltip } from 'antd';
 import { ChevronDown as ChevronDownIcon, Lock as LockIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '../../hooks';
@@ -96,14 +96,15 @@ function IdentityBar({ onOpenSwitcher }: Props) {
             )}
           </span>
           <span className="identity-pill-chain">
-            <Image
-              height={12}
-              width={12}
-              preview={false}
+            {/* plain <img>: antd Image's inline wrapper sat on the text
+                baseline inside this overflow-hidden 11px line and clipped
+                the logo — a flex-centered block img cannot clip */}
+            <img
+              className="identity-pill-chain-logo"
               src={blockchainConfig.logo}
               alt=""
             />
-            {chainLabel}
+            <span className="identity-pill-chain-label">{chainLabel}</span>
           </span>
         </span>
         <ChevronDownIcon className="identity-pill-caret" />

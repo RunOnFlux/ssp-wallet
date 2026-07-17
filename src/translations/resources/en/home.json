@@ -313,7 +313,6 @@
     "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
     "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
     "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
-    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronise Key!\" to continue with the SSP Key setup.",
     "tab_scan": "Scan with SSP Key",
     "tab_manual": "Enter manually",
     "chips_label_identity": "Also activate these chains with one approval on your SSP Key:",
@@ -334,10 +333,8 @@
     "continue_to_wallet": "Continue to wallet",
     "verify_words_heading": "Verify this matches your SSP Key",
     "verify_words_body": "Scan this with your SSP Key to verify — or compare the 6 words below. If they differ, do NOT use this wallet — stop and re-pair.",
-    "verify_scan_hint": "Scan this with your SSP Key to verify — or compare the 6 words below.",
-    "verify_words_session_label": "Verification code ({{count}} chains)",
-    "verify_words_identity_label": "SSP Identity",
-    "verify_words_batch_label": "Additional chains ({{count}})",
+    "verify_words_session_label_one": "Verification code",
+    "verify_words_session_label_other": "Verification code ({{count}} chains)",
     "verify_words_match": "They match — continue",
     "verify_words_mismatch": "They don't match",
     "verify_mismatch_warning": "Verification codes did not match. This vault was not activated — re-pair to try again."
@@ -861,19 +858,23 @@
     "steps": {
       "welcome_overview": {
         "title": "Welcome to SSP Wallet!",
-        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! Your wallet is now ready to use. Here you can see your wallet address and balance. Always verify that the wallet address displayed here matches the address shown on your SSP Key device."
+        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! This is Home — your wallet address and balance for the active wallet. Always verify that the address shown here matches the address on your SSP Key device."
+      },
+      "backup_health": {
+        "title": "Backup Health",
+        "content": "Whenever something still needs securing — your seed phrase not yet verified or your SSP Key not yet paired — an amber backup-health card appears right here under your balance, showing exactly what is at stake. Once everything is secured, it disappears."
       },
       "multi_chain_intro": {
-        "title": "Multiple Blockchain Support",
-        "content": "SSP Wallet supports multiple blockchains! This dropdown shows your current wallet and chain. Click on it to access chain switching options."
+        "title": "Your Wallet & Chain Pill",
+        "content": "This pill shows the active wallet and chain — its color dot and identicon make your wallet recognizable at a glance. Tap it to open the switcher for wallets and networks."
       },
       "find_switch_chain": {
-        "title": "Switch Chain Button",
-        "content": "Perfect! Now click on \"Switch Chain\" to open the blockchain selection where you can choose different networks."
+        "title": "Networks",
+        "content": "This is the switcher. Your wallets are listed on top; the Networks section below lets you jump to another blockchain. Click the Networks header to continue."
       },
       "select_ethereum": {
         "title": "Select Ethereum",
-        "content": "Great! The chain selection modal is open. Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
+        "content": "Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
       },
       "ethereum_sync_waiting": {
         "title": "Sync with SSP Key",
@@ -890,11 +891,11 @@
       },
       "receive_intro": {
         "title": "Receiving Funds",
-        "content": "Click Receive to get your Ethereum address. This address can receive ETH and any ERC-20 tokens. You can copy the address or use the QR code."
+        "content": "Receive shows your address for the active chain — copy it or share the QR code. On Ethereum it accepts ETH and any ERC-20 tokens."
       },
       "send_intro": {
         "title": "Sending Funds",
-        "content": "The Send button opens the transaction interface where you can send cryptocurrency to other addresses. It includes fields for recipient, amount, and fees."
+        "content": "Send opens a guided three-step flow: enter the recipient and amount, review the fee and details, then confirm on your SSP Key. Every transaction needs both devices — that's the dual-signature security."
       },
       "swap_feature": {
         "title": "Swap Feature",
@@ -920,13 +921,21 @@
         "title": "Your Address Book",
         "content": "Save addresses you send to frequently. Each contact has a name and address, making transactions more convenient and reducing errors."
       },
+      "places_nav": {
+        "title": "Getting Around",
+        "content": "The bottom bar is your navigation: Home for the active wallet, Portfolio for everything you hold, Activity for history, and Menu for settings and tools. Hover any icon for its name."
+      },
+      "portfolio_tab": {
+        "title": "Portfolio",
+        "content": "Portfolio shows your total value across all chains, wallets and tokens in one place — with allocation at a glance. Chains you haven't activated yet can be activated right from the list."
+      },
       "extended_menu_intro": {
-        "title": "Advanced Menu Features",
-        "content": "This menu provides access to advanced features: WalletConnect for connecting to dApps, Address Details, SSP Wallet Details, Settings and more. The lock icon on the right securely logs you out."
+        "title": "The Menu Tab",
+        "content": "Menu is the full toolbox: settings (language, currency, theme), WalletConnect for dApps, Address & SSP Wallet details, message signing, network configuration and this tutorial. The lock icon at the top right securely logs you out."
       },
       "address_management": {
         "title": "Wallets Management",
-        "content": "This dropdown manages multiple addresses per blockchain. You can create new addresses, switch between existing ones, or remove the last created address. Each address is independent with its own balance and transaction history."
+        "content": "The wallet pill at the top opens the switcher, where you manage multiple wallets per blockchain: create new ones, name and color them, switch between them, or remove the last created one. Each wallet is independent with its own balance and history."
       },
       "tutorial_complete": {
         "title": "Tutorial Complete!",
@@ -937,6 +946,7 @@
   "tabs": {
     "home": "Home",
     "portfolio": "Portfolio",
+    "menu": "Menu",
     "nav": "Wallet sections"
   },
   "switcher": {

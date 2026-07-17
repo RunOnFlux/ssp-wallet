@@ -863,6 +863,10 @@ export function useSolSendStrategy(): SendStrategyView {
     customFeeContent,
     hiddenFormContent: null,
     feeDisplay: txFee || '---',
+    // Normal preset is ready once the schedule-derived baseline exists ('0'
+    // means "not yet derived", mirroring feePresets above); Custom is the
+    // user's own fee.
+    feeReady: manualFee ? txFee !== '' : autoFee !== '0',
     feeSymbol: blockchainConfig.symbol,
     feeFiat: toFiat(txFee),
     totalDisplay,
