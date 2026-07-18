@@ -101,6 +101,14 @@ body {
   min-height: 0;
   overflow-y: auto; /* tall dialogs scroll inside, not past the viewport */
   overscroll-behavior: contain;
+  /* The body is the single scroll region of a modal — hide its scrollbar so
+     dialogs never show a visible bar (and never read as a double scrollbar
+     next to the page). Scroll still works via wheel/touch/keyboard. */
+  scrollbar-width: none; /* Firefox */
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-body::-webkit-scrollbar {
+  display: none; /* Chromium/WebKit */
 }
 
 /* Fallback before ThemeProvider stamps data-theme (avoids flash on load) */
@@ -367,6 +375,10 @@ svg.lucide-spin {
   border-radius: 12px;
   overflow: hidden;
   text-align: left;
+  /* Keep the 1px border inside the container width so the list never forces
+     horizontal overflow in a narrow popup/panel. */
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 :root[data-theme='dark'] .feed-list {
@@ -406,6 +418,7 @@ svg.lucide-spin {
   font-family: var(--ssp-mono);
   font-size: 11px;
   word-break: break-all;
+  min-width: 0; /* allow full txid/address to wrap inside the flex detail line */
 }
 
 .feed-detail-actions {

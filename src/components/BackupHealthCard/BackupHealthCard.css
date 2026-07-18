@@ -40,9 +40,11 @@
 .backup-health-text {
   flex: 1 1 auto;
   min-width: 0;
-  /* Breathing room before the Verify/dismiss controls — the flex gap alone
-     reads glued at narrow widths where the body text wraps tight. */
-  padding-right: 4px;
+  /* Clear separation before the Verify/dismiss control column — the 12px flex
+     gap alone read glued at narrow widths where the body text wraps tight.
+     12px padding + 12px gap = a comfortable ~24px gutter, matching the spacing
+     of the action-button row below the card. */
+  padding-right: 12px;
 }
 
 .backup-health-title {

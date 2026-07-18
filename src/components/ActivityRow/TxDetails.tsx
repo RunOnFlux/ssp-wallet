@@ -7,7 +7,6 @@ import { blockchains } from '@storage/blockchains';
 import { explorerTxUrl } from '../../lib/explorerUrl';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import { formatFullTimestamp } from '../../lib/relativeTime';
-import { truncateAddress } from '../../lib/addressDisplay';
 import type { cryptos, transaction } from '../../types';
 
 const { Text } = Typography;
@@ -73,7 +72,7 @@ function TxDetails({
           {t('home:transactionsTable.txid')}
         </span>
         <Text copyable={{ text: tx.txid }} className="feed-detail-mono">
-          {truncateAddress(tx.txid, 10)}
+          {tx.txid}
         </Text>
       </div>
       {!!tx.receiver && (
@@ -82,7 +81,7 @@ function TxDetails({
             {t('home:transactionsTable.to_address')}
           </span>
           <Text copyable={{ text: tx.receiver }} className="feed-detail-mono">
-            {truncateAddress(tx.receiver, 10)}
+            {tx.receiver}
           </Text>
         </div>
       )}
@@ -124,7 +123,7 @@ function TxDetails({
             copyable={{ text: tx.contractAddress }}
             className="feed-detail-mono"
           >
-            {truncateAddress(tx.contractAddress, 10)}
+            {tx.contractAddress}
           </Text>
         </div>
       )}

@@ -1,6 +1,8 @@
 .headerbar {
   margin: auto;
-  line-height: 30px;
   width: calc(100% - 2rem);
-  height: 25px;
+  /* Size to content, never a fixed clip height: a title that wraps to two
+     lines (e.g. "Import Wallet Seed Phrase" at narrow panel widths) must grow
+     the bar so it never spills over the divider / progress bar below it. */
+  min-height: 30px;
 }

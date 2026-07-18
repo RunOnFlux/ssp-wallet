@@ -38,14 +38,7 @@ coverage
 .nyc_output
 # upgrade-in-place release gate artifacts
 .upgrade-test/
-# phase-checkpoint screenshot artifacts (dev only)
-.phase*-shots/
-scripts/phase*-screenshots.mjs
-.lucide-shots/
-scripts/lucide-screenshots.mjs
-.wave9-shots/
-scripts/wave9-screenshots.mjs
-.wave10-shots/
-scripts/wave10-screenshots.mjs
-.final-sweep-shots/
-scripts/final-sweep-screenshots.mjs
+# dev-only screenshot artifacts (regenerable — any *-shots dir + screenshot harnesses)
+.*-shots/
+scripts/*-screenshots.mjs
+.probe-profile/

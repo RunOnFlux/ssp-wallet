@@ -7,6 +7,10 @@
   align-items: center;
   gap: 10px;
   width: 100%;
+  /* border-box so width:100% + the 12px side padding stays INSIDE the row's
+     container — content-box would make each row 24px wider than the feed and
+     push its right edge (amount / status chip) past the narrow-panel viewport. */
+  box-sizing: border-box;
   padding: 10px 12px;
   border: none;
   background: transparent;
@@ -172,6 +176,20 @@
 /* Align the detail inset card under the row content (past the glyph). */
 .arow-details {
   margin: 0 12px 12px;
+}
+
+/* First / last rows: round the interactive button so its amber focus/active
+   outline (and hover wash) follows the list's 12px rounded corners instead of
+   being clipped square by the container's overflow:hidden. The 11px inner
+   radius matches the list radius minus its 1px border. */
+.feed-list > .arow-wrap:first-child .arow {
+  border-top-left-radius: 11px;
+  border-top-right-radius: 11px;
+}
+
+.feed-list > .arow-wrap:last-child .arow {
+  border-bottom-left-radius: 11px;
+  border-bottom-right-radius: 11px;
 }
 
 @media (prefers-reduced-motion: reduce) {

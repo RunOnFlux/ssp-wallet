@@ -1,6 +1,11 @@
 .activity-tab {
   text-align: left;
   padding: 4px 2px;
+  /* Never wider than the shell content column — combined with border-box rows
+     (ActivityRow.css) the whole feed fits a 420px popup with no horizontal
+     overflow of rows or the export/refresh controls. */
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .activity-header {

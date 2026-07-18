@@ -1,11 +1,14 @@
+/* antd lays the 5 items out as equal flex cells; letting them share the row
+   width (instead of a fixed 62px cell + a -20px nudge) keeps the stepper
+   centered with symmetric left/right gutters at every panel width. */
 .creation-steps > div {
-  width: 62px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .creation-steps {
   margin-bottom: 35px;
   margin-top: 18px;
-  margin-left: -20px;
 }
 
 /* Goal-gradient progress readout — never 0%. */

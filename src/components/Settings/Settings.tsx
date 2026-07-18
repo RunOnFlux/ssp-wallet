@@ -865,7 +865,9 @@ function Settings() {
       {/* Preferences — the only section with inline controls. */}
       <Section title={t('home:settings.preferences', 'Preferences')}>
         <Row icon={<LanguagesIcon />} label={t('home:settings.language')}>
-          <LanguageSelector label={false} />
+          {/* label=true shows the dropdown arrow so the value isn't
+              right-heavy and it matches the Fiat/Theme selects beside it. */}
+          <LanguageSelector label={true} />
         </Row>
         <Row icon={<CoinsIcon />} label={t('home:settings.fiat_currency')}>
           <Select
