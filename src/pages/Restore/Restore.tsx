@@ -618,7 +618,7 @@ function Restore() {
               setMnemonicShow(!mnemonicShow);
               setWSPwasShown(true);
             }}
-            icon={<CircleAlertIcon style={{ color: 'orange' }} />}
+            icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
           >
             <div className="popconfirm-button">
               <Button type="dashed" icon={<EyeOffIcon />} style={{ margin: 5 }}>
@@ -650,7 +650,7 @@ function Restore() {
             setSeedPhraseCopyingVisible(true);
             setWpCopied(true);
           }}
-          icon={<CircleAlertIcon style={{ color: 'orange' }} />}
+          icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
         >
           <div className="popconfirm-button">
             <Button type="dashed" icon={<CopyIcon />} style={{ margin: 5 }}>

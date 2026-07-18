@@ -1069,7 +1069,7 @@ function Swap() {
                   size="small"
                   type="text"
                   className="swap-box-row-sub-selection"
-                  style={{ color: 'red' }}
+                  style={{ color: '#ef4444' }}
                   disabled={true}
                 >
                   {t('home:swap.chain_sync_required')}
@@ -1084,10 +1084,10 @@ function Swap() {
               <div className="swap-switch-container">
                 <Button
                   className="swap-switch-button"
+                  icon={<ArrowDownUpIcon />}
+                  aria-label={t('home:swap.swap_crypto')}
                   onClick={() => changeDirection()}
-                >
-                  <ArrowDownUpIcon />
-                </Button>
+                />
               </div>
               {selectedExchange.exchangeId?.slice(-3) !== 'fix' ? (
                 <Popover
@@ -1227,7 +1227,7 @@ function Swap() {
                   size="small"
                   type="text"
                   className="swap-box-row-sub-selection"
-                  style={{ color: 'red' }}
+                  style={{ color: '#ef4444' }}
                   disabled={true}
                 >
                   {t('home:swap.chain_sync_required')}
@@ -1277,21 +1277,16 @@ function Swap() {
         <div className="rate-value">
           {rate > 0 && loading === false ? (
             <>
-              {showAdvancedOptions ? (
-                <>
-                  <CircleMinusIcon
-                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                  />
-                  &nbsp;
-                </>
-              ) : (
-                <>
-                  <CirclePlusIcon
-                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                  />
-                  &nbsp;
-                </>
-              )}
+              <button
+                type="button"
+                className="swap-advanced-toggle"
+                aria-label={t('home:swap.advanced_options')}
+                aria-expanded={showAdvancedOptions}
+                onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+              >
+                {showAdvancedOptions ? <CircleMinusIcon /> : <CirclePlusIcon />}
+              </button>
+              &nbsp;
               <Popover
                 content={
                   selectedExchange.exchangeId?.slice(-3) === 'fix'

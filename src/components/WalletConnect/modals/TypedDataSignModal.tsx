@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSspLogo } from '../../../hooks/useSspLogo';
-import { Modal, QRCode, Space, Typography, Card, Alert } from 'antd';
+import { Modal, QRCode, Space, Typography, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
 import { SessionRequest } from '../types/modalTypes';
 import { useWalletConnect } from '../../../contexts/WalletConnectContext';
 import { blockchains } from '@storage/blockchains';
+import DappOrigin from '../../DappRequest/DappOrigin';
+import '../../DappRequest/DappRequest.css';
 
 const { Text, Paragraph } = Typography;
 
@@ -24,7 +26,7 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
 }) => {
   const { t } = useTranslation(['home', 'common']);
   const sspLogo = useSspLogo();
-  const { chainSwitchInfo } = useWalletConnect();
+  const { chainSwitchInfo, activeSessions } = useWalletConnect();
   const { activeChain } = useAppSelector((state) => state.sspState);
   const [step, setStep] = useState<'approval' | 'qr'>('approval');
   const [isApproving, setIsApproving] = useState(false);
@@ -90,6 +92,9 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
     }
   };
 
+  // Session peer metadata for the origin header (who is asking)
+  const peerMetadata = activeSessions[request.topic]?.peer?.metadata;
+
   // First step: Approval dialog
   if (step === 'approval') {
     return (
@@ -100,45 +105,46 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
         onCancel={handleReject}
         okText={t('home:walletconnect.approve')}
         cancelText={t('home:walletconnect.reject')}
+        cancelButtonProps={{ type: 'text' }}
         confirmLoading={isApproving}
-        style={{ textAlign: 'center', top: 60 }}
       >
-        <Space
-          direction="vertical"
-          size="large"
-          style={{ width: '100%', textAlign: 'left' }}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            textAlign: 'left',
+            marginTop: 16,
+          }}
         >
-          <Text>
-            {t('home:walletconnect.dapp_requests_typed_data_signature')}
-          </Text>
+          <DappOrigin
+            name={peerMetadata?.name}
+            url={peerMetadata?.url}
+            icon={peerMetadata?.icons?.[0]}
+          />
 
-          {/* Address Section */}
-          <Card
-            size="small"
-            title={t('home:walletconnect.address')}
-            style={{ marginBottom: 16 }}
-          >
-            <div style={{ textAlign: 'center' }}>
-              <Text
-                code
-                copyable
-                style={{ fontSize: '13px', fontWeight: 'bold' }}
-              >
+          <p className="dapp-ask">
+            {t('home:walletconnect.dapp_requests_typed_data_signature')}
+          </p>
+
+          <div className="dapp-summary">
+            <div className="dapp-summary-row">
+              <span className="dapp-summary-label">
+                {t('home:walletconnect.address')}
+              </span>
+              <Text className="dapp-summary-value dapp-mono" copyable>
                 {address}
               </Text>
-              <div style={{ marginTop: 8 }}>
-                <Text type="secondary" style={{ fontSize: '12px' }}>
-                  {chainSwitchInfo?.required && chainSwitchInfo.targetChain
-                    ? t('home:walletconnect.on_network', {
-                        networkName: chainSwitchInfo.targetChain.chainName,
-                      })
-                    : t('home:walletconnect.on_network', {
-                        networkName: blockchains[activeChain].name,
-                      })}
-                </Text>
-              </div>
             </div>
-          </Card>
+            <div className="dapp-summary-row">
+              <span className="dapp-summary-label">{t('common:network')}</span>
+              <span className="dapp-summary-value">
+                {chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                  ? chainSwitchInfo.targetChain.chainName
+                  : blockchains[activeChain].name}
+              </span>
+            </div>
+          </div>
 
           {/* Chain Switch Warning */}
           {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
@@ -159,75 +165,36 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
               }
               type="warning"
               showIcon
-              style={{ marginBottom: 16 }}
             />
           )}
 
-          {/* TypedData Section */}
-          <Card
-            size="small"
-            title={t('home:walletconnect.data')}
-            style={{ marginBottom: 16 }}
-          >
-            <Alert
-              description={
-                <div style={{ textAlign: 'center' }}>
-                  <Text
-                    style={{
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {t('home:walletconnect.structured_eip712_data')}
-                  </Text>
-                </div>
-              }
-              type="success"
-              style={{ marginBottom: 12 }}
-            />
-
-            <Text type="secondary">
-              {t('home:walletconnect.technical_data_eip712')}
-            </Text>
+          {/* EIP-712 payload — mono, scrolls internally, theme-aware */}
+          <div>
             <div
-              style={{
-                marginTop: 8,
-                maxHeight: '200px',
-                overflow: 'auto',
-                background: '#f5f5f5',
-                padding: '10px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                fontFamily: 'var(--ssp-mono)',
-              }}
+              className="dapp-summary-label"
+              style={{ fontSize: 12, marginBottom: 4 }}
             >
-              <Text
-                copyable={{ text: JSON.stringify(typedData, null, 2) }}
-                style={{ fontSize: '12px' }}
-              >
-                {JSON.stringify(typedData, null, 2)}
-              </Text>
+              {t('home:walletconnect.data')} —{' '}
+              {t('home:walletconnect.structured_eip712_data')}
             </div>
-          </Card>
-
-          {/* Method Info */}
-          <Alert
-            message={`${t('home:walletconnect.method_prefix')} ${method}`}
-            description={t(
-              'home:walletconnect.eip712_structured_data_signature',
-            )}
-            type="info"
-            showIcon
-            style={{ marginBottom: 16, fontSize: '12px' }}
-          />
-
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <Text type="secondary">
-              {t('home:walletconnect.step_1_approve_wallet')}
+            <Text
+              className="dapp-payload"
+              style={{ display: 'block' }}
+              copyable={{ text: JSON.stringify(typedData, null, 2) }}
+            >
+              {JSON.stringify(typedData, null, 2)}
             </Text>
           </div>
-        </Space>
+
+          {/* Method footnote */}
+          <Text type="secondary" style={{ fontSize: 11, lineHeight: 1.5 }}>
+            <span style={{ fontFamily: 'var(--ssp-mono)' }}>{method}</span>
+            {' — '}
+            {t('home:walletconnect.eip712_structured_data_signature')}
+            <br />
+            {t('home:walletconnect.step_1_approve_wallet')}
+          </Text>
+        </div>
       </Modal>
     );
   }
@@ -239,7 +206,7 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
       open={true}
       onCancel={handleReject}
       footer={null}
-      style={{ textAlign: 'center', top: 60 }}
+      style={{ textAlign: 'center' }}
     >
       <div style={{ textAlign: 'left' }}>
         <div style={{ textAlign: 'center' }}>

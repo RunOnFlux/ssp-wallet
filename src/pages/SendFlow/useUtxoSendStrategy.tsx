@@ -857,7 +857,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
           textAlign: 'right',
           marginRight: 10,
           fontSize: 12,
-          color: 'grey',
+          opacity: 0.65,
         }}
       >
         {feePerByte}{' '}

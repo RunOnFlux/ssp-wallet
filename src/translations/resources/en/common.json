@@ -52,5 +52,8 @@
   "rename_wallet": "Rename wallet",
   "retry": "Retry",
   "done": "Done",
-  "saved": "Saved"
+  "saved": "Saved",
+  "show": "Show",
+  "hide": "Hide",
+  "copy": "Copy"
 }

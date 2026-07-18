@@ -558,7 +558,7 @@ function Create() {
                 setMnemonicShow(!mnemonicShow);
                 setWSPwasShown(true);
               }}
-              icon={<CircleAlertIcon style={{ color: 'orange' }} />}
+              icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
             >
               <div className="popconfirm-button">
                 <Button
@@ -594,7 +594,7 @@ function Create() {
               setSeedPhraseCopyingVisible(true);
               setWpCopied(true);
             }}
-            icon={<CircleAlertIcon style={{ color: 'orange' }} />}
+            icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
           >
             <div className="popconfirm-button">
               <Button type="dashed" icon={<CopyIcon />} style={{ margin: 5 }}>

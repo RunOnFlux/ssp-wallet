@@ -18,7 +18,7 @@
 }
 
 .wallet-name-edit-icon {
-  color: #8c8c8c;
+  color: #78716c; /* text-tertiary (warm stone) */
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;

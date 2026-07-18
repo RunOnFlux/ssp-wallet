@@ -1,3 +1,14 @@
 .no-text-select .ant-select-selection-item {
   display: none !important;
 }
+
+/* Fee preset tiles are keyboard-operable (role=button) — give them the
+   shared amber focus ring; colors/borders stay token-driven inline. */
+.fee-preset {
+  border-radius: 8px; /* controls radius (DESIGN_TOKENS §4) */
+}
+
+.fee-preset:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 1px;
+}

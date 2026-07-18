@@ -52,7 +52,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
       key: 'website',
       label: (
         <Space>
-          <GlobeIcon style={{ color: '#722ed1' }} />
+          <GlobeIcon style={{ color: '#a855f7' }} />
           <div>
             <div>{t('welcome:help.website')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -85,7 +85,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
       key: 'privacy',
       label: (
         <Space>
-          <ShieldCheckIcon style={{ color: '#13c2c2' }} />
+          <ShieldCheckIcon style={{ color: '#14b8a6' }} />
           <div>
             <div>{t('welcome:help.privacy')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -100,7 +100,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
       key: 'terms',
       label: (
         <Space>
-          <FileTextIcon style={{ color: '#eb2f96' }} />
+          <FileTextIcon style={{ color: '#ec4899' }} />
           <div>
             <div>{t('welcome:help.terms')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>

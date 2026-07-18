@@ -562,24 +562,28 @@ function Login() {
 
   return (
     <>
-      {isLoading && <Spin size="large" />}
+      {isLoading && (
+        <div className="auth-loading">
+          <Spin size="large" />
+        </div>
+      )}
       {!isLoading && (
-        <div style={{ paddingBottom: '43px' }}>
+        <div className="auth-page">
           <Image
             width={80}
             preview={false}
             src={sspLogo}
-            style={{ paddingTop: 70 }}
+            className="auth-logo"
+            alt="SSP Wallet"
           />
-          <h2>{t('login:welcome_back')}</h2>
-          <h3>{t('login:to_secure_wallet')}</h3>
-          <br />
-          <br />
+          <h2 className="auth-title">{t('login:welcome_back')}</h2>
+          <h3 className="auth-subtitle">{t('login:to_secure_wallet')}</h3>
           <Form
             name="loginForm"
             onFinish={(values) => void onFinish(values as loginForm)}
             autoComplete="off"
             layout="vertical"
+            className="auth-form"
           >
             <div className="password-input-container">
               <Form.Item label={t('login:unlock_with_pw')} name="password">
@@ -601,14 +605,14 @@ function Login() {
               </Button>
             </Form.Item>
           </Form>
-          <br />
           <Button
             type="link"
             block
             size="small"
+            style={{ marginTop: 8 }}
             onClick={() => navigate('/restore')}
           >
-            {t('login:forgot_pw')} <i> {t('login:restore')}</i>
+            {t('login:forgot_pw')} {t('login:restore')}
           </Button>
         </div>
       )}

@@ -248,7 +248,7 @@ function AddressDetails(props: {
               onConfirm={() => {
                 setPrivateKeyVisible(true);
               }}
-              icon={<CircleAlertIcon style={{ color: 'orange' }} />}
+              icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
             >
               <EyeOffIcon />
             </Popconfirm>

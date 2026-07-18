@@ -363,7 +363,8 @@
     "proceed_to_pay": "Proceed to Pay",
     "tx_rejected": "Transaction Rejected",
     "invalid_request": "Invalid Request",
-    "transaction_sent": "Transaction Sent"
+    "transaction_sent": "Transaction Sent",
+    "review_details": "Review the payment below. You will still confirm the transaction before anything is sent."
   },
   "signMessage": {
     "sign_message": "Sign Message",
@@ -590,7 +591,8 @@
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",
     "err_delete_token": "Error while deleting token. Please try again.",
-    "no_tokens": "No tokens on this wallet yet"
+    "no_tokens": "No tokens on this wallet yet",
+    "custom_tokens": "Custom tokens"
   },
   "buy_sell_crypto": {
     "third_party_service": "Third Party Service",
@@ -649,7 +651,8 @@
     "balance": "Balance",
     "max_tooltip_token": "Send your entire token balance. Network fees are paid separately in the native coin.",
     "max_tooltip_native": "Send your maximum available balance. Network fees are automatically reserved.",
-    "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees."
+    "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees.",
+    "advanced_options": "Advanced options"
   },
   "walletconnect": {
     "title": "WalletConnect",

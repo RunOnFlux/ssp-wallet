@@ -43,3 +43,9 @@ coverage
 scripts/phase*-screenshots.mjs
 .lucide-shots/
 scripts/lucide-screenshots.mjs
+.wave9-shots/
+scripts/wave9-screenshots.mjs
+.wave10-shots/
+scripts/wave10-screenshots.mjs
+.final-sweep-shots/
+scripts/final-sweep-screenshots.mjs

@@ -1,21 +1,13 @@
 import React, { useState } from 'react';
-import {
-  Modal,
-  Space,
-  Typography,
-  Card,
-  Alert,
-  Collapse,
-  Tag,
-  Divider,
-} from 'antd';
+import { Modal, Typography, Alert, Collapse, Tag, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../../../types';
 import { SessionRequest, EthereumTransaction } from '../types/modalTypes';
 import { useWalletConnect } from '../../../contexts/WalletConnectContext';
-import { CircleAlert as CircleAlertIcon, Info as InfoIcon } from 'lucide-react';
+import DappOrigin from '../../DappRequest/DappOrigin';
+import '../../DappRequest/DappRequest.css';
 
 const { Text } = Typography;
 
@@ -31,7 +23,7 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
   onReject,
 }) => {
   const { t } = useTranslation(['home', 'common']);
-  const { chainSwitchInfo } = useWalletConnect();
+  const { chainSwitchInfo, activeSessions } = useWalletConnect();
   const { activeChain } = useAppSelector((state) => state.sspState);
   const [step] = useState<'approval'>('approval');
   const [isApproving, setIsApproving] = useState(false);
@@ -165,17 +157,19 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
     };
   };
 
-  // Helper function to get dApp information
+  // dApp identity for the origin header: prefer the session peer metadata,
+  // fall back to the verified origin from the request's verify context.
   const getDAppInfo = () => {
-    const dappName =
-      request?.verifyContext?.verified?.origin ||
-      request?.params?.chainId ||
-      t('home:walletconnect.unknown_dapp');
-
-    const dappUrl = request?.verifyContext?.verified?.validation || '';
-    const isVerified = !!request?.verifyContext?.verified?.isScam === false;
-
-    return { dappName, dappUrl, isVerified };
+    const peerMetadata = request
+      ? activeSessions[request.topic]?.peer?.metadata
+      : undefined;
+    const verifiedOrigin = request?.verifyContext?.verified?.origin || '';
+    return {
+      name: peerMetadata?.name,
+      url: peerMetadata?.url || verifiedOrigin,
+      icon: peerMetadata?.icons?.[0],
+      isScam: !!request?.verifyContext?.verified?.isScam,
+    };
   };
 
   const handleApprove = async () => {
@@ -229,197 +223,171 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
       onCancel={handleReject}
       okText={t('home:walletconnect.approve')}
       cancelText={t('home:walletconnect.reject')}
+      cancelButtonProps={{ type: 'text' }}
       confirmLoading={isApproving}
-      style={{ textAlign: 'center', top: 60 }}
     >
-      <Space
-        direction="vertical"
-        size="large"
-        style={{ textAlign: 'left', marginTop: 24 }}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+          textAlign: 'left',
+          marginTop: 16,
+        }}
       >
-        {/* dApp Information */}
-        <Card size="small">
-          <Space direction="vertical" size="small">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Text strong>{t('home:walletconnect_tx_modal.dapp_label')}:</Text>
-              <Tag color={dappInfo.isVerified ? 'green' : 'orange'}>
-                {dappInfo.dappName}
-              </Tag>
-              {dappInfo.isVerified ? (
-                <InfoIcon style={{ color: '#22c55e' }} />
-              ) : (
-                <CircleAlertIcon style={{ color: '#f59e0b' }} />
-              )}
-            </div>
-            {dappInfo.dappUrl && (
-              <div>
-                <Text type="secondary" style={{ fontSize: '12px' }}>
-                  {dappInfo.dappUrl}
-                </Text>
-              </div>
-            )}
-          </Space>
-        </Card>
+        <DappOrigin
+          name={dappInfo.name}
+          url={dappInfo.url}
+          icon={dappInfo.icon}
+        />
 
-        <Text>{t('home:walletconnect.dapp_requests_transaction')}</Text>
-
-        {/* Function Information */}
-        {transaction.data && transaction.data !== '0x' && (
-          <Card
-            size="small"
-            style={{
-              border: decodedData.warning ? '1px solid #f59e0b' : undefined,
-            }}
-          >
-            <Space direction="vertical" size="small" style={{ width: '100%' }}>
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <Text strong>
-                  {t('home:walletconnect_tx_modal.function_label_with_colon')}
-                </Text>
-                {decodedData.signature && (
-                  <Text code style={{ fontSize: '11px' }}>
-                    {decodedData.signature}
-                  </Text>
-                )}
-              </div>
-              <Tag color={decodedData.isRecognized ? 'blue' : 'red'}>
-                {decodedData.functionName}
-              </Tag>
-              {decodedData.warning && (
-                <Alert
-                  message={decodedData.warning}
-                  type="warning"
-                  showIcon
-                  style={{ fontSize: '12px' }}
-                />
-              )}
-            </Space>
-          </Card>
+        {dappInfo.isScam && (
+          <Alert
+            message={t('home:walletconnect.security_warning')}
+            description={t('home:walletconnect.connection_warning')}
+            type="error"
+            showIcon
+          />
         )}
 
-        {/* Transaction Details */}
-        <Card size="small" title={t('home:walletconnect.transaction_request')}>
-          <Space direction="vertical" size="small" style={{ width: '100%' }}>
-            <Space direction="vertical" size="small">
-              <div>
-                <Text strong>{t('common:from')}: </Text>
-                <br />
-                <Text code copyable style={{ fontSize: '13px' }}>
-                  {transaction.from || t('common:address')}
-                </Text>
-              </div>
-              <Text type="secondary" style={{ fontSize: '12px' }}>
-                {chainSwitchInfo?.required && chainSwitchInfo.targetChain
-                  ? t('home:walletconnect.on_network', {
-                      networkName: chainSwitchInfo.targetChain.chainName,
-                    })
-                  : t('home:walletconnect.on_network', {
-                      networkName: blockchains[activeChain].name,
-                    })}
-              </Text>
-            </Space>
+        <p className="dapp-ask">
+          {t('home:walletconnect.dapp_requests_transaction')}
+        </p>
 
-            <div>
-              <Text strong>{t('home:walletconnect.to')}: </Text>
-              <br />
-              <Text code copyable style={{ fontSize: '13px' }}>
-                {transaction.to || t('common:address')}
-              </Text>
+        {/* What the contract call does — shown before the raw facts */}
+        {transaction.data && transaction.data !== '0x' && (
+          <div className="dapp-summary">
+            <div className="dapp-summary-row">
+              <span className="dapp-summary-label">
+                {t('home:walletconnect_tx_modal.function_label')}
+              </span>
+              <span className="dapp-summary-value">
+                <Tag
+                  color={decodedData.isRecognized ? 'blue' : 'red'}
+                  style={{ marginInlineEnd: 0 }}
+                >
+                  {decodedData.functionName}
+                </Tag>
+                {decodedData.signature && (
+                  <span
+                    className="dapp-mono"
+                    style={{ fontSize: 11, marginLeft: 8 }}
+                  >
+                    {decodedData.signature}
+                  </span>
+                )}
+              </span>
             </div>
+            {decodedData.warning && (
+              <Alert message={decodedData.warning} type="warning" showIcon />
+            )}
+          </div>
+        )}
 
-            <Space
-              direction="horizontal"
-              size="large"
-              style={{
-                width: '100%',
-                justifyContent: 'space-between',
-                marginTop: 24,
-              }}
+        {/* Transaction facts */}
+        <div className="dapp-summary">
+          <div className="dapp-summary-row">
+            <span className="dapp-summary-label">{t('common:from')}</span>
+            <Text className="dapp-summary-value dapp-mono" copyable>
+              {transaction.from || t('common:address')}
+            </Text>
+          </div>
+          <div className="dapp-summary-row">
+            <span className="dapp-summary-label">
+              {t('home:walletconnect.to')}
+            </span>
+            <Text className="dapp-summary-value dapp-mono" copyable>
+              {transaction.to || t('common:address')}
+            </Text>
+          </div>
+          <div className="dapp-summary-row">
+            <span className="dapp-summary-label">{t('common:network')}</span>
+            <span className="dapp-summary-value">
+              {chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                ? chainSwitchInfo.targetChain.chainName
+                : blockchains[activeChain].name}
+            </span>
+          </div>
+          <div className="dapp-summary-row">
+            <span className="dapp-summary-label">
+              {t('home:walletconnect.value')}
+            </span>
+            <span
+              className="dapp-summary-value"
+              style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}
             >
-              <div>
-                <Text strong>{t('home:walletconnect.value')}: </Text>
-                <Text>
-                  {formatCurrencyValue(
-                    transaction.value || '0',
-                    chainSwitchInfo?.required && chainSwitchInfo.targetChain
-                      ? chainSwitchInfo.targetChain.chainKey
-                      : activeChain,
-                  )}
-                </Text>
-              </div>
+              {formatCurrencyValue(
+                transaction.value || '0',
+                chainSwitchInfo?.required && chainSwitchInfo.targetChain
+                  ? chainSwitchInfo.targetChain.chainKey
+                  : activeChain,
+              )}
+            </span>
+          </div>
+          <div className="dapp-summary-row">
+            <span className="dapp-summary-label">
+              {t('home:walletconnect.gas')}
+            </span>
+            <span
+              className="dapp-summary-value"
+              style={{ fontVariantNumeric: 'tabular-nums' }}
+            >
+              {formatGasValue(transaction.gas, transaction.gasLimit)}
+            </span>
+          </div>
+        </div>
 
-              <div>
-                <Text strong>{t('home:walletconnect.gas')}: </Text>
-                <Text>
-                  {formatGasValue(transaction.gas, transaction.gasLimit)}
-                </Text>
-              </div>
-            </Space>
+        {/* Raw payload behind an expander */}
+        <Collapse
+          size="small"
+          items={[
+            {
+              key: '1',
+              label: t('home:walletconnect_tx_modal.raw_transaction_data'),
+              children: (
+                <div style={{ textAlign: 'left' }}>
+                  <div
+                    className="dapp-summary-label"
+                    style={{ fontSize: 12, marginBottom: 4 }}
+                  >
+                    {t('home:walletconnect_tx_modal.complete_transaction')}
+                  </div>
+                  <Text
+                    className="dapp-payload"
+                    style={{ display: 'block' }}
+                    copyable={{
+                      text: JSON.stringify(transaction, null, 2),
+                    }}
+                  >
+                    {JSON.stringify(transaction, null, 2)}
+                  </Text>
 
-            <Collapse
-              size="small"
-              items={[
-                {
-                  key: '1',
-                  label: t('home:walletconnect_tx_modal.raw_transaction_data'),
-                  children: (
-                    <div>
-                      <Text strong>
-                        {t('home:walletconnect_tx_modal.complete_transaction')}:
-                      </Text>
-                      <Typography.Paragraph
-                        code
-                        copyable={{
-                          text: JSON.stringify(transaction, null, 2),
-                        }}
-                        style={{
-                          maxHeight: '300px',
-                          overflowY: 'auto',
-                          marginTop: '8px',
-                          whiteSpace: 'pre-wrap',
-                          fontSize: '12px',
-                        }}
+                  {transaction.data && transaction.data !== '0x' && (
+                    <>
+                      <Divider style={{ margin: '12px 0 8px 0' }} />
+                      <div
+                        className="dapp-summary-label"
+                        style={{ fontSize: 12, marginBottom: 4 }}
                       >
-                        {JSON.stringify(transaction, null, 2)}
-                      </Typography.Paragraph>
-
-                      {transaction.data && transaction.data !== '0x' && (
-                        <>
-                          <Divider style={{ margin: '12px 0 8px 0' }} />
-                          <Text strong>
-                            {t('home:walletconnect_tx_modal.data_field_only')}:
-                          </Text>
-                          <div style={{ marginTop: '4px' }}>
-                            <Text type="secondary" style={{ fontSize: '11px' }}>
-                              {t('home:walletconnect_tx_modal.data_length')}:{' '}
-                              {transaction.data.length}{' '}
-                              {t('home:walletconnect_tx_modal.characters')}
-                            </Text>
-                          </div>
-                          <Typography.Paragraph
-                            code
-                            copyable={{ text: transaction.data }}
-                            style={{
-                              maxHeight: '200px',
-                              overflowY: 'auto',
-                              marginTop: '4px',
-                              wordBreak: 'break-all',
-                              fontSize: '12px',
-                            }}
-                          >
-                            {transaction.data}
-                          </Typography.Paragraph>
-                        </>
-                      )}
-                    </div>
-                  ),
-                },
-              ]}
-            />
-          </Space>
-        </Card>
+                        {t('home:walletconnect_tx_modal.data_field_only')} ·{' '}
+                        {t('home:walletconnect_tx_modal.data_length')}:{' '}
+                        {transaction.data.length}{' '}
+                        {t('home:walletconnect_tx_modal.characters')}
+                      </div>
+                      <Text
+                        className="dapp-payload"
+                        style={{ display: 'block' }}
+                        copyable={{ text: transaction.data }}
+                      >
+                        {transaction.data}
+                      </Text>
+                    </>
+                  )}
+                </div>
+              ),
+            },
+          ]}
+        />
 
         {/* Chain Switch Warning */}
         {chainSwitchInfo?.required && chainSwitchInfo.targetChain && (
@@ -443,21 +411,17 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
           />
         )}
 
-        {/* Method Info */}
-        <Alert
-          message={`${t('home:walletconnect.method_prefix')} eth_sendTransaction`}
-          description={t('home:walletconnect.execute_transaction_blockchain')}
-          type="info"
-          showIcon
-          style={{ fontSize: '12px' }}
-        />
-
-        <div style={{ textAlign: 'center' }}>
-          <Text type="secondary">
-            {t('home:walletconnect.step_1_approve_wallet')}
-          </Text>
-        </div>
-      </Space>
+        {/* Method footnote */}
+        <Text type="secondary" style={{ fontSize: 11, lineHeight: 1.5 }}>
+          <span style={{ fontFamily: 'var(--ssp-mono)' }}>
+            eth_sendTransaction
+          </span>
+          {' — '}
+          {t('home:walletconnect.execute_transaction_blockchain')}
+          <br />
+          {t('home:walletconnect.step_1_approve_wallet')}
+        </Text>
+      </div>
     </Modal>
   );
 };

@@ -435,7 +435,7 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 float: 'left',
                 marginLeft: 3,
                 fontSize: 12,
-                color: 'grey',
+                color: token.colorTextSecondary,
                 zIndex: 2,
                 position: 'relative',
               }}
@@ -615,6 +615,8 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                   key={preset.key}
                   role="button"
                   tabIndex={0}
+                  aria-pressed={selected}
+                  className="fee-preset"
                   onClick={() => strategy.selectPreset(preset.key)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -625,7 +627,6 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                     border: `2px solid ${
                       selected ? token.colorPrimary : token.colorBorderSecondary
                     }`,
-                    borderRadius: 10,
                     padding: '8px 10px',
                     cursor: 'pointer',
                     textAlign: 'left',
@@ -687,7 +688,7 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
               display: strategy.selectedPreset === 'custom' ? 'block' : 'none',
               textAlign: 'left',
               border: `1px solid ${token.colorBorderSecondary}`,
-              borderRadius: 10,
+              borderRadius: 8,
               padding: '12px 12px 0',
               marginBottom: 12,
             }}

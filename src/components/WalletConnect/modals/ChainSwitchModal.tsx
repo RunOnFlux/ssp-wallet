@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, App } from 'antd';
+import { Modal, App, Alert } from 'antd';
+import '../../DappRequest/DappRequest.css';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
 import { blockchains } from '@storage/blockchains';
@@ -75,19 +76,35 @@ const ChainSwitchModal: React.FC<ChainSwitchModalProps> = ({
       onCancel={handleReject}
       okText={t('home:walletconnect.approve')}
       cancelText={t('home:walletconnect.reject')}
-      style={{ textAlign: 'center', top: 60 }}
+      cancelButtonProps={{ type: 'text' }}
     >
-      <div style={{ textAlign: 'left' }}>
-        <p>{t('home:walletconnect.dapp_requests_chain_switch')}</p>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 16,
+          textAlign: 'left',
+          marginTop: 16,
+        }}
+      >
+        <p className="dapp-ask">
+          {t('home:walletconnect.dapp_requests_chain_switch')}
+        </p>
 
-        <div style={{ marginBottom: '8px' }}>
-          <strong>{t('home:walletconnect.target_chain')}:</strong>{' '}
-          {targetChain[1].name}
+        <div className="dapp-summary">
+          <div className="dapp-summary-row">
+            <span className="dapp-summary-label">
+              {t('home:walletconnect.target_chain')}
+            </span>
+            <span className="dapp-summary-value">{targetChain[1].name}</span>
+          </div>
         </div>
 
-        <p style={{ color: '#f59e0b', marginTop: '12px' }}>
-          {t('home:walletconnect.switch_chain_warning')}
-        </p>
+        <Alert
+          message={t('home:walletconnect.switch_chain_warning')}
+          type="warning"
+          showIcon
+        />
       </div>
     </Modal>
   );

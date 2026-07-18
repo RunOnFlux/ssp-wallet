@@ -236,7 +236,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                     >
                       {t('home:tutorial.privacy_policy')}
                     </Button>
-                    <span style={{ color: '#ccc' }}>|</span>
+                    <span style={{ opacity: 0.4 }}>|</span>
                     <Button
                       type="link"
                       size="small"

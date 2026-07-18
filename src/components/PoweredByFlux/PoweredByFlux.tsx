@@ -30,7 +30,7 @@ function PoweredByFlux({
   const lastClickTimeRef = useRef(0);
   const { isDark } = useThemeMode();
   const themeStyle = isDark ? 'light' : 'dark'; // powered_by asset variant (light art on dark bg)
-  const colorBox = isDark ? '#333' : '#ddd';
+  const colorBox = isDark ? '#3d3a38' : '#d6d3d1'; // border-secondary tokens
 
   const open = (url: string) => {
     window.open(url, '_blank');

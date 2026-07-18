@@ -1,4 +1,4 @@
-import { Card, Badge, Avatar, Flex, Button } from 'antd';
+import { Card, Badge, Avatar, Flex, Button, Tag } from 'antd';
 const { Meta } = Card;
 import { useTranslation } from 'react-i18next';
 import { MouseEvent, useState } from 'react';
@@ -117,13 +117,12 @@ function SwapBox(props: {
                   {new Date(swap.createdAt).toLocaleDateString()}
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <Button
+                  <Tag
                     color={transformStatusToColor(swap.status)}
-                    variant="filled"
-                    size="small"
+                    style={{ marginInlineEnd: 0 }}
                   >
                     {transformStatusToString(swap.status)}
-                  </Button>
+                  </Tag>
                 </div>
               </div>
               <div>
@@ -247,68 +246,112 @@ function SwapBox(props: {
                   </div>
                 </div>
                 {infoExpanded && (
-                  <div className={'token-box'} id={'swap-id' + swap.swapId}>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.created_at')}:{' '}
-                      {new Date(swap.createdAt).toLocaleDateString()},{' '}
-                      {new Date(swap.createdAt).toLocaleTimeString()}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.rate')}: 1{' '}
-                      {sellAsset
-                        ? (blockchains[sellAsset.split('_')[0]].tokens?.find(
-                            (token) => token.symbol === sellAsset.split('_')[1],
-                          )?.symbol ??
-                          blockchains[sellAsset.split('_')[0]]?.symbol)
-                        : null}{' '}
-                      = {swap.rate}{' '}
-                      {buyAsset
-                        ? (blockchains[buyAsset.split('_')[0]].tokens?.find(
-                            (token) => token.symbol === buyAsset.split('_')[1],
-                          )?.symbol ??
-                          blockchains[buyAsset.split('_')[0]]?.symbol)
-                        : null}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.swap_id')}: {swap.swapId}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.provider')}: {provider.name}{' '}
-                      {provider.type.charAt(0).toUpperCase() +
-                        provider.type.slice(1)}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.sell_address')}:{' '}
-                      {swap.refundAddress || 'N/A'}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.buy_address')}: {swap.buyAddress || 'N/A'}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.sell_txid')}: {swap.sellTxid || 'N/A'}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.buy_txid')}: {swap.buyTxid || 'N/A'}
-                    </p>
+                  <div className="feed-details" id={'swap-id' + swap.swapId}>
+                    <div className="feed-detail-line">
+                      <span className="feed-detail-label">
+                        {t('home:swap.created_at')}:
+                      </span>
+                      <span>
+                        {new Date(swap.createdAt).toLocaleDateString()},{' '}
+                        {new Date(swap.createdAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <div className="feed-detail-line">
+                      <span className="feed-detail-label">
+                        {t('home:swap.rate')}:
+                      </span>
+                      <span>
+                        1{' '}
+                        {sellAsset
+                          ? (blockchains[sellAsset.split('_')[0]].tokens?.find(
+                              (token) =>
+                                token.symbol === sellAsset.split('_')[1],
+                            )?.symbol ??
+                            blockchains[sellAsset.split('_')[0]]?.symbol)
+                          : null}{' '}
+                        = {swap.rate}{' '}
+                        {buyAsset
+                          ? (blockchains[buyAsset.split('_')[0]].tokens?.find(
+                              (token) =>
+                                token.symbol === buyAsset.split('_')[1],
+                            )?.symbol ??
+                            blockchains[buyAsset.split('_')[0]]?.symbol)
+                          : null}
+                      </span>
+                    </div>
+                    <div className="feed-detail-line">
+                      <span className="feed-detail-label">
+                        {t('home:swap.swap_id')}:
+                      </span>
+                      <span className="feed-detail-mono">{swap.swapId}</span>
+                    </div>
+                    <div className="feed-detail-line">
+                      <span className="feed-detail-label">
+                        {t('home:swap.provider')}:
+                      </span>
+                      <span>
+                        {provider.name}{' '}
+                        {provider.type.charAt(0).toUpperCase() +
+                          provider.type.slice(1)}
+                      </span>
+                    </div>
+                    <div className="feed-detail-line">
+                      <span className="feed-detail-label">
+                        {t('home:swap.sell_address')}:
+                      </span>
+                      <span className="feed-detail-mono">
+                        {swap.refundAddress || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="feed-detail-line">
+                      <span className="feed-detail-label">
+                        {t('home:swap.buy_address')}:
+                      </span>
+                      <span className="feed-detail-mono">
+                        {swap.buyAddress || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="feed-detail-line">
+                      <span className="feed-detail-label">
+                        {t('home:swap.sell_txid')}:
+                      </span>
+                      <span className="feed-detail-mono">
+                        {swap.sellTxid || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="feed-detail-line">
+                      <span className="feed-detail-label">
+                        {t('home:swap.buy_txid')}:
+                      </span>
+                      <span className="feed-detail-mono">
+                        {swap.buyTxid || 'N/A'}
+                      </span>
+                    </div>
                     {swap.refundTxid && (
-                      <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                        {t('home:swap.refund_txid')}: {swap.refundTxid || 'N/A'}
-                      </p>
+                      <div className="feed-detail-line">
+                        <span className="feed-detail-label">
+                          {t('home:swap.refund_txid')}:
+                        </span>
+                        <span className="feed-detail-mono">
+                          {swap.refundTxid}
+                        </span>
+                      </div>
                     )}
                     {provider.track && (
-                      <Button
-                        type="default"
-                        size="small"
-                        style={{ float: 'right' }}
-                        onClick={() => {
-                          window.open(
-                            `${provider.track}${swap.swapId}`,
-                            '_blank',
-                          );
-                        }}
-                      >
-                        {t('home:swap.track_swap')}
-                      </Button>
+                      <div className="feed-detail-actions">
+                        <Button
+                          type="default"
+                          size="small"
+                          onClick={() => {
+                            window.open(
+                              `${provider.track}${swap.swapId}`,
+                              '_blank',
+                            );
+                          }}
+                        >
+                          {t('home:swap.track_swap')}
+                        </Button>
+                      </div>
                     )}
                   </div>
                 )}

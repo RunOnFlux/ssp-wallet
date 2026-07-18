@@ -1,6 +1,7 @@
-import { Typography, Button, Space, Modal, Input } from 'antd';
+import { Typography, Button, Modal, Input } from 'antd';
 import { useAppSelector } from '../../hooks';
-const { Paragraph, Text } = Typography;
+import '../DappRequest/DappRequest.css';
+const { Text } = Typography;
 const { TextArea } = Input;
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
@@ -166,63 +167,77 @@ function SignMessage({
       <Modal
         title={t('home:signMessage.sign_message')}
         open={open}
-        style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancel}
         footer={[]}
       >
-        <Space
-          direction="vertical"
-          size="middle"
-          style={{ marginBottom: 16, marginTop: 16 }}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            marginTop: 16,
+          }}
         >
-          <Space direction="vertical" size="small">
-            {wExternalIdentity === address || !address ? (
-              <Text>{t('home:signMessage.sign_message_sspwid')}</Text>
-            ) : (
-              <Text>
-                {t('home:signMessage.sign_message_info', {
+          <p className="dapp-ask">
+            {wExternalIdentity === address || !address
+              ? t('home:signMessage.sign_message_sspwid')
+              : t('home:signMessage.sign_message_info', {
                   chainName: blockchainConfig.name,
                 })}
+          </p>
+          <div className="dapp-summary">
+            <div className="dapp-summary-row">
+              <span className="dapp-summary-label">{t('common:address')}</span>
+              <Text
+                className="dapp-summary-value dapp-mono"
+                copyable={{ text: address || wExternalIdentity }}
+              >
+                {address || wExternalIdentity}
               </Text>
-            )}
-            <Paragraph
-              copyable={{ text: wExternalIdentity }}
-              className="copyableAddress"
+            </div>
+          </div>
+          <div style={{ textAlign: 'left' }}>
+            <div
+              className="dapp-summary-label"
+              style={{ fontSize: 12, marginBottom: 4 }}
             >
-              <Text strong>{address || wExternalIdentity}</Text>
-            </Paragraph>
-          </Space>
-          <Space direction="vertical" size="small">
-            <Text>{t('home:signMessage.message')}:</Text>
+              {t('home:signMessage.message')}
+            </div>
             <TextArea
               onChange={handleTextInput}
-              className="sign-message-text-area"
-              size={'large'}
               rows={4}
               disabled={message ? true : false}
               value={message ? message : messageToSign}
+              style={{ fontFamily: 'var(--ssp-mono)', fontSize: 12 }}
+              aria-label={t('home:signMessage.message')}
             />
-          </Space>
+          </div>
           {messageSignature && (
-            <Space direction="vertical" size="small">
-              <Text>{t('home:signMessage.signature')}:</Text>
-              <Paragraph
+            <div style={{ textAlign: 'left' }}>
+              <div
+                className="dapp-summary-label"
+                style={{ fontSize: 12, marginBottom: 4 }}
+              >
+                {t('home:signMessage.signature')}
+              </div>
+              <Text
+                className="dapp-payload"
+                style={{ display: 'block' }}
                 copyable={{ text: messageSignature }}
-                className="copyableAddress"
               >
                 {messageSignature}
-              </Paragraph>
-            </Space>
+              </Text>
+            </div>
           )}
-          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
-            <Button type="primary" size="large" onClick={handleOk}>
+          <div className="dapp-actions">
+            <Button type="primary" size="large" block onClick={handleOk}>
               {t('home:signMessage.sign')}
             </Button>
-            <Button type="link" block size="small" onClick={handleCancel}>
+            <Button type="text" block onClick={handleCancel}>
               {t('common:cancel')}
             </Button>
-          </Space>
-        </Space>
+          </div>
+        </div>
       </Modal>
     </>
   );

@@ -1,8 +1,8 @@
-import { Typography, Button, Space, Modal } from 'antd';
-const { Text } = Typography;
+import { Button, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../../types';
+import '../DappRequest/DappRequest.css';
 
 interface tokensInfoData {
   status: string;
@@ -100,31 +100,31 @@ function TokensInfo({ open, chain, openAction }: Props) {
       <Modal
         title={t('home:tokensInfo.tokens_requests')}
         open={open}
-        style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancel}
         footer={[]}
       >
-        <Space
-          direction="vertical"
-          size="middle"
-          style={{ marginBottom: 16, marginTop: 16 }}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            marginTop: 16,
+          }}
         >
-          <Space direction="vertical" size="small">
-            <Text>
-              {t('home:tokensInfo.tokens_requests_info', {
-                chain: blockchains[chain]?.name,
-              })}
-            </Text>
-          </Space>
-          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
-            <Button type="primary" size="large" onClick={handleOk}>
+          <p className="dapp-ask">
+            {t('home:tokensInfo.tokens_requests_info', {
+              chain: blockchains[chain]?.name,
+            })}
+          </p>
+          <div className="dapp-actions">
+            <Button type="primary" size="large" block onClick={handleOk}>
               {t('common:approve_request')}
             </Button>
-            <Button type="link" block size="small" onClick={handleCancel}>
+            <Button type="text" block onClick={handleCancel}>
               {t('common:reject_request')}
             </Button>
-          </Space>
-        </Space>
+          </div>
+        </div>
       </Modal>
     </>
   );

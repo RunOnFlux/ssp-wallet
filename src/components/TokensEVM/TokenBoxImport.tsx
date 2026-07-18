@@ -1,4 +1,4 @@
-import { Card, Avatar, Checkbox, Badge, Button } from 'antd';
+import { Avatar, Checkbox, Badge, Button } from 'antd';
 import { toast } from '../../lib/toast';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
@@ -9,8 +9,6 @@ import { cryptos } from '../../types';
 import { setActivatedTokens, setImportedTokens } from '../../store';
 
 import './TokenBoxImport.css';
-
-const { Meta } = Card;
 
 function TokenBoxImport(props: {
   chain: keyof cryptos;
@@ -87,69 +85,53 @@ function TokenBoxImport(props: {
     }
   };
 
+  // v2 row/checkbox language (shared .feed-list container in the parent):
+  // clicking anywhere on the row toggles; the Checkbox itself remains the
+  // accessible keyboard control. Both paths set the same computed value, so
+  // a click that hits the checkbox (and bubbles to the row) stays idempotent.
   return (
-    <div className="token-box-import-container">
+    <div
+      className={
+        'token-import-row' + (props.notSelectable ? ' not-selectable' : '')
+      }
+      onClick={() => triggerAction(props.tokenInfo.contract, !props.active)}
+    >
+      <Badge
+        count={<Avatar src={blockchains[props.chain].logo} size={16} />}
+        size="small"
+        offset={[-2, 5]}
+      >
+        <Avatar src={props.tokenInfo.logo} size={30} />
+      </Badge>
+      <div className="token-import-main">
+        <span className="token-import-symbol">{props.tokenInfo.symbol}</span>
+        <span className="token-import-name" title={props.tokenInfo.name}>
+          {props.tokenInfo.name}
+        </span>
+      </div>
       {props.deletePossible && (
         <Button
-          type="default"
+          type="text"
           danger
           size="small"
+          icon={<Trash2Icon />}
+          aria-label={t('home:tokens.delete_token')}
           title={t('home:tokens.delete_token')}
-          onClick={() => handleDelete(props.tokenInfo.contract)}
-          style={{
-            position: 'absolute',
-            left: '14px',
-            bottom: '4px',
-            zIndex: 10,
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleDelete(props.tokenInfo.contract);
           }}
-        >
-          <Trash2Icon />
-        </Button>
-      )}
-      <Card
-        className={props.notSelectable ? 'not-selectable' : ''}
-        hoverable
-        size="small"
-        onClick={() => triggerAction(props.tokenInfo.contract, !props.active)}
-      >
-        <Meta
-          avatar={
-            <div style={{ marginTop: '12px' }}>
-              <Badge
-                count={<Avatar src={blockchains[props.chain].logo} size={18} />}
-                size="small"
-                offset={[-2, 5]}
-              >
-                <Avatar src={props.tokenInfo.logo} size={30} />
-              </Badge>
-            </div>
-          }
-          title={
-            <>
-              <div style={{ float: 'left' }}>{props.tokenInfo.symbol}</div>
-              <div style={{ float: 'right' }}>
-                <Checkbox
-                  checked={props.active}
-                  onChange={(e) =>
-                    triggerAction(props.tokenInfo.contract, e.target.checked)
-                  }
-                ></Checkbox>
-              </div>
-            </>
-          }
-          description={
-            <>
-              <div
-                className={'token-box-import'}
-                title={props.tokenInfo.name}
-                style={{ textAlign: 'left', float: 'left' }}
-              >
-                {props.tokenInfo.name}
-              </div>
-            </>
-          }
         />
-      </Card>
+      )}
+      <Checkbox
+        checked={props.active}
+        disabled={props.notSelectable}
+        aria-label={props.tokenInfo.symbol}
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) =>
+          triggerAction(props.tokenInfo.contract, e.target.checked)
+        }
+      />
     </div>
   );
 }
