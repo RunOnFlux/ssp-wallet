@@ -33,6 +33,7 @@ vi.mock('localforage', () => ({
 import {
   mergeChainTransactions,
   filterFeedByChain,
+  buildTxRowIdentities,
   discoverActivityChains,
   loadCachedChainTransactions,
 } from '../../src/lib/activityFeed';
@@ -129,6 +130,57 @@ describe('activityFeed merge/sort/filter', () => {
     expect(only).toHaveLength(1);
     expect(only[0].chain).toBe('eth');
     expect(filterFeedByChain(merged, 'flux')).toEqual([]);
+  });
+});
+
+describe('buildTxRowIdentities', () => {
+  it('gives rows sharing one txid unique keys and 1-of-N ordinals', () => {
+    // One EVM contract call → ETH value movement + token transfer: same txid.
+    const rows = [
+      tx('0xabc', 10, { amount: '-100', tokenSymbol: undefined }),
+      tx('0xabc', 10, { amount: '5000', tokenSymbol: 'USDC' }),
+      tx('0xother', 5),
+    ];
+    const ids = buildTxRowIdentities(rows);
+    expect(ids).toHaveLength(3);
+    expect(new Set(ids.map((i) => i.key)).size).toBe(3); // all unique
+    expect(ids[0]).toMatchObject({ ordinal: 1, total: 2 });
+    expect(ids[1]).toMatchObject({ ordinal: 2, total: 2 });
+    expect(ids[2]).toMatchObject({ ordinal: 1, total: 1 });
+  });
+
+  it('keys identical duplicate rows apart via the occurrence ordinal', () => {
+    const rows = [
+      tx('dup', 1, { amount: '10' }),
+      tx('dup', 1, { amount: '10' }),
+    ];
+    const ids = buildTxRowIdentities(rows);
+    expect(ids[0].key).not.toBe(ids[1].key);
+    expect(ids.map((i) => i.ordinal)).toEqual([1, 2]);
+    expect(ids.map((i) => i.total)).toEqual([2, 2]);
+  });
+
+  it('is stable across rebuilds for the same input order', () => {
+    const rows = [
+      tx('0xabc', 10, { amount: '-100' }),
+      tx('0xabc', 10, { amount: '5000', tokenSymbol: 'USDC' }),
+    ];
+    expect(buildTxRowIdentities(rows)).toEqual(buildTxRowIdentities(rows));
+  });
+
+  it('scopes txid grouping by chain (multi-chain feed)', () => {
+    const rows = [
+      { ...tx('same', 1), chain: 'btc' },
+      { ...tx('same', 1), chain: 'eth' },
+    ];
+    const ids = buildTxRowIdentities(rows);
+    // Same txid on DIFFERENT chains is not the same transaction — no link.
+    expect(ids.map((i) => i.total)).toEqual([1, 1]);
+    expect(ids[0].key).not.toBe(ids[1].key);
+  });
+
+  it('returns an empty array for an empty feed', () => {
+    expect(buildTxRowIdentities([])).toEqual([]);
   });
 });
 

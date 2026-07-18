@@ -10,6 +10,7 @@
   "err_wallet_phrase_invalid": "Your wallet seed phrase is invalid.",
   "err_r1": "Code R1: Something went wrong while creating wallet.",
   "import_seed": "Import Wallet Seed Phrase",
+  "change_password": "Change Password",
   "wallet_seed": "Wallet Seed",
   "input_wallet_seed": "Please input your mnemonic wallet seed",
   "input_seed_phrase": "Input Seed Phrase",

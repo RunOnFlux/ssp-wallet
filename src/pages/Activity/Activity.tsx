@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Button, Skeleton, Tooltip, Typography } from 'antd';
-import {
-  History as HistoryIcon,
-  ExternalLink as ExternalLinkIcon,
-  RotateCw as RotateCwIcon,
-} from 'lucide-react';
+import { Button, Skeleton, Tooltip } from 'antd';
+import { History as HistoryIcon, RotateCw as RotateCwIcon } from 'lucide-react';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
 import { useTranslation } from 'react-i18next';
@@ -12,29 +8,27 @@ import { useAppSelector } from '../../hooks';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import { fetchAddressTransactions } from '../../lib/transactions';
-import { explorerTxUrl } from '../../lib/explorerUrl';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import {
   formatRelativeTime,
   formatFullTimestamp,
 } from '../../lib/relativeTime';
-import { truncateAddress } from '../../lib/addressDisplay';
 import {
   discoverActivityChains,
   loadCachedChainTransactions,
   mergeChainTransactions,
   filterFeedByChain,
+  buildTxRowIdentities,
   type ActivityFeedItem,
   type SyncedChainWallet,
 } from '../../lib/activityFeed';
 import Identicon from '../../components/Identicon/Identicon';
 import WalletName from '../../components/WalletName/WalletName';
 import ActivityRow from '../../components/ActivityRow/ActivityRow';
+import TxDetails from '../../components/ActivityRow/TxDetails';
 import EmptyState from '../../components/EmptyState/EmptyState';
 import type { cryptos } from '../../types';
 import './Activity.css';
-
-const { Text } = Typography;
 
 /**
  * Activity tab — a merged, time-sorted feed across ALL synced chains of the
@@ -152,16 +146,22 @@ function Activity() {
     </button>
   );
 
-  const renderRow = (item: ActivityFeedItem) => {
+  // Unique per-row identity — rows of the same tx (shared txid) expand
+  // independently and carry an "n of N" link chip. Identities are built over
+  // the VISIBLE list so indexes stay aligned with what is rendered.
+  const rowIdentities = buildTxRowIdentities(visible);
+
+  const renderRow = (item: ActivityFeedItem, index: number) => {
     const cfg = blockchains[item.chain];
-    const rowKey = `${item.chain}-${item.txid}`;
+    const identity = rowIdentities[index];
     const decimals = item.decimals ?? cfg.decimals;
     const amount = new BigNumber(item.amount).dividedBy(10 ** decimals);
     const received = amount.isGreaterThan(0);
-    const expanded = expandedKey === rowKey;
+    const expanded = expandedKey === identity.key;
+    const chainFiat = fiatRates[sspConfig().fiatCurrency] ?? 0;
     return (
       <ActivityRow
-        key={rowKey}
+        key={identity.key}
         direction={received ? 'in' : 'out'}
         label={
           received
@@ -176,6 +176,14 @@ function Activity() {
             <span title={formatFullTimestamp(item.timestamp, i18n.language)}>
               {formatRelativeTime(item.timestamp, i18n.language)}
             </span>
+            {identity.total > 1 && (
+              <span className="arow-txpart">
+                {t('home:transactionsTable.tx_part', {
+                  ord: identity.ordinal,
+                  total: identity.total,
+                })}
+              </span>
+            )}
           </>
         }
         amount={`${received ? '+' : ''}${formatCrypto(amount)} ${
@@ -188,44 +196,13 @@ function Activity() {
           item.blockheight && item.blockheight > 0 ? 'confirmed' : 'unconfirmed'
         }
         expanded={expanded}
-        onActivate={() => setExpandedKey(expanded ? null : rowKey)}
+        onActivate={() => setExpandedKey(expanded ? null : identity.key)}
         details={
-          <>
-            <div className="feed-detail-line">
-              <span className="feed-detail-label">
-                {t('home:transactionsTable.txid')}
-              </span>
-              <Text copyable={{ text: item.txid }} className="feed-detail-mono">
-                {truncateAddress(item.txid, 10)}
-              </Text>
-            </div>
-            <div>
-              {t('home:transactionsTable.fee_with_symbol', {
-                fee: formatCrypto(
-                  new BigNumber(item.fee || '0').dividedBy(10 ** cfg.decimals),
-                ),
-                symbol: cfg.symbol,
-              })}
-            </div>
-            {item.message && (
-              <div>
-                {t('home:transactionsTable.note_with_note', {
-                  note: item.message,
-                })}
-              </div>
-            )}
-            <div className="feed-detail-actions">
-              <Button
-                size="small"
-                icon={<ExternalLinkIcon size={13} />}
-                href={explorerTxUrl(item.chain, item.txid)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t('home:txSent.show_in_explorer')}
-              </Button>
-            </div>
-          </>
+          <TxDetails
+            tx={item}
+            chain={item.chain}
+            chainFiatRate={(cryptoRates[item.chain] ?? 0) * chainFiat}
+          />
         }
       />
     );

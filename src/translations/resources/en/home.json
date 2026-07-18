@@ -49,6 +49,12 @@
     "date": "Date",
     "amount": "Amount",
     "confirmations": "Confirmations",
+    "fee": "Fee",
+    "to_address": "To",
+    "block_height": "Block height",
+    "token_contract": "Token contract",
+    "note": "Note",
+    "tx_part": "{{ord}} of {{total}}",
     "export_tx": "Export Transactions",
     "tx_confirmed": "Confirmed.",
     "tx_unconfirmed": "Unconfirmed. Transaction not yet mined.",
@@ -225,6 +231,9 @@
     "about": "About",
     "enterprise_email_alerts": "SSP Enterprise email alerts",
     "change_pw_help": "Changing your password re-imports the wallet from your seed phrase — have it ready before you start.",
+    "change_pw_confirm": "Changing your password means re-entering your seed phrase and re-encrypting your wallet. You'll need your seed phrase. Continue?",
+    "popular_currencies": "Popular",
+    "all_currencies": "All currencies",
     "public_nonces_plain": "One-time signing numbers your SSP Key pre-shares so transactions on EVM chains can be co-signed. Sync them again if EVM signing ever gets stuck."
   },
   "receive": {

@@ -72,6 +72,7 @@ function SwapHistory(props: {
         style={{ textAlign: 'center' }}
         onCancel={handleExit}
         footer={[]}
+        width="min(560px, calc(100vw - 32px))"
       >
         <Space
           direction="vertical"

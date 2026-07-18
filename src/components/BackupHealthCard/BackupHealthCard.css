@@ -6,7 +6,7 @@
 .backup-health-card {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin: 10px 0 4px;
   padding: 10px 12px;
   border: 1px solid #fcd34d;
@@ -40,6 +40,9 @@
 .backup-health-text {
   flex: 1 1 auto;
   min-width: 0;
+  /* Breathing room before the Verify/dismiss controls — the flex gap alone
+     reads glued at narrow widths where the body text wraps tight. */
+  padding-right: 4px;
 }
 
 .backup-health-title {

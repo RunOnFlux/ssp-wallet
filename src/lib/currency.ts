@@ -56,6 +56,19 @@ export const supportedFiatValues: (keyof currency)[] = [
   'ZAR',
 ];
 
+/**
+ * Pinned as the top "Popular" group in the fiat currency picker
+ * (Menu → Preferences). Must stay a subset of supportedFiatValues.
+ */
+export const popularFiatValues: (keyof currency)[] = [
+  'USD',
+  'EUR',
+  'GBP',
+  'JPY',
+  'BTC',
+  'ETH',
+];
+
 export function getFiatSymbol(fiatCurrency: keyof currency): string {
   return getSymbolFromCurrency(fiatCurrency) ?? '';
 }

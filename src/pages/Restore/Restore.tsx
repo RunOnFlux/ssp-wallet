@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../lib/toast';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import {
   Input,
   Button,
@@ -84,7 +84,16 @@ function Restore() {
   const blockchainConfig = blockchains[identityChain];
   const { wallets } = useAppSelector((state) => state[identityChain]);
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
+  // Menu → Security → Change password enters this page with router state so
+  // it can present itself in change-password clothing (title, no onboarding
+  // stepper, "Change Password" submit) while the underlying restore
+  // mechanics stay byte-identical. Router state does not survive a popup
+  // close mid-flow — the page then falls back to the standard Import labels.
+  const isChangePassword = Boolean(
+    (location.state as { changePassword?: boolean } | null)?.changePassword,
+  );
   // use secure local storage for storing mnemonic 'walletSeed', 'xpriv-48-slip-0-0-coin', 'xpub-48-slip-0-0-coin' and '2-xpub-48-slip-0-0-coin' (2- as for second key) of together with encryption of browser-passworder
   // use localforage to store addresses, balances, transactions and other data. This data is not encrypted for performance reasons and they are not sensitive.
   // if user exists, navigate to login
@@ -310,7 +319,9 @@ function Restore() {
   };
 
   const handleNavigation = () => {
-    if (!Object.keys(wallets).length) {
+    if (isChangePassword) {
+      navigate('/settings');
+    } else if (!Object.keys(wallets).length) {
       // Router state only — tells the shell's pairing screen to show the
       // "Import Wallet" wizard labels instead of the Create ones.
       navigate('/home', { state: { imported: true } });
@@ -442,13 +453,21 @@ function Restore() {
 
   return (
     <>
-      <div style={{ paddingBottom: '63px' }}>
+      <div className="page-frame-onboarding" style={{ paddingBottom: '63px' }}>
         <Headerbar
-          headerTitle={t('cr:import_seed')}
-          navigateTo={!Object.keys(wallets).length ? '/home' : '/welcome'}
+          headerTitle={
+            isChangePassword ? t('cr:change_password') : t('cr:import_seed')
+          }
+          navigateTo={
+            isChangePassword
+              ? '/settings'
+              : !Object.keys(wallets).length
+                ? '/home'
+                : '/welcome'
+          }
         />
         <Divider />
-        <CreationSteps step={1} import={true} />
+        {!isChangePassword && <CreationSteps step={1} import={true} />}
         <br />
         <Form
           name="seedForm"
@@ -543,7 +562,9 @@ function Restore() {
 
           <Form.Item>
             <Button type="primary" size="large" htmlType="submit">
-              {t('cr:import_wallet')}
+              {isChangePassword
+                ? t('cr:change_password')
+                : t('cr:import_wallet')}
             </Button>
           </Form.Item>
         </Form>
@@ -563,10 +584,12 @@ function Restore() {
         onOk={handleOk}
         onCancel={handleCancel}
         cancelText={t('common:cancel')}
-        okText={t('cr:restore_wallet')}
+        okText={
+          isChangePassword ? t('cr:change_password') : t('cr:restore_wallet')
+        }
         style={{ textAlign: 'center', top: 60 }}
       >
-        <CreationSteps step={2} import={true} />
+        {!isChangePassword && <CreationSteps step={2} import={true} />}
         <p>{t('cr:wallet_seed_info')}</p>
         <p>{t('cr:wallet_seed_info_2')}</p>
         <p>{t('cr:keep_seed_safe')}</p>

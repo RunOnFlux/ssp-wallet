@@ -55,6 +55,47 @@ export function mergeChainTransactions(
   return items;
 }
 
+/**
+ * Per-row identity for the activity feeds' expansion state. One on-chain
+ * transaction can legitimately produce several feed rows sharing a txid
+ * (e.g. an EVM contract call moving ETH value AND emitting a token
+ * transfer), so keying expansion on the bare txid makes those rows
+ * co-expand. Instead each row gets a stable unique key (chain + txid +
+ * asset + amount + occurrence ordinal) plus its "n of N" position among
+ * same-transaction rows for an optional visual link. Pure; order-aligned
+ * with the input array.
+ */
+export interface TxRowIdentity {
+  /** Unique, stable expansion/list key for this row. */
+  key: string;
+  /** 1-based position among rows sharing this row's txid (and chain). */
+  ordinal: number;
+  /** Total number of rows sharing this row's txid (and chain). */
+  total: number;
+}
+
+export function buildTxRowIdentities(
+  txs: (Pick<transaction, 'txid' | 'amount'> &
+    Partial<Pick<transaction, 'tokenSymbol'>> & { chain?: string })[],
+): TxRowIdentity[] {
+  const totals = new Map<string, number>();
+  for (const tx of txs) {
+    const group = `${tx.chain ?? ''}:${tx.txid}`;
+    totals.set(group, (totals.get(group) ?? 0) + 1);
+  }
+  const seen = new Map<string, number>();
+  return txs.map((tx) => {
+    const group = `${tx.chain ?? ''}:${tx.txid}`;
+    const ordinal = (seen.get(group) ?? 0) + 1;
+    seen.set(group, ordinal);
+    return {
+      key: `${group}:${tx.tokenSymbol ?? ''}:${tx.amount}:${ordinal}`,
+      ordinal,
+      total: totals.get(group) ?? 1,
+    };
+  });
+}
+
 /** Chain filter for the feed ('all' passes everything through). Pure. */
 export function filterFeedByChain(
   items: ActivityFeedItem[],

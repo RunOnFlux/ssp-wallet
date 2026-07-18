@@ -568,7 +568,7 @@ function Login() {
         </div>
       )}
       {!isLoading && (
-        <div className="auth-page">
+        <div className="auth-page page-frame-onboarding">
           <Image
             width={80}
             preview={false}

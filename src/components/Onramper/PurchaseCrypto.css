@@ -1,41 +1,62 @@
-.onramper-modal {
-  background-color: #1a1918;
-  display: block;
-  margin-bottom: -20px;
-}
+/* Buy/Sell (Onramper) modal — a themed card around the widget iframe.
+   The modal container matches the widget's containerColor URL param
+   (PurchaseCrypto.tsx) so there is never a white/void letterbox around the
+   iframe in either theme, and the iframe area flexes inside the global modal
+   geometry (index.css) so the 600px popup never clips its bottom edge.
+   Selectors are prefixed with .ant-modal-root … so they outrank the global
+   .ant-modal-body scroll rule (the widget scrolls itself). */
 
-:root[data-theme='light'] .onramper-modal {
+.ant-modal-root .ant-modal-wrap .ant-modal.onramper-modal .ant-modal-container {
+  padding: 0;
+  overflow: hidden;
   background-color: #ffffff;
 }
 
-.onramper-modal .ant-modal-content,
-.onramper-modal .ant-modal-body {
-  padding: 0 !important;
+:root[data-theme='dark']
+  .ant-modal-root
+  .ant-modal-wrap
+  .ant-modal.onramper-modal
+  .ant-modal-container {
+  background-color: #1a1918;
 }
 
-.onramper-modal .ant-modal-content {
-  border-radius: 12px;
-  overflow: hidden;
+.ant-modal-root .ant-modal-wrap .ant-modal.onramper-modal .ant-modal-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden; /* the Onramper widget owns its internal scrolling */
+  padding: 0;
 }
 
-.onramper-modal .ant-modal-header {
-  display: none;
-}
-
+/* Close button always visible above the busy widget chrome */
 .onramper-modal .ant-modal-close {
-  transition: top 0.2s ease 0.15s, right 0.2s ease 0.15s;
+  transition:
+    top 0.2s ease 0.15s,
+    right 0.2s ease 0.15s;
 }
 
 .onramper-iframe-active .ant-modal-close {
   top: 0px;
   right: 0px;
-  transition: top 0.2s ease, right 0.2s ease;
+  transition:
+    top 0.2s ease,
+    right 0.2s ease;
 }
 
+/* Widget/consent/loading panes: the Onramper widget's natural height is
+   ~630px — taller and its own (white) page body letterboxes above/below it
+   inside the iframe. Shrink with the viewport (32px = the global modal
+   breathing margin). */
 .onramper-container,
 .onramper-loading,
 .onramper-consent {
-  height: min(650px, 100dvh);
+  height: min(630px, calc(100dvh - 32px));
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.onramper-container {
+  display: flex;
 }
 
 .onramper-iframe {
@@ -43,6 +64,7 @@
   width: 100%;
   height: 100%;
   display: block;
+  flex: 1 1 auto;
 }
 
 .onramper-loading,
@@ -52,7 +74,7 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 16px;
+  padding: 24px;
 }
 
 .onramper-consent-buttons {
@@ -66,6 +88,6 @@
   white-space: normal;
   height: auto;
   max-width: 284px;
-  display: 'block';
+  display: block;
   padding: 5px 12px;
 }

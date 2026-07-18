@@ -56,7 +56,12 @@ body {
    tab bar / identity bar sit at z-index ≤ 100, below antd's popup layer at
    1000). The flex centering + `top: 0 !important` also neutralizes the many
    per-modal inline `style={{ top: 60 }}` offsets and antd's `centered`
-   inline-block trick — one geometry for every dialog surface. ---- */
+   inline-block trick — one geometry for every dialog surface.
+
+   antd 6 panel DOM is .ant-modal > .ant-modal-container > [close, header,
+   body, footer] (v5's .ant-modal-content no longer exists). The container is
+   a max-height flex column; ONLY .ant-modal-body scrolls, so the title bar
+   and footer buttons stay visible while long content scrolls between them. */
 .ant-modal-root .ant-modal-wrap {
   display: flex;
   align-items: center;
@@ -78,9 +83,24 @@ body {
   max-height: calc(100dvh - 32px);
 }
 
-.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-content {
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* may shrink below content height inside the capped modal */
+  max-height: 100%;
+  overflow: hidden; /* preserves the rounded corners; the body owns scroll */
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-header,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-footer {
+  flex-shrink: 0;
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-body {
+  flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto; /* tall dialogs scroll inside, not with the page */
+  overflow-y: auto; /* tall dialogs scroll inside, not past the viewport */
+  overscroll-behavior: contain;
 }
 
 /* Fallback before ThemeProvider stamps data-theme (avoids flash on load) */
@@ -394,4 +414,50 @@ svg.lucide-spin {
   align-items: center;
   gap: 8px;
   margin-top: 10px;
+}
+
+/* Bare icon button for the reveal (eye) toggles in the detail modals —
+   keyboard-reachable with the shared amber focus ring. Global (index.css)
+   because these toggles appear in modals opened from several pages. */
+.reveal-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+
+.reveal-toggle:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 1px;
+}
+
+/* ---- Onboarding/auth page frame (Welcome / Login / Create / Restore) ----
+   These pages render OUTSIDE the WalletShell, whose columns normally own the
+   side-panel paddings (#root drops to padding:0 at ≥500px panel widths). The
+   frame therefore provides its own geometry: a centered max-width column with
+   consistent padding from a 360px panel to a full-screen window. */
+.page-frame-onboarding {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Phone-width panel keeps #root's popup paddings (8px sides ≤419px) — top the
+   frame up to a consistent 16px gutter. */
+body.extension-sidepanel .page-frame-onboarding {
+  padding: 8px 8px 0;
+}
+
+@media (min-width: 500px) {
+  /* ≥500px panel: #root is edge-to-edge (padding 0) — the frame owns all of
+     the page padding. */
+  body.extension-sidepanel .page-frame-onboarding {
+    padding: 16px 24px 0;
+  }
 }

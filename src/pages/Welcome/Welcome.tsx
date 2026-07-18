@@ -32,7 +32,7 @@ function Welcome() {
         </div>
       )}
       {!isLoading && (
-        <div className="auth-page">
+        <div className="auth-page page-frame-onboarding">
           <Image
             width={120}
             preview={false}

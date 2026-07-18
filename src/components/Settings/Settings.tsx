@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Button, Input, Space, Select, Tooltip, theme } from 'antd';
+import { App, Button, Input, Space, Select, Tooltip, theme } from 'antd';
 import {
   BookUser as BookUserIcon,
   Check as CheckIcon,
   ChevronDown as ChevronDownIcon,
   ChevronRight as ChevronRightIcon,
+  CircleAlert as CircleAlertIcon,
   CircleHelp as CircleHelpIcon,
   Cloud as CloudIcon,
   Coins as CoinsIcon,
@@ -48,7 +49,11 @@ import type { ThemeMode } from '../../contexts/ThemeContext';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import LanguageSelector from '../../components/LanguageSelector/LanguageSelector.tsx';
 import { currency, cryptos } from '../../types';
-import { supportedFiatValues, getFiatSymbol } from '../../lib/currency.ts';
+import {
+  supportedFiatValues,
+  popularFiatValues,
+  getFiatSymbol,
+} from '../../lib/currency.ts';
 import { setFiatRates } from '../../store';
 import axios from 'axios';
 import ConfirmPublicNoncesKey from '../ConfirmPublicNoncesKey/ConfirmPublicNoncesKey';
@@ -143,6 +148,7 @@ function Row({
 function Settings() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { modal } = App.useApp();
   const {
     activeChain,
     sspWalletKeyInternalIdentity,
@@ -642,16 +648,28 @@ function Settings() {
     setPasswordConfirmOpen(false);
   };
 
+  // Fiat currency picker: popular currencies pinned as a top group, the rest
+  // alphabetical beneath (supportedFiatValues is already A–Z).
   const fiatOptions = () => {
-    const opts = [];
-    for (const fiat of supportedFiatValues) {
-      opts.push({
-        value: fiat,
-        label: fiat,
-        desc: getFiatSymbol(fiat) ? `${fiat} (${getFiatSymbol(fiat)})` : fiat,
-      });
-    }
-    return opts;
+    const toOption = (fiat: keyof currency) => ({
+      value: fiat,
+      label: fiat,
+      desc: getFiatSymbol(fiat) ? `${fiat} (${getFiatSymbol(fiat)})` : fiat,
+    });
+    return [
+      {
+        label: t('home:settings.popular_currencies', 'Popular'),
+        title: 'popular',
+        options: popularFiatValues.map(toOption),
+      },
+      {
+        label: t('home:settings.all_currencies', 'All currencies'),
+        title: 'all',
+        options: supportedFiatValues
+          .filter((fiat) => !popularFiatValues.includes(fiat))
+          .map(toOption),
+      },
+    ];
   };
 
   // Chevron row: opens a modal/page. `trailing` renders a quiet status hint
@@ -857,7 +875,13 @@ function Settings() {
             onChange={(value) => setSspFiatCurrency(value)}
             style={{ minWidth: 110 }}
             options={fiatOptions()}
-            optionRender={(option) => <>{option.data.desc}</>}
+            optionRender={(option) => (
+              // optionRender only ever receives leaf options (groups render
+              // their own label row) but the option type is the union.
+              <>
+                {'desc' in option.data ? option.data.desc : option.data.label}
+              </>
+            )}
           />
         </Row>
         <Row icon={<SunMoonIcon />} label={t('home:settings.theme')}>
@@ -880,7 +904,23 @@ function Settings() {
         {navRow(
           <KeyRoundIcon />,
           t('home:settings.change_pw'),
-          () => navigate('/restore'),
+          () => {
+            // Plain-language confirm BEFORE jumping into the restore flow —
+            // changing the password IS a seed re-import under the hood, and
+            // the user should reach for their seed phrase first.
+            modal.confirm({
+              title: t('home:settings.change_pw'),
+              icon: <CircleAlertIcon />,
+              content: t(
+                'home:settings.change_pw_confirm',
+                "Changing your password means re-entering your seed phrase and re-encrypting your wallet. You'll need your seed phrase. Continue?",
+              ),
+              okText: t('common:continue', 'Continue'),
+              cancelText: t('common:cancel'),
+              onOk: () =>
+                navigate('/restore', { state: { changePassword: true } }),
+            });
+          },
           {
             help: t(
               'home:settings.change_pw_help',
@@ -1068,7 +1108,7 @@ function Settings() {
           setTriggerTutorial(true),
         )}
         <div className="settings-about-footer">
-          <PoweredByFlux inline isClickeable />
+          <PoweredByFlux about isClickeable />
         </div>
       </Section>
 

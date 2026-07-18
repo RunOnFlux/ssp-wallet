@@ -1,6 +1,8 @@
 /* Word-match verify modal (shared by the Backup checkup card + Menu row) */
 .backup-verify-body {
-  padding: 4px 0 8px;
+  /* Generous bottom padding: the word-option chips are the last content and
+     must never touch the modal's bottom border. */
+  padding: 4px 0 20px;
 }
 
 .backup-verify-shield {
@@ -22,6 +24,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  padding-bottom: 4px;
 }
 
 .backup-verify-error {

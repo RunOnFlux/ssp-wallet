@@ -1,9 +1,8 @@
-import { Popconfirm, Button, Typography } from 'antd';
+import { Popconfirm, Button } from 'antd';
 import { sspConfig } from '@storage/ssp';
 import { toast } from '../../lib/toast';
 import {
   CircleHelp as CircleHelpIcon,
-  ExternalLink as ExternalLinkIcon,
   History as HistoryIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -14,21 +13,19 @@ import { transaction } from '../../types';
 import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
-import { explorerTxUrl } from '../../lib/explorerUrl';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import {
   formatRelativeTime,
   formatFullTimestamp,
 } from '../../lib/relativeTime';
-import { truncateAddress } from '../../lib/addressDisplay';
+import { buildTxRowIdentities } from '../../lib/activityFeed';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 import { fetchDataForCSV } from '../../lib/transactions';
 import { cryptos } from '../../types';
 import { useAppSelector } from '../../hooks';
 import ActivityRow from '../ActivityRow/ActivityRow';
+import TxDetails from '../ActivityRow/TxDetails';
 import EmptyState from '../EmptyState/EmptyState';
-
-const { Text } = Typography;
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -106,12 +103,18 @@ function TransactionsTable(props: {
     return cr * fi;
   };
 
-  const renderTx = (record: transaction) => {
+  // Unique per-row identity: rows of the SAME on-chain tx (e.g. an EVM call
+  // moving ETH value + a token transfer) share a txid but expand
+  // independently; the "n of N" ordinal links them visually.
+  const rowIdentities = buildTxRowIdentities(props.transactions);
+
+  const renderTx = (record: transaction, index: number) => {
+    const identity = rowIdentities[index];
     const decimals = record.decimals ?? blockchainConfig.decimals;
     const amount = new BigNumber(record.amount).dividedBy(10 ** decimals);
     const received = amount.isGreaterThan(0);
     const confirmed = !!record.blockheight && record.blockheight > 0;
-    const expanded = expandedKey === record.txid;
+    const expanded = expandedKey === identity.key;
     const timestamp = new Date(record.timestamp).getTime();
     const rbfPossible =
       !confirmed &&
@@ -126,7 +129,7 @@ function TransactionsTable(props: {
       : fiatRate;
     return (
       <ActivityRow
-        key={record.txid}
+        key={identity.key}
         direction={received ? 'in' : 'out'}
         label={
           received
@@ -134,9 +137,19 @@ function TransactionsTable(props: {
             : t('home:activityFeed.sent')
         }
         sub={
-          <span title={formatFullTimestamp(timestamp, i18n.language)}>
-            {formatRelativeTime(timestamp, i18n.language)}
-          </span>
+          <>
+            <span title={formatFullTimestamp(timestamp, i18n.language)}>
+              {formatRelativeTime(timestamp, i18n.language)}
+            </span>
+            {identity.total > 1 && (
+              <span className="arow-txpart">
+                {t('home:transactionsTable.tx_part', {
+                  ord: identity.ordinal,
+                  total: identity.total,
+                })}
+              </span>
+            )}
+          </>
         }
         amount={`${received ? '+' : ''}${formatCrypto(amount)} ${
           record.tokenSymbol || blockchainConfig.symbol
@@ -146,64 +159,15 @@ function TransactionsTable(props: {
         )}`}
         status={confirmed ? 'confirmed' : 'unconfirmed'}
         expanded={expanded}
-        onActivate={() => setExpandedKey(expanded ? null : record.txid)}
+        onActivate={() => setExpandedKey(expanded ? null : identity.key)}
         details={
-          <>
-            <div className="feed-detail-line">
-              <span className="feed-detail-label">
-                {t('home:transactionsTable.txid')}
-              </span>
-              <Text
-                copyable={{ text: record.txid }}
-                className="feed-detail-mono"
-              >
-                {truncateAddress(record.txid, 10)}
-              </Text>
-            </div>
-            {record.type !== 'evm' && record.type !== 'sol' && (
-              <div>
-                {t('home:transactionsTable.fee_with_symbol', {
-                  fee: formatCrypto(
-                    new BigNumber(record.fee).dividedBy(
-                      10 ** blockchainConfig.decimals,
-                    ),
-                  ),
-                  symbol: blockchainConfig.symbol,
-                })}{' '}
-                ({(+record.fee / (record.vsize! ?? record.size!)).toFixed(2)}{' '}
-                {record.vsize ? 'sat/vB' : 'sat/B'})
-              </div>
-            )}
-            {(record.type === 'evm' || record.type === 'sol') && (
-              <div>
-                {t('home:transactionsTable.fee_with_symbol', {
-                  fee: formatCrypto(
-                    new BigNumber(record.fee).dividedBy(
-                      10 ** blockchainConfig.decimals,
-                    ),
-                  ),
-                  symbol: blockchainConfig.symbol,
-                })}
-              </div>
-            )}
-            {record.message && (
-              <div>
-                {t('home:transactionsTable.note_with_note', {
-                  note: record.message,
-                })}
-              </div>
-            )}
-            <div className="feed-detail-actions">
-              <Button
-                size="small"
-                icon={<ExternalLinkIcon size={13} />}
-                href={explorerTxUrl(chain, record.txid)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t('home:txSent.show_in_explorer')}
-              </Button>
-              {rbfPossible && (
+          <TxDetails
+            tx={record}
+            chain={chain}
+            tipHeight={props.blockheight > 0 ? props.blockheight : undefined}
+            chainFiatRate={fiatRate}
+            extraActions={
+              rbfPossible && (
                 <Popconfirm
                   title={t('home:transactionsTable.replace_by_fee', {
                     chainName: blockchainConfig.name,
@@ -227,9 +191,9 @@ function TransactionsTable(props: {
                     {t('home:transactionsTable.replace_by_fee')}
                   </Button>
                 </Popconfirm>
-              )}
-            </div>
-          </>
+              )
+            }
+          />
         }
       />
     );

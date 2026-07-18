@@ -37,21 +37,5 @@
   margin-block-end: 0em;
 }
 
-/* Bare icon button for the reveal (eye) toggles in the detail modals —
-   keyboard-reachable with the shared amber focus ring. */
-.reveal-toggle {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  color: inherit;
-  cursor: pointer;
-  display: inline-flex;
-  vertical-align: middle;
-  border-radius: 4px;
-}
-
-.reveal-toggle:focus-visible {
-  outline: 2px solid var(--ssp-focus);
-  outline-offset: 1px;
-}
+/* .reveal-toggle (eye toggles) now lives in index.css — it is used by modals
+   opened from several pages, not just Home. */

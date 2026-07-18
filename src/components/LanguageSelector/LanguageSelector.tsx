@@ -8,8 +8,6 @@ function LanguageSelector(props: { label: boolean }) {
   const { i18n } = useTranslation();
   const { t } = useTranslation(['home', 'common']);
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
-  console.log(i18n.languages);
-  console.log(i18n);
 
   const handleChange = async (value: string): Promise<void> => {
     let lng = value;
@@ -38,7 +36,9 @@ function LanguageSelector(props: { label: boolean }) {
         suffixIcon={props.label ? undefined : null}
         variant={'outlined'}
         value={currentLanguage}
-        optionLabelProp={props.label ? 'desc' : 'label'}
+        // Always show the language's own name ("English"), never the raw
+        // ISO code ("en") — both in the dropdown and as the selected value.
+        optionLabelProp={'desc'}
         onChange={handleChange}
         style={{ width: 'fit-content' }}
         dropdownStyle={{ minWidth: '130px' }}

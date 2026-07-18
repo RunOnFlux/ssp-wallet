@@ -159,13 +159,33 @@
 }
 
 /* About footer — the popup home of version + Powered by Flux (and the
-   5-click-version security-test trigger). */
+   5-click-version security-test trigger). One consistent 11px row: version
+   left, Powered by Flux right, vertically centered. */
 .settings-about-footer {
   padding: 2px 0 4px;
 }
 
-.settings-about-footer .powered-by-flux {
-  margin-top: 0 !important;
+.powered-by-flux-about {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0 10px;
+}
+
+.powered-by-flux-about-version {
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.65;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* antd Image wrapper renders inline-block with descender gap — flatten it so
+   the logo centers on the same line as the version text. */
+.powered-by-flux-about .ant-image {
+  display: flex;
+  align-items: center;
 }
 
 .settings-save-bar {

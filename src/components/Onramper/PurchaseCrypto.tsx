@@ -87,9 +87,11 @@ function PurchaseCrypto(props: {
         onCancel={handleOk}
         closable={true}
         centered
-        width="min(600px, calc(100vw - 16px))"
+        // Cap at the Onramper widget's natural max width — any wider and the
+        // widget floats letterboxed on its own (white) page body inside the
+        // iframe. At this width the widget fills the iframe edge-to-edge.
+        width="min(460px, calc(100vw - 16px))"
         footer={null}
-        wrapClassName="onramper-modal"
         className={`onramper-modal${userConsentBuy && signature && !loading ? ' onramper-iframe-active' : ''}`}
         styles={{ container: { padding: 0, margin: 0 } }}
       >

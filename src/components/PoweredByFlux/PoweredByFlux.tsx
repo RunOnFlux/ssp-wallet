@@ -14,16 +14,23 @@ interface Props {
   inline?: boolean;
   /**
    * Compact stacked variant for the side-panel nav rail's bottom footer block
-   * (logo above a small version caption, 10px scale). Keeps the same click
+   * (version caption above the logo, 10px scale). Keeps the same click
    * behaviors: logo → runonflux.com, 5× version click → /security-test.
    * Styled by the host (TabBar.css) via the class hooks.
    */
   rail?: boolean;
+  /**
+   * Single-row variant for the Menu → About block: version left, Powered by
+   * Flux right, one consistent 11px line. Same click behaviors as the rail.
+   * Styled by the host (Settings.css) via the class hooks.
+   */
+  about?: boolean;
 }
 function PoweredByFlux({
   isClickeable = false,
   inline = false,
   rail = false,
+  about = false,
 }: Props) {
   const navigate = useNavigate();
   const clickCountRef = useRef(0);
@@ -56,6 +63,12 @@ function PoweredByFlux({
   if (rail) {
     return (
       <div className="powered-by-flux-rail">
+        <div
+          className="powered-by-flux-rail-version"
+          onClick={isClickeable ? handleVersionClick : undefined}
+        >
+          v{version}
+        </div>
         <Image
           height={14}
           preview={false}
@@ -65,12 +78,28 @@ function PoweredByFlux({
           }
           style={isClickeable ? { cursor: 'pointer' } : undefined}
         />
+      </div>
+    );
+  }
+
+  if (about) {
+    return (
+      <div className="powered-by-flux-about">
         <div
-          className="powered-by-flux-rail-version"
+          className="powered-by-flux-about-version"
           onClick={isClickeable ? handleVersionClick : undefined}
         >
           v{version}
         </div>
+        <Image
+          height={14}
+          preview={false}
+          src={`/powered_by_${themeStyle}.svg`}
+          onClick={
+            isClickeable ? () => open('https://runonflux.com') : undefined
+          }
+          style={isClickeable ? { cursor: 'pointer' } : undefined}
+        />
       </div>
     );
   }

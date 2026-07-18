@@ -161,10 +161,24 @@ function AddressDetails(props: {
           <>
             <h3 className="detailsTitleWithDescription">
               {redeemScriptVisible && (
-                <EyeIcon onClick={() => setRedeemScriptVisible(false)} />
+                <button
+                  type="button"
+                  className="reveal-toggle"
+                  aria-label={t('common:hide')}
+                  onClick={() => setRedeemScriptVisible(false)}
+                >
+                  <EyeIcon />
+                </button>
               )}
               {!redeemScriptVisible && (
-                <EyeOffIcon onClick={() => setRedeemScriptVisible(true)} />
+                <button
+                  type="button"
+                  className="reveal-toggle"
+                  aria-label={t('common:show')}
+                  onClick={() => setRedeemScriptVisible(true)}
+                >
+                  <EyeOffIcon />
+                </button>
               )}{' '}
               {t('home:addressDetails.wallet_redeem_script')}:
             </h3>
@@ -191,10 +205,24 @@ function AddressDetails(props: {
           <>
             <h3 className="detailsTitleWithDescription">
               {witnessScriptVisible && (
-                <EyeIcon onClick={() => setWitnessScriptVisible(false)} />
+                <button
+                  type="button"
+                  className="reveal-toggle"
+                  aria-label={t('common:hide')}
+                  onClick={() => setWitnessScriptVisible(false)}
+                >
+                  <EyeIcon />
+                </button>
               )}
               {!witnessScriptVisible && (
-                <EyeOffIcon onClick={() => setWitnessScriptVisible(true)} />
+                <button
+                  type="button"
+                  className="reveal-toggle"
+                  aria-label={t('common:show')}
+                  onClick={() => setWitnessScriptVisible(true)}
+                >
+                  <EyeOffIcon />
+                </button>
               )}{' '}
               {t('home:addressDetails.wallet_witness_script')}:
             </h3>
@@ -219,7 +247,14 @@ function AddressDetails(props: {
         )}
         <h3 className="detailsTitleWithDescription">
           {privateKeyVisible && (
-            <EyeIcon onClick={() => setPrivateKeyVisible(false)} />
+            <button
+              type="button"
+              className="reveal-toggle"
+              aria-label={t('common:hide')}
+              onClick={() => setPrivateKeyVisible(false)}
+            >
+              <EyeIcon />
+            </button>
           )}
           {!privateKeyVisible && (
             <Popconfirm
@@ -250,7 +285,13 @@ function AddressDetails(props: {
               }}
               icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
             >
-              <EyeOffIcon />
+              <button
+                type="button"
+                className="reveal-toggle"
+                aria-label={t('common:show')}
+              >
+                <EyeOffIcon />
+              </button>
             </Popconfirm>
           )}{' '}
           {t('home:addressDetails.wallet_priv_key')}:

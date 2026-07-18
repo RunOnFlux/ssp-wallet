@@ -318,7 +318,7 @@ function Create() {
     const [localPasswordStrength, setLocalPasswordStrength] = useState('');
 
     return (
-      <div style={{ paddingBottom: '43px' }}>
+      <div className="page-frame-onboarding" style={{ paddingBottom: '43px' }}>
         <Headerbar headerTitle={t('cr:create_pw')} navigateTo="/welcome" />
         <Divider />
         <CreationSteps step={1} import={false} />
