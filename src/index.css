@@ -38,6 +38,17 @@ body {
   width: 100%;
 }
 
+/* antd's <App> reset wrapper sits between #root and the routed page. Without an
+   explicit height it collapses to content height, which breaks percentage
+   heights inside it — the centred auth screens (.auth-page min-height:100%)
+   then fall back to top-anchored and leave a dead expanse of empty space at the
+   bottom of a tall side panel. Filling it to #root restores the height chain
+   for every route; content taller than the viewport still overflows/scrolls as
+   before. */
+.ant-app {
+  height: 100%;
+}
+
 .adjustedWidth {
   width: calc(100% - 2rem);
 }
@@ -339,6 +350,15 @@ svg.lucide-spin {
   /* Flex centering now owns vertical position — a small breath keeps the mark
      off the very top when the content is tall enough to top-align. */
   padding-top: 8px;
+}
+
+/* The logo is antd <Image>: `className` lands on the inner <img>, but the flex
+   item is the `.ant-image` WRAPPER (which also carries the fixed width:80/120px
+   from the width prop). A flex column places a definite-width item at the start
+   (left) and text-align can't reach it, so centre the wrapper explicitly. Only
+   the auth screens render an <Image> inside .auth-page, so this is safe. */
+.auth-page .ant-image {
+  align-self: center;
 }
 
 .auth-loading {
