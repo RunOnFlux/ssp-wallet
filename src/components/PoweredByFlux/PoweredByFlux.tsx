@@ -8,13 +8,23 @@ interface Props {
   isClickeable?: boolean;
   /**
    * Render in normal document flow instead of fixed to the viewport bottom.
-   * Used inside the Phase 3 WalletShell where the bottom tab bar owns the
-   * fixed footer slot; the brand strip (and the 5-click version easter egg)
-   * then scrolls at the end of the content.
+   * Used on the pre-shell pages (login/create/restore) where there is no tab
+   * bar owning the fixed footer slot.
    */
   inline?: boolean;
+  /**
+   * Compact stacked variant for the side-panel nav rail's bottom footer block
+   * (logo above a small version caption, 10px scale). Keeps the same click
+   * behaviors: logo → runonflux.com, 5× version click → /security-test.
+   * Styled by the host (TabBar.css) via the class hooks.
+   */
+  rail?: boolean;
 }
-function PoweredByFlux({ isClickeable = false, inline = false }: Props) {
+function PoweredByFlux({
+  isClickeable = false,
+  inline = false,
+  rail = false,
+}: Props) {
   const navigate = useNavigate();
   const clickCountRef = useRef(0);
   const lastClickTimeRef = useRef(0);
@@ -43,6 +53,28 @@ function PoweredByFlux({ isClickeable = false, inline = false }: Props) {
       clickCountRef.current = 0; // Reset counter
     }
   };
+  if (rail) {
+    return (
+      <div className="powered-by-flux-rail">
+        <Image
+          height={14}
+          preview={false}
+          src={`/powered_by_${themeStyle}.svg`}
+          onClick={
+            isClickeable ? () => open('https://runonflux.com') : undefined
+          }
+          style={isClickeable ? { cursor: 'pointer' } : undefined}
+        />
+        <div
+          className="powered-by-flux-rail-version"
+          onClick={isClickeable ? handleVersionClick : undefined}
+        >
+          v{version}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={

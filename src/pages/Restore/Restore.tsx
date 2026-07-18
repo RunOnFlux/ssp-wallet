@@ -57,7 +57,11 @@ import Headerbar from '../../components/Headerbar/Headerbar.tsx';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter/PasswordStrengthMeter.tsx';
 import OnboardingPersonalize from '../../components/OnboardingPersonalize/OnboardingPersonalize.tsx';
 import PillarCelebration from '../../components/PillarCelebration/PillarCelebration.tsx';
-import { setWalletMeta } from '../../storage/walletMeta';
+import {
+  setWalletMeta,
+  setBackupVerified,
+  markBackupVerifyNow,
+} from '../../storage/walletMeta';
 import { generateDefaultWalletName } from '../../storage/walletNames';
 
 // The wallet restored by onboarding is always index 0-0.
@@ -399,10 +403,12 @@ function Restore() {
         }
         setXpubWallet(identityChain, xpub);
         dispatch(setPasswordBlob(pwBlob));
-        // Append-only personalization key (written after any localForage.clear()
-        // above). We intentionally do NOT mark the backup verified here: restore
-        // never runs the word challenge, so the Home backup-health nudge should
-        // still invite the user to verify (loss aversion, plan Part 0/4).
+        // Append-only personalization keys (written after any localForage.clear()
+        // above). Typing the full seed IS proof of backup possession — count it
+        // as a verification so the periodic backup checkup starts a fresh
+        // 30-day cycle instead of nagging a just-restored wallet.
+        setBackupVerified(true);
+        markBackupVerifyNow(Date.now());
         if (meta) {
           setWalletMeta(ONBOARDING_WALLET_ID, {
             name: meta.name,

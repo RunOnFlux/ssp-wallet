@@ -1,5 +1,6 @@
-import { QRCode, Typography, Button, Space, Modal, Alert, Divider } from 'antd';
+import { QRCode, Typography, Button, Modal, Alert, Divider } from 'antd';
 import { useSspLogo } from '../../hooks/useSspLogo';
+import './Receive.css';
 const { Paragraph, Text } = Typography;
 import { useAppSelector } from '../../hooks';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +37,7 @@ function Receive(props: {
         })}
         open={open}
         onOk={handleOk}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center' }}
         onCancel={handleOk}
         footer={[
           <Button key="ok" type="primary" onClick={handleOk}>
@@ -53,39 +54,41 @@ function Receive(props: {
           })}
           type="warning"
           showIcon
-          style={{ marginBottom: 20, textAlign: 'left' }}
+          style={{ marginBottom: 16, textAlign: 'left' }}
         />
 
-        <div style={{ textAlign: 'center' }}>
-          <h3>{t('home:receive.wallet_address')}:</h3>
-          <Space direction="vertical" size="large" style={{ marginBottom: 20 }}>
+        <div className="receive-body">
+          <span className="receive-label">
+            {t('home:receive.wallet_address')}
+          </span>
+          <div className="receive-qr">
             <QRCode
               errorLevel="H"
               value={wallets[walletInUse].address}
               icon={sspLogo}
-              size={256}
-              style={{ margin: '0 auto' }}
+              size={232}
             />
-            <Paragraph
-              copyable={{ text: wallets[walletInUse].address }}
-              className="copyableAddress"
-              style={{ textAlign: 'center' }}
-            >
-              <Text strong>{wallets[walletInUse].address}</Text>
-            </Paragraph>
+          </div>
+          <Paragraph
+            copyable={{ text: wallets[walletInUse].address }}
+            className="copyableAddress receive-address"
+          >
+            <Text strong className="receive-address-text">
+              {wallets[walletInUse].address}
+            </Text>
+          </Paragraph>
 
-            <Divider style={{ margin: '0' }} />
+          <Divider style={{ margin: '4px 0' }} />
 
-            {/* NETWORK INFO */}
-            <div style={{ textAlign: 'left', width: '100%' }}>
-              <Text type="secondary">
-                {t('home:receive.address_info_block', {
-                  chain_name: blockchainConfig.name,
-                  chain_symbol: blockchainConfig.symbol,
-                })}
-              </Text>
-            </div>
-          </Space>
+          {/* NETWORK INFO */}
+          <div className="receive-info">
+            <Text type="secondary">
+              {t('home:receive.address_info_block', {
+                chain_name: blockchainConfig.name,
+                chain_symbol: blockchainConfig.symbol,
+              })}
+            </Text>
+          </div>
         </div>
       </Modal>
     </>

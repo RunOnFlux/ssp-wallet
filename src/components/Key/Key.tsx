@@ -43,6 +43,7 @@ import {
   fetchChainSyncRejection,
   verifyBatchSyncDoc,
   ensureWalletChainKeys,
+  hasStoredKeyXpub,
   storeKeyXpubForChain,
   shouldShowQrFallback,
   isBatchStalled,
@@ -1000,9 +1001,16 @@ function Key(props: {
     refreshBatch();
     const wkIdentity = sspWalletKeyInternalIdentity;
     if (!wkIdentity) return;
+    // The chain being activated is re-requested only while it is still
+    // unsynced — once it landed (activeChainDoneRef), a re-send covers just
+    // the extra selected chips (re-requesting a synced chain would sit
+    // 'pending' forever: its doc handler defers to the classic poll, which
+    // is gone by then).
     const chains = isIdentityChain
       ? selectedChainsRef.current
-      : [activeChain, ...selectedChainsRef.current];
+      : activeChainDoneRef.current
+        ? selectedChainsRef.current
+        : [activeChain, ...selectedChainsRef.current];
     void startBatch(chains, wkIdentity);
   };
 
@@ -1015,18 +1023,25 @@ function Key(props: {
     (chain) => batch.chains[chain].status !== 'pending',
   ).length;
   const batchActive = batch.phase !== 'idle';
+  // Chips stay toggleable while merely WAITING for the phone ('awaiting'):
+  // in the post-pairing flow the batch auto-starts immediately, so locking
+  // chips there made them look dead. A toggle during 'awaiting' only changes
+  // what the next explicit re-send includes — never a request in flight.
+  // Locked only while 'preparing' (payload being built) and 'syncing'
+  // (chains actively arriving).
   const chipsEditable =
-    batch.phase === 'idle' ||
-    batch.phase === 'fallback' ||
-    batch.phase === 'rejected' ||
-    batch.phase === 'done';
+    batch.phase !== 'preparing' && batch.phase !== 'syncing';
 
-  // chains offered for extra activation: everything except the identity
-  // chain, the chain being activated, and chains that are already synced
+  // Chains offered for extra activation: everything except the identity
+  // chain, the chain being activated, and chains that are already synced.
+  // "Already synced" must consult secure storage (2-xpub-48-* present), not
+  // just redux — the store only hydrates a chain's key xpub once the chain
+  // has been switched to this session.
   const offeredChains = (Object.keys(blockchains) as (keyof cryptos)[]).filter(
     (chain) => {
       if (chain === identityChain || chain === activeChain) return false;
-      return !store.getState()[chain]?.xpubKey;
+      if (store.getState()[chain]?.xpubKey) return false;
+      return !hasStoredKeyXpub(chain);
     },
   );
 
@@ -1158,12 +1173,14 @@ function Key(props: {
       </p>
       {offeredChains.length > 0 && (
         <div className="keySyncChips">
-          <Text type="secondary" style={{ fontSize: 12 }}>
+          <Text type="secondary" style={{ fontSize: 11 }}>
             {isIdentityChain
               ? t('home:key.chips_label_identity')
               : t('home:key.chips_label_chain')}
           </Text>
-          <div className="keySyncChipsRow">
+          <div
+            className={`keySyncChipsRow${chipsEditable ? '' : ' keySyncChipsLocked'}`}
+          >
             {offeredChains.map((chain) => (
               <Tag.CheckableTag
                 key={chain}
@@ -1176,12 +1193,28 @@ function Key(props: {
               </Tag.CheckableTag>
             ))}
           </div>
+          {/* Post-pairing: the auto-request covered only the chain being
+              activated — extra chips go out via this explicit re-send (the
+              chainsyncrequest payload is rebuilt from activeChain + the
+              selected chips, one approval on the key). Visible whenever a
+              send would be meaningful: waiting/fallback/rejected/done, and
+              highlighted once the user actually selected chips. */}
           {!isIdentityChain &&
             chipsEditable &&
             batch.phase !== 'idle' &&
+            (!activeChainDoneRef.current || selectedChains.length > 0) &&
             sspWalletKeyInternalIdentity && (
-              <Button size="small" onClick={restartBatch}>
-                {t('home:key.batch_resend_request')}
+              <Button
+                size="small"
+                type={selectedChains.length > 0 ? 'primary' : 'default'}
+                onClick={restartBatch}
+                data-testid="key-batch-resend"
+              >
+                {selectedChains.length > 0
+                  ? t('home:key.batch_request_selected', {
+                      count: selectedChains.length,
+                    })
+                  : t('home:key.batch_resend_request')}
               </Button>
             )}
         </div>

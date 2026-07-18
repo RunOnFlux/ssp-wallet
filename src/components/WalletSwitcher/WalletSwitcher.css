@@ -100,15 +100,101 @@
   font-size: 14px;
 }
 
+/* Wallet management — a two-tile row in the sheet's own design language:
+   "New wallet" as an amber-tinted tile (like the Home action row), "Remove
+   last" as a quiet danger-tinted secondary. Identical behavior + confirms. */
 .switcher-wallet-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 4px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 8px;
+  margin-top: 8px;
 }
 
-.switcher-wallet-actions .ant-btn {
-  padding-left: 10px;
+.switcher-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.switcher-action:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
+.switcher-action-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.switcher-action-label {
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.switcher-action-new {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.switcher-action-new:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.switcher-action-new:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.switcher-action-new .switcher-action-icon {
+  color: #b45309; /* amber-700 — ≥4.5:1 on the tinted light surface */
+}
+
+:root[data-theme='dark'] .switcher-action-new {
+  background: rgba(245, 158, 11, 0.14);
+}
+
+:root[data-theme='dark'] .switcher-action-new:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.22);
+}
+
+:root[data-theme='dark'] .switcher-action-new .switcher-action-icon {
+  color: #fbbf24; /* brand amber-400 on dark */
+}
+
+.switcher-action-remove {
+  background: rgba(239, 68, 68, 0.07);
+  color: #b91c1c; /* red-700 — quiet danger, ≥4.5:1 on the faint tint */
+}
+
+.switcher-action-remove:hover {
+  background: rgba(239, 68, 68, 0.14);
+}
+
+:root[data-theme='dark'] .switcher-action-remove {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171; /* red-400 on dark */
+}
+
+:root[data-theme='dark'] .switcher-action-remove:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switcher-action {
+    transition: none;
+  }
 }
 
 .switcher-chain {

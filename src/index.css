@@ -51,6 +51,38 @@ body {
   margin-top: 5px; /* fix for modal footer button - if it does not fit on the same line, there is no gap between buttons */
 }
 
+/* ---- Modal geometry: every modal is viewport-fixed and viewport-centered,
+   scrolls INTERNALLY when tall, and never hides under the shell chrome (the
+   tab bar / identity bar sit at z-index ≤ 100, below antd's popup layer at
+   1000). The flex centering + `top: 0 !important` also neutralizes the many
+   per-modal inline `style={{ top: 60 }}` offsets and antd's `centered`
+   inline-block trick — one geometry for every dialog surface. ---- */
+.ant-modal-root .ant-modal-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ant-modal-root .ant-modal-wrap::before {
+  display: none; /* antd's .ant-modal-centered vertical-align shim */
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal {
+  top: 0 !important;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+  margin: 0 auto;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-content {
+  min-height: 0;
+  overflow-y: auto; /* tall dialogs scroll inside, not with the page */
+}
+
 /* Fallback before ThemeProvider stamps data-theme (avoids flash on load) */
 :root:not([data-theme]) {
   color: #1c1917;
@@ -113,6 +145,20 @@ body {
 /* Side panel mode - applied via JS detection */
 body.extension-sidepanel {
   width: 100%;
+  /* The popup's fixed 600px body would confine a tall panel to its top 600px
+     (footer "floating mid-page"); the panel fills the real viewport instead. */
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ≥500px side-panel two-column layout: the shell columns own ALL padding
+   (symmetric around the content), so the root wrapper goes edge-to-edge and
+   the nav rail sits flush left. A phone-width panel keeps the popup paddings. */
+@media (min-width: 500px) {
+  body.extension-sidepanel #root {
+    padding: 0;
+    height: 100%;
+  }
 }
 
 @media (max-width: 419px) {
@@ -242,4 +288,65 @@ svg.lucide-spin {
   svg.lucide-spin {
     animation: none;
   }
+}
+
+/* ---- Shared v2 list surfaces (Home tabs + Activity page) ----
+   .feed-list: the 12-radius bordered card list every feed-style surface uses
+   (activity rows, token rows, node rows). .feed-details: the inset detail
+   card shown when a row expands. Kept global so the Tokens/Nodes tabs share
+   them without importing the ActivityRow component. */
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e7e5e4;
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: left;
+}
+
+:root[data-theme='dark'] .feed-list {
+  border-color: #272524;
+}
+
+.feed-list > * {
+  border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+}
+
+.feed-list > *:last-child {
+  border-bottom: none;
+}
+
+.feed-details {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(128, 128, 128, 0.07);
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.feed-detail-line {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.feed-detail-label {
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+.feed-detail-mono {
+  font-family: var(--ssp-mono);
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.feed-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
 }

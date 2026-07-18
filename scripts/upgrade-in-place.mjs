@@ -293,22 +293,64 @@ async function phaseOne() {
     step(
       'OLD build: proceeding to Home (auto-unlocks via session, or manual unlock)',
     );
+    // Late-1.40.x old builds already carry the v2 onboarding: a "Make it
+    // yours" personalization step follows the restore dialog — continue
+    // through it when present (classic builds skip straight past this).
+    const personalize = page.getByRole('dialog', { name: 'Make it yours' });
+    const personalizeShown = await personalize
+      .waitFor({ timeout: 15_000 })
+      .then(() => true)
+      .catch(() => false);
+    if (personalizeShown) {
+      await personalize.getByRole('button', { name: 'Continue' }).click();
+      info('Continued through the "Make it yours" personalization step.');
+      await page.waitForTimeout(500);
+    }
     // After restore the app navigates to /login; with the fresh session
-    // password blob it usually auto-unlocks straight into Home where the
-    // SSP Key sync modal appears. Handle both variants.
+    // password blob it usually auto-unlocks straight into the SSP Key pairing
+    // surface — a modal dialog on classic builds, a full-screen view (same
+    // title as a heading) on v2-era builds. Handle both, plus manual unlock.
     const keyDialog = page.getByRole('dialog', { name: 'Dual Factor SSP Key' });
+    const keyHeading = page.getByRole('heading', {
+      name: 'Dual Factor SSP Key',
+    });
     const loginHeading = page.getByRole('heading', { name: 'Welcome back!' });
-    await keyDialog.or(loginHeading).first().waitFor({ timeout: NAV_TIMEOUT });
+    await keyDialog
+      .or(keyHeading)
+      .or(loginHeading)
+      .first()
+      .waitFor({ timeout: NAV_TIMEOUT });
     if (await loginHeading.isVisible().catch(() => false)) {
       await unlockWithPassword(page);
     }
 
     step('OLD build: pairing SSP Key via manual xpub input');
-    await keyDialog.waitFor({ timeout: NAV_TIMEOUT });
-    await keyDialog.getByRole('button', { name: /Issues syncing/ }).click();
-    await keyDialog.locator('textarea').fill(TEST_KEY_XPUB);
-    await keyDialog.getByRole('button', { name: 'Sync Key' }).click();
-    await keyDialog.waitFor({ state: 'hidden', timeout: NAV_TIMEOUT });
+    await keyDialog.or(keyHeading).first().waitFor({ timeout: NAV_TIMEOUT });
+    if (await keyDialog.isVisible().catch(() => false)) {
+      // Classic modal-dialog pairing flow
+      await keyDialog.getByRole('button', { name: /Issues syncing/ }).click();
+      await keyDialog.locator('textarea').fill(TEST_KEY_XPUB);
+      await keyDialog.getByRole('button', { name: 'Sync Key' }).click();
+      await keyDialog.waitFor({ state: 'hidden', timeout: NAV_TIMEOUT });
+    } else {
+      // v2 full-screen pairing: manual xpub entry, then the anti-MITM
+      // verify-words gate (confirm the codes match).
+      await page.getByText('Enter manually', { exact: false }).click();
+      await page.locator('textarea').first().fill(TEST_KEY_XPUB);
+      await page
+        .getByRole('button', { name: /Sync Key|Synchron/i })
+        .first()
+        .click();
+      const continueBtn = page.getByRole('button', {
+        name: 'Continue to wallet',
+      });
+      await continueBtn.waitFor({ timeout: NAV_TIMEOUT });
+      await continueBtn.click();
+      await page
+        .locator('[data-testid="key-verify-match"]')
+        .click({ timeout: NAV_TIMEOUT });
+      await keyHeading.waitFor({ state: 'hidden', timeout: NAV_TIMEOUT });
+    }
 
     step('OLD build: capturing receive address on Home');
     const address = await readHomeAddress(page);
@@ -317,24 +359,39 @@ async function phaseOne() {
     await dismissTutorialIfShown(page);
 
     step('OLD build: setting theme to dark via Settings UI');
-    // Open the burger submenu in the navbar, pick "Settings".
-    await page
-      .locator('[data-tutorial="extended-menu"]')
-      .getByRole('menuitem')
-      .first()
-      .click();
-    await page.getByRole('menuitem', { name: 'Settings' }).click();
-    const settingsDialog = page.getByRole('dialog', { name: 'Settings' });
-    await settingsDialog.waitFor({ timeout: NAV_TIMEOUT });
-    // The theme <Select> currently shows "System" — switch it to "Dark".
-    await settingsDialog.getByText('System', { exact: true }).click();
-    await page.getByRole('option', { name: 'Dark' }).click();
-    await page
-      .locator('html[data-theme="dark"]')
-      .waitFor({ timeout: NAV_TIMEOUT });
-    // Give localForage a moment to flush the preference to IndexedDB.
-    await page.waitForTimeout(1_000);
-    await settingsDialog.getByRole('button', { name: 'Close' }).click();
+    const burger = page.locator('[data-tutorial="extended-menu"]');
+    if ((await burger.count()) > 0) {
+      // Classic Navbar burger -> Settings modal
+      await burger.getByRole('menuitem').first().click();
+      await page.getByRole('menuitem', { name: 'Settings' }).click();
+      const settingsDialog = page.getByRole('dialog', { name: 'Settings' });
+      await settingsDialog.waitFor({ timeout: NAV_TIMEOUT });
+      // The theme <Select> currently shows "System" — switch it to "Dark".
+      await settingsDialog.getByText('System', { exact: true }).click();
+      await page.getByRole('option', { name: 'Dark' }).click();
+      await page
+        .locator('html[data-theme="dark"]')
+        .waitFor({ timeout: NAV_TIMEOUT });
+      // Give localForage a moment to flush the preference to IndexedDB.
+      await page.waitForTimeout(1_000);
+      await settingsDialog.getByRole('button', { name: 'Close' }).click();
+    } else {
+      // v2 shell: Menu tab -> routed settings page with a Theme <Select>
+      await page.locator('[data-tutorial="tab-settings"]').click();
+      await page
+        .locator('.settings-row', { hasText: 'Theme' })
+        .locator('.ant-select')
+        .click();
+      await page.getByRole('option', { name: 'Dark' }).click();
+      await page
+        .locator('html[data-theme="dark"]')
+        .waitFor({ timeout: NAV_TIMEOUT });
+      // Give localForage a moment to flush the preference to IndexedDB.
+      await page.waitForTimeout(1_000);
+      // Return to Home so the persisted last-tab is Home for phase 2.
+      await page.locator('[data-tutorial="tab-home"]').click();
+      await page.waitForTimeout(500);
+    }
     // Re-open the app and re-check: proves dark mode was persisted, not
     // just applied. (page.reload() would 404 — the SPA pushState-ed to a
     // virtual route like /home that is not a real extension file.)
@@ -393,6 +450,16 @@ async function phaseTwo(expected) {
     await unlockWithPassword(page);
 
     step('NEW build: asserting Home shows the SAME address without re-pairing');
+    // The v2 shell reopens on the persisted last tab — normalize to Home
+    // first so the address container is on screen.
+    try {
+      const homeTab = page.locator('[data-tutorial="tab-home"]');
+      await homeTab.waitFor({ timeout: 10_000 });
+      await homeTab.click();
+      await page.waitForTimeout(500);
+    } catch {
+      // no tab bar (should not happen on the NEW build) — proceed as-is
+    }
     // If the SSP Key pairing had been lost, the "Dual Factor SSP Key" modal
     // would block Home and the address would never render.
     const address = await readHomeAddress(page);

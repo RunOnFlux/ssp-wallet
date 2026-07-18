@@ -1,4 +1,9 @@
 import { useSyncExternalStore } from 'react';
+import {
+  BACKUP_CHECKUP_INTERVAL_MS,
+  sanitizeBackupCheckupState,
+} from '../lib/backupCheckup';
+import type { BackupCheckupState } from '../lib/backupCheckup';
 
 /**
  * Wallet personalization + backup-health metadata — Phase 4 "Delight".
@@ -7,9 +12,9 @@ import { useSyncExternalStore } from 'react';
  * `localStorage` keys, completely separate from `sspConfig`, encrypted seeds
  * (secureLocalStorage), wallet state, `walletNames-*` / `navPrefs` (localForage),
  * `themeMode`, etc. Nothing here is required for correctness — a missing/corrupt
- * value falls back to a safe default (no custom name/color; backup treated as
- * unverified so the health nudge simply shows). Losing all of it never affects
- * funds, keys or pairing; an upgraded wallet with no keys renders the defaults.
+ * value falls back to a safe default (no custom name/color; backup checkup
+ * simply not due). Losing all of it never affects funds, keys or pairing; an
+ * upgraded wallet with no keys renders the defaults.
  *
  * Why localStorage (not localForage): the wallet-init path clears localForage
  * on first sync of a fresh wallet (address-mismatch safety in WalletShell).
@@ -17,10 +22,14 @@ import { useSyncExternalStore } from 'react';
  * live in localStorage, which is cleared only by the onboarding flow itself
  * (localStorage.clear() runs BEFORE we write here) and never by localForage.
  *
- * Two independent concerns share one module (and one subscriber set):
+ * Three independent concerns share one module (and one subscriber set):
  *   - `walletMeta`            → per-wallet cosmetic { name, color } (IKEA effect)
- *   - `walletBackupVerified`  → one global flag: has the seed been word-verified
- *                               (loss-aversion backup-health card on Home)
+ *   - `walletBackupVerified`  → one global flag: has the seed EVER been
+ *                               word-verified (bookkeeping for Menu → Security)
+ *   - `walletBackupCheckup`   → periodic checkup cycle timestamps
+ *                               { lastVerifyAt, snoozedUntil } driving the
+ *                               30-day Home "Backup checkup" card (cycle logic
+ *                               itself is pure — lib/backupCheckup)
  */
 
 export interface WalletMeta {
@@ -34,6 +43,7 @@ type MetaMap = Record<string, WalletMeta>;
 
 const WALLET_META_KEY = 'walletMeta';
 const BACKUP_VERIFIED_KEY = 'walletBackupVerified';
+const BACKUP_CHECKUP_KEY = 'walletBackupCheckup';
 
 /** Accent palette offered in the "Make it yours" step (DESIGN_TOKENS chart set). */
 export const ACCENT_COLORS = [
@@ -73,10 +83,11 @@ function sanitizeMeta(input: unknown): MetaMap {
 }
 
 // Synchronous cache backed by localStorage. getSnapshot must be referentially
-// stable between changes, so we only replace `metaCache` when it actually
-// changes (on write, or a cross-tab storage event).
+// stable between changes, so we only replace the caches when they actually
+// change (on write, or a cross-tab storage event).
 let metaCache: MetaMap = readMeta();
 let backupCache: boolean = readBackup();
+let checkupCache: BackupCheckupState = readCheckup();
 
 function readMeta(): MetaMap {
   try {
@@ -97,6 +108,26 @@ function readBackup(): boolean {
   }
 }
 
+function readCheckup(): BackupCheckupState {
+  try {
+    const raw = localStorage.getItem(BACKUP_CHECKUP_KEY);
+    return raw ? sanitizeBackupCheckupState(JSON.parse(raw)) : {};
+  } catch (error) {
+    console.log('[walletMeta] checkup read failed', error);
+    return {};
+  }
+}
+
+function writeCheckup(next: BackupCheckupState): void {
+  checkupCache = next;
+  try {
+    localStorage.setItem(BACKUP_CHECKUP_KEY, JSON.stringify(next));
+  } catch (error) {
+    console.log('[walletMeta] checkup write failed', error);
+  }
+  emit();
+}
+
 // Keep in sync if another extension view (side panel vs popup) writes.
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
@@ -105,6 +136,9 @@ if (typeof window !== 'undefined') {
       emit();
     } else if (e.key === BACKUP_VERIFIED_KEY) {
       backupCache = readBackup();
+      emit();
+    } else if (e.key === BACKUP_CHECKUP_KEY) {
+      checkupCache = readCheckup();
       emit();
     }
   });
@@ -146,6 +180,19 @@ export function setBackupVerified(verified: boolean): void {
   emit();
 }
 
+/** Record a successful backup verification — resets the 30-day checkup cycle. */
+export function markBackupVerifyNow(now: number): void {
+  writeCheckup({ ...checkupCache, lastVerifyAt: now });
+}
+
+/** "Later" on the checkup card — snooze for one full cycle. */
+export function snoozeBackupCheckup(now: number): void {
+  writeCheckup({
+    ...checkupCache,
+    snoozedUntil: now + BACKUP_CHECKUP_INTERVAL_MS,
+  });
+}
+
 /** Reactive per-wallet metadata (name + color). */
 export function useWalletMeta(walletId: string): WalletMeta {
   return useSyncExternalStore(
@@ -162,4 +209,9 @@ export function useWalletMetaMap(): MetaMap {
 /** Reactive global "has the seed been word-verified" flag. */
 export function useBackupVerified(): boolean {
   return useSyncExternalStore(subscribe, () => backupCache);
+}
+
+/** Reactive periodic-checkup state (evaluate with isBackupCheckupDue). */
+export function useBackupCheckupState(): BackupCheckupState {
+  return useSyncExternalStore(subscribe, () => checkupCache);
 }

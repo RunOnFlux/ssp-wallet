@@ -13,22 +13,12 @@
  * handshake for approval.
  */
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Form,
-  Divider,
-  Button,
-  Input,
-  Space,
-  Popover,
-  Select,
-  theme,
-} from 'antd';
+import { Form, Button, Input, Space, Popover, Select, theme } from 'antd';
 import { CircleHelp as CircleHelpIcon, Scan as ScanIcon } from 'lucide-react';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 
-import Navbar from '../../components/Navbar/Navbar';
-import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux';
+import PageHeader from '../../components/PageHeader/PageHeader';
 import SspConnect from '../../components/SspConnect/SspConnect';
 import QRScanner, {
   isQrScanSupported,
@@ -76,9 +66,9 @@ function SendFlow() {
     | 'utxo'
     | 'evm'
     | 'sol';
-  // chainType cannot change while this page is mounted (chain switching is
-  // disabled in the send Navbar), so keying the inner flow by chainType keeps
-  // the strategy hook identity stable per mount.
+  // chainType cannot change while this page is mounted (the flow header shows
+  // chain context but offers no switcher), so keying the inner flow by
+  // chainType keeps the strategy hook identity stable per mount.
   return <SendFlowInner key={chainType} chainType={chainType} />;
 }
 
@@ -247,19 +237,13 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
     </div>
   );
 
-  const refresh = () => {
-    // navbar has refresh disabled but the prop is required
-  };
-
   return (
-    <>
-      <Navbar
-        refresh={refresh}
-        hasRefresh={false}
-        allowChainSwitch={false}
-        header={strategy.headerTitle}
-      />
-      <Divider style={{ marginBottom: 8 }} />
+    <div className="flow-page">
+      {/* Slim v2 chrome: back chevron + title + static chain pill. The send
+          flow is chain-bound mid-flow, so chain context is shown but never
+          switchable here; wallet switching and the old Navbar burger
+          utilities are reachable via the shell after backing out. */}
+      <PageHeader title={strategy.headerTitle || t('send:send')} chainPill />
 
       {/* Step progress — Details · Review · Approve */}
       <div
@@ -344,10 +328,7 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
         }}
         autoComplete="off"
         layout="vertical"
-        style={{
-          paddingBottom: '43px',
-          marginTop: strategy.headerTitle ? '16px' : '0',
-        }}
+        style={{ paddingBottom: 16 }}
         data-tutorial="send-form"
       >
         {strategy.hiddenFormContent}
@@ -840,8 +821,7 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
         }}
       />
       <SspConnect />
-      <PoweredByFlux />
-    </>
+    </div>
   );
 }
 

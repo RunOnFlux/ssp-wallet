@@ -50,7 +50,11 @@ import FloatingHelp from '../../components/FloatingHelp/FloatingHelp.tsx';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter/PasswordStrengthMeter.tsx';
 import OnboardingPersonalize from '../../components/OnboardingPersonalize/OnboardingPersonalize.tsx';
 import PillarCelebration from '../../components/PillarCelebration/PillarCelebration.tsx';
-import { setWalletMeta, setBackupVerified } from '../../storage/walletMeta';
+import {
+  setWalletMeta,
+  setBackupVerified,
+  markBackupVerifyNow,
+} from '../../storage/walletMeta';
 import { generateDefaultWalletName } from '../../storage/walletNames';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 
@@ -288,7 +292,10 @@ function Create() {
           });
         }
         // Word verification just completed successfully — the seed is verified.
+        // Also stamps the periodic backup checkup so a brand-new wallet is not
+        // asked to re-verify for a full cycle.
         setBackupVerified(true);
+        markBackupVerifyNow(Date.now());
         // Brief pillar-assembly celebration, then continue to unlock/pairing.
         const reduceMotion = window.matchMedia(
           '(prefers-reduced-motion: reduce)',

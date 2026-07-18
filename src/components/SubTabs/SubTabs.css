@@ -1,0 +1,61 @@
+/* Home content sub-tab selector — same interactive-pill language as the
+   Activity page's chain filter chips (amber = active). */
+
+.sub-tabs-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+
+.sub-tab {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #d6d3d1;
+  border-radius: 999px;
+  padding: 3px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+:root[data-theme='dark'] .sub-tab {
+  border-color: #3d3a38;
+}
+
+.sub-tab:hover {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.sub-tab:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
+.sub-tab-active,
+.sub-tab-active:hover {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: #0c0a09;
+  font-weight: 600;
+}
+
+.sub-tabs-pane {
+  padding-top: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sub-tab {
+    transition: none;
+  }
+}

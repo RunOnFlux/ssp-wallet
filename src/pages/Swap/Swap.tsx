@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../lib/toast';
 import axios from 'axios';
 import {
-  Divider,
   InputNumber,
   Row,
   Col,
@@ -20,15 +19,16 @@ import {
   ChevronDown as ChevronDownIcon,
   CircleMinus as CircleMinusIcon,
   CirclePlus as CirclePlusIcon,
+  History as HistoryIcon,
   Info as InfoIcon,
   LoaderCircle as LoaderCircleIcon,
 } from 'lucide-react';
-import Navbar from '../../components/Navbar/Navbar.tsx';
+import PageHeader from '../../components/PageHeader/PageHeader.tsx';
+import SwapHistory from '../../components/SwapHistory/SwapHistory.tsx';
 import { useTranslation } from 'react-i18next';
 import { blockchains, Token } from '@storage/blockchains';
 import secureLocalStorage from 'react-secure-storage';
 
-import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './Swap.css';
 import { useAppSelector, useAppDispatch } from '../../hooks.ts';
@@ -163,11 +163,9 @@ function Swap() {
     (state) => state.fiatCryptoRates,
   );
 
-  const refresh = () => {
-    console.log(
-      'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
-    );
-  };
+  // Swap history — re-homed from the deleted Navbar burger to a first-class
+  // header action (the only load-bearing item the burger offered on /swap).
+  const [openSwapHistory, setOpenSwapHistory] = useState(false);
 
   const displayMessage = (type: NoticeType, content: string) => {
     void toast.open({
@@ -905,16 +903,22 @@ function Swap() {
   };
 
   return (
-    <>
+    <div className="flow-page">
       {loadingSwap && <Spin size="large" fullscreen />}
-      <Navbar
-        refresh={refresh}
-        hasRefresh={false}
-        allowChainSwitch={false}
-        hasSwapHistory={true}
-        header={t('home:swap.swap_crypto')}
+      <PageHeader
+        title={t('home:swap.swap_crypto')}
+        right={
+          <button
+            type="button"
+            className="page-header-action"
+            onClick={() => setOpenSwapHistory(true)}
+            aria-label={t('home:navbar.swap_history')}
+            title={t('home:navbar.swap_history')}
+          >
+            <HistoryIcon />
+          </button>
+        }
       />
-      <Divider />
       <div className="swap-area">
         <div className="swap-box">
           <Row gutter={[16, 16]} className="swap-box-row no-border-bottom">
@@ -1606,9 +1610,9 @@ function Swap() {
           </Space>
         </Space>
       </Modal>
+      <SwapHistory open={openSwapHistory} openAction={setOpenSwapHistory} />
       <SspConnect />
-      <PoweredByFlux />
-    </>
+    </div>
   );
 }
 

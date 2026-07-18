@@ -1,15 +1,17 @@
 {
   "err_panic": "PANIC: Invalid SSP Key.",
   "backupHealth": {
-    "title_amount": "{{amount}} protected by one device",
-    "title_generic": "Protect your wallet",
-    "body_one_device": "Verify your seed backup and pair your SSP Key — it's your only way back in.",
-    "body_unverified": "You haven't verified your seed backup. Confirm it now so you never lose access.",
     "verify": "Verify",
     "verify_title": "Verify your backup",
     "verify_lead": "Confirm you still have your seed phrase backup. No one can recover it for you.",
     "verify_decrypt_error": "Could not read your wallet. Please try again.",
     "verified_toast": "Backup verified. Your wallet is safe."
+  },
+  "backupCheckup": {
+    "title": "Backup checkup",
+    "body": "It's been a while — take 30 seconds to confirm your seed words still match your backup.",
+    "protecting": "Your backup protects {{amount}} across your wallets.",
+    "later": "Later"
   },
   "balances": {
     "locked": "Locked: {{balance}} {{symbol}}",
@@ -171,9 +173,7 @@
   },
   "settings": {
     "err_saving_conf": "Error while saving configuration. Please try again.",
-    "settings": "Settings",
     "change_pw": "Change password",
-    "change_pw_restore": "Change password? Restore!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Service",
     "chain_api_service": "{{chain}} API Service",
@@ -187,7 +187,6 @@
     "use_system_language": "Use System Language",
     "public_nonces_sync": "Public Nonces",
     "sync_public_nonces": "Sync Public Nonces",
-    "public_nonces_sync_help": "Public nonces are required for EVM transactions. This forces synchronisation of nonces from your SSP Key device to enable EVM transaction signing.",
     "sspEnterprise": {
       "title": "SSP Enterprise",
       "description": "Connect your wallet with SSP Enterprise to receive email notifications about transactions, balance alerts, and weekly reports. You can also manage organizations and team wallets via the SSP Enterprise web app.",
@@ -214,9 +213,19 @@
       "sign_and_subscribe": "Sign & Subscribe",
       "waiting_signature": "Awaiting SSP Key..."
     },
-    "general": "General",
     "security": "Security",
-    "networks": "Networks"
+    "verify_backup": "Verify seed backup",
+    "verify_backup_help": "Confirm your seed phrase backup by matching one of its words — the phrase itself is never shown.",
+    "backup_verified": "Verified",
+    "preferences": "Preferences",
+    "tools": "Tools",
+    "advanced": "Advanced",
+    "advanced_hint": "Network endpoints & expert tools",
+    "wallet_key_details": "Wallet & Key details",
+    "about": "About",
+    "enterprise_email_alerts": "SSP Enterprise email alerts",
+    "change_pw_help": "Changing your password re-imports the wallet from your seed phrase — have it ready before you start.",
+    "public_nonces_plain": "One-time signing numbers your SSP Key pre-shares so transactions on EVM chains can be co-signed. Sync them again if EVM signing ever gets stuck."
   },
   "receive": {
     "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
@@ -263,13 +272,11 @@
   "navbar": {
     "refresh": "Refresh",
     "chain_wallet": "{{chain}} {{wallet}}",
-    "ssp_details": "SSP Wallet Details",
     "addr_details": "Address Details",
     "generate_new_wallet": "Generate New Wallet",
     "remove_last_wallet": "Remove Last Wallet",
     "remove": "Remove",
     "remove_last_wallet_desc": "This action will remove your most recently generated wallet. You can generate the same new wallet at any time.",
-    "switch_chain": "Switch Chain",
     "max_wallets": "42. The answer to the ultimate question of life, the universe, and everything. You have reached the maximum number of wallets.",
     "ssp_message_sign": "Message Signing",
     "swap_history": "Swap History",
@@ -337,7 +344,9 @@
     "verify_words_session_label_other": "Verification code ({{count}} chains)",
     "verify_words_match": "They match — continue",
     "verify_words_mismatch": "They don't match",
-    "verify_mismatch_warning": "Verification codes did not match. This vault was not activated — re-pair to try again."
+    "verify_mismatch_warning": "Verification codes did not match. This vault was not activated — re-pair to try again.",
+    "batch_request_selected_one": "Request {{count}} selected chain",
+    "batch_request_selected_other": "Request {{count}} selected chains"
   },
   "chainSelect": {
     "select_chain": "Select Chain",
@@ -560,7 +569,9 @@
     "contacts_updated": "Contacts Updated",
     "err_saving_contacts": "Error while saving contacts. Please try again.",
     "contact_deleted": "Contact Deleted",
-    "created_at": "Created at"
+    "created_at": "Created at",
+    "address_copied": "Address copied to clipboard",
+    "copy_address": "Copy address"
   },
   "tokens": {
     "import_token": "Import Token",
@@ -578,7 +589,8 @@
     "invalid_token_contract": "Invalid token contract.",
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",
-    "err_delete_token": "Error while deleting token. Please try again."
+    "err_delete_token": "Error while deleting token. Please try again.",
+    "no_tokens": "No tokens on this wallet yet"
   },
   "buy_sell_crypto": {
     "third_party_service": "Third Party Service",
@@ -954,11 +966,21 @@
     "title": "Wallets & networks",
     "search": "Search wallets or networks",
     "wallets": "wallets",
-    "networks": "Networks"
+    "networks": "Networks",
+    "new_wallet": "New wallet",
+    "remove_last": "Remove last"
   },
   "portfolio": {
     "not_activated": "Not yet activated",
     "tap_to_activate": "Tap to activate",
     "incl_tokens": "incl. {{amount}} tokens"
+  },
+  "activityFeed": {
+    "all": "All",
+    "chains_scope_one": "{{count}} synced chain",
+    "chains_scope_other": "{{count}} synced chains",
+    "sent": "Sent",
+    "received": "Received",
+    "pending": "Pending"
   }
 }

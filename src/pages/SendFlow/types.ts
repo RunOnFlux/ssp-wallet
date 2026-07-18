@@ -25,7 +25,7 @@ export interface FeePresetView {
 
 export interface SendStrategyView {
   chainType: 'utxo' | 'evm' | 'sol';
-  /** Navbar header override (swap mode uses the swap title). */
+  /** Page header title override (swap mode uses the swap title). */
   headerTitle: string;
   /** Submit button label (swap mode shows "Send and Swap for ..."). */
   submitLabel: string;

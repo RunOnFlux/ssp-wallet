@@ -123,7 +123,7 @@ export const getTutorialSteps = (
     },
     {
       id: 'activity-section',
-      target: '.ant-tabs-tab[data-node-key="activity"]',
+      target: '[data-tutorial-tab="activity"]',
       title: t('home:tutorial.steps.activity_section.title'),
       content: t('home:tutorial.steps.activity_section.content'),
       position: 'auto',
@@ -141,7 +141,7 @@ export const getTutorialSteps = (
     },
     {
       id: 'contacts-section',
-      target: '.ant-tabs-tab[data-node-key="contacts"]',
+      target: '[data-tutorial-tab="contacts"]',
       title: t('home:tutorial.steps.contacts_section.title'),
       content: t('home:tutorial.steps.contacts_section.content'),
       position: 'auto',

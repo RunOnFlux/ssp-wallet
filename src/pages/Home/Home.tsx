@@ -1,4 +1,4 @@
-import { Divider, Space, Tabs, Skeleton } from 'antd';
+import { Divider, Skeleton } from 'antd';
 import { useAppSelector } from '../../hooks';
 import './Home.css';
 import Navigation from '../../components/Navigation/Navigation';
@@ -6,10 +6,10 @@ import Transactions from '../../components/Transactions/Transactions';
 import Nodes from '../../components/Nodes/Nodes';
 import Contacts from '../../components/Contacts/Contacts';
 import Tokens from '../../components/TokensEVM/Tokens';
+import SubTabs from '../../components/SubTabs/SubTabs';
 import Balances from '../../components/Balances/Balances';
 import BackupHealthCard from '../../components/BackupHealthCard/BackupHealthCard';
 import AddressContainer from '../../components/AddressContainer/AddressContainer.tsx';
-import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 
@@ -59,45 +59,58 @@ function Home() {
       <BackupHealthCard />
       <Navigation />
       <Divider style={{ margin: '12px 0' }} />
-      <Space direction="vertical" style={{ width: '100%' }}>
-        {wallets?.[walletInUse]?.nodes && (
-          <Tabs
+      {wallets?.[walletInUse]?.nodes && (
+        <SubTabs
+          defaultActiveKey="activity"
+          items={[
+            {
+              label: t('common:activity'),
+              key: 'activity',
+              children: <Transactions />,
+            },
+            {
+              label: t('home:contacts.contacts'),
+              key: 'contacts',
+              children: <Contacts />,
+            },
+            {
+              label: t('common:nodes'),
+              key: 'nodes',
+              children: <Nodes />,
+            },
+          ]}
+        />
+      )}
+      {(chainType === 'evm' || chainType === 'sol') && (
+        <SubTabs
+          defaultActiveKey="tokens"
+          data-tutorial="tokens-section"
+          items={[
+            {
+              label: t('common:tokens'),
+              key: 'tokens',
+              children: <Tokens />,
+            },
+            {
+              label: t('common:activity'),
+              key: 'activity',
+              children: <Transactions />,
+            },
+            {
+              label: t('home:contacts.contacts'),
+              key: 'contacts',
+              children: <Contacts />,
+            },
+          ]}
+        />
+      )}
+      {wallets?.[walletInUse] &&
+        !wallets[walletInUse].nodes &&
+        chainType !== 'evm' &&
+        chainType !== 'sol' && (
+          <SubTabs
             defaultActiveKey="activity"
-            size="small"
-            centered
-            tabBarStyle={{ marginBottom: 0 }}
             items={[
-              {
-                label: t('common:activity'),
-                key: 'activity',
-                children: <Transactions />,
-              },
-              {
-                label: t('home:contacts.contacts'),
-                key: 'contacts',
-                children: <Contacts />,
-              },
-              {
-                label: t('common:nodes'),
-                key: 'nodes',
-                children: <Nodes />,
-              },
-            ]}
-          />
-        )}
-        {(chainType === 'evm' || chainType === 'sol') && (
-          <Tabs
-            defaultActiveKey="tokens"
-            size="small"
-            centered
-            tabBarStyle={{ marginBottom: 0 }}
-            data-tutorial="tokens-section"
-            items={[
-              {
-                label: t('common:tokens'),
-                key: 'tokens',
-                children: <Tokens />,
-              },
               {
                 label: t('common:activity'),
                 key: 'activity',
@@ -111,31 +124,6 @@ function Home() {
             ]}
           />
         )}
-        {wallets?.[walletInUse] &&
-          !wallets[walletInUse].nodes &&
-          chainType !== 'evm' &&
-          chainType !== 'sol' && (
-            <Tabs
-              defaultActiveKey="activity"
-              size="small"
-              centered
-              tabBarStyle={{ marginBottom: 0 }}
-              items={[
-                {
-                  label: t('common:activity'),
-                  key: 'activity',
-                  children: <Transactions />,
-                },
-                {
-                  label: t('home:contacts.contacts'),
-                  key: 'contacts',
-                  children: <Contacts />,
-                },
-              ]}
-            />
-          )}
-      </Space>
-      <PoweredByFlux inline isClickeable />
     </div>
   );
 }

@@ -36,3 +36,74 @@
 .activity-header-sub .ant-input {
   display: none;
 }
+
+.activity-refresh {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Chain filter chips — All · one per synced chain. Same interactive-pill
+   language as the pairing activation chips (amber = selected). */
+.activity-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.activity-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #d6d3d1;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+:root[data-theme='dark'] .activity-chip {
+  border-color: #3d3a38;
+}
+
+.activity-chip:hover {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.activity-chip:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
+.activity-chip-active,
+.activity-chip-active:hover {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: #0c0a09;
+  font-weight: 600;
+}
+
+.activity-chip-logo {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activity-chip {
+    transition: none;
+  }
+}
+
+/* Feed rows are the shared ActivityRow component (.arow-*); the list
+   container + detail inset (.feed-list / .feed-details) live in index.css. */

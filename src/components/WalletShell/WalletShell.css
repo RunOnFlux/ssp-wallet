@@ -46,20 +46,25 @@
   }
 }
 
-/* ---- Side-panel mode: two-column layout (left nav rail + right column) ---- */
-body.extension-sidepanel .wallet-shell {
-  flex-direction: row;
-  min-height: 100vh;
-  align-items: stretch;
-}
+/* ---- Side-panel mode: two-column layout (left nav rail + right column).
+   Only at ≥500px — a phone-width panel falls back to the popup layout. ---- */
+@media (min-width: 500px) {
+  body.extension-sidepanel .wallet-shell {
+    flex-direction: row;
+    min-height: 100%;
+    align-items: stretch;
+  }
 
-body.extension-sidepanel .wallet-shell-main {
-  flex: 1 1 auto;
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 0 12px;
-}
+  body.extension-sidepanel .wallet-shell-main {
+    flex: 1 1 auto;
+    max-width: 760px;
+    margin: 0 auto;
+    /* Symmetric horizontal padding around the content: #root padding is zeroed
+       in panel mode (index.css), so the gap rail→content equals content→edge. */
+    padding: 0 20px;
+  }
 
-body.extension-sidepanel .wallet-shell-content {
-  padding-bottom: 24px;
+  body.extension-sidepanel .wallet-shell-content {
+    padding-bottom: 24px;
+  }
 }

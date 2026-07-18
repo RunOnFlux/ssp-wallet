@@ -117,14 +117,14 @@ function ImportToken(props: {
         title={t('home:tokens.import_token')}
         open={open && !openCustomImportTokenDialog}
         onOk={handleOk}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center' }}
         onCancel={handleCancel}
         footer={[]}
       >
         <Flex
           wrap
           gap="middle"
-          style={{ marginTop: '20px', marginBottom: '40px' }}
+          style={{ marginTop: '16px', marginBottom: '24px' }}
         >
           <Input
             id="searchToken"

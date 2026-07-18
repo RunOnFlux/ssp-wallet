@@ -287,6 +287,29 @@ export async function ensureWalletChainKeys(
 }
 
 /**
+ * Does the wallet already hold an SSP Key xpub for this chain?
+ *
+ * Redux only hydrates a chain's xpubKey when the chain is switched to
+ * (lib/chainSwitching.ts), so the store is NOT a reliable "already synced"
+ * signal for chains never visited this session. The encrypted
+ * `2-xpub-48-…` secure-storage record IS — it is written exactly once per
+ * synced chain (manual, QR and batch flows all end in the same write).
+ * Presence check only; nothing is decrypted.
+ */
+export function hasStoredKeyXpub(chain: keyof cryptos): boolean {
+  const blockchainConfig = blockchains[chain];
+  if (!blockchainConfig) return false;
+  const key = `2-xpub-48-${blockchainConfig.slip}-0-${getScriptType(
+    blockchainConfig.scriptType,
+  )}-${blockchainConfig.id}`;
+  try {
+    return !!secureLocalStorage.getItem(key);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Store a verified key xpub for a (possibly non-active) chain — the exact
  * same redux + secure-storage writes the manual/QR flow performs in
  * Key.tsx handleOkModalKey.

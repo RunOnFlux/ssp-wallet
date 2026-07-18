@@ -1,9 +1,11 @@
 .swap-area {
-  margin: 8px;
+  /* Shell rhythm: horizontal padding comes from #root (16px scale) —
+     the page adds only vertical spacing. */
+  margin: 8px 0 16px;
 }
 
 .swap-box-row {
-  border-radius: 10px;
+  border-radius: 12px; /* 12-radius cards (shell language) */
   padding: 16px;
   margin-bottom: 2px;
 }

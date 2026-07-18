@@ -1,23 +1,76 @@
-.contact-name {
-  width: 215px;
-  word-break: break-all;
-  padding: 16px 10px !important;
+/* Contacts tab — v2 row list (shared .feed-list container from index.css). */
+
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 12px;
+  text-align: left;
 }
 
-.contact-address {
-  width: 145px;
-  word-break: break-all;
-  padding: 16px 10px !important;
+.contact-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 auto;
+  line-height: 1.35;
 }
 
-@media (max-width: 400px) {
-  .contact-name {
-    width: 150px;
-    padding: 12px 6px !important;
-  }
+.contact-row-name {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-  .contact-address {
-    width: 120px;
-    padding: 12px 6px !important;
-  }
+.contact-row-address {
+  font-size: 11px;
+  font-family: var(--ssp-mono);
+  opacity: 0.65;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contact-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+/* Quiet icon buttons — lucide icons center via flex. */
+.contact-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contacts-actions {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 8px;
+}
+
+/* Add/edit contact modal — v2 form rhythm. */
+.manage-contact-form {
+  text-align: left;
+  margin-top: 8px;
+}
+
+.manage-contact-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 12px 0 4px;
+}
+
+.manage-contact-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
 }

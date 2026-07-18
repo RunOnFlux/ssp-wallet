@@ -8,6 +8,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import type { WalletTab } from '../../storage/navPrefs';
 import { tabToPath } from '../../storage/navPrefs';
+import PoweredByFlux from '../PoweredByFlux/PoweredByFlux';
 import './TabBar.css';
 
 interface Props {
@@ -62,6 +63,13 @@ function TabBar({ activeTab }: Props) {
           <span className="tab-bar-label">{tab.label}</span>
         </button>
       ))}
+      {/* Side-panel rail footer — version + Powered by Flux pinned at the rail
+          bottom (margin-top:auto). display:none in the popup's bottom bar and
+          the <500px popup-layout fallback (TabBar.css); the popup will get an
+          About home for these in the Menu later. */}
+      <div className="tab-bar-footer">
+        <PoweredByFlux rail isClickeable />
+      </div>
     </nav>
   );
 }

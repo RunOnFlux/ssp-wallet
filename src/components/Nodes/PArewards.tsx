@@ -236,7 +236,7 @@ function PArewards(props: {
             onConfirm={() => {
               proceedToClaim();
             }}
-            icon={<CircleHelpIcon style={{ color: 'green' }} />}
+            icon={<CircleHelpIcon style={{ color: '#22c55e' }} />}
           >
             <Button type="primary" size="middle" disabled={!paRewardsAvailable}>
               {t('home:fusion.claim_with_fusion')}

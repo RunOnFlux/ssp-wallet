@@ -1,10 +1,27 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { Button, Input, Space, Select, Tooltip, theme } from 'antd';
 import {
+  BookUser as BookUserIcon,
+  Check as CheckIcon,
+  ChevronDown as ChevronDownIcon,
   ChevronRight as ChevronRightIcon,
   CircleHelp as CircleHelpIcon,
+  Cloud as CloudIcon,
+  Coins as CoinsIcon,
+  Compass as CompassIcon,
+  HardDrive as HardDriveIcon,
+  Hash as HashIcon,
+  KeyRound as KeyRoundIcon,
+  Languages as LanguagesIcon,
   Link as LinkIcon,
+  Mail as MailIcon,
+  PenLine as PenLineIcon,
+  Server as ServerIcon,
+  ShieldCheck as ShieldCheckIcon,
+  SlidersHorizontal as SlidersHorizontalIcon,
+  SunMoon as SunMoonIcon,
+  Wallet as WalletIcon,
 } from 'lucide-react';
 import { NoticeType } from 'antd/es/message/interface';
 import { toast } from '../../lib/toast';
@@ -43,10 +60,13 @@ import WkSign from '../WkSign/WkSign';
 import type { WkSignResponse } from '../../lib/wkSign';
 import AddressDetails from '../AddressDetails/AddressDetails';
 import SspWalletDetails from '../SspWalletDetails/SspWalletDetails';
+import VerifyBackupModal from '../VerifyBackup/VerifyBackupModal';
+import { useBackupVerified } from '../../storage/walletMeta';
 import ManualSign from '../ManualSign/ManualSign';
 import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
 import WalletConnect from '../WalletConnect/WalletConnect';
 import TutorialTrigger from '../Tutorial/TutorialTrigger';
+import PoweredByFlux from '../PoweredByFlux/PoweredByFlux';
 import './Settings.css';
 
 interface sspConfigType {
@@ -79,10 +99,12 @@ function Section({
 }
 
 function Row({
+  icon,
   label,
   help,
   children,
 }: {
+  icon?: React.ReactNode;
   label: React.ReactNode;
   help?: string;
   children: React.ReactNode;
@@ -91,6 +113,7 @@ function Row({
   return (
     <div className="settings-row">
       <div className="settings-row-label">
+        {icon && <span className="settings-row-icon">{icon}</span>}
         {label}
         {help && (
           <Tooltip title={help}>
@@ -106,14 +129,16 @@ function Row({
 }
 
 /**
- * Settings — Phase 3 sectioned, routed page (General / Security / Networks /
- * SSP Enterprise) replacing the old ~990-line single Settings modal. No
- * separate Advanced section: every power-user item already has a home (relay +
- * per-chain node/API/explorer endpoints live under Networks). Every previous
- * setting is preserved; the theme toggle lives under General, and the utilities
- * that used to hang off the Navbar burger (address details, SSP wallet details,
- * sign message, WalletConnect, tutorial) are relocated here so nothing became
- * unreachable when Home dropped the hamburger.
+ * Menu — the 4th tab destination: a single sectioned page ordered by use
+ * frequency. Preferences (language / currency / theme, inline controls) →
+ * Security (chevron rows opening modals or /restore) → Tools (WalletConnect +
+ * SSP Enterprise email alerts expander) → a COLLAPSED "Advanced" expander
+ * (public nonces sync + relay / per-chain node / API / explorer endpoint
+ * inputs) → About (tutorial, version + Powered by Flux — the popup's only
+ * home of the 5-click-version security-test trigger now that Home shows no
+ * footer). Every previous setting is preserved; the utilities that used to
+ * hang off the deleted Navbar burger (address details, wallet & key details,
+ * sign message, WalletConnect, tutorial) live here.
  */
 function Settings() {
   const dispatch = useAppDispatch();
@@ -146,10 +171,16 @@ function Settings() {
   const [openAddressDetails, setOpenAddressDetails] = useState(false);
   const [openSspWalletDetails, setOpenSspWalletDetails] = useState(false);
   const [openManualSign, setOpenManualSign] = useState(false);
+  const [openVerifyBackup, setOpenVerifyBackup] = useState(false);
+  const backupVerified = useBackupVerified();
   const [openWalletConnect, setOpenWalletConnect] = useState(false);
   const [passwordConfirmOpen, setPasswordConfirmOpen] = useState(false);
   const [actionToPerform, setActionToPerform] = useState('');
   const [triggerTutorial, setTriggerTutorial] = useState(false);
+  // Collapsed-by-default expanders: Advanced (endpoints + nonces) and the
+  // SSP Enterprise email-alerts block under Tools.
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [enterpriseOpen, setEnterpriseOpen] = useState(false);
 
   // SSP Enterprise Notification state
   const enterpriseConfigData = getEnterpriseNotificationConfig();
@@ -623,20 +654,188 @@ function Settings() {
     return opts;
   };
 
-  const navRow = (label: string, onClick: () => void, help?: string) => (
+  // Chevron row: opens a modal/page. `trailing` renders a quiet status hint
+  // (e.g. the green "Verified" check) before the caret.
+  const navRow = (
+    icon: React.ReactNode,
+    label: string,
+    onClick: () => void,
+    opts?: { help?: string; trailing?: React.ReactNode },
+  ) => (
     <button type="button" className="settings-nav-row" onClick={onClick}>
-      <span>
+      <span className="settings-row-label">
+        <span className="settings-row-icon">{icon}</span>
         {label}
-        {help && (
-          <Tooltip title={help}>
+        {opts?.help && (
+          <Tooltip title={opts.help}>
             <CircleHelpIcon
               style={{ marginLeft: 6, color: token.colorPrimary }}
             />
           </Tooltip>
         )}
       </span>
-      <ChevronRightIcon className="settings-nav-caret" />
+      <span className="settings-nav-end">
+        {opts?.trailing}
+        <ChevronRightIcon className="settings-nav-caret" />
+      </span>
     </button>
+  );
+
+  // Expander header row — same affordance family as navRow but the caret
+  // rotates and the body expands in place (Advanced, Enterprise alerts).
+  const expanderRow = (
+    icon: React.ReactNode,
+    label: string,
+    open: boolean,
+    onToggle: () => void,
+    opts?: { hint?: string; trailing?: React.ReactNode },
+  ) => (
+    <button
+      type="button"
+      className="settings-nav-row settings-expander-row"
+      onClick={onToggle}
+      aria-expanded={open}
+    >
+      <span className="settings-row-label">
+        <span className="settings-row-icon">{icon}</span>
+        <span className="settings-expander-text">
+          {label}
+          {opts?.hint && (
+            <span className="settings-expander-hint">{opts.hint}</span>
+          )}
+        </span>
+      </span>
+      <span className="settings-nav-end">
+        {opts?.trailing}
+        {open ? (
+          <ChevronDownIcon className="settings-nav-caret" />
+        ) : (
+          <ChevronRightIcon className="settings-nav-caret" />
+        )}
+      </span>
+    </button>
+  );
+
+  // The multi-step SSP Enterprise subscribe/verify/sign block, unchanged in
+  // behavior — now rendered inside the collapsed Tools expander.
+  const renderEnterpriseBlock = () => (
+    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+      {!isEnterpriseSubscribed ? (
+        <>
+          {subscriptionStep === 'email' && (
+            <>
+              <Input
+                type="email"
+                placeholder={t('home:settings.sspEnterprise.email_placeholder')}
+                value={enterpriseEmail}
+                onChange={(e) => setEnterpriseEmail(e.target.value)}
+                disabled={enterpriseLoading}
+                onPressEnter={handleEnterpriseRequestCode}
+              />
+              <Button
+                type="primary"
+                onClick={handleEnterpriseRequestCode}
+                loading={enterpriseLoading}
+              >
+                {t('home:settings.sspEnterprise.subscribe')}
+              </Button>
+            </>
+          )}
+          {subscriptionStep === 'verification' && (
+            <>
+              <div style={{ color: token.colorTextSecondary, fontSize: 12 }}>
+                {t('home:settings.sspEnterprise.code_sent_to', {
+                  email: enterpriseEmail,
+                })}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Input.OTP
+                  length={6}
+                  value={verificationCode}
+                  onChange={(value) => {
+                    const cleanValue = value
+                      .replace(/[^A-Za-z0-9]/g, '')
+                      .toUpperCase();
+                    setVerificationCode(cleanValue);
+                    if (cleanValue.length === 6 && !enterpriseLoading) {
+                      handleEnterpriseVerifyCode(cleanValue);
+                    }
+                  }}
+                  disabled={enterpriseLoading}
+                />
+              </div>
+              {remainingAttempts !== null && remainingAttempts < 5 && (
+                <div style={{ color: token.colorWarning, fontSize: 11 }}>
+                  {t('home:settings.sspEnterprise.remaining_attempts', {
+                    count: remainingAttempts,
+                  })}
+                </div>
+              )}
+              <Space>
+                <Button
+                  onClick={() => {
+                    setSubscriptionStep('email');
+                    setVerificationCode('');
+                  }}
+                >
+                  {t('common:back')}
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={() => handleEnterpriseVerifyCode()}
+                  loading={enterpriseLoading}
+                  disabled={verificationCode.length !== 6}
+                >
+                  {t('home:settings.sspEnterprise.verify_code')}
+                </Button>
+              </Space>
+            </>
+          )}
+          {subscriptionStep === 'signing' && (
+            <>
+              <div style={{ color: token.colorSuccess, fontSize: 12 }}>
+                ✓ {t('home:settings.sspEnterprise.email_verified')}
+              </div>
+              <div style={{ color: token.colorTextSecondary, fontSize: 12 }}>
+                {t('home:settings.sspEnterprise.signing_required')}
+              </div>
+              <Space>
+                <Button
+                  onClick={() => {
+                    setSubscriptionStep('email');
+                    setVerifiedEmail(null);
+                  }}
+                >
+                  {t('common:cancel')}
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleEnterpriseSignAndSubscribe}
+                  loading={enterpriseLoading}
+                >
+                  {t('home:settings.sspEnterprise.sign_and_subscribe')}
+                </Button>
+              </Space>
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <div style={{ color: token.colorTextSecondary }}>
+            {t('home:settings.sspEnterprise.subscribed_as', {
+              email: enterpriseEmail,
+            })}
+          </div>
+          <Button
+            danger
+            onClick={handleEnterpriseUnsubscribe}
+            loading={enterpriseLoading}
+          >
+            {t('home:settings.sspEnterprise.unsubscribe')}
+          </Button>
+        </>
+      )}
+    </Space>
   );
 
   return (
@@ -645,11 +844,12 @@ function Settings() {
           relocated utilities), so it is titled "Menu" everywhere user-visible. */}
       <h1 className="settings-page-title">{t('home:tabs.menu', 'Menu')}</h1>
 
-      <Section title={t('home:settings.general', 'General')}>
-        <Row label={t('home:settings.language')}>
+      {/* Preferences — the only section with inline controls. */}
+      <Section title={t('home:settings.preferences', 'Preferences')}>
+        <Row icon={<LanguagesIcon />} label={t('home:settings.language')}>
           <LanguageSelector label={false} />
         </Row>
-        <Row label={t('home:settings.fiat_currency')}>
+        <Row icon={<CoinsIcon />} label={t('home:settings.fiat_currency')}>
           <Select
             popupMatchSelectWidth={false}
             value={sspFiatCurrency}
@@ -660,7 +860,7 @@ function Settings() {
             optionRender={(option) => <>{option.data.desc}</>}
           />
         </Row>
-        <Row label={t('home:settings.theme')}>
+        <Row icon={<SunMoonIcon />} label={t('home:settings.theme')}>
           <Select
             popupMatchSelectWidth={false}
             value={themeMode}
@@ -673,240 +873,203 @@ function Settings() {
             ]}
           />
         </Row>
-        {navRow(t('home:tutorial.tutorial_help'), () =>
-          setTriggerTutorial(true),
-        )}
       </Section>
 
+      {/* Security — chevron rows; each opens a modal or the restore page. */}
       <Section title={t('home:settings.security', 'Security')}>
-        {navRow(t('home:navbar.addr_details'), () => {
+        {navRow(
+          <KeyRoundIcon />,
+          t('home:settings.change_pw'),
+          () => navigate('/restore'),
+          {
+            help: t(
+              'home:settings.change_pw_help',
+              'Changing your password re-imports the wallet from your seed phrase — have it ready before you start.',
+            ),
+          },
+        )}
+        {navRow(
+          <ShieldCheckIcon />,
+          t('home:settings.verify_backup', 'Verify seed backup'),
+          () => setOpenVerifyBackup(true),
+          {
+            help: t(
+              'home:settings.verify_backup_help',
+              'Confirm your seed phrase backup by matching one of its words — the phrase itself is never shown.',
+            ),
+            trailing: backupVerified ? (
+              <span className="settings-verified-hint">
+                <CheckIcon />
+                {t('home:settings.backup_verified', 'Verified')}
+              </span>
+            ) : undefined,
+          },
+        )}
+        {navRow(
+          <WalletIcon />,
+          t('home:settings.wallet_key_details', 'Wallet & Key details'),
+          () => {
+            setActionToPerform('sspwallet');
+            setPasswordConfirmOpen(true);
+          },
+        )}
+        {navRow(<BookUserIcon />, t('home:navbar.addr_details'), () => {
           setActionToPerform('address');
           setPasswordConfirmOpen(true);
         })}
-        {navRow(t('home:navbar.ssp_details'), () => {
-          setActionToPerform('sspwallet');
-          setPasswordConfirmOpen(true);
-        })}
-        {navRow(t('home:navbar.ssp_message_sign'), () =>
+        {navRow(<PenLineIcon />, t('home:navbar.ssp_message_sign'), () =>
           setOpenManualSign(true),
         )}
-        <Row
-          label={t('home:settings.public_nonces_sync')}
-          help={t('home:settings.public_nonces_sync_help')}
-        >
-          <Button size="middle" onClick={handlePublicNoncesSync}>
-            {t('home:settings.sync_public_nonces')}
-          </Button>
-        </Row>
-        <Row label={t('home:settings.change_pw')}>
-          <Button type="default" size="middle">
-            <Link to={'/restore'}>{t('home:settings.change_pw_restore')}</Link>
-          </Button>
-        </Row>
       </Section>
 
-      <Section title={t('home:settings.networks', 'Networks')}>
+      {/* Tools — WalletConnect + the SSP Enterprise email-alerts expander. */}
+      <Section title={t('home:settings.tools', 'Tools')}>
         {navRow(
+          <LinkIcon />,
           t('home:walletconnect.title'),
           () => setOpenWalletConnect(true),
           isEVM
             ? undefined
-            : t('home:walletconnect.evm_only', 'EVM chains only'),
+            : { help: t('home:walletconnect.evm_only', 'EVM chains only') },
         )}
-        <Row label={t('home:settings.ssp_relay')}>
-          <Space.Compact style={{ width: '100%' }}>
-            <Input
-              placeholder={originalConfig.relay}
-              value={sspConfigRelay}
-              onChange={(e) => setSspConfigRelay(e.target.value)}
-            />
-            <Button onClick={resetSSP}>{t('common:reset')}</Button>
-          </Space.Compact>
-        </Row>
-        {backendsOriginalConfig[activeChain].node && (
-          <Row
-            label={t('home:settings.chain_node_service', {
-              chain: blockchainConfig.name,
-            })}
-          >
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                placeholder={backendsOriginalConfig[activeChain].node}
-                value={nodeConfig}
-                onChange={(e) => setNodeConfig(e.target.value)}
-              />
-              <Button onClick={resetNodeConfig}>{t('common:reset')}</Button>
-            </Space.Compact>
-          </Row>
+        {expanderRow(
+          <MailIcon />,
+          t(
+            'home:settings.enterprise_email_alerts',
+            'SSP Enterprise email alerts',
+          ),
+          enterpriseOpen,
+          () => setEnterpriseOpen((open) => !open),
+          {
+            trailing: isEnterpriseSubscribed ? (
+              <span className="settings-trailing-caption">
+                {enterpriseEmail}
+              </span>
+            ) : undefined,
+          },
         )}
-        {backendsOriginalConfig[activeChain].api && (
-          <Row
-            label={t('home:settings.chain_api_service', {
-              chain: blockchainConfig.name,
-            })}
-          >
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                placeholder={backendsOriginalConfig[activeChain].api}
-                value={apiConfig}
-                onChange={(e) => setApiConfig(e.target.value)}
-              />
-              <Button onClick={resetApiConfig}>{t('common:reset')}</Button>
-            </Space.Compact>
-          </Row>
-        )}
-        {backendsOriginalConfig[activeChain].explorer && (
-          <Row
-            label={t('home:settings.chain_explorer_service', {
-              chain: blockchainConfig.name,
-            })}
-          >
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                placeholder={backendsOriginalConfig[activeChain].explorer}
-                value={explorerConfig}
-                onChange={(e) => setExplorerConfig(e.target.value)}
-              />
-              <Button onClick={resetExplorerConfig}>{t('common:reset')}</Button>
-            </Space.Compact>
-          </Row>
+        {enterpriseOpen && (
+          <div className="settings-expander-body">
+            <div className="settings-caption">
+              {t('home:settings.sspEnterprise.description')}
+            </div>
+            {renderEnterpriseBlock()}
+          </div>
         )}
       </Section>
 
-      <Section
-        title={
-          <span>
-            <LinkIcon style={{ marginRight: 6 }} />
-            {t('home:settings.sspEnterprise.title')}
-          </span>
-        }
-      >
-        <div style={{ marginBottom: 8, fontSize: 12, opacity: 0.7 }}>
-          {t('home:settings.sspEnterprise.description')}
-        </div>
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          {!isEnterpriseSubscribed ? (
-            <>
-              {subscriptionStep === 'email' && (
-                <>
-                  <Input
-                    type="email"
-                    placeholder={t(
-                      'home:settings.sspEnterprise.email_placeholder',
-                    )}
-                    value={enterpriseEmail}
-                    onChange={(e) => setEnterpriseEmail(e.target.value)}
-                    disabled={enterpriseLoading}
-                    onPressEnter={handleEnterpriseRequestCode}
-                  />
-                  <Button
-                    type="primary"
-                    onClick={handleEnterpriseRequestCode}
-                    loading={enterpriseLoading}
-                  >
-                    {t('home:settings.sspEnterprise.subscribe')}
-                  </Button>
-                </>
-              )}
-              {subscriptionStep === 'verification' && (
-                <>
-                  <div
-                    style={{ color: token.colorTextSecondary, fontSize: 12 }}
-                  >
-                    {t('home:settings.sspEnterprise.code_sent_to', {
-                      email: enterpriseEmail,
-                    })}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <Input.OTP
-                      length={6}
-                      value={verificationCode}
-                      onChange={(value) => {
-                        const cleanValue = value
-                          .replace(/[^A-Za-z0-9]/g, '')
-                          .toUpperCase();
-                        setVerificationCode(cleanValue);
-                        if (cleanValue.length === 6 && !enterpriseLoading) {
-                          handleEnterpriseVerifyCode(cleanValue);
-                        }
-                      }}
-                      disabled={enterpriseLoading}
-                    />
-                  </div>
-                  {remainingAttempts !== null && remainingAttempts < 5 && (
-                    <div style={{ color: token.colorWarning, fontSize: 11 }}>
-                      {t('home:settings.sspEnterprise.remaining_attempts', {
-                        count: remainingAttempts,
-                      })}
-                    </div>
-                  )}
-                  <Space>
-                    <Button
-                      onClick={() => {
-                        setSubscriptionStep('email');
-                        setVerificationCode('');
-                      }}
-                    >
-                      {t('common:back')}
-                    </Button>
-                    <Button
-                      type="primary"
-                      onClick={() => handleEnterpriseVerifyCode()}
-                      loading={enterpriseLoading}
-                      disabled={verificationCode.length !== 6}
-                    >
-                      {t('home:settings.sspEnterprise.verify_code')}
-                    </Button>
-                  </Space>
-                </>
-              )}
-              {subscriptionStep === 'signing' && (
-                <>
-                  <div style={{ color: token.colorSuccess, fontSize: 12 }}>
-                    ✓ {t('home:settings.sspEnterprise.email_verified')}
-                  </div>
-                  <div
-                    style={{ color: token.colorTextSecondary, fontSize: 12 }}
-                  >
-                    {t('home:settings.sspEnterprise.signing_required')}
-                  </div>
-                  <Space>
-                    <Button
-                      onClick={() => {
-                        setSubscriptionStep('email');
-                        setVerifiedEmail(null);
-                      }}
-                    >
-                      {t('common:cancel')}
-                    </Button>
-                    <Button
-                      type="primary"
-                      onClick={handleEnterpriseSignAndSubscribe}
-                      loading={enterpriseLoading}
-                    >
-                      {t('home:settings.sspEnterprise.sign_and_subscribe')}
-                    </Button>
-                  </Space>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <div style={{ color: token.colorTextSecondary }}>
-                {t('home:settings.sspEnterprise.subscribed_as', {
-                  email: enterpriseEmail,
-                })}
-              </div>
-              <Button
-                danger
-                onClick={handleEnterpriseUnsubscribe}
-                loading={enterpriseLoading}
-              >
-                {t('home:settings.sspEnterprise.unsubscribe')}
-              </Button>
-            </>
+      {/* Advanced — collapsed expander: public nonces + ALL network-endpoint
+          inputs (SSP relay, per-chain node/API/explorer + resets). */}
+      <section className="settings-section">
+        <div className="settings-section-body">
+          {expanderRow(
+            <SlidersHorizontalIcon />,
+            t('home:settings.advanced', 'Advanced'),
+            advancedOpen,
+            () => setAdvancedOpen((open) => !open),
+            {
+              hint: t(
+                'home:settings.advanced_hint',
+                'Network endpoints & expert tools',
+              ),
+            },
           )}
-        </Space>
+          {advancedOpen && (
+            <div className="settings-expander-body">
+              <Row
+                icon={<HashIcon />}
+                label={t('home:settings.public_nonces_sync')}
+                help={t(
+                  'home:settings.public_nonces_plain',
+                  'One-time signing numbers your SSP Key pre-shares so transactions on EVM chains can be co-signed. Sync them again if EVM signing ever gets stuck.',
+                )}
+              >
+                <Button size="middle" onClick={handlePublicNoncesSync}>
+                  {t('home:settings.sync_public_nonces')}
+                </Button>
+              </Row>
+              <Row icon={<ServerIcon />} label={t('home:settings.ssp_relay')}>
+                <Space.Compact style={{ width: '100%' }}>
+                  <Input
+                    placeholder={originalConfig.relay}
+                    value={sspConfigRelay}
+                    onChange={(e) => setSspConfigRelay(e.target.value)}
+                  />
+                  <Button onClick={resetSSP}>{t('common:reset')}</Button>
+                </Space.Compact>
+              </Row>
+              {backendsOriginalConfig[activeChain].node && (
+                <Row
+                  icon={<HardDriveIcon />}
+                  label={t('home:settings.chain_node_service', {
+                    chain: blockchainConfig.name,
+                  })}
+                >
+                  <Space.Compact style={{ width: '100%' }}>
+                    <Input
+                      placeholder={backendsOriginalConfig[activeChain].node}
+                      value={nodeConfig}
+                      onChange={(e) => setNodeConfig(e.target.value)}
+                    />
+                    <Button onClick={resetNodeConfig}>
+                      {t('common:reset')}
+                    </Button>
+                  </Space.Compact>
+                </Row>
+              )}
+              {backendsOriginalConfig[activeChain].api && (
+                <Row
+                  icon={<CloudIcon />}
+                  label={t('home:settings.chain_api_service', {
+                    chain: blockchainConfig.name,
+                  })}
+                >
+                  <Space.Compact style={{ width: '100%' }}>
+                    <Input
+                      placeholder={backendsOriginalConfig[activeChain].api}
+                      value={apiConfig}
+                      onChange={(e) => setApiConfig(e.target.value)}
+                    />
+                    <Button onClick={resetApiConfig}>
+                      {t('common:reset')}
+                    </Button>
+                  </Space.Compact>
+                </Row>
+              )}
+              {backendsOriginalConfig[activeChain].explorer && (
+                <Row
+                  icon={<CompassIcon />}
+                  label={t('home:settings.chain_explorer_service', {
+                    chain: blockchainConfig.name,
+                  })}
+                >
+                  <Space.Compact style={{ width: '100%' }}>
+                    <Input
+                      placeholder={backendsOriginalConfig[activeChain].explorer}
+                      value={explorerConfig}
+                      onChange={(e) => setExplorerConfig(e.target.value)}
+                    />
+                    <Button onClick={resetExplorerConfig}>
+                      {t('common:reset')}
+                    </Button>
+                  </Space.Compact>
+                </Row>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* About — tutorial + version + Powered by Flux. This block is now the
+          popup's ONLY home of the version caption and the 5-click-version
+          security-test trigger (Home shows no footer anymore). */}
+      <Section title={t('home:settings.about', 'About')}>
+        {navRow(<CircleHelpIcon />, t('home:tutorial.tutorial_help'), () =>
+          setTriggerTutorial(true),
+        )}
+        <div className="settings-about-footer">
+          <PoweredByFlux inline isClickeable />
+        </div>
       </Section>
 
       <div className="settings-save-bar">
@@ -946,6 +1109,10 @@ function Settings() {
         openAction={setOpenSspWalletDetails}
       />
       <ManualSign open={openManualSign} openAction={setOpenManualSign} />
+      <VerifyBackupModal
+        open={openVerifyBackup}
+        onClose={() => setOpenVerifyBackup(false)}
+      />
       <WalletConnect
         open={openWalletConnect}
         openAction={setOpenWalletConnect}

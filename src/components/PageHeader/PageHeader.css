@@ -1,0 +1,156 @@
+/* Slim v2 page header for the standalone flow pages (/send, /swap) — matches
+   the IdentityBar's visual weight and the shell's 16px rhythm. */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0 10px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.page-header-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.15s ease;
+}
+
+:root[data-theme='dark'] .page-header-back {
+  border-color: #272524;
+}
+
+.page-header-back:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.page-header-back:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
+.page-header-middle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.page-header-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Static chain context pill — context, never a switcher. */
+.page-header-chain {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 6px;
+  border: 1px solid #e7e5e4;
+  border-radius: 999px;
+  font-size: 11px;
+  opacity: 0.8;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+:root[data-theme='dark'] .page-header-chain {
+  border-color: #272524;
+}
+
+.page-header-chain-logo {
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.page-header-chain-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right slot mirrors the back button footprint so the title stays centered
+   even when empty. */
+.page-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 36px;
+  flex-shrink: 0;
+}
+
+.page-header-right .page-header-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.15s ease;
+}
+
+:root[data-theme='dark'] .page-header-right .page-header-action {
+  border-color: #272524;
+}
+
+.page-header-right .page-header-action:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.page-header-right .page-header-action:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-header-back,
+  .page-header-right .page-header-action {
+    transition: none;
+  }
+}
+
+/* Container for the standalone flow pages: the popup #root already pads
+   16px, so this is a no-op there; in the ≥500px side-panel (where #root goes
+   edge-to-edge for the shell's rail layout) it restores the same symmetric
+   centered column rhythm the shell columns use. */
+.flow-page {
+  width: 100%;
+}
+
+@media (min-width: 500px) {
+  body.extension-sidepanel .flow-page {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 8px 16px 16px;
+    box-sizing: border-box;
+  }
+
+  body.extension-sidepanel .page-header {
+    padding: 12px 0;
+  }
+}

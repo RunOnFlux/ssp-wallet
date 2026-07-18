@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
-import { Drawer, Input, Button, Popconfirm, Divider, Image } from 'antd';
+import { Drawer, Input, Popconfirm, Divider, Image } from 'antd';
 import {
   Check as CheckIcon,
   CircleHelp as CircleHelpIcon,
-  Minus as MinusIcon,
   Plus as PlusIcon,
   Search as SearchIcon,
+  Trash2 as Trash2Icon,
 } from 'lucide-react';
 import { NoticeType } from 'antd/es/message/interface';
 import { toast } from '../../lib/toast';
@@ -263,8 +263,11 @@ function WalletSwitcher({ open, openAction }: Props) {
     })();
   };
 
-  const body = document.body;
-  const isSidePanel = body.classList.contains('extension-sidepanel');
+  // Right-hand drawer only in the ≥500px side-panel two-column layout; a
+  // phone-width panel behaves exactly like the popup (bottom sheet).
+  const isSidePanel =
+    document.body.classList.contains('extension-sidepanel') &&
+    window.innerWidth >= 500;
 
   return (
     <Drawer
@@ -343,15 +346,19 @@ function WalletSwitcher({ open, openAction }: Props) {
 
       {!query && (
         <div className="switcher-wallet-actions">
-          <Button
-            type="text"
-            icon={<PlusIcon />}
+          <button
+            type="button"
+            className="switcher-action switcher-action-new"
             onClick={addWallet}
             disabled={walletIds.length >= 20}
+            title={t('home:navbar.generate_new_wallet')}
             data-tutorial="add-wallet-button"
           >
-            {t('home:navbar.generate_new_wallet')}
-          </Button>
+            <PlusIcon className="switcher-action-icon" />
+            <span className="switcher-action-label">
+              {t('home:switcher.new_wallet', 'New wallet')}
+            </span>
+          </button>
           {walletIds.length > 1 && (
             <Popconfirm
               title={t('home:navbar.remove_last_wallet')}
@@ -361,13 +368,17 @@ function WalletSwitcher({ open, openAction }: Props) {
               onConfirm={removeLastWallet}
               icon={<CircleHelpIcon style={{ color: '#f59e0b' }} />}
             >
-              <Button
-                type="text"
-                icon={<MinusIcon />}
+              <button
+                type="button"
+                className="switcher-action switcher-action-remove"
+                title={t('home:navbar.remove_last_wallet')}
                 data-tutorial="remove-wallet-button"
               >
-                {t('home:navbar.remove_last_wallet')}
-              </Button>
+                <Trash2Icon className="switcher-action-icon" />
+                <span className="switcher-action-label">
+                  {t('home:switcher.remove_last', 'Remove last')}
+                </span>
+              </button>
             </Popconfirm>
           )}
         </div>

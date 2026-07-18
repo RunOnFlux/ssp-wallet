@@ -130,9 +130,12 @@
   display: none;
 }
 
-/* Side-panel: identity bar sits atop the content column, full width of it */
-body.extension-sidepanel .identity-bar {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 12px 8px;
+/* Side-panel (≥500px two-column layout): identity bar sits atop the content
+   column and spans exactly its width — .wallet-shell-main already caps and
+   pads the column, so no extra max-width here (a narrower cap misaligned the
+   bar against the content below). A phone-width panel keeps the popup layout. */
+@media (min-width: 500px) {
+  body.extension-sidepanel .identity-bar {
+    padding: 12px 0;
+  }
 }

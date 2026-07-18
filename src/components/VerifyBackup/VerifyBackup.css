@@ -1,0 +1,31 @@
+/* Word-match verify modal (shared by the Backup checkup card + Menu row) */
+.backup-verify-body {
+  padding: 4px 0 8px;
+}
+
+.backup-verify-shield {
+  font-size: 34px;
+  color: #f59e0b;
+}
+
+.backup-verify-lead {
+  margin: 12px 0 8px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.backup-verify-question {
+  margin: 14px 0 6px;
+}
+
+.backup-verify-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.backup-verify-error {
+  color: #ef4444;
+  font-size: 12px;
+  margin: 4px 0;
+}

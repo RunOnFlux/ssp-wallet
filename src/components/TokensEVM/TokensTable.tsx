@@ -1,18 +1,21 @@
 import { blockchains, Token } from '@storage/blockchains';
 import localForage from 'localforage';
+import { Coins as CoinsIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
 import TokenBox from './TokenBox';
+import EmptyState from '../EmptyState/EmptyState';
 import { setActivatedTokens } from '../../store';
 import { useEffect, useState } from 'react';
 
 function TokensTable() {
+  const { t } = useTranslation(['home']);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { wallets, walletInUse, importedTokens } = useAppSelector(
     (state) => state[activeChain],
   );
   const blockchainConfig = blockchains[activeChain];
   const activatedTokens = wallets[walletInUse].activatedTokens ?? [];
-  console.log(activatedTokens);
 
   const [activeTokensInfo, setActiveTokensInfo] = useState<Token[]>([]);
 
@@ -41,8 +44,10 @@ function TokensTable() {
     })();
   };
 
-  return (
-    <div>
+  return activeTokensInfo.length === 0 ? (
+    <EmptyState icon={<CoinsIcon />} description={t('home:tokens.no_tokens')} />
+  ) : (
+    <div className="feed-list">
       {activeTokensInfo.map((item, index) => (
         <TokenBox
           chain={activeChain}

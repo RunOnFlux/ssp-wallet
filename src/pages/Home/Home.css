@@ -1,10 +1,16 @@
+/* Copyable address pill (Home hero, Receive modal, signing dialogs) — mono
+   per DESIGN_TOKENS §3. Theme pill fills live in index.css. (Previously
+   carried invalid quoted display/overflow values — removed.) */
 .copyableAddress {
   margin: auto;
   width: fit-content;
   padding: 3px 10px;
-  border-radius: 10px;
-  display: 'flex';
-  overflow: 'visible';
+  border-radius: 8px;
+}
+
+.copyableAddress .ant-typography {
+  font-family: var(--ssp-mono);
+  font-size: 12px;
 }
 
 .home-tab {
