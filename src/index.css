@@ -322,11 +322,23 @@ svg.lucide-spin {
    One shared rhythm: logo, 24px title, quiet subtitle, centered action
    column on the 4-pt scale (padding-bottom clears the PoweredByFlux bar). */
 .auth-page {
-  padding-bottom: 43px;
+  /* Fill the viewport and center the content column so the screen reads full
+     and balanced (v1's rhythm) instead of clustered at the top with dead space
+     below. `safe` keeps the top reachable if the content ever exceeds the
+     height (tiny popups); the bottom padding lifts the group just above true
+     centre, clear of the fixed PoweredByFlux bar. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+  justify-content: safe center;
+  padding-bottom: 56px;
 }
 
 .auth-logo {
-  padding-top: 70px;
+  /* Flex centering now owns vertical position — a small breath keeps the mark
+     off the very top when the content is tall enough to top-align. */
+  padding-top: 8px;
 }
 
 .auth-loading {
@@ -340,19 +352,21 @@ svg.lucide-spin {
   font-size: 24px;
   font-weight: 700;
   line-height: 1.3;
-  margin: 20px 0 0;
+  margin: 24px 0 0;
 }
 
 .auth-subtitle {
   font-size: 16px;
   font-weight: 500;
   line-height: 1.4;
-  margin: 4px 0 0;
-  opacity: 0.75;
+  margin: 10px 0 0;
+  opacity: 0.82;
 }
 
 .auth-form {
-  margin-top: 24px;
+  /* Generous gap under the header block — the airy separation that made v1's
+     unlock screen read spacious rather than cramped. */
+  margin-top: 40px;
 }
 
 .auth-actions {

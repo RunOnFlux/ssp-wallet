@@ -71,9 +71,19 @@ function ActivityRow(props: ActivityRowProps) {
           <span className="arow-sub">{props.sub}</span>
         </span>
         <span className="arow-end">
-          <span className="arow-amount privacy-sensitive">{props.amount}</span>
+          <span
+            className="arow-amount privacy-sensitive"
+            title={typeof props.amount === 'string' ? props.amount : undefined}
+          >
+            {props.amount}
+          </span>
           {props.fiat !== undefined && (
-            <span className="arow-fiat privacy-sensitive">{props.fiat}</span>
+            <span
+              className="arow-fiat privacy-sensitive"
+              title={typeof props.fiat === 'string' ? props.fiat : undefined}
+            >
+              {props.fiat}
+            </span>
           )}
         </span>
         {props.statusNode ??
