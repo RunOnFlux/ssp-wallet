@@ -947,6 +947,12 @@ export function useUtxoSendStrategy(): SendStrategyView {
     feeReady: manualFee || feeComputed,
     feeSymbol: blockchainConfig.symbol,
     feeFiat: toFiat(txFee),
+    feeRateDisplay:
+      feePerByte && feePerByte !== '---'
+        ? `${feePerByte} ${
+            blockchainConfig.scriptType === 'p2sh' ? 'sat/B' : 'sat/vB'
+          }`
+        : null,
     totalDisplay,
     isRBF: !!state.utxos?.length,
     approveActive: openConfirmTx,

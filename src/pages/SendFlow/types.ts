@@ -83,6 +83,12 @@ export interface SendStrategyView {
   feeReady: boolean;
   feeSymbol: string;
   feeFiat: string | null;
+  /**
+   * Short fee-RATE readout, e.g. "12 sat/vB" (UTXO) or "25 gwei" (EVM), shown
+   * next to the fee amount on the form so both are visible even on Automatic.
+   * null for chains without a market rate (Solana's flat schedule).
+   */
+  feeRateDisplay: string | null;
   /** Amount + fee total in native units for native-asset sends, else null. */
   totalDisplay: string | null;
   isRBF: boolean;

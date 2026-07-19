@@ -13,7 +13,16 @@
  * handshake for approval.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Form, Button, Input, Space, Popover, Select, theme } from 'antd';
+import {
+  Form,
+  Button,
+  Input,
+  Space,
+  Popover,
+  Select,
+  Segmented,
+  theme,
+} from 'antd';
 import { CircleHelp as CircleHelpIcon, Scan as ScanIcon } from 'lucide-react';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
@@ -221,6 +230,10 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
     if (!cr || !fi) return null;
     return formatFiatWithSymbol(numeric.multipliedBy(cr).multipliedBy(fi));
   };
+
+  // The currently-selected preset (for the compact fee readout on the form).
+  const activePreset =
+    strategy.feePresets.find((p) => p.key === strategy.selectedPreset) ?? null;
 
   const selectedTitleStep = strategy.approveActive ? 'approve' : step;
   const stepLabels: Record<SendStep, string> = {
@@ -461,6 +474,87 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
             {t('send:max')}: {strategy.amount.maxDisplay}
           </Button>
 
+          {/* Network fee selection — presets + optional custom inputs. Lives on
+              the compose page so the fee is chosen alongside the amount; the
+              clear/marginTop resets the float from the fiat/Max row above. */}
+          <div style={{ clear: 'both', marginTop: 34, textAlign: 'left' }}>
+            {/* Fee readout — a quiet caption so the fee stays SECONDARY to the
+                amount above it; the segmented toggle keeps the picker to one
+                compact row instead of large tiles. */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+                marginBottom: 8,
+              }}
+            >
+              <span style={{ fontSize: 13, color: token.colorTextSecondary }}>
+                {t('send:network_fee')}
+              </span>
+              {strategy.selectedPreset !== 'custom' && (
+                <span style={{ fontSize: 11, color: token.colorTextSecondary }}>
+                  {presetEta(strategy.selectedPreset)}
+                </span>
+              )}
+            </div>
+            <Segmented
+              block
+              value={strategy.selectedPreset}
+              onChange={(value) => strategy.selectPreset(value)}
+              options={strategy.feePresets.map((preset) => ({
+                label: presetLabel(preset.key),
+                value: preset.key,
+              }))}
+            />
+            {strategy.selectedPreset !== 'custom' && (
+              <div style={{ fontSize: 12, marginTop: 6, textAlign: 'left' }}>
+                {activePreset?.feeAmount != null ? (
+                  <>
+                    {/* Absolute fee (total for this tx) + its fiat + the rate. */}
+                    {new BigNumber(activePreset.feeAmount).toFixed()}{' '}
+                    {strategy.feeSymbol}
+                    {presetFiat(activePreset.feeAmount) ? (
+                      <span style={{ color: token.colorTextSecondary }}>
+                        {' '}
+                        ≈ {presetFiat(activePreset.feeAmount)}
+                      </span>
+                    ) : null}
+                    {strategy.feeRateDisplay ? (
+                      <span style={{ color: token.colorTextSecondary }}>
+                        {' '}
+                        · {strategy.feeRateDisplay}
+                      </span>
+                    ) : null}
+                  </>
+                ) : (
+                  // No amount yet → the absolute fee can't be computed; show the
+                  // rate alone so the user still sees what they'll pay per byte.
+                  <span style={{ color: token.colorTextSecondary }}>
+                    {strategy.feeRateDisplay ?? t('send:enter_amount_for_fee')}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Custom fee — the manual inputs, expanded when Custom is chosen.
+                Kept mounted so form values survive preset switches. */}
+            <div
+              style={{
+                display:
+                  strategy.selectedPreset === 'custom' ? 'block' : 'none',
+                textAlign: 'left',
+                border: `1px solid ${token.colorBorderSecondary}`,
+                borderRadius: 8,
+                padding: '12px 12px 0',
+                marginTop: 10,
+                marginBottom: 4,
+              }}
+            >
+              {strategy.customFeeContent}
+            </div>
+          </div>
+
           {strategy.message && (
             <Form.Item
               style={{ marginTop: '26px' }}
@@ -593,107 +687,6 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 </span>
               </div>
             ) : null}
-          </div>
-
-          {/* Fee presets */}
-          <div style={{ textAlign: 'left', marginBottom: 6 }}>
-            <span style={{ fontSize: 13 }}>{t('send:network_fee')}</span>
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                strategy.feePresets.length > 2 ? '1fr 1fr' : '1fr 1fr',
-              gap: 8,
-              marginBottom: 12,
-            }}
-          >
-            {strategy.feePresets.map((preset) => {
-              const selected = strategy.selectedPreset === preset.key;
-              return (
-                <div
-                  key={preset.key}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={selected}
-                  className="fee-preset"
-                  onClick={() => strategy.selectPreset(preset.key)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      strategy.selectPreset(preset.key);
-                    }
-                  }}
-                  style={{
-                    border: `2px solid ${
-                      selected ? token.colorPrimary : token.colorBorderSecondary
-                    }`,
-                    padding: '8px 10px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    background: selected
-                      ? token.colorPrimaryBg
-                      : token.colorBgContainer,
-                  }}
-                  data-testid={`fee-preset-${preset.key}`}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: 13,
-                      fontWeight: 600,
-                    }}
-                  >
-                    <span>{presetLabel(preset.key)}</span>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: token.colorTextSecondary,
-                    }}
-                  >
-                    {presetEta(preset.key)}
-                  </div>
-                  {preset.key !== 'custom' && (
-                    <div style={{ fontSize: 11, marginTop: 2 }}>
-                      {preset.feeAmount !== null ? (
-                        <>
-                          {new BigNumber(preset.feeAmount).toFixed()}{' '}
-                          {strategy.feeSymbol}
-                          {presetFiat(preset.feeAmount) ? (
-                            <span
-                              style={{
-                                color: token.colorTextSecondary,
-                                marginLeft: 4,
-                              }}
-                            >
-                              ≈ {presetFiat(preset.feeAmount)}
-                            </span>
-                          ) : null}
-                        </>
-                      ) : (
-                        '---'
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Custom fee — the legacy manual inputs, expanded on demand.
-              Kept mounted so form values survive preset switches. */}
-          <div
-            style={{
-              display: strategy.selectedPreset === 'custom' ? 'block' : 'none',
-              textAlign: 'left',
-              border: `1px solid ${token.colorBorderSecondary}`,
-              borderRadius: 8,
-              padding: '12px 12px 0',
-              marginBottom: 12,
-            }}
-          >
-            {strategy.customFeeContent}
           </div>
 
           {/* Fee + total summary */}

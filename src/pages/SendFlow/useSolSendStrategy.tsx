@@ -869,6 +869,8 @@ export function useSolSendStrategy(): SendStrategyView {
     feeReady: manualFee ? txFee !== '' : autoFee !== '0',
     feeSymbol: blockchainConfig.symbol,
     feeFiat: toFiat(txFee),
+    // Solana uses a flat, paymaster-reimbursed fee schedule — no market rate.
+    feeRateDisplay: null,
     totalDisplay,
     isRBF: false,
     approveActive: openConfirmTx,

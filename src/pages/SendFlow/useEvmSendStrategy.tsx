@@ -1654,6 +1654,14 @@ export function useEvmSendStrategy(): SendStrategyView {
     feeReady: txFee !== '---' && txFee !== '',
     feeSymbol: blockchainConfig.symbol,
     feeFiat: txFee !== '---' ? toFiat(txFee) : null,
+    feeRateDisplay: (() => {
+      // Effective gas price = base + priority (both in gwei). Shown so the
+      // user sees the rate, not just the total fee, even on Automatic.
+      const gwei = new BigNumber(baseGasPrice || '0').plus(
+        priorityGasPrice || '0',
+      );
+      return gwei.isFinite() && gwei.gt(0) ? `${gwei.toFixed()} gwei` : null;
+    })(),
     totalDisplay,
     isRBF: !!state.utxos?.length,
     approveActive: openConfirmTx,
