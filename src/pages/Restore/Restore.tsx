@@ -113,10 +113,13 @@ function Restore() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { isDark } = useThemeMode();
   const [isNarrowScreen, setIsNarrowScreen] = useState(window.innerWidth < 420);
-  const canvasWidth = isNarrowScreen ? 290 : 366;
-  const canvasHeight = isNarrowScreen ? 240 : 180;
+  // Sized to sit INSIDE the modal body (no negative margins) so the left
+  // column's row numbers are never clipped. Mirrors the Create flow.
+  const canvasWidth = isNarrowScreen ? 276 : 336;
+  const rowPitch = 30;
+  const canvasHeight = isNarrowScreen ? rowPitch * 8 + 6 : rowPitch * 6 + 6;
   const columns = isNarrowScreen ? 3 : 4;
-  const columnWidth = isNarrowScreen ? 95 : 90;
+  const columnWidth = isNarrowScreen ? 90 : 82;
   const browser = window.chrome || window.browser;
 
   useEffect(() => {
@@ -187,20 +190,20 @@ function Restore() {
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font =
-          '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
+          '9px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
         ctx.fillStyle = isDark ? '#fff' : '#000';
         new TextDecoder()
           .decode(mnemonic)
           .split(' ')
           .forEach((word, index) => {
             const x = (index % columns) * columnWidth + 5;
-            const y = Math.floor(index / columns) * 30 + 20;
+            const y = Math.floor(index / columns) * rowPitch + 18;
             ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
             ctx.font =
-              '14px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
-            ctx.fillText(mnemonicShow ? word : '*****', x + 20, y);
+              '13px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
+            ctx.fillText(mnemonicShow ? word : '*****', x + 18, y);
             ctx.font =
-              '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Reset font for the next number
+              '9px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Reset font for the next number
           });
       }
     }
@@ -588,106 +591,100 @@ function Restore() {
           isChangePassword ? t('cr:change_password') : t('cr:restore_wallet')
         }
         style={{ textAlign: 'center', top: 60 }}
+        classNames={{ body: 'backup-seed-body' }}
       >
         {!isChangePassword && <CreationSteps step={2} import={true} />}
-        <p>{t('cr:wallet_seed_info')}</p>
-        <p>{t('cr:wallet_seed_info_2')}</p>
-        <p>{t('cr:keep_seed_safe')}</p>
-        <p>
-          <b>{t('cr:seed_loose_info')}</b>
-        </p>
+        <div className="backup-seed-callout">
+          <CircleAlertIcon className="backup-seed-callout-icon" />
+          <div className="backup-seed-callout-text">
+            <b>{t('cr:seed_loose_info')}</b> {t('cr:wallet_seed_info')}{' '}
+            {t('cr:wallet_seed_info_2')} {t('cr:keep_seed_safe')}
+          </div>
+        </div>
         <Divider />
         <canvas
           ref={canvasRef}
           width={canvasWidth}
           height={canvasHeight}
-          style={{
-            border: `0.5px solid ${isDark ? '#fff' : '#000'}`,
-            marginLeft: '-15px',
-            marginRight: '-15px',
-          }}
+          style={{ display: 'block', margin: '2px auto 0', maxWidth: '100%' }}
         />
-        {mnemonicShow && (
-          <div className="popconfirm-button">
+        <div className="backup-seed-actions">
+          {mnemonicShow ? (
             <Button
               type="dashed"
               icon={<EyeIcon />}
+              block
               onClick={() => {
                 setMnemonicShow(!mnemonicShow);
                 setWSPwasShown(true);
               }}
-              style={{ margin: 5 }}
             >
-              {t('cr:hide_mnemonic')} {t('cr:wallet_seed_phrase')}
+              {t('cr:hide')}
             </Button>
-          </div>
-        )}
-        {!mnemonicShow && (
+          ) : (
+            <Popconfirm
+              title={t('cr:show_wallet_seed', {
+                sensitive_data: t('cr:wallet_seed_phrase'),
+              })}
+              description={
+                <>
+                  {t('cr:show_sensitive_data', {
+                    sensitive_data: t('cr:wallet_seed_phrase'),
+                  })}
+                </>
+              }
+              classNames={{ container: 'popconfirm-container' }}
+              okText={t('common:confirm')}
+              cancelText={t('common:cancel')}
+              onConfirm={() => {
+                setMnemonicShow(!mnemonicShow);
+                setWSPwasShown(true);
+              }}
+              icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
+            >
+              <Button type="dashed" icon={<EyeOffIcon />} block>
+                {t('cr:show')}
+              </Button>
+            </Popconfirm>
+          )}
           <Popconfirm
-            title={t('cr:show_wallet_seed', {
-              sensitive_data: t('cr:wallet_seed_phrase'),
-            })}
+            title={t('cr:copy_wallet_seed')}
             description={
-              <>
-                {t('cr:show_sensitive_data', {
-                  sensitive_data: t('cr:wallet_seed_phrase'),
-                })}
-              </>
+              <Space
+                direction="vertical"
+                size={'middle'}
+                style={{ marginTop: 12, marginBottom: 12 }}
+              >
+                <span>
+                  {t('cr:copy_sensitive_data_desc', {
+                    sensitive_data: t('cr:wallet_seed_phrase'),
+                  })}
+                </span>
+                <span>{t('cr:copy_anyone_can_read')}</span>
+              </Space>
             }
             classNames={{ container: 'popconfirm-container' }}
             okText={t('common:confirm')}
             cancelText={t('common:cancel')}
             onConfirm={() => {
-              setMnemonicShow(!mnemonicShow);
-              setWSPwasShown(true);
+              setSeedPhraseCopyingVisible(true);
+              setWpCopied(true);
             }}
             icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
           >
-            <div className="popconfirm-button">
-              <Button type="dashed" icon={<EyeOffIcon />} style={{ margin: 5 }}>
-                {t('cr:show_mnemonic')} {t('cr:wallet_seed_phrase')}
-              </Button>
-            </div>
-          </Popconfirm>
-        )}
-        <Popconfirm
-          title={t('cr:copy_wallet_seed')}
-          description={
-            <Space
-              direction="vertical"
-              size={'middle'}
-              style={{ marginTop: 12, marginBottom: 12 }}
-            >
-              <span>
-                {t('cr:copy_sensitive_data_desc', {
-                  sensitive_data: t('cr:wallet_seed_phrase'),
-                })}
-              </span>
-              <span>{t('cr:copy_anyone_can_read')}</span>
-            </Space>
-          }
-          classNames={{ container: 'popconfirm-container' }}
-          okText={t('common:confirm')}
-          cancelText={t('common:cancel')}
-          onConfirm={() => {
-            setSeedPhraseCopyingVisible(true);
-            setWpCopied(true);
-          }}
-          icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
-        >
-          <div className="popconfirm-button">
-            <Button type="dashed" icon={<CopyIcon />} style={{ margin: 5 }}>
-              {t('cr:copy_wallet_seed')}
+            <Button type="dashed" icon={<CopyIcon />} block>
+              {t('cr:copy_short')}
             </Button>
-          </div>
-        </Popconfirm>
+          </Popconfirm>
+        </div>
         <Divider />
-        <br />
-        <Checkbox disabled={!wspWasShown && !wpCopied} onChange={onChangeWSP}>
+        <Checkbox
+          className="backup-seed-check"
+          disabled={!wspWasShown && !wpCopied}
+          onChange={onChangeWSP}
+        >
           {t('cr:phrase_backed_up')}
         </Checkbox>
-        <br />
-        <br />
       </Modal>
       <Modal
         title={t('cr:copy_wallet_seed')}

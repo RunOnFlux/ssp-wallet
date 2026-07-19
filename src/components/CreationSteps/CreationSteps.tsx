@@ -3,20 +3,21 @@ import { useTranslation } from 'react-i18next';
 import './CreationSteps.css';
 
 /**
- * Onboarding wizard chrome. Goal-gradient (Phase 4): the progress readout
- * NEVER reads 0% — the first step already shows 22% so momentum is
- * visible from the start. The percent is presentational only; `step` still
- * drives which antd Steps node is active. A "Make it yours" personalization
- * node sits between Backup and Sync.
+ * Onboarding wizard chrome. The progress readout uses clean, 0/5-ending values
+ * (25 / 50 / 75 / 90) so it always reads nicely. Only steps 1–4 are ever
+ * rendered — "Get Started" is the pre-wizard Welcome screen — so the readout
+ * runs 25 → 50 → 75 → 90; the final Sync step holds at 90% (100% is reserved
+ * for actual completion, not merely landing on the last step). The percent is
+ * presentational only; `step` still drives which antd Steps node is active. A
+ * "Make it yours" personalization node sits between Backup and Sync.
  */
 
-// Non-zero at every stage — the wizard should always feel underway, never at 0.
-// Goal-gradient floor: the very first step already reads 22%.
+// Clean 0/5-ending readout; never 0% in practice (step 0 is never rendered).
 const STEP_PERCENT: Record<number, number> = {
-  0: 22,
-  1: 40,
-  2: 58,
-  3: 76,
+  0: 25,
+  1: 25,
+  2: 50,
+  3: 75,
   4: 90,
 };
 
@@ -69,7 +70,7 @@ function CreationSteps(props: { step: number; import: boolean }) {
       ),
     },
   ];
-  const percent = STEP_PERCENT[props.step] ?? 22;
+  const percent = STEP_PERCENT[props.step] ?? 25;
   return (
     <>
       <div className="creation-progress" aria-hidden="true">
