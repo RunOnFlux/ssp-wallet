@@ -91,6 +91,8 @@ export interface SendStrategyView {
   feeRateDisplay: string | null;
   /** Amount + fee total in native units for native-asset sends, else null. */
   totalDisplay: string | null;
+  /** Fiat value of totalDisplay (so Review shows the total in fiat too). */
+  totalFiat: string | null;
   isRBF: boolean;
 
   // ---- approve step ----

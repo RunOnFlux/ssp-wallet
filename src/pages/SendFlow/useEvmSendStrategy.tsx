@@ -1663,6 +1663,7 @@ export function useEvmSendStrategy(): SendStrategyView {
       return gwei.isFinite() && gwei.gt(0) ? `${gwei.toFixed()} gwei` : null;
     })(),
     totalDisplay,
+    totalFiat: toFiat(totalDisplay),
     isRBF: !!state.utxos?.length,
     approveActive: openConfirmTx,
     modals,

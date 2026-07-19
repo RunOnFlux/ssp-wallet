@@ -778,7 +778,8 @@ export function useSolSendStrategy(): SendStrategyView {
   // Legacy manual fee input — total fee in SOL with the schedule floor
   // enforced at submit, exactly as before.
   const customFeeContent = (
-    <Form.Item label={t('send:max_fee')} name="fee">
+    // No label — the section heading already reads "Max Network Fee".
+    <Form.Item name="fee">
       <Input
         size="large"
         value={txFee}
@@ -872,6 +873,7 @@ export function useSolSendStrategy(): SendStrategyView {
     // Solana uses a flat, paymaster-reimbursed fee schedule — no market rate.
     feeRateDisplay: null,
     totalDisplay,
+    totalFiat: toFiat(totalDisplay),
     isRBF: false,
     approveActive: openConfirmTx,
     modals,

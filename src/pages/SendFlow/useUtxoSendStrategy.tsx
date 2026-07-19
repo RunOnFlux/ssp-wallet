@@ -837,8 +837,9 @@ export function useUtxoSendStrategy(): SendStrategyView {
   // 'fee' form value survives.
   const customFeeContent = (
     <>
+      {/* No "Fee" label — it sits right under the "Network Fee" heading + the
+          Automatic/Custom toggle, so the label is redundant. */}
       <Form.Item
-        label={t('send:fee')}
         name="fee"
         rules={[{ required: true, message: t('send:input_fee') }]}
       >
@@ -954,6 +955,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
           }`
         : null,
     totalDisplay,
+    totalFiat: toFiat(totalDisplay),
     isRBF: !!state.utxos?.length,
     approveActive: openConfirmTx,
     modals,

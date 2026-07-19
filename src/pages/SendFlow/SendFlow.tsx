@@ -329,6 +329,9 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
       <Form
         name="sendForm"
         form={strategy.form}
+        // Every field here is effectively required; the red asterisks just add
+        // noise, so hide them (validation still runs).
+        requiredMark={false}
         onFinish={(values) => strategy.onFinish(values)}
         onFinishFailed={(info) => {
           // Some fields (fee, gas components) live behind the Custom preset
@@ -474,10 +477,38 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
             {t('send:max')}: {strategy.amount.maxDisplay}
           </Button>
 
-          {/* Network fee selection — presets + optional custom inputs. Lives on
-              the compose page so the fee is chosen alongside the amount; the
-              clear/marginTop resets the float from the fiat/Max row above. */}
-          <div style={{ clear: 'both', marginTop: 34, textAlign: 'left' }}>
+          {strategy.message && (
+            <Form.Item
+              // clear:both resets the floated fiat/Max row above this block.
+              style={{ marginTop: '26px', clear: 'both' }}
+              label={t('send:message')}
+              name="message"
+              rules={[{ required: false, message: t('send:include_message') }]}
+            >
+              <Input
+                size="large"
+                value={strategy.message.value}
+                placeholder={t('send:payment_note')}
+                onChange={(e) => strategy.message?.set(e.target.value)}
+              />
+            </Form.Item>
+          )}
+
+          <div style={{ marginTop: strategy.message ? 0 : 30, clear: 'both' }}>
+            {strategy.composeExtra}
+          </div>
+
+          {/* Network fee — LAST (after the note) so the amount stays the focus.
+              Normal single field-gap above it: 0 when a Message field precedes it
+              (that Form.Item already carries its own bottom margin), else 24 (the
+              composeExtra block above has none). */}
+          <div
+            style={{
+              clear: 'both',
+              marginTop: strategy.message ? 0 : 24,
+              textAlign: 'left',
+            }}
+          >
             {/* Fee readout — a quiet caption so the fee stays SECONDARY to the
                 amount above it; the segmented toggle keeps the picker to one
                 compact row instead of large tiles. */}
@@ -490,7 +521,9 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
               }}
             >
               <span style={{ fontSize: 13, color: token.colorTextSecondary }}>
-                {t('send:network_fee')}
+                {chainType === 'sol'
+                  ? t('send:network_fee_max')
+                  : t('send:network_fee')}
               </span>
               {strategy.selectedPreset !== 'custom' && (
                 <span style={{ fontSize: 11, color: token.colorTextSecondary }}>
@@ -537,42 +570,29 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
               </div>
             )}
 
-            {/* Custom fee — the manual inputs, expanded when Custom is chosen.
-                Kept mounted so form values survive preset switches. */}
+            {/* Custom fee — expanded when Custom is chosen. EVM has several gas
+                fields, so it keeps a bordered box that visually groups them as
+                one Network-Fee unit; UTXO/SOL have a single field and stay
+                unboxed (lighter). Kept mounted so form values survive preset
+                switches. */}
             <div
               style={{
                 display:
                   strategy.selectedPreset === 'custom' ? 'block' : 'none',
                 textAlign: 'left',
-                border: `1px solid ${token.colorBorderSecondary}`,
-                borderRadius: 8,
-                padding: '12px 12px 0',
-                marginTop: 10,
+                marginTop: 8,
                 marginBottom: 4,
+                ...(chainType === 'evm'
+                  ? {
+                      border: `1px solid ${token.colorBorderSecondary}`,
+                      borderRadius: 8,
+                      padding: '12px 12px 0',
+                    }
+                  : {}),
               }}
             >
               {strategy.customFeeContent}
             </div>
-          </div>
-
-          {strategy.message && (
-            <Form.Item
-              style={{ marginTop: '26px' }}
-              label={t('send:message')}
-              name="message"
-              rules={[{ required: false, message: t('send:include_message') }]}
-            >
-              <Input
-                size="large"
-                value={strategy.message.value}
-                placeholder={t('send:payment_note')}
-                onChange={(e) => strategy.message?.set(e.target.value)}
-              />
-            </Form.Item>
-          )}
-
-          <div style={{ marginTop: strategy.message ? 0 : 30 }}>
-            {strategy.composeExtra}
           </div>
 
           <Form.Item style={{ marginTop: 40 }}>
@@ -699,7 +719,9 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
             }}
           >
             <span style={{ color: token.colorTextSecondary }}>
-              {t('send:network_fee')}
+              {chainType === 'sol'
+                ? t('send:network_fee_max')
+                : t('send:network_fee')}
             </span>
             <span>
               {strategy.feeDisplay} {strategy.feeSymbol}
@@ -730,6 +752,18 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
               <span>{t('send:total')}</span>
               <span>
                 {strategy.totalDisplay} {strategy.feeSymbol}
+                {strategy.totalFiat ? (
+                  <span
+                    style={{
+                      color: token.colorTextSecondary,
+                      marginLeft: 6,
+                      fontSize: 12,
+                      fontWeight: 400,
+                    }}
+                  >
+                    ≈ {strategy.totalFiat}
+                  </span>
+                ) : null}
               </span>
             </div>
           )}

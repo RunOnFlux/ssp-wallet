@@ -83,6 +83,7 @@
   "review_to": "To",
   "review_amount": "Amount",
   "network_fee": "Network Fee",
+  "network_fee_max": "Max Network Fee",
   "enter_amount_for_fee": "Enter an amount to see the fee",
   "total": "Total",
   "fee_preset_slow": "Slow",
