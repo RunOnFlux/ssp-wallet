@@ -333,17 +333,17 @@ svg.lucide-spin {
    One shared rhythm: logo, 24px title, quiet subtitle, centered action
    column on the 4-pt scale (padding-bottom clears the PoweredByFlux bar). */
 .auth-page {
-  /* Fill the viewport and center the content column so the screen reads full
-     and balanced (v1's rhythm) instead of clustered at the top with dead space
-     below. `safe` keeps the top reachable if the content ever exceeds the
-     height (tiny popups); the bottom padding lifts the group just above true
-     centre, clear of the fixed PoweredByFlux bar. */
+  /* Top-anchored column; the logo's margin-top (below) drops the whole group to
+     the UPPER THIRD (v1/master rhythm) — a login reads best top-biased, not
+     vertically dead-centred (which sat too low in a tall panel). The offset
+     lives on the logo margin, NOT padding here: .auth-page also carries
+     .page-frame-onboarding, whose side-gutter `padding:` shorthand (higher
+     specificity in the side panel) would reset any padding-bottom to 0. */
   display: flex;
   flex-direction: column;
   min-height: 100%;
   box-sizing: border-box;
-  justify-content: safe center;
-  padding-bottom: 56px;
+  justify-content: flex-start;
 }
 
 .auth-logo {
@@ -359,6 +359,13 @@ svg.lucide-spin {
    the auth screens render an <Image> inside .auth-page, so this is safe. */
 .auth-page .ant-image {
   align-self: center;
+  /* Drop the top-anchored column to the upper third: viewport-proportional so
+     the content centres around ~38% of the panel height regardless of size
+     (the -180px ≈ half the content block, so `38vh - half` lands the block's
+     centre at 38%). Margin (not padding) to dodge the frame shorthand above.
+     Clamped so it never goes negative on a short popup or runs away on a very
+     tall panel. */
+  margin-top: clamp(24px, calc(38vh - 180px), 42vh);
 }
 
 .auth-loading {
