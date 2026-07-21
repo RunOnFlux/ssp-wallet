@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
 import {
-  Modal,
+  App,
   QRCode,
   Button,
   Input,
@@ -57,7 +57,6 @@ import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import { sspConfig } from '@storage/ssp';
 
 const { TextArea } = Input;
-const { confirm } = Modal;
 
 const xpubRegex = /^([a-zA-Z]{2}ub[1-9A-HJ-NP-Za-km-z]{79,140})$/; // xpub start is the most usual, but can also be Ltub
 
@@ -157,6 +156,7 @@ function Key(props: {
 }) {
   const { t } = useTranslation(['home', 'common']);
   const sspLogo = useSspLogo();
+  const { modal } = App.useApp();
   const { token } = theme.useToken();
   const { synchronised, onSyncViewChange, importedWallet = false } = props;
   const [isModalKeyOpen, setIsModalKeyOpen] = useState(false);
@@ -974,7 +974,7 @@ function Key(props: {
   };
 
   const showConfirmCancelModalKey = () => {
-    confirm({
+    modal.confirm({
       title: isIdentityChain
         ? t('home:key.cancel_sync_q')
         : t('home:key.cancel_sync_q_chain', { chain: blockchainConfig.name }),
