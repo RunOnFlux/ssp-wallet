@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Card, Typography, Space, Row, Col } from 'antd';
 import {
-  PlayCircleOutlined,
-  CloseOutlined,
-  GlobalOutlined,
-  BookOutlined,
-  CustomerServiceOutlined,
-  MessageOutlined,
-} from '@ant-design/icons';
+  Book as BookIcon,
+  CirclePlay as CirclePlayIcon,
+  Globe as GlobeIcon,
+  Headset as HeadsetIcon,
+  MessageCircle as MessageCircleIcon,
+  X as XIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTutorial } from './TutorialProvider';
 import { sspConfig, updateTutorialConfig } from '../../storage/ssp';
@@ -138,7 +138,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
             extra={
               <Button
                 type="text"
-                icon={<CloseOutlined />}
+                icon={<XIcon />}
                 onClick={handleDismissWelcome}
                 size="small"
               />
@@ -146,7 +146,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
           >
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <div>
-                <PlayCircleOutlined
+                <CirclePlayIcon
                   style={{
                     fontSize: '48px',
                     color: '#fbbf24',
@@ -167,7 +167,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                   size="large"
                   onClick={() => handleStartTutorial('onboarding')}
                   style={{ width: '100%' }}
-                  icon={<PlayCircleOutlined />}
+                  icon={<CirclePlayIcon />}
                 >
                   {t('home:tutorial.start_wallet_tour')}
                 </Button>
@@ -178,7 +178,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                 >
                   <Col span={12}>
                     <Button
-                      icon={<GlobalOutlined />}
+                      icon={<GlobeIcon />}
                       onClick={() => openExternalLink('https://sspwallet.io')}
                       className="tutorial-intro-button"
                     >
@@ -187,7 +187,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                   </Col>
                   <Col span={12}>
                     <Button
-                      icon={<BookOutlined />}
+                      icon={<BookIcon />}
                       onClick={() =>
                         openExternalLink('https://sspwallet.io/guide')
                       }
@@ -198,7 +198,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                   </Col>
                   <Col span={12}>
                     <Button
-                      icon={<CustomerServiceOutlined />}
+                      icon={<HeadsetIcon />}
                       onClick={() =>
                         openExternalLink('https://sspwallet.io/support')
                       }
@@ -209,7 +209,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                   </Col>
                   <Col span={12}>
                     <Button
-                      icon={<MessageOutlined />}
+                      icon={<MessageCircleIcon />}
                       onClick={() =>
                         openExternalLink('https://sspwallet.io/contact')
                       }
@@ -236,7 +236,7 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
                     >
                       {t('home:tutorial.privacy_policy')}
                     </Button>
-                    <span style={{ color: '#ccc' }}>|</span>
+                    <span style={{ opacity: 0.4 }}>|</span>
                     <Button
                       type="link"
                       size="small"

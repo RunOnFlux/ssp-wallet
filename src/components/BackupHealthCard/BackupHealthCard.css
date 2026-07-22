@@ -1,0 +1,99 @@
+/*
+ * Backup checkup card — periodic routine reminder. Warm warning tokens
+ * (amber), never alarm red; it reads as guidance, not error. Theme-aware via
+ * [data-theme].
+ */
+.backup-health-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Symmetric breathing room — the 4px bottom gap read glued to the action
+     tiles directly below; match the top so the card sits as its own block. */
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.12);
+  text-align: left;
+}
+
+:root[data-theme='dark'] .backup-health-card {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.backup-health-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
+  font-size: 15px;
+}
+
+:root[data-theme='dark'] .backup-health-icon {
+  color: #fcd34d;
+}
+
+.backup-health-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  /* Clear separation before the Verify/dismiss control column — the 12px flex
+     gap alone read glued at narrow widths where the body text wraps tight.
+     12px padding + 12px gap = a comfortable ~24px gutter, matching the spacing
+     of the action-button row below the card. */
+  padding-right: 12px;
+}
+
+.backup-health-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.backup-health-body {
+  font-size: 11px;
+  line-height: 1.3;
+  opacity: 0.75;
+  margin-top: 1px;
+}
+
+.backup-health-action {
+  flex-shrink: 0;
+}
+
+/* "Later" dismiss — quiet icon button, snoozes the checkup for one cycle */
+.backup-health-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.backup-health-dismiss:hover {
+  opacity: 0.85;
+}
+
+.backup-health-dismiss:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 1px;
+}
+
+.backup-health-dismiss svg {
+  width: 14px;
+  height: 14px;
+}

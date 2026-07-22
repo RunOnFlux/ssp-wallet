@@ -1,0 +1,162 @@
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* Chrome sits above page content but BELOW every antd popup layer
+     (zIndexPopupBase = 1000): modals/drawers/popconfirms must never render
+     underneath the tab bar. */
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  height: 44px;
+  border-top: 1px solid #e7e5e4;
+  background: #fafaf9;
+}
+
+:root[data-theme='dark'] .tab-bar {
+  border-top-color: #272524;
+  background: #0c0a09;
+}
+
+.tab-bar-item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 2px;
+  color: inherit;
+  opacity: 0.65;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
+}
+
+.tab-bar-item:hover {
+  opacity: 0.85;
+}
+
+.tab-bar-item:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: -2px; /* keep the ring inside the fixed bar */
+}
+
+.tab-bar-item-active {
+  opacity: 1;
+  color: #f59e0b;
+}
+
+.tab-bar-icon {
+  font-size: 20px;
+  line-height: 1;
+  transition: font-size 0.15s ease;
+}
+
+.tab-bar-item-active .tab-bar-icon {
+  font-size: 22px; /* slightly larger active icon — labels live in tooltips */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-bar-item,
+  .tab-bar-icon {
+    transition: none;
+  }
+}
+
+/* Compact popup bar is icons-only; the label stays in the DOM for the
+   side-panel rail (and mirrors the aria-label/tooltip). */
+.tab-bar-label {
+  display: none;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Rail-only footer block (version + Powered by Flux) — hidden in the popup's
+   bottom bar and the <500px popup-layout fallback. */
+.tab-bar-footer {
+  display: none;
+}
+
+/* ---- Side-panel: vertical left rail (vertical space isn't scarce here —
+   labels stay visible). Only at ≥500px: a phone-width panel keeps the popup's
+   bottom icon bar. ---- */
+@media (min-width: 500px) {
+  body.extension-sidepanel .tab-bar {
+    position: sticky;
+    top: 0;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 4px;
+    box-sizing: border-box; /* padding inside 100dvh — no 16px page overflow */
+    width: 128px;
+    height: 100vh;
+    height: 100dvh;
+    padding-top: 16px;
+    border-top: none;
+    border-right: 1px solid #e7e5e4;
+    order: 0;
+  }
+
+  :root[data-theme='dark'] body.extension-sidepanel .tab-bar {
+    border-right-color: #272524;
+  }
+
+  body.extension-sidepanel .tab-bar-item {
+    flex: 0 0 auto;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 8px;
+    margin: 0 8px;
+  }
+
+  body.extension-sidepanel .tab-bar-item-active {
+    background: rgba(245, 158, 11, 0.12);
+  }
+
+  body.extension-sidepanel .tab-bar-item-active .tab-bar-icon {
+    font-size: 20px; /* rail rows keep uniform icon size — label carries state */
+  }
+
+  body.extension-sidepanel .tab-bar-label {
+    display: block;
+    font-size: 14px;
+  }
+
+  /* Footer pinned to the rail bottom: version caption FIRST, Powered by
+     Flux beneath it. Same behaviors as everywhere else (logo click opens
+     runonflux.com, 5× version click opens the security test). */
+  body.extension-sidepanel .tab-bar-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: auto;
+    padding: 14px 8px 16px;
+  }
+
+  body.extension-sidepanel .powered-by-flux-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+  }
+
+  body.extension-sidepanel .powered-by-flux-rail-version {
+    font-size: 10px;
+    line-height: 1;
+    opacity: 0.65;
+    cursor: pointer;
+    user-select: none;
+  }
+}

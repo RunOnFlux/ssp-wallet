@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../lib/toast';
 import axios from 'axios';
 import {
-  Divider,
   InputNumber,
   Row,
   Col,
@@ -16,19 +15,20 @@ import {
   Tooltip,
 } from 'antd';
 import {
-  CaretDownOutlined,
-  LoadingOutlined,
-  PlusCircleOutlined,
-  MinusCircleOutlined,
-  SwapOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
-import Navbar from '../../components/Navbar/Navbar.tsx';
+  ArrowDownUp as ArrowDownUpIcon,
+  ChevronDown as ChevronDownIcon,
+  CircleMinus as CircleMinusIcon,
+  CirclePlus as CirclePlusIcon,
+  History as HistoryIcon,
+  Info as InfoIcon,
+  LoaderCircle as LoaderCircleIcon,
+} from 'lucide-react';
+import PageHeader from '../../components/PageHeader/PageHeader.tsx';
+import SwapHistory from '../../components/SwapHistory/SwapHistory.tsx';
 import { useTranslation } from 'react-i18next';
 import { blockchains, Token } from '@storage/blockchains';
 import secureLocalStorage from 'react-secure-storage';
 
-import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
 import './Swap.css';
 import { useAppSelector, useAppDispatch } from '../../hooks.ts';
@@ -49,6 +49,7 @@ import {
 } from '../../types';
 import AddressBox from './AddressBox.tsx';
 import { getDisplayName } from '../../storage/walletNames';
+import { truncateAddress } from '../../lib/addressDisplay';
 import { NoticeType } from 'antd/es/message/interface';
 import BigNumber from 'bignumber.js';
 import {
@@ -162,11 +163,9 @@ function Swap() {
     (state) => state.fiatCryptoRates,
   );
 
-  const refresh = () => {
-    console.log(
-      'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
-    );
-  };
+  // Swap history — re-homed from the deleted Navbar burger to a first-class
+  // header action (the only load-bearing item the burger offered on /swap).
+  const [openSwapHistory, setOpenSwapHistory] = useState(false);
 
   const displayMessage = (type: NoticeType, content: string) => {
     void toast.open({
@@ -904,16 +903,22 @@ function Swap() {
   };
 
   return (
-    <>
+    <div className="flow-page">
       {loadingSwap && <Spin size="large" fullscreen />}
-      <Navbar
-        refresh={refresh}
-        hasRefresh={false}
-        allowChainSwitch={false}
-        hasSwapHistory={true}
-        header={t('home:swap.swap_crypto')}
+      <PageHeader
+        title={t('home:swap.swap_crypto')}
+        right={
+          <button
+            type="button"
+            className="page-header-action"
+            onClick={() => setOpenSwapHistory(true)}
+            aria-label={t('home:navbar.swap_history')}
+            title={t('home:navbar.swap_history')}
+          >
+            <HistoryIcon />
+          </button>
+        }
       />
-      <Divider />
       <div className="swap-area">
         <div className="swap-box">
           <Row gutter={[16, 16]} className="swap-box-row no-border-bottom">
@@ -975,7 +980,7 @@ function Swap() {
                   {blockchains[sellAsset.split('_')[0]].tokens?.find(
                     (token) => token.symbol === sellAsset.split('_')[1],
                   )?.symbol ?? blockchains[sellAsset.split('_')[0]]?.symbol}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </div>
               </Button>
             </Col>
@@ -1008,7 +1013,7 @@ function Swap() {
                   }
                   placement="bottomLeft"
                 >
-                  <InfoCircleOutlined
+                  <InfoIcon
                     style={{
                       color: amountExceedsBalance ? '#ef4444' : 'inherit',
                       cursor: 'help',
@@ -1054,24 +1059,17 @@ function Swap() {
                     sellAssetAddress,
                   )}
                   :{' '}
-                  {userAddresses[sellAsset.split('_')[0]][
-                    sellAssetAddress
-                  ].substring(0, 8)}
-                  ...
-                  {userAddresses[sellAsset.split('_')[0]][
-                    sellAssetAddress
-                  ].substring(
-                    userAddresses[sellAsset.split('_')[0]][sellAssetAddress]
-                      .length - 6,
+                  {truncateAddress(
+                    userAddresses[sellAsset.split('_')[0]][sellAssetAddress],
                   )}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </Button>
               ) : (
                 <Button
                   size="small"
                   type="text"
                   className="swap-box-row-sub-selection"
-                  style={{ color: 'red' }}
+                  style={{ color: '#ef4444' }}
                   disabled={true}
                 >
                   {t('home:swap.chain_sync_required')}
@@ -1086,10 +1084,10 @@ function Swap() {
               <div className="swap-switch-container">
                 <Button
                   className="swap-switch-button"
+                  icon={<ArrowDownUpIcon />}
+                  aria-label={t('home:swap.swap_crypto')}
                   onClick={() => changeDirection()}
-                >
-                  <SwapOutlined rotate={90} />
-                </Button>
+                />
               </div>
               {selectedExchange.exchangeId?.slice(-3) !== 'fix' ? (
                 <Popover
@@ -1102,7 +1100,10 @@ function Swap() {
                 >
                   {t('home:swap.you_get')} ~ &nbsp;
                   {loading ? (
-                    <Spin indicator={<LoadingOutlined spin />} size="small" />
+                    <Spin
+                      indicator={<LoaderCircleIcon className="lucide-spin" />}
+                      size="small"
+                    />
                   ) : (
                     ''
                   )}
@@ -1111,7 +1112,10 @@ function Swap() {
                 <>
                   {t('home:swap.you_get')} &nbsp;
                   {loading ? (
-                    <Spin indicator={<LoadingOutlined spin />} size="small" />
+                    <Spin
+                      indicator={<LoaderCircleIcon className="lucide-spin" />}
+                      size="small"
+                    />
                   ) : (
                     ''
                   )}
@@ -1173,7 +1177,7 @@ function Swap() {
                   {blockchains[buyAsset.split('_')[0]].tokens?.find(
                     (token) => token.symbol === buyAsset.split('_')[1],
                   )?.symbol ?? blockchains[buyAsset.split('_')[0]]?.symbol}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </div>
               </Button>
             </Col>
@@ -1213,24 +1217,17 @@ function Swap() {
                     buyAssetAddress,
                   )}
                   :{' '}
-                  {userAddresses[buyAsset.split('_')[0]][
-                    buyAssetAddress
-                  ].substring(0, 8)}
-                  ...
-                  {userAddresses[buyAsset.split('_')[0]][
-                    buyAssetAddress
-                  ].substring(
-                    userAddresses[buyAsset.split('_')[0]][buyAssetAddress]
-                      .length - 6,
+                  {truncateAddress(
+                    userAddresses[buyAsset.split('_')[0]][buyAssetAddress],
                   )}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </Button>
               ) : (
                 <Button
                   size="small"
                   type="text"
                   className="swap-box-row-sub-selection"
-                  style={{ color: 'red' }}
+                  style={{ color: '#ef4444' }}
                   disabled={true}
                 >
                   {t('home:swap.chain_sync_required')}
@@ -1271,7 +1268,7 @@ function Swap() {
                       ? ` - ${t('home:swap.best_rate')}`
                       : ` - ${t('home:swap.user_choice')}`
                     : ''}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </Button>
               </Col>
             </Row>
@@ -1280,21 +1277,16 @@ function Swap() {
         <div className="rate-value">
           {rate > 0 && loading === false ? (
             <>
-              {showAdvancedOptions ? (
-                <>
-                  <MinusCircleOutlined
-                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                  />
-                  &nbsp;
-                </>
-              ) : (
-                <>
-                  <PlusCircleOutlined
-                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                  />
-                  &nbsp;
-                </>
-              )}
+              <button
+                type="button"
+                className="swap-advanced-toggle"
+                aria-label={t('home:swap.advanced_options')}
+                aria-expanded={showAdvancedOptions}
+                onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+              >
+                {showAdvancedOptions ? <CircleMinusIcon /> : <CirclePlusIcon />}
+              </button>
+              &nbsp;
               <Popover
                 content={
                   selectedExchange.exchangeId?.slice(-3) === 'fix'
@@ -1613,9 +1605,9 @@ function Swap() {
           </Space>
         </Space>
       </Modal>
+      <SwapHistory open={openSwapHistory} openAction={setOpenSwapHistory} />
       <SspConnect />
-      <PoweredByFlux />
-    </>
+    </div>
   );
 }
 

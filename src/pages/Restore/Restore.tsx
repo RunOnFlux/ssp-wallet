@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../lib/toast';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import {
   Input,
   Button,
@@ -18,14 +18,12 @@ import { useTranslation } from 'react-i18next';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 
 import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-  LockOutlined,
-  ExclamationCircleFilled,
-  CopyOutlined,
-  EyeInvisibleFilled,
-  EyeFilled,
-} from '@ant-design/icons';
+  CircleAlert as CircleAlertIcon,
+  Copy as CopyIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+  Lock as LockIcon,
+} from 'lucide-react';
 import secureLocalStorage from 'react-secure-storage';
 
 import { useAppDispatch } from '../../hooks';
@@ -57,6 +55,17 @@ import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import CreationSteps from '../../components/CreationSteps/CreationSteps.tsx';
 import Headerbar from '../../components/Headerbar/Headerbar.tsx';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter/PasswordStrengthMeter.tsx';
+import OnboardingPersonalize from '../../components/OnboardingPersonalize/OnboardingPersonalize.tsx';
+import PillarCelebration from '../../components/PillarCelebration/PillarCelebration.tsx';
+import {
+  setWalletMeta,
+  setBackupVerified,
+  markBackupVerifyNow,
+} from '../../storage/walletMeta';
+import { generateDefaultWalletName } from '../../storage/walletNames';
+
+// The wallet restored by onboarding is always index 0-0.
+const ONBOARDING_WALLET_ID = '0-0';
 
 interface passwordForm {
   mnemonic: string;
@@ -75,7 +84,16 @@ function Restore() {
   const blockchainConfig = blockchains[identityChain];
   const { wallets } = useAppSelector((state) => state[identityChain]);
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
+  // Menu → Security → Change password enters this page with router state so
+  // it can present itself in change-password clothing (title, no onboarding
+  // stepper, "Change Password" submit) while the underlying restore
+  // mechanics stay byte-identical. Router state does not survive a popup
+  // close mid-flow — the page then falls back to the standard Import labels.
+  const isChangePassword = Boolean(
+    (location.state as { changePassword?: boolean } | null)?.changePassword,
+  );
   // use secure local storage for storing mnemonic 'walletSeed', 'xpriv-48-slip-0-0-coin', 'xpub-48-slip-0-0-coin' and '2-xpub-48-slip-0-0-coin' (2- as for second key) of together with encryption of browser-passworder
   // use localforage to store addresses, balances, transactions and other data. This data is not encrypted for performance reasons and they are not sensitive.
   // if user exists, navigate to login
@@ -90,13 +108,18 @@ function Restore() {
   const [wpCopied, setWpCopied] = useState(false);
   const [seedPhraseCopyingVisible, setSeedPhraseCopyingVisible] =
     useState(false);
+  const [personalizeOpen, setPersonalizeOpen] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { isDark } = useThemeMode();
   const [isNarrowScreen, setIsNarrowScreen] = useState(window.innerWidth < 420);
-  const canvasWidth = isNarrowScreen ? 290 : 366;
-  const canvasHeight = isNarrowScreen ? 240 : 180;
+  // Sized to sit INSIDE the modal body (no negative margins) so the left
+  // column's row numbers are never clipped. Mirrors the Create flow.
+  const canvasWidth = isNarrowScreen ? 276 : 336;
+  const rowPitch = 30;
+  const canvasHeight = isNarrowScreen ? rowPitch * 8 + 6 : rowPitch * 6 + 6;
   const columns = isNarrowScreen ? 3 : 4;
-  const columnWidth = isNarrowScreen ? 95 : 90;
+  const columnWidth = isNarrowScreen ? 90 : 82;
   const browser = window.chrome || window.browser;
 
   useEffect(() => {
@@ -112,7 +135,15 @@ function Restore() {
   const handleOk = () => {
     if (WSPbackedUp && (wspWasShown || wpCopied)) {
       setIsModalOpen(false);
-      storeMnemonic(mnemonic);
+      if (isChangePassword) {
+        // password change re-uses the restore pipeline but is NOT onboarding:
+        // no "Make it yours" step (its save would clobber wallet 0-0's
+        // existing name/color with defaults) — store with the current meta
+        // untouched
+        storeMnemonic(mnemonic);
+      } else {
+        setPersonalizeOpen(true);
+      }
     } else {
       displayMessage('info', t('cr:info_backup_needed'));
     }
@@ -167,20 +198,20 @@ function Restore() {
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font =
-          '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
+          '9px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
         ctx.fillStyle = isDark ? '#fff' : '#000';
         new TextDecoder()
           .decode(mnemonic)
           .split(' ')
           .forEach((word, index) => {
             const x = (index % columns) * columnWidth + 5;
-            const y = Math.floor(index / columns) * 30 + 20;
+            const y = Math.floor(index / columns) * rowPitch + 18;
             ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
             ctx.font =
-              '14px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
-            ctx.fillText(mnemonicShow ? word : '*****', x + 20, y);
+              '13px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
+            ctx.fillText(mnemonicShow ? word : '*****', x + 18, y);
             ctx.font =
-              '10px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Reset font for the next number
+              '9px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Reset font for the next number
           });
       }
     }
@@ -199,7 +230,7 @@ function Restore() {
   const warningWeakPassword = () => {
     modal.confirm({
       title: t('cr:weak_password'),
-      icon: <ExclamationCircleFilled />,
+      icon: <CircleAlertIcon />,
       content: (
         <>
           {t('cr:weak_password_info')}
@@ -299,21 +330,42 @@ function Restore() {
   };
 
   const handleNavigation = () => {
-    if (!Object.keys(wallets).length) {
-      navigate('/home');
+    if (isChangePassword) {
+      navigate('/settings');
+    } else if (!Object.keys(wallets).length) {
+      // Router state only — tells the shell's pairing screen to show the
+      // "Import Wallet" wizard labels instead of the Create ones.
+      navigate('/home', { state: { imported: true } });
     } else {
       navigate('/welcome');
     }
   };
 
-  const storeMnemonic = (mnemonicPhrase: Uint8Array) => {
+  const storeMnemonic = (
+    mnemonicPhrase: Uint8Array,
+    meta?: { name: string; color: string },
+  ) => {
     if (!mnemonicPhrase.length) {
       displayMessage('error', t('cr:err_wallet_phrase_invalid'));
       return;
     }
+    // A password change re-uses the restore pipeline on the SAME wallet, so its
+    // personalization must survive the wipe below — localStorage.clear() would
+    // otherwise drop walletMeta (custom names/colors) and the theme preference.
+    // Snapshot the survivor keys and rewrite them after the clear.
+    const preservedLocal: Record<string, string> = {};
+    if (isChangePassword) {
+      for (const key of ['walletMeta', 'themeMode']) {
+        const value = localStorage.getItem(key);
+        if (value !== null) preservedLocal[key] = value;
+      }
+    }
     // first clean all data from localForge and secureLocalStorage
     localStorage.clear();
     secureLocalStorage.clear();
+    for (const [key, value] of Object.entries(preservedLocal)) {
+      localStorage.setItem(key, value);
+    }
     localForage
       .getItem(`wallets-${identityChain}`)
       .then(async (wallets) => {
@@ -323,8 +375,11 @@ function Restore() {
         } else {
           await localForage.setItem('activeChain', identityChain);
         }
-        // Reset tutorial to ensure it shows for restored wallets
-        await resetTutorial();
+        // Reset tutorial to ensure it shows for restored wallets — but not
+        // for a mere password change on an existing, already-toured wallet
+        if (!isChangePassword) {
+          await resetTutorial();
+        }
         if (browser?.storage?.session) {
           await browser.storage.session.clear();
         }
@@ -387,7 +442,35 @@ function Restore() {
         }
         setXpubWallet(identityChain, xpub);
         dispatch(setPasswordBlob(pwBlob));
-        navigate('/login');
+        // Append-only personalization keys (written after any localForage.clear()
+        // above). Typing the full seed IS proof of backup possession — count it
+        // as a verification so the periodic backup checkup starts a fresh
+        // 30-day cycle instead of nagging a just-restored wallet.
+        setBackupVerified(true);
+        markBackupVerifyNow(Date.now());
+        if (meta) {
+          setWalletMeta(ONBOARDING_WALLET_ID, {
+            name: meta.name,
+            color: meta.color,
+          });
+        }
+        if (isChangePassword) {
+          // no "Your wallet is ready" celebration for a password change
+          navigate('/login');
+          return;
+        }
+        const reduceMotion = window.matchMedia(
+          '(prefers-reduced-motion: reduce)',
+        ).matches;
+        setCelebrating(true);
+        setTimeout(
+          () => {
+            // imported flag rides through Login to the shell's pairing
+            // wizard so it shows the Import labels, not the Create ones
+            navigate('/login', { state: { imported: true } });
+          },
+          reduceMotion ? 900 : 2100,
+        );
       })
       .catch((error) => {
         displayMessage('error', t('cr:err_r1'));
@@ -405,13 +488,21 @@ function Restore() {
 
   return (
     <>
-      <div style={{ paddingBottom: '63px' }}>
+      <div className="page-frame-onboarding" style={{ paddingBottom: '63px' }}>
         <Headerbar
-          headerTitle={t('cr:import_seed')}
-          navigateTo={!Object.keys(wallets).length ? '/home' : '/welcome'}
+          headerTitle={
+            isChangePassword ? t('cr:change_password') : t('cr:import_seed')
+          }
+          navigateTo={
+            isChangePassword
+              ? '/settings'
+              : !Object.keys(wallets).length
+                ? '/home'
+                : '/welcome'
+          }
         />
         <Divider />
-        <CreationSteps step={1} import={true} />
+        {!isChangePassword && <CreationSteps step={1} import={true} />}
         <br />
         <Form
           name="seedForm"
@@ -457,9 +548,9 @@ function Restore() {
                   <Input.Password
                     size="large"
                     placeholder={t('cr:set_password')}
-                    prefix={<LockOutlined />}
+                    prefix={<LockIcon />}
                     iconRender={(visible) =>
-                      visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                      visible ? <EyeIcon /> : <EyeOffIcon />
                     }
                     className="password-input"
                     onChange={(e) => {
@@ -481,9 +572,9 @@ function Restore() {
               <Input.Password
                 size="large"
                 placeholder={t('cr:confirm_password')}
-                prefix={<LockOutlined />}
+                prefix={<LockIcon />}
                 iconRender={(visible) =>
-                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                  visible ? <EyeIcon /> : <EyeOffIcon />
                 }
                 className="password-input"
               />
@@ -506,7 +597,9 @@ function Restore() {
 
           <Form.Item>
             <Button type="primary" size="large" htmlType="submit">
-              {t('cr:import_wallet')}
+              {isChangePassword
+                ? t('cr:change_password')
+                : t('cr:import_wallet')}
             </Button>
           </Form.Item>
         </Form>
@@ -526,112 +619,104 @@ function Restore() {
         onOk={handleOk}
         onCancel={handleCancel}
         cancelText={t('common:cancel')}
-        okText={t('cr:restore_wallet')}
+        okText={
+          isChangePassword ? t('cr:change_password') : t('cr:restore_wallet')
+        }
         style={{ textAlign: 'center', top: 60 }}
+        classNames={{ body: 'backup-seed-body' }}
       >
-        <CreationSteps step={2} import={true} />
-        <p>{t('cr:wallet_seed_info')}</p>
-        <p>{t('cr:wallet_seed_info_2')}</p>
-        <p>{t('cr:keep_seed_safe')}</p>
-        <p>
-          <b>{t('cr:seed_loose_info')}</b>
-        </p>
+        {!isChangePassword && <CreationSteps step={2} import={true} />}
+        <div className="backup-seed-callout">
+          <CircleAlertIcon className="backup-seed-callout-icon" />
+          <div className="backup-seed-callout-text">
+            <b>{t('cr:seed_loose_info')}</b> {t('cr:wallet_seed_info')}{' '}
+            {t('cr:wallet_seed_info_2')} {t('cr:keep_seed_safe')}
+          </div>
+        </div>
         <Divider />
         <canvas
           ref={canvasRef}
           width={canvasWidth}
           height={canvasHeight}
-          style={{
-            border: `0.5px solid ${isDark ? '#fff' : '#000'}`,
-            marginLeft: '-15px',
-            marginRight: '-15px',
-          }}
+          style={{ display: 'block', margin: '2px auto 0', maxWidth: '100%' }}
         />
-        {mnemonicShow && (
-          <div className="popconfirm-button">
+        <div className="backup-seed-actions">
+          {mnemonicShow ? (
             <Button
               type="dashed"
-              icon={<EyeFilled />}
+              icon={<EyeIcon />}
+              block
               onClick={() => {
                 setMnemonicShow(!mnemonicShow);
                 setWSPwasShown(true);
               }}
-              style={{ margin: 5 }}
             >
-              {t('cr:hide_mnemonic')} {t('cr:wallet_seed_phrase')}
+              {t('cr:hide')}
             </Button>
-          </div>
-        )}
-        {!mnemonicShow && (
+          ) : (
+            <Popconfirm
+              title={t('cr:show_wallet_seed', {
+                sensitive_data: t('cr:wallet_seed_phrase'),
+              })}
+              description={
+                <>
+                  {t('cr:show_sensitive_data', {
+                    sensitive_data: t('cr:wallet_seed_phrase'),
+                  })}
+                </>
+              }
+              classNames={{ container: 'popconfirm-container' }}
+              okText={t('common:confirm')}
+              cancelText={t('common:cancel')}
+              onConfirm={() => {
+                setMnemonicShow(!mnemonicShow);
+                setWSPwasShown(true);
+              }}
+              icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
+            >
+              <Button type="dashed" icon={<EyeOffIcon />} block>
+                {t('cr:show')}
+              </Button>
+            </Popconfirm>
+          )}
           <Popconfirm
-            title={t('cr:show_wallet_seed', {
-              sensitive_data: t('cr:wallet_seed_phrase'),
-            })}
+            title={t('cr:copy_wallet_seed')}
             description={
-              <>
-                {t('cr:show_sensitive_data', {
-                  sensitive_data: t('cr:wallet_seed_phrase'),
-                })}
-              </>
+              <Space
+                direction="vertical"
+                size={'middle'}
+                style={{ marginTop: 12, marginBottom: 12 }}
+              >
+                <span>
+                  {t('cr:copy_sensitive_data_desc', {
+                    sensitive_data: t('cr:wallet_seed_phrase'),
+                  })}
+                </span>
+                <span>{t('cr:copy_anyone_can_read')}</span>
+              </Space>
             }
             classNames={{ container: 'popconfirm-container' }}
             okText={t('common:confirm')}
             cancelText={t('common:cancel')}
             onConfirm={() => {
-              setMnemonicShow(!mnemonicShow);
-              setWSPwasShown(true);
+              setSeedPhraseCopyingVisible(true);
+              setWpCopied(true);
             }}
-            icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+            icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
           >
-            <div className="popconfirm-button">
-              <Button
-                type="dashed"
-                icon={<EyeInvisibleFilled />}
-                style={{ margin: 5 }}
-              >
-                {t('cr:show_mnemonic')} {t('cr:wallet_seed_phrase')}
-              </Button>
-            </div>
-          </Popconfirm>
-        )}
-        <Popconfirm
-          title={t('cr:copy_wallet_seed')}
-          description={
-            <Space
-              direction="vertical"
-              size={'middle'}
-              style={{ marginTop: 12, marginBottom: 12 }}
-            >
-              <span>
-                {t('cr:copy_sensitive_data_desc', {
-                  sensitive_data: t('cr:wallet_seed_phrase'),
-                })}
-              </span>
-              <span>{t('cr:copy_anyone_can_read')}</span>
-            </Space>
-          }
-          classNames={{ container: 'popconfirm-container' }}
-          okText={t('common:confirm')}
-          cancelText={t('common:cancel')}
-          onConfirm={() => {
-            setSeedPhraseCopyingVisible(true);
-            setWpCopied(true);
-          }}
-          icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
-        >
-          <div className="popconfirm-button">
-            <Button type="dashed" icon={<CopyOutlined />} style={{ margin: 5 }}>
-              {t('cr:copy_wallet_seed')}
+            <Button type="dashed" icon={<CopyIcon />} block>
+              {t('cr:copy_short')}
             </Button>
-          </div>
-        </Popconfirm>
+          </Popconfirm>
+        </div>
         <Divider />
-        <br />
-        <Checkbox disabled={!wspWasShown && !wpCopied} onChange={onChangeWSP}>
+        <Checkbox
+          className="backup-seed-check"
+          disabled={!wspWasShown && !wpCopied}
+          onChange={onChangeWSP}
+        >
           {t('cr:phrase_backed_up')}
         </Checkbox>
-        <br />
-        <br />
       </Modal>
       <Modal
         title={t('cr:copy_wallet_seed')}
@@ -653,7 +738,7 @@ function Restore() {
         <Space direction="vertical" size="middle">
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 new TextDecoder().decode(
@@ -667,7 +752,7 @@ function Restore() {
           </Button>
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 new TextDecoder().decode(
@@ -684,7 +769,7 @@ function Restore() {
           </Button>
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 new TextDecoder().decode(
@@ -701,6 +786,26 @@ function Restore() {
           </Button>
         </Space>
       </Modal>
+      <OnboardingPersonalize
+        open={personalizeOpen}
+        defaultName={generateDefaultWalletName(ONBOARDING_WALLET_ID)}
+        identiconSeed={ONBOARDING_WALLET_ID}
+        isImport={true}
+        onContinue={(name, color) => {
+          setPersonalizeOpen(false);
+          storeMnemonic(mnemonic, { name, color });
+        }}
+        onBack={() => {
+          setPersonalizeOpen(false);
+          setIsModalOpen(true);
+        }}
+      />
+      {celebrating && (
+        <PillarCelebration
+          title={t('cr:ready.title')}
+          subtitle={t('cr:ready.subtitle')}
+        />
+      )}
       <PoweredByFlux />
     </>
   );

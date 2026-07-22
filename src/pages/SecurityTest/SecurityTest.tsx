@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Card, Typography, Space } from 'antd';
 import {
-  SafetyOutlined,
-  BugOutlined,
-  ClearOutlined,
-  ArrowLeftOutlined,
-} from '@ant-design/icons';
+  ArrowLeft as ArrowLeftIcon,
+  Bug as BugIcon,
+  Eraser as EraserIcon,
+  ShieldCheck as ShieldCheckIcon,
+} from 'lucide-react';
 import { useNavigate } from 'react-router';
 import type { LavaMoatSecurityResult } from '../../types/lavamoat';
 
@@ -529,7 +529,7 @@ const SecurityTest: React.FC = () => {
         <Card>
           <Space>
             <Button
-              icon={<ArrowLeftOutlined />}
+              icon={<ArrowLeftIcon />}
               onClick={() => navigate('/')}
               type="default"
             >
@@ -539,7 +539,7 @@ const SecurityTest: React.FC = () => {
           <br />
           <br />
           <Title level={2}>
-            <SafetyOutlined style={{ color: '#22c55e' }} /> LavaMoat Security
+            <ShieldCheckIcon style={{ color: '#22c55e' }} /> LavaMoat Security
             Test
           </Title>
           <Paragraph>
@@ -551,7 +551,7 @@ const SecurityTest: React.FC = () => {
           <Space>
             <Button
               type="primary"
-              icon={<BugOutlined />}
+              icon={<BugIcon />}
               onClick={runSecurityTests}
               loading={isRunning}
               disabled={isRunning}
@@ -559,7 +559,7 @@ const SecurityTest: React.FC = () => {
               {isRunning ? 'Running Security Tests...' : 'Run Security Tests'}
             </Button>
             <Button
-              icon={<ClearOutlined />}
+              icon={<EraserIcon />}
               onClick={clearResults}
               disabled={isRunning}
             >
@@ -581,7 +581,7 @@ const SecurityTest: React.FC = () => {
                 <div key={index} style={{ marginBottom: '8px' }}>
                   <Text
                     style={{
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--ssp-mono)',
                       fontSize: '13px',
                       fontWeight:
                         result.type === 'pass' || result.type === 'fail'

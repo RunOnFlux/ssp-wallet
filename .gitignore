@@ -36,3 +36,11 @@ coverage
 
 # nyc test coverage
 .nyc_output
+# upgrade-in-place release gate artifacts
+.upgrade-test/
+# dev-only screenshot artifacts (regenerable — any *-shots dir + screenshot harnesses)
+.*-shots/
+scripts/*-screenshots.mjs
+.probe-profile/
+# dev-only headful test profiles (any *-profile dir a harness spins up)
+.*-profile/

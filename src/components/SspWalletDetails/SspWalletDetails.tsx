@@ -18,11 +18,11 @@ import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-  CopyOutlined,
-  ExclamationCircleFilled,
-} from '@ant-design/icons';
+  CircleAlert as CircleAlertIcon,
+  Copy as CopyIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { getScriptType } from '../../lib/wallet';
@@ -213,7 +213,7 @@ function SSPWalletDetails(props: {
         })}
         open={open}
         onOk={handleOk}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center' }}
         onCancel={handleOk}
         footer={[
           <Button key="ok" type="primary" onClick={handleOk}>
@@ -223,12 +223,24 @@ function SSPWalletDetails(props: {
       >
         <h3 className="detailsTitleWithDescription">
           {chainSyncKeyVisible && (
-            <EyeTwoTone onClick={() => setChainSyncKeyVisible(false)} />
+            <button
+              type="button"
+              className="reveal-toggle"
+              aria-label={t('common:hide')}
+              onClick={() => setChainSyncKeyVisible(false)}
+            >
+              <EyeIcon />
+            </button>
           )}
           {!chainSyncKeyVisible && (
-            <EyeInvisibleOutlined
+            <button
+              type="button"
+              className="reveal-toggle"
+              aria-label={t('common:show')}
               onClick={() => setChainSyncKeyVisible(true)}
-            />
+            >
+              <EyeOffIcon />
+            </button>
           )}{' '}
           {t('home:sspWalletDetails.chain_sync_ssp_key', {
             chain: blockchainConfig.name,
@@ -274,12 +286,24 @@ function SSPWalletDetails(props: {
         </Space>
         <h3 className="detailsTitleWithDescription">
           {extendedPublicKeyVisible && (
-            <EyeTwoTone onClick={() => setExtendedPublicKeyVisible(false)} />
+            <button
+              type="button"
+              className="reveal-toggle"
+              aria-label={t('common:hide')}
+              onClick={() => setExtendedPublicKeyVisible(false)}
+            >
+              <EyeIcon />
+            </button>
           )}
           {!extendedPublicKeyVisible && (
-            <EyeInvisibleOutlined
+            <button
+              type="button"
+              className="reveal-toggle"
+              aria-label={t('common:show')}
               onClick={() => setExtendedPublicKeyVisible(true)}
-            />
+            >
+              <EyeOffIcon />
+            </button>
           )}{' '}
           {t('home:sspWalletDetails.chain_extended_pub', {
             chain: blockchainConfig.name,
@@ -302,7 +326,14 @@ function SSPWalletDetails(props: {
         </Space>
         <h3 className="detailsTitleWithDescription">
           {extendedPrivateKeyVisible && (
-            <EyeTwoTone onClick={() => setExtendedPrivateKeyVisible(false)} />
+            <button
+              type="button"
+              className="reveal-toggle"
+              aria-label={t('common:hide')}
+              onClick={() => setExtendedPrivateKeyVisible(false)}
+            >
+              <EyeIcon />
+            </button>
           )}
           {!extendedPrivateKeyVisible && (
             <Popconfirm
@@ -336,9 +367,15 @@ function SSPWalletDetails(props: {
               onConfirm={() => {
                 setExtendedPrivateKeyVisible(true);
               }}
-              icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+              icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
             >
-              <EyeInvisibleOutlined />
+              <button
+                type="button"
+                className="reveal-toggle"
+                aria-label={t('common:show')}
+              >
+                <EyeOffIcon />
+              </button>
             </Popconfirm>
           )}{' '}
           {t('home:sspWalletDetails.chain_extended_priv', {
@@ -357,13 +394,13 @@ function SSPWalletDetails(props: {
           <Paragraph className="copyableAddress">
             <Text>
               {extendedPrivateKeyVisible ? xpriv : '*** *** *** *** *** ***'}{' '}
-              <Tooltip title={'Copy'}>
+              <Tooltip title={t('common:copy')}>
                 <Button
                   type="link"
                   size="small"
                   color="primary"
                   className="copyableIcon"
-                  icon={<CopyOutlined />}
+                  icon={<CopyIcon />}
                   onClick={() => {
                     setXprivCopyingVisible(true);
                   }}
@@ -374,10 +411,24 @@ function SSPWalletDetails(props: {
         </Space>
         <h3 className="detailsTitleWithDescription">
           {sspSyncKeyVisible && (
-            <EyeTwoTone onClick={() => setSspSyncKeyVisible(false)} />
+            <button
+              type="button"
+              className="reveal-toggle"
+              aria-label={t('common:hide')}
+              onClick={() => setSspSyncKeyVisible(false)}
+            >
+              <EyeIcon />
+            </button>
           )}
           {!sspSyncKeyVisible && (
-            <EyeInvisibleOutlined onClick={() => setSspSyncKeyVisible(true)} />
+            <button
+              type="button"
+              className="reveal-toggle"
+              aria-label={t('common:show')}
+              onClick={() => setSspSyncKeyVisible(true)}
+            >
+              <EyeOffIcon />
+            </button>
           )}{' '}
           {t('home:sspWalletDetails.ssp_sync_wallet_key')}:
         </h3>
@@ -409,12 +460,24 @@ function SSPWalletDetails(props: {
           <>
             <h3 className="detailsTitleWithDescription">
               {wkIdentityVisible && (
-                <EyeTwoTone onClick={() => setWkIdentityVisible(false)} />
+                <button
+                  type="button"
+                  className="reveal-toggle"
+                  aria-label={t('common:hide')}
+                  onClick={() => setWkIdentityVisible(false)}
+                >
+                  <EyeIcon />
+                </button>
               )}
               {!wkIdentityVisible && (
-                <EyeInvisibleOutlined
+                <button
+                  type="button"
+                  className="reveal-toggle"
+                  aria-label={t('common:show')}
                   onClick={() => setWkIdentityVisible(true)}
-                />
+                >
+                  <EyeOffIcon />
+                </button>
               )}{' '}
               {t('home:sspWalletDetails.wk_identity')}:
             </h3>
@@ -448,7 +511,14 @@ function SSPWalletDetails(props: {
         )}
         <h3 className="detailsTitleWithDescription">
           {seedPhraseVisible && (
-            <EyeTwoTone onClick={() => setSeedPhraseVisible(false)} />
+            <button
+              type="button"
+              className="reveal-toggle"
+              aria-label={t('common:hide')}
+              onClick={() => setSeedPhraseVisible(false)}
+            >
+              <EyeIcon />
+            </button>
           )}
           {!seedPhraseVisible && (
             <Popconfirm
@@ -468,9 +538,15 @@ function SSPWalletDetails(props: {
               onConfirm={() => {
                 setSeedPhraseVisible(true);
               }}
-              icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+              icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
             >
-              <EyeInvisibleOutlined />
+              <button
+                type="button"
+                className="reveal-toggle"
+                aria-label={t('common:show')}
+              >
+                <EyeOffIcon />
+              </button>
             </Popconfirm>
           )}{' '}
           {t('home:sspWalletDetails.ssp_mnemonic')}:
@@ -486,7 +562,7 @@ function SSPWalletDetails(props: {
             width={canvasWidth}
             height={canvasHeight}
             style={{
-              border: `0.5px solid ${isDark ? '#fff' : '#000'}`,
+              border: `1px solid ${isDark ? '#3d3a38' : '#d6d3d1'}`,
               maxWidth: '100%',
             }}
           />
@@ -514,11 +590,11 @@ function SSPWalletDetails(props: {
             onConfirm={() => {
               setSeedPhraseCopyingVisible(true);
             }}
-            icon={<ExclamationCircleFilled style={{ color: 'orange' }} />}
+            icon={<CircleAlertIcon style={{ color: '#f59e0b' }} />}
           >
             <Button
               type="dashed"
-              icon={<CopyOutlined />}
+              icon={<CopyIcon />}
               style={{
                 whiteSpace: 'normal',
                 paddingTop: 20,
@@ -537,7 +613,7 @@ function SSPWalletDetails(props: {
         title={t('cr:copy_wallet_seed')}
         open={seedPhraseCopyingVisible}
         onOk={() => setSeedPhraseCopyingVisible(false)}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center' }}
         onCancel={() => setSeedPhraseCopyingVisible(false)}
         footer={[
           <Button
@@ -553,7 +629,7 @@ function SSPWalletDetails(props: {
         <Space direction="vertical" size="middle">
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 new TextDecoder().decode(
@@ -567,7 +643,7 @@ function SSPWalletDetails(props: {
           </Button>
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 new TextDecoder().decode(
@@ -584,7 +660,7 @@ function SSPWalletDetails(props: {
           </Button>
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 new TextDecoder().decode(
@@ -609,7 +685,7 @@ function SSPWalletDetails(props: {
         })}
         open={xprivCopyingVisible}
         onOk={() => setXprivCopyingVisible(false)}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center' }}
         onCancel={() => setXprivCopyingVisible(false)}
         footer={[
           <Button
@@ -631,7 +707,7 @@ function SSPWalletDetails(props: {
         <Space direction="vertical" size="middle">
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 xpriv.substring(0, Math.round(xpriv.length / 2)),
@@ -643,7 +719,7 @@ function SSPWalletDetails(props: {
           </Button>
           <Button
             type="dashed"
-            icon={<CopyOutlined />}
+            icon={<CopyIcon />}
             onClick={() => {
               navigator.clipboard.writeText(
                 xpriv.substring(Math.round(xpriv.length / 2), xpriv.length),

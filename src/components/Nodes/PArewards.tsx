@@ -7,7 +7,7 @@ import { Button, Space, Popconfirm, Spin, Typography, Tooltip } from 'antd';
 const { Paragraph } = Typography;
 import { fusionPAavailable, fusionMessage, errorResponse } from '../../types';
 import { blockchains } from '@storage/blockchains';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { CircleHelp as CircleHelpIcon } from 'lucide-react';
 import { NoticeType } from 'antd/es/message/interface';
 import { randomBytes } from 'crypto';
 import { fluxnode } from '@runonflux/flux-sdk';
@@ -236,7 +236,7 @@ function PArewards(props: {
             onConfirm={() => {
               proceedToClaim();
             }}
-            icon={<QuestionCircleOutlined style={{ color: 'green' }} />}
+            icon={<CircleHelpIcon style={{ color: '#22c55e' }} />}
           >
             <Button type="primary" size="middle" disabled={!paRewardsAvailable}>
               {t('home:fusion.claim_with_fusion')}

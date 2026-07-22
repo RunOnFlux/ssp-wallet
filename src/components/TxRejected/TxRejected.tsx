@@ -1,5 +1,5 @@
 import { Typography, Button, Space, Modal } from 'antd';
-import { IssuesCloseOutlined } from '@ant-design/icons';
+import { CircleX as CircleXIcon } from 'lucide-react';
 const { Text } = Typography;
 import { useTranslation } from 'react-i18next';
 
@@ -30,7 +30,7 @@ function TxRejected(props: {
           style={{ marginBottom: 16, marginTop: 16 }}
         >
           <Text>{t('home:txRejected.tx_rejected_info')}</Text>
-          <IssuesCloseOutlined style={{ fontSize: '48px' }} />
+          <CircleXIcon style={{ fontSize: '48px' }} />
           <Text>{t('home:txRejected.tx_rejected_info_2')}</Text>
           <Button type="primary" size="middle" onClick={handleOk}>
             {t('common:ok')}

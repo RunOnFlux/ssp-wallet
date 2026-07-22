@@ -3,7 +3,6 @@
   width: min(350px, calc(100vw - 70px));
 }
 
-
 .password-input-container {
   display: flex;
   justify-content: center;
@@ -13,4 +12,103 @@
   .seed-input {
     width: 340px;
   }
+}
+
+/* Backup Wallet Seed modal — a breathable, roomy layout scoped to this modal.
+   The body scrolls as a safety net (with a visible thin amber scrollbar,
+   overriding the global scrollbar-hide rule) so the checkbox + Confirm are
+   always reachable even if content overflows the 420x760 popup. */
+.backup-seed-body .creation-steps {
+  margin: 12px 0;
+}
+.backup-seed-body .ant-divider-horizontal {
+  margin: 12px 0;
+}
+
+/* Compact amber warning callout — mirrors .backup-health-card (amber border +
+   tinted, theme-aware background). Replaces the old wall-of-text paragraphs. */
+.backup-seed-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.12);
+  text-align: left;
+}
+
+:root[data-theme='dark'] .backup-seed-callout {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.backup-seed-callout-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: #f59e0b;
+}
+
+.backup-seed-callout-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+/* Backed-up checkbox: box tight to the first line of its (two-line) label, the
+   whole control left-aligned and centred as a block — not an orphaned box far
+   to the left of a centred label. */
+.backup-seed-body .backup-seed-check.ant-checkbox-wrapper {
+  display: inline-flex;
+  align-items: flex-start;
+  text-align: left;
+  max-width: 320px;
+  line-height: 1.35;
+}
+.backup-seed-body .backup-seed-check .ant-checkbox {
+  margin-top: 1px;
+}
+
+/* Hide/Show + Copy sit side-by-side, each taking half the row. */
+.backup-seed-actions {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.backup-seed-actions > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.backup-seed-actions .ant-btn {
+  width: 100%;
+}
+
+/* Safety-net scrollbar for THIS modal only. Overrides the global rule in
+   index.css that hides the .ant-modal-body scrollbar — matched at the same
+   selector specificity (+ the .backup-seed-body class) so it wins. */
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-body.backup-seed-body {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(245, 158, 11, 0.5) transparent;
+}
+
+.ant-modal-root
+  .ant-modal-wrap
+  .ant-modal
+  .ant-modal-body.backup-seed-body::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+.ant-modal-root
+  .ant-modal-wrap
+  .ant-modal
+  .ant-modal-body.backup-seed-body::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.5);
+  border-radius: 3px;
 }

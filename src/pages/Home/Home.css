@@ -1,10 +1,29 @@
+/* Copyable address pill (Home hero, Receive modal, signing dialogs) — mono
+   per DESIGN_TOKENS §3. Theme pill fills live in index.css. (Previously
+   carried invalid quoted display/overflow values — removed.) */
 .copyableAddress {
   margin: auto;
   width: fit-content;
   padding: 3px 10px;
-  border-radius: 10px;
-  display: 'flex';
-  overflow: 'visible';
+  border-radius: 8px;
+}
+
+.copyableAddress .ant-typography {
+  font-family: var(--ssp-mono);
+  font-size: 12px;
+}
+
+.home-tab {
+  text-align: center;
+}
+
+.home-hero {
+  margin-top: 4px;
+}
+
+.home-loading {
+  padding: 24px 8px;
+  text-align: center;
 }
 
 .detailsDescription {
@@ -12,6 +31,11 @@
 }
 
 .detailsTitleWithDescription {
+  font-size: 16px; /* type scale (DESIGN_TOKENS §3) instead of browser h3 */
+  font-weight: 600;
   margin-block-start: 2em;
   margin-block-end: 0em;
 }
+
+/* .reveal-toggle (eye toggles) now lives in index.css — it is used by modals
+   opened from several pages, not just Home. */

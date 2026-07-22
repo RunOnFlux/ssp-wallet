@@ -1,5 +1,5 @@
 import { Typography, Button, Space, Modal } from 'antd';
-import { WarningOutlined } from '@ant-design/icons';
+import { TriangleAlert as TriangleAlertIcon } from 'lucide-react';
 const { Text } = Typography;
 import { useTranslation } from 'react-i18next';
 
@@ -30,7 +30,7 @@ function StrongEncryptionChange(props: {
           style={{ marginBottom: 16, marginTop: 16 }}
         >
           <Text>{t('cr:strong_fingerprint_encryption_info')}</Text>
-          <WarningOutlined style={{ fontSize: '48px' }} />
+          <TriangleAlertIcon style={{ fontSize: '48px' }} />
           <Text>{t('cr:strong_encryption_change_detected')}</Text>
           <Text>{t('cr:strong_encryption_change_detected_info_2')}</Text>
           <Text>{t('cr:strong_encryption_change_detected_info_3')}</Text>

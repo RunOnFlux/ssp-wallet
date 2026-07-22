@@ -1,5 +1,18 @@
 {
   "err_panic": "PANIC: Invalid SSP Key.",
+  "backupHealth": {
+    "verify": "Verify",
+    "verify_title": "Verify your backup",
+    "verify_lead": "Confirm you still have your seed phrase backup. No one can recover it for you.",
+    "verify_decrypt_error": "Could not read your wallet. Please try again.",
+    "verified_toast": "Backup verified. Your wallet is safe."
+  },
+  "backupCheckup": {
+    "title": "Backup checkup",
+    "body": "It's been a while — take 30 seconds to confirm your seed words still match your backup.",
+    "protecting": "Your backup protects {{amount}} across your wallets.",
+    "later": "Later"
+  },
   "balances": {
     "locked": "Locked: {{balance}} {{symbol}}",
     "hide": "Hide balances",
@@ -36,6 +49,12 @@
     "date": "Date",
     "amount": "Amount",
     "confirmations": "Confirmations",
+    "fee": "Fee",
+    "to_address": "To",
+    "block_height": "Block height",
+    "token_contract": "Token contract",
+    "note": "Note",
+    "tx_part": "{{ord}} of {{total}}",
     "export_tx": "Export Transactions",
     "tx_confirmed": "Confirmed.",
     "tx_unconfirmed": "Unconfirmed. Transaction not yet mined.",
@@ -160,9 +179,7 @@
   },
   "settings": {
     "err_saving_conf": "Error while saving configuration. Please try again.",
-    "settings": "Settings",
     "change_pw": "Change password",
-    "change_pw_restore": "Change password? Restore!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Service",
     "chain_api_service": "{{chain}} API Service",
@@ -176,7 +193,6 @@
     "use_system_language": "Use System Language",
     "public_nonces_sync": "Public Nonces",
     "sync_public_nonces": "Sync Public Nonces",
-    "public_nonces_sync_help": "Public nonces are required for EVM transactions. This forces synchronisation of nonces from your SSP Key device to enable EVM transaction signing.",
     "sspEnterprise": {
       "title": "SSP Enterprise",
       "description": "Connect your wallet with SSP Enterprise to receive email notifications about transactions, balance alerts, and weekly reports. You can also manage organizations and team wallets via the SSP Enterprise web app.",
@@ -202,7 +218,23 @@
       "email_verified": "Email verified!",
       "sign_and_subscribe": "Sign & Subscribe",
       "waiting_signature": "Awaiting SSP Key..."
-    }
+    },
+    "security": "Security",
+    "verify_backup": "Verify seed backup",
+    "verify_backup_help": "Confirm your seed phrase backup by matching one of its words — the phrase itself is never shown.",
+    "backup_verified": "Verified",
+    "preferences": "Preferences",
+    "tools": "Tools",
+    "advanced": "Advanced",
+    "advanced_hint": "Network endpoints & expert tools",
+    "wallet_key_details": "Wallet & Key details",
+    "about": "About",
+    "enterprise_email_alerts": "SSP Enterprise email alerts",
+    "change_pw_help": "Changing your password re-imports the wallet from your seed phrase — have it ready before you start.",
+    "change_pw_confirm": "Changing your password means re-entering your seed phrase and re-encrypting your wallet. You'll need your seed phrase. Continue?",
+    "popular_currencies": "Popular",
+    "all_currencies": "All currencies",
+    "public_nonces_plain": "One-time signing numbers your SSP Key pre-shares so transactions on EVM chains can be co-signed. Sync them again if EVM signing ever gets stuck."
   },
   "receive": {
     "receive_chain_wallet": "Receive to {{chain}} {{wallet}}",
@@ -221,17 +253,22 @@
     "sell": "Sell",
     "swap": "Swap"
   },
+  "keyHandshake": {
+    "title": "Approve on your SSP Key",
+    "step_sent": "Sent to your SSP Key",
+    "step_awaiting": "Awaiting approval on your phone…",
+    "step_approved": "Approved",
+    "step_rejected": "Rejected",
+    "expires_in": "Expires in",
+    "expired": "This request has expired. Close this dialog and try again.",
+    "show_qr": "Show QR instead",
+    "hide_qr": "Hide QR"
+  },
   "confirmTxKey": {
-    "confirm_tx_key": "Confirm Transaction on SSP Key",
     "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or use a manual input.",
-    "waiting_title": "Waiting for approval on your SSP Key…",
-    "elapsed": "Elapsed: {{time}}",
-    "step_open": "Open SSP Key on your phone",
-    "step_review": "Review the request",
-    "step_approve": "Approve",
     "soft_timeout_title": "Taking longer than usual?",
-    "soft_timeout_description": "Make sure SSP Key is open and online. You can also scan the QR code below to load the request manually."
+    "soft_timeout_description": "Make sure SSP Key is open and online. You can also show the QR fallback below to load the request manually."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "Confirm Public Nonces on SSP Key",
@@ -244,16 +281,15 @@
   "navbar": {
     "refresh": "Refresh",
     "chain_wallet": "{{chain}} {{wallet}}",
-    "ssp_details": "SSP Wallet Details",
     "addr_details": "Address Details",
     "generate_new_wallet": "Generate New Wallet",
     "remove_last_wallet": "Remove Last Wallet",
     "remove": "Remove",
     "remove_last_wallet_desc": "This action will remove your most recently generated wallet. You can generate the same new wallet at any time.",
-    "switch_chain": "Switch Chain",
     "max_wallets": "42. The answer to the ultimate question of life, the universe, and everything. You have reached the maximum number of wallets.",
     "ssp_message_sign": "Message Signing",
-    "swap_history": "Swap History"
+    "swap_history": "Swap History",
+    "lock": "Lock"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Password is not valid. Please try again.",
@@ -293,7 +329,33 @@
     "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
     "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
     "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
-    "ssp_key_download_3": "Once you have downloaded SSP Key, click on \"Synchronise Key!\" to continue with the SSP Key setup."
+    "tab_scan": "Scan with SSP Key",
+    "tab_manual": "Enter manually",
+    "chips_label_identity": "Also activate these chains with one approval on your SSP Key:",
+    "chips_label_chain": "Activate more chains in the same approval:",
+    "timeline_waiting_scan": "Waiting for scan",
+    "timeline_phone_detected": "Phone detected",
+    "timeline_verifying": "Verifying keys",
+    "timeline_activating": "Activating {{total}} chains",
+    "timeline_syncing_chains": "Syncing chains ({{done}}/{{total}})",
+    "timeline_ready": "Ready",
+    "timeline_request_sent": "Request sent to your SSP Key",
+    "timeline_approved_phone": "Approved on your phone",
+    "batch_preparing": "Preparing request…",
+    "batch_resend_request": "Send request again",
+    "batch_fallback_info": "Your SSP Key app needs an update for one-tap sync — or scan the QR code below to sync this chain.",
+    "batch_rejected_info": "The request was declined on your SSP Key. You can scan the QR code below instead.",
+    "batch_partial_failed": "Some chains did not sync. Switch to a chain later to activate it.",
+    "continue_to_wallet": "Continue to wallet",
+    "verify_words_heading": "Verify this matches your SSP Key",
+    "verify_words_body": "Scan this with your SSP Key to verify — or compare the 6 words below. If they differ, do NOT use this wallet — stop and re-pair.",
+    "verify_words_session_label_one": "Verification code",
+    "verify_words_session_label_other": "Verification code ({{count}} chains)",
+    "verify_words_match": "They match — continue",
+    "verify_words_mismatch": "They don't match",
+    "verify_mismatch_warning": "Verification codes did not match. This vault was not activated — re-pair to try again.",
+    "batch_request_selected_one": "Request {{count}} selected chain",
+    "batch_request_selected_other": "Request {{count}} selected chains"
   },
   "chainSelect": {
     "select_chain": "Select Chain",
@@ -310,7 +372,8 @@
     "proceed_to_pay": "Proceed to Pay",
     "tx_rejected": "Transaction Rejected",
     "invalid_request": "Invalid Request",
-    "transaction_sent": "Transaction Sent"
+    "transaction_sent": "Transaction Sent",
+    "review_details": "Review the payment below. You will still confirm the transaction before anything is sent."
   },
   "signMessage": {
     "sign_message": "Sign Message",
@@ -433,7 +496,9 @@
         "SIMULATION_DECODE_MISMATCH": "The advisory risk preview disagrees with this device's own decode of the transaction. Trust the recipients and amounts decoded above, not the preview.",
         "SIMULATION_UNAVAILABLE": "Risk checks could not be completed; the preview is best-effort."
       }
-    }
+    },
+    "err_sign_mismatch": "Signing blocked: the transaction does not match what was shown for approval. Do not retry — contact support.",
+    "err_sign_unverifiable": "Signing blocked: this request could not be independently verified on your device."
   },
   "enterpriseFluxNodeStart": {
     "title": "Start Flux Node",
@@ -516,7 +581,9 @@
     "contacts_updated": "Contacts Updated",
     "err_saving_contacts": "Error while saving contacts. Please try again.",
     "contact_deleted": "Contact Deleted",
-    "created_at": "Created at"
+    "created_at": "Created at",
+    "address_copied": "Address copied to clipboard",
+    "copy_address": "Copy address"
   },
   "tokens": {
     "import_token": "Import Token",
@@ -534,7 +601,9 @@
     "invalid_token_contract": "Invalid token contract.",
     "delete_token": "Delete Token",
     "token_deleted": "Token Deleted!",
-    "err_delete_token": "Error while deleting token. Please try again."
+    "err_delete_token": "Error while deleting token. Please try again.",
+    "no_tokens": "No tokens on this wallet yet",
+    "custom_tokens": "Custom tokens"
   },
   "buy_sell_crypto": {
     "third_party_service": "Third Party Service",
@@ -593,7 +662,8 @@
     "balance": "Balance",
     "max_tooltip_token": "Send your entire token balance. Network fees are paid separately in the native coin.",
     "max_tooltip_native": "Send your maximum available balance. Network fees are automatically reserved.",
-    "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees."
+    "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees.",
+    "advanced_options": "Advanced options"
   },
   "walletconnect": {
     "title": "WalletConnect",
@@ -738,7 +808,8 @@
     "redirected_to_send_page": "Redirected to send page",
     "walletconnect_transaction_approved": "Transaction approved and sent successfully!",
     "eth_sign_transaction_not_supported": "eth_signTransaction is not supported by Account Abstraction wallets. Please use eth_sendTransaction instead.",
-    "eth_sign_transaction_error": "eth_signTransaction is not supported by Account Abstraction wallets. Account Abstraction wallets use UserOperations instead of traditional transactions. Please use eth_sendTransaction to execute the transaction directly."
+    "eth_sign_transaction_error": "eth_signTransaction is not supported by Account Abstraction wallets. Account Abstraction wallets use UserOperations instead of traditional transactions. Please use eth_sendTransaction to execute the transaction directly.",
+    "evm_only": "EVM chains only"
   },
   "walletconnect_tx_modal": {
     "simple_transfer": "Simple Transfer",
@@ -813,19 +884,23 @@
     "steps": {
       "welcome_overview": {
         "title": "Welcome to SSP Wallet!",
-        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! Your wallet is now ready to use. Here you can see your wallet address and balance. Always verify that the wallet address displayed here matches the address shown on your SSP Key device."
+        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! This is Home — your wallet address and balance for the active wallet. Always verify that the address shown here matches the address on your SSP Key device."
+      },
+      "backup_health": {
+        "title": "Backup Health",
+        "content": "Whenever something still needs securing — your seed phrase not yet verified or your SSP Key not yet paired — an amber backup-health card appears right here under your balance, showing exactly what is at stake. Once everything is secured, it disappears."
       },
       "multi_chain_intro": {
-        "title": "Multiple Blockchain Support",
-        "content": "SSP Wallet supports multiple blockchains! This dropdown shows your current wallet and chain. Click on it to access chain switching options."
+        "title": "Your Wallet & Chain Pill",
+        "content": "This pill shows the active wallet and chain — its color dot and identicon make your wallet recognizable at a glance. Tap it to open the switcher for wallets and networks."
       },
       "find_switch_chain": {
-        "title": "Switch Chain Button",
-        "content": "Perfect! Now click on \"Switch Chain\" to open the blockchain selection where you can choose different networks."
+        "title": "Networks",
+        "content": "This is the switcher. Your wallets are listed on top; the Networks section below lets you jump to another blockchain. Click the Networks header to continue."
       },
       "select_ethereum": {
         "title": "Select Ethereum",
-        "content": "Great! The chain selection modal is open. Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
+        "content": "Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
       },
       "ethereum_sync_waiting": {
         "title": "Sync with SSP Key",
@@ -842,11 +917,11 @@
       },
       "receive_intro": {
         "title": "Receiving Funds",
-        "content": "Click Receive to get your Ethereum address. This address can receive ETH and any ERC-20 tokens. You can copy the address or use the QR code."
+        "content": "Receive shows your address for the active chain — copy it or share the QR code. On Ethereum it accepts ETH and any ERC-20 tokens."
       },
       "send_intro": {
         "title": "Sending Funds",
-        "content": "The Send button opens the transaction interface where you can send cryptocurrency to other addresses. It includes fields for recipient, amount, and fees."
+        "content": "Send opens a guided three-step flow: enter the recipient and amount, review the fee and details, then confirm on your SSP Key. Every transaction needs both devices — that's the dual-signature security."
       },
       "swap_feature": {
         "title": "Swap Feature",
@@ -872,18 +947,54 @@
         "title": "Your Address Book",
         "content": "Save addresses you send to frequently. Each contact has a name and address, making transactions more convenient and reducing errors."
       },
+      "places_nav": {
+        "title": "Getting Around",
+        "content": "The bottom bar is your navigation: Home for the active wallet, Portfolio for everything you hold, Activity for history, and Menu for settings and tools. Hover any icon for its name."
+      },
+      "portfolio_tab": {
+        "title": "Portfolio",
+        "content": "Portfolio shows your total value across all chains, wallets and tokens in one place — with allocation at a glance. Chains you haven't activated yet can be activated right from the list."
+      },
       "extended_menu_intro": {
-        "title": "Advanced Menu Features",
-        "content": "This menu provides access to advanced features: WalletConnect for connecting to dApps, Address Details, SSP Wallet Details, Settings and more. The lock icon on the right securely logs you out."
+        "title": "The Menu Tab",
+        "content": "Menu is the full toolbox: settings (language, currency, theme), WalletConnect for dApps, Address & SSP Wallet details, message signing, network configuration and this tutorial. The lock icon at the top right securely logs you out."
       },
       "address_management": {
         "title": "Wallets Management",
-        "content": "This dropdown manages multiple addresses per blockchain. You can create new addresses, switch between existing ones, or remove the last created address. Each address is independent with its own balance and transaction history."
+        "content": "The wallet pill at the top opens the switcher, where you manage multiple wallets per blockchain: create new ones, name and color them, switch between them, or remove the last created one. Each wallet is independent with its own balance and history."
       },
       "tutorial_complete": {
         "title": "Tutorial Complete!",
         "content": "Congratulations! You now know how to use all major features of SSP Wallet. Explore confidently and manage your crypto securely."
       }
     }
+  },
+  "tabs": {
+    "home": "Home",
+    "portfolio": "Portfolio",
+    "menu": "Menu",
+    "nav": "Wallet sections"
+  },
+  "switcher": {
+    "open": "Switch wallet or network",
+    "title": "Wallets & networks",
+    "search": "Search wallets or networks",
+    "wallets": "wallets",
+    "networks": "Networks",
+    "new_wallet": "New wallet",
+    "remove_last": "Remove last"
+  },
+  "portfolio": {
+    "not_activated": "Not yet activated",
+    "tap_to_activate": "Tap to activate",
+    "incl_tokens": "incl. {{amount}} tokens"
+  },
+  "activityFeed": {
+    "all": "All",
+    "chains_scope_one": "{{count}} synced chain",
+    "chains_scope_other": "{{count}} synced chains",
+    "sent": "Sent",
+    "received": "Received",
+    "pending": "Pending"
   }
 }

@@ -1,0 +1,141 @@
+.identity-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 4px 10px 4px;
+  width: 100%;
+}
+
+.identity-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid #e7e5e4;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+:root[data-theme='dark'] .identity-pill {
+  border-color: #272524;
+}
+
+.identity-pill:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.identity-pill-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.identity-pill-avatar {
+  display: inline-flex;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.identity-pill-wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.identity-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.identity-pill-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.identity-pill-chain {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  opacity: 0.65;
+  min-width: 0;
+}
+
+.identity-pill-chain-logo {
+  display: block;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0; /* never squeezed (= clipped) by a long chain label */
+}
+
+.identity-pill-chain-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.identity-pill-caret {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.identity-lock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.15s ease;
+}
+
+:root[data-theme='dark'] .identity-lock {
+  border-color: #272524;
+}
+
+.identity-lock:hover {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.identity-pill:focus-visible,
+.identity-lock:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
+/* Prevent WalletName's inline edit affordance from disturbing the pill layout */
+.identity-pill-wallet .ant-input {
+  display: none;
+}
+
+/* Side-panel (≥500px two-column layout): identity bar sits atop the content
+   column and spans exactly its width — .wallet-shell-main already caps and
+   pads the column, so no extra max-width here (a narrower cap misaligned the
+   bar against the content below). A phone-width panel keeps the popup layout. */
+@media (min-width: 500px) {
+  body.extension-sidepanel .identity-bar {
+    padding: 12px 0;
+  }
+}

@@ -144,7 +144,14 @@ export const darkTheme: ThemeConfig = {
   components: {
     Button: {
       primaryColor: '#000000',
-      algorithm: true,
+      // Pin the primary fill to crisp brand amber in dark mode — the
+      // darkAlgorithm otherwise desaturates it to ~#bb8f20 (a muted ochre),
+      // and amber IS the brand identity, so the CTA must match #fbbf24 in
+      // both themes. Hover/active use adjacent ramp steps (black text stays legible).
+      colorPrimary: '#fbbf24',
+      colorPrimaryHover: '#fcd34d',
+      colorPrimaryActive: '#f59e0b',
+      algorithm: false,
       controlHeight: 32,
     },
     Modal: {

@@ -1,24 +1,80 @@
-.linearGradientButton {
-  background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(255, 0, 0, 0.15)) !important;
+/* Home action row — equal-width tokenized verb tiles (DESIGN_TOKENS §1/§4):
+   amber-tinted surface, amber icon, neutral label, 12px radius. */
+.action-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 10px;
 }
 
-.linearGradientButton:hover {
-  color: rgb(0, 128, 128) !important;
-  border-color: rgba(0, 128, 128, 1) !important;
+.action-row-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 50px;
+  padding: 6px 4px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.12);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 
-.buttonSwap {
-  border-color: #d9d9d9 !important;
+.action-row-button:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.2);
 }
 
-.buttonSwapLight {
-  border-color: #424242 !important;
+.action-row-button:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
 }
 
-.buttonSwap:hover {
-  border-color: rgba(128, 0, 128, 0.2) !important;
+.action-row-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
-.buttonSwapLight:hover {
-  border-color: rgba(255, 255, 0, 0.5) !important;
+/* Tooltip anchor around a disabled tile — the tile itself must fill it */
+.action-row-tooltip-target {
+  display: block;
+}
+
+.action-row-tooltip-target .action-row-button {
+  width: 100%;
+}
+
+.action-row-icon {
+  font-size: 18px;
+  color: #b45309; /* amber-700 — ≥4.5:1 on the tinted light surface */
+  flex-shrink: 0;
+}
+
+:root[data-theme='dark'] .action-row-button {
+  background: rgba(245, 158, 11, 0.14);
+}
+
+:root[data-theme='dark'] .action-row-button:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.22);
+}
+
+:root[data-theme='dark'] .action-row-icon {
+  color: #fbbf24; /* brand amber-400 on dark */
+}
+
+.action-row-label {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-row-button {
+    transition: none;
+  }
 }

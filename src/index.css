@@ -12,6 +12,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  /* One mono stack for every address/hash/seed-word render (DESIGN_TOKENS §3) */
+  --ssp-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Amber focus ring (primary-500) shared by all custom interactive chrome */
+  --ssp-focus: #f59e0b;
 }
 
 body {
@@ -34,6 +38,17 @@ body {
   width: 100%;
 }
 
+/* antd's <App> reset wrapper sits between #root and the routed page. Without an
+   explicit height it collapses to content height, which breaks percentage
+   heights inside it — the centred auth screens (.auth-page min-height:100%)
+   then fall back to top-anchored and leave a dead expanse of empty space at the
+   bottom of a tall side panel. Filling it to #root restores the height chain
+   for every route; content taller than the viewport still overflows/scrolls as
+   before. */
+.ant-app {
+  height: 100%;
+}
+
 .adjustedWidth {
   width: calc(100% - 2rem);
 }
@@ -45,6 +60,66 @@ body {
 .ant-modal-footer button,
 .ant-modal-confirm-btns button {
   margin-top: 5px; /* fix for modal footer button - if it does not fit on the same line, there is no gap between buttons */
+}
+
+/* ---- Modal geometry: every modal is viewport-fixed and viewport-centered,
+   scrolls INTERNALLY when tall, and never hides under the shell chrome (the
+   tab bar / identity bar sit at z-index ≤ 100, below antd's popup layer at
+   1000). The flex centering + `top: 0 !important` also neutralizes the many
+   per-modal inline `style={{ top: 60 }}` offsets and antd's `centered`
+   inline-block trick — one geometry for every dialog surface.
+
+   antd 6 panel DOM is .ant-modal > .ant-modal-container > [close, header,
+   body, footer] (v5's .ant-modal-content no longer exists). The container is
+   a max-height flex column; ONLY .ant-modal-body scrolls, so the title bar
+   and footer buttons stay visible while long content scrolls between them. */
+.ant-modal-root .ant-modal-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ant-modal-root .ant-modal-wrap::before {
+  display: none; /* antd's .ant-modal-centered vertical-align shim */
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal {
+  top: 0 !important;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+  margin: 0 auto;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* may shrink below content height inside the capped modal */
+  max-height: 100%;
+  overflow: hidden; /* preserves the rounded corners; the body owns scroll */
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-header,
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-footer {
+  flex-shrink: 0;
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto; /* tall dialogs scroll inside, not past the viewport */
+  overscroll-behavior: contain;
+  /* The body is the single scroll region of a modal — hide its scrollbar so
+     dialogs never show a visible bar (and never read as a double scrollbar
+     next to the page). Scroll still works via wheel/touch/keyboard. */
+  scrollbar-width: none; /* Firefox */
+}
+
+.ant-modal-root .ant-modal-wrap .ant-modal .ant-modal-body::-webkit-scrollbar {
+  display: none; /* Chromium/WebKit */
 }
 
 /* Fallback before ThemeProvider stamps data-theme (avoids flash on load) */
@@ -109,6 +184,20 @@ body {
 /* Side panel mode - applied via JS detection */
 body.extension-sidepanel {
   width: 100%;
+  /* The popup's fixed 600px body would confine a tall panel to its top 600px
+     (footer "floating mid-page"); the panel fills the real viewport instead. */
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ≥500px side-panel two-column layout: the shell columns own ALL padding
+   (symmetric around the content), so the root wrapper goes edge-to-edge and
+   the nav rail sits flush left. A phone-width panel keeps the popup paddings. */
+@media (min-width: 500px) {
+  body.extension-sidepanel #root {
+    padding: 0;
+    height: 100%;
+  }
 }
 
 @media (max-width: 419px) {
@@ -151,4 +240,278 @@ body.extension-sidepanel .adjustedWidth {
 :root.privacy-hidden .privacy-sensitive {
   filter: blur(8px);
   user-select: none;
+}
+
+/* Lucide icons (DESIGN_TOKENS §6): match antd icon metrics so migrated
+   icons keep the exact visual scale — 1em square, baseline-aligned,
+   currentColor via lucide's own stroke inheritance. */
+svg.lucide {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
+/* antd slot icons: antd keys its confirm/popconfirm/result icon metrics and
+   severity colors to `.anticon` (token.iconCls) — lucide icons placed in
+   those slots get none of them. Mirror antd 6's own rules for `svg.lucide`
+   (which is 1em-square above, so font-size drives its size exactly like an
+   anticon). Values are the resolved antd tokens for our theme:
+   fontHeight 22px, marginSM 12px, marginXS 8px, fontSizeHeading3*3 = 72px;
+   severity colors = sharedTokens in styles/theme.ts (same in light + dark). */
+
+/* Modal.confirm — mirrors .ant-modal-confirm-body > .anticon */
+.ant-modal-confirm-body > svg.lucide {
+  flex: none;
+  font-size: 22px; /* modalConfirmIconSize = token.fontHeight */
+  margin-inline-end: 12px; /* confirmIconMarginInlineEnd = marginSM */
+  color: #f59e0b; /* Modal.confirm() default severity = warning */
+}
+.ant-modal-confirm-body-has-title > svg.lucide {
+  /* (modalTitleHeight 27px − icon 22px) / 2 — centers on the title line */
+  margin-top: 2.5px;
+}
+/* keep antd's text-width clamp when the icon is a lucide svg */
+.ant-modal-confirm-body > svg.lucide + .ant-modal-confirm-paragraph {
+  max-width: calc(100% - 34px); /* icon 22px + marginSM 12px */
+}
+.ant-modal-confirm-error .ant-modal-confirm-body > svg.lucide {
+  color: #ef4444;
+}
+.ant-modal-confirm-warning .ant-modal-confirm-body > svg.lucide,
+.ant-modal-confirm-confirm .ant-modal-confirm-body > svg.lucide {
+  color: #f59e0b;
+}
+.ant-modal-confirm-info .ant-modal-confirm-body > svg.lucide {
+  color: #3b82f6;
+}
+.ant-modal-confirm-success .ant-modal-confirm-body > svg.lucide {
+  color: #22c55e;
+}
+
+/* Popconfirm — mirrors .ant-popconfirm-message > .ant-popconfirm-message-icon .anticon */
+.ant-popconfirm-message > .ant-popconfirm-message-icon svg.lucide {
+  color: #f59e0b; /* colorWarning */
+  font-size: 14px; /* token.fontSize */
+  line-height: 1;
+  margin-inline-end: 8px; /* marginXS */
+}
+
+/* Result — mirrors .ant-result .ant-result-icon > .anticon */
+.ant-result .ant-result-icon > svg.lucide {
+  font-size: 72px; /* iconFontSize = fontSizeHeading3 * 3 */
+}
+.ant-result-success .ant-result-icon > svg.lucide {
+  color: #22c55e;
+}
+.ant-result-error .ant-result-icon > svg.lucide {
+  color: #ef4444;
+}
+.ant-result-info .ant-result-icon > svg.lucide {
+  color: #3b82f6;
+}
+.ant-result-warning .ant-result-icon > svg.lucide {
+  color: #f59e0b;
+}
+
+svg.lucide-spin {
+  animation: lucide-spin 1s linear infinite;
+}
+
+@keyframes lucide-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  svg.lucide-spin {
+    animation: none;
+  }
+}
+
+/* ---- Auth pages (Welcome / Login): the first screens ever seen ----
+   One shared rhythm: logo, 24px title, quiet subtitle, centered action
+   column on the 4-pt scale (padding-bottom clears the PoweredByFlux bar). */
+.auth-page {
+  /* Top-anchored column; the logo's margin-top (below) drops the whole group to
+     the UPPER THIRD (v1/master rhythm) — a login reads best top-biased, not
+     vertically dead-centred (which sat too low in a tall panel). The offset
+     lives on the logo margin, NOT padding here: .auth-page also carries
+     .page-frame-onboarding, whose side-gutter `padding:` shorthand (higher
+     specificity in the side panel) would reset any padding-bottom to 0. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+.auth-logo {
+  /* Flex centering now owns vertical position — a small breath keeps the mark
+     off the very top when the content is tall enough to top-align. */
+  padding-top: 8px;
+}
+
+/* The logo is antd <Image>: `className` lands on the inner <img>, but the flex
+   item is the `.ant-image` WRAPPER (which also carries the fixed width:80/120px
+   from the width prop). A flex column places a definite-width item at the start
+   (left) and text-align can't reach it, so centre the wrapper explicitly. Only
+   the auth screens render an <Image> inside .auth-page, so this is safe. */
+.auth-page .ant-image {
+  align-self: center;
+  /* Drop the top-anchored column to the upper third: viewport-proportional so
+     the content centres around ~38% of the panel height regardless of size
+     (the -180px ≈ half the content block, so `38vh - half` lands the block's
+     centre at 38%). Margin (not padding) to dodge the frame shorthand above.
+     Clamped so it never goes negative on a short popup or runs away on a very
+     tall panel. */
+  margin-top: clamp(24px, calc(38vh - 180px), 42vh);
+}
+
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.auth-title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 24px 0 0;
+}
+
+.auth-subtitle {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 10px 0 0;
+  opacity: 0.82;
+}
+
+.auth-form {
+  /* Generous gap under the header block — the airy separation that made v1's
+     unlock screen read spacious rather than cramped. */
+  margin-top: 40px;
+}
+
+.auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 240px;
+  margin: 24px auto 0;
+}
+
+/* ---- Shared v2 list surfaces (Home tabs + Activity page) ----
+   .feed-list: the 12-radius bordered card list every feed-style surface uses
+   (activity rows, token rows, node rows). .feed-details: the inset detail
+   card shown when a row expands. Kept global so the Tokens/Nodes tabs share
+   them without importing the ActivityRow component. */
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e7e5e4;
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: left;
+  /* Keep the 1px border inside the container width so the list never forces
+     horizontal overflow in a narrow popup/panel. */
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+:root[data-theme='dark'] .feed-list {
+  border-color: #272524;
+}
+
+.feed-list > * {
+  border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+}
+
+.feed-list > *:last-child {
+  border-bottom: none;
+}
+
+.feed-details {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(128, 128, 128, 0.07);
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.feed-detail-line {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.feed-detail-label {
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+.feed-detail-mono {
+  font-family: var(--ssp-mono);
+  font-size: 11px;
+  word-break: break-all;
+  min-width: 0; /* allow full txid/address to wrap inside the flex detail line */
+}
+
+.feed-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Bare icon button for the reveal (eye) toggles in the detail modals —
+   keyboard-reachable with the shared amber focus ring. Global (index.css)
+   because these toggles appear in modals opened from several pages. */
+.reveal-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+
+.reveal-toggle:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 1px;
+}
+
+/* ---- Onboarding/auth page frame (Welcome / Login / Create / Restore) ----
+   These pages render OUTSIDE the WalletShell, whose columns normally own the
+   side-panel paddings (#root drops to padding:0 at ≥500px panel widths). The
+   frame therefore provides its own geometry: a centered max-width column with
+   consistent padding from a 360px panel to a full-screen window. */
+.page-frame-onboarding {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Phone-width panel keeps #root's popup paddings (8px sides ≤419px) — top the
+   frame up to a consistent 16px gutter. */
+body.extension-sidepanel .page-frame-onboarding {
+  padding: 8px 8px 0;
+}
+
+@media (min-width: 500px) {
+  /* ≥500px panel: #root is edge-to-edge (padding 0) — the frame owns all of
+     the page padding. */
+  body.extension-sidepanel .page-frame-onboarding {
+    padding: 16px 24px 0;
+  }
 }

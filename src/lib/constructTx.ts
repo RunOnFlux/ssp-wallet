@@ -388,7 +388,11 @@ export function buildUnsignedRawTx(
     }
 
     // absurd fee check, we define absurd fee as 100 USD sspConfig().maxTxFeeUSD in send.tsx
-    if (actualTxFee.isGreaterThan(new BigNumber(maxFee))) {
+    // Guard against a non-finite cap (e.g. a poisoned/zero rate producing a NaN
+    // maxFee): isGreaterThan(NaN) is always false, which would silently DISABLE
+    // this backstop — so treat a non-finite cap as "reject" (fail closed).
+    const maxFeeBn = new BigNumber(maxFee);
+    if (!maxFeeBn.isFinite() || actualTxFee.isGreaterThan(maxFeeBn)) {
       throw new Error(`Fee is absurdly too high ${actualTxFee.toFixed()}`);
     }
 

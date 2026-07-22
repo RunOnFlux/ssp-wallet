@@ -10,6 +10,8 @@ import {
   formatFiatWithSymbol,
   fetchRate,
   fetchAllRates,
+  supportedFiatValues,
+  popularFiatValues,
 } from '../../src/lib/currency';
 import * as sspStorage from '@storage/ssp';
 import BigNumber from 'bignumber.js';
@@ -193,6 +195,22 @@ describe('Currency Lib', () => {
       expect(res.fiat).toBeDefined();
       expect(res.crypto).not.toBeNull();
       expect(res.crypto).toBeDefined();
+    });
+  });
+
+  describe('popularFiatValues (pinned picker group)', () => {
+    it('is a non-empty, duplicate-free subset of supportedFiatValues', () => {
+      expect(popularFiatValues.length).toBeGreaterThan(0);
+      expect(new Set(popularFiatValues).size).toBe(popularFiatValues.length);
+      for (const fiat of popularFiatValues) {
+        expect(supportedFiatValues).toContain(fiat);
+      }
+    });
+
+    it('pins the expected staples', () => {
+      expect(popularFiatValues).toEqual(
+        expect.arrayContaining(['USD', 'EUR', 'GBP', 'BTC']),
+      );
     });
   });
 });

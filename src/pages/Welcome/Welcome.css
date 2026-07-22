@@ -1,4 +1,6 @@
 .welcome-text {
-  margin: 30px;
-  margin-bottom: 50px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 16px 24px 0;
+  opacity: 0.8;
 }

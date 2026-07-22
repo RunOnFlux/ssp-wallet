@@ -1,0 +1,213 @@
+/* Shared activity feed row — see ActivityRow.tsx. The list container
+   (.feed-list) and detail inset card (.feed-details) live in index.css so the
+   Tokens and Nodes tabs share them without importing this component. */
+
+.arow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  /* border-box so width:100% + the 12px side padding stays INSIDE the row's
+     container — content-box would make each row 24px wider than the feed and
+     push its right edge (amount / status chip) past the narrow-panel viewport. */
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.arow:hover {
+  background: rgba(128, 128, 128, 0.07);
+}
+
+.arow:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: -2px;
+}
+
+/* Row awaiting SSP Key approval — subtle amber wash. */
+.arow-wrap-pending {
+  background: rgba(251, 191, 36, 0.07);
+}
+
+.arow-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.arow-glyph svg {
+  width: 14px;
+  height: 14px;
+}
+
+.arow-glyph-in {
+  background: rgba(34, 197, 94, 0.14);
+  color: #22c55e;
+}
+
+.arow-glyph-out {
+  background: rgba(251, 191, 36, 0.18);
+  color: #b45309;
+}
+
+:root[data-theme='dark'] .arow-glyph-out {
+  background: rgba(251, 191, 36, 0.14);
+  color: #fbbf24;
+}
+
+.arow-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 auto;
+  line-height: 1.35;
+}
+
+.arow-label {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arow-sub {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  opacity: 0.65;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tiny "1 of 2" chip linking rows born from the SAME on-chain transaction
+   (one contract call → value movement + token transfer). Quiet, meta-line
+   scale. */
+.arow-txpart {
+  flex-shrink: 0;
+  padding: 0 4px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 999px;
+  font-size: 9px;
+  line-height: 1.4;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.arow-sub-logo {
+  width: 12px;
+  height: 12px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.arow-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  /* Cap the amount column so a pathologically long value (a dust token with a
+     20-digit supply) can't consume the whole row and force the meta line
+     (chain · date) on the left to truncate — the reported "26/6," cut-off.
+     Instead the amount itself shrinks and ellipses; its full value stays on
+     hover (title) and in the expanded detail. Normal amounts never reach the
+     cap, so common rows are unchanged. */
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 58%;
+  line-height: 1.35;
+}
+
+.arow-amount {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.arow-fiat {
+  font-size: 10px;
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Confirmed / unconfirmed state chip. */
+.arow-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.arow-status svg {
+  width: 13px;
+  height: 13px;
+}
+
+.arow-status-confirmed {
+  background: rgba(34, 197, 94, 0.14);
+  color: #22c55e;
+}
+
+.arow-status-unconfirmed {
+  background: rgba(251, 191, 36, 0.18);
+  color: #b45309;
+}
+
+:root[data-theme='dark'] .arow-status-unconfirmed {
+  background: rgba(251, 191, 36, 0.14);
+  color: #fbbf24;
+}
+
+/* Countdown status node (pending approval rows). */
+.arow-countdown {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* Align the detail inset card under the row content (past the glyph). */
+.arow-details {
+  margin: 0 12px 12px;
+}
+
+/* First / last rows: round the interactive button so its amber focus/active
+   outline (and hover wash) follows the list's 12px rounded corners instead of
+   being clipped square by the container's overflow:hidden. The 11px inner
+   radius matches the list radius minus its 1px border. */
+.feed-list > .arow-wrap:first-child .arow {
+  border-top-left-radius: 11px;
+  border-top-right-radius: 11px;
+}
+
+.feed-list > .arow-wrap:last-child .arow {
+  border-bottom-left-radius: 11px;
+  border-bottom-right-radius: 11px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arow {
+    transition: none;
+  }
+}

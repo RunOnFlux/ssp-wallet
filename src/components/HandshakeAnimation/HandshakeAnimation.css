@@ -1,0 +1,326 @@
+/*
+ * 2-of-2 handshake motif. All sizing derives from --hs-size (composition
+ * height). Colors follow the logo + DESIGN_TOKENS.md; the right pillar and
+ * device frames are theme-neutral via [data-theme] (PillarLoader pattern).
+ * Motion: calm ease-out curves in the 150–250 ms band for state changes,
+ * a slow 2.6 s pulse for the waiting travel. prefers-reduced-motion gets
+ * static frames — the status timeline text carries the state.
+ */
+
+.handshake {
+  /* traveling distance: track width minus the traveler's own width */
+  --hs-track-width: calc(var(--hs-size) * 1.55);
+  --hs-traveler-height: calc(var(--hs-size) * 0.32);
+  /* mark aspect ratio is 184/240 ≈ 0.767 */
+  --hs-travel: calc(var(--hs-track-width) - var(--hs-traveler-height) * 0.767);
+  --hs-frame: #a8a29e;
+  --hs-frame-active: #f59e0b;
+  --hs-neutral-pillar: #595a5a;
+  --hs-success: #22c55e;
+  --hs-error: #ef4444;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--hs-size);
+  margin: 0 auto;
+  user-select: none;
+}
+
+:root[data-theme='dark'] .handshake {
+  --hs-frame: #57534e;
+  --hs-neutral-pillar: #fafbfb;
+}
+
+/* ---- pillar colors (exact logo colors) ---- */
+.hs-pillar-left {
+  fill: #f59e0b;
+}
+.hs-pillar-center {
+  fill: #fcd34d;
+}
+.hs-pillar-right {
+  fill: var(--hs-neutral-pillar);
+}
+
+/* ---- device frames ---- */
+.hs-device {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--hs-frame);
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition:
+    border-color 250ms ease-out,
+    box-shadow 250ms ease-out,
+    opacity 250ms ease-out;
+}
+
+.hs-wallet {
+  width: calc(var(--hs-size) * 0.92);
+  height: calc(var(--hs-size) * 0.68);
+}
+
+/* browser-window top bar */
+.hs-wallet-bar {
+  position: absolute;
+  top: calc(var(--hs-size) * 0.1);
+  left: calc(var(--hs-size) * 0.09);
+  right: calc(var(--hs-size) * 0.09);
+  border-top: 1.5px solid var(--hs-frame);
+  opacity: 0.7;
+}
+
+.hs-phone {
+  width: calc(var(--hs-size) * 0.42);
+  height: calc(var(--hs-size) * 0.78);
+  border-radius: 7px;
+}
+
+/* phone notch */
+.hs-phone-notch {
+  position: absolute;
+  top: calc(var(--hs-size) * 0.05);
+  width: calc(var(--hs-size) * 0.12);
+  border-top: 2px solid var(--hs-frame);
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+/* the shared identity mark inside both devices */
+.hs-device-mark {
+  height: calc(var(--hs-size) * 0.26);
+  opacity: 0.85;
+  margin-top: calc(var(--hs-size) * 0.06);
+}
+
+.hs-phone .hs-device-mark {
+  height: calc(var(--hs-size) * 0.22);
+}
+
+/* ---- track between the devices ---- */
+.hs-track {
+  position: relative;
+  width: var(--hs-track-width);
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.hs-track-line {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--hs-size) * 0.06);
+  right: calc(var(--hs-size) * 0.06);
+  border-top: 1.5px dashed var(--hs-frame);
+  opacity: 0.45;
+  transition: opacity 250ms ease-out;
+}
+
+/* ---- waiting: mini mark travels wallet → phone ---- */
+.hs-traveler {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: var(--hs-traveler-height);
+  opacity: 0;
+  transform: translate(0, -50%);
+}
+
+.handshake-waiting .hs-traveler {
+  animation: hs-travel 2.6s ease-in-out infinite;
+}
+
+/* gentle shimmer across the three pillars as the mark travels */
+.handshake-waiting .hs-traveler path {
+  animation: hs-shimmer 2.6s ease-in-out infinite;
+}
+.handshake-waiting .hs-traveler path:nth-child(2) {
+  animation-delay: 130ms;
+}
+.handshake-waiting .hs-traveler path:nth-child(3) {
+  animation-delay: 260ms;
+}
+
+@keyframes hs-travel {
+  0% {
+    transform: translate(0, -50%) scale(0.82);
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate(calc(var(--hs-travel) * 0.5), -50%) scale(1);
+  }
+  86% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--hs-travel), -50%) scale(0.82);
+    opacity: 0;
+  }
+}
+
+@keyframes hs-shimmer {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* devices answer the pulse: wallet glows as the mark departs,
+   phone as it arrives */
+.handshake-waiting .hs-wallet {
+  animation: hs-frame-pulse 2.6s ease-in-out infinite;
+}
+.handshake-waiting .hs-phone {
+  animation: hs-frame-pulse 2.6s ease-in-out infinite;
+  animation-delay: 1.3s;
+}
+
+@keyframes hs-frame-pulse {
+  0%,
+  40%,
+  100% {
+    border-color: var(--hs-frame);
+  }
+  12% {
+    border-color: var(--hs-frame-active);
+  }
+}
+
+/* ---- approved: pillars assemble at center + green flash ---- */
+.hs-center-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: calc(var(--hs-size) * 0.52);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 200ms ease-out;
+}
+
+.hs-center-mark path {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+.handshake-approved .hs-traveler,
+.handshake-rejected .hs-traveler {
+  display: none;
+}
+
+.handshake-approved .hs-center-mark {
+  opacity: 1;
+}
+
+.handshake-approved .hs-center-mark path {
+  animation: hs-rise 220ms ease-out backwards;
+}
+.handshake-approved .hs-center-mark path:nth-child(2) {
+  animation-delay: 70ms;
+}
+.handshake-approved .hs-center-mark path:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+@keyframes hs-rise {
+  from {
+    transform: translateY(12%) scaleY(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* green flash affordance behind the assembled mark */
+.hs-status-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--hs-size) * 0.72);
+  height: calc(var(--hs-size) * 0.72);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  opacity: 0;
+}
+
+.handshake-approved .hs-status-ring {
+  border: 2px solid var(--hs-success);
+  animation: hs-ring 450ms ease-out forwards;
+  animation-delay: 160ms;
+}
+
+@keyframes hs-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0;
+  }
+}
+
+.handshake-approved .hs-device {
+  border-color: var(--hs-success);
+}
+
+.handshake-approved .hs-track-line {
+  opacity: 0.2;
+}
+
+/* ---- rejected: motif dims, red accent ---- */
+.handshake-rejected .hs-device,
+.handshake-rejected .hs-track-line,
+.handshake-rejected .hs-device-mark {
+  opacity: 0.45;
+}
+
+.handshake-rejected .hs-center-mark {
+  opacity: 0.3;
+}
+
+.handshake-rejected .hs-phone {
+  border-color: var(--hs-error);
+  opacity: 0.9;
+}
+
+.handshake-rejected .hs-phone-notch {
+  border-color: var(--hs-error);
+}
+
+/* ---- companion status timeline (same visual language as the pairing
+   view's .keySyncTimeline in Key.css) ---- */
+.keyHandshakeTimeline {
+  max-width: 280px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.keyHandshakeTimeline .ant-steps-item {
+  padding-bottom: 0 !important;
+}
+
+/* ---- reduced motion: static frames, timeline text carries state ---- */
+@media (prefers-reduced-motion: reduce) {
+  .handshake *,
+  .handshake {
+    animation: none !important;
+    transition: none !important;
+  }
+  .handshake-waiting .hs-traveler {
+    opacity: 1;
+    transform: translate(calc(var(--hs-travel) * 0.5), -50%);
+  }
+  .handshake-approved .hs-status-ring {
+    opacity: 0;
+  }
+}

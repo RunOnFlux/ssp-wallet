@@ -211,7 +211,7 @@ function EnterpriseNonceSync({ open, requesterInfo, openAction }: Props) {
             )}
             <Text
               type="secondary"
-              style={{ fontSize: '12px', fontFamily: 'monospace' }}
+              style={{ fontSize: '12px', fontFamily: 'var(--ssp-mono)' }}
             >
               {requesterInfo.origin}
             </Text>

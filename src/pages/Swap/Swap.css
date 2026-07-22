@@ -1,9 +1,11 @@
 .swap-area {
-  margin: 8px;
+  /* Shell rhythm: horizontal padding comes from #root (16px scale) —
+     the page adds only vertical spacing. */
+  margin: 8px 0 16px;
 }
 
 .swap-box-row {
-  border-radius: 10px;
+  border-radius: 12px; /* 12-radius cards (shell language) */
   padding: 16px;
   margin-bottom: 2px;
 }
@@ -113,4 +115,27 @@
 .swap-switch-button {
   width: 25px;
   height: 25px;
+  padding: 0; /* default button padding squeezed the icon out of the 25px box */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Advanced-options toggle: bare icon button with the shared focus ring */
+.swap-advanced-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+
+.swap-advanced-toggle:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 1px;
 }

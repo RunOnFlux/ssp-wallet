@@ -1,10 +1,10 @@
-import { Typography, Button, Space, Modal, Select } from 'antd';
-const { Text } = Typography;
+import { Button, Modal, Select } from 'antd';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
 import { blockchains } from '@storage/blockchains';
 import { generatedWallets } from '../../types';
+import '../DappRequest/DappRequest.css';
 
 interface addressesInfoData {
   status: string;
@@ -133,42 +133,46 @@ function AllAddressesInfo({ open, openAction }: Props) {
       <Modal
         title={t('home:addressesInfo.addresses_requests')}
         open={open}
-        style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancel}
         footer={[]}
       >
-        <Space
-          direction="vertical"
-          size="middle"
-          style={{ marginBottom: 16, marginTop: 16 }}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            marginTop: 16,
+          }}
         >
-          <Space direction="vertical" size="small">
-            <Text>{t('home:addressesInfo.addresses_requests_info_all')}</Text>
-          </Space>
+          <p className="dapp-ask">
+            {t('home:addressesInfo.addresses_requests_info_all')}
+          </p>
           <Select
             mode="multiple"
             allowClear
-            style={{ width: '100%', maxWidth: '400px' }}
+            style={{ width: '100%', textAlign: 'left' }}
             placeholder={t('home:addressesInfo.select_addresses')}
             defaultValue={[]}
             onChange={handleApprovedAddressesChange}
             value={approvedAddresses}
             options={options}
+            aria-label={t('home:addressesInfo.select_addresses')}
           />
-          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
+          <div className="dapp-actions">
             <Button
               type="primary"
               size="large"
+              block
               onClick={handleOk}
               disabled={!approvedAddresses.length}
             >
               {t('common:approve_request')}
             </Button>
-            <Button type="link" block size="small" onClick={handleCancel}>
+            <Button type="text" block onClick={handleCancel}>
               {t('common:reject_request')}
             </Button>
-          </Space>
-        </Space>
+          </div>
+        </div>
       </Modal>
     </>
   );

@@ -1,18 +1,22 @@
-import { Card, Badge, Avatar, Flex, Button } from 'antd';
-const { Meta } = Card;
+import { Card, Badge, Avatar, Button, Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { MouseEvent, useState } from 'react';
 import { blockchains } from '@storage/blockchains';
 import './SwapBox.css';
 import { exchangeProvider, swapHistoryOrder } from '../../types';
 import {
-  SwapLeftOutlined,
-  SwapRightOutlined,
-  CaretDownOutlined,
-  CaretUpOutlined,
-} from '@ant-design/icons';
+  ChevronDown as ChevronDownIcon,
+  ChevronUp as ChevronUpIcon,
+  MoveRight as MoveRightIcon,
+} from 'lucide-react';
 import { useAppSelector } from '../../hooks';
 
+/**
+ * Compact swap-history row: header line (date left, status chip right), a
+ * tight sell → buy line with the amounts under the asset symbols in 11px
+ * tabular-nums, and a right-aligned expand chevron. Expanded details render
+ * in the shared `.feed-details` inset card.
+ */
 function SwapBox(props: {
   swap: swapHistoryOrder;
   reverseAbeMapping: Record<string, string>;
@@ -55,12 +59,27 @@ function SwapBox(props: {
     logo: '',
   };
 
+  // "chain_SYMBOL" asset id → chain logo / token logo / display symbol
+  const assetToken = (asset?: string) =>
+    asset
+      ? blockchains[asset.split('_')[0]]?.tokens?.find(
+          (token) => token.symbol === asset.split('_')[1],
+        )
+      : undefined;
+  const assetChainLogo = (asset?: string) =>
+    asset ? blockchains[asset.split('_')[0]]?.logo : undefined;
+  const assetLogo = (asset?: string) =>
+    asset ? (assetToken(asset)?.logo ?? assetChainLogo(asset)) : undefined;
+  const assetSymbol = (asset?: string) =>
+    asset
+      ? (assetToken(asset)?.symbol ?? blockchains[asset.split('_')[0]]?.symbol)
+      : null;
+
   const openDetails = (
     event: MouseEvent<HTMLDivElement, globalThis.MouseEvent>,
   ) => {
     const containingElement = document.querySelector('#swap-id' + swap.swapId);
     if (containingElement) {
-      console.log('kappa');
       if (containingElement.contains(event.target as Node)) {
         // do not register clicks here
         return;
@@ -101,223 +120,137 @@ function SwapBox(props: {
     return 'blue';
   };
 
-  return (
-    <>
-      <Card
-        hoverable
-        className="swap-box-card-container"
+  const assetSide = (
+    asset: string | undefined,
+    amount: string,
+    buy = false,
+  ) => (
+    <div className={`swap-box-side${buy ? ' swap-box-side-buy' : ''}`}>
+      <Badge
+        count={<Avatar src={assetChainLogo(asset)} size={14} />}
         size="small"
-        onClick={(e) => openDetails(e)}
+        offset={[-2, 4]}
       >
-        <Meta
-          title={
-            <>
-              <div className="swap-box-timestamp-status ant-card-meta-description">
-                <div style={{ textAlign: 'left' }}>
-                  {new Date(swap.createdAt).toLocaleDateString()}
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <Button
-                    color={transformStatusToColor(swap.status)}
-                    variant="filled"
-                    size="small"
-                  >
-                    {transformStatusToString(swap.status)}
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <div style={{ float: 'left' }} className="swap-box-container">
-                  <div>
-                    <Badge
-                      count={
-                        <Avatar
-                          src={
-                            sellAsset
-                              ? blockchains[sellAsset.split('_')[0]]?.logo
-                              : null
-                          }
-                          size={18}
-                        />
-                      }
-                      size="small"
-                      offset={[-2, 5]}
-                    >
-                      <Avatar
-                        src={
-                          sellAsset
-                            ? (blockchains[
-                                sellAsset.split('_')[0]
-                              ].tokens?.find(
-                                (token) =>
-                                  token.symbol === sellAsset.split('_')[1],
-                              )?.logo ??
-                              blockchains[sellAsset.split('_')[0]]?.logo)
-                            : null
-                        }
-                        size={30}
-                      />
-                    </Badge>
-                  </div>
-                  <div>
-                    {sellAsset
-                      ? (blockchains[sellAsset.split('_')[0]].tokens?.find(
-                          (token) => token.symbol === sellAsset.split('_')[1],
-                        )?.symbol ??
-                        blockchains[sellAsset.split('_')[0]]?.symbol)
-                      : null}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: 'calc(50% - 15px)',
-                    width: '30px',
-                    top: '40px',
-                  }}
-                >
-                  <SwapRightOutlined style={{ fontSize: '31px' }} />
-                </div>
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: 'calc(50% - 15px)',
-                    width: '30px',
-                    top: '47px',
-                  }}
-                >
-                  <SwapLeftOutlined
-                    style={{ rotate: '180deg', fontSize: '31px' }}
-                  />
-                </div>
-                <div style={{ float: 'right' }} className="swap-box-container">
-                  <div>
-                    <Badge
-                      count={
-                        <Avatar
-                          src={
-                            buyAsset
-                              ? blockchains[buyAsset.split('_')[0]]?.logo
-                              : null
-                          }
-                          size={18}
-                        />
-                      }
-                      size="small"
-                      offset={[-2, 5]}
-                    >
-                      <Avatar
-                        src={
-                          buyAsset
-                            ? (blockchains[buyAsset.split('_')[0]].tokens?.find(
-                                (token) =>
-                                  token.symbol === buyAsset.split('_')[1],
-                              )?.logo ??
-                              blockchains[buyAsset.split('_')[0]]?.logo)
-                            : null
-                        }
-                        size={30}
-                      />
-                    </Badge>
-                  </div>
-                  <div>
-                    {buyAsset
-                      ? (blockchains[buyAsset.split('_')[0]].tokens?.find(
-                          (token) => token.symbol === buyAsset.split('_')[1],
-                        )?.symbol ??
-                        blockchains[buyAsset.split('_')[0]]?.symbol)
-                      : null}
-                  </div>
-                </div>
-              </div>
-            </>
-          }
-          description={
-            <>
-              <Flex vertical>
-                <div>
-                  <div className="swap-box-sell-amount">
-                    {infoExpanded ? <CaretUpOutlined /> : <CaretDownOutlined />}
-                    <span style={{ paddingLeft: '20px' }}>
-                      {Number(swap.sellAmount)}
-                    </span>
-                  </div>
-                  <div className="swap-box-buy-amount">
-                    {Number(swap.buyAmount)}
-                  </div>
-                </div>
-                {infoExpanded && (
-                  <div className={'token-box'} id={'swap-id' + swap.swapId}>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.created_at')}:{' '}
-                      {new Date(swap.createdAt).toLocaleDateString()},{' '}
-                      {new Date(swap.createdAt).toLocaleTimeString()}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.rate')}: 1{' '}
-                      {sellAsset
-                        ? (blockchains[sellAsset.split('_')[0]].tokens?.find(
-                            (token) => token.symbol === sellAsset.split('_')[1],
-                          )?.symbol ??
-                          blockchains[sellAsset.split('_')[0]]?.symbol)
-                        : null}{' '}
-                      = {swap.rate}{' '}
-                      {buyAsset
-                        ? (blockchains[buyAsset.split('_')[0]].tokens?.find(
-                            (token) => token.symbol === buyAsset.split('_')[1],
-                          )?.symbol ??
-                          blockchains[buyAsset.split('_')[0]]?.symbol)
-                        : null}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.swap_id')}: {swap.swapId}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.provider')}: {provider.name}{' '}
-                      {provider.type.charAt(0).toUpperCase() +
-                        provider.type.slice(1)}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.sell_address')}:{' '}
-                      {swap.refundAddress || 'N/A'}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.buy_address')}: {swap.buyAddress || 'N/A'}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.sell_txid')}: {swap.sellTxid || 'N/A'}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('home:swap.buy_txid')}: {swap.buyTxid || 'N/A'}
-                    </p>
-                    {swap.refundTxid && (
-                      <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                        {t('home:swap.refund_txid')}: {swap.refundTxid || 'N/A'}
-                      </p>
-                    )}
-                    {provider.track && (
-                      <Button
-                        type="default"
-                        size="small"
-                        style={{ float: 'right' }}
-                        onClick={() => {
-                          window.open(
-                            `${provider.track}${swap.swapId}`,
-                            '_blank',
-                          );
-                        }}
-                      >
-                        {t('home:swap.track_swap')}
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </Flex>
-            </>
-          }
-        />
-      </Card>
-    </>
+        <Avatar src={assetLogo(asset)} size={24} />
+      </Badge>
+      <div className="swap-box-asset">
+        <span className="swap-box-symbol">{assetSymbol(asset)}</span>
+        <span className="swap-box-amount">{Number(amount)}</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <Card
+      hoverable
+      className="swap-box-card-container"
+      size="small"
+      onClick={(e) => openDetails(e)}
+    >
+      <div className="swap-box-header">
+        <span className="swap-box-date">
+          {new Date(swap.createdAt).toLocaleDateString()}
+        </span>
+        <Tag
+          color={transformStatusToColor(swap.status)}
+          style={{ marginInlineEnd: 0 }}
+        >
+          {transformStatusToString(swap.status)}
+        </Tag>
+      </div>
+      <div className="swap-box-main">
+        {assetSide(sellAsset, swap.sellAmount)}
+        <MoveRightIcon className="swap-box-arrow" />
+        {assetSide(buyAsset, swap.buyAmount, true)}
+        {infoExpanded ? (
+          <ChevronUpIcon className="swap-box-chevron" />
+        ) : (
+          <ChevronDownIcon className="swap-box-chevron" />
+        )}
+      </div>
+      {infoExpanded && (
+        <div
+          className="feed-details swap-box-details"
+          id={'swap-id' + swap.swapId}
+        >
+          <div className="feed-detail-line">
+            <span className="feed-detail-label">
+              {t('home:swap.created_at')}:
+            </span>
+            <span>
+              {new Date(swap.createdAt).toLocaleDateString()},{' '}
+              {new Date(swap.createdAt).toLocaleTimeString()}
+            </span>
+          </div>
+          <div className="feed-detail-line">
+            <span className="feed-detail-label">{t('home:swap.rate')}:</span>
+            <span>
+              1 {assetSymbol(sellAsset)} = {swap.rate} {assetSymbol(buyAsset)}
+            </span>
+          </div>
+          <div className="feed-detail-line">
+            <span className="feed-detail-label">{t('home:swap.swap_id')}:</span>
+            <span className="feed-detail-mono">{swap.swapId}</span>
+          </div>
+          <div className="feed-detail-line">
+            <span className="feed-detail-label">
+              {t('home:swap.provider')}:
+            </span>
+            <span>
+              {provider.name}{' '}
+              {provider.type.charAt(0).toUpperCase() + provider.type.slice(1)}
+            </span>
+          </div>
+          <div className="feed-detail-line">
+            <span className="feed-detail-label">
+              {t('home:swap.sell_address')}:
+            </span>
+            <span className="feed-detail-mono">
+              {swap.refundAddress || 'N/A'}
+            </span>
+          </div>
+          <div className="feed-detail-line">
+            <span className="feed-detail-label">
+              {t('home:swap.buy_address')}:
+            </span>
+            <span className="feed-detail-mono">{swap.buyAddress || 'N/A'}</span>
+          </div>
+          <div className="feed-detail-line">
+            <span className="feed-detail-label">
+              {t('home:swap.sell_txid')}:
+            </span>
+            <span className="feed-detail-mono">{swap.sellTxid || 'N/A'}</span>
+          </div>
+          <div className="feed-detail-line">
+            <span className="feed-detail-label">
+              {t('home:swap.buy_txid')}:
+            </span>
+            <span className="feed-detail-mono">{swap.buyTxid || 'N/A'}</span>
+          </div>
+          {swap.refundTxid && (
+            <div className="feed-detail-line">
+              <span className="feed-detail-label">
+                {t('home:swap.refund_txid')}:
+              </span>
+              <span className="feed-detail-mono">{swap.refundTxid}</span>
+            </div>
+          )}
+          {provider.track && (
+            <div className="feed-detail-actions">
+              <Button
+                type="default"
+                size="small"
+                onClick={() => {
+                  window.open(`${provider.track}${swap.swapId}`, '_blank');
+                }}
+              >
+                {t('home:swap.track_swap')}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
   );
 }
 

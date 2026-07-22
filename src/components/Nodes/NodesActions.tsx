@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { toast } from '../../lib/toast';
 import { Button, Dropdown, Modal, Spin } from 'antd';
-import { MoreOutlined, SettingOutlined } from '@ant-design/icons';
+import {
+  EllipsisVertical as EllipsisVerticalIcon,
+  Settings as SettingsIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
 import { fluxnode } from '@runonflux/flux-sdk';
@@ -156,7 +159,7 @@ function NodesActions(props: {
             {
               key: 'configure-delegates',
               label: t('home:nodesTable.configure_delegates'),
-              icon: <SettingOutlined />,
+              icon: <SettingsIcon />,
               onClick: () => setDelegatesModalOpen(true),
             },
           ],
@@ -164,7 +167,7 @@ function NodesActions(props: {
         trigger={['click']}
         placement="bottomRight"
       >
-        <Button type="text" icon={<MoreOutlined />} />
+        <Button type="text" icon={<EllipsisVerticalIcon />} />
       </Dropdown>
       <Modal
         title={t('home:nodesTable.start_all_nodes_title', {

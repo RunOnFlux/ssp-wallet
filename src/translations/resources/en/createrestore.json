@@ -10,6 +10,7 @@
   "err_wallet_phrase_invalid": "Your wallet seed phrase is invalid.",
   "err_r1": "Code R1: Something went wrong while creating wallet.",
   "import_seed": "Import Wallet Seed Phrase",
+  "change_password": "Change Password",
   "wallet_seed": "Wallet Seed",
   "input_wallet_seed": "Please input your mnemonic wallet seed",
   "input_seed_phrase": "Input Seed Phrase",
@@ -27,6 +28,9 @@
   "seed_loose_info": "Losing the wallet seed will result in loss of access to your wallet.",
   "hide_mnemonic": "Hide Mnemonic",
   "show_mnemonic": "Show Mnemonic",
+  "hide": "Hide",
+  "show": "Show",
+  "copy_short": "Copy",
   "wallet_seed_phrase": "Wallet Seed Phrase",
   "phrase_backed_up": "I have backed up my wallet seed phrase in a secure location.",
   "err_wallet_phrase_invalid_login": "Wallet seed phrase is invalid.",
@@ -38,6 +42,16 @@
   "backup_confirmed": "Backup Confirmed!",
   "confirm_wallet_seed_word": "Confirm Wallet Seed",
   "word_number": "Word #{{number}}",
+  "personalize": {
+    "title": "Make it yours",
+    "lead": "Give your wallet a name and a color so you can spot it at a glance.",
+    "name_label": "Wallet name",
+    "color_label": "Accent color"
+  },
+  "ready": {
+    "title": "Your wallet is ready.",
+    "subtitle": "Pair your SSP Key next to unlock secure sending."
+  },
   "incorrect_backup_confirmation": "Incorrect Word",
   "strong_password": "Strong password should contain at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character.",
   "weak_password": "Weak Password Used",

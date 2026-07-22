@@ -1,28 +1,31 @@
-import { Table, Empty, Tooltip, Popconfirm, Button, Space } from 'antd';
+import { Popconfirm, Button } from 'antd';
 import { sspConfig } from '@storage/ssp';
 import { toast } from '../../lib/toast';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import {
+  CircleHelp as CircleHelpIcon,
+  History as HistoryIcon,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-const { Column } = Table;
 import BigNumber from 'bignumber.js';
 import { NoticeType } from 'antd/es/message/interface';
-import {
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  VerticalAlignTopOutlined,
-  VerticalAlignBottomOutlined,
-} from '@ant-design/icons';
 import { transaction } from '../../types';
 import './Transactions.css';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
-import { explorerTxUrl } from '../../lib/explorerUrl';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
+import {
+  formatRelativeTime,
+  formatFullTimestamp,
+} from '../../lib/relativeTime';
+import { buildTxRowIdentities } from '../../lib/activityFeed';
 import { mkConfig, generateCsv, download } from 'export-to-csv';
 import { fetchDataForCSV } from '../../lib/transactions';
 import { cryptos } from '../../types';
 import { useAppSelector } from '../../hooks';
+import ActivityRow from '../ActivityRow/ActivityRow';
+import TxDetails from '../ActivityRow/TxDetails';
+import EmptyState from '../EmptyState/EmptyState';
 
 function TransactionsTable(props: {
   transactions: transaction[];
@@ -32,10 +35,11 @@ function TransactionsTable(props: {
   chain: keyof cryptos;
   refresh: () => void;
 }) {
-  const { t } = useTranslation(['home', 'common']);
+  const { t, i18n } = useTranslation(['home', 'common']);
   const navigate = useNavigate();
   const { chain } = props;
   const [fiatRate, setFiatRate] = useState(0);
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const blockchainConfig = blockchains[chain];
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
@@ -99,205 +103,119 @@ function TransactionsTable(props: {
     return cr * fi;
   };
 
+  // Unique per-row identity: rows of the SAME on-chain tx (e.g. an EVM call
+  // moving ETH value + a token transfer) share a txid but expand
+  // independently; the "n of N" ordinal links them visually.
+  const rowIdentities = buildTxRowIdentities(props.transactions);
+
+  const renderTx = (record: transaction, index: number) => {
+    const identity = rowIdentities[index];
+    const decimals = record.decimals ?? blockchainConfig.decimals;
+    const amount = new BigNumber(record.amount).dividedBy(10 ** decimals);
+    const received = amount.isGreaterThan(0);
+    const confirmed = !!record.blockheight && record.blockheight > 0;
+    const expanded = expandedKey === identity.key;
+    const timestamp = new Date(record.timestamp).getTime();
+    const rbfPossible =
+      !confirmed &&
+      !!record.utxos?.length &&
+      +record.amount <= 0 &&
+      blockchainConfig.rbf;
+    const rate = record.tokenSymbol
+      ? getCryptoRate(
+          record.tokenSymbol.toLowerCase() as keyof typeof cryptoRates,
+          sspConfig().fiatCurrency,
+        )
+      : fiatRate;
+    return (
+      <ActivityRow
+        key={identity.key}
+        direction={received ? 'in' : 'out'}
+        label={
+          received
+            ? t('home:activityFeed.received')
+            : t('home:activityFeed.sent')
+        }
+        sub={
+          <>
+            <span title={formatFullTimestamp(timestamp, i18n.language)}>
+              {formatRelativeTime(timestamp, i18n.language)}
+            </span>
+            {identity.total > 1 && (
+              <span className="arow-txpart">
+                {t('home:transactionsTable.tx_part', {
+                  ord: identity.ordinal,
+                  total: identity.total,
+                })}
+              </span>
+            )}
+          </>
+        }
+        amount={`${received ? '+' : ''}${formatCrypto(amount)} ${
+          record.tokenSymbol || blockchainConfig.symbol
+        }`}
+        fiat={`${received ? '' : '-'}${formatFiatWithSymbol(
+          amount.abs().multipliedBy(new BigNumber(rate)),
+        )}`}
+        status={confirmed ? 'confirmed' : 'unconfirmed'}
+        expanded={expanded}
+        onActivate={() => setExpandedKey(expanded ? null : identity.key)}
+        details={
+          <TxDetails
+            tx={record}
+            chain={chain}
+            tipHeight={props.blockheight > 0 ? props.blockheight : undefined}
+            chainFiatRate={fiatRate}
+            extraActions={
+              rbfPossible && (
+                <Popconfirm
+                  title={t('home:transactionsTable.replace_by_fee', {
+                    chainName: blockchainConfig.name,
+                  })}
+                  description={
+                    <>
+                      {t('home:transactionsTable.replace_by_fee_desc')}
+                      <br /> <br />
+                      {t('home:transactionsTable.replace_by_fee_desc_b')}
+                    </>
+                  }
+                  overlayStyle={{ maxWidth: 360, margin: 10 }}
+                  okText={t('home:transactionsTable.replace_by_fee')}
+                  cancelText={t('common:cancel')}
+                  onConfirm={() => {
+                    proceedToRBF(record);
+                  }}
+                  icon={<CircleHelpIcon style={{ color: '#22c55e' }} />}
+                >
+                  <Button size="small">
+                    {t('home:transactionsTable.replace_by_fee')}
+                  </Button>
+                </Popconfirm>
+              )
+            }
+          />
+        }
+      />
+    );
+  };
+
   return (
     <>
-      <Table
-        className="adjustedWidth"
-        locale={{
-          emptyText: (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={t('home:transactionsTable.no_tx_history')}
-            />
-          ),
-        }}
-        pagination={false}
-        showHeader={false}
-        rowKey="txid"
-        bordered={false}
-        loading={false}
-        style={{ width: '100%' }}
-        dataSource={props.transactions}
-        expandable={{
-          showExpandColumn: false,
-          expandedRowRender: (record) => (
-            <div>
-              <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                {t('home:transactionsTable.txid_link', { txid: record.txid })}
-              </p>
-              {record.type !== 'evm' && record.type !== 'sol' && (
-                <p style={{ margin: 0 }}>
-                  {t('home:transactionsTable.fee_with_symbol', {
-                    fee: formatCrypto(
-                      new BigNumber(record.fee).dividedBy(
-                        10 ** blockchainConfig.decimals,
-                      ),
-                    ),
-                    symbol: blockchainConfig.symbol,
-                  })}{' '}
-                  ({(+record.fee / (record.vsize! ?? record.size!)).toFixed(2)}{' '}
-                  {record.vsize ? 'sat/vB' : 'sat/B'})
-                </p>
-              )}
-              {(record.type === 'evm' || record.type === 'sol') && (
-                <p style={{ margin: 0 }}>
-                  {t('home:transactionsTable.fee_with_symbol', {
-                    fee: formatCrypto(
-                      new BigNumber(record.fee).dividedBy(
-                        10 ** blockchainConfig.decimals,
-                      ),
-                    ),
-                    symbol: blockchainConfig.symbol,
-                  })}
-                </p>
-              )}
-
-              {record.message && (
-                <p style={{ margin: 0 }}>
-                  {t('home:transactionsTable.note_with_note', {
-                    note: record.message,
-                  })}
-                </p>
-              )}
-              <a
-                href={explorerTxUrl(chain, record.txid)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t('home:txSent.show_in_explorer')}
-              </a>
-              {(record.blockheight <= 0 || !record.blockheight) &&
-                record.utxos?.length &&
-                +record.amount <= 0 &&
-                blockchainConfig.rbf && (
-                  <div
-                    style={{
-                      marginTop: 16,
-                      float: 'right',
-                    }}
-                  >
-                    <Popconfirm
-                      title={t('home:transactionsTable.replace_by_fee', {
-                        chainName: blockchainConfig.name,
-                      })}
-                      description={
-                        <>
-                          {t('home:transactionsTable.replace_by_fee_desc')}
-                          <br /> <br />
-                          {t('home:transactionsTable.replace_by_fee_desc_b')}
-                        </>
-                      }
-                      overlayStyle={{ maxWidth: 360, margin: 10 }}
-                      okText={t('home:transactionsTable.replace_by_fee')}
-                      cancelText={t('common:cancel')}
-                      onConfirm={() => {
-                        proceedToRBF(record);
-                      }}
-                      icon={
-                        <QuestionCircleOutlined style={{ color: 'green' }} />
-                      }
-                    >
-                      <Button size="small">
-                        {t('home:transactionsTable.replace_by_fee')}
-                      </Button>
-                    </Popconfirm>
-                  </div>
-                )}
-            </div>
-          ),
-          expandRowByClick: true,
-        }}
-      >
-        <Column
-          title={t('home:transactionsTable.direction')}
-          dataIndex="amount"
-          className="table-icon"
-          render={(amnt: string) => (
-            <>
-              {+amnt > 0 ? (
-                <VerticalAlignBottomOutlined style={{ fontSize: '16px' }} />
-              ) : (
-                <VerticalAlignTopOutlined style={{ fontSize: '16px' }} />
-              )}
-            </>
-          )}
+      {props.transactions.length === 0 ? (
+        <EmptyState
+          icon={<HistoryIcon />}
+          description={t('home:transactionsTable.no_tx_history')}
         />
-        <Column
-          title={t('home:transactionsTable.date')}
-          className="table-time"
-          dataIndex="timestamp"
-          render={(time: string) => (
-            <>
-              {new Date(time).toLocaleTimeString()}
-              <br />
-              {new Date(time).toLocaleDateString()}
-            </>
-          )}
-        />
-        <Column
-          title={t('home:transactionsTable.amount')}
-          className="table-amount"
-          dataIndex="amount"
-          render={(amnt: string, record: transaction) => (
-            <span className="privacy-sensitive">
-              {formatCrypto(
-                new BigNumber(amnt).dividedBy(
-                  10 ** (record.decimals ?? blockchainConfig.decimals),
-                ),
-              )}{' '}
-              {record.tokenSymbol || blockchainConfig.symbol}
-              <br />
-              <div style={{ color: 'grey', fontSize: 12 }}>
-                {+amnt < 0 ? '-' : ''}
-                {formatFiatWithSymbol(
-                  new BigNumber(Math.abs(+amnt))
-                    .dividedBy(
-                      10 ** (record.decimals ?? blockchainConfig.decimals),
-                    )
-                    .multipliedBy(
-                      new BigNumber(
-                        record.tokenSymbol
-                          ? getCryptoRate(
-                              record.tokenSymbol.toLowerCase() as keyof typeof cryptoRates,
-                              sspConfig().fiatCurrency,
-                            )
-                          : fiatRate,
-                      ),
-                    ),
-                )}
-              </div>
-            </span>
-          )}
-        />
-        <Column
-          title={t('home:transactionsTable.confirmations')}
-          className="table-icon"
-          dataIndex="blockheight"
-          render={(height: number) => (
-            <>
-              {height <= 0 || !height ? (
-                <Tooltip title={t('home:transactionsTable.tx_unconfirmed')}>
-                  <ClockCircleOutlined style={{ fontSize: '18px' }} />
-                </Tooltip>
-              ) : (
-                <Tooltip title={t('home:transactionsTable.tx_confirmed')}>
-                  <CheckCircleOutlined style={{ fontSize: '18px' }} />
-                </Tooltip>
-              )}
-            </>
-          )}
-        />
-      </Table>
-      <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }}>
-        <Button
-          type="primary"
-          size="middle"
-          onClick={handleExport}
-          disabled={props.transactions.length == 0}
-        >
-          {t('home:transactionsTable.export_tx')}
-        </Button>
-      </Space>
+      ) : (
+        <>
+          <div className="feed-list">{props.transactions.map(renderTx)}</div>
+          <div className="transactions-actions">
+            <Button type="primary" size="middle" onClick={handleExport}>
+              {t('home:transactionsTable.export_tx')}
+            </Button>
+          </div>
+        </>
+      )}
     </>
   );
 }

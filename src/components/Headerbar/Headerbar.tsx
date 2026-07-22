@@ -15,7 +15,7 @@ function Headerbar({ headerTitle, navigateTo }: Props) {
   return (
     <>
       <div className="headerbar">
-        <Row justify="space-evenly">
+        <Row justify="space-evenly" align="middle">
           <Col span={4}>
             <Image
               height={30}
@@ -29,7 +29,7 @@ function Headerbar({ headerTitle, navigateTo }: Props) {
             span={16}
             style={{
               fontSize: '16px',
-              lineHeight: '36px',
+              lineHeight: 1.3,
               fontWeight: 'bold',
               textAlign: 'center',
             }}
