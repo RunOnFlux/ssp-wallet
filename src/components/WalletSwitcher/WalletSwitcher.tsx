@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
-import { Drawer, Input, Popconfirm, Divider, Image } from 'antd';
+import { Drawer, Input, Modal, Popconfirm, Divider, Image } from 'antd';
 import {
   Check as CheckIcon,
   CircleHelp as CircleHelpIcon,
+  Pencil as PencilIcon,
   Plus as PlusIcon,
   Search as SearchIcon,
   Trash2 as Trash2Icon,
@@ -34,7 +35,7 @@ import { switchToChain } from '../../lib/chainSwitching';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import { sspConfig } from '@storage/ssp';
 import { getDisplayName, removeWalletName } from '../../storage/walletNames';
-import { useWalletMetaMap } from '../../storage/walletMeta';
+import { useWalletMetaMap, setWalletMeta } from '../../storage/walletMeta';
 import { identiconData } from '../../lib/identicon';
 import Identicon from '../Identicon/Identicon';
 import WalletName from '../WalletName/WalletName';
@@ -70,6 +71,8 @@ function WalletSwitcher({ open, openAction }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
@@ -142,7 +145,9 @@ function WalletSwitcher({ open, openAction }: Props) {
     return `${formatCrypto(total)} ${blockchainConfig.symbol}`;
   };
 
-  const generateAddress = (path: string) => {
+  // Returns the promise of the wallets-<chain> storage write so callers that
+  // must serialize against it (wallet removal) can await it.
+  const generateAddress = (path: string): Promise<void> => {
     try {
       const [typeStr, addrStr] = path.split('-');
       const addrInfo = generateMultisigAddress(
@@ -155,7 +160,7 @@ function WalletSwitcher({ open, openAction }: Props) {
       setAddress(activeChain, path, addrInfo.address);
       setRedeemScript(activeChain, path, addrInfo.redeemScript ?? '');
       setWitnessScript(activeChain, path, addrInfo.witnessScript ?? '');
-      void (async function () {
+      return (async function () {
         const gw: generatedWallets =
           (await localForage.getItem('wallets-' + activeChain)) ?? {};
         gw[path] = addrInfo.address;
@@ -164,12 +169,15 @@ function WalletSwitcher({ open, openAction }: Props) {
     } catch (error) {
       displayMessage('error', t('home:err_panic'));
       console.log(error);
+      return Promise.resolve();
     }
   };
 
-  const selectWallet = (id: string) => {
-    generateAddress(id);
-    void (async function () {
+  // Returns the promise of the full switch (redux + storage committed) so
+  // removal can serialize behind it.
+  const selectWallet = (id: string): Promise<void> => {
+    const generated = generateAddress(id);
+    const done = (async function () {
       const txsWallet: transaction[] =
         (await localForage.getItem(`transactions-${activeChain}-${id}`)) ?? [];
       const balancesWallet: balancesObj =
@@ -194,9 +202,11 @@ function WalletSwitcher({ open, openAction }: Props) {
       setUnconfirmedBalance(activeChain, id, balancesWallet.unconfirmed);
       await localForage.setItem(`walletInUse-${activeChain}`, id);
       setWalletInUse(activeChain, id);
+      await generated;
     })();
     openAction(false);
     navigate('/home');
+    return done;
   };
 
   const addWallet = () => {
@@ -211,7 +221,7 @@ function WalletSwitcher({ open, openAction }: Props) {
         displayMessage('error', t('home:navbar.max_wallets'));
         return;
       }
-      generateAddress(path);
+      void generateAddress(path);
     } catch (error) {
       displayMessage('error', t('home:err_panic'));
       console.log(error);
@@ -219,30 +229,39 @@ function WalletSwitcher({ open, openAction }: Props) {
   };
 
   const removeLastWallet = () => {
-    try {
-      let path = '0-0';
-      let i = 0;
-      while (walletIds.includes(path)) {
-        i++;
-        path = '0-' + i;
-      }
-      const walletToRemoveIndex = i - 1;
-      const pathToDelete = `0-${walletToRemoveIndex}`;
-      if (walletToRemoveIndex <= 0) return;
-      if (pathToDelete === walletInUse) {
-        selectWallet('0-0');
-      }
-      removeWallet(activeChain, pathToDelete);
-      void (async function () {
+    void (async function () {
+      try {
+        let path = '0-0';
+        let i = 0;
+        while (walletIds.includes(path)) {
+          i++;
+          path = '0-' + i;
+        }
+        const walletToRemoveIndex = i - 1;
+        const pathToDelete = `0-${walletToRemoveIndex}`;
+        if (walletToRemoveIndex <= 0) return;
+        if (pathToDelete === walletInUse) {
+          // wait until the 0-0 switch fully commits (redux + storage): the
+          // UI must never render a deleted walletInUse, and the
+          // wallets-<chain> read-modify-writes below must not interleave
+          // with selectWallet's (which could resurrect the deleted entry)
+          await selectWallet('0-0');
+        }
+        removeWallet(activeChain, pathToDelete);
         await removeWalletName(activeChain, pathToDelete);
+        // NOTE: walletMeta is intentionally NOT cleared. It is keyed by bare
+        // walletId (chain-agnostic), so clearing it here would wipe the same
+        // index's name/color on every OTHER chain too. Re-adding the index
+        // regenerates the identical address, so inheriting the prior
+        // name/color is correct rather than stale.
         const gw: generatedWallets =
           (await localForage.getItem(`wallets-${activeChain}`)) ?? {};
         delete gw[pathToDelete];
         await localForage.setItem(`wallets-${activeChain}`, gw);
-      })();
-    } catch (error) {
-      console.log(error);
-    }
+      } catch (error) {
+        console.log(error);
+      }
+    })();
   };
 
   const switchChain = (chain: keyof cryptos) => {
@@ -299,11 +318,21 @@ function WalletSwitcher({ open, openAction }: Props) {
             identiconData(wallets[id]?.address || id).color;
           const metaName = walletMetaMap[id]?.name;
           return (
-            <button
+            // Row is a keyboard-focusable div, not a <button>, so the rename
+            // control below can be a real nested <button> (a button inside a
+            // button is invalid HTML and left the pencil keyboard-unreachable).
+            <div
               key={id}
-              type="button"
+              role="button"
+              tabIndex={0}
               className={`switcher-wallet${id === walletInUse ? ' switcher-wallet-active' : ''}`}
-              onClick={() => selectWallet(id)}
+              onClick={() => void selectWallet(id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  void selectWallet(id);
+                }
+              }}
             >
               <span
                 className="switcher-wallet-avatar"
@@ -338,11 +367,60 @@ function WalletSwitcher({ open, openAction }: Props) {
                 {id === walletInUse && (
                   <CheckIcon className="switcher-wallet-check" />
                 )}
+                {/* rename affordance — the ONLY place a wallet can be
+                    renamed in v2 (master had it in the Navbar dropdown) */}
+                <button
+                  type="button"
+                  className="switcher-wallet-rename"
+                  title={t('common:rename_wallet')}
+                  aria-label={t('common:rename_wallet')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setRenameValue(walletMetaMap[id]?.name ?? '');
+                    setRenameId(id);
+                  }}
+                >
+                  <PencilIcon className="switcher-wallet-rename-icon" />
+                </button>
               </span>
-            </button>
+            </div>
           );
         })}
       </div>
+
+      <Modal
+        title={t('common:rename_wallet')}
+        open={renameId !== null}
+        onCancel={() => setRenameId(null)}
+        onOk={() => {
+          if (renameId) {
+            // empty input clears the custom name (falls back to the legacy
+            // walletNames entry or the "Wallet N" default)
+            setWalletMeta(renameId, { name: renameValue });
+          }
+          setRenameId(null);
+        }}
+        okText={t('common:save')}
+        cancelText={t('common:cancel')}
+        destroyOnHidden
+      >
+        <Input
+          value={renameValue}
+          onChange={(e) => setRenameValue(e.target.value.slice(0, 25))}
+          placeholder={
+            renameId ? getDisplayName(activeChain, renameId) : undefined
+          }
+          maxLength={25}
+          autoFocus
+          onPressEnter={() => {
+            if (renameId) {
+              setWalletMeta(renameId, { name: renameValue });
+            }
+            setRenameId(null);
+          }}
+        />
+      </Modal>
 
       {!query && (
         <div className="switcher-wallet-actions">

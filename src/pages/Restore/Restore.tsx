@@ -135,7 +135,15 @@ function Restore() {
   const handleOk = () => {
     if (WSPbackedUp && (wspWasShown || wpCopied)) {
       setIsModalOpen(false);
-      setPersonalizeOpen(true);
+      if (isChangePassword) {
+        // password change re-uses the restore pipeline but is NOT onboarding:
+        // no "Make it yours" step (its save would clobber wallet 0-0's
+        // existing name/color with defaults) — store with the current meta
+        // untouched
+        storeMnemonic(mnemonic);
+      } else {
+        setPersonalizeOpen(true);
+      }
     } else {
       displayMessage('info', t('cr:info_backup_needed'));
     }
@@ -341,9 +349,23 @@ function Restore() {
       displayMessage('error', t('cr:err_wallet_phrase_invalid'));
       return;
     }
+    // A password change re-uses the restore pipeline on the SAME wallet, so its
+    // personalization must survive the wipe below — localStorage.clear() would
+    // otherwise drop walletMeta (custom names/colors) and the theme preference.
+    // Snapshot the survivor keys and rewrite them after the clear.
+    const preservedLocal: Record<string, string> = {};
+    if (isChangePassword) {
+      for (const key of ['walletMeta', 'themeMode']) {
+        const value = localStorage.getItem(key);
+        if (value !== null) preservedLocal[key] = value;
+      }
+    }
     // first clean all data from localForge and secureLocalStorage
     localStorage.clear();
     secureLocalStorage.clear();
+    for (const [key, value] of Object.entries(preservedLocal)) {
+      localStorage.setItem(key, value);
+    }
     localForage
       .getItem(`wallets-${identityChain}`)
       .then(async (wallets) => {
@@ -353,8 +375,11 @@ function Restore() {
         } else {
           await localForage.setItem('activeChain', identityChain);
         }
-        // Reset tutorial to ensure it shows for restored wallets
-        await resetTutorial();
+        // Reset tutorial to ensure it shows for restored wallets — but not
+        // for a mere password change on an existing, already-toured wallet
+        if (!isChangePassword) {
+          await resetTutorial();
+        }
         if (browser?.storage?.session) {
           await browser.storage.session.clear();
         }
@@ -429,13 +454,20 @@ function Restore() {
             color: meta.color,
           });
         }
+        if (isChangePassword) {
+          // no "Your wallet is ready" celebration for a password change
+          navigate('/login');
+          return;
+        }
         const reduceMotion = window.matchMedia(
           '(prefers-reduced-motion: reduce)',
         ).matches;
         setCelebrating(true);
         setTimeout(
           () => {
-            navigate('/login');
+            // imported flag rides through Login to the shell's pairing
+            // wizard so it shows the Import labels, not the Create ones
+            navigate('/login', { state: { imported: true } });
           },
           reduceMotion ? 900 : 2100,
         );

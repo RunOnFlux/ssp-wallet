@@ -100,6 +100,30 @@
   font-size: 14px;
 }
 
+/* Rename pencil — quiet until hovered so the row stays scannable. */
+.switcher-wallet-rename {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  border-radius: 6px;
+  opacity: 0.45;
+  cursor: pointer;
+}
+
+.switcher-wallet-rename:hover,
+.switcher-wallet-rename:focus-visible {
+  opacity: 1;
+  background: rgba(120, 113, 108, 0.15);
+}
+
+.switcher-wallet-rename-icon {
+  width: 14px;
+  height: 14px;
+}
+
 /* Wallet management — a two-tile row in the sheet's own design language:
    "New wallet" as an amber-tinted tile (like the Home action row), "Remove
    last" as a quiet danger-tinted secondary. Identical behavior + confirms. */

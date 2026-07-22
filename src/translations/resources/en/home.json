@@ -496,7 +496,9 @@
         "SIMULATION_DECODE_MISMATCH": "The advisory risk preview disagrees with this device's own decode of the transaction. Trust the recipients and amounts decoded above, not the preview.",
         "SIMULATION_UNAVAILABLE": "Risk checks could not be completed; the preview is best-effort."
       }
-    }
+    },
+    "err_sign_mismatch": "Signing blocked: the transaction does not match what was shown for approval. Do not retry — contact support.",
+    "err_sign_unverifiable": "Signing blocked: this request could not be independently verified on your device."
   },
   "enterpriseFluxNodeStart": {
     "title": "Start Flux Node",

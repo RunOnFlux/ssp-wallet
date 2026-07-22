@@ -16,6 +16,10 @@ import {
 } from '../../lib/wallet';
 import { signVaultMessageWithSchnorr } from '../../lib/evmSigning';
 import {
+  userOpHashMatches,
+  messageDigestMatches,
+} from '../../lib/userOpVerify';
+import {
   decodeVaultTransaction,
   type VaultDecodedTx,
 } from '../../lib/transactions';
@@ -829,7 +833,47 @@ function EnterpriseVaultSignTx({
         | undefined;
 
       if (isEvm) {
-        // EVM: Schnorr signing with enterprise nonces
+        // EVM: Schnorr signing with enterprise nonces.
+        // TRUSTLESS BINDING (parity with the Solana vault path): the approval
+        // UI decodes/displays evmUserOp (tx) or signMessage (personal_sign),
+        // but the Schnorr sign consumes rawUnsignedTx — an opaque hash. A
+        // compromised relay could show a benign operation while the wallet
+        // co-signs a vault-draining one. Recompute the hash on-device from
+        // what was DISPLAYED and refuse on mismatch (same primitives the
+        // honest wallet builds with, so a legitimate proposal always matches).
+        if (isMessageSign) {
+          if (!messageDigestMatches(signMessage, rawUnsignedTx)) {
+            throw new Error(t('home:enterpriseVaultSignTx.err_sign_mismatch'));
+          }
+        } else if (evmUserOp) {
+          let parsedUserOp: unknown;
+          try {
+            parsedUserOp = JSON.parse(evmUserOp);
+          } catch {
+            throw new Error(
+              t('home:enterpriseVaultSignTx.err_sign_unverifiable'),
+            );
+          }
+          const userOpRequest =
+            parsedUserOp &&
+            typeof parsedUserOp === 'object' &&
+            'userOpRequest' in parsedUserOp
+              ? parsedUserOp.userOpRequest
+              : parsedUserOp;
+          if (
+            !userOpHashMatches(
+              userOpRequest,
+              chain as keyof cryptos,
+              rawUnsignedTx,
+            )
+          ) {
+            throw new Error(t('home:enterpriseVaultSignTx.err_sign_mismatch'));
+          }
+        } else {
+          throw new Error(
+            t('home:enterpriseVaultSignTx.err_sign_unverifiable'),
+          );
+        }
 
         // Key-only mode: wallet nonce is empty placeholder — wallet skips
         // Schnorr signing entirely, Key signs independently.

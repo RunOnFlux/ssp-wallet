@@ -42,3 +42,5 @@ coverage
 .*-shots/
 scripts/*-screenshots.mjs
 .probe-profile/
+# dev-only headful test profiles (any *-profile dir a harness spins up)
+.*-profile/

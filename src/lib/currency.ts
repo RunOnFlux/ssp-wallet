@@ -140,12 +140,34 @@ export async function fetchRate(chain: string): Promise<currency> {
   }
 }
 
+// Drop any rate value that is not a finite, positive number. A poisoned relay
+// could otherwise inject NaN/negative/absurd rates: NaN silently DISABLES the
+// 100-USD absurd-fee backstop (isGreaterThan(NaN) is always false), and
+// negatives/absurds break fee math. Omitting a bad value makes downstream
+// `?? 0` treat it as "rate unknown", which fails safe (the hard per-chain
+// maxFee cap still applies).
+function sanitizeRateMap<T>(input: T): T {
+  const out: Record<string, number> = {};
+  for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+      out[key] = value;
+    }
+  }
+  // Sanitization can drop keys; consumers read every rate through `?? 0`, so a
+  // missing (bad) value fails safe. Cast back to the fixed-key rate type.
+  return out as T;
+}
+
 export async function fetchAllRates(): Promise<currencySSPRelay> {
   try {
     const url = `https://${sspConfig().relay}/v1/rates`;
     const response = await axios.get<currencySSPRelay>(url);
     if (response.data.crypto && response.data.fiat) {
-      return response.data;
+      return {
+        ...response.data,
+        crypto: sanitizeRateMap(response.data.crypto),
+        fiat: sanitizeRateMap(response.data.fiat),
+      };
     } else {
       throw new Error('Invalid response from SSP for rates');
     }

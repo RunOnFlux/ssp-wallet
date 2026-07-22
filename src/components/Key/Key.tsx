@@ -267,6 +267,15 @@ function Key(props: {
   useEffect(() => {
     return () => {
       stopBatchPolling();
+      // Also stop the module-scoped 1s sync poll. Without this it survives
+      // unmount (e.g. AutoLogout firing mid-pairing) and a late sync doc would
+      // still persist key xpubs via storeKeyXpubForChain AFTER logout and
+      // WITHOUT the anti-MITM verification gate ever being confirmed.
+      if (pollingSyncInterval) {
+        clearInterval(pollingSyncInterval);
+        pollingSyncInterval = undefined;
+      }
+      syncRunning = false;
     };
   }, []);
 
@@ -632,12 +641,29 @@ function Key(props: {
     finishSync();
   };
 
-  // The user reported the codes DON'T match — a possible relay substitution.
-  // Discard the just-synced key material for this vault, warn, and return to
-  // pairing. Never proceed into the wallet.
-  const abortVerification = () => {
-    verifyOpenRef.current = false;
-    setVerifyGate(null);
+  // Discard EVERY key xpub stored during this session's not-yet-confirmed
+  // syncs — the batch chains AND the active chain. Key xpubs are persisted as
+  // docs arrive (before the verification gate), so an abort must sweep them
+  // all: a relay substitution flagged by a code mismatch taints every chain
+  // synced this session, and leftovers would be treated as already-synced
+  // (hasStoredKeyXpub) and never re-gated.
+  const discardSessionSyncedChains = () => {
+    (Object.keys(batchRef.current.chains) as (keyof cryptos)[]).forEach(
+      (chain) => {
+        const config = blockchains[chain];
+        if (!config) return;
+        try {
+          secureLocalStorage.removeItem(
+            `2-xpub-48-${config.slip}-0-${getScriptType(
+              config.scriptType,
+            )}-${config.id}`,
+          );
+        } catch (error) {
+          console.log(error);
+        }
+        setXpubKey(chain, '');
+      },
+    );
     identityKeyXpubRef.current = '';
     setXpubKey(activeChain, '');
     try {
@@ -645,6 +671,15 @@ function Key(props: {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  // The user reported the codes DON'T match — a possible relay substitution.
+  // Discard the just-synced key material for this vault, warn, and return to
+  // pairing. Never proceed into the wallet.
+  const abortVerification = () => {
+    verifyOpenRef.current = false;
+    setVerifyGate(null);
+    discardSessionSyncedChains();
     displayMessage('warning', t('home:key.verify_mismatch_warning'));
     logoutOrSwitchChain();
   };
@@ -849,7 +884,7 @@ function Key(props: {
     if (!keyInput && !keyAutomaticInput) {
       displayMessage(
         'warning',
-        identityChain
+        isIdentityChain
           ? t('home:key.warn_await_sync')
           : t('home:key.warn_await_sync_chain', {
               chain: blockchainConfig.name,
@@ -862,7 +897,7 @@ function Key(props: {
     if (xpubKeyInput.trim() === xpubWallet.trim()) {
       displayMessage(
         'error',
-        identityChain
+        isIdentityChain
           ? t('home:key.err_sync_1')
           : t('home:key.err_sync_1_chain', { chain: blockchainConfig.name }),
       );
@@ -999,6 +1034,10 @@ function Key(props: {
             chain: blockchainConfig.name,
           }),
       onOk() {
+        // cancelling before the verification code was confirmed — discard
+        // whatever synced this session (it never passed the gate); the user
+        // re-pairs/re-activates cleanly next time
+        discardSessionSyncedChains();
         logoutOrSwitchChain();
       },
       onCancel() {
@@ -1428,12 +1467,14 @@ function Key(props: {
                 />
                 {verified && batchActive && batch.phase !== 'done' && (
                   /* Secondary by design: one primary per screen (Sync Key
-                     stays primary), and a clear 12px gap from the tab body. */
-                  <Button
-                    block
-                    onClick={completeSync}
-                    style={{ marginTop: 12 }}
-                  >
+                     stays primary), and a clear 12px gap from the tab body.
+                     Skipping ahead mid-batch deliberately bypasses the
+                     verification gate: a partial gate would aggregate fewer
+                     chains than SSP Key's code and could NEVER match —
+                     sending the user into a false "they don't match" abort.
+                     Chains already landed passed their cryptographic checks;
+                     the phone's eventual code is informational. */
+                  <Button block onClick={finishSync} style={{ marginTop: 12 }}>
                     {t('home:key.continue_to_wallet')}
                   </Button>
                 )}
