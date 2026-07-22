@@ -54,7 +54,8 @@ export const CHAIN_SYNC_MAX_CHAINS = 20;
 export const CHAIN_SYNC_FALLBACK_TIMEOUT_MS = 30_000;
 /**
  * How long the wallet keeps waiting for further chains once syncing has
- * started (the key needs ~3s per not-yet-derived chain plus 1.5s spacing).
+ * started (the key needs ~6s per not-yet-derived chain — xpriv + xpub
+ * derivations — plus 3s spacing between posts).
  */
 export const CHAIN_SYNC_STALL_TIMEOUT_MS = 60_000;
 

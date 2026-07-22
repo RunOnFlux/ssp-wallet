@@ -20,6 +20,7 @@ The SSP Wallet supports **WalletConnect v2** with a hybrid architecture for maxi
 ## 🏗️ **Architecture**
 
 ### **System Components**
+
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │   DApp      │◄──►│ SSP Wallet  │◄──►│ SSP Relay   │
@@ -34,6 +35,7 @@ The SSP Wallet supports **WalletConnect v2** with a hybrid architecture for maxi
 ```
 
 ### **Communication Methods**
+
 1. **Primary**: REST API for maximum reliability
 2. **Enhancement**: WebSocket for real-time notifications
 3. **Fallback**: Manual QR/URI input for offline scenarios
@@ -42,9 +44,10 @@ The SSP Wallet supports **WalletConnect v2** with a hybrid architecture for maxi
 ## 📋 **Quick Start**
 
 ### **30-Second Test**
+
 ```bash
 # 1. Connect any WalletConnect v2 dApp to SSP Wallet
-# 2. Scan QR or paste URI in SSP Key mobile app  
+# 2. Scan QR or paste URI in SSP Key mobile app
 # 3. Approve signature request → see instant result
 
 # Test API directly:
@@ -54,6 +57,7 @@ curl -X POST https://relay.sspwallet.io/v1/action \
 ```
 
 ### **What You Get**
+
 - ✅ **Full WalletConnect v2** - Standard compliant protocol
 - ✅ **Hybrid Communication** - Real-time + reliable fallbacks
 - ✅ **Multi-Platform** - Web wallet + mobile key approval
@@ -79,12 +83,12 @@ let callGasLimit = Math.ceil((token ? 63544 : 63544) * 1.4);
 
 **Why DeFi Protocols Need More Gas:**
 
-| Operation Type | Gas Required | Complexity |
-|----------------|--------------|------------|
-| **Simple Transfer** | ~89k gas | Single contract call |
-| **OpenSea NFT** | ~133k gas | NFT transfer + marketplace logic |
+| Operation Type                  | Gas Required  | Complexity                                      |
+| ------------------------------- | ------------- | ----------------------------------------------- |
+| **Simple Transfer**             | ~89k gas      | Single contract call                            |
+| **OpenSea NFT**                 | ~133k gas     | NFT transfer + marketplace logic                |
 | **🦄 Uniswap Universal Router** | **~311k gas** | Multi-hop routing, pool interactions, callbacks |
-| **Aave/Compound** | ~178k gas | Lending protocol interactions |
+| **Aave/Compound**               | ~178k gas     | Lending protocol interactions                   |
 
 ### **The Solution: Intelligent Gas Scaling**
 
@@ -102,17 +106,17 @@ export async function estimateGas(
   let preVerificationGas = Math.ceil((token ? 65235 : 64277) * 1.4);
   let callGasLimit = Math.ceil((token ? 63544 : 63544) * 1.4);
   const suggestedVerLimit = Math.ceil((token ? 393861 : 393421) * 1.4);
-  
+
   // DYNAMIC GAS SCALING for complex DeFi operations
   if (customData && customData !== '0x') {
     const dataLength = customData.length;
-    
+
     if (customData.startsWith('0x3593564c')) {
       // Uniswap Universal Router - aggressive scaling
       preVerificationGas = Math.ceil(preVerificationGas * 1.8); // +80%
       callGasLimit = Math.ceil(callGasLimit * 3.5); // +250%
     } else if (dataLength > 1000) {
-      // Complex DeFi - moderate scaling  
+      // Complex DeFi - moderate scaling
       preVerificationGas = Math.ceil(preVerificationGas * 1.5); // +50%
       callGasLimit = Math.ceil(callGasLimit * 2.0); // +100%
     } else if (dataLength > 100) {
@@ -121,12 +125,16 @@ export async function estimateGas(
       callGasLimit = Math.ceil(callGasLimit * 1.5); // +50%
     }
   }
-  
+
   return {
     preVerificationGas: preVerificationGas.toString(),
     callGasLimit: callGasLimit.toString(),
     verificationGasLimit: suggestedVerLimit.toString(),
-    totalGas: (preVerificationGas + callGasLimit + suggestedVerLimit).toString(),
+    totalGas: (
+      preVerificationGas +
+      callGasLimit +
+      suggestedVerLimit
+    ).toString(),
   };
 }
 
@@ -137,7 +145,7 @@ const calculateGasBreakdown = () => {
   const hasToken = txToken && txToken !== blockchainConfig.tokens[0].contract;
   let basePreVerificationGas = Math.ceil((hasToken ? 65235 : 64277) * 1.4);
   let baseCallGasLimit = Math.ceil((hasToken ? 63544 : 63544) * 1.4);
-  
+
   // Apply same scaling logic...
   // Final values are set to state and passed to transaction function
 };
@@ -145,8 +153,8 @@ const calculateGasBreakdown = () => {
 // 🔧 Transaction construction (src/lib/constructTx.ts)
 export async function constructAndSignEVMTransaction(
   // ... other parameters
-  preVerificationGas: string,    // Always provided from estimation
-  callGasLimit: string,         // Always provided from estimation  
+  preVerificationGas: string, // Always provided from estimation
+  callGasLimit: string, // Always provided from estimation
   verificationGasLimit: string, // Always provided from estimation
   // ... remaining parameters
 ): Promise<string> {
@@ -154,14 +162,14 @@ export async function constructAndSignEVMTransaction(
   const gasPreVerification = Number(preVerificationGas);
   const gasCallLimit = Number(callGasLimit);
   const gasVerificationLimit = Number(verificationGasLimit);
-  
+
   console.log('💻 USING PROVIDED GAS VALUES:', {
     preVerificationGas: gasPreVerification,
     callGasLimit: gasCallLimit,
     verificationGasLimit: gasVerificationLimit,
     total: gasPreVerification + gasCallLimit + gasVerificationLimit,
   });
-  
+
   // Transaction construction with exact gas values...
 }
 ```
@@ -171,17 +179,18 @@ export async function constructAndSignEVMTransaction(
 The SSP wallet now uses **intelligent account-aware gas estimation** that dramatically reduces costs for existing accounts:
 
 #### **Core Functions**
+
 ```typescript
 // 1. Smart Gas Estimation with Account Detection (src/lib/constructTx.ts)
 export async function estimateGas(
   chain: keyof cryptos,
-  sender: string, 
+  sender: string,
   token: string,
   customData?: string,
 ): Promise<GasEstimate> {
   // CRITICAL: Check if account already exists
   const accountExists = accountNonce !== '0x0';
-  
+
   if (accountExists) {
     // 60-80% lower gas requirements for existing accounts
     verificationGasLimit = Math.ceil(81492 * 1.4); // ~113k instead of ~550k
@@ -191,16 +200,17 @@ export async function estimateGas(
   }
 }
 
-// 2. Transaction Construction (src/lib/constructTx.ts)  
+// 2. Transaction Construction (src/lib/constructTx.ts)
 export async function constructAndSignEVMTransaction(
   // ... standard params
-  preVerificationGas: string,    // Always required
-  callGasLimit: string,          // Always required  
-  verificationGasLimit: string,  // Always required
-): Promise<string>
+  preVerificationGas: string, // Always required
+  callGasLimit: string, // Always required
+  verificationGasLimit: string, // Always required
+): Promise<string>;
 ```
 
 #### **Gas Component Sources - Account-Aware**
+
 Real Alchemy responses from `eth_estimateUserOperationGas`:
 
 ```typescript
@@ -209,7 +219,7 @@ Real Alchemy responses from `eth_estimateUserOperationGas`:
  * - Token:  preVerificationGas: 65235, callGasLimit: 63544, verificationGasLimit: 393861
  *
  * Account Exists (nonce > 0) - MUCH CHEAPER:
- * - Native: preVerificationGas: 62076, callGasLimit: 27138, verificationGasLimit: 81242  
+ * - Native: preVerificationGas: 62076, callGasLimit: 27138, verificationGasLimit: 81242
  * - Token:  preVerificationGas: 63000, callGasLimit: 55810, verificationGasLimit: 81492
  *
  * CRITICAL: Account existence = 80% reduction in verificationGasLimit!
@@ -218,12 +228,12 @@ Real Alchemy responses from `eth_estimateUserOperationGas`:
 
 #### **Real-World Gas Savings**
 
-| Transaction Type | Account Creation | Existing Account | Savings |
-|------------------|------------------|------------------|---------|
-| **Native ETH Transfer** | ~729k gas | **~238k gas** | **🎯 67% reduction** |
-| **ERC-20 Transfer** | ~729k gas | **~278k gas** | **🎯 62% reduction** |
-| **Uniswap (existing)** | ~2.28M gas | **~950k gas** | **🎯 58% reduction** |
-| **DeFi (existing)** | ~1.82M gas | **~780k gas** | **🎯 57% reduction** |
+| Transaction Type        | Account Creation | Existing Account | Savings              |
+| ----------------------- | ---------------- | ---------------- | -------------------- |
+| **Native ETH Transfer** | ~729k gas        | **~238k gas**    | **🎯 67% reduction** |
+| **ERC-20 Transfer**     | ~729k gas        | **~278k gas**    | **🎯 62% reduction** |
+| **Uniswap (existing)**  | ~2.28M gas       | **~950k gas**    | **🎯 58% reduction** |
+| **DeFi (existing)**     | ~1.82M gas       | **~780k gas**    | **🎯 57% reduction** |
 
 #### **WalletConnect Integration Benefits**
 
@@ -242,17 +252,18 @@ When dApps connect to SSP wallet:
 ```
 
 #### **Dynamic Scaling for DeFi**
+
 Complex operations still get automatic scaling in `estimateGas()`:
 
 ```typescript
 if (customData.startsWith('0x3593564c')) {
   // Uniswap Universal Router
-  preVerificationGas *= 1.8;  // +80%
-  callGasLimit *= 3.5;        // +250%
+  preVerificationGas *= 1.8; // +80%
+  callGasLimit *= 3.5; // +250%
 } else if (dataLength > 1000) {
   // Complex DeFi
-  preVerificationGas *= 1.5;  // +50%
-  callGasLimit *= 2.0;        // +100%
+  preVerificationGas *= 1.5; // +50%
+  callGasLimit *= 2.0; // +100%
 }
 ```
 
@@ -270,6 +281,7 @@ if (customData.startsWith('0x3593564c')) {
 ### **Core Files**
 
 #### **SSP Wallet**
+
 ```typescript
 // src/contexts/WalletConnectContext.tsx
 - WalletConnect v2 client initialization
@@ -278,13 +290,14 @@ if (customData.startsWith('0x3593564c')) {
 - EIP-191, EIP-712 compliance
 - Schnorr MultiSig integration
 
-// src/lib/walletConnectRelay.ts  
+// src/lib/walletConnectRelay.ts
 - API client for SSP Relay communication
 - Request/response handling with polling
 - Connection testing utilities
 ```
 
 #### **Gas Estimation Enhancement**
+
 ```typescript
 // src/lib/constructTx.ts - Enhanced estimateGas function
 export async function estimateGas(
@@ -292,7 +305,7 @@ export async function estimateGas(
   sender: string,
   token: string,
   customData?: string, // WalletConnect transaction data
-): Promise<GasEstimate>
+): Promise<GasEstimate>;
 
 // src/lib/constructTx.ts - Simplified constructAndSignEVMTransaction
 export async function constructAndSignEVMTransaction(
@@ -311,7 +324,7 @@ export async function constructAndSignEVMTransaction(
   token?: `0x${string}` | '',
   importedTokens: Token[] = [],
   customData?: string,
-): Promise<string>
+): Promise<string>;
 
 // src/pages/SendFlow/useEvmSendStrategy.tsx - Real-time integration
 const getTotalGasLimit = async () => {
@@ -324,6 +337,7 @@ const getTotalGasLimit = async () => {
 ```
 
 #### **SSP Relay**
+
 ```typescript
 // src/apiServices/actionApi.ts
 + Enhanced to support 'walletconnect' actions
@@ -336,6 +350,7 @@ const getTotalGasLimit = async () => {
 ```
 
 #### **SSP Key**
+
 ```typescript
 // src/contexts/SocketContext.tsx
 + WalletConnect request handling via WebSocket
@@ -383,10 +398,11 @@ await handlePersonalSign(['0x48656c6c6f20576f726c64', '0x742d35Cc...']);
 ## 📡 **Communication Flows**
 
 ### **Primary Flow (API + WebSocket)**
+
 ```
 1. DApp → SSP Wallet: WalletConnect request
 2. SSP Wallet → SSP Relay: POST /v1/action (action: 'walletconnect')
-3. SSP Relay → SSP Key: WebSocket 'walletconnect' event  
+3. SSP Relay → SSP Key: WebSocket 'walletconnect' event
 4. SSP Key: User approves/rejects
 5. SSP Key → SSP Relay: POST /v1/action (action: 'walletconnect_response')
 6. SSP Relay → SSP Wallet: WebSocket 'walletconnect_response' event
@@ -394,66 +410,72 @@ await handlePersonalSign(['0x48656c6c6f20576f726c64', '0x742d35Cc...']);
 ```
 
 ### **Fallback Flow (API Only)**
+
 ```
 1. DApp → SSP Wallet: WalletConnect request
 2. SSP Wallet → SSP Relay: POST /v1/action (action: 'walletconnect')
-3. SSP Wallet: Polls GET /v1/action/{wkIdentity} 
+3. SSP Wallet: Polls GET /v1/action/{wkIdentity}
 4. SSP Key: Polls GET /v1/action/{wkIdentity}
-5. SSP Key: User approves/rejects  
+5. SSP Key: User approves/rejects
 6. SSP Key → SSP Relay: POST /v1/action (action: 'walletconnect_response')
 7. SSP Wallet: Receives response via polling
 8. SSP Wallet → DApp: Signature result
 ```
 
 ### **Manual/QR Flow**
+
 ```
 1. DApp generates WalletConnect URI
 2. User manually enters or scans QR code in SSP Key
 3. SSP Key parses: chain:wallet:walletConnectData format
 4. SSP Key shows approval modal
-5. SSP Key → SSP Relay: POST /v1/action (action: 'walletconnect_response') 
+5. SSP Key → SSP Relay: POST /v1/action (action: 'walletconnect_response')
 6. DApp polls or uses WebSocket for result
 ```
 
 ## 🛠️ **Protocol Support**
 
 ### **Signing Methods**
+
 ```javascript
 // Message signing with EIP-191
-personal_sign(message, address)
+personal_sign(message, address);
 
-// Structured data with EIP-712  
-eth_signTypedData_v4(address, typedData)
+// Structured data with EIP-712
+eth_signTypedData_v4(address, typedData);
 
 // Raw message signing (deprecated but supported)
-eth_sign(address, hash)
+eth_sign(address, hash);
 ```
 
 ### **Transaction Methods**
+
 ```javascript
 // Sign and broadcast transaction
-eth_sendTransaction({to, value, data, gas, gasPrice})
+eth_sendTransaction({ to, value, data, gas, gasPrice });
 
 // Sign transaction only (no broadcast)
-eth_signTransaction({to, value, data})
+eth_signTransaction({ to, value, data });
 ```
 
 ### **Wallet Methods**
+
 ```javascript
 // Account discovery
-eth_accounts() / eth_requestAccounts()
+eth_accounts() / eth_requestAccounts();
 
 // Network information
-eth_chainId() / net_version()
+eth_chainId() / net_version();
 
 // Chain switching
-wallet_switchEthereumChain({chainId: '0x1'})
-wallet_addEthereumChain({chainId, chainName, rpcUrls, nativeCurrency})
+wallet_switchEthereumChain({ chainId: '0x1' });
+wallet_addEthereumChain({ chainId, chainName, rpcUrls, nativeCurrency });
 ```
 
 ## 📋 **Request/Response Format**
 
 ### **WalletConnect Request**
+
 ```json
 {
   "action": "walletconnect",
@@ -465,9 +487,10 @@ wallet_addEthereumChain({chainId, chainName, rpcUrls, nativeCurrency})
 ```
 
 ### **WalletConnect Response**
+
 ```json
 {
-  "action": "walletconnect_response", 
+  "action": "walletconnect_response",
   "payload": "{\"requestId\":\"wc_123\",\"approved\":true,\"result\":\"0x1234...\",\"timestamp\":1234567890}",
   "chain": "",
   "path": "",
@@ -478,17 +501,20 @@ wallet_addEthereumChain({chainId, chainName, rpcUrls, nativeCurrency})
 ## 🎨 **UI Components**
 
 ### **Session Management**
+
 - **SessionProposalModal** - Approve/reject new connections
 - **ActiveSessionsList** - Manage connected dApps
 - **DisconnectButton** - Clean session termination
 
-### **Request Approval**  
+### **Request Approval**
+
 - **PersonalSignModal** - Simple message signing
 - **TypedDataSignModal** - Structured data (EIP-712)
 - **TransactionRequestModal** - Transaction review and approval
 - **ChainSwitchModal** - Network change confirmation
 
 ### **Mobile Integration**
+
 - **QRScanner** - Camera-based URI capture
 - **ManualInput** - Text input for copy/paste
 - **RequestNotification** - Push alerts for pending requests
@@ -496,16 +522,18 @@ wallet_addEthereumChain({chainId, chainName, rpcUrls, nativeCurrency})
 ## ⚙️ **Configuration**
 
 ### **Chain Support**
+
 ```javascript
 const SUPPORTED_CHAINS = [
-  'eip155:1',    // Ethereum Mainnet
+  'eip155:1', // Ethereum Mainnet
   'eip155:8453', // Base
   'eip155:42161', // Arbitrum
-  'eip155:137',   // Polygon
+  'eip155:137', // Polygon
 ];
 ```
 
 ### **WalletConnect Setup**
+
 ```javascript
 // Update WalletConnect Project ID (get from https://cloud.reown.com)
 const WALLETCONNECT_PROJECT_ID = 'your_project_id_here';
@@ -515,19 +543,21 @@ const FEATURES = {
   WALLETCONNECT_ENABLED: process.env.NODE_ENV === 'production',
   WEBSOCKET_REAL_TIME: true,
   QR_SCANNER: true,
-  MANUAL_INPUT: true
+  MANUAL_INPUT: true,
 };
 ```
 
 ## 🔒 **Security Features**
 
 ### **Input Validation**
+
 - ✅ **Address Validation**: Verify signing requests match active wallet
 - ✅ **Chain Validation**: Ensure requests are for supported networks
 - ✅ **Method Validation**: Only allow whitelisted RPC methods
 - ✅ **Payload Sanitization**: Validate and sanitize all request data
 
 ### **Key Management**
+
 - ✅ **Private Key Protection**: Keys properly encrypted and cleared from memory
 - ✅ **Nonce Security**: Each nonce used only once and properly managed
 - ✅ **Error Information**: No sensitive information leaked in error messages
@@ -536,11 +566,13 @@ const FEATURES = {
 ## 🐛 **Known Issues & Solutions**
 
 ### **Account Abstraction Incompatibility: `eth_signTransaction`**
+
 **Issue**: `eth_signTransaction` method is not compatible with Account Abstraction wallets  
 **Cause**: UserOperations cannot be converted to valid RLP-encoded transactions that dApps expect  
 **Solution**: Method immediately rejects with clear error message directing dApps to use `eth_sendTransaction` instead
 
 ### **Premature Transaction ID Display**
+
 **Issue**: Transaction IDs are sometimes shown before SSP Key approval  
 **Cause**: WebSocket receives transaction hash immediately after construction, before approval  
 **Solution**: Under development - will defer TxSent modal until approval confirmation
@@ -551,6 +583,7 @@ const FEATURES = {
 **✅ Current Solution**: Intelligent account existence detection with massive cost savings:
 
 #### **Account Detection Logic**
+
 ```typescript
 // Check account nonce to determine existence
 const accountNonce = await eth_getTransactionCount(sender, 'latest');
@@ -558,25 +591,27 @@ const accountExists = accountNonce !== '0x0';
 
 if (accountExists) {
   // Existing account: 60-80% lower verification gas
-  verificationGasLimit = Math.ceil(81492 * 1.4);   // ~113k
-  callGasLimit = Math.ceil(27138 * 1.4);           // ~38k (native)
+  verificationGasLimit = Math.ceil(81492 * 1.4); // ~113k
+  callGasLimit = Math.ceil(27138 * 1.4); // ~38k (native)
 } else {
-  // Account creation: Higher gas requirements  
-  verificationGasLimit = Math.ceil(393421 * 1.4);  // ~550k
-  callGasLimit = Math.ceil(63544 * 1.4);           // ~89k
+  // Account creation: Higher gas requirements
+  verificationGasLimit = Math.ceil(393421 * 1.4); // ~550k
+  callGasLimit = Math.ceil(63544 * 1.4); // ~89k
 }
 ```
 
 #### **Multi-Level Gas Architecture**
+
 - **🔍 Detection Level**: Account nonce check determines base gas requirements
 - **📊 Estimation Level**: Account-aware base values + dynamic DeFi scaling
-- **🎛️ UI Level**: Real-time calculation and manual override capability  
+- **🎛️ UI Level**: Real-time calculation and manual override capability
 - **🔗 WalletConnect Level**: dApp gasLimit + appropriate AA overhead
 - **✅ Result**: 99%+ success rate with accurate estimates and massive cost savings
 
 ## 🚀 **Future Enhancements**
 
 ### **✅ Completed**
+
 - **Account-Aware Gas Estimation**: Intelligent detection saving 60-80% gas costs
 - **WalletConnect Gas Compatibility**: Proper dApp gasLimit handling with AA overhead
 - **Dynamic DeFi Scaling**: Automatic gas adjustments for Uniswap, Aave, etc.
@@ -584,24 +619,28 @@ if (accountExists) {
 - **Individual Gas Components**: Clean API with explicit preVerification, call, verification limits
 
 ### **🔄 In Progress**
+
 - **Real-time Gas Estimation**: Replace hardcoded Alchemy values with live `eth_estimateUserOperationGas` calls
 - **Chain-Specific Optimization**: Different base values for Polygon, Arbitrum, etc.
 
 ### **🎯 Planned**
+
 - **Intelligent Gas Price Detection**: Dynamic base/priority fee suggestions based on network congestion
 - **Transaction Simulation**: Pre-flight simulation to catch reverts before signing
 - **Gas Price Alerts**: Notify users when network fees are unusually high/low
 - **Batch Transaction Support**: Multi-call operations with optimized gas distribution
 
 ### **📊 Metrics to Track**
+
 - **Gas Accuracy**: % of transactions that succeed with estimated gas
-- **Cost Savings**: Average reduction in gas estimates for existing accounts  
+- **Cost Savings**: Average reduction in gas estimates for existing accounts
 - **User Satisfaction**: Reduced "gas too expensive" complaints
 - **DeFi Success Rate**: Complex operation success rate with dynamic scaling
 
 ## 🧪 **Testing & Verification**
 
 ### **Completed Testing**
+
 - ✅ **Key Derivation**: Proper wallet key generation and validation
 - ✅ **Nonce Management**: Storage and consumption of public nonces
 - ✅ **Error Handling**: Various error scenarios and user feedback
@@ -610,6 +649,7 @@ if (accountExists) {
 - ✅ **Multi-Chain**: Cross-chain transaction support
 
 ### **API Testing**
+
 ```bash
 # Confirmed working with actual relay
 curl -X POST https://relay.sspwallet.io/v1/action \
@@ -620,24 +660,28 @@ curl -X POST https://relay.sspwallet.io/v1/action \
 ## 💡 **Benefits of This Architecture**
 
 ### **1. Reuses Existing Infrastructure** ✅
+
 - No new database tables needed
-- No new API endpoints needed  
+- No new API endpoints needed
 - Leverages proven action API patterns
 - Uses existing WebSocket infrastructure
 
 ### **2. Clean Architecture** ✅
+
 - Single API for all SSP actions (tx, nonces, walletconnect)
 - Consistent error handling and validation
 - Unified logging and monitoring
 - No code duplication
 
 ### **3. Reliability** ✅
+
 - API-first approach for maximum reliability
-- WebSocket enhancement for real-time experience  
+- WebSocket enhancement for real-time experience
 - Automatic fallback mechanisms
 - 15-minute auto-expiration prevents buildup
 
 ### **4. User Experience** ✅
+
 - **Real-time notifications** when WebSocket works
 - **Reliable delivery** when WebSocket fails
 - **Manual input support** for any situation
@@ -645,4 +689,4 @@ curl -X POST https://relay.sspwallet.io/v1/action \
 
 ---
 
-*This implementation enables SSP Wallet users to seamlessly interact with complex DeFi protocols through WalletConnect while maintaining optimal gas efficiency, security, and cost transparency.* 
+_This implementation enables SSP Wallet users to seamlessly interact with complex DeFi protocols through WalletConnect while maintaining optimal gas efficiency, security, and cost transparency._

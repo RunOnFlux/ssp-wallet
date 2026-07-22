@@ -488,6 +488,16 @@ function Key(props: {
       entry.status = 'synced';
       batch.lastProgressAt = Date.now();
       refreshBatch();
+      // If this was the LAST outstanding chain, the batch is complete —
+      // without this, a batch whose ACTIVE chain settles last (single-chain
+      // one-tap activation being the common case) never reaches 'done' and
+      // the verification gate is silently skipped even though SSP Key shows
+      // its code. Only finalize an ENGAGED batch ('syncing', i.e. the key
+      // actually answered with sync docs): after a rejection or a pure
+      // manual/typed entry the key shows no code, so no gate belongs here.
+      if (batch.phase === 'syncing') {
+        checkBatchComplete();
+      }
     }
   };
 
@@ -886,16 +896,18 @@ function Key(props: {
             secureLocalStorage.setItem(`2-${derivationPath}`, encryptedXpub2);
             // now we have both xpubWallet and xpubKey
             setVerified(true);
-            markBatchChainSynced(activeChain);
             // retain the key xpub (display-only) for the verification code:
             // identity pairing → the single-pair code; a non-identity chain
             // activated via batch → its entry in the aggregate code.
+            // Recorded BEFORE markBatchChainSynced so a finalize it triggers
+            // builds the gate from the complete entry.
             if (isIdentityChain) {
               identityKeyXpubRef.current = xpub2;
             } else if (batchRef.current.chains[activeChain]) {
               batchRef.current.chains[activeChain].keyXpub = xpub2;
             }
             activeChainDoneRef.current = true;
+            markBatchChainSynced(activeChain);
             if (pollingSyncInterval) {
               clearInterval(pollingSyncInterval);
               pollingSyncInterval = undefined;
