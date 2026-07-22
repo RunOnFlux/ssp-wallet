@@ -143,6 +143,10 @@ export function useEvmSendStrategy(): SendStrategyView {
   const [openConfirmPublicNonces, setOpenConfirmPublicNonces] = useState(false);
   const [openPublicNoncesRejected, setOpenPublicNoncesRejected] =
     useState(false);
+  // guards the Send button against double-clicks while the async build +
+  // sign + post pipeline runs (a double run would consume TWO stored SSP Key
+  // public nonces; the legacy Popconfirm used to debounce this)
+  const [submitting, setSubmitting] = useState(false);
   const [openPublicNoncsReceived, setOpenPublicNoncesReceived] =
     useState(false);
   const [txHex, setTxHex] = useState('');
@@ -857,6 +861,10 @@ export function useEvmSendStrategy(): SendStrategyView {
       displayMessage('error', t('send:err_invalid_fee'));
       return;
     }
+    if (submitting) {
+      return;
+    }
+    setSubmitting(true);
     // get our password to decrypt xpriv from secure storage
     const fingerprint: string = getFingerprint();
     passworderDecrypt(fingerprint, passwordBlob)
@@ -950,6 +958,7 @@ export function useEvmSendStrategy(): SendStrategyView {
               sspWalletKeyInternalIdentity,
             );
             setTxHex(signedTx);
+            setSubmitting(false);
             setOpenConfirmTx(true);
             if (txSentInterval) {
               clearInterval(txSentInterval);
@@ -992,11 +1001,13 @@ export function useEvmSendStrategy(): SendStrategyView {
             }
           })
           .catch((error: TypeError) => {
+            setSubmitting(false);
             displayMessage('error', error.message);
             console.log(error);
           });
       })
       .catch((error: TypeError) => {
+        setSubmitting(false);
         console.log(error);
         displayMessage('error', error.message ?? t('send:err_s1'));
       });
@@ -1409,6 +1420,47 @@ export function useEvmSendStrategy(): SendStrategyView {
   // Advanced Options (transaction data) — compose-step extra, lifted from
   // the legacy Collapse. Shown expanded automatically when a dApp provided
   // calldata via WalletConnect.
+  // Contract-interaction visibility on the REVIEW step: the compose-only
+  // Advanced Options are hidden there, but attached calldata changes what
+  // the transaction DOES — the confirmation screen must say so (a dApp
+  // payload could otherwise review as a plain "0 ETH to 0xContract").
+  const reviewExtra =
+    txData && txData !== '0x' ? (
+      <div style={{ marginTop: 8 }}>
+        <div
+          style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}
+        >
+          <span style={{ fontSize: 12, color: token.colorTextSecondary }}>
+            {t('send:contract_interaction')}
+          </span>
+          <span style={{ fontSize: 12, textAlign: 'right' }}>
+            {decodeTransactionData(txData)}
+          </span>
+        </div>
+        <div
+          style={{
+            fontFamily: 'var(--ssp-mono)',
+            fontSize: 11,
+            color: token.colorTextSecondary,
+            wordBreak: 'break-all',
+            maxHeight: 72,
+            overflowY: 'auto',
+            marginTop: 4,
+          }}
+        >
+          {txData}
+        </div>
+        {txData.startsWith('0xa9059cbb') && (
+          <Alert
+            message={t('send:warn_token_transfer_override')}
+            type="warning"
+            showIcon
+            style={{ marginTop: 8, fontSize: 12 }}
+          />
+        )}
+      </div>
+    ) : null;
+
   const composeExtra = (
     <Collapse
       size="small"
@@ -1594,7 +1646,7 @@ export function useEvmSendStrategy(): SendStrategyView {
     form,
     onFinish: (values) => onFinish(values as sendForm),
     cancel: cancelSend,
-    submitting: false,
+    submitting,
     tokenSelect: {
       items: tokenItems,
       value: txToken,
@@ -1642,6 +1694,7 @@ export function useEvmSendStrategy(): SendStrategyView {
     },
     message: null,
     composeExtra,
+    reviewExtra,
     validateCompose,
     feePresets,
     selectedPreset: feePreset,
@@ -1650,8 +1703,15 @@ export function useEvmSendStrategy(): SendStrategyView {
     hiddenFormContent,
     feeDisplay: txFee || '---',
     // '---' is the explicit "fee unknown" marker set when gas estimation
-    // produced NaN; anything else (incl. a computed zero) is a real fee.
-    feeReady: txFee !== '---' && txFee !== '',
+    // produced NaN. A computed fee of 0 is NOT ready while the gas
+    // components are still their initial 0,0,0 (estimation pending/hung) —
+    // that zero is a placeholder, and Review must never assert it. Any
+    // completed estimate, its failure fallback, or a WalletConnect prefill
+    // yields non-zero components; manual mode is user-controlled.
+    feeReady:
+      txFee !== '---' &&
+      txFee !== '' &&
+      (manualFee || getTotalGasFromComponents() > 0),
     feeSymbol: blockchainConfig.symbol,
     feeFiat: txFee !== '---' ? toFiat(txFee) : null,
     feeRateDisplay: (() => {

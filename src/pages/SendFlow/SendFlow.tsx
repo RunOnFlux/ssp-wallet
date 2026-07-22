@@ -707,6 +707,7 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 </span>
               </div>
             ) : null}
+            {strategy.reviewExtra ?? null}
           </div>
 
           {/* Fee + total summary */}

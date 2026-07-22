@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Skeleton, Image, Tooltip } from 'antd';
 import {
@@ -61,18 +61,39 @@ function Portfolio() {
     [cryptoRates, fiatRates, fiatCurrency],
   );
 
+  // Latest rates, readable at load-COMPLETION time. The mount effect captures
+  // the first render's load closure (all-zero rates); a slow live load could
+  // otherwise resolve AFTER real rates arrived and overwrite correctly-valued
+  // data with $0 totals until the next 5-minute rates poll.
+  const ratesRef = useRef({ cryptoRates, fiatRates, ratesLoaded });
+  ratesRef.current = { cryptoRates, fiatRates, ratesLoaded };
+
   const load = async (live: boolean) => {
     try {
-      const result = await loadPortfolio(
-        cryptoRates,
-        fiatRates,
+      const startRates = ratesRef.current;
+      let result = await loadPortfolio(
+        startRates.cryptoRates,
+        startRates.fiatRates,
         fiatCurrency,
         live,
       );
+      if (
+        ratesRef.current.cryptoRates !== startRates.cryptoRates ||
+        ratesRef.current.fiatRates !== startRates.fiatRates
+      ) {
+        // rates landed while the (network) load ran — revalue from the
+        // just-written cache with the fresh rates before painting
+        result = await loadPortfolio(
+          ratesRef.current.cryptoRates,
+          ratesRef.current.fiatRates,
+          fiatCurrency,
+          false,
+        );
+      }
       setData(result);
       // Snapshots/change only make sense once rates are in — with all-zero
       // rates the total is 0 because of missing rates, not missing funds.
-      if (live && ratesLoaded) {
+      if (live && ratesRef.current.ratesLoaded) {
         const ch = await updatePortfolioSnapshots(
           result.totalFiat,
           fiatCurrency,

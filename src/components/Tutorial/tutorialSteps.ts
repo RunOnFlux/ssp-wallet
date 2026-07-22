@@ -42,7 +42,11 @@ export const getTutorialSteps = (
       title: t('home:tutorial.steps.find_switch_chain.title'),
       content: t('home:tutorial.steps.find_switch_chain.content'),
       position: 'auto',
-      action: 'click',
+      // 'none' (Next button): the target is the inert "Networks" section
+      // heading — with action 'click' the natural user action (tapping a
+      // network ROW) switched chains, closed the drawer and dead-ended the
+      // tour. The NEXT step highlights the Ethereum row for the real click.
+      action: 'none',
       skipable: false,
     },
     {

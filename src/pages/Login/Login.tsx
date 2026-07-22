@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { toast } from '../../lib/toast';
 import { useSspLogo } from '../../hooks/useSspLogo';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { getLastTab, tabToPath } from '../../storage/navPrefs';
 import { Input, Image, Button, Form, Spin } from 'antd';
 import localForage from 'localforage';
@@ -92,6 +92,12 @@ function Login() {
   const { t, i18n } = useTranslation(['login', 'common']);
   const sspLogo = useSspLogo();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Restore navigates here with { imported: true } right after a seed import —
+  // forwarded to the shell's pairing screen so it shows the Import labels.
+  const cameFromImport = Boolean(
+    (location.state as { imported?: boolean } | null)?.imported,
+  );
   const dispatch = useAppDispatch();
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -457,7 +463,10 @@ function Login() {
                 setXpubKeyIdentity(xpub2Identity);
               } else {
                 // check if we have xpub2, if not, navigate to home immediately as there we run a check if to keep localforage or clear it
-                navigate('/home');
+                navigate(
+                  '/home',
+                  cameFromImport ? { state: { imported: true } } : undefined,
+                );
                 return;
               }
             }
@@ -533,11 +542,14 @@ function Login() {
             }
             // Open where the user left off (append-only navPrefs; defaults to
             // Home for fresh profiles — keeps the upgrade-in-place gate green).
+            const navState = cameFromImport
+              ? { state: { imported: true } }
+              : undefined;
             try {
               const lastTab = await getLastTab();
-              navigate(tabToPath(lastTab));
+              navigate(tabToPath(lastTab), navState);
             } catch {
-              navigate('/home');
+              navigate('/home', navState);
             }
           } else {
             displayMessage('error', t('login:err_lx', { code: 'L2' }));

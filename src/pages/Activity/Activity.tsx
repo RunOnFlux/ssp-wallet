@@ -24,6 +24,7 @@ import {
 } from '../../lib/activityFeed';
 import Identicon from '../../components/Identicon/Identicon';
 import WalletName from '../../components/WalletName/WalletName';
+import { useWalletMeta } from '../../storage/walletMeta';
 import ActivityRow from '../../components/ActivityRow/ActivityRow';
 import TxDetails from '../../components/ActivityRow/TxDetails';
 import EmptyState from '../../components/EmptyState/EmptyState';
@@ -47,6 +48,7 @@ function Activity() {
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
+  const walletMeta = useWalletMeta(walletInUse);
 
   const [sources, setSources] = useState<SyncedChainWallet[]>([]);
   const [feed, setFeed] = useState<ActivityFeedItem[]>([]);
@@ -218,11 +220,17 @@ function Activity() {
         <div className="activity-header-meta">
           <span className="activity-header-title">{t('common:activity')}</span>
           <span className="activity-header-sub">
-            <WalletName
-              walletId={walletInUse}
-              chain={activeChain}
-              editable={false}
-            />
+            {/* prefer the v2 walletMeta name — same precedence as the
+                IdentityBar pill and the wallet switcher rows */}
+            {walletMeta.name ? (
+              <span>{walletMeta.name}</span>
+            ) : (
+              <WalletName
+                walletId={walletInUse}
+                chain={activeChain}
+                editable={false}
+              />
+            )}
             {' · '}
             {t('home:activityFeed.chains_scope', {
               count: sources.length,

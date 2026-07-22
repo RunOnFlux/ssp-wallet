@@ -62,6 +62,12 @@ export interface SendStrategyView {
   message: { value: string; set: (value: string) => void } | null;
   /** Chain-specific extra compose content (EVM: advanced data collapse). */
   composeExtra: ReactNode;
+  /**
+   * Chain-specific extra content inside the REVIEW summary card (EVM:
+   * contract-interaction/calldata disclosure — anything that changes what
+   * the transaction does must be visible at the confirmation point).
+   */
+  reviewExtra?: ReactNode;
   /** Gate compose → review. Returns a user-facing error message or null. */
   validateCompose: () => string | null;
 

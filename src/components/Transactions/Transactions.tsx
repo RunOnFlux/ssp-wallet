@@ -49,6 +49,14 @@ function Transactions() {
       getTransactions();
       getCryptoRate(activeChain, sspConfig().fiatCurrency);
     }, 20000);
+    // Home unmounts when switching tabs (Portfolio/Activity/Settings) — the
+    // poller must not keep firing after unmount (same cleanup as Balances).
+    return () => {
+      if (globalThis.refreshIntervalTransactions) {
+        clearInterval(globalThis.refreshIntervalTransactions);
+        globalThis.refreshIntervalTransactions = undefined;
+      }
+    };
   }, [activeChain, walletInUse, walletAddress]);
 
   useEffect(() => {

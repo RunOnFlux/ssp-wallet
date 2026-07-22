@@ -376,6 +376,21 @@ function NodesTable(props: {
           {blockchainConfig.symbol}
         </Text>
       </div>
+      {record.ip && (
+        <div>
+          <Text type="secondary" className="node-detail-label">
+            {t('home:nodesTable.ip')}
+          </Text>
+          {/* the row itself is a <button> (user-select none) — this is the
+              only place the IP can be selected/copied */}
+          <Text
+            copyable={{ text: record.ip }}
+            className="node-detail-value-mono"
+          >
+            {record.ip}
+          </Text>
+        </div>
+      )}
       <div>
         <Text type="secondary" className="node-detail-label">
           {t('home:transactionsTable.txid')}

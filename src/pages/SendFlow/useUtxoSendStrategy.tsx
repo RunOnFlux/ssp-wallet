@@ -94,6 +94,9 @@ export function useUtxoSendStrategy(): SendStrategyView {
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
+  // guards the Send button against double-clicks while the async construct +
+  // post pipeline runs (the legacy Popconfirm used to debounce this)
+  const [submitting, setSubmitting] = useState(false);
   const [txHex, setTxHex] = useState('');
   const [txid, setTxid] = useState('');
   const [sendingAmount, setSendingAmount] = useState('0');
@@ -435,8 +438,12 @@ export function useUtxoSendStrategy(): SendStrategyView {
     // target recommended fee of blockchain config
     setTxSize(txSize);
     const fpb = feePerByte === '---' ? autoRate : feePerByte;
+    // ceil to whole satoshis — a fractional relay rate would otherwise
+    // produce a fractional-satoshi fee and utxolib rejects fractional
+    // satoshi outputs at construction time
     const feeSats = new BigNumber(txSize)
       .multipliedBy(manualFee ? fpb : autoRate)
+      .integerValue(BigNumber.ROUND_CEIL)
       .toFixed(); // satoshis
     let feeUnit = new BigNumber(feeSats)
       .dividedBy(10 ** blockchainConfig.decimals)
@@ -558,6 +565,10 @@ export function useUtxoSendStrategy(): SendStrategyView {
       );
       return;
     }
+    if (submitting) {
+      return;
+    }
+    setSubmitting(true);
     // get our password to decrypt xpriv from secure storage
     const fingerprint: string = getFingerprint();
     passworderDecrypt(fingerprint, passwordBlob)
@@ -639,6 +650,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
               txInfo.utxos,
             );
             setTxHex(txInfo.signedTx);
+            setSubmitting(false);
             setOpenConfirmTx(true);
             if (txSentInterval) {
               clearInterval(txSentInterval);
@@ -681,11 +693,13 @@ export function useUtxoSendStrategy(): SendStrategyView {
             }
           })
           .catch((error: TypeError) => {
+            setSubmitting(false);
             displayMessage('error', error.message);
             console.log(error);
           });
       })
       .catch((error) => {
+        setSubmitting(false);
         console.log(error);
         displayMessage('error', t('send:err_s1'));
       });
@@ -827,9 +841,11 @@ export function useUtxoSendStrategy(): SendStrategyView {
     txFee,
   ]);
 
-  const totalDisplay = new BigNumber(sendingAmount || '0')
-    .plus(txFee || '0')
-    .toFixed();
+  // guard against a garbage custom fee — Review must never print "NaN"
+  const totalCandidate = new BigNumber(sendingAmount || '0').plus(txFee || '0');
+  const totalDisplay = totalCandidate.isFinite()
+    ? totalCandidate.toFixed()
+    : '---';
 
   // Legacy manual-fee inputs: total fee in coin units + derived sat/vB
   // readout — exactly the fields the old Send page exposed in manual mode.
@@ -898,7 +914,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
     form,
     onFinish: (values) => onFinish(values as sendForm),
     cancel: cancelSend,
-    submitting: false,
+    submitting,
     tokenSelect: null,
     receiver: {
       value: txReceiver,
