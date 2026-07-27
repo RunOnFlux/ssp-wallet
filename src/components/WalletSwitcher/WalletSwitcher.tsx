@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
-import { Drawer, Input, Modal, Popconfirm, Divider, Image } from 'antd';
+import { Drawer, Input, Modal, Popconfirm, Divider, Image, Spin } from 'antd';
 import {
   Check as CheckIcon,
   CircleHelp as CircleHelpIcon,
@@ -73,6 +73,14 @@ function WalletSwitcher({ open, openAction }: Props) {
   const [query, setQuery] = useState('');
   const [renameId, setRenameId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  // chain whose switch is running — drives the row spinner + the sheet-wide
+  // disabled state (a switch decrypts the seed and re-derives master keys, so
+  // it takes seconds during which every row used to stay pressable)
+  const [switchingChain, setSwitchingChain] = useState<keyof cryptos | null>(
+    null,
+  );
+  // guards the same-tick double tap that a state flag cannot catch
+  const switchInFlight = useRef(false);
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { wallets, walletInUse, xpubKey, xpubWallet } = useAppSelector(
@@ -264,12 +272,18 @@ function WalletSwitcher({ open, openAction }: Props) {
     })();
   };
 
+  // One switch at a time: setActiveChain + the activeChain storage write are
+  // last-writer-wins, so two concurrent switches could land the user on the
+  // chain they tapped FIRST (and navigate twice).
   const switchChain = (chain: keyof cryptos) => {
+    if (switchInFlight.current) return;
     if (chain === activeChain) {
       openAction(false);
       navigate('/home');
       return;
     }
+    switchInFlight.current = true;
+    setSwitchingChain(chain);
     void (async function () {
       try {
         await switchToChain(chain, passwordBlob);
@@ -278,9 +292,16 @@ function WalletSwitcher({ open, openAction }: Props) {
       } catch (error) {
         console.log(error);
         displayMessage('error', t('home:chainSelect.unable_switch_chain'));
+      } finally {
+        switchInFlight.current = false;
+        setSwitchingChain(null);
       }
     })();
   };
+
+  // Everything in the sheet mutates the SAME per-chain redux + localForage keys
+  // a running switch is rewriting — nothing is pressable while one is live.
+  const rowsDisabled = switchingChain !== null;
 
   // Right-hand drawer only in the ≥500px side-panel two-column layout; a
   // phone-width panel behaves exactly like the popup (bottom sheet).
@@ -325,11 +346,16 @@ function WalletSwitcher({ open, openAction }: Props) {
               key={id}
               role="button"
               tabIndex={0}
+              aria-disabled={rowsDisabled || undefined}
               className={`switcher-wallet${id === walletInUse ? ' switcher-wallet-active' : ''}`}
-              onClick={() => void selectWallet(id)}
+              onClick={() => {
+                if (rowsDisabled) return;
+                void selectWallet(id);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
+                  if (rowsDisabled) return;
                   void selectWallet(id);
                 }
               }}
@@ -374,6 +400,7 @@ function WalletSwitcher({ open, openAction }: Props) {
                   className="switcher-wallet-rename"
                   title={t('common:rename_wallet')}
                   aria-label={t('common:rename_wallet')}
+                  disabled={rowsDisabled}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -428,7 +455,7 @@ function WalletSwitcher({ open, openAction }: Props) {
             type="button"
             className="switcher-action switcher-action-new"
             onClick={addWallet}
-            disabled={walletIds.length >= 20}
+            disabled={rowsDisabled || walletIds.length >= 20}
             title={t('home:navbar.generate_new_wallet')}
             data-tutorial="add-wallet-button"
           >
@@ -444,12 +471,14 @@ function WalletSwitcher({ open, openAction }: Props) {
               okText={t('home:navbar.remove')}
               cancelText={t('common:cancel')}
               onConfirm={removeLastWallet}
+              disabled={rowsDisabled}
               icon={<CircleHelpIcon style={{ color: '#f59e0b' }} />}
             >
               <button
                 type="button"
                 className="switcher-action switcher-action-remove"
                 title={t('home:navbar.remove_last_wallet')}
+                disabled={rowsDisabled}
                 data-tutorial="remove-wallet-button"
               >
                 <Trash2Icon className="switcher-action-icon" />
@@ -472,8 +501,10 @@ function WalletSwitcher({ open, openAction }: Props) {
           <button
             key={chain}
             type="button"
-            className={`switcher-chain${chain === activeChain ? ' switcher-chain-active' : ''}`}
+            className={`switcher-chain${chain === activeChain ? ' switcher-chain-active' : ''}${chain === switchingChain ? ' switcher-chain-switching' : ''}`}
             onClick={() => switchChain(chain)}
+            disabled={rowsDisabled}
+            aria-busy={chain === switchingChain || undefined}
             data-tutorial={chain === 'eth' ? 'chain-item-eth' : undefined}
           >
             <Image
@@ -486,7 +517,8 @@ function WalletSwitcher({ open, openAction }: Props) {
             <span className="switcher-chain-name">
               {blockchains[chain].name}
             </span>
-            {chain === activeChain && (
+            {chain === switchingChain && <Spin size="small" />}
+            {chain === activeChain && chain !== switchingChain && (
               <CheckIcon className="switcher-wallet-check" />
             )}
           </button>

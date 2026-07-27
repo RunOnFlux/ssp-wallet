@@ -92,7 +92,10 @@ function EnterpriseNonceSync({ open, requesterInfo, openAction }: Props) {
 
     try {
       if (!wkIdentity || !passwordBlob) {
-        throw new Error(t('home:enterpriseNonceSync.err_wallet_not_ready'));
+        // The actionable message, not the terse `err_wallet_not_ready`
+        // ("Wallet not ready"), which told the user nothing about what to do
+        // and left its actionable sibling key unreferenced.
+        throw new Error(t('home:enterpriseNonceSync.wallet_not_ready'));
       }
       // Phase 1: Force-replace wallet nonces (purge old, generate fresh set)
       await replenishWalletEnterpriseNonces(wkIdentity, passwordBlob, true);

@@ -4,6 +4,7 @@ import {
   verificationWords,
   batchVerificationWords,
   verificationCode,
+  recoveryVerificationWords,
 } from '../../src/lib/verificationCode';
 
 // Two format-valid xpubs that differ only in their tail — enough for the
@@ -106,6 +107,59 @@ describe('verificationCode', () => {
         'marriage',
         'trumpet',
         'razor',
+      ]);
+    });
+  });
+  describe('recoveryVerificationWords', () => {
+    const PK_EPH = '02' + 'ab'.repeat(32);
+    const NONCE = 'cd'.repeat(16);
+
+    it('is deterministic and yields six wordlist words', () => {
+      const words = recoveryVerificationWords(PK_EPH, NONCE);
+      expect(words).toHaveLength(6);
+      words.forEach((word) => expect(wordSet.has(word)).toBe(true));
+      expect(recoveryVerificationWords(PK_EPH, NONCE)).toEqual(words);
+    });
+
+    it('changes when either field is substituted', () => {
+      const words = recoveryVerificationWords(PK_EPH, NONCE);
+      expect(
+        recoveryVerificationWords('03' + 'ab'.repeat(32), NONCE),
+      ).not.toEqual(words);
+      expect(recoveryVerificationWords(PK_EPH, 'ce'.repeat(16))).not.toEqual(
+        words,
+      );
+    });
+
+    it('tolerates casing and surrounding whitespace', () => {
+      expect(
+        recoveryVerificationWords(
+          ` ${PK_EPH.toUpperCase()} `,
+          ` ${NONCE.toUpperCase()} `,
+        ),
+      ).toEqual(recoveryVerificationWords(PK_EPH, NONCE));
+    });
+
+    it('is NOT order-invariant — the two fields play different roles', () => {
+      expect(recoveryVerificationWords(NONCE, PK_EPH)).not.toEqual(
+        recoveryVerificationWords(PK_EPH, NONCE),
+      );
+    });
+
+    it('is domain-separated from the pairing codes', () => {
+      expect(recoveryVerificationWords(PK_EPH, NONCE)).not.toEqual(
+        verificationWords(PK_EPH, NONCE, 'recovery'),
+      );
+    });
+
+    it('matches a fixed known vector (cross-repo parity)', () => {
+      expect(recoveryVerificationWords(PK_EPH, NONCE)).toEqual([
+        'immense',
+        'laundry',
+        'snake',
+        'naive',
+        'spring',
+        'turn',
       ]);
     });
   });

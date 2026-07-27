@@ -89,3 +89,82 @@ export function computeEvmMaxToken(
 ): string {
   return new BigNumber(balanceBase).dividedBy(10 ** tokenDecimals).toFixed();
 }
+
+/**
+ * Half-typed amounts and the '---' fee placeholder reach these helpers, and
+ * bignumber.js THROWS on a non-numeric string rather than yielding NaN, so
+ * every parse of a display/input string goes through here.
+ */
+function parseAmount(value: string): BigNumber | null {
+  try {
+    const numeric = new BigNumber(value);
+    return numeric.isFinite() ? numeric : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Insufficient-balance check shared by the live amount validation and the
+ * compose → review gate: a native send must cover amount + fee out of the
+ * same balance, a token send only the amount (the fee is paid in native).
+ * An unparseable amount/fee/balance is NOT reported as exceeding — the amount
+ * field's own "invalid amount" rule owns that case.
+ */
+export function evmAmountExceedsBalance(
+  sendingAmount: string,
+  feeEth: string,
+  spendableBase: string,
+  decimals: number,
+  isToken: boolean,
+): boolean {
+  const amount = parseAmount(sendingAmount || '0');
+  const fee = isToken ? new BigNumber(0) : parseAmount(feeEth || '0');
+  const spendable = parseAmount(spendableBase || '0');
+  if (!amount || !fee || !spendable) {
+    return false;
+  }
+  return amount.plus(fee).isGreaterThan(spendable.dividedBy(10 ** decimals));
+}
+
+/**
+ * amount + fee in native units (full precision — this is what the fiat
+ * conversion consumes), or null when either side is not a number yet. Both are
+ * user-typed strings and the fee also carries the '---' placeholder, so the
+ * sum has to be parsed defensively rather than thrown from render.
+ */
+export function evmTotalNative(
+  sendingAmount: string,
+  feeEth: string,
+): string | null {
+  const amount = parseAmount(sendingAmount || '0');
+  const fee = parseAmount(feeEth || '0');
+  if (!amount || !fee) {
+    return null;
+  }
+  return amount.plus(fee).toFixed();
+}
+
+/**
+ * Display cap for EVM amounts. Wei-precision values carry up to 18 decimals
+ * ("0.00044731977948761 ETH"), which is noise on the very rows where the user
+ * verifies a spend and reads inconsistently next to the 8-decimal UTXO rows in
+ * the same component. Fees and totals round UP so the displayed number never
+ * understates what leaves the wallet; MAX rounds DOWN so it never overstates
+ * what is available. Returns null for a value that is not a finite number
+ * (callers keep their own '---' placeholder for that).
+ */
+export function evmDisplayAmount(
+  value: string | null,
+  rounding: BigNumber.RoundingMode = BigNumber.ROUND_CEIL,
+  maxDecimals = 8,
+): string | null {
+  if (value === null || value === '') {
+    return null;
+  }
+  const numeric = parseAmount(value);
+  if (!numeric) {
+    return null;
+  }
+  return numeric.decimalPlaces(maxDecimals, rounding).toFixed();
+}

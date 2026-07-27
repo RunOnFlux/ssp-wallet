@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Skeleton, Image, Tooltip } from 'antd';
+import type { NoticeType } from 'antd/es/message/interface';
 import {
   ArrowDown as ArrowDownIcon,
   ArrowUp as ArrowUpIcon,
-  RefreshCw as RefreshCwIcon,
+  LoaderCircle as LoaderCircleIcon,
+  RotateCw as RotateCwIcon,
 } from 'lucide-react';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
+import { toast } from '../../lib/toast';
 import { useAppSelector } from '../../hooks';
 import { usePrivacyMode } from '../../contexts/PrivacyContext';
 import { sspConfig } from '@storage/ssp';
@@ -46,8 +49,13 @@ function Portfolio() {
   const [change, setChange] = useState<PortfolioChange | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [switching, setSwitching] = useState<keyof cryptos | null>(null);
 
   const fiatCurrency = sspConfig().fiatCurrency;
+
+  const displayMessage = (type: NoticeType, content: string) => {
+    void toast.open({ type, content });
+  };
 
   // Rates readiness: the fiatCryptoRates slice initializes every rate to 0 and
   // only ever moves via setCryptoRates/setFiatRates once the controller fetch
@@ -68,7 +76,9 @@ function Portfolio() {
   const ratesRef = useRef({ cryptoRates, fiatRates, ratesLoaded });
   ratesRef.current = { cryptoRates, fiatRates, ratesLoaded };
 
-  const load = async (live: boolean) => {
+  // Resolves to false when the load failed — a user-initiated refresh must be
+  // able to tell the user, instead of spinning and showing the same figures.
+  const load = async (live: boolean): Promise<boolean> => {
     try {
       const startRates = ratesRef.current;
       let result = await loadPortfolio(
@@ -100,8 +110,10 @@ function Portfolio() {
         );
         setChange(ch);
       }
+      return true;
     } catch (error) {
       console.log('[portfolio] load failed', error);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -151,7 +163,19 @@ function Portfolio() {
 
   const manualRefresh = () => {
     setRefreshing(true);
-    void load(true).finally(() => setRefreshing(false));
+    void load(true)
+      .then((ok) => {
+        if (!ok) {
+          displayMessage(
+            'error',
+            t(
+              'home:portfolio.refresh_failed',
+              "Couldn't refresh — showing the last saved values.",
+            ),
+          );
+        }
+      })
+      .finally(() => setRefreshing(false));
   };
 
   const activeChains = useMemo(
@@ -176,13 +200,21 @@ function Portfolio() {
       }));
   }, [data, activeChains, totalFiat]);
 
+  // Same contract as the wallet switcher: one switch at a time, and a failed
+  // derivation (bad password / seed) says so instead of doing nothing at all.
+  // `switching` is deliberately NOT cleared on success — the row stays busy
+  // until the /home navigation unmounts the tab.
   const switchTo = (chain: keyof cryptos) => {
+    if (switching) return;
+    setSwitching(chain);
     void (async () => {
       try {
         await switchToChain(chain, passwordBlob);
         navigate('/home');
       } catch (error) {
         console.log(error);
+        setSwitching(null);
+        displayMessage('error', t('home:chainSelect.unable_switch_chain'));
       }
     })();
   };
@@ -209,13 +241,16 @@ function Portfolio() {
             {t('home:tabs.portfolio', 'Portfolio')}
           </h2>
           <Tooltip title={t('home:navbar.refresh')}>
+            {/* Same glyph, tint and spin as the Activity tab's refresh — one
+                action must never read as two different controls. */}
             <button
               type="button"
-              className={`portfolio-refresh${refreshing ? ' spinning' : ''}`}
+              className="portfolio-refresh"
               onClick={manualRefresh}
+              disabled={refreshing}
               aria-label={t('home:navbar.refresh')}
             >
-              <RefreshCwIcon />
+              <RotateCwIcon className={refreshing ? 'lucide-spin' : ''} />
             </button>
           </Tooltip>
         </div>
@@ -280,6 +315,8 @@ function Portfolio() {
             type="button"
             className="portfolio-row"
             onClick={() => switchTo(c.chain)}
+            disabled={switching !== null}
+            aria-busy={switching === c.chain}
           >
             <Image height={28} width={28} preview={false} src={c.logo} alt="" />
             <span className="portfolio-row-meta">
@@ -301,6 +338,12 @@ function Portfolio() {
                 </span>
               )}
             </span>
+            {switching === c.chain && (
+              <LoaderCircleIcon
+                className="lucide-spin portfolio-row-spinner"
+                aria-hidden="true"
+              />
+            )}
           </button>
         ))}
       </div>
@@ -317,6 +360,8 @@ function Portfolio() {
                 type="button"
                 className="portfolio-row portfolio-row-inactive"
                 onClick={() => switchTo(c.chain)}
+                disabled={switching !== null}
+                aria-busy={switching === c.chain}
               >
                 <Image
                   height={28}
@@ -328,9 +373,17 @@ function Portfolio() {
                 <span className="portfolio-row-meta">
                   <span className="portfolio-row-name">{c.name}</span>
                   <span className="portfolio-row-crypto">
-                    {t('home:portfolio.tap_to_activate', 'Tap to activate')}
+                    {switching === c.chain
+                      ? t('home:portfolio.activating', 'Activating…')
+                      : t('home:portfolio.tap_to_activate', 'Tap to activate')}
                   </span>
                 </span>
+                {switching === c.chain && (
+                  <LoaderCircleIcon
+                    className="lucide-spin portfolio-row-spinner"
+                    aria-hidden="true"
+                  />
+                )}
               </button>
             ))}
           </div>

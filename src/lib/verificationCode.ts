@@ -92,6 +92,22 @@ export function batchVerificationWords(
   return bitsToWords(digest, WORDS);
 }
 
+/**
+ * Code for a recovery exchange, derived from the two public fields of the
+ * request. Both devices compute it independently — the Wallet from what it
+ * generated, the Key from what it received — so a relay that substitutes
+ * either field makes the two codes differ before anything is released.
+ */
+export function recoveryVerificationWords(
+  pkEphHex: string,
+  nonceHex: string,
+): string[] {
+  const eph = pkEphHex.trim().toLowerCase();
+  const nonce = nonceHex.trim().toLowerCase();
+  const digest = sha256(utf8(`ssp-verify-recovery\n${eph}\n${nonce}`));
+  return bitsToWords(digest, WORDS);
+}
+
 /** Convenience: the words as a single spaced string. */
 export function verificationCode(
   walletXpub: string,

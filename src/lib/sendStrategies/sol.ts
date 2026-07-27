@@ -64,3 +64,45 @@ export function computeSolMax(
   }
   return max.toFixed();
 }
+
+/**
+ * Half-typed amounts reach this helper, and bignumber.js THROWS on a
+ * non-numeric string rather than yielding NaN, so every parse of an input
+ * string goes through here.
+ */
+function parseAmount(value: string): BigNumber | null {
+  try {
+    const numeric = new BigNumber(value);
+    return numeric.isFinite() ? numeric : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Insufficient-balance check shared by the live amount validation and the
+ * compose → review gate. Native SOL: amount + paymaster fee both come out of
+ * the vault SOL balance. SPL: only the token amount is checked here (the fee
+ * is paid in vault SOL and is verified at submit time). An unparseable
+ * amount/fee/balance is NOT reported as exceeding — the amount field's own
+ * "invalid amount" rule owns that case.
+ */
+export function solAmountExceedsBalance(
+  sendingAmount: string,
+  feeSol: string,
+  spendableBase: string,
+  tokenDecimals: number,
+  chainDecimals: number,
+  isNative: boolean,
+): boolean {
+  const amount = parseAmount(sendingAmount || '0');
+  const fee = isNative ? parseAmount(feeSol || '0') : new BigNumber(0);
+  const spendable = parseAmount(spendableBase || '0');
+  if (!amount || !fee || !spendable) {
+    return false;
+  }
+  const totalBase = amount
+    .multipliedBy(10 ** tokenDecimals)
+    .plus(fee.multipliedBy(10 ** chainDecimals));
+  return totalBase.isGreaterThan(spendable);
+}

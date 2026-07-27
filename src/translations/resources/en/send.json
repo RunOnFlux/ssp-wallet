@@ -16,6 +16,7 @@
   "camera_page_blocked": "Camera access was blocked. Click the camera icon in the address bar (or Chrome Settings → Privacy → Site settings → Camera) to allow it, then try again.",
   "camera_page_no_camera": "No camera was found on this device.",
   "err_invalid_amount": "Invalid amount.",
+  "err_amount_exceeds_balance": "Amount + fee exceeds your balance.",
   "err_invalid_fee": "Invalid fee.",
   "err_invalid_message": "Message is too long. Maximum is {{characters}} characters.",
   "err_pwd_not_valid": "Password is not valid.",
@@ -34,9 +35,10 @@
   "message": "Message",
   "include_message": "Include message to transaction",
   "payment_note": "Payment Note",
+  "contacts_picker": "Choose from contacts and my wallets",
   "confirm_tx": "Confirm Transaction?",
   "tx_to_sspkey": "Transaction will be sent for approval to your SSP Key.",
-  "double_check_tx": "Double check the transaction details before confirming.",
+  "double_check_tx": "Double check the transaction details before you send.",
   "max": "Max",
   "using_automatic_fee": "Using automatic network fee",
   "using_manual_fee": "Using manual network fee",
@@ -44,6 +46,9 @@
   "replace_by_fee_tx": "This is a Replace by Fee (RBF) transaction.",
   "replace_by_fee_stop": "To cancel Replace by Fee (RBF) transaction, hit Cancel or navigate back by clicking on SSP logo.",
   "err_public_nonces": "Public nonces are not available, please sync public nonces from SSP Key first.",
+  "err_sol_fee_not_ready": "Network fees are still loading. Wait a moment and try again.",
+  "err_sol_not_synced": "Solana isn't fully synced with your SSP Key yet. Open the Solana chain and complete the sync, then try again.",
+  "err_derive_address": "Couldn't derive this wallet's address from your SSP Key data. Re-sync this chain with your SSP Key, or restore your wallet if the problem persists.",
   "base_gas_price": "Base Gas Price",
   "priority_gas_price": "Priority Gas Price",
   "total_gas_limit": "Total Gas Limit",
@@ -97,5 +102,7 @@
   "eta_evm_slow": "~ 1 min",
   "eta_evm_normal": "Recommended rate",
   "eta_evm_fast": "~ 15 sec",
-  "eta_sol_normal": "Recommended rate"
+  "eta_sol_normal": "Recommended rate",
+  "swap_awaiting_quote": "Waiting for an exchange rate — this updates automatically.",
+  "view_pending_approval": "View pending approval"
 }

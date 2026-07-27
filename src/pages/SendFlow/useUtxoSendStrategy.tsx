@@ -46,6 +46,7 @@ import { setContacts } from '../../store';
 import { transaction, utxo, swapResponseData } from '../../types';
 import {
   presetRateUtxo,
+  rbfFeeFloor,
   utxoFeeForRate,
   type FeePresetKey,
 } from '../../lib/sendStrategies/utxo';
@@ -59,6 +60,10 @@ interface sendForm {
   utxos: utxo[]; // RBF mandatory utxos - use all of them or one?
   paymentAction?: boolean;
   swap?: swapResponseData;
+  // Fee of the transaction being replaced, in BASE UNITS (satoshis), forwarded
+  // by TransactionsTable.proceedToRBF. Required so the replacement can clear
+  // BIP125 rule 4 — see the RBF floor in calculateTxFeeSize().
+  replacedFeeSats?: string;
 }
 
 let txSentInterval: string | number | NodeJS.Timeout | undefined;
@@ -94,6 +99,10 @@ export function useUtxoSendStrategy(): SendStrategyView {
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
+  // True from posting the action until it reaches a terminal state. Closing the
+  // approval dialog does NOT clear it — the request is still live on the relay,
+  // and re-arming Send here would double-post against the same inputs.
+  const [pendingApproval, setPendingApproval] = useState(false);
   // guards the Send button against double-clicks while the async construct +
   // post pipeline runs (the legacy Popconfirm used to debounce this)
   const [submitting, setSubmitting] = useState(false);
@@ -192,7 +201,19 @@ export function useUtxoSendStrategy(): SendStrategyView {
           setFeePerByte('---');
         }
       });
-  }, [walletInUse, activeChain, sendingAmount, manualFee, feePreset]);
+    // txMessage is a dependency because calculateTxFeeSize() feeds it into
+    // getTransactionSize(), which adds the OP_RETURN output and measures the
+    // real vsize. Without it, typing the note AFTER the amount left the fee at
+    // the no-note estimate and the signed transaction underpaid for the extra
+    // output.
+  }, [
+    walletInUse,
+    activeChain,
+    sendingAmount,
+    manualFee,
+    feePreset,
+    txMessage,
+  ]);
 
   useEffect(() => {
     if (useMaximum && !manualFee) {
@@ -262,6 +283,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
             txid,
           });
         }
+        setPendingApproval(false);
         setOpenTxSent(true);
       });
     }
@@ -286,6 +308,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
         if (state.paymentAction) {
           payRequestAction(null);
         }
+        setPendingApproval(false);
         setOpenTxRejected(true);
       });
       if (txSentInterval) {
@@ -454,6 +477,19 @@ export function useUtxoSendStrategy(): SendStrategyView {
       const calculatedFee = new BigNumber(feeUnit);
       if (swapFee.isGreaterThan(calculatedFee)) {
         feeUnit = swapFee.toFixed();
+      }
+    }
+
+    // Replace-by-Fee floor (BIP125 rule 4) — see rbfFeeFloor() for why.
+    if (state.utxos?.length && state.replacedFeeSats) {
+      const floorUnit = rbfFeeFloor(
+        txSize,
+        state.replacedFeeSats,
+        blockchainConfig.minFeePerByte,
+        blockchainConfig.decimals,
+      );
+      if (floorUnit && new BigNumber(floorUnit).isGreaterThan(feeUnit)) {
+        feeUnit = floorUnit;
       }
     }
 
@@ -651,6 +687,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
             );
             setTxHex(txInfo.signedTx);
             setSubmitting(false);
+            setPendingApproval(true);
             setOpenConfirmTx(true);
             if (txSentInterval) {
               clearInterval(txSentInterval);
@@ -974,6 +1011,8 @@ export function useUtxoSendStrategy(): SendStrategyView {
     totalFiat: toFiat(totalDisplay),
     isRBF: !!state.utxos?.length,
     approveActive: openConfirmTx,
+    pendingApproval,
+    showPendingApproval: () => setOpenConfirmTx(true),
     modals,
   };
 }

@@ -98,3 +98,14 @@
     font-size: 12px;
   }
 }
+
+/* Honour the OS reduce-motion preference, like the rest of the app's
+ * stylesheets. Scoped to this file's own animated selectors rather than a
+ * global override, which would also freeze antd's loading spinners. */
+@media (prefers-reduced-motion: reduce) {
+  .wallet-name-edit-icon,
+  .wallet-name-save,
+  .wallet-name-cancel {
+    transition: none;
+  }
+}

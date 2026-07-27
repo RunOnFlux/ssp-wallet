@@ -25,8 +25,12 @@ vi.mock('../../src/storage/ssp', () => ({
 vi.mock('axios', () => ({
   default: { get: vi.fn(), post: vi.fn() },
 }));
+vi.mock('localforage', () => ({
+  default: { setItem: vi.fn(async () => undefined) },
+}));
 
 import axios from 'axios';
+import localForage from 'localforage';
 import {
   CHAIN_SYNC_VERSION,
   CHAIN_SYNC_MAX_CHAINS,
@@ -38,6 +42,9 @@ import {
   isBatchStalled,
   verifyBatchSyncDoc,
   fetchChainSyncRejection,
+  storeKeyPublicNonces,
+  isBatchPollablePhase,
+  requiresVerificationGate,
 } from '../../src/lib/chainSync';
 import { getMasterXpub, generateMultisigAddress } from '../../src/lib/wallet';
 
@@ -140,6 +147,49 @@ describe('fallback timing', () => {
   });
 });
 
+describe('batch polling phases', () => {
+  it('keeps polling while the QR fallback is shown so a late decline is seen', () => {
+    expect(isBatchPollablePhase('fallback')).toBe(true);
+  });
+
+  it('polls while waiting for and receiving the key answers', () => {
+    expect(isBatchPollablePhase('awaiting')).toBe(true);
+    expect(isBatchPollablePhase('syncing')).toBe(true);
+  });
+
+  it('stops polling once nothing more can arrive', () => {
+    expect(isBatchPollablePhase('idle')).toBe(false);
+    expect(isBatchPollablePhase('preparing')).toBe(false);
+    expect(isBatchPollablePhase('done')).toBe(false);
+    expect(isBatchPollablePhase('rejected')).toBe(false);
+  });
+});
+
+describe('requiresVerificationGate', () => {
+  // The gate is the anti-MITM control: no batch outcome that ends the wallet's
+  // wait may complete pairing without it once key material has landed.
+  it('gates a completed batch', () => {
+    expect(requiresVerificationGate('done', true)).toBe(true);
+  });
+
+  it('gates a batch the key DECLINED (the key shows its identity-only code)', () => {
+    expect(requiresVerificationGate('rejected', true)).toBe(true);
+  });
+
+  it('does not gate while the key may still answer', () => {
+    // a partial code would aggregate fewer chains than the key's and could
+    // never match — the explicit "continue to wallet" skip belongs here
+    expect(requiresVerificationGate('awaiting', true)).toBe(false);
+    expect(requiresVerificationGate('syncing', true)).toBe(false);
+    expect(requiresVerificationGate('fallback', true)).toBe(false);
+  });
+
+  it('does not gate when nothing synced yet', () => {
+    expect(requiresVerificationGate('done', false)).toBe(false);
+    expect(requiresVerificationGate('rejected', false)).toBe(false);
+  });
+});
+
 describe('verifyBatchSyncDoc (real derivations)', () => {
   const chain = 'flux';
   // same call shape as the wallet/key sync flows: account 0, p2sh
@@ -227,6 +277,40 @@ describe('verifyBatchSyncDoc (real derivations)', () => {
     expect(verifyBatchSyncDoc({ chain, keyXpub: '' }, xpubWallet).valid).toBe(
       false,
     );
+  });
+});
+
+describe('storeKeyPublicNonces', () => {
+  // The nonce pool is per-INSTALL, not per-chain: the key regenerates it when
+  // it syncs an EVM chain and keeps only the last pool it generated, so a batch
+  // sync doc's pool MUST land in the same localForage key the classic flow
+  // writes — otherwise the wallet keeps a pool the key already discarded and
+  // every EVM send waits forever on a nonce the key does not have.
+  const pool = [
+    { kPublic: 'k1', kTwoPublic: 'kTwo1' },
+    { kPublic: 'k2', kTwoPublic: 'kTwo2' },
+  ];
+
+  it('writes the pool to the shared sspKeyPublicNonces key', async () => {
+    localForage.setItem.mockClear();
+    await storeKeyPublicNonces(pool);
+    expect(localForage.setItem).toHaveBeenCalledWith(
+      'sspKeyPublicNonces',
+      pool,
+    );
+  });
+
+  it('leaves the stored pool untouched for docs without one', async () => {
+    localForage.setItem.mockClear();
+    await storeKeyPublicNonces(undefined);
+    await storeKeyPublicNonces([]);
+    await storeKeyPublicNonces('nonsense');
+    expect(localForage.setItem).not.toHaveBeenCalled();
+  });
+
+  it('never throws when the storage write fails', async () => {
+    localForage.setItem.mockRejectedValueOnce(new Error('quota'));
+    await expect(storeKeyPublicNonces(pool)).resolves.toBeUndefined();
   });
 });
 

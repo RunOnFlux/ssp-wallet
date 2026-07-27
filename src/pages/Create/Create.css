@@ -8,6 +8,42 @@
   justify-content: center;
 }
 
+/* ---- Onboarding form column (Create / Restore / Login) ----
+   One capped, centered column for the WHOLE form so stacked field groups share
+   a single left edge and width. Without this the seed textarea filled the
+   552px side-panel column while the password fields stayed at a hard 350px,
+   centered — three stacked groups on three left edges. */
+.page-frame-onboarding form {
+  max-width: 420px;
+  /* Long-hand: the `margin` shorthand would out-specify (and zero) the 40px
+     margin-top .auth-form gives the unlock form under its subtitle. */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Block, not the centering flex row: a shrink-to-fit flex item would collapse
+   the field once its width becomes a percentage of the column. */
+.page-frame-onboarding .password-input-container {
+  display: block;
+  width: 100%;
+}
+
+.page-frame-onboarding .password-input {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Containing block for the password strength meter, which positions itself
+   absolutely. Sits in the field's `extra` slot — just under the input (under
+   the validation message when one shows) — so Input.Password can stay the
+   Form.Item's direct child and keep the label's htmlFor + the error's
+   aria-describedby wiring. The fixed height keeps the field from jittering as
+   the meter appears and disappears. */
+.password-strength-slot {
+  position: relative;
+  height: 6px;
+}
+
 @media (max-width: 370px) {
   .seed-input {
     width: 340px;

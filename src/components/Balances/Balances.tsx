@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
 import { useAppSelector } from '../../hooks';
@@ -38,6 +38,15 @@ function Balances() {
   );
   const walletAddress = wallets[walletInUse]?.address;
   const myNodes = wallets[walletInUse].nodes || [];
+  // The 20s poller's interval callback holds the closure from the render in
+  // which its effect last ran, and that effect is keyed on
+  // [activeChain, walletInUse, walletAddress]. Activating a token produces a
+  // new `wallets` object via Immer but changes none of those deps, so the
+  // interval is never rebuilt and kept fetching the OLD activatedTokens list —
+  // a token activated while Home stayed mounted never got a balance. Read the
+  // live value through a ref instead of the captured one.
+  const walletsRef = useRef(wallets);
+  walletsRef.current = wallets;
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -98,7 +107,8 @@ function Balances() {
   const fetchBalance = () => {
     const chainFetched = activeChain;
     const walletFetched = walletInUse;
-    fetchAddressBalance(wallets[walletFetched].address, chainFetched)
+    const walletsNow = walletsRef.current;
+    fetchAddressBalance(walletsNow[walletFetched].address, chainFetched)
       .then(async (balance) => {
         setBalance(chainFetched, walletFetched, balance.confirmed);
         setUnconfirmedBalance(chainFetched, walletFetched, balance.unconfirmed);
@@ -117,9 +127,9 @@ function Balances() {
     ) {
       // create contracts array from tokens contracts in specs
       fetchAddressTokenBalances(
-        wallets[walletFetched].address,
+        walletsNow[walletFetched].address,
         chainFetched,
-        wallets[walletInUse].activatedTokens || [], // fetch for activated tokens only
+        walletsNow[walletFetched].activatedTokens || [], // fetch for activated tokens only
       )
         .then(async (balancesTokens) => {
           console.log(balancesTokens);

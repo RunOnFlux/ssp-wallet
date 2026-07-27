@@ -128,12 +128,21 @@ function Restore() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Every onboarding modal draws its own CreationSteps, and antd's mask is
+  // semi-transparent — so the page-level stepper is hidden (layout kept) while
+  // one is open. Exactly one progress bar/percentage is ever legible.
+  const isOnboardingModalOpen = isModalOpen || personalizeOpen;
+  // Same convention as the Create flow's word-confirmation modal: the OK button
+  // is disabled until the requirement is met, never a toast after the fact. The
+  // toast stays as a belt-and-braces fallback.
+  const canConfirmBackup = WSPbackedUp && (wspWasShown || wpCopied);
+
   const showModal = () => {
     setIsModalOpen(true);
   };
 
   const handleOk = () => {
-    if (WSPbackedUp && (wspWasShown || wpCopied)) {
+    if (canConfirmBackup) {
       setIsModalOpen(false);
       if (isChangePassword) {
         // password change re-uses the restore pipeline but is NOT onboarding:
@@ -355,7 +364,9 @@ function Restore() {
     // Snapshot the survivor keys and rewrite them after the clear.
     const preservedLocal: Record<string, string> = {};
     if (isChangePassword) {
-      for (const key of ['walletMeta', 'themeMode']) {
+      // recovery_kx is ssp-key's account xpub — public, unchanged by a password
+      // change, and costly to re-obtain, so it rides through the wipe too.
+      for (const key of ['walletMeta', 'themeMode', 'recovery_kx']) {
         const value = localStorage.getItem(key);
         if (value !== null) preservedLocal[key] = value;
       }
@@ -502,7 +513,13 @@ function Restore() {
           }
         />
         <Divider />
-        {!isChangePassword && <CreationSteps step={1} import={true} />}
+        {!isChangePassword && (
+          <div
+            style={{ visibility: isOnboardingModalOpen ? 'hidden' : 'visible' }}
+          >
+            <CreationSteps step={1} import={true} />
+          </div>
+        )}
         <br />
         <Form
           name="seedForm"
@@ -534,6 +551,10 @@ function Restore() {
             styles={{ content: { maxWidth: 300 } }}
           >
             <div className="password-input-container">
+              {/* The strength meter rides in `extra`, NOT in a wrapper around
+                  the input: Form.Item clones its direct child to attach the
+                  field id + aria-* wiring, so a wrapper would hand the label's
+                  htmlFor and the error's aria-describedby to a <div>. */}
               <Form.Item
                 label={t('cr:set_password')}
                 name="password"
@@ -543,22 +564,24 @@ function Restore() {
                     message: t('cr:input_password'),
                   },
                 ]}
+                extra={
+                  <div className="password-strength-slot">
+                    <PasswordStrengthMeter password={localPasswordStrength} />
+                  </div>
+                }
               >
-                <div>
-                  <Input.Password
-                    size="large"
-                    placeholder={t('cr:set_password')}
-                    prefix={<LockIcon />}
-                    iconRender={(visible) =>
-                      visible ? <EyeIcon /> : <EyeOffIcon />
-                    }
-                    className="password-input"
-                    onChange={(e) => {
-                      setLocalPasswordStrength(e.target.value);
-                    }}
-                  />
-                  <PasswordStrengthMeter password={localPasswordStrength} />
-                </div>
+                <Input.Password
+                  size="large"
+                  placeholder={t('cr:set_password')}
+                  prefix={<LockIcon />}
+                  iconRender={(visible) =>
+                    visible ? <EyeIcon /> : <EyeOffIcon />
+                  }
+                  className="password-input"
+                  onChange={(e) => {
+                    setLocalPasswordStrength(e.target.value);
+                  }}
+                />
               </Form.Item>
             </div>
           </Popover>
@@ -581,7 +604,21 @@ function Restore() {
             </Form.Item>
           </div>
 
-          <Form.Item name="tos" valuePropName="checked">
+          {/* A `required` rule can't gate a checkbox (async-validator treats
+              `false` as present), so the agreement is enforced by a validator
+              that surfaces the same message inline instead of as a toast. */}
+          <Form.Item
+            name="tos"
+            valuePropName="checked"
+            rules={[
+              {
+                validator: (_rule, checked: boolean) =>
+                  checked
+                    ? Promise.resolve()
+                    : Promise.reject(new Error(t('cr:err_tos'))),
+              },
+            ]}
+          >
             <Checkbox>
               {t('cr:i_agree')}{' '}
               <a
@@ -618,6 +655,7 @@ function Restore() {
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
+        okButtonProps={{ disabled: !canConfirmBackup }}
         cancelText={t('common:cancel')}
         okText={
           isChangePassword ? t('cr:change_password') : t('cr:restore_wallet')
@@ -630,7 +668,8 @@ function Restore() {
           <CircleAlertIcon className="backup-seed-callout-icon" />
           <div className="backup-seed-callout-text">
             <b>{t('cr:seed_loose_info')}</b> {t('cr:wallet_seed_info')}{' '}
-            {t('cr:wallet_seed_info_2')} {t('cr:keep_seed_safe')}
+            {t('cr:wallet_seed_info_2')} {t('cr:keep_seed_safe')}{' '}
+            {t('cr:seed_handling_sec')}
           </div>
         </div>
         <Divider />

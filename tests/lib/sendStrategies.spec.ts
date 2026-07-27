@@ -7,6 +7,7 @@ import {
 } from '../../src/lib/sendStrategies/machine';
 import {
   presetRateUtxo,
+  rbfFeeFloor,
   utxoFeeForRate,
   computeUtxoMax,
   UTXO_RATE_MULTIPLIERS,
@@ -124,6 +125,43 @@ describe('sendStrategies: UTXO fee presets + MAX', () => {
     expect(computeUtxoMax('1000', 8, '1')).toBe('0');
     // empty fee treated as 0
     expect(computeUtxoMax('100000000', 8, '')).toBe('1');
+  });
+
+  // BIP125 rule 4. RBF used to recompute a byte-identical fee to the original
+  // send, so the node rejected the replacement and the stuck transaction stayed
+  // stuck with no explanation.
+  describe('rbfFeeFloor', () => {
+    it('is the replaced fee plus the replacement size at the min relay rate', () => {
+      // 250 vB @ 1 sat/vB = 250 sats bump on top of a 1000 sat original
+      expect(rbfFeeFloor(250, '1000', 1, 8)).toBe('0.0000125');
+      // 8 decimals: (1000 + 250) / 1e8
+      expect(rbfFeeFloor(250, '1000', 1, 8)).toBe(
+        ((1000 + 250) / 1e8).toString(),
+      );
+    });
+
+    it('always exceeds the replaced fee, so a replacement can never pay less', () => {
+      const replaced = 5000;
+      const floor = rbfFeeFloor(221, String(replaced), 1, 8);
+      expect(floor).not.toBeNull();
+      expect(Number(floor) * 1e8).toBeGreaterThan(replaced);
+    });
+
+    it('rounds the bump up to whole satoshis for fractional relay rates', () => {
+      // 221 vB @ 0.5 sat/vB = 110.5 → 111
+      expect(rbfFeeFloor(221, '0', 0.5, 8)).toBe((111 / 1e8).toString());
+    });
+
+    it('scales with the chain decimals', () => {
+      expect(rbfFeeFloor(100, '900', 1, 4)).toBe((1000 / 1e4).toString());
+    });
+
+    it('returns null when the size or replaced fee is unusable', () => {
+      expect(rbfFeeFloor(0, '1000', 1, 8)).toBeNull();
+      expect(rbfFeeFloor(-5, '1000', 1, 8)).toBeNull();
+      expect(rbfFeeFloor(250, 'not-a-number', 1, 8)).toBeNull();
+      expect(rbfFeeFloor(250, '-1', 1, 8)).toBeNull();
+    });
   });
 });
 

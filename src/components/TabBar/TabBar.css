@@ -119,6 +119,11 @@
     padding: 0 16px;
     border-radius: 8px;
     margin: 0 8px;
+    min-width: 0; /* so the nowrap label may shrink instead of overflowing */
+  }
+
+  body.extension-sidepanel .tab-bar-icon {
+    flex-shrink: 0; /* the label yields width, never the icon */
   }
 
   body.extension-sidepanel .tab-bar-item-active {
@@ -129,9 +134,17 @@
     font-size: 20px; /* rail rows keep uniform icon size — label carries state */
   }
 
+  /* The rail is a fixed 128px, which leaves ~71px for a 14px label. The label
+     is `white-space: nowrap`, so without these three a longer localized string
+     (ja アクティビティ, hu Tevékenység, ru Активность) cannot shrink below its
+     min-content width and paints past the rail's right border into the content
+     gutter. The untruncated string stays in the item's title + aria-label. */
   body.extension-sidepanel .tab-bar-label {
     display: block;
     font-size: 14px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Footer pinned to the rail bottom: version caption FIRST, Powered by

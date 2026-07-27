@@ -23,6 +23,7 @@ import {
   generateRecoveryNonce,
   unwrapSkRFromTransit,
 } from './recoveryCrypto';
+import { recoveryVerificationWords } from './verificationCode';
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 // Action names are all-lowercase to match SSP convention — relay re-emits
@@ -48,10 +49,15 @@ export class RecoveryError extends Error {
 }
 
 interface RecoveryResponsePayload {
+  version: number; // protocol version — must match what we asked for
   transit: string; // hex of wrapped sk_r
   nonce: string; // hex, must echo request
   timestamp: number; // echoes request
+  recoveryIndex: number; // echoes request
 }
+
+/** Protocol version this build speaks. Older shapes are not accepted. */
+const PROTOCOL_VERSION = 2;
 
 interface RelaySocketResponse {
   payload: string; // JSON-stringified body
@@ -76,6 +82,13 @@ export async function requestRecovery(params: {
   relay: string;
   /** identity chain (e.g. 'btc') — required by relay's POST /v1/action validator */
   chain: string;
+  /** which sk_r(i) the stored envelope was sealed to */
+  recoveryIndex: number;
+  /**
+   * Receives the out-of-band code for this exchange as soon as it is known, so
+   * the caller can show it next to the same code on ssp-key. Display-only.
+   */
+  onVerificationWords?: (words: string[]) => void;
   timeoutMs?: number;
 }): Promise<Buffer> {
   const {
@@ -83,6 +96,8 @@ export async function requestRecovery(params: {
     keyIdentityPubKeyHex,
     relay,
     chain,
+    recoveryIndex,
+    onVerificationWords,
     timeoutMs = DEFAULT_TIMEOUT_MS,
   } = params;
 
@@ -90,6 +105,10 @@ export async function requestRecovery(params: {
   const nonce = generateRecoveryNonce();
   const timestamp = Date.now();
   const keyIdentityPub = Buffer.from(keyIdentityPubKeyHex, 'hex');
+
+  const pkEphHex = eph.pub.toString('hex');
+  const nonceHex = nonce.toString('hex');
+  onVerificationWords?.(recoveryVerificationWords(pkEphHex, nonceHex));
 
   const socket: Socket = io(`https://${relay}`, {
     path: '/v1/socket/wallet',
@@ -121,9 +140,10 @@ export async function requestRecovery(params: {
             path: '',
             wkIdentity,
             payload: JSON.stringify({
-              pkEph: eph.pub.toString('hex'),
-              nonce: nonce.toString('hex'),
+              pkEph: pkEphHex,
+              nonce: nonceHex,
               timestamp,
+              recoveryIndex,
             }),
           })
           .catch((err: unknown) => {
@@ -166,11 +186,26 @@ export async function requestRecovery(params: {
           return;
         }
 
+        // The response must be for the same protocol version and the same
+        // index we asked for; anything else cannot unwrap what we hold.
+        if (
+          body.version !== PROTOCOL_VERSION ||
+          body.recoveryIndex !== recoveryIndex
+        ) {
+          reject(
+            new RecoveryError(
+              'malformed_response',
+              'recovery response did not match the request parameters',
+            ),
+          );
+          return;
+        }
+
         // Nonce-match is defense-in-depth; the AES-GCM tag binds the
         // ciphertext to this session's ephemeral key already, but
         // bailing early on a mismatched nonce avoids burning the
         // decrypt attempt on an unrelated stray response.
-        if (body.nonce !== nonce.toString('hex')) {
+        if (body.nonce !== nonceHex) {
           reject(
             new RecoveryError(
               'nonce_mismatch',

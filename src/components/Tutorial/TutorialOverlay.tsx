@@ -76,7 +76,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   onEnterpriseVerifyCode,
   onEnterpriseSignAndSubscribe,
 }) => {
-  const { t } = useTranslation(['home']);
+  const { t } = useTranslation(['home', 'common']);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const [cardPosition, setCardPosition] = useState({ top: 0, left: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -901,6 +901,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 icon={<XIcon />}
                 onClick={handleClose}
                 size="small"
+                /* Icon-only: without a name a screen reader announced only
+                   "button". Matches the aria-label + title convention the
+                   other icon-only buttons in this codebase already use. */
+                aria-label={t('common:close')}
+                title={t('common:close')}
               />
             </Flex>
           </Flex>

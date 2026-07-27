@@ -88,10 +88,12 @@ vi.mock('@runonflux/aa-schnorr-multisig-sdk', () => ({
 }));
 
 import {
+  buildPersonalSignPreimage,
   signMessageWithSchnorrMultisig,
   signVaultMessageWithSchnorr,
 } from '../../src/lib/evmSigning';
 import * as accountAbstraction from '@runonflux/aa-schnorr-multisig-sdk';
+import { ethers } from 'ethers';
 
 // --- Test fixtures ---
 
@@ -138,6 +140,101 @@ describe('evmSigning', () => {
       signature: mockSig,
       finalPublicNonce: mockPubNonces.kPublic,
       challenge: mockChallenge,
+    });
+  });
+
+  // ==========================================================================
+  // buildPersonalSignPreimage -- EIP-191 preimage for dApp personal_sign
+  // ==========================================================================
+  describe('buildPersonalSignPreimage', () => {
+    // The SDK hashes the string we hand it with
+    // solidityPackedKeccak256(['string'], [msg]) === keccak256(utf8(msg)).
+    // So the digest actually signed is this, and it MUST equal what the dApp
+    // verifies against, i.e. ethers.hashMessage(payload).
+    const digestOf = (preimage: string): string =>
+      ethers.solidityPackedKeccak256(['string'], [preimage]);
+
+    it('should produce the EIP-191 prefix with the UTF-8 byte length', () => {
+      expect(buildPersonalSignPreimage('abc')).toBe(
+        '\x19Ethereum Signed Message:\n3abc',
+      );
+      // 'é' is 1 UTF-16 code unit but 2 UTF-8 bytes
+      expect(buildPersonalSignPreimage('é')).toBe(
+        '\x19Ethereum Signed Message:\n2é',
+      );
+    });
+
+    it('should hash to ethers.hashMessage for plain ASCII text', () => {
+      const message = 'Sign in to Example dApp\nNonce: 12345';
+      expect(digestOf(buildPersonalSignPreimage(message))).toBe(
+        ethers.hashMessage(message),
+      );
+    });
+
+    it.each([
+      ['emoji', 'gm 🙂🚀'],
+      ['CJK', '你好，世界'],
+      ['accented', 'Přihlásit se do peněženky'],
+      ['mixed', 'Přihlásit 世界 🙂 done'],
+      ['4-byte astral only', '𝕊𝕊ℙ'],
+    ])(
+      'should hash to ethers.hashMessage for non-ASCII text (%s)',
+      (_label, message) => {
+        expect(digestOf(buildPersonalSignPreimage(message))).toBe(
+          ethers.hashMessage(message),
+        );
+      },
+    );
+
+    it('measures the message preimage in bytes, not UTF-16 code units', () => {
+      // The old code composed the prefix from decodedMessage.length (UTF-16
+      // code units) instead of the UTF-8 byte count, so every non-ASCII
+      // message was signed against a preimage no dApp could verify.
+      const message = 'gm 🙂🚀';
+      const buggyPreimage = `\x19Ethereum Signed Message:\n${message.length}${message}`;
+      expect(message.length).not.toBe(ethers.toUtf8Bytes(message).length);
+      expect(digestOf(buggyPreimage)).not.toBe(ethers.hashMessage(message));
+      expect(digestOf(buildPersonalSignPreimage(message))).toBe(
+        ethers.hashMessage(message),
+      );
+    });
+
+    it('should decode a hex payload and hash it as the dApp expects', () => {
+      const message = 'Přihlásit 世界 🙂';
+      const hexPayload = ethers.hexlify(ethers.toUtf8Bytes(message));
+      expect(buildPersonalSignPreimage(hexPayload)).toBe(
+        buildPersonalSignPreimage(message),
+      );
+      expect(digestOf(buildPersonalSignPreimage(hexPayload))).toBe(
+        ethers.hashMessage(ethers.getBytes(hexPayload)),
+      );
+    });
+
+    it('should handle an empty hex payload', () => {
+      expect(digestOf(buildPersonalSignPreimage('0x'))).toBe(
+        ethers.hashMessage(new Uint8Array()),
+      );
+    });
+
+    it('should reject a hex payload that is not valid UTF-8 instead of signing the hex text', () => {
+      // A 32-byte digest passed to personal_sign: the old code fell back to
+      // signing the literal '0x…' string, producing a signature the dApp can
+      // never verify. Refusing is the only honest answer while the preimage
+      // travels to the SSP Key as a string.
+      const rawDigest = ethers.keccak256(ethers.toUtf8Bytes('payload'));
+      expect(() => buildPersonalSignPreimage(rawDigest)).toThrow(
+        'not valid UTF-8',
+      );
+      expect(() => buildPersonalSignPreimage('0xfffe')).toThrow(
+        'not valid UTF-8',
+      );
+    });
+
+    it('should treat a non-hex payload as plain text', () => {
+      const message = 'not hex at all: 0xZZ';
+      expect(digestOf(buildPersonalSignPreimage(message))).toBe(
+        ethers.hashMessage(message),
+      );
     });
   });
 

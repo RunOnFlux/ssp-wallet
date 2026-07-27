@@ -16,6 +16,11 @@
   --ssp-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   /* Amber focus ring (primary-500) shared by all custom interactive chrome */
   --ssp-focus: #f59e0b;
+  /* Inline text links. The brand amber, darkened for light mode so it clears
+     4.5:1 against the page: #b45309 is 4.81:1 on #fafaf9, where the primary
+     #fbbf24 manages 1.6:1 and even antd's colorLink #d97706 only 3.05:1.
+     Overridden for dark below (#fcd34d, 12.62:1). */
+  --ssp-color-link: #b45309;
 }
 
 body {
@@ -132,6 +137,8 @@ body {
   :root:not([data-theme]) {
     color: #fafaf9;
     background-color: #0c0a09;
+    /* Lighter end of the amber ramp on a dark ground: 12.62:1. */
+    --ssp-color-link: #fcd34d;
   }
 }
 
@@ -155,6 +162,7 @@ body {
 :root[data-theme='dark'] {
   color: #fafaf9;
   background-color: #0c0a09;
+  --ssp-color-link: #fcd34d;
 }
 
 :root[data-theme='dark'] .copyableAddress {

@@ -125,6 +125,13 @@
   outline-offset: 2px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .identity-pill,
+  .identity-lock {
+    transition: none;
+  }
+}
+
 /* Prevent WalletName's inline edit affordance from disturbing the pill layout */
 .identity-pill-wallet .ant-input {
   display: none;
@@ -137,5 +144,19 @@
 @media (min-width: 500px) {
   body.extension-sidepanel .identity-bar {
     padding: 12px 0;
+    /* Pins with the nav rail. The rail is sticky and full-height, so a
+       scrolling identity bar carried the wallet/network switcher and the Lock
+       button off the top of a long page while the neighbouring nav column
+       stayed put — locking or switching network meant scrolling back up. The
+       background is opaque colorBgBase (same pair TabBar.css uses) so page
+       content scrolls underneath it. */
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #fafaf9;
+  }
+
+  :root[data-theme='dark'] body.extension-sidepanel .identity-bar {
+    background: #0c0a09;
   }
 }

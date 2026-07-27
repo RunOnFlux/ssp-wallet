@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
 import localForage from 'localforage';
 import { NoticeType } from 'antd/es/message/interface';
@@ -29,7 +29,12 @@ import {
   generateInternalIdentityAddress,
   generateExternalIdentityAddress,
 } from '../../lib/wallet.ts';
-import { ensureRecoveryEnvelope } from '../../lib/recoveryEnvelope.ts';
+import {
+  ensureRecoveryEnvelope,
+  isRecoveryEnvelopeCurrent,
+  storeRecoveryXpub,
+} from '../../lib/recoveryEnvelope.ts';
+import { requestRecoveryXpub } from '../../lib/recoveryXpubRequest.ts';
 import { useTranslation } from 'react-i18next';
 import { generatedWallets } from '../../types';
 import { useWalletConnect } from '../../contexts/WalletConnectContext';
@@ -73,6 +78,12 @@ function WalletShell() {
     (state) => state[activeChain],
   );
   const browser = window.chrome || window.browser;
+  // The envelope setup below reaches out to the relay, so it runs at most once
+  // per pairing rather than on every dependency settle.
+  const recoveryEnvelopeRunRef = useRef<{
+    inFlight: boolean;
+    settledFor: string | null;
+  }>({ inFlight: false, settledFor: null });
 
   useEnterpriseNotificationSync();
 
@@ -200,12 +211,52 @@ function WalletShell() {
       !identityChain
     )
       return;
-    void ensureRecoveryEnvelope({
-      passwordBlob,
-      xpubKeyIdentity,
-      wkIdentity: sspWalletKeyInternalIdentity,
-      identityChain,
+    const state = recoveryEnvelopeRunRef.current;
+    // Skip only if this identity is already done, or a run for it is in flight.
+    // The in-flight flag is cleared when the run settles, so a dependency change
+    // mid-flight (or React re-mounting the effect in development) retries rather
+    // than skipping for the life of the mount.
+    if (state.inFlight) return;
+    if (state.settledFor === sspWalletKeyInternalIdentity) return;
+    state.inFlight = true;
+    let cancelled = false;
+    const run = async () => {
+      // ssp-key keeps a persistent record of its recovery account xpub; read it
+      // when this pairing has nothing to work with yet.
+      if (!isRecoveryEnvelopeCurrent(sspWalletKeyInternalIdentity)) {
+        const record = await requestRecoveryXpub({
+          wkIdentity: sspWalletKeyInternalIdentity,
+          relay: sspConfig().relay,
+          isCancelled: () => cancelled,
+        });
+        if (cancelled) return;
+        if (record) {
+          // Verified against the identity key we derive ourselves — the relay
+          // is not trusted for this.
+          storeRecoveryXpub({
+            recoveryXpub: record.recoveryXpub,
+            signature: record.xpubSignature,
+            wkIdentity: sspWalletKeyInternalIdentity,
+            xpubKeyIdentity,
+            identityChain,
+          });
+        }
+      }
+      if (cancelled) return;
+      await ensureRecoveryEnvelope({
+        passwordBlob,
+        xpubKeyIdentity,
+        wkIdentity: sspWalletKeyInternalIdentity,
+        identityChain,
+      });
+      state.settledFor = sspWalletKeyInternalIdentity;
+    };
+    void run().finally(() => {
+      state.inFlight = false;
     });
+    return () => {
+      cancelled = true;
+    };
   }, [
     passwordBlob,
     xpubKeyIdentity,

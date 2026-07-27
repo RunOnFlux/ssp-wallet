@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSspLogo } from '../../hooks/useSspLogo';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import secureLocalStorage from 'react-secure-storage';
 import { Button, Image, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -47,12 +47,20 @@ function Welcome() {
             <br />
             {t('common:appName.moto')}
           </p>
+          {/* Navigation lives on the buttons themselves — a nested <Link> would
+              only be clickable on its own text glyphs and would leave the
+              button itself a dead keyboard stop. */}
           <div className="auth-actions">
-            <Button type="primary" size="large" block>
-              <Link to={'/create'}>{t('welcome:get_started')}</Link>
+            <Button
+              type="primary"
+              size="large"
+              block
+              onClick={() => navigate('/create')}
+            >
+              {t('welcome:get_started')}
             </Button>
-            <Button type="link" block>
-              <Link to={'/restore'}>{t('welcome:restore_with_seed')}</Link>
+            <Button type="link" block onClick={() => navigate('/restore')}>
+              {t('welcome:restore_with_seed')}
             </Button>
           </div>
         </div>

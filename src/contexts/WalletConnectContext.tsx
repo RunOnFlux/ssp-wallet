@@ -20,7 +20,6 @@ import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../types';
 import localForage from 'localforage';
 import { useTranslation } from 'react-i18next';
-import { ethers } from 'ethers';
 import {
   deriveEVMPublicKey,
   generateAddressKeypair,
@@ -31,7 +30,15 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import axios from 'axios';
 import { sspConfig } from '@storage/ssp';
-import { signMessageWithSchnorrMultisig } from '../lib/evmSigning';
+import {
+  buildPersonalSignPreimage,
+  signMessageWithSchnorrMultisig,
+} from '../lib/evmSigning';
+import {
+  ERC20_TRANSFER_SELECTOR,
+  describeErc20Transfer,
+  parseUnsignedQuantity,
+} from '../lib/constructTx';
 import { useSocket } from '../hooks/useSocket';
 import { NoticeType } from 'antd/es/message/interface';
 import { switchToChain } from '../lib/chainSwitching';
@@ -1826,31 +1833,24 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     return new Promise((resolve, reject) => {
       const [message, address] = params;
 
-      // Decode hex-encoded messages for personal_sign
-      let decodedMessage: string;
-      if (message.startsWith('0x')) {
-        try {
-          decodedMessage = ethers.toUtf8String(message);
-          console.log('🔍 Hex-encoded message decoded:', {
-            original: message,
-            decoded: decodedMessage,
-          });
-        } catch {
-          console.log('⚠️ Failed to decode hex message, using as plain text');
-          decodedMessage = message;
-        }
-      } else {
-        decodedMessage = message;
+      // Add the EIP-191 prefix for personal_sign. The prefixed length is the
+      // payload's UTF-8 BYTE count, so the digest the SDK ends up hashing is
+      // exactly ethers' hashMessage() - see buildPersonalSignPreimage.
+      let eip191Message: string;
+      try {
+        eip191Message = buildPersonalSignPreimage(message);
+      } catch (error) {
+        console.error('🔐 personal_sign payload rejected:', error);
+        reject(
+          error instanceof Error
+            ? error
+            : new Error(t('home:walletconnect.unknown_error')),
+        );
+        return;
       }
-
-      // Add EIP-191 prefix for personal_sign
-      const prefix = '\x19Ethereum Signed Message:\n';
-      const eip191Message =
-        prefix + decodedMessage.length.toString() + decodedMessage;
 
       console.log('📋 EIP-191 formatted message:', {
         originalMessage: message,
-        decodedMessage: decodedMessage,
         eip191Message: JSON.stringify(eip191Message),
       });
 
@@ -1965,29 +1965,28 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       const blockchainConfig = blockchains[currentActiveChain];
       const { networkFees } = freshState.networkFees;
 
-      // Parse transaction parameters with proper hex handling
+      // Parse transaction parameters with proper hex handling - every
+      // dApp-supplied field is a 256-bit integer, see parseUnsignedQuantity.
       const parseHexValue = (
         value: string | undefined,
         defaultValue: string,
       ): string => {
-        if (!value) return defaultValue;
-        if (value.startsWith('0x')) {
-          return parseInt(value, 16).toString();
+        try {
+          return value ? parseUnsignedQuantity(value).toString() : defaultValue;
+        } catch {
+          // gas hints are advisory - SSP re-estimates them anyway - so a
+          // malformed one falls back to the default instead of failing
+          return defaultValue;
         }
-        return value;
       };
 
-      // Convert wei value to ether
-      const parseWeiToEther = (weiValue: string | undefined): string => {
-        if (!weiValue || weiValue === '0x0' || weiValue === '0') return '0';
-        const weiString = weiValue.startsWith('0x')
-          ? parseInt(weiValue, 16).toString()
-          : weiValue;
-        const etherValue = new BigNumber(weiString).dividedBy(
-          new BigNumber(10).pow(18),
-        );
-        return etherValue.toFixed();
-      };
+      // Convert wei value to ether. Unlike the gas hints this must never be
+      // guessed: an unparseable value fails the request rather than signing a
+      // different amount than the dApp asked for.
+      const weiToEther = (weiValue: bigint): string =>
+        new BigNumber(weiValue.toString())
+          .dividedBy(new BigNumber(10).pow(18))
+          .toFixed();
 
       // Parse gas values
       const requestedGasLimit = parseHexValue(
@@ -2032,22 +2031,28 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       }
 
       // Parse the amount (value) from wei to ether
-      const amount = parseWeiToEther(transaction.value);
+      const weiValue = parseUnsignedQuantity(transaction.value);
+      const amount = weiToEther(weiValue);
 
-      // Determine if this is a token transfer by checking data field
-      let isTokenTransfer = false;
-      let tokenContract = '';
-      if (
-        transaction.data &&
-        transaction.data !== '0x' &&
-        transaction.data.length > 10
-      ) {
-        // Check if it's an ERC20 transfer (starts with 0xa9059cbb which is transfer function selector)
-        if (transaction.data.startsWith('0xa9059cbb')) {
-          isTokenTransfer = true;
-          tokenContract = transaction.to || '';
-        }
-      }
+      // Determine if this is a token transfer by checking data field.
+      // Selector-only check - this one just picks the AA gas budget.
+      const isTokenTransfer = !!transaction.data?.startsWith(
+        ERC20_TRANSFER_SELECTOR,
+      );
+
+      // Whether it can also be PRESENTED as a token transfer is a much
+      // stricter question: the dApp's calldata carries the real recipient and
+      // amount, so we only swap in the friendly "send X TOKEN to Y" shape when
+      // the values we are about to display re-encode to exactly the bytes the
+      // dApp asked us to sign (see describeErc20Transfer). Otherwise the
+      // calldata is forwarded untouched and reviewed as what it is - a raw
+      // contract interaction against `transaction.to`.
+      const erc20Transfer = describeErc20Transfer(
+        { to: transaction.to, data: transaction.data, value: weiValue },
+        blockchainConfig.tokens.concat(
+          freshState[currentActiveChain].importedTokens ?? [],
+        ),
+      );
 
       // Store resolve/reject functions for when transaction completes
       // Store in a map for retrieval when txid comes back from SSP
@@ -2112,7 +2117,14 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         baseGasPrice: finalBaseGasPrice,
         priorityGasPrice: finalPriorityGasPrice,
         isTokenTransfer,
-        tokenContract,
+        erc20Transfer: erc20Transfer
+          ? {
+              symbol: erc20Transfer.token.symbol,
+              contract: erc20Transfer.token.contract,
+              recipient: erc20Transfer.recipient,
+              amount: erc20Transfer.amount,
+            }
+          : null,
         data: transaction.data?.substring(0, 100) + '...',
         gasBreakdown: {
           preVerificationGas: finalPreVerificationGas,
@@ -2123,18 +2135,36 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
 
       // Navigate to SendEVM with the parsed parameters
       const navigationState = {
-        receiver: transaction.to || '',
-        amount: amount,
-        contract: isTokenTransfer ? tokenContract : '', // Empty for native currency
         baseGasPrice: finalBaseGasPrice,
         priorityGasPrice: finalPriorityGasPrice,
         // Individual gas components - total will be calculated from these
         preVerificationGas: finalPreVerificationGas.toString(),
         callGasLimit: finalCallGasLimit.toString(),
         verificationGasLimit: finalVerificationGasLimit.toString(),
-        data: transaction.data || '0x',
         walletConnectTxId: txRequestId, // For tracking this WC transaction
         walletConnectMode: true, // Flag to indicate this came from WalletConnect
+        ...(erc20Transfer
+          ? {
+              // Verified ERC-20 transfer: review and sign the dApp's REAL
+              // recipient and amount. The calldata is deliberately not
+              // forwarded - constructAndSignEVMTransaction re-encodes the
+              // `transfer()` for the selected token, which describeErc20Transfer
+              // just proved is byte-identical to what the dApp sent.
+              receiver: erc20Transfer.recipient,
+              amount: erc20Transfer.amount,
+              contract: erc20Transfer.token.contract,
+              data: '',
+            }
+          : {
+              // Native send or opaque contract call (including an ERC-20
+              // transfer we could not verify): the dApp's calldata is signed
+              // verbatim against its own `to` with its own native value, and
+              // that is exactly what the review screen renders.
+              receiver: transaction.to || '',
+              amount: amount,
+              contract: '', // Empty for native currency
+              data: transaction.data || '0x',
+            }),
       };
 
       console.log(

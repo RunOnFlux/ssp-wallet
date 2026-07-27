@@ -22,54 +22,23 @@ const STEP_PERCENT: Record<number, number> = {
 };
 
 function CreationSteps(props: { step: number; import: boolean }) {
-  const { t } = useTranslation(['common']);
-  const items = [
-    {
-      title: (
-        <div style={{ lineHeight: '18px' }}>
-          {t('common:get')}
-          <br />
-          {t('common:started')}
-        </div>
-      ),
-    },
-    {
-      title: (
-        <div style={{ lineHeight: '18px' }}>
-          {props.import ? t('common:import') : t('common:create')}
-          <br />
-          {props.import ? t('common:wallet') : t('common:password')}
-        </div>
-      ),
-    },
-    {
-      title: (
-        <div style={{ lineHeight: '18px' }}>
-          {t('common:backup')}
-          <br />
-          {t('common:wallet')}
-        </div>
-      ),
-    },
-    {
-      title: (
-        <div style={{ lineHeight: '18px' }}>
-          {t('common:make_it')}
-          <br />
-          {t('common:yours')}
-        </div>
-      ),
-    },
-    {
-      title: (
-        <div style={{ lineHeight: '18px' }}>
-          {t('common:sync')}
-          <br />
-          {t('common:ssp_key')}
-        </div>
-      ),
-    },
+  const { t } = useTranslation(['cr']);
+  // One whole-phrase key per node — never single words joined by <br/>, which
+  // only reads as a sentence in English. The labels wrap inside their own cell;
+  // `whiteSpace: normal` guards against an inherited nowrap.
+  const labels = [
+    t('cr:steps.get_started'),
+    props.import ? t('cr:steps.import_wallet') : t('cr:steps.create_password'),
+    t('cr:steps.backup_wallet'),
+    // Reuses the personalize modal's own title so the two can never drift.
+    t('cr:personalize.title'),
+    t('cr:steps.sync_key'),
   ];
+  const items = labels.map((label) => ({
+    title: (
+      <div style={{ lineHeight: '18px', whiteSpace: 'normal' }}>{label}</div>
+    ),
+  }));
   const percent = STEP_PERCENT[props.step] ?? 25;
   return (
     <>

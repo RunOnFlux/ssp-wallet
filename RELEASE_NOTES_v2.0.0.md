@@ -34,15 +34,16 @@ pairing, and settings exactly as they were.
 
 ## Security
 
-- No changes to key derivation, signing, seed handling, or encryption —
+- No changes to how transactions are signed or how your seed is stored —
   verified by independent audit across every commit in this release.
 - All dependencies updated and exactly pinned; every fixable vulnerability
   resolved.
-- Works with SSP Key v1 and v2 — update in any order.
+- Works with SSP Key v1 and v2 — update in any order; a few v2 features
+  switch on once both apps are updated.
 
 ## Compatibility
 
 - Updating in place: nothing to re-do. Your wallet, password, pairing and
   settings carry over (covered by an automated release gate).
-- Old SSP Key keeps working with this wallet; batch sync activates when both
-  apps are on v2.
+- Old SSP Key keeps working with this wallet; batch sync and password
+  recovery activate when both apps are on v2.

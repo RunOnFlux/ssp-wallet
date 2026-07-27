@@ -47,9 +47,12 @@
   white-space: nowrap;
 }
 
+/* Fixed 4-up grid: 8 swatches never fit one row inside a 420px popup
+   (8x34 + 7x12 = 356px), and a wrapping flex row orphaned the 8th, centered on
+   a second row. Two balanced rows of four at every width instead. */
 .personalize-swatches {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 34px);
   justify-content: center;
   gap: 12px;
   margin-bottom: 4px;

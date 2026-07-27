@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import VerificationWords from '../VerificationWords/VerificationWords';
+
 const { Text } = Typography;
 
 export type RecoveryDialogStatus =
@@ -18,6 +20,11 @@ interface RecoveryDialogProps {
   open: boolean;
   status: RecoveryDialogStatus;
   errorCode?: string;
+  /**
+   * Out-of-band code for this exchange. SSP Key shows the same six words on
+   * its approval screen; the user compares before approving.
+   */
+  verificationWords?: string[];
   onClose: () => void;
   onRetry?: () => void;
   /**
@@ -33,6 +40,7 @@ function RecoveryDialog({
   open,
   status,
   errorCode,
+  verificationWords,
   onClose,
   onRetry,
   onRestore,
@@ -63,6 +71,21 @@ function RecoveryDialog({
           <>
             <SmartphoneIcon style={{ fontSize: '48px' }} />
             <Text>{t('login:recovery_dialog_body')}</Text>
+            {verificationWords && verificationWords.length > 0 && (
+              <div>
+                <Text strong>{t('login:recovery_verify_heading')}</Text>
+                <VerificationWords
+                  words={verificationWords}
+                  testId="recovery-verify-words"
+                />
+                <Text
+                  type="secondary"
+                  style={{ display: 'block', marginTop: 8, fontSize: 12 }}
+                >
+                  {t('login:recovery_verify_body')}
+                </Text>
+              </div>
+            )}
             <Spin />
             <Text type="secondary">{t('login:recovery_waiting')}</Text>
           </>

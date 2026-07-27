@@ -77,6 +77,14 @@ declare module '@storage/ssp' {
   let sspConfig: () => ssp;
   let sspConfigOriginal: () => ssp;
   let loadSSPConfig: () => void;
+  // Merges the two user-adjustable preferences into the EXISTING sspConfig
+  // record. Use this instead of writing the record directly — it also holds the
+  // tutorial state and the enterprise notification subscription, both of which
+  // a whole-record setItem/removeItem destroys.
+  let updateUserPreferences: (prefs: {
+    relay?: string;
+    fiatCurrency?: keyof currency;
+  }) => Promise<void>;
   let getEnterpriseNotificationConfig: () => enterpriseNotificationConfig | null;
   let updateEnterpriseNotificationConfig: (
     configData: enterpriseNotificationConfig,

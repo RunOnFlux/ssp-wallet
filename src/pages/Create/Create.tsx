@@ -86,6 +86,11 @@ function Create() {
   const [personalizeOpen, setPersonalizeOpen] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   const browser = window.chrome || window.browser;
+  // Every onboarding modal draws its own CreationSteps, and antd's mask is
+  // semi-transparent — so the page-level stepper is hidden (layout kept) while
+  // one is open. Exactly one progress bar/percentage is ever legible.
+  const isOnboardingModalOpen =
+    isModalOpen || isConfrimModalOpen || personalizeOpen;
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -321,7 +326,11 @@ function Create() {
       <div className="page-frame-onboarding" style={{ paddingBottom: '43px' }}>
         <Headerbar headerTitle={t('cr:create_pw')} navigateTo="/welcome" />
         <Divider />
-        <CreationSteps step={1} import={false} />
+        <div
+          style={{ visibility: isOnboardingModalOpen ? 'hidden' : 'visible' }}
+        >
+          <CreationSteps step={1} import={false} />
+        </div>
         <br />
         <Form
           name="pwdForm"
@@ -337,6 +346,10 @@ function Create() {
             styles={{ content: { maxWidth: 300 } }}
           >
             <div className="password-input-container">
+              {/* The strength meter rides in `extra`, NOT in a wrapper around
+                  the input: Form.Item clones its direct child to attach the
+                  field id + aria-* wiring, so a wrapper would hand the label's
+                  htmlFor and the error's aria-describedby to a <div>. */}
               <Form.Item
                 label={t('cr:set_password')}
                 name="password"
@@ -346,22 +359,24 @@ function Create() {
                     message: t('cr:input_password'),
                   },
                 ]}
+                extra={
+                  <div className="password-strength-slot">
+                    <PasswordStrengthMeter password={localPasswordStrength} />
+                  </div>
+                }
               >
-                <div style={{ position: 'relative' }}>
-                  <Input.Password
-                    size="large"
-                    placeholder={t('cr:set_password')}
-                    prefix={<LockIcon />}
-                    iconRender={(visible) =>
-                      visible ? <EyeIcon /> : <EyeOffIcon />
-                    }
-                    className="password-input"
-                    onChange={(e) => {
-                      setLocalPasswordStrength(e.target.value);
-                    }}
-                  />
-                  <PasswordStrengthMeter password={localPasswordStrength} />
-                </div>
+                <Input.Password
+                  size="large"
+                  placeholder={t('cr:set_password')}
+                  prefix={<LockIcon />}
+                  iconRender={(visible) =>
+                    visible ? <EyeIcon /> : <EyeOffIcon />
+                  }
+                  className="password-input"
+                  onChange={(e) => {
+                    setLocalPasswordStrength(e.target.value);
+                  }}
+                />
               </Form.Item>
             </div>
           </Popover>
@@ -382,7 +397,21 @@ function Create() {
               />
             </Form.Item>
           </div>
-          <Form.Item name="tos" valuePropName="checked">
+          {/* A `required` rule can't gate a checkbox (async-validator treats
+              `false` as present), so the agreement is enforced by a validator
+              that surfaces the same message inline instead of as a toast. */}
+          <Form.Item
+            name="tos"
+            valuePropName="checked"
+            rules={[
+              {
+                validator: (_rule, checked: boolean) =>
+                  checked
+                    ? Promise.resolve()
+                    : Promise.reject(new Error(t('cr:err_tos'))),
+              },
+            ]}
+          >
             <Checkbox>
               {t('cr:i_agree')}{' '}
               <a
@@ -436,8 +465,13 @@ function Create() {
       setWpCopied(false);
     };
 
+    // Same convention as the word-confirmation modal one step later: the OK
+    // button is disabled until the requirement is met, never a toast after the
+    // fact. The toast stays as a belt-and-braces fallback.
+    const canConfirmBackup = WSPbackedUp && (wspWasShown || wpCopied);
+
     const handleOk = () => {
-      if (WSPbackedUp && (wspWasShown || wpCopied)) {
+      if (canConfirmBackup) {
         setIsModalOpen(false);
         setIsConfrimModalOpen(true);
       } else {
@@ -509,6 +543,7 @@ function Create() {
           open={isModalOpen}
           onOk={handleOk}
           onCancel={handleCancel}
+          okButtonProps={{ disabled: !canConfirmBackup }}
           okText={t('common:confirm')}
           cancelText={t('common:cancel')}
           style={{ textAlign: 'center', top: 60, padding: 10 }}
@@ -519,7 +554,8 @@ function Create() {
             <CircleAlertIcon className="backup-seed-callout-icon" />
             <div className="backup-seed-callout-text">
               <b>{t('cr:seed_loose_info')}</b> {t('cr:wallet_seed_info')}{' '}
-              {t('cr:keep_seed_safe')}
+              {t('cr:wallet_seed_info_2')} {t('cr:keep_seed_safe')}{' '}
+              {t('cr:seed_handling_sec')}
             </div>
           </div>
           <Divider />

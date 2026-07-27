@@ -1,5 +1,5 @@
 import { Tooltip } from 'antd';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import BigNumber from 'bignumber.js';
 import './Transactions.css';
 import { useTranslation } from 'react-i18next';
@@ -22,8 +22,12 @@ function PendingTransactionsTable(props: {
   refresh: () => void;
 }) {
   const { t, i18n } = useTranslation(['home', 'common']);
-  const [fiatRate, setFiatRate] = useState(0);
-  const [pendingTxs, setPendingTxs] = useState<pendingTransaction[]>([]);
+  // Approvals whose countdown ran out. The parent owns the pending list, so
+  // expiry is tracked as a flag here (keyed by the immutable expireAt) instead
+  // of mirroring props into local state — a local `setPendingTxs([])` reset was
+  // undone on the very next commit and left a clickable row with a dead 00:00
+  // timer that re-opened ConfirmTxKey with a freshly restarted countdown.
+  const [expiredKeys, setExpiredKeys] = useState<string[]>([]);
   const [txHex, setTxHex] = useState('');
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const { activeChain } = useAppSelector((state) => state.sspState);
@@ -33,17 +37,12 @@ function PendingTransactionsTable(props: {
     (state) => state.fiatCryptoRates,
   );
 
-  useEffect(() => {
-    setPendingTxs(props.transactions);
-    setFiatRate(props.fiatRate);
-  });
-
   const confirmTxAction = (status: boolean) => {
     setOpenConfirmTx(status);
   };
 
-  const onFinishCountDown = () => {
-    setPendingTxs([]);
+  const onFinishCountDown = (key: string) => {
+    setExpiredKeys((keys) => (keys.includes(key) ? keys : [...keys, key]));
     setTimeout(() => {
       props.refresh(); // refresh on parent
     }, 500);
@@ -65,7 +64,7 @@ function PendingTransactionsTable(props: {
           record.tokenSymbol.toLowerCase() as keyof typeof cryptoRates,
           sspConfig().fiatCurrency,
         )
-      : fiatRate;
+      : props.fiatRate;
     return (
       <ActivityRow
         key={record.expireAt}
@@ -93,9 +92,17 @@ function PendingTransactionsTable(props: {
         statusNode={
           record.expireAt ? (
             <Tooltip title={t('home:transactionsTable.tx_pending')}>
-              <span className="arow-countdown">
+              {/* The countdown is the only carrier of "awaiting SSP Key
+                  approval" on this row, and it sits inside the row button so
+                  it can never take focus — the tooltip alone would keep it out
+                  of the accessible tree entirely. */}
+              <span
+                className="arow-countdown"
+                role="timer"
+                aria-label={t('home:transactionsTable.tx_pending')}
+              >
                 <CountdownTimer
-                  onFinish={() => onFinishCountDown()}
+                  onFinish={() => onFinishCountDown(record.expireAt)}
                   expireAtDateTime={record.expireAt}
                   createdAtDateTime={record.createdAt}
                 />
@@ -110,6 +117,12 @@ function PendingTransactionsTable(props: {
       />
     );
   };
+
+  // An expired approval is gone the moment its timer hits zero — it must not
+  // be re-openable while the parent's refresh (500 ms later) catches up.
+  const pendingTxs = props.transactions.filter(
+    (record) => !expiredKeys.includes(record.expireAt),
+  );
 
   return (
     <>

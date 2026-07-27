@@ -135,6 +135,9 @@ import {
   estimateGas,
   constructAndSignEVMTransaction,
   estimateUtxoTxSize,
+  parseUnsignedQuantity,
+  decodeErc20Transfer,
+  describeErc20Transfer,
 } from '../../src/lib/constructTx';
 
 const rawTxFlux =
@@ -840,6 +843,292 @@ describe('ConstructTx Lib', () => {
       );
 
       expect(maxSize).toBeGreaterThanOrEqual(normalSize);
+    });
+  });
+
+  // ==========================================================================
+  // dApp (WalletConnect) transaction requests: 256-bit quantities and ERC-20
+  // calldata. Everything here decides what actually gets SIGNED, so the tests
+  // pin the exact bytes.
+  // ==========================================================================
+  describe('parseUnsignedQuantity', () => {
+    it('should parse hex and decimal quantities exactly', () => {
+      expect(parseUnsignedQuantity('0x0')).toBe(0n);
+      expect(parseUnsignedQuantity('0x21')).toBe(33n);
+      expect(parseUnsignedQuantity('21000')).toBe(21000n);
+    });
+
+    it('should default empty / absent / bare-0x quantities to zero', () => {
+      expect(parseUnsignedQuantity(undefined)).toBe(0n);
+      expect(parseUnsignedQuantity('')).toBe(0n);
+      expect(parseUnsignedQuantity('0x')).toBe(0n);
+    });
+
+    it('keeps full wei precision above Number.MAX_SAFE_INTEGER', () => {
+      // 1.234567890123456789 ETH in wei. Number.MAX_SAFE_INTEGER is ~9.007e15
+      // wei (≈0.009 ETH), so the old parseInt(value, 16) snapped this onto the
+      // nearest double — and that corrupted amount (…456800, 11 wei too much)
+      // was what got signed into the user operation.
+      const weiHex = '0x112210f47de98115';
+      expect(parseUnsignedQuantity(weiHex)).toBe(1234567890123456789n);
+      expect(parseUnsignedQuantity(weiHex).toString()).toBe(
+        '1234567890123456789',
+      );
+      expect(parseInt(weiHex, 16).toString()).toBe('1234567890123456800');
+    });
+
+    it('keeps full precision for a 256-bit maximum', () => {
+      const maxUint256 = `0x${'f'.repeat(64)}`;
+      expect(parseUnsignedQuantity(maxUint256)).toBe(2n ** 256n - 1n);
+    });
+
+    it('should throw on malformed or negative quantities rather than guessing', () => {
+      expect(() => parseUnsignedQuantity('0xzz')).toThrow();
+      expect(() => parseUnsignedQuantity('1.5')).toThrow();
+      expect(() => parseUnsignedQuantity('-1')).toThrow(
+        'Negative quantity in transaction request',
+      );
+    });
+  });
+
+  describe('decodeErc20Transfer', () => {
+    const recipient = '0x66324EE406cCccdDdAd7f510a61Af22DeC391606';
+    // Hand-assembled so the test is an independent oracle for viem's encoder.
+    const encodeTransfer = (to, rawAmount) =>
+      '0xa9059cbb' +
+      to.slice(2).toLowerCase().padStart(64, '0') +
+      rawAmount.toString(16).padStart(64, '0');
+
+    it('should decode a canonical transfer(address,uint256) calldata', () => {
+      const decoded = decodeErc20Transfer(
+        encodeTransfer(recipient, 12345678901234567890n),
+      );
+      expect(decoded).not.toBeNull();
+      expect(decoded.recipient).toBe(recipient); // checksummed
+      expect(decoded.rawAmount).toBe(12345678901234567890n);
+    });
+
+    it('should decode a mixed-case calldata', () => {
+      const decoded = decodeErc20Transfer(
+        encodeTransfer(recipient, 1n).toUpperCase().replace('0X', '0x'),
+      );
+      expect(decoded.recipient).toBe(recipient);
+      expect(decoded.rawAmount).toBe(1n);
+    });
+
+    it('should reject anything that is not exactly the canonical encoding', () => {
+      const canonical = encodeTransfer(recipient, 1n);
+      expect(decodeErc20Transfer(undefined)).toBeNull();
+      expect(decodeErc20Transfer('0x')).toBeNull();
+      // wrong selector (approve)
+      expect(
+        decodeErc20Transfer('0x095ea7b3' + canonical.slice(10)),
+      ).toBeNull();
+      // trailing bytes past the two words
+      expect(decodeErc20Transfer(canonical + 'ff')).toBeNull();
+      // truncated
+      expect(decodeErc20Transfer(canonical.slice(0, -2))).toBeNull();
+      // dirty padding above the address word
+      expect(
+        decodeErc20Transfer('0xa9059cbb' + '01' + canonical.slice(12)),
+      ).toBeNull();
+      // non-hex payload
+      expect(decodeErc20Transfer(canonical.slice(0, -2) + 'zz')).toBeNull();
+    });
+  });
+
+  describe('describeErc20Transfer', () => {
+    // Sepolia's registered token: Fake Flux, 8 decimals.
+    const fakeFlux = '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B909';
+    const tokens = [
+      { contract: '', name: 'Sepolia', symbol: 'TEST-ETH', decimals: 18 },
+      {
+        contract: fakeFlux,
+        name: 'Fake Flux',
+        symbol: 'TEST-FLUX',
+        decimals: 8,
+      },
+    ];
+    const recipient = '0x66324EE406cCccdDdAd7f510a61Af22DeC391606';
+    const encodeTransfer = (to, rawAmount) =>
+      '0xa9059cbb' +
+      to.slice(2).toLowerCase().padStart(64, '0') +
+      rawAmount.toString(16).padStart(64, '0');
+
+    it('should surface the REAL recipient and amount of a known token transfer', () => {
+      const intent = describeErc20Transfer(
+        {
+          to: fakeFlux,
+          data: encodeTransfer(recipient, 12345678901234567890n),
+          value: 0n,
+        },
+        tokens,
+      );
+      expect(intent).not.toBeNull();
+      expect(intent.recipient).toBe(recipient);
+      // 8 decimals, and far beyond what a double could represent
+      expect(intent.amount).toBe('123456789012.3456789');
+      expect(intent.token.symbol).toBe('TEST-FLUX');
+    });
+
+    it('should return the registry spelling of the contract, not the dApp casing', () => {
+      const intent = describeErc20Transfer(
+        {
+          to: fakeFlux.toLowerCase(),
+          data: encodeTransfer(recipient, 100000000n),
+          value: 0n,
+        },
+        tokens,
+      );
+      // constructAndSignEVMTransaction and the send flow both look tokens up
+      // case-sensitively, so the registry spelling is the only usable one.
+      expect(intent.token.contract).toBe(fakeFlux);
+      expect(intent.amount).toBe('1');
+    });
+
+    it('should refuse to re-present an unknown token', () => {
+      const unknown = '0x1111111111111111111111111111111111111111';
+      expect(
+        describeErc20Transfer(
+          { to: unknown, data: encodeTransfer(recipient, 1n), value: 0n },
+          tokens,
+        ),
+      ).toBeNull();
+    });
+
+    it('should refuse when a native value rides along with the calldata', () => {
+      expect(
+        describeErc20Transfer(
+          {
+            to: fakeFlux,
+            data: encodeTransfer(recipient, 1n),
+            value: 1000000000000000n,
+          },
+          tokens,
+        ),
+      ).toBeNull();
+    });
+
+    it('should refuse non-transfer calldata and missing fields', () => {
+      expect(
+        describeErc20Transfer(
+          { to: fakeFlux, data: '0x095ea7b3', value: 0n },
+          tokens,
+        ),
+      ).toBeNull();
+      expect(
+        describeErc20Transfer(
+          { to: undefined, data: undefined, value: 0n },
+          tokens,
+        ),
+      ).toBeNull();
+    });
+  });
+
+  describe('constructAndSignEVMTransaction with dApp calldata', () => {
+    const privateKey =
+      '0x29c6fbfe8f749d4d122a3a8422e63977aaf943fb3674a927fb88f1a2833a53ad';
+    const memberAddr = '0x300429d8ef26b7264fab66d9368958d0e99e3f1f';
+    const fakeFlux = '0x690cc0235aBEA2cF89213E30D0F0Ea0fC054B909';
+    const recipient = '0x66324EE406cCccdDdAd7f510a61Af22DeC391606';
+    const rawAmount = 12345678901234567890n;
+    const dAppCalldata =
+      '0xa9059cbb' +
+      recipient.slice(2).toLowerCase().padStart(64, '0') +
+      rawAmount.toString(16).padStart(64, '0');
+
+    const build = (amount, receiver, token, customData) =>
+      constructAndSignEVMTransaction(
+        'sepolia',
+        receiver,
+        amount,
+        privateKey,
+        rawTxSepolia.publicKeys[memberAddr],
+        rawTxSepolia.publicNonces[memberAddr],
+        '1000000000',
+        '1000000000',
+        '80000',
+        '100000',
+        '500000',
+        token,
+        [],
+        customData,
+      );
+
+    it('leaves supplied calldata untouched instead of re-encoding a transfer', async () => {
+      // The WalletConnect path used to pass BOTH token = <token contract> and
+      // customData = <dApp calldata>, and the ERC-20 branch then rebuilt
+      // transfer(tokenContract, 0) — a zero-amount transfer to the token
+      // contract itself, with the dApp's real recipient and amount discarded.
+      vi.clearAllMocks();
+      await build('0', fakeFlux, fakeFlux, dAppCalldata);
+
+      const builtUo = aaMocks.buildUserOperation.mock.calls[0][0].uo;
+      expect(builtUo.data).toBe(dAppCalldata);
+      expect(builtUo.target).toBe(fakeFlux);
+      expect(builtUo.value).toBe(0n);
+    });
+
+    it('should never spend the token amount as native value on a pass-through', async () => {
+      // `amount` is denominated in the selected token here, so it must not
+      // leak into the user operation's native value field.
+      vi.clearAllMocks();
+      await build('123456789012.3456789', fakeFlux, fakeFlux, dAppCalldata);
+
+      const builtUo = aaMocks.buildUserOperation.mock.calls[0][0].uo;
+      expect(builtUo.value).toBe(0n);
+      expect(builtUo.data).toBe(dAppCalldata);
+    });
+
+    it('should still pass native calldata through with its native value', async () => {
+      vi.clearAllMocks();
+      await build('0.1', recipient, '', '0xdeadbeef');
+
+      const builtUo = aaMocks.buildUserOperation.mock.calls[0][0].uo;
+      expect(builtUo.data).toBe('0xdeadbeef');
+      expect(builtUo.target).toBe(recipient);
+      expect(builtUo.value).toBe(100000000000000000n);
+    });
+
+    it('should still re-encode a plain token send that carries no calldata', async () => {
+      vi.clearAllMocks();
+      await build('1', recipient, fakeFlux, undefined);
+
+      const builtUo = aaMocks.buildUserOperation.mock.calls[0][0].uo;
+      expect(builtUo.target).toBe(fakeFlux);
+      // transfer(recipient, 1 * 10^8)
+      expect(builtUo.data).toBe(
+        '0xa9059cbb' +
+          recipient.slice(2).toLowerCase().padStart(64, '0') +
+          100000000n.toString(16).padStart(64, '0'),
+      );
+    });
+
+    it('WYSIWYS: what the review screen shows re-encodes to the dApp bytes', async () => {
+      // End-to-end for the WalletConnect ERC-20 path: describeErc20Transfer
+      // produces exactly the receiver/amount/asset the send screen renders
+      // (and disables), and feeding those three values back through the
+      // signing path must reproduce the dApp's calldata byte-for-byte.
+      const tokens = [
+        { contract: '', name: 'Sepolia', symbol: 'TEST-ETH', decimals: 18 },
+        {
+          contract: fakeFlux,
+          name: 'Fake Flux',
+          symbol: 'TEST-FLUX',
+          decimals: 8,
+        },
+      ];
+      const intent = describeErc20Transfer(
+        { to: fakeFlux, data: dAppCalldata, value: 0n },
+        tokens,
+      );
+
+      vi.clearAllMocks();
+      await build(intent.amount, intent.recipient, intent.token.contract, '');
+
+      const builtUo = aaMocks.buildUserOperation.mock.calls[0][0].uo;
+      expect(builtUo.target).toBe(fakeFlux);
+      expect(builtUo.data).toBe(dAppCalldata);
     });
   });
 });

@@ -25,6 +25,7 @@
  */
 
 import axios from 'axios';
+import localForage from 'localforage';
 import secureLocalStorage from 'react-secure-storage';
 import {
   decrypt as passworderDecrypt,
@@ -41,7 +42,7 @@ import {
   getScriptType,
 } from './wallet';
 import { setXpubWallet, setXpubKey, store } from '../store';
-import type { cryptos } from '../types';
+import type { cryptos, publicNonce } from '../types';
 
 export const CHAIN_SYNC_VERSION = 1;
 export const CHAIN_SYNC_MAX_CHAINS = 20;
@@ -127,6 +128,50 @@ export function isBatchStalled(
   nowMs: number,
 ): boolean {
   return nowMs - lastProgressAtMs >= CHAIN_SYNC_STALL_TIMEOUT_MS;
+}
+
+/**
+ * Batch lifecycle phases, shared with components/Key/Key.tsx so the polling
+ * and verification-gate policies below can be expressed over them (and tested).
+ */
+export type BatchPhase =
+  | 'idle'
+  | 'preparing'
+  | 'awaiting'
+  | 'syncing'
+  | 'done'
+  | 'rejected'
+  | 'fallback';
+
+/**
+ * Phases in which the wallet must keep polling the key. 'fallback' included:
+ * the per-chain QR path shown there is only an ALTERNATIVE — the key may still
+ * approve (slow tap) or decline late, and a late decline is what puts the
+ * verification gate back on screen (see requiresVerificationGate).
+ */
+export function isBatchPollablePhase(phase: BatchPhase): boolean {
+  return phase === 'awaiting' || phase === 'syncing' || phase === 'fallback';
+}
+
+/**
+ * Does a batch that stopped the wallet's wait still owe the user the anti-MITM
+ * verification gate?
+ *
+ * The gate is a security control — the only thing that catches a relay
+ * substituting its own key material during pairing — so EVERY path that ends
+ * the wait must reach it whenever key material actually landed this session
+ * (`activeChainDone`): a completed batch ('done') and equally one the key
+ * DECLINED ('rejected'), where the key shows its identity-only code. Phases in
+ * which the key is still expected to answer ('awaiting'/'syncing'/'fallback')
+ * deliberately do NOT gate: a code built there would aggregate fewer chains
+ * than the key's and could never match.
+ */
+export function requiresVerificationGate(
+  phase: BatchPhase,
+  activeChainDone: boolean,
+): boolean {
+  if (!activeChainDone) return false;
+  return phase === 'done' || phase === 'rejected';
 }
 
 export interface BatchSyncDoc {
@@ -328,6 +373,32 @@ export async function storeKeyXpubForChain(
   const encryptedXpub2 = await passworderEncrypt(password, keyXpub);
   secureLocalStorage.setItem(`2-${derivationPath}`, encryptedXpub2);
   setXpubKey(chain, keyXpub);
+}
+
+/**
+ * Store the Schnorr public-nonce pool a batch sync doc carries — the exact
+ * same localForage write the classic per-chain flow performs in
+ * components/Key/Key.tsx checkSynced.
+ *
+ * The pool is per-INSTALL, not per-chain: ONE localForage key here, ONE redux
+ * slot on the key side, and every EVM send draws from it regardless of chain.
+ * The key regenerates the pool when it syncs an EVM chain and keeps only the
+ * last one it generated, so a batch doc's pool MUST be ingested here — without
+ * it the wallet keeps a pool the key already discarded and every EVM send waits
+ * forever on a nonce the key does not have. The key generates the pool once per
+ * batch and reports the same one for every EVM chain of that batch, so both
+ * sides converge on the same pool whichever docs the wallet observed.
+ *
+ * A doc without a pool (non-EVM chain) or with an empty one leaves the stored
+ * pool untouched — never wipe a working pool on a degenerate response.
+ */
+export async function storeKeyPublicNonces(
+  publicNonces: publicNonce[] | undefined,
+): Promise<void> {
+  if (!Array.isArray(publicNonces) || !publicNonces.length) return;
+  await localForage
+    .setItem('sspKeyPublicNonces', publicNonces)
+    .catch((error) => console.log(error)); // we do not need to throw an error
 }
 
 /**

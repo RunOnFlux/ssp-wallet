@@ -25,7 +25,7 @@
   transition: background 0.15s ease;
 }
 
-.action-row-button:hover:not(:disabled) {
+.action-row-button:hover:not(:disabled):not([aria-disabled='true']) {
   background: rgba(245, 158, 11, 0.2);
 }
 
@@ -34,7 +34,8 @@
   outline-offset: 2px;
 }
 
-.action-row-button:disabled {
+.action-row-button:disabled,
+.action-row-button[aria-disabled='true'] {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -58,7 +59,8 @@
   background: rgba(245, 158, 11, 0.14);
 }
 
-:root[data-theme='dark'] .action-row-button:hover:not(:disabled) {
+:root[data-theme='dark']
+  .action-row-button:hover:not(:disabled):not([aria-disabled='true']) {
   background: rgba(245, 158, 11, 0.22);
 }
 

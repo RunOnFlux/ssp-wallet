@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { App, Button, Input, Space, Select, Tooltip, theme } from 'antd';
+import {
+  App,
+  Button,
+  Input,
+  Space,
+  Select,
+  Switch,
+  Tooltip,
+  theme,
+} from 'antd';
 import {
   BookUser as BookUserIcon,
   Check as CheckIcon,
@@ -40,7 +49,9 @@ import {
   subscribeToEnterpriseNotifications,
   unsubscribeFromEnterpriseNotifications,
   getDefaultEnterpriseNotificationPreferences,
+  updateUserPreferences,
 } from '@storage/ssp';
+import type { enterpriseNotificationPreferences } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { useAppSelector, useAppDispatch } from '../../hooks';
@@ -73,11 +84,6 @@ import WalletConnect from '../WalletConnect/WalletConnect';
 import TutorialTrigger from '../Tutorial/TutorialTrigger';
 import PoweredByFlux from '../PoweredByFlux/PoweredByFlux';
 import './Settings.css';
-
-interface sspConfigType {
-  relay?: string;
-  fiatCurrency?: keyof currency;
-}
 
 interface EnterpriseNotificationApiResponse {
   status: string;
@@ -121,9 +127,23 @@ function Row({
         {icon && <span className="settings-row-icon">{icon}</span>}
         {label}
         {help && (
-          <Tooltip title={help}>
-            <CircleHelpIcon
-              style={{ marginLeft: 6, color: token.colorPrimary }}
+          /* A real focusable control, not a tooltip bolted onto an <svg>: antd
+             binds its trigger handlers to the child, and a lucide svg has no
+             tabIndex, so the help text was mouse-hover only. The sentence
+             itself is the button's accessible name, so a screen reader gets it
+             on focus regardless of when the tooltip opens; antd's Button
+             carries the focus-visible ring.
+             colorLink, not colorPrimary: raw amber #fbbf24 on the light
+             surface #fafaf9 is 1.6:1, below the 3:1 a meaningful UI glyph
+             needs. colorLink is #d97706 in light (3.08:1) and #fbbf24 in dark
+             (11.8:1) — same brand ramp, legible in both. */
+          <Tooltip title={help} trigger={['hover', 'focus', 'click']}>
+            <Button
+              type="text"
+              size="small"
+              aria-label={help}
+              style={{ marginLeft: 2, color: token.colorLink }}
+              icon={<CircleHelpIcon size={16} />}
             />
           </Tooltip>
         )}
@@ -196,6 +216,16 @@ function Settings() {
   const [isEnterpriseSubscribed, setIsEnterpriseSubscribed] = useState(
     !!(enterpriseConfigData?.isSubscribed && enterpriseConfigData?.email),
   );
+  // The six categories the relay supports. They used to be hardcoded on and
+  // POSTed verbatim — marketing included, which nothing in the UI disclosed —
+  // and the only way off any of them was a full unsubscribe (a fresh 2-of-2
+  // signature that also drops the alerts the user actually wanted). They are
+  // now chosen here, before the verification email is even requested.
+  const [enterprisePreferences, setEnterprisePreferences] =
+    useState<enterpriseNotificationPreferences>(
+      enterpriseConfigData?.preferences ??
+        getDefaultEnterpriseNotificationPreferences(),
+    );
   const [enterpriseLoading, setEnterpriseLoading] = useState(false);
   const [subscriptionStep, setSubscriptionStep] = useState<
     'email' | 'verification' | 'signing'
@@ -226,6 +256,9 @@ function Settings() {
     const config = getEnterpriseNotificationConfig();
     setEnterpriseEmail(config?.email ?? '');
     setIsEnterpriseSubscribed(!!(config?.isSubscribed && config?.email));
+    setEnterprisePreferences(
+      config?.preferences ?? getDefaultEnterpriseNotificationPreferences(),
+    );
   }, []);
 
   const completeSubscribe = async (result: WkSignResponse) => {
@@ -271,7 +304,8 @@ function Settings() {
         walletIdentity: sspWalletInternalIdentity,
         email: verifiedEmail,
         chains,
-        preferences: getDefaultEnterpriseNotificationPreferences(),
+        // The user's own selection, not the shipped defaults.
+        preferences: enterprisePreferences,
         subscriptionMessage: result.message,
         walletSignature: result.walletSignature,
         walletPubKey: result.walletPubKey,
@@ -292,7 +326,10 @@ function Settings() {
         requestBody,
       );
       if (response.data?.status === 'success' && response.data?.data?.success) {
-        await subscribeToEnterpriseNotifications(verifiedEmail);
+        await subscribeToEnterpriseNotifications(
+          verifiedEmail,
+          enterprisePreferences,
+        );
         setIsEnterpriseSubscribed(true);
         setSubscriptionStep('email');
         setVerifiedEmail(null);
@@ -343,6 +380,7 @@ function Settings() {
         await unsubscribeFromEnterpriseNotifications();
         setIsEnterpriseSubscribed(false);
         setEnterpriseEmail('');
+        setEnterprisePreferences(getDefaultEnterpriseNotificationPreferences());
         displayMessage(
           'success',
           t('home:settings.sspEnterprise.unsubscribe_success'),
@@ -366,20 +404,49 @@ function Settings() {
     void toast.open({ type, content });
   };
 
+  /**
+   * Nudge the rates object so everything reading `sspConfig().fiatCurrency`
+   * recomputes. The currency is read imperatively rather than from Redux, so
+   * changing it does not by itself re-render the components that format money;
+   * changing the identity of the rates slice does. handleSave has always done
+   * this — it is factored out here so the instant-apply path below cannot drift
+   * from it.
+   */
+  const refreshFiatFormatting = () => {
+    dispatch(setFiatRates({ ...fiatRates, IDR: fiatRates.IDR + 0.0000000001 }));
+  };
+
+  /**
+   * Fiat currency applies IMMEDIATELY, like the Language and Theme rows it sits
+   * between. It used to only set local state, so the change appeared to take
+   * effect but silently reverted unless the user also found the Save button —
+   * which lives at the bottom of the collapsed "Advanced" expander, off screen
+   * and unrelated to this row.
+   */
+  const applyFiatCurrency = async (value: keyof currency) => {
+    const previous = sspFiatCurrency;
+    setSspFiatCurrency(value);
+    try {
+      await updateUserPreferences({ fiatCurrency: value });
+      loadSSPConfig();
+      refreshFiatFormatting();
+    } catch (error) {
+      console.log(error);
+      setSspFiatCurrency(previous); // never leave the row showing an unsaved value
+      displayMessage('error', t('home:settings.err_saving_conf'));
+    }
+  };
+
   const handleSave = async () => {
     try {
-      const sspConf: sspConfigType = {};
-      if (originalConfig.relay !== sspConfigRelay) {
-        sspConf.relay = sspConfigRelay;
-      }
-      if (originalConfig.fiatCurrency !== sspFiatCurrency) {
-        sspConf.fiatCurrency = sspFiatCurrency;
-      }
-      if (Object.keys(sspConf).length > 0) {
-        await localForage.setItem('sspConfig', sspConf).catch(console.log);
-      } else {
-        await localForage.removeItem('sspConfig').catch(console.log);
-      }
+      // Merge, never replace: the sspConfig record also holds the tutorial
+      // state and the SSP Enterprise notification subscription. Writing a bare
+      // { relay, fiatCurrency } object over it — or removing the record when
+      // both matched their defaults — destroyed both.
+      await updateUserPreferences({
+        relay: sspConfigRelay,
+        fiatCurrency: sspFiatCurrency,
+      }).catch(console.log);
       const storedBackends: backends =
         (await localForage.getItem('backends')) ?? {};
       if (!storedBackends[activeChain]) {
@@ -427,20 +494,18 @@ function Settings() {
       loadBackendsConfig();
       loadSSPConfig();
       displayMessage('success', t('common:saved', 'Saved'));
-      setTimeout(() => {
-        dispatch(
-          setFiatRates({ ...fiatRates, IDR: fiatRates.IDR + 0.0000000001 }),
-        );
-      }, 100);
+      setTimeout(refreshFiatFormatting, 100);
     } catch (error) {
       console.log(error);
       displayMessage('error', t('home:settings.err_saving_conf'));
     }
   };
 
-  const resetSSP = () => {
+  // Scoped to the relay field it sits beside, like the three resets below it.
+  // It used to also revert Fiat Currency — a control on a different card — so
+  // resetting the relay silently put the user's currency back to USD.
+  const resetRelayConfig = () => {
     setSspConfigRelay(originalConfig.relay);
-    setSspFiatCurrency(originalConfig.fiatCurrency);
   };
   const resetNodeConfig = () => {
     setNodeConfig(backendsOriginalConfig[activeChain].node);
@@ -674,30 +739,45 @@ function Settings() {
 
   // Chevron row: opens a modal/page. `trailing` renders a quiet status hint
   // (e.g. the green "Verified" check) before the caret.
+  //
+  // The help text used to hang off a Tooltip wrapped around the <svg> INSIDE
+  // this button: antd binds its trigger handlers to that child, an svg has no
+  // tabIndex so onFocus never fired (hover-only help), and a click on the icon
+  // simply bubbled into the row's navigation. The row IS the focusable
+  // element, so the tooltip belongs on the row — reachable by Tab, and
+  // described to screen readers via the aria-describedby antd sets while it is
+  // open. The icon stays as a silent visual marker that help exists.
   const navRow = (
     icon: React.ReactNode,
     label: string,
     onClick: () => void,
     opts?: { help?: string; trailing?: React.ReactNode },
-  ) => (
-    <button type="button" className="settings-nav-row" onClick={onClick}>
-      <span className="settings-row-label">
-        <span className="settings-row-icon">{icon}</span>
-        {label}
-        {opts?.help && (
-          <Tooltip title={opts.help}>
+  ) => {
+    const row = (
+      <button type="button" className="settings-nav-row" onClick={onClick}>
+        <span className="settings-row-label">
+          <span className="settings-row-icon">{icon}</span>
+          {label}
+          {opts?.help && (
             <CircleHelpIcon
-              style={{ marginLeft: 6, color: token.colorPrimary }}
+              aria-hidden="true"
+              style={{ marginLeft: 6, color: token.colorLink }}
             />
-          </Tooltip>
-        )}
-      </span>
-      <span className="settings-nav-end">
-        {opts?.trailing}
-        <ChevronRightIcon className="settings-nav-caret" />
-      </span>
-    </button>
-  );
+          )}
+        </span>
+        <span className="settings-nav-end">
+          {opts?.trailing}
+          <ChevronRightIcon className="settings-nav-caret" />
+        </span>
+      </button>
+    );
+    if (!opts?.help) return row;
+    return (
+      <Tooltip title={opts.help} trigger={['hover', 'focus']}>
+        {row}
+      </Tooltip>
+    );
+  };
 
   // Expander header row — same affordance family as navRow but the caret
   // rotates and the body expands in place (Advanced, Enterprise alerts).
@@ -734,8 +814,33 @@ function Settings() {
     </button>
   );
 
-  // The multi-step SSP Enterprise subscribe/verify/sign block, unchanged in
-  // behavior — now rendered inside the collapsed Tools expander.
+  // Every category the subscription can send, in the order the relay lists
+  // them. `marketing` is last and ships OFF (see storage/ssp.ts) — it is not a
+  // wallet alert and the feature description never promised it.
+  const enterprisePreferenceRows: {
+    key: keyof enterpriseNotificationPreferences;
+    label: string;
+  }[] = [
+    { key: 'incomingTx', label: t('common:notification_categories.incoming') },
+    { key: 'outgoingTx', label: t('common:notification_categories.outgoing') },
+    {
+      key: 'largeTransactions',
+      label: t('common:notification_categories.large_tx'),
+    },
+    {
+      key: 'lowBalance',
+      label: t('common:notification_categories.low_balance'),
+    },
+    {
+      key: 'weeklyReport',
+      label: t('common:notification_categories.weekly_report'),
+    },
+    { key: 'marketing', label: t('common:notification_categories.marketing') },
+  ];
+
+  // The multi-step SSP Enterprise subscribe/verify/sign block — now rendered
+  // inside the collapsed Tools expander, with the category switches the
+  // subscription always silently enabled.
   const renderEnterpriseBlock = () => (
     <Space direction="vertical" size="middle" style={{ width: '100%' }}>
       {!isEnterpriseSubscribed ? (
@@ -750,6 +855,41 @@ function Settings() {
                 disabled={enterpriseLoading}
                 onPressEnter={handleEnterpriseRequestCode}
               />
+              <div>
+                <div className="settings-caption">
+                  {t('common:notification_categories.title')}
+                </div>
+                <div
+                  style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+                >
+                  {enterprisePreferenceRows.map(({ key, label }) => (
+                    <div
+                      key={key}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 12,
+                        fontSize: 13,
+                      }}
+                    >
+                      <span>{label}</span>
+                      <Switch
+                        size="small"
+                        aria-label={label}
+                        checked={enterprisePreferences[key]}
+                        disabled={enterpriseLoading}
+                        onChange={(checked) =>
+                          setEnterprisePreferences((prev) => ({
+                            ...prev,
+                            [key]: checked,
+                          }))
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
               <Button
                 type="primary"
                 onClick={handleEnterpriseRequestCode}
@@ -874,7 +1014,9 @@ function Settings() {
             popupMatchSelectWidth={false}
             value={sspFiatCurrency}
             optionLabelProp={'desc'}
-            onChange={(value) => setSspFiatCurrency(value)}
+            onChange={(value) => {
+              void applyFiatCurrency(value);
+            }}
             style={{ minWidth: 110 }}
             options={fiatOptions()}
             optionRender={(option) => (
@@ -1037,7 +1179,9 @@ function Settings() {
                     value={sspConfigRelay}
                     onChange={(e) => setSspConfigRelay(e.target.value)}
                   />
-                  <Button onClick={resetSSP}>{t('common:reset')}</Button>
+                  <Button onClick={resetRelayConfig}>
+                    {t('common:reset')}
+                  </Button>
                 </Space.Compact>
               </Row>
               {backendsOriginalConfig[activeChain].node && (
@@ -1135,6 +1279,7 @@ function Settings() {
           siteName: 'SSP Enterprise',
           origin: 'SSP Wallet',
           description: t('home:settings.sspEnterprise.description'),
+          internal: true,
         }}
         openAction={handleWkSignResult}
       />

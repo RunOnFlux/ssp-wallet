@@ -139,3 +139,27 @@
   outline: 2px solid var(--ssp-focus);
   outline-offset: 1px;
 }
+
+/*
+ * Terms-of-service link in the swap footer. It previously carried
+ * `color: inherit; text-decoration: none`, which made the only link on the
+ * screen — the terms the user agrees to by swapping — visually identical to the
+ * caption beside it. colorLink from the theme, plus an underline, so the
+ * affordance does not rest on colour alone.
+ */
+.swap-tos-link {
+  color: var(--ssp-color-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.swap-tos-link:hover,
+.swap-tos-link:focus-visible {
+  text-decoration-thickness: 2px;
+}
+
+.swap-tos-link:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

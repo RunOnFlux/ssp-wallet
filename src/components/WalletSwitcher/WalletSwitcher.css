@@ -156,6 +156,11 @@
   outline-offset: 2px;
 }
 
+.switcher-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .switcher-action-icon {
   width: 16px;
   height: 16px;
@@ -202,7 +207,7 @@
   color: #b91c1c; /* red-700 — quiet danger, ≥4.5:1 on the faint tint */
 }
 
-.switcher-action-remove:hover {
+.switcher-action-remove:hover:not(:disabled) {
   background: rgba(239, 68, 68, 0.14);
 }
 
@@ -211,13 +216,24 @@
   color: #f87171; /* red-400 on dark */
 }
 
-:root[data-theme='dark'] .switcher-action-remove:hover {
+:root[data-theme='dark'] .switcher-action-remove:hover:not(:disabled) {
   background: rgba(239, 68, 68, 0.2);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .switcher-action {
     transition: none;
+  }
+
+  /* the switch indicator stops moving but must stay legible: antd's dots idle
+     at opacity 0.3 and only reach full opacity through their animation */
+  .switcher-chain.switcher-chain-switching .ant-spin-dot,
+  .switcher-chain.switcher-chain-switching .ant-spin-dot-item {
+    animation: none;
+  }
+
+  .switcher-chain.switcher-chain-switching .ant-spin-dot-item {
+    opacity: 1;
   }
 }
 
@@ -248,6 +264,38 @@
 
 .switcher-chain-active {
   background: rgba(245, 158, 11, 0.1);
+}
+
+/* A chain switch takes seconds (seed decryption + key derivation) and its
+   store/storage writes are last-writer-wins — every row goes inert until it
+   settles, and only the row being switched keeps full contrast + its spinner. */
+.switcher-chain:disabled,
+.switcher-wallet[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.switcher-chain:disabled.switcher-chain-switching {
+  opacity: 1;
+  cursor: progress;
+}
+
+/* antd's Spin paints its dots with colorPrimary (#fbbf24), which is only
+   1.7:1 on the light drawer surface. Amber-700 gives 5.0:1 on white and 4.7:1
+   on the active row's amber tint; dark keeps brand amber (8.9:1 or better). */
+.switcher-chain.switcher-chain-switching .ant-spin.ant-spin-section {
+  color: #b45309;
+}
+
+:root[data-theme='dark']
+  .switcher-chain.switcher-chain-switching
+  .ant-spin.ant-spin-section {
+  color: #fbbf24;
+}
+
+.switcher-chain:disabled:not(.switcher-chain-active):hover,
+.switcher-wallet[aria-disabled='true']:not(.switcher-wallet-active):hover {
+  background: transparent;
 }
 
 .switcher-chain-name {

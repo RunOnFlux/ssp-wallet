@@ -167,7 +167,12 @@ function NodesActions(props: {
         trigger={['click']}
         placement="bottomRight"
       >
-        <Button type="text" icon={<EllipsisVerticalIcon />} />
+        <Button
+          type="text"
+          icon={<EllipsisVerticalIcon />}
+          aria-label={t('home:nodesTable.node_actions', 'Node actions')}
+          title={t('home:nodesTable.node_actions', 'Node actions')}
+        />
       </Dropdown>
       <Modal
         title={t('home:nodesTable.start_all_nodes_title', {

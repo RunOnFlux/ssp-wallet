@@ -27,10 +27,16 @@ export interface WkSignMessageValidation {
 }
 
 export interface WkSignRequesterInfo {
+  /** Browser-verified frame origin (stamped in background.js from `sender`). */
   origin: string;
+  /** Page-supplied and unverifiable — presentation only, never for trust. */
   siteName?: string;
   description?: string;
   iconUrl?: string;
+  /** Set only by in-app callers; unreachable from the page bridge. */
+  internal?: boolean;
+  topOrigin?: string;
+  isSubframe?: boolean;
 }
 
 export interface WkSignResponse {

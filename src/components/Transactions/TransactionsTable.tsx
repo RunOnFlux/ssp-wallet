@@ -65,6 +65,10 @@ function TransactionsTable(props: {
         .toFixed(),
       message: record.message,
       utxos: record.utxos,
+      // Base units (satoshis), as produced in lib/transactions.ts. The send
+      // strategy needs it to floor the replacement fee above the replaced one
+      // (BIP125 rule 4) — without it the replacement is rejected by the node.
+      replacedFeeSats: record.fee,
     };
     navigate('/send', { state: navigationObject });
   };

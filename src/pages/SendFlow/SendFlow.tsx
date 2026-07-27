@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Form,
   Button,
+  ConfigProvider,
   Input,
   Space,
   Popover,
@@ -23,11 +24,16 @@ import {
   Segmented,
   theme,
 } from 'antd';
-import { CircleHelp as CircleHelpIcon, Scan as ScanIcon } from 'lucide-react';
+import {
+  BookUser as BookUserIcon,
+  CircleHelp as CircleHelpIcon,
+  Scan as ScanIcon,
+} from 'lucide-react';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 
 import PageHeader from '../../components/PageHeader/PageHeader';
+import { useThemeMode } from '../../contexts/ThemeContext';
 import SspConnect from '../../components/SspConnect/SspConnect';
 import QRScanner, {
   isQrScanSupported,
@@ -69,6 +75,43 @@ const STRATEGY_HOOKS: Record<'utxo' | 'evm' | 'sol', () => SendStrategyView> = {
   sol: useSolSendStrategy,
 };
 
+/**
+ * Inline-error red. antd's colorError (#ef4444) clears 4.5:1 on the dark page
+ * (#0c0a09 → 5.25:1) but only 3.6:1 on the light one (#fafaf9), so the light
+ * theme steps down the ramp to #b91c1c (6.2:1) — no single red clears 4.5:1
+ * against both page backgrounds.
+ */
+const ERROR_TEXT_COLOR = { dark: '#ef4444', light: '#b91c1c' } as const;
+
+/**
+ * Surface tokens for the fee-preset Segmented. antd derives its trackBg from
+ * colorBgLayout, which IS the page background in this theme, so the control
+ * shipped with no visible track and its unselected option rendered in the
+ * exact colour of the caption above it. trackBg/itemSelectedBg give it a track
+ * and a readable thumb; the 1px border is what carries the ≥3:1 boundary
+ * WCAG 1.4.11 wants, since no fill can reach 3:1 against a near-black page.
+ * #78716c is the one neutral that clears it on BOTH pages (4.12:1 on #0c0a09,
+ * 4.59:1 on #fafaf9).
+ */
+const SEGMENTED_BORDER_COLOR = '#78716c';
+const SEGMENTED_TOKENS = {
+  dark: {
+    trackBg: '#141312',
+    itemColor: '#a8a29e',
+    itemSelectedBg: '#78716c',
+    itemSelectedColor: '#fafaf9',
+  },
+  light: {
+    trackBg: '#d6d3d1',
+    itemColor: '#57534e',
+    itemSelectedBg: '#ffffff',
+    itemSelectedColor: '#1c1917',
+  },
+} as const;
+
+/** Ties the amount field to its inline error message for screen readers. */
+const AMOUNT_ERROR_ID = 'send-amount-error';
+
 function SendFlow() {
   const { activeChain } = useAppSelector((state) => state.sspState);
   const chainType = (blockchains[activeChain].chainType ?? 'utxo') as
@@ -83,6 +126,7 @@ function SendFlow() {
 
 function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
   const { token } = theme.useToken();
+  const { isDark } = useThemeMode();
   const { t } = useTranslation(['send', 'common', 'home']);
   const strategy = STRATEGY_HOOKS[chainType]();
   const { activeChain } = useAppSelector((state) => state.sspState);
@@ -173,6 +217,13 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
     }
     return null;
   }, [strategy.receiver.value, contacts, wallets, walletNames, activeChain]);
+
+  // The amount field's only "error" state across all three strategies is
+  // "amount (+ fee) exceeds the available balance". It used to render as a bare
+  // red border with no message and Continue stayed fully enabled — the visual
+  // state and the affordance now agree, and the reason is spelled out.
+  const amountError = strategy.amount.status === 'error';
+  const errorColor = ERROR_TEXT_COLOR[isDark ? 'dark' : 'light'];
 
   const handleContinue = () => {
     const error = strategy.validateCompose();
@@ -394,6 +445,10 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                   aria-label={t('send:scan_qr')}
                 />
               )}
+              {/* Contacts + own wallets. SendFlow.css hides the selection item,
+                  so the trigger is icon-only — it needs both a recognisable
+                  glyph and an explicit accessible name (the hidden item cannot
+                  provide one). aria-label lands on the role="combobox" input. */}
               <Select
                 size="large"
                 className="no-text-select"
@@ -404,6 +459,9 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 onChange={(value: string) => strategy.receiver.set(value)}
                 options={contactsItems}
                 disabled={strategy.receiver.disabled}
+                suffixIcon={<BookUserIcon />}
+                title={t('send:contacts_picker')}
+                aria-label={t('send:contacts_picker')}
                 dropdownRender={(menu) => <>{menu}</>}
               />
             </Space.Compact>
@@ -442,22 +500,50 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
               placeholder={t('send:input_amount')}
               suffix={strategy.amount.suffix}
               disabled={strategy.amount.disabled}
+              aria-invalid={amountError || undefined}
+              aria-describedby={amountError ? AMOUNT_ERROR_ID : undefined}
             />
           </Form.Item>
-          {strategy.amount.fiat && (
+          {/* The error takes the fiat estimate's slot rather than adding a row:
+              the two are mutually exclusive in practice and the amount / Max
+              pair below relies on this row's exact height. */}
+          {amountError ? (
             <div
+              id={AMOUNT_ERROR_ID}
+              // Polite, not assertive: a zero-balance wallet is already in this
+              // state on load, and aria-invalid + aria-describedby carry the
+              // field's status the moment it takes focus.
+              role="status"
               style={{
                 marginTop: '-22px',
                 float: 'left',
                 marginLeft: 3,
+                maxWidth: '65%',
                 fontSize: 12,
-                color: token.colorTextSecondary,
+                color: errorColor,
                 zIndex: 2,
                 position: 'relative',
+                textAlign: 'left',
               }}
             >
-              ≈ {strategy.amount.fiat}
+              {t('send:err_amount_exceeds_balance')}
             </div>
+          ) : (
+            strategy.amount.fiat && (
+              <div
+                style={{
+                  marginTop: '-22px',
+                  float: 'left',
+                  marginLeft: 3,
+                  fontSize: 12,
+                  color: token.colorTextSecondary,
+                  zIndex: 2,
+                  position: 'relative',
+                }}
+              >
+                ≈ {strategy.amount.fiat}
+              </div>
+            )
           )}
           <Button
             type="text"
@@ -531,15 +617,27 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 </span>
               )}
             </div>
-            <Segmented
-              block
-              value={strategy.selectedPreset}
-              onChange={(value) => strategy.selectPreset(value)}
-              options={strategy.feePresets.map((preset) => ({
-                label: presetLabel(preset.key),
-                value: preset.key,
-              }))}
-            />
+            <ConfigProvider
+              theme={{
+                components: {
+                  Segmented: SEGMENTED_TOKENS[isDark ? 'dark' : 'light'],
+                },
+              }}
+            >
+              <Segmented
+                block
+                // The border is the boundary: `block` spreads the two options
+                // to the page edges (261px apart in the side panel), and
+                // without it they stop reading as one grouped control.
+                style={{ border: `1px solid ${SEGMENTED_BORDER_COLOR}` }}
+                value={strategy.selectedPreset}
+                onChange={(value) => strategy.selectPreset(value)}
+                options={strategy.feePresets.map((preset) => ({
+                  label: presetLabel(preset.key),
+                  value: preset.key,
+                }))}
+              />
+            </ConfigProvider>
             {strategy.selectedPreset !== 'custom' && (
               <div style={{ fontSize: 12, marginTop: 6, textAlign: 'left' }}>
                 {activePreset?.feeAmount != null ? (
@@ -601,6 +699,11 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 type="primary"
                 size="large"
                 style={{ minWidth: 220, maxWidth: '380px' }}
+                // An amount the balance cannot fund is already known here —
+                // advancing to Review would only defer the failure to the
+                // Send button two steps later.
+                disabled={amountError}
+                aria-describedby={amountError ? AMOUNT_ERROR_ID : undefined}
                 onClick={handleContinue}
               >
                 {t('send:continue')}
@@ -804,11 +907,23 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                 }}
+                // While a posted request is still awaiting the SSP Key, this
+                // reopens it instead of submitting. Closing the approval dialog
+                // does not cancel the request, so submitting again would post a
+                // SECOND transaction against the same UTXOs / nonce — and simply
+                // disabling the button would strand the user with no way back to
+                // the request they already made.
                 onClick={() => {
+                  if (strategy.pendingApproval) {
+                    strategy.showPendingApproval();
+                    return;
+                  }
                   strategy.form.submit();
                 }}
               >
-                {strategy.submitLabel}
+                {strategy.pendingApproval
+                  ? t('send:view_pending_approval')
+                  : strategy.submitLabel}
               </Button>
               <div
                 style={{

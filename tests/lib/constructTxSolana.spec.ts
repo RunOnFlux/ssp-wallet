@@ -196,8 +196,7 @@ describe('Solana constructTx', () => {
         new PublicKey(walletKp.pubKey),
         new PublicKey(keyKp.pubKey),
       ].sort((a, b) => Buffer.compare(a.toBuffer(), b.toBuffer()));
-      const memberHash = require('crypto')
-        .createHash('sha256');
+      const memberHash = require('crypto').createHash('sha256');
       for (const m of sortedMembers) memberHash.update(m.toBytes());
       const [multisigPda] = PublicKey.findProgramAddressSync(
         [Buffer.from('multisig'), memberHash.digest(), Buffer.from([2])],
@@ -304,9 +303,7 @@ describe('Solana constructTx', () => {
         Buffer.from(ix.data).subarray(0, 8).equals(discriminator),
       );
       expect(createIx, 'create_transaction ix should be present').toBeDefined();
-      expect(
-        createIx!.data.subarray(0, 8).equals(discriminator),
-      ).toBe(true);
+      expect(createIx!.data.subarray(0, 8).equals(discriminator)).toBe(true);
 
       // Decode header → account_keys → instructions, walking the
       // borsh-encoded proposal message. Find SystemProgram transfers to

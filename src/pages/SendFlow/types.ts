@@ -104,6 +104,16 @@ export interface SendStrategyView {
   // ---- approve step ----
   /** True while the ConfirmTxKey handshake modal is open. */
   approveActive: boolean;
+  /**
+   * True from the moment the action is posted until it reaches a terminal state
+   * (txid received, or rejected). Closing the approval dialog does NOT clear it
+   * — the request stays live on the relay for its whole validity window, so
+   * re-arming Send would post a SECOND transaction against the same UTXOs /
+   * nonce. SendFlow offers "View pending approval" instead while it is set.
+   */
+  pendingApproval: boolean;
+  /** Re-open the approval dialog for the request that is still pending. */
+  showPendingApproval: () => void;
   /** ConfirmTxKey + TxSent + TxRejected (+ EVM nonce modals) — untouched. */
   modals: ReactNode;
 }

@@ -2,7 +2,7 @@ import { Button, Popconfirm, Typography } from 'antd';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 import { CircleHelp as CircleHelpIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Token, blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import { useAppSelector } from '../../hooks';
@@ -25,7 +25,6 @@ function TokenBox(props: {
   handleRemoveToken: (contract: string) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const [fiatRate, setFiatRate] = useState(0);
   const [infoExpanded, setInfoExpanded] = useState(false);
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[props.chain],
@@ -42,25 +41,21 @@ function TokenBox(props: {
   if (!props.tokenInfo.contract) {
     balance = balanceCOIN;
   }
+  // Derived during render, NOT held in state behind a mount-only effect.
+  // Previously this was state set by a `[]`-deps effect, so the rate froze at
+  // whatever cryptoRates/fiatRates held on mount — and pinned to $0.00 for the
+  // whole session when rates had not arrived yet. The component already
+  // subscribes to state.fiatCryptoRates, so it re-renders on every rates
+  // update; computing here is both correct and less code. (Balances.tsx does
+  // the same sum with [activeChain, cryptoRates, fiatRates] deps.)
+  const fiatRate =
+    (cryptoRates[
+      props.tokenInfo.symbol.toLowerCase() as keyof typeof cryptoRates
+    ] ?? 0) * (fiatRates[sspConfig().fiatCurrency] ?? 0);
+
   const balanceUsd = new BigNumber(balance)
     .dividedBy(10 ** props.tokenInfo.decimals)
     .multipliedBy(new BigNumber(fiatRate));
-
-  useEffect(() => {
-    getCryptoRate(
-      props.tokenInfo.symbol.toLowerCase() as keyof typeof cryptoRates, // we use lower cased symbol as key
-      sspConfig().fiatCurrency,
-    );
-  }, []); // Run once on mount - token never changes within component instance
-
-  const getCryptoRate = (
-    crypto: keyof typeof cryptoRates,
-    fiat: keyof typeof fiatRates,
-  ) => {
-    const cr = cryptoRates[crypto] ?? 0;
-    const fi = fiatRates[fiat] ?? 0;
-    setFiatRate(cr * fi);
-  };
 
   const removeToken = () => {
     props.handleRemoveToken(props.tokenInfo.contract);
@@ -80,11 +75,17 @@ function TokenBox(props: {
             src={props.tokenInfo.logo}
             alt=""
           />
-          <img
-            className="token-row-logo-badge"
-            src={blockchains[props.chain].logo}
-            alt=""
-          />
+          {/* Chain badge only for real tokens: a native asset IS the chain, so
+              badging it stuck a second, smaller copy of the same glyph on the
+              row — and next to an ERC-20 row the badge stopped reading as
+              "this token lives on <chain>". */}
+          {props.tokenInfo.contract && (
+            <img
+              className="token-row-logo-badge"
+              src={blockchains[props.chain].logo}
+              alt=""
+            />
+          )}
         </span>
         <span className="token-row-main">
           <span className="token-row-symbol">{props.tokenInfo.symbol}</span>

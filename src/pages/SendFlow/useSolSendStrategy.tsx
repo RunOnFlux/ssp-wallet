@@ -53,6 +53,7 @@ import { backends } from '@storage/backends';
 import {
   validateSolRecipient,
   computeSolAutoFee,
+  solAmountExceedsBalance,
   type SolFeeSchedule,
 } from '../../lib/sendStrategies/sol';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
@@ -136,6 +137,10 @@ export function useSolSendStrategy(): SendStrategyView {
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
+  // True from posting the action until it reaches a terminal state. Closing the
+  // approval dialog does NOT clear it — the request is still live on the relay,
+  // and re-arming Send here would double-post against the same inputs.
+  const [pendingApproval, setPendingApproval] = useState(false);
   const [txHex, setTxHex] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -154,6 +159,7 @@ export function useSolSendStrategy(): SendStrategyView {
     if (socketTxid && socketChain === activeChain) {
       setTxHex(socketTxid);
       setOpenConfirmTx(false);
+      setPendingApproval(false);
       setOpenTxSent(true);
       setSubmitting(false);
       clearTxid?.();
@@ -163,6 +169,7 @@ export function useSolSendStrategy(): SendStrategyView {
   useEffect(() => {
     if (socketTxRejected && socketChain === activeChain) {
       setOpenConfirmTx(false);
+      setPendingApproval(false);
       setOpenTxRejected(true);
       setSubmitting(false);
       clearTxRejected?.();
@@ -358,34 +365,28 @@ export function useSolSendStrategy(): SendStrategyView {
     };
   }, [txToken, walletInUse, activeChain, xpubKey, xpubWallet]);
 
-  // Flag insufficient balance with a red input border.
+  // Insufficient-balance predicate shared by the live red-border effect and
+  // the compose → review gate, so the visual state and the affordance agree.
+  const exceedsBalance = (tokenDecimals: number): boolean =>
+    solAmountExceedsBalance(
+      sendingAmount,
+      txFee,
+      spendableBalance,
+      tokenDecimals,
+      blockchainConfig.decimals,
+      !txToken || txToken === blockchainConfig.tokens[0].contract,
+    );
+
+  // Flag insufficient balance with a red input border + the inline message the
+  // compose step renders from amount.status.
   useEffect(() => {
     const tokenInfo = blockchainConfig.tokens
       .concat(importedTokens ?? [])
       .find((tk) => tk.contract === txToken);
     if (!tokenInfo) return;
-    const isNative =
-      !txToken || txToken === blockchainConfig.tokens[0].contract;
-    const decimals = tokenInfo.decimals;
-    const amountInBase = new BigNumber(sendingAmount || '0').multipliedBy(
-      10 ** decimals,
+    setValidateStatusAmount(
+      exceedsBalance(tokenInfo.decimals) ? 'error' : 'success',
     );
-    const max = new BigNumber(spendableBalance);
-    if (isNative) {
-      // Native send + fee both come from vault SOL balance.
-      const feeBase = new BigNumber(txFee || '0').multipliedBy(
-        10 ** blockchainConfig.decimals,
-      );
-      setValidateStatusAmount(
-        amountInBase.plus(feeBase).isGreaterThan(max) ? 'error' : 'success',
-      );
-    } else {
-      // SPL: tokens come from token balance, fee comes from vault SOL.
-      // Token balance check only — SOL fee balance is checked at submit time.
-      setValidateStatusAmount(
-        amountInBase.isGreaterThan(max) ? 'error' : 'success',
-      );
-    }
   }, [sendingAmount, spendableBalance, txFee, txToken, importedTokens]);
 
   // "Use Maximum" — fills amount with spendable - fee.
@@ -452,14 +453,11 @@ export function useSolSendStrategy(): SendStrategyView {
       return;
     }
     if (!feeSchedule || !paymasterPubkey) {
-      displayMessage('error', 'Solana paymaster not ready, try again shortly');
+      displayMessage('error', t('send:err_sol_fee_not_ready'));
       return;
     }
     if (!xpubKey?.startsWith('[') || !xpubWallet?.startsWith('[')) {
-      displayMessage(
-        'error',
-        'Solana pairing not complete — partner pubkey array missing',
-      );
+      displayMessage('error', t('send:err_sol_not_synced'));
       return;
     }
 
@@ -660,6 +658,7 @@ export function useSolSendStrategy(): SendStrategyView {
           sspWalletKeyInternalIdentity,
         );
         setTxHex(signedTxBase64);
+        setPendingApproval(true);
         setOpenConfirmTx(true);
         setSubmitting(false);
 
@@ -694,6 +693,7 @@ export function useSolSendStrategy(): SendStrategyView {
         setOpenConfirmTx(false);
         // Surface key-rejection vs other errors distinctly.
         if (error?.message?.includes('Key device rejected')) {
+          setPendingApproval(false);
           setOpenTxRejected(true);
         } else {
           displayMessage('error', error?.message || 'Send failed');
@@ -751,6 +751,11 @@ export function useSolSendStrategy(): SendStrategyView {
     }
     if (!sendingAmount || isNaN(+sendingAmount) || +sendingAmount <= 0) {
       return t('send:input_amount');
+    }
+    // Balance is checked here too — Review must never present a spend the
+    // vault cannot fund (the send would only fail at the Key handshake).
+    if (exceedsBalance(selectedTokenInfo.decimals)) {
+      return t('send:err_amount_exceeds_balance');
     }
     return null;
   };
@@ -876,6 +881,8 @@ export function useSolSendStrategy(): SendStrategyView {
     totalFiat: toFiat(totalDisplay),
     isRBF: false,
     approveActive: openConfirmTx,
+    pendingApproval,
+    showPendingApproval: () => setOpenConfirmTx(true),
     modals,
   };
 }

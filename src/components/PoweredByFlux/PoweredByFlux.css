@@ -1,0 +1,34 @@
+/*
+ * The Powered-by-Flux logo is a real <button> when clickable (it opens
+ * runonflux.com). It previously rendered as an antd <Image onClick>, i.e. a bare
+ * <img>: no tab stop, no keyboard activation, no accessible name. These rules
+ * strip the native button chrome so it still looks like a plain logo, while
+ * keeping it focusable with a visible focus state.
+ */
+.powered-by-flux-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  /* Keep the focus ring from being clipped by the footer's overflow. */
+  line-height: 0;
+}
+
+.powered-by-flux-link:focus-visible {
+  /* Amber brand ring, same treatment as the other focusable chrome. */
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+.powered-by-flux-link:hover {
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .powered-by-flux-link {
+    transition: none;
+  }
+}

@@ -46,6 +46,18 @@
       "packages": {},
       "builtins": {}
     },
+    "@noble/curves": {
+      "packageName": "@noble/curves",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
     "@noble/hashes": {
       "packageName": "@noble/hashes",
       "globals": {

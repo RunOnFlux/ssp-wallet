@@ -85,7 +85,10 @@ function ConfirmTxKey(props: {
   const qrSize = windowWidth < 420 ? 240 : 280;
   const qrPayload = `${chain}:${wallet}:${txHex}`;
 
-  const handleOk = () => {
+  // Closing is NOT cancelling: the action stays live on the relay for its full
+  // validity window and remains approvable on the phone. Named + labelled for
+  // what it does (the amber "OK" read as "confirm" on a pending request).
+  const handleClose = () => {
     openAction(false);
   };
 
@@ -104,18 +107,25 @@ function ConfirmTxKey(props: {
   }));
 
   const remainingSeconds = ACTION_EXPIRY_SECONDS - elapsedSeconds;
+  // Still approvable on the phone ⇒ the footer must not offer a primary
+  // "confirm"; only the terminal phases (and expiry) get a primary Done.
+  const isPending = phase === 'waiting' && remainingSeconds > 0;
 
   return (
     <>
       <Modal
         title={t('home:keyHandshake.title')}
         open={open}
-        onOk={handleOk}
+        onOk={handleClose}
         style={{ textAlign: 'center', top: 60 }}
-        onCancel={handleOk}
+        onCancel={handleClose}
         footer={[
-          <Button key="ok" type="primary" onClick={handleOk}>
-            {t('common:ok')}
+          <Button
+            key="close"
+            type={isPending ? 'default' : 'primary'}
+            onClick={handleClose}
+          >
+            {isPending ? t('common:close') : t('common:done')}
           </Button>,
         ]}
       >
@@ -165,6 +175,14 @@ function ConfirmTxKey(props: {
                 style={{ textAlign: 'left' }}
               />
             )}
+          {isPending && (
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {t(
+                'home:keyHandshake.close_keeps_pending',
+                'Closing this dialog does not cancel the request — it stays pending on your SSP Key until it expires.',
+              )}
+            </Text>
+          )}
           {/* QR fallback — payload generation untouched, presentation only */}
           <Button type="link" onClick={() => setShowFallback(!showFallback)}>
             {showFallback

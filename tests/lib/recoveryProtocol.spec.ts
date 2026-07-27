@@ -41,6 +41,7 @@ vi.mock('socket.io-client', () => ({
 
 import { requestRecovery, RecoveryError } from '../../src/lib/recoveryProtocol';
 import { wrapSkRForTransit } from '../../src/lib/recoveryCrypto';
+import { recoveryVerificationWords } from '../../src/lib/verificationCode';
 
 // -------------------------------------------------------------------------
 // Helpers
@@ -71,15 +72,25 @@ function captureRequestBody() {
 // Simulate the ssp-key side: take the wallet's request pkEph, wrap a sk_r
 // using the real crypto, and emit a recoveryresponse socket event.
 function simulateSspKeyResponse(params) {
-  const { sspKeyPriv, skR, wkIdentity, overrideNonce, overrideTransit } =
-    params;
+  const {
+    sspKeyPriv,
+    skR,
+    wkIdentity,
+    overrideNonce,
+    overrideTransit,
+    overrideVersion,
+    overrideIndex,
+  } = params;
   const req = captureRequestPayload();
   const pkEph = Buffer.from(req.pkEph, 'hex');
   const transit = overrideTransit ?? wrapSkRForTransit(sspKeyPriv, pkEph, skR);
   const responsePayload = {
+    // `in` rather than ??, so a test can drop the field entirely.
+    version: 'overrideVersion' in params ? overrideVersion : 2,
     transit,
     nonce: overrideNonce ?? req.nonce,
     timestamp: req.timestamp,
+    recoveryIndex: overrideIndex ?? req.recoveryIndex,
   };
   mockSocket.fire('recoveryresponse', {
     wkIdentity,
@@ -115,6 +126,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
 
     await Promise.resolve();
@@ -139,6 +151,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
     const caught = promise.catch((e) => e);
 
@@ -175,6 +188,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
 
     await Promise.resolve();
@@ -200,6 +214,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
 
     await Promise.resolve();
@@ -224,6 +239,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
 
     await Promise.resolve();
@@ -247,6 +263,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
 
     await Promise.resolve();
@@ -268,6 +285,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
 
     await Promise.resolve();
@@ -289,6 +307,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
 
     await Promise.resolve();
@@ -321,6 +340,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
 
     await Promise.resolve();
@@ -337,6 +357,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
       timeoutMs: 50,
     });
     const caught = promise.catch((e) => e);
@@ -354,6 +375,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
       timeoutMs: 50,
     });
     const caught = promise.catch((e) => e);
@@ -386,6 +408,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
     await Promise.resolve();
     mockSocket.fire('connect');
@@ -409,6 +432,7 @@ describe('recoveryProtocol.requestRecovery', () => {
       keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
       chain: 'btc',
       relay: 'relay.test.io',
+      recoveryIndex: 0,
     });
     await Promise.resolve();
     mockSocket.fire('connect');
@@ -418,5 +442,106 @@ describe('recoveryProtocol.requestRecovery', () => {
     await expect(promise).rejects.toThrow();
     expect(mockSocket.removeAllListeners).toHaveBeenCalled();
     expect(mockSocket.disconnect).toHaveBeenCalled();
+  });
+  it('asks for the index the envelope was sealed to', async () => {
+    const sspKey = genKeypair();
+    const promise = requestRecovery({
+      wkIdentity: 'bc1qwkid',
+      keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
+      chain: 'btc',
+      relay: 'relay.test.io',
+      recoveryIndex: 5,
+    });
+    const caught = promise.catch((e) => e);
+    await Promise.resolve();
+    mockSocket.fire('connect');
+    await Promise.resolve();
+
+    expect(captureRequestPayload().recoveryIndex).toBe(5);
+    simulateSspKeyResponse({
+      sspKeyPriv: sspKey.priv,
+      skR: randomBytes(32),
+      wkIdentity: 'bc1qwkid',
+    });
+    await caught;
+  });
+
+  it('rejects a response for a different index', async () => {
+    const sspKey = genKeypair();
+    const promise = requestRecovery({
+      wkIdentity: 'bc1qwkid',
+      keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
+      chain: 'btc',
+      relay: 'relay.test.io',
+      recoveryIndex: 3,
+    });
+    await Promise.resolve();
+    mockSocket.fire('connect');
+    await Promise.resolve();
+    simulateSspKeyResponse({
+      sspKeyPriv: sspKey.priv,
+      skR: randomBytes(32),
+      wkIdentity: 'bc1qwkid',
+      overrideIndex: 4,
+    });
+
+    await expect(promise).rejects.toMatchObject({
+      code: 'malformed_response',
+    });
+  });
+
+  it('rejects a response that does not speak this protocol version', async () => {
+    const sspKey = genKeypair();
+    const promise = requestRecovery({
+      wkIdentity: 'bc1qwkid',
+      keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
+      chain: 'btc',
+      relay: 'relay.test.io',
+      recoveryIndex: 0,
+    });
+    await Promise.resolve();
+    mockSocket.fire('connect');
+    await Promise.resolve();
+    // A response with no version field at all.
+    simulateSspKeyResponse({
+      sspKeyPriv: sspKey.priv,
+      skR: randomBytes(32),
+      wkIdentity: 'bc1qwkid',
+      overrideVersion: undefined,
+    });
+
+    await expect(promise).rejects.toMatchObject({
+      code: 'malformed_response',
+    });
+  });
+
+  it('hands the out-of-band code out before waiting', async () => {
+    const sspKey = genKeypair();
+    const seen = [];
+    const promise = requestRecovery({
+      wkIdentity: 'bc1qwkid',
+      keyIdentityPubKeyHex: sspKey.pub.toString('hex'),
+      chain: 'btc',
+      relay: 'relay.test.io',
+      recoveryIndex: 0,
+      onVerificationWords: (words) => seen.push(words),
+    });
+    const caught = promise.catch((e) => e);
+    await Promise.resolve();
+    mockSocket.fire('connect');
+    await Promise.resolve();
+
+    // Reported once, and it is the code for the request actually posted.
+    expect(seen).toHaveLength(1);
+    expect(seen[0]).toHaveLength(6);
+    const req = captureRequestPayload();
+    expect(seen[0]).toEqual(recoveryVerificationWords(req.pkEph, req.nonce));
+
+    simulateSspKeyResponse({
+      sspKeyPriv: sspKey.priv,
+      skR: randomBytes(32),
+      wkIdentity: 'bc1qwkid',
+    });
+    await caught;
   });
 });

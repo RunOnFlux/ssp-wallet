@@ -131,7 +131,8 @@
     "err_duplicate_delegate": "This delegate is already added.",
     "delegates_count_one": "{{count}} delegate configured",
     "delegates_count_other": "{{count}} delegates configured",
-    "redeem_script": "Redeem Script"
+    "redeem_script": "Redeem Script",
+    "node_actions": "Node actions"
   },
   "setupNode": {
     "setup_node": "Setup {{chainName}} Node",
@@ -273,7 +274,7 @@
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "Confirm Public Nonces on SSP Key",
     "confirm_public_nonces_key_info": "In order to send EVM transaction, we first need to obtain public nonces from SSP Key which are used for transaction construction.",
-    "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open your SSP Key on our mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
+    "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "manual_input": "Input Public Nonces manually instead",
     "public_nonces_stored": "Public Nonces Stored!",
     "invalid_public_nonces": "Invalid Public Nonces."
@@ -281,13 +282,13 @@
   "navbar": {
     "refresh": "Refresh",
     "chain_wallet": "{{chain}} {{wallet}}",
-    "addr_details": "Address Details",
+    "addr_details": "Address details",
     "generate_new_wallet": "Generate New Wallet",
     "remove_last_wallet": "Remove Last Wallet",
     "remove": "Remove",
     "remove_last_wallet_desc": "This action will remove your most recently generated wallet. You can generate the same new wallet at any time.",
     "max_wallets": "42. The answer to the ultimate question of life, the universe, and everything. You have reached the maximum number of wallets.",
-    "ssp_message_sign": "Message Signing",
+    "ssp_message_sign": "Message signing",
     "swap_history": "Swap History",
     "lock": "Lock"
   },
@@ -301,8 +302,8 @@
   },
   "key": {
     "sync_key": "Sync Key",
-    "err_sync_fail": "Synchronisation failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
-    "warn_await_sync": "Awaiting SSP Key synchronisation or manual input.",
+    "err_sync_fail": "Synchronization failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
+    "warn_await_sync": "Awaiting SSP Key synchronization or manual input.",
     "err_sync_1": "Please input SSP Key XPUB. SSP Key XPUB is different than SSP Wallet XPUB. Ensure that both SSP Wallet and SSP Key are using unique, different seed phrases.",
     "err_invalid_key": "Invalid SSP Key.",
     "err_k2": "Code K2: Something went wrong while decrypting password.",
@@ -311,14 +312,14 @@
     "cancel_sync": "Cancel SSP Sync",
     "back_to_sync": "Back to SSP Key Sync",
     "sync_info_content": "SSP Wallet cannot be used without SSP Key. This will log you out of SSP Wallet.",
-    "dual_factor_key": "Dual Factor SSP Key",
+    "dual_factor_key": "Dual Signature SSP Key",
     "sync_info_1": "SSP Wallet is a Dual Signature Wallet. You will need to download SSP Key on your mobile device to access your wallet.",
-    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
+    "sync_info_2": "Scan the following QR code using your SSP Key mobile app to synchronize your SSP Wallet with your SSP Key.",
     "issues_syncing": "Issues syncing? Manual Input",
-    "dual_factor_key_chain": "Dual Factor SSP Key for {{chain}}",
+    "dual_factor_key_chain": "Dual Signature SSP Key for {{chain}}",
     "input_xpub": "Input SSP Key {{chain}} Extended Public Key {{path}} here",
     "sync_key_chain": "Sync Key for {{chain}}",
-    "warn_await_sync_chain": "Awaiting SSP Key synchronisation or manual input.",
+    "warn_await_sync_chain": "Awaiting SSP Key synchronization or manual input.",
     "err_sync_1_chain": "Please input SSP Key XPUB of {{chain}} chain. SSP Key XPUB is different than SSP Wallet XPUB.",
     "cancel_sync_q_chain": "Cancel SSP Key Sync for {{chain}}?",
     "sync_info_content_chain": "SSP Wallet for chain {{chain}} cannot be used without SSP Key. This will switch back to Bitcoin Chain",
@@ -326,9 +327,9 @@
     "setup_ssp_key": "Setup SSP Key",
     "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
     "ssp_key_ready": "My SSP Key is ready!",
-    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
+    "ssp_key_2fa": "SSP Key is the second signature for your SSP Wallet",
     "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
-    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_2": "SSP Key has its own recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
     "tab_scan": "Scan with SSP Key",
     "tab_manual": "Enter manually",
     "chips_label_identity": "Also activate these chains with one approval on your SSP Key:",
@@ -348,12 +349,12 @@
     "batch_partial_failed": "Some chains did not sync. Switch to a chain later to activate it.",
     "continue_to_wallet": "Continue to wallet",
     "verify_words_heading": "Verify this matches your SSP Key",
-    "verify_words_body": "Scan this with your SSP Key to verify — or compare the 6 words below. If they differ, do NOT use this wallet — stop and re-pair.",
+    "verify_words_body": "Scan this with your SSP Key to verify — or compare the 6 words below. If they differ, do NOT use this wallet — stop and start the sync again.",
     "verify_words_session_label_one": "Verification code",
     "verify_words_session_label_other": "Verification code ({{count}} chains)",
     "verify_words_match": "They match — continue",
     "verify_words_mismatch": "They don't match",
-    "verify_mismatch_warning": "Verification codes did not match. This vault was not activated — re-pair to try again.",
+    "verify_mismatch_warning": "Verification codes did not match. This vault was not activated — start the sync again to retry.",
     "batch_request_selected_one": "Request {{count}} selected chain",
     "batch_request_selected_other": "Request {{count}} selected chains"
   },
@@ -402,13 +403,15 @@
     "verified_origin": "Origin",
     "requesting_from": "Requesting from",
     "manual_input": "Manual Input for SSP Key",
-    "manual_input_desc": "If automatic sync isn't working, scan QR code or copy the data for SSP Key."
+    "manual_input_desc": "If automatic sync isn't working, scan QR code or copy the data for SSP Key.",
+    "site_provided": "Provided by the site, not verified:",
+    "embedded_frame": "Requested by an embedded frame inside {{top}}"
   },
   "enterpriseVaultXpub": {
     "title": "Enterprise Vault Key Request",
     "description": "A request to provide public keys for an enterprise vault has been received. Please review the details below.",
     "vault_name": "Vault",
-    "org_name": "Organisation",
+    "org_name": "Organization",
     "chain": "Chain",
     "ssp_identity": "SSP Identity",
     "approve": "Approve",
@@ -416,7 +419,7 @@
     "waiting_for_key": "Waiting for SSP Key approval...",
     "key_rejected": "Request rejected by SSP Key",
     "err_not_logged_in": "Not logged in",
-    "err_not_synced": "SSP Wallet is not yet synchronised with SSP Key. Please complete the sync first.",
+    "err_not_synced": "SSP Wallet is not yet synchronized with SSP Key. Please complete the sync first.",
     "err_invalid_chain": "Invalid chain",
     "err_seed_unavailable": "Could not retrieve wallet seed",
     "err_decrypt_password": "Failed to decrypt password",
@@ -425,14 +428,14 @@
     "err_decrypt_identity_key": "Failed to decrypt identity key"
   },
   "enterpriseNonceSync": {
-    "title": "Enterprise Nonce Synchronisation",
-    "description": "SSP Enterprise is requesting to synchronise cryptographic nonces used for vault transaction signing. This will sync both your wallet and SSP Key nonces.",
+    "title": "Enterprise Nonce Synchronization",
+    "description": "SSP Enterprise is requesting to synchronize cryptographic nonces used for vault transaction signing. This will sync both your wallet and SSP Key nonces.",
     "info": "This will generate fresh signing nonces and sync them with the relay server. No funds will be moved.",
     "approve": "Sync Nonces",
-    "syncing": "Synchronising nonces...",
-    "syncing_wallet": "Synchronising wallet nonces...",
+    "syncing": "Synchronizing nonces...",
+    "syncing_wallet": "Synchronizing wallet nonces...",
     "syncing_key": "Waiting for SSP Key to sync nonces...",
-    "success": "Wallet and Key nonces synchronised successfully!",
+    "success": "Wallet and Key nonces synchronized successfully!",
     "wallet_not_ready": "Wallet is not unlocked. Please unlock your wallet first.",
     "key_sync_failed": "SSP Key nonce sync failed. Please try again.",
     "key_sync_timeout": "SSP Key did not respond. Open SSP Key and try again.",
@@ -443,7 +446,7 @@
     "title": "Enterprise Vault Transaction Signing",
     "description": "A request to sign a vault transaction has been received. Please review the transaction details below.",
     "vault_name": "Vault",
-    "org_name": "Organisation",
+    "org_name": "Organization",
     "chain": "Chain",
     "source_address": "Source Address",
     "ssp_identity": "SSP Identity",
@@ -534,7 +537,7 @@
   "chainsInfo": {
     "chain_requests": "Chains Information Request",
     "chain_requests_info": "A request to get information about all integrated chains in SSP was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. No personal data is shared.",
-    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronised was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
+    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronized was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
     "chain_requests_info_error": "Error getting chains information."
   },
   "tokensInfo": {
@@ -547,10 +550,10 @@
   },
   "addressesInfo": {
     "addresses_requests": "Addresses Information Request",
-    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Excersice caution as your addresses will be shared with the requester.",
-    "addresses_requests_info_all": "A request to get a list of addresses for all synchronised blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Excersice caution as your addresses will be shared with the requester.",
+    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Exercise caution as your addresses will be shared with the requester.",
+    "addresses_requests_info_all": "A request to get a list of addresses for all synchronized blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Exercise caution as your addresses will be shared with the requester.",
     "addresses_requests_info_error": "Error getting addresses information.",
-    "no_addresses": "Chain not synchronised. No addresses found.",
+    "no_addresses": "Chain not synchronized. No addresses found.",
     "select_addresses": "Select Addresses to Share"
   },
   "fusion": {
@@ -617,7 +620,7 @@
     "search_asset": "Search Asset",
     "you_send": "You Send",
     "you_get": "You Get",
-    "chain_sync_required": "Chain synchronisation required first",
+    "chain_sync_required": "Chain synchronization required first",
     "select_receiving_wallet": "Select Receiving Wallet",
     "select_sending_wallet": "Select Sending Wallet",
     "select_buy_asset": "Select Asset to Buy",
@@ -987,6 +990,8 @@
   "portfolio": {
     "not_activated": "Not yet activated",
     "tap_to_activate": "Tap to activate",
+    "activating": "Activating…",
+    "refresh_failed": "Couldn't refresh — showing the last saved values.",
     "incl_tokens": "incl. {{amount}} tokens"
   },
   "activityFeed": {

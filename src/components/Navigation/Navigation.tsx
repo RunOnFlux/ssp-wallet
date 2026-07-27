@@ -48,16 +48,28 @@ function Navigation() {
   const isSOL = blockchainConfig.chainType === 'sol';
   const buySellAvailable =
     servicesAvailability.onramp && servicesAvailability.offramp;
-  const buySellComingSoon =
-    !blockchainConfig.onramperNetwork &&
-    !blockchainConfig.symbol.includes('TEST');
+  // Onramper support is the ONLY thing that enables the tile, so it must also
+  // be the thing that explains a disabled one. Gating the tooltip on
+  // "mainnet without an onramp" instead made it dead code — every chain
+  // lacking onramperNetwork is a test network — leaving Solana (devnet-only)
+  // and every other test chain with a dead tile that explained nothing.
+  const buySellUnavailable = !blockchainConfig.onramperNetwork;
+  const isTestNetwork = blockchainConfig.symbol.includes('TEST');
 
   const buySellButton = (
     <button
       type="button"
       className="action-row-button"
-      disabled={!blockchainConfig.onramperNetwork}
-      onClick={() => openBuyAction(true)}
+      /* aria-disabled, NOT the `disabled` attribute. A natively disabled button
+         is removed from the tab order, so the tooltip explaining WHY Buy/Sell is
+         unavailable could only be reached by hovering a mouse. This keeps the
+         tile focusable — and therefore explainable to keyboard and screen-reader
+         users — while still refusing the action. */
+      aria-disabled={buySellUnavailable || undefined}
+      onClick={() => {
+        if (buySellUnavailable) return;
+        openBuyAction(true);
+      }}
       data-tutorial="buy-sell-button"
     >
       <CreditCardIcon className="action-row-icon" />
@@ -110,10 +122,24 @@ function Navigation() {
           </button>
         )}
         {buySellAvailable &&
-          (buySellComingSoon ? (
-            <Tooltip title={t('home:buy_sell_crypto.coming_soon')}>
-              {/* span wrapper: disabled native buttons swallow hover events,
-                  so the tooltip must attach to a live element */}
+          (buySellUnavailable ? (
+            <Tooltip
+              title={
+                isTestNetwork
+                  ? t(
+                      'home:buy_sell_crypto.not_on_test_networks',
+                      'Not available on test networks',
+                    )
+                  : t('home:buy_sell_crypto.coming_soon')
+              }
+              /* focus as well as hover: the tile is aria-disabled rather than
+                 natively disabled precisely so a keyboard user can reach this
+                 explanation. */
+              trigger={['hover', 'focus']}
+            >
+              {/* span wrapper kept: antd attaches its trigger handlers to the
+                  child, and the wrapper also gives the tooltip a stable anchor
+                  box around the tile. */}
               <span className="action-row-tooltip-target">{buySellButton}</span>
             </Tooltip>
           ) : (

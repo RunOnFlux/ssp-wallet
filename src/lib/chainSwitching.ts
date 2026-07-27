@@ -1,4 +1,5 @@
 import localForage from 'localforage';
+import { createSerialQueue } from './serialQueue';
 import { cryptos } from '../types';
 import { blockchains } from '@storage/blockchains';
 import {
@@ -50,6 +51,18 @@ const balancesObject: balancesObj = {
 };
 
 /**
+ * The switch currently running, if any. A chain switch is a long, multi-step
+ * sequence of Redux dispatches and localForage writes, so two running at once
+ * interleave and can leave the store describing one chain while `activeChain`
+ * names another.
+ *
+ * There are six call sites (wallet switcher, chain select, portfolio,
+ * WalletConnect x2, chain-switch modal). Guarding them one by one leaves the
+ * next caller free to reintroduce the race, so the guard lives here instead.
+ */
+const switchQueue = createSerialQueue<keyof cryptos>();
+
+/**
  * Complete chain switching utility that handles:
  * - Wallet generation/restoration
  * - State loading (transactions, balances, tokens, etc.)
@@ -57,8 +70,24 @@ const balancesObject: balancesObj = {
  * - Redux state updates
  *
  * Extracted from ChainSelect component for reuse in WalletConnect and other contexts.
+ *
+ * Concurrency-safe for every caller:
+ *  - a second request for the SAME chain joins the one already running instead
+ *    of repeating the whole sequence;
+ *  - a request for a DIFFERENT chain queues behind it, so switches never
+ *    interleave. Queuing rather than rejecting preserves last-click-wins, which
+ *    is what a user tapping two networks in quick succession actually means.
  */
 export async function switchToChain(
+  targetChain: keyof cryptos,
+  passwordBlob: string,
+): Promise<void> {
+  return switchQueue(targetChain, () =>
+    performChainSwitch(targetChain, passwordBlob),
+  );
+}
+
+async function performChainSwitch(
   targetChain: keyof cryptos,
   passwordBlob: string,
 ): Promise<void> {

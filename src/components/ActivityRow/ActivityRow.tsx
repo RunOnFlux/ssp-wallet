@@ -46,6 +46,14 @@ export interface ActivityRowProps {
 function ActivityRow(props: ActivityRowProps) {
   const { t } = useTranslation(['home']);
   const hasDetails = !!props.details;
+  // Confirmation state is the most consequential attribute of a row, and the
+  // chip sits INSIDE the row button — it can never take focus, so a tooltip
+  // alone reaches the mouse only. role="img" + aria-label puts the same text in
+  // the accessible tree (the bare lucide glyph carries no title of its own).
+  const statusLabel =
+    props.status === 'confirmed'
+      ? t('home:transactionsTable.tx_confirmed')
+      : t('home:transactionsTable.tx_unconfirmed');
   return (
     <div className={`arow-wrap${props.pending ? ' arow-wrap-pending' : ''}`}>
       <button
@@ -88,19 +96,15 @@ function ActivityRow(props: ActivityRowProps) {
         </span>
         {props.statusNode ??
           (props.status && (
-            <Tooltip
-              title={
-                props.status === 'confirmed'
-                  ? t('home:transactionsTable.tx_confirmed')
-                  : t('home:transactionsTable.tx_unconfirmed')
-              }
-            >
+            <Tooltip title={statusLabel}>
               <span
                 className={`arow-status ${
                   props.status === 'confirmed'
                     ? 'arow-status-confirmed'
                     : 'arow-status-unconfirmed'
                 }`}
+                role="img"
+                aria-label={statusLabel}
               >
                 {props.status === 'confirmed' ? (
                   <CircleCheckIcon />

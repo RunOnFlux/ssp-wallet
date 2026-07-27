@@ -57,6 +57,49 @@ export function utxoFeeForRate(
 }
 
 /**
+ * Minimum fee, in coin units, that a Replace-by-Fee replacement must pay.
+ *
+ * BIP125 rule 4: a replacement must pay at least the replaced transaction's fee
+ * PLUS the replacement's own size at the minimum relay rate. RBF previously
+ * recomputed a byte-identical fee to the original send (the preset defaults to
+ * 'normal' and the size barely changes), so the node rejected the replacement
+ * and the stuck transaction stayed stuck with no explanation.
+ *
+ * @param txSizeVBytes    measured vsize of the replacement
+ * @param replacedFeeSats fee of the transaction being replaced, in BASE units
+ * @param minFeePerByte   chain's minimum relay rate (sat/vB)
+ * @param decimals        chain decimals, to return coin units
+ * @returns the floor in coin units, or null when it cannot be computed
+ */
+export function rbfFeeFloor(
+  txSizeVBytes: number,
+  replacedFeeSats: string,
+  minFeePerByte: number,
+  decimals: number,
+): string | null {
+  if (!txSizeVBytes || txSizeVBytes <= 0) {
+    return null;
+  }
+  // Validate BEFORE constructing: this bignumber.js build THROWS on a
+  // non-numeric string rather than yielding NaN, so an isFinite() check after
+  // the fact never runs. The replaced fee originates from chain-explorer data.
+  if (
+    typeof replacedFeeSats !== 'string' ||
+    !/^\d+(\.\d+)?$/.test(replacedFeeSats.trim())
+  ) {
+    return null;
+  }
+  const replaced = new BigNumber(replacedFeeSats);
+  const minBumpSats = new BigNumber(txSizeVBytes)
+    .multipliedBy(minFeePerByte)
+    .integerValue(BigNumber.ROUND_CEIL);
+  return replaced
+    .plus(minBumpSats)
+    .dividedBy(10 ** decimals)
+    .toFixed();
+}
+
+/**
  * MAX amount for a UTXO send — lifted math from the legacy Send.tsx
  * useMaximum effect: spendable (sats) converted to units minus the fee,
  * floored at 0.

@@ -1,8 +1,10 @@
 import { Image } from 'antd';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useThemeMode } from '../../contexts/ThemeContext';
 import { version } from '../../../package.json';
+import './PoweredByFlux.css';
 
 interface Props {
   isClickeable?: boolean;
@@ -33,6 +35,7 @@ function PoweredByFlux({
   about = false,
 }: Props) {
   const navigate = useNavigate();
+  const { t } = useTranslation(['common']);
   const clickCountRef = useRef(0);
   const lastClickTimeRef = useRef(0);
   const { isDark } = useThemeMode();
@@ -40,7 +43,42 @@ function PoweredByFlux({
   const colorBox = isDark ? '#3d3a38' : '#d6d3d1'; // border-secondary tokens
 
   const open = (url: string) => {
-    window.open(url, '_blank');
+    // noopener/noreferrer: the opened page must not get a window.opener handle
+    // back to the extension document — that is a reverse-tabnabbing lever, and
+    // the side panel does not close on blur the way the popup does.
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  /**
+   * The Flux logo as a real button when it is clickable.
+   *
+   * It used to be an antd <Image onClick>, which renders a bare <img>: no role,
+   * no tab stop, no keyboard activation and no accessible name, so the only
+   * external link in the footer was reachable by mouse alone. All three
+   * variants (rail / about / default) render through this.
+   */
+  const FluxLogo = ({ height }: { height: number }) => {
+    const img = (
+      <Image
+        height={height}
+        preview={false}
+        src={`/powered_by_${themeStyle}.svg`}
+      />
+    );
+    if (!isClickeable) {
+      return img;
+    }
+    return (
+      <button
+        type="button"
+        className="powered-by-flux-link"
+        onClick={() => open('https://runonflux.com')}
+        aria-label={t('common:powered_by_flux_link')}
+        title={t('common:powered_by_flux_link')}
+      >
+        {img}
+      </button>
+    );
   };
 
   const handleVersionClick = () => {
@@ -69,15 +107,7 @@ function PoweredByFlux({
         >
           v{version}
         </div>
-        <Image
-          height={14}
-          preview={false}
-          src={`/powered_by_${themeStyle}.svg`}
-          onClick={
-            isClickeable ? () => open('https://runonflux.com') : undefined
-          }
-          style={isClickeable ? { cursor: 'pointer' } : undefined}
-        />
+        <FluxLogo height={14} />
       </div>
     );
   }
@@ -91,15 +121,7 @@ function PoweredByFlux({
         >
           v{version}
         </div>
-        <Image
-          height={14}
-          preview={false}
-          src={`/powered_by_${themeStyle}.svg`}
-          onClick={
-            isClickeable ? () => open('https://runonflux.com') : undefined
-          }
-          style={isClickeable ? { cursor: 'pointer' } : undefined}
-        />
+        <FluxLogo height={14} />
       </div>
     );
   }
@@ -133,13 +155,7 @@ function PoweredByFlux({
     >
       {isClickeable && (
         <>
-          <Image
-            height={18}
-            preview={false}
-            src={`/powered_by_${themeStyle}.svg`}
-            onClick={() => open('https://runonflux.com')}
-            style={{ cursor: 'pointer' }}
-          />
+          <FluxLogo height={18} />
           <div
             style={{ fontSize: 10, position: 'absolute', bottom: 10, left: 10 }}
             onClick={handleVersionClick}
@@ -148,13 +164,7 @@ function PoweredByFlux({
           </div>
         </>
       )}
-      {!isClickeable && (
-        <Image
-          height={18}
-          preview={false}
-          src={`/powered_by_${themeStyle}.svg`}
-        />
-      )}
+      {!isClickeable && <FluxLogo height={18} />}
     </div>
   );
 }

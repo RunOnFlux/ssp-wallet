@@ -79,6 +79,55 @@ export function sspConfigOriginal(): config {
   return ssp;
 }
 
+/**
+ * The raw persisted record — NOT the merged view from sspConfig().
+ * Writers must merge into this, so that keys they know nothing about survive.
+ */
+async function readStoredConfig(): Promise<Partial<config>> {
+  const stored: Partial<config> | null = await localForage.getItem('sspConfig');
+  return stored ?? {};
+}
+
+/**
+ * Persist the two user-adjustable preferences from Menu.
+ *
+ * This exists because Settings used to build a fresh `{ relay, fiatCurrency }`
+ * object and `setItem` it over the whole record — silently destroying
+ * `tutorial` and `enterpriseNotification` (the SSP Enterprise subscription) —
+ * and to `removeItem` the entire record whenever both values happened to match
+ * the defaults. Preferences are merged in, and a value equal to its shipped
+ * default is stored as an absent key rather than by deleting the record.
+ */
+export async function updateUserPreferences(prefs: {
+  relay?: string;
+  fiatCurrency?: keyof currency;
+}) {
+  const next: Partial<config> = { ...(await readStoredConfig()) };
+
+  if (prefs.relay !== undefined) {
+    if (prefs.relay === ssp.relay) {
+      delete next.relay;
+    } else {
+      next.relay = prefs.relay;
+    }
+  }
+  if (prefs.fiatCurrency !== undefined) {
+    if (prefs.fiatCurrency === ssp.fiatCurrency) {
+      delete next.fiatCurrency;
+    } else {
+      next.fiatCurrency = prefs.fiatCurrency;
+    }
+  }
+
+  storedLocalForgeSSPConfig = next;
+  if (Object.keys(next).length === 0) {
+    // Nothing left worth persisting — safe to drop the record entirely.
+    await localForage.removeItem('sspConfig');
+  } else {
+    await localForage.setItem('sspConfig', next);
+  }
+}
+
 export async function updateTutorialConfig(tutorialConfig: tutorialConfig) {
   const currentConfig = sspConfig();
   const updatedConfig = {
@@ -100,7 +149,15 @@ export async function resetTutorial() {
   await updateTutorialConfig(tutorialConfig);
 }
 
-// SSP Enterprise Notification configuration
+// SSP Enterprise Notification configuration.
+//
+// These are the values Settings offers when the user first opens the subscribe
+// form — they are the STARTING POINT of an explicit choice, not a silent
+// enrolment. `marketing` therefore defaults to OFF: it is not a wallet alert,
+// the feature's own description only promises "transactions, balance alerts,
+// and weekly reports", and the only way back off it used to be a full
+// unsubscribe (which costs a fresh 2-of-2 signature and drops the alerts the
+// user actually wanted).
 const defaultEnterpriseNotificationPreferences: enterpriseNotificationPreferences =
   {
     incomingTx: true,
@@ -108,7 +165,7 @@ const defaultEnterpriseNotificationPreferences: enterpriseNotificationPreference
     largeTransactions: true,
     lowBalance: true,
     weeklyReport: true,
-    marketing: true,
+    marketing: false,
   };
 
 export function getEnterpriseNotificationConfig(): enterpriseNotificationConfig | null {

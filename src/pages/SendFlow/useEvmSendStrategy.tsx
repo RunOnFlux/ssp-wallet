@@ -67,7 +67,13 @@ import {
   swapResponseData,
   tokenBalanceEVM,
 } from '../../types';
-import { presetGasEvm, evmFeeTotalEth } from '../../lib/sendStrategies/evm';
+import {
+  presetGasEvm,
+  evmFeeTotalEth,
+  evmAmountExceedsBalance,
+  evmDisplayAmount,
+  evmTotalNative,
+} from '../../lib/sendStrategies/evm';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
 import type { SendStrategyView, FeePresetView } from './types';
 
@@ -140,6 +146,10 @@ export function useEvmSendStrategy(): SendStrategyView {
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
   const [openTxRejected, setOpenTxRejected] = useState(false);
+  // True from posting the action until it reaches a terminal state. Closing the
+  // approval dialog does NOT clear it — the request is still live on the relay,
+  // and re-arming Send here would double-post against the same inputs.
+  const [pendingApproval, setPendingApproval] = useState(false);
   const [openConfirmPublicNonces, setOpenConfirmPublicNonces] = useState(false);
   const [openPublicNoncesRejected, setOpenPublicNoncesRejected] =
     useState(false);
@@ -386,7 +396,10 @@ export function useEvmSendStrategy(): SendStrategyView {
     );
   };
 
-  useEffect(() => {
+  // Insufficient-balance predicate shared by the live red-border effect and
+  // the compose → review gate, so the visual state and the affordance agree.
+  // Returns null when the selected token isn't known yet (nothing to compare).
+  const exceedsBalance = (): boolean | null => {
     if (txToken) {
       const tokenInformation = blockchains[activeChain].tokens
         .concat(importedTokens ?? [])
@@ -394,32 +407,30 @@ export function useEvmSendStrategy(): SendStrategyView {
           return token.contract === txToken;
         });
       if (!tokenInformation) {
-        setValidateStatusAmount('error');
-        return;
+        return null;
       }
-      const totalAmount = new BigNumber(sendingAmount);
-      const maxSpendable = new BigNumber(spendableBalance).dividedBy(
-        10 ** tokenInformation.decimals,
+      return evmAmountExceedsBalance(
+        sendingAmount,
+        txFee,
+        spendableBalance,
+        tokenInformation.decimals,
+        true,
       );
-      if (totalAmount.isGreaterThan(maxSpendable)) {
-        // mark amount in red box as bad inpout
-        setValidateStatusAmount('error');
-      } else {
-        setValidateStatusAmount('success');
-      }
-    } else {
-      const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
-      const maxSpendable = new BigNumber(spendableBalance).dividedBy(
-        10 ** blockchainConfig.decimals,
-      );
-
-      if (totalAmount.isGreaterThan(maxSpendable)) {
-        // mark amount in red box as bad inpout
-        setValidateStatusAmount('error');
-      } else {
-        setValidateStatusAmount('success');
-      }
     }
+    return evmAmountExceedsBalance(
+      sendingAmount,
+      txFee,
+      spendableBalance,
+      blockchainConfig.decimals,
+      false,
+    );
+  };
+
+  useEffect(() => {
+    const exceeds = exceedsBalance();
+    // mark amount in red box as bad input (unknown token counts as bad too,
+    // exactly as before)
+    setValidateStatusAmount(exceeds !== false ? 'error' : 'success');
   }, [walletInUse, activeChain, sendingAmount, txFee, spendableBalance]);
 
   useEffect(() => {
@@ -471,6 +482,7 @@ export function useEvmSendStrategy(): SendStrategyView {
             txid,
           });
         }
+        setPendingApproval(false);
         setOpenTxSent(true);
       });
     }
@@ -533,6 +545,7 @@ export function useEvmSendStrategy(): SendStrategyView {
           );
         }
 
+        setPendingApproval(false);
         setOpenTxRejected(true);
       });
       if (txSentInterval) {
@@ -959,6 +972,7 @@ export function useEvmSendStrategy(): SendStrategyView {
             );
             setTxHex(signedTx);
             setSubmitting(false);
+            setPendingApproval(true);
             setOpenConfirmTx(true);
             if (txSentInterval) {
               clearInterval(txSentInterval);
@@ -1151,6 +1165,11 @@ export function useEvmSendStrategy(): SendStrategyView {
     if (!state.walletConnectMode && +sendingAmount <= 0) {
       return t('send:err_invalid_amount');
     }
+    // Balance is checked here too — Review must never present a spend the
+    // wallet cannot fund (the send would only fail at the Key handshake).
+    if (exceedsBalance() === true) {
+      return t('send:err_amount_exceeds_balance');
+    }
     return null;
   };
 
@@ -1167,13 +1186,13 @@ export function useEvmSendStrategy(): SendStrategyView {
         return {
           key: 'normal' as const,
           feeAmount: totalGas
-            ? evmFeeTotalEth(totalGas, gas.base, gas.priority)
+            ? evmDisplayAmount(evmFeeTotalEth(totalGas, gas.base, gas.priority))
             : null,
         };
       })(),
       {
         key: 'custom',
-        feeAmount: txFee !== '---' ? txFee || null : null,
+        feeAmount: txFee !== '---' ? evmDisplayAmount(txFee || null) : null,
       },
     ];
   }, [
@@ -1191,11 +1210,12 @@ export function useEvmSendStrategy(): SendStrategyView {
       .concat(importedTokens ?? [])
       .find((tk) => tk.contract === txToken) ?? blockchainConfig.tokens[0];
 
-  const totalDisplay = isNativeAsset
-    ? new BigNumber(sendingAmount || '0')
-        .plus(txFee !== '---' ? txFee || '0' : '0')
-        .toFixed()
+  // Raw (full-precision) total feeds the fiat conversion; the displayed string
+  // is capped — see evmDisplayAmount.
+  const totalRaw = isNativeAsset
+    ? evmTotalNative(sendingAmount, txFee !== '---' ? txFee : '0')
     : null;
+  const totalDisplay = evmDisplayAmount(totalRaw);
 
   // Legacy manual gas inputs — exactly the fields the old SendEVM page
   // exposed under "Fee Details" (base/priority gwei + the three gas
@@ -1683,11 +1703,16 @@ export function useEvmSendStrategy(): SendStrategyView {
       suffix: selectedTokenInfo.symbol ?? blockchainConfig.symbol,
       disabled: !!state.swap || !!(state?.walletConnectMode && state?.amount),
       fiat: isNativeAsset ? toFiat(sendingAmount) : null,
-      maxDisplay: new BigNumber(spendableBalance)
-        .dividedBy(
-          10 ** (selectedTokenInfo.decimals ?? blockchainConfig.decimals),
-        )
-        .toFixed(),
+      // MAX rounds DOWN so the number shown is never more than is available.
+      maxDisplay:
+        evmDisplayAmount(
+          new BigNumber(spendableBalance)
+            .dividedBy(
+              10 ** (selectedTokenInfo.decimals ?? blockchainConfig.decimals),
+            )
+            .toFixed(),
+          BigNumber.ROUND_DOWN,
+        ) ?? '0',
       onMax: () => setUseMaximum(true),
       maxDisabled:
         !!state.swap || !!(state?.walletConnectMode && state?.amount),
@@ -1701,7 +1726,7 @@ export function useEvmSendStrategy(): SendStrategyView {
     selectPreset: setFeePreset,
     customFeeContent,
     hiddenFormContent,
-    feeDisplay: txFee || '---',
+    feeDisplay: (txFee !== '---' ? evmDisplayAmount(txFee) : null) ?? '---',
     // '---' is the explicit "fee unknown" marker set when gas estimation
     // produced NaN. A computed fee of 0 is NOT ready while the gas
     // components are still their initial 0,0,0 (estimation pending/hung) —
@@ -1720,12 +1745,22 @@ export function useEvmSendStrategy(): SendStrategyView {
       const gwei = new BigNumber(baseGasPrice || '0').plus(
         priorityGasPrice || '0',
       );
-      return gwei.isFinite() && gwei.gt(0) ? `${gwei.toFixed()} gwei` : null;
+      if (!gwei.isFinite() || !gwei.gt(0)) {
+        return null;
+      }
+      // The rate is informational: 2 decimals from 1 gwei up, 4 significant
+      // digits below it so sub-gwei L2 rates don't collapse to "0.00".
+      const rounded = gwei.gte(1)
+        ? gwei.decimalPlaces(2, BigNumber.ROUND_CEIL)
+        : gwei.precision(4, BigNumber.ROUND_CEIL);
+      return `${rounded.toFixed()} gwei`;
     })(),
     totalDisplay,
-    totalFiat: toFiat(totalDisplay),
+    totalFiat: toFiat(totalRaw),
     isRBF: !!state.utxos?.length,
     approveActive: openConfirmTx,
+    pendingApproval,
+    showPendingApproval: () => setOpenConfirmTx(true),
     modals,
   };
 }

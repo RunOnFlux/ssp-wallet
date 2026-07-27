@@ -323,7 +323,10 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
         style={{ marginBottom: 16, marginTop: 16, width: '100%' }}
       >
         <Text>
-          {requesterInfo?.origin === 'SSP Wallet'
+          {/* Keyed off the internal flag, NOT the origin string: the flag is
+              set from the browser-verified sender, whereas an origin string in
+              the message body is page-supplied. */}
+          {requesterInfo?.internal
             ? t('home:wkSign.description_internal')
             : t('home:wkSign.description')}
         </Text>
@@ -347,24 +350,61 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
                 }}
               />
             )}
-            {requesterInfo.siteName && (
-              <Text strong style={{ fontSize: '15px', display: 'block' }}>
-                {requesterInfo.siteName}
-              </Text>
-            )}
-            <Text
-              type="secondary"
-              style={{ fontSize: '12px', fontFamily: 'var(--ssp-mono)' }}
-            >
-              {requesterInfo.origin}
-            </Text>
-            {requesterInfo.description && (
-              <Text
-                type="secondary"
-                style={{ fontSize: '12px', display: 'block', marginTop: 4 }}
-              >
-                {requesterInfo.description}
-              </Text>
+            {/* For external requests the browser-verified origin is the ONLY
+                trustworthy identity, so it leads. siteName/description are
+                written by the requesting page, and are labelled as such. */}
+            {requesterInfo.internal ? (
+              <>
+                {requesterInfo.siteName && (
+                  <Text strong style={{ fontSize: '15px', display: 'block' }}>
+                    {requesterInfo.siteName}
+                  </Text>
+                )}
+                {requesterInfo.description && (
+                  <Text
+                    type="secondary"
+                    style={{ fontSize: '12px', display: 'block', marginTop: 4 }}
+                  >
+                    {requesterInfo.description}
+                  </Text>
+                )}
+              </>
+            ) : (
+              <>
+                <Text
+                  strong
+                  style={{
+                    fontSize: '15px',
+                    display: 'block',
+                    fontFamily: 'var(--ssp-mono)',
+                    wordBreak: 'break-all',
+                  }}
+                >
+                  {requesterInfo.origin}
+                </Text>
+                {requesterInfo.isSubframe && requesterInfo.topOrigin && (
+                  <Text
+                    type="warning"
+                    style={{ fontSize: '12px', display: 'block', marginTop: 4 }}
+                  >
+                    {t('home:wkSign.embedded_frame', {
+                      top: requesterInfo.topOrigin,
+                    })}
+                  </Text>
+                )}
+                {(requesterInfo.siteName || requesterInfo.description) && (
+                  <Text
+                    type="secondary"
+                    style={{ fontSize: '12px', display: 'block', marginTop: 4 }}
+                  >
+                    {t('home:wkSign.site_provided')}
+                    {requesterInfo.siteName ? ` ${requesterInfo.siteName}` : ''}
+                    {requesterInfo.description
+                      ? ` — ${requesterInfo.description}`
+                      : ''}
+                  </Text>
+                )}
+              </>
             )}
           </div>
         )}

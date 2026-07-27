@@ -38,6 +38,7 @@ import {
   type VerifyEntry,
 } from '../../lib/pairingVerification';
 import { replenishWalletEnterpriseNonces } from '../../lib/enterpriseNonces';
+import { storeRecoveryXpub } from '../../lib/recoveryEnvelope';
 import {
   buildChainSyncRequestPayload,
   fetchChainSyncRejection,
@@ -45,9 +46,13 @@ import {
   ensureWalletChainKeys,
   hasStoredKeyXpub,
   storeKeyXpubForChain,
+  storeKeyPublicNonces,
   shouldShowQrFallback,
   isBatchStalled,
+  isBatchPollablePhase,
+  requiresVerificationGate,
 } from '../../lib/chainSync';
+import type { BatchPhase } from '../../lib/chainSync';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import type { syncSSPRelay, cryptos } from '../../types';
@@ -92,15 +97,6 @@ let nonceReplenishRunning = false;
 
 // Sensible default extra chains preselected during first (identity) pairing.
 const POPULAR_CHAINS = ['eth', 'flux', 'polygon'];
-
-type BatchPhase =
-  | 'idle'
-  | 'preparing'
-  | 'awaiting'
-  | 'syncing'
-  | 'done'
-  | 'rejected'
-  | 'fallback';
 
 interface BatchChainState {
   xpubWallet: string;
@@ -188,6 +184,12 @@ function Key(props: {
   } = useAppSelector((state) => state.sspState);
   const dispatch = useAppDispatch();
   const { xpubKey, xpubWallet } = useAppSelector((state) => state[activeChain]);
+  // The identity account's key xpub, which is what signs the recovery record.
+  // Separate from the active chain's: a chain sync carries the recovery fields
+  // too, and on an already-paired wallet only this one is populated.
+  const { xpubKey: storedIdentityKeyXpub } = useAppSelector(
+    (state) => state[identityChain],
+  );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { createWkIdentityAuth } = useRelayAuth();
   const blockchainConfig = blockchains[activeChain];
@@ -358,7 +360,11 @@ function Key(props: {
 
   const batchTick = async () => {
     const batch = batchRef.current;
-    if (batch.phase !== 'awaiting' && batch.phase !== 'syncing') {
+    // 'fallback' is pollable too — the QR path shown there is only an
+    // ALTERNATIVE, the key may still approve or decline late (lib/chainSync.ts
+    // isBatchPollablePhase). Bailing out there left the batch unobservable
+    // forever, so a late decline never reached the verification gate.
+    if (!isBatchPollablePhase(batch.phase)) {
       return;
     }
     batch.pollTick += 1;
@@ -399,6 +405,22 @@ function Key(props: {
           batchRef.current.phase = 'rejected';
           refreshBatch();
           stopBatchPolling();
+          // The key declined the extra chains — but whatever already synced
+          // this session (identity pairing, or a chain entered manually) still
+          // has to pass the anti-MITM gate. finalizeBatch never runs from
+          // 'rejected' and handleOkModalKey has long since taken the startBatch
+          // branch, so without this the ONLY exit is "Continue to wallet" and
+          // pairing would complete WITHOUT the verification code. SSP Key shows
+          // the identity-only code on a decline, which is exactly what
+          // buildVerifyGate produces here (no batch chain reached 'done').
+          if (
+            requiresVerificationGate(
+              batchRef.current.phase,
+              activeChainDoneRef.current,
+            )
+          ) {
+            completeSync();
+          }
           return;
         }
       } finally {
@@ -421,6 +443,25 @@ function Key(props: {
         batch.docCheckRunning = false;
       }
     }
+  };
+
+  /**
+   * Take the recovery account xpub out of a sync doc.
+   *
+   * ssp-key signs it with its identity key, and `storeRecoveryXpub` verifies
+   * that signature against the identity pubkey derived from `identityXpub`, so
+   * a doc that has been tampered with is dropped rather than cached. Callers
+   * pass an identity xpub they have already verified.
+   */
+  const ingestRecoveryXpub = (doc: syncSSPRelay, identityXpub: string) => {
+    if (!doc.recoveryXpub || !doc.xpubSignature || !identityXpub) return;
+    storeRecoveryXpub({
+      recoveryXpub: doc.recoveryXpub,
+      signature: doc.xpubSignature,
+      wkIdentity: doc.wkIdentity,
+      xpubKeyIdentity: identityXpub,
+      identityChain,
+    });
   };
 
   // A sync doc arrived for a chain other than the active one — verify it
@@ -459,11 +500,23 @@ function Key(props: {
       displayMessage('error', t('home:key.err_sync_fail'));
     } else {
       try {
+        // Not doc.keyXpub — that belongs to this doc's chain. The signature is
+        // made by the identity account's key.
+        ingestRecoveryXpub(
+          doc,
+          identityKeyXpubRef.current || storedIdentityKeyXpub,
+        );
         await storeKeyXpubForChain(
           doc.chain as keyof cryptos,
           doc.keyXpub,
           passwordBlob,
         );
+        // The key regenerates its per-INSTALL public-nonce pool for every EVM
+        // chain it syncs and keeps only the last one — ingest it here exactly
+        // as checkSynced does for the active chain, or the wallet would keep a
+        // pool the key already discarded and every EVM send would hang
+        // (lib/chainSync.ts storeKeyPublicNonces).
+        await storeKeyPublicNonces(doc.publicNonces);
         entry.status = 'synced';
         // retain the key xpub (display-only) for the verification code
         entry.keyXpub = doc.keyXpub;
@@ -530,7 +583,7 @@ function Key(props: {
     if (failed > 0) {
       displayMessage('warning', t('home:key.batch_partial_failed'));
     }
-    if (activeChainDoneRef.current) {
+    if (requiresVerificationGate(batch.phase, activeChainDoneRef.current)) {
       completeSync();
     }
   };
@@ -855,6 +908,16 @@ function Key(props: {
                 nonceReplenishRunning = false;
               });
           }
+          // On the identity chain, xpubKey has just been proven by the
+          // wkIdentity check above; on any other chain use the one already
+          // recorded for the identity.
+          ingestRecoveryXpub(
+            res.data,
+            activeChain === identityChain
+              ? xpubKey
+              : identityKeyXpubRef.current || storedIdentityKeyXpub,
+          );
+
           // synced ok
           setVerified(true);
           syncRunning = false;

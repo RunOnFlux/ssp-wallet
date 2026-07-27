@@ -707,6 +707,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
           siteName: 'SSP Enterprise',
           origin: 'SSP Wallet',
           description: t('home:settings.sspEnterprise.description'),
+          internal: true,
         }}
         openAction={handleWkSignResult}
       />
