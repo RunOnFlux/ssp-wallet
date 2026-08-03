@@ -74,6 +74,7 @@ import {
   evmDisplayAmount,
   evmTotalNative,
 } from '../../lib/sendStrategies/evm';
+import { parseAmount } from '../../lib/sendStrategies/amount';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
 import type { SendStrategyView, FeePresetView } from './types';
 
@@ -1139,8 +1140,8 @@ export function useEvmSendStrategy(): SendStrategyView {
     if (units === null) {
       return null;
     }
-    const numeric = new BigNumber(units || '0');
-    if (!numeric.isFinite() || numeric.lte(0)) {
+    const numeric = parseAmount(units || '0');
+    if (!numeric || numeric.lte(0)) {
       return null;
     }
     const cr = cryptoRates[activeChain] ?? 0;

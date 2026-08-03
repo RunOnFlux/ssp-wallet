@@ -10,6 +10,7 @@
  * calls the existing lib/constructTx functions unchanged.
  */
 import BigNumber from 'bignumber.js';
+import { parseAmount } from './amount';
 
 export type FeePresetKey = 'slow' | 'normal' | 'fast' | 'custom';
 
@@ -114,4 +115,27 @@ export function computeUtxoMax(
   return maxSpendable.minus(fee).isGreaterThan(0)
     ? maxSpendable.minus(fee).toFixed()
     : '0';
+}
+
+/**
+ * Insufficient-balance check for the live amount validation: a UTXO send must
+ * cover amount + fee out of the spendable balance. Amount and fee are
+ * user-typed strings ('' and half-typed values like '.' reach this while the
+ * user edits), so an unparseable amount/fee/balance is NOT reported as
+ * exceeding — the amount field's own "invalid amount" rule owns that case.
+ * Mirrors evmAmountExceedsBalance / solAmountExceedsBalance.
+ */
+export function utxoAmountExceedsBalance(
+  sendingAmount: string,
+  feeUnits: string,
+  spendableSats: string,
+  decimals: number,
+): boolean {
+  const amount = parseAmount(sendingAmount || '0');
+  const fee = parseAmount(feeUnits || '0');
+  const spendable = parseAmount(spendableSats || '0');
+  if (!amount || !fee || !spendable) {
+    return false;
+  }
+  return amount.plus(fee).isGreaterThan(spendable.dividedBy(10 ** decimals));
 }

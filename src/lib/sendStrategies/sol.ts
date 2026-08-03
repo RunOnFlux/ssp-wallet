@@ -9,6 +9,7 @@
  * at-least-the-floor rule the legacy page enforced at submit).
  */
 import BigNumber from 'bignumber.js';
+import { parseAmount } from './amount';
 
 export interface SolFeeSchedule {
   subsequentSendLamports: number;
@@ -63,20 +64,6 @@ export function computeSolMax(
     return remaining.isGreaterThan(0) ? remaining.toFixed() : '0';
   }
   return max.toFixed();
-}
-
-/**
- * Half-typed amounts reach this helper, and bignumber.js THROWS on a
- * non-numeric string rather than yielding NaN, so every parse of an input
- * string goes through here.
- */
-function parseAmount(value: string): BigNumber | null {
-  try {
-    const numeric = new BigNumber(value);
-    return numeric.isFinite() ? numeric : null;
-  } catch {
-    return null;
-  }
 }
 
 /**

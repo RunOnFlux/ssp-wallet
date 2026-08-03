@@ -47,9 +47,11 @@ import { transaction, utxo, swapResponseData } from '../../types';
 import {
   presetRateUtxo,
   rbfFeeFloor,
+  utxoAmountExceedsBalance,
   utxoFeeForRate,
   type FeePresetKey,
 } from '../../lib/sendStrategies/utxo';
+import { parseAmount, totalNative } from '../../lib/sendStrategies/amount';
 import type { SendStrategyView, FeePresetView } from './types';
 
 interface sendForm {
@@ -240,16 +242,16 @@ export function useUtxoSendStrategy(): SendStrategyView {
   }, [txFee]);
 
   useEffect(() => {
-    const totalAmount = new BigNumber(sendingAmount).plus(txFee || '0');
-    const maxSpendable = new BigNumber(spendableBalance).dividedBy(
-      10 ** blockchainConfig.decimals,
+    // amount and fee are raw input strings — an empty or half-typed value
+    // ('', '.') must not be reported as exceeding, and must never throw
+    const exceeds = utxoAmountExceedsBalance(
+      sendingAmount,
+      txFee,
+      spendableBalance,
+      blockchainConfig.decimals,
     );
-    if (totalAmount.isGreaterThan(maxSpendable)) {
-      // mark amount in red box as bad inpout
-      setValidateStatusAmount('error');
-    } else {
-      setValidateStatusAmount('success');
-    }
+    // mark amount in red box as bad input
+    setValidateStatusAmount(exceeds ? 'error' : 'success');
   }, [walletInUse, activeChain, sendingAmount, txFee]);
 
   useEffect(() => {
@@ -823,8 +825,8 @@ export function useUtxoSendStrategy(): SendStrategyView {
     if (units === null) {
       return null;
     }
-    const numeric = new BigNumber(units || '0');
-    if (!numeric.isFinite() || numeric.lte(0)) {
+    const numeric = parseAmount(units || '0');
+    if (!numeric || numeric.lte(0)) {
       return null;
     }
     const cr = cryptoRates[activeChain] ?? 0;
@@ -878,11 +880,9 @@ export function useUtxoSendStrategy(): SendStrategyView {
     txFee,
   ]);
 
-  // guard against a garbage custom fee — Review must never print "NaN"
-  const totalCandidate = new BigNumber(sendingAmount || '0').plus(txFee || '0');
-  const totalDisplay = totalCandidate.isFinite()
-    ? totalCandidate.toFixed()
-    : '---';
+  // guard against a garbage amount / custom fee — Review must never print
+  // "NaN" and a half-typed value must never throw from render
+  const totalDisplay = totalNative(sendingAmount, txFee) ?? '---';
 
   // Legacy manual-fee inputs: total fee in coin units + derived sat/vB
   // readout — exactly the fields the old Send page exposed in manual mode.

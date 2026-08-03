@@ -15,6 +15,11 @@ import {
   evmTotalNative,
 } from '../../src/lib/sendStrategies/evm';
 import { solAmountExceedsBalance } from '../../src/lib/sendStrategies/sol';
+import { utxoAmountExceedsBalance } from '../../src/lib/sendStrategies/utxo';
+import {
+  parseAmount,
+  totalNative,
+} from '../../src/lib/sendStrategies/amount';
 
 describe('batch B: EVM insufficient-balance gate', () => {
   // 1 ETH in wei.
@@ -95,6 +100,50 @@ describe('batch B: SOL insufficient-balance gate', () => {
     expect(solAmountExceedsBalance('abc', '0.002', oneSol, 9, 9, true)).toBe(
       false,
     );
+  });
+});
+
+describe('batch B: UTXO insufficient-balance gate', () => {
+  // 1 BTC in sats.
+  const oneBtc = '100000000';
+
+  it('counts the fee against the spendable balance', () => {
+    expect(utxoAmountExceedsBalance('0.999', '0.002', oneBtc, 8)).toBe(true);
+    expect(utxoAmountExceedsBalance('0.997', '0.002', oneBtc, 8)).toBe(false);
+  });
+
+  it('reports the zero-balance case', () => {
+    expect(utxoAmountExceedsBalance('0.001', '0.0004', '0', 8)).toBe(true);
+  });
+
+  it('does not throw or report exceeding while the user is mid-edit', () => {
+    // The live validation effect runs on every keystroke: a cleared field
+    // (''), a leading dot ('.5' typed dot-first) and garbage in the custom
+    // fee all reach it and used to crash the Send page (bignumber.js v11
+    // throws "Not a number" instead of yielding NaN).
+    expect(() => utxoAmountExceedsBalance('', '0.002', oneBtc, 8)).not.toThrow();
+    expect(utxoAmountExceedsBalance('', '0.002', oneBtc, 8)).toBe(false);
+    expect(utxoAmountExceedsBalance('.', '0.002', oneBtc, 8)).toBe(false);
+    expect(utxoAmountExceedsBalance('abc', '0.002', oneBtc, 8)).toBe(false);
+    expect(utxoAmountExceedsBalance('0.5', '---', oneBtc, 8)).toBe(false);
+  });
+});
+
+describe('batch B: shared amount parsing', () => {
+  it('parseAmount returns null instead of throwing on garbage input', () => {
+    expect(parseAmount('')).toBeNull();
+    expect(parseAmount('.')).toBeNull();
+    expect(parseAmount('abc')).toBeNull();
+    expect(parseAmount('---')).toBeNull();
+    expect(parseAmount('0.5')?.toFixed()).toBe('0.5');
+    expect(parseAmount('0.')?.toFixed()).toBe('0');
+  });
+
+  it('totalNative sums user-typed amount + fee, null when unparseable', () => {
+    expect(totalNative('0.5', '0.001')).toBe('0.501');
+    expect(totalNative('', '')).toBe('0'); // empty counts as 0, like legacy
+    expect(totalNative('.', '0.001')).toBeNull();
+    expect(totalNative('0.5', '---')).toBeNull();
   });
 });
 

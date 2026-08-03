@@ -10,6 +10,7 @@
  * components) unchanged.
  */
 import BigNumber from 'bignumber.js';
+import { parseAmount, totalNative } from './amount';
 import type { FeePresetKey } from './utxo';
 
 /** Priority-tip multipliers. Normal = today's automatic fee. */
@@ -91,20 +92,6 @@ export function computeEvmMaxToken(
 }
 
 /**
- * Half-typed amounts and the '---' fee placeholder reach these helpers, and
- * bignumber.js THROWS on a non-numeric string rather than yielding NaN, so
- * every parse of a display/input string goes through here.
- */
-function parseAmount(value: string): BigNumber | null {
-  try {
-    const numeric = new BigNumber(value);
-    return numeric.isFinite() ? numeric : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Insufficient-balance check shared by the live amount validation and the
  * compose → review gate: a native send must cover amount + fee out of the
  * same balance, a token send only the amount (the fee is paid in native).
@@ -137,12 +124,7 @@ export function evmTotalNative(
   sendingAmount: string,
   feeEth: string,
 ): string | null {
-  const amount = parseAmount(sendingAmount || '0');
-  const fee = parseAmount(feeEth || '0');
-  if (!amount || !fee) {
-    return null;
-  }
-  return amount.plus(fee).toFixed();
+  return totalNative(sendingAmount, feeEth);
 }
 
 /**

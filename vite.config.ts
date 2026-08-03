@@ -61,6 +61,11 @@ export default defineConfig(({ command, mode }) => ({
     },
   },
   build: {
+    // No <link rel="modulepreload"> hints: on chrome-extension:// pages Chrome
+    // never matches them to the actual module fetches ("cross-world extension
+    // resource mismatch" console warnings) and the assets are local files, so
+    // preloading buys nothing.
+    modulePreload: false,
     rollupOptions: {
       input: {
         index: 'index.html',

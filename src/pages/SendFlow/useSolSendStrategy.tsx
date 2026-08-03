@@ -56,6 +56,7 @@ import {
   solAmountExceedsBalance,
   type SolFeeSchedule,
 } from '../../lib/sendStrategies/sol';
+import { parseAmount, totalNative } from '../../lib/sendStrategies/amount';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
 import type { SendStrategyView, FeePresetView } from './types';
 
@@ -452,6 +453,12 @@ export function useSolSendStrategy(): SendStrategyView {
       displayMessage('error', t('send:input_amount'));
       return;
     }
+    // manual fee is a raw input string — gate it here with a friendly message
+    // instead of letting BigNumber throw inside the submit chain
+    if (manualFee && (!values.fee || isNaN(+values.fee) || +values.fee < 0)) {
+      displayMessage('error', t('send:err_invalid_fee'));
+      return;
+    }
     if (!feeSchedule || !paymasterPubkey) {
       displayMessage('error', t('send:err_sol_fee_not_ready'));
       return;
@@ -729,8 +736,8 @@ export function useSolSendStrategy(): SendStrategyView {
     if (units === null) {
       return null;
     }
-    const numeric = new BigNumber(units || '0');
-    if (!numeric.isFinite() || numeric.lte(0)) {
+    const numeric = parseAmount(units || '0');
+    if (!numeric || numeric.lte(0)) {
       return null;
     }
     const cr = cryptoRates[activeChain] ?? 0;
@@ -776,9 +783,9 @@ export function useSolSendStrategy(): SendStrategyView {
     }
   };
 
-  const totalDisplay = isNativeAsset
-    ? new BigNumber(sendingAmount || '0').plus(txFee || '0').toFixed()
-    : null;
+  // amount and fee are raw input strings — a half-typed value must never
+  // throw from render; unparseable → null (rendered as the '---' placeholder)
+  const totalDisplay = isNativeAsset ? totalNative(sendingAmount, txFee) : null;
 
   // Legacy manual fee input — total fee in SOL with the schedule floor
   // enforced at submit, exactly as before.

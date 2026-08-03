@@ -29,7 +29,6 @@ import {
   CircleHelp as CircleHelpIcon,
   Scan as ScanIcon,
 } from 'lucide-react';
-import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
 
 import PageHeader from '../../components/PageHeader/PageHeader';
@@ -49,6 +48,7 @@ import {
   sendStepIndex,
   type SendStep,
 } from '../../lib/sendStrategies/machine';
+import { parseAmount } from '../../lib/sendStrategies/amount';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
 import { toast } from '../../lib/toast';
 import { truncateAddress } from '../../lib/addressDisplay';
@@ -274,8 +274,8 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
   );
   const presetFiat = (feeAmount: string | null): string | null => {
     if (feeAmount === null) return null;
-    const numeric = new BigNumber(feeAmount || '0');
-    if (!numeric.isFinite() || numeric.lte(0)) return null;
+    const numeric = parseAmount(feeAmount || '0');
+    if (!numeric || numeric.lte(0)) return null;
     const cr = cryptoRates[activeChain] ?? 0;
     const fi = fiatRates[sspConfig().fiatCurrency] ?? 0;
     if (!cr || !fi) return null;
@@ -643,7 +643,7 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 {activePreset?.feeAmount != null ? (
                   <>
                     {/* Absolute fee (total for this tx) + its fiat + the rate. */}
-                    {new BigNumber(activePreset.feeAmount).toFixed()}{' '}
+                    {parseAmount(activePreset.feeAmount)?.toFixed() ?? '---'}{' '}
                     {strategy.feeSymbol}
                     {presetFiat(activePreset.feeAmount) ? (
                       <span style={{ color: token.colorTextSecondary }}>
