@@ -344,7 +344,7 @@
     "timeline_approved_phone": "Approved on your phone",
     "batch_preparing": "Preparing request…",
     "batch_resend_request": "Send request again",
-    "batch_fallback_info": "Your SSP Key app needs an update for one-tap sync — or scan the QR code below to sync this chain.",
+    "batch_fallback_info": "Your SSP Key app might need an update for one-tap sync — or scan the QR code below to sync {{chain}}.",
     "batch_rejected_info": "The request was declined on your SSP Key. You can scan the QR code below instead.",
     "batch_partial_failed": "Some chains did not sync. Switch to a chain later to activate it.",
     "continue_to_wallet": "Continue to wallet",

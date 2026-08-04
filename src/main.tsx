@@ -19,15 +19,24 @@ import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 import './index.css';
 
-// Popup vs Side Panel detection
-// Popup opens at exactly 420px width (hardcoded in CSS)
-// Side panel opens at browser's default (360px) or resized width
+// Popup vs Side Panel detection.
+// The manifest tags each surface explicitly (index.html?ctx=popup /
+// ?ctx=sidepanel) — deterministic, immune to the zoom/DPI/scrollbar rounding
+// that made the old width heuristic misclassify the popup as a panel.
+// The width heuristic remains only as a fallback for untagged opens (a full
+// tab, an old pinned panel from before the manifest change).
 const POPUP_WIDTH = 420;
+const EXPLICIT_CTX = new URLSearchParams(window.location.search).get('ctx');
 
 const detectExtensionContext = () => {
   const html = document.documentElement;
   const body = document.body;
-  const isSidePanel = window.innerWidth !== POPUP_WIDTH;
+  const isSidePanel =
+    EXPLICIT_CTX === 'popup'
+      ? false
+      : EXPLICIT_CTX === 'sidepanel'
+        ? true
+        : window.innerWidth !== POPUP_WIDTH;
 
   html.classList.toggle('extension-sidepanel', isSidePanel);
   html.classList.toggle('extension-popup', !isSidePanel);
@@ -35,10 +44,14 @@ const detectExtensionContext = () => {
   body.classList.toggle('extension-popup', !isSidePanel);
 };
 
-// Initial detection after brief delay (allows browser to set final width)
+// Classify immediately — with an explicit ctx the answer is already known,
+// and waiting 100ms let the first paint run unclamped (the popup window
+// sized itself to that wide paint and never shrank back).
+detectExtensionContext();
+// Re-check after the browser settles the final width (fallback opens only).
 setTimeout(detectExtensionContext, 100);
 
-// Re-detect on resize (for side panel resizing)
+// Re-detect on resize (side-panel resizing; no-op when ctx is explicit)
 window.addEventListener('resize', detectExtensionContext);
 
 localForage.config({

@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../lib/toast';
 import { useSspLogo } from '../../hooks/useSspLogo';
-import { CircleAlert as CircleAlertIcon } from 'lucide-react';
+import {
+  CircleAlert as CircleAlertIcon,
+  SendHorizontal as SendHorizontalIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import localForage from 'localforage';
@@ -218,6 +221,15 @@ function Key(props: {
   useEffect(() => {
     // check if we have 2-xpub-48-slip-0-ScriptType-coin
     if (!xpubKey) {
+      if (hasStoredKeyXpub(activeChain)) {
+        // Paired but not yet hydrated: during login/auto-unlock the store
+        // fills the active chain's xpubs a beat after navigation lands on
+        // Home, and this effect used to flash the full-screen sync QR view
+        // for that beat. The encrypted 2-xpub-48-* record is the durable
+        // proof that pairing exists — hydration completes on its own, so
+        // showing the sync view here is always wrong.
+        return;
+      }
       // no xpubKey, show sync view of Key
       setIsModalKeyOpen(true);
       activeChainDoneRef.current = false;
@@ -1285,7 +1297,7 @@ function Key(props: {
           ? t('home:key.sync_info_2')
           : t('home:key.sync_info_2_chain', { chain: blockchainConfig.name })}
       </p>
-      {offeredChains.length > 0 && (
+      {(offeredChains.length > 0 || !isIdentityChain) && (
         <div className="keySyncChips">
           <Text type="secondary" style={{ fontSize: 11 }}>
             {isIdentityChain
@@ -1295,6 +1307,15 @@ function Key(props: {
           <div
             className={`keySyncChipsRow${chipsEditable ? '' : ' keySyncChipsLocked'}`}
           >
+            {/* The chain being activated leads the row: always checked and
+                not toggleable — it IS the request. Without it the syncing
+                chain was invisible here and the row read as if the request
+                did not include it. */}
+            {!isIdentityChain && (
+              <Tag.CheckableTag checked style={{ cursor: 'default' }}>
+                {blockchainConfig.name}
+              </Tag.CheckableTag>
+            )}
             {offeredChains.map((chain) => (
               <Tag.CheckableTag
                 key={chain}
@@ -1307,37 +1328,46 @@ function Key(props: {
               </Tag.CheckableTag>
             ))}
           </div>
-          {/* Post-pairing: the auto-request covered only the chain being
-              activated — extra chips go out via this explicit re-send (the
-              chainsyncrequest payload is rebuilt from activeChain + the
-              selected chips, one approval on the key). Visible whenever a
-              send would be meaningful: waiting/fallback/rejected/done, and
-              highlighted once the user actually selected chips. */}
-          {!isIdentityChain &&
-            chipsEditable &&
-            batch.phase !== 'idle' &&
-            (!activeChainDoneRef.current || selectedChains.length > 0) &&
-            sspWalletKeyInternalIdentity && (
-              <Button
-                size="small"
-                type={selectedChains.length > 0 ? 'primary' : 'default'}
-                onClick={restartBatch}
-                data-testid="key-batch-resend"
-              >
-                {selectedChains.length > 0
-                  ? t('home:key.batch_request_selected', {
-                      count: selectedChains.length,
-                    })
-                  : t('home:key.batch_resend_request')}
-              </Button>
-            )}
         </div>
       )}
+      {/* Post-pairing: the auto-request covered only the chain being
+          activated — extra chips go out via this explicit re-send (the
+          chainsyncrequest payload is rebuilt from activeChain + the
+          selected chips, one approval on the key). Visible whenever a
+          send would be meaningful: waiting/fallback/rejected/done, and
+          highlighted once the user actually selected chips. Rendered as a
+          separated full-size action OUTSIDE the chips block — inside it,
+          the button read as one more selectable chain. */}
+      {!isIdentityChain &&
+        chipsEditable &&
+        batch.phase !== 'idle' &&
+        (!activeChainDoneRef.current || selectedChains.length > 0) &&
+        sspWalletKeyInternalIdentity && (
+          <Button
+            block
+            icon={<SendHorizontalIcon size={14} />}
+            style={{ marginTop: 4 }}
+            type={selectedChains.length > 0 ? 'primary' : 'default'}
+            onClick={restartBatch}
+            data-testid="key-batch-resend"
+          >
+            {selectedChains.length > 0
+              ? t('home:key.batch_request_selected', {
+                  count: selectedChains.length,
+                })
+              : t('home:key.batch_resend_request')}
+          </Button>
+        )}
       {batch.phase === 'fallback' && (
         <Alert
           type="info"
           showIcon
-          message={t('home:key.batch_fallback_info')}
+          // The QR path syncs ONE chain — the one being activated — so name
+          // it: with extra chains selected, "this chain" read as if the QR
+          // covered the whole batch.
+          message={t('home:key.batch_fallback_info', {
+            chain: blockchainConfig.name,
+          })}
         />
       )}
       {batch.phase === 'rejected' && (

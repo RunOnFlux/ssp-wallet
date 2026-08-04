@@ -125,11 +125,18 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <div>
+          {/* svg.lucide sizes icons at 1em (index.css antd parity), so
+              fontSize IS the size control here. Block + auto margins put the
+              icon centered ABOVE the text instead of inline beside its
+              first line. */}
           <CirclePlayIcon
             style={{
               fontSize: '48px',
               color: '#fbbf24',
               marginBottom: '16px',
+              display: 'block',
+              marginLeft: 'auto',
+              marginRight: 'auto',
             }}
           />
           <Text type="secondary">

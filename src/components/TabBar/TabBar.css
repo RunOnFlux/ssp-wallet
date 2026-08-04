@@ -97,7 +97,10 @@
     justify-content: flex-start;
     gap: 4px;
     box-sizing: border-box; /* padding inside 100dvh — no 16px page overflow */
-    width: 128px;
+    /* 152px: margins 16 + padding 32 + icon 20 + gap 12 leaves ~72px for the
+       label — enough for "Portfolio" (~62px at 14px). At the previous 128px
+       only ~48px remained and even the English labels truncated. */
+    width: 152px;
     height: 100vh;
     height: 100dvh;
     padding-top: 16px;
@@ -134,7 +137,7 @@
     font-size: 20px; /* rail rows keep uniform icon size — label carries state */
   }
 
-  /* The rail is a fixed 128px, which leaves ~71px for a 14px label. The label
+  /* The rail is a fixed 152px, which leaves ~72px for a 14px label. The label
      is `white-space: nowrap`, so without these three a longer localized string
      (ja アクティビティ, hu Tevékenység, ru Активность) cannot shrink below its
      min-content width and paints past the rail's right border into the content

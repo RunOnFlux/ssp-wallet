@@ -23,6 +23,15 @@
   --ssp-color-link: #b45309;
 }
 
+/* Chrome sizes the popup window to the html element's layout width — any
+   descendant overflowing 420px (a wide table row, a nowrap flex line) would
+   silently widen the whole popup, one page after another. Clamp and clip at
+   the ROOT; the side panel restores fluid width below. */
+html {
+  width: 420px;
+  overflow-x: hidden;
+}
+
 body {
   margin: auto;
   display: flex;
@@ -190,6 +199,10 @@ body {
 }
 
 /* Side panel mode - applied via JS detection */
+html.extension-sidepanel {
+  width: 100%;
+}
+
 body.extension-sidepanel {
   width: 100%;
   /* The popup's fixed 600px body would confine a tall panel to its top 600px

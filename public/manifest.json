@@ -5,7 +5,7 @@
   "short_name": "SSP",
   "description": "Secure. Simple. Powerful.",
   "action": {
-    "default_popup": "index.html",
+    "default_popup": "index.html?ctx=popup",
     "default_title": "SSP Wallet"
   },
   "author": "https://sspwallet.io",
@@ -13,7 +13,7 @@
     "service_worker": "scripts/background.js"
   },
   "side_panel": {
-    "default_path": "index.html"
+    "default_path": "index.html?ctx=sidepanel"
   },
   "icons": {
     "256": "ssp-logo-black-256x256.png"

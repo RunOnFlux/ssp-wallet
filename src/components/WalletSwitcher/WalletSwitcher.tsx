@@ -58,6 +58,12 @@ const balancesObject: balancesObj = { confirmed: '0.00', unconfirmed: '0.00' };
 interface Props {
   open: boolean;
   openAction: (status: boolean) => void;
+  /**
+   * Keep the current route after a WALLET switch (the Send flow opens the
+   * switcher in place and remounts itself on walletInUse). Chain switches
+   * still navigate home — the whole page context changes with the chain.
+   */
+  stayOnRoute?: boolean;
 }
 
 /**
@@ -67,7 +73,7 @@ interface Props {
  * network switch. All the underlying store mutations are the SAME ones the
  * Navbar used (generate address, load per-wallet state, switchToChain).
  */
-function WalletSwitcher({ open, openAction }: Props) {
+function WalletSwitcher({ open, openAction, stayOnRoute }: Props) {
   const { t } = useTranslation(['home', 'common']);
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -213,7 +219,9 @@ function WalletSwitcher({ open, openAction }: Props) {
       await generated;
     })();
     openAction(false);
-    navigate('/home');
+    if (!stayOnRoute) {
+      navigate('/home');
+    }
     return done;
   };
 

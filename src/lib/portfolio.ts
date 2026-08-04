@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
 import { blockchains } from '@storage/blockchains';
 import type { Token } from '@storage/blockchains';
+import { hasStoredKeyXpub } from './chainSync';
 import { fetchAddressBalance, fetchAddressTokenBalances } from './balances';
 import type {
   cryptos,
@@ -195,7 +196,12 @@ export async function loadPortfolio(
     discovered.map(async ({ chain, wallets, walletInUse }) => {
       const cfg = blockchains[chain];
       const ids = Object.keys(wallets);
-      const needsActivation = ids.length === 0;
+      // "Needs activation" must consult the durable pairing record, not just
+      // generated addresses: a BATCH chain sync stores the chain's key xpub
+      // but addresses are only generated on the first switch to the chain —
+      // without the storage check, freshly synced chains kept showing under
+      // "Not yet activated" (balances appear after the first visit).
+      const needsActivation = ids.length === 0 && !hasStoredKeyXpub(chain);
 
       // Token specs = built-in chain tokens + user-imported tokens, exactly
       // like Home's TokensTable.

@@ -38,6 +38,7 @@ import QRScanner, {
   isQrScanSupported,
 } from '../../components/QRScanner/QRScanner';
 import Identicon from '../../components/Identicon/Identicon';
+import WalletSwitcher from '../../components/WalletSwitcher/WalletSwitcher';
 import { useAppSelector } from '../../hooks';
 import { formatFiatWithSymbol } from '../../lib/currency';
 import { sspConfig } from '@storage/ssp';
@@ -114,14 +115,18 @@ const AMOUNT_ERROR_ID = 'send-amount-error';
 
 function SendFlow() {
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const { walletInUse } = useAppSelector((state) => state[activeChain]);
   const chainType = (blockchains[activeChain].chainType ?? 'utxo') as
     | 'utxo'
     | 'evm'
     | 'sol';
-  // chainType cannot change while this page is mounted (the flow header shows
-  // chain context but offers no switcher), so keying the inner flow by
-  // chainType keeps the strategy hook identity stable per mount.
-  return <SendFlowInner key={chainType} chainType={chainType} />;
+  // Keying by chainType keeps the strategy hook identity stable per mount;
+  // keying by walletInUse remounts the whole flow when the user switches the
+  // sending wallet in place (the "From" row), so every strategy re-reads
+  // balances/utxos for the new wallet instead of carrying stale state.
+  return (
+    <SendFlowInner key={`${chainType}-${walletInUse}`} chainType={chainType} />
+  );
 }
 
 function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
@@ -130,7 +135,9 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
   const { t } = useTranslation(['send', 'common', 'home']);
   const strategy = STRATEGY_HOOKS[chainType]();
   const { activeChain } = useAppSelector((state) => state.sspState);
-  const { wallets } = useAppSelector((state) => state[activeChain]);
+  const { wallets, walletInUse } = useAppSelector(
+    (state) => state[activeChain],
+  );
   const { contacts } = useAppSelector((state) => state.contacts);
   const walletNames = useAppSelector(
     (state) => state.walletNames?.chains[activeChain] || {},
@@ -138,6 +145,14 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
 
   const [step, setStep] = useState<SendStep>('compose');
   const [openQrScanner, setOpenQrScanner] = useState(false);
+  const [openWalletSwitcher, setOpenWalletSwitcher] = useState(false);
+
+  // The sending wallet, made visible and changeable in place. The legacy
+  // pages relied on the Home switcher for this, which left the Send screen
+  // with no indication of WHICH address the funds leave from.
+  const senderAddress = wallets[walletInUse]?.address ?? '';
+  const senderLabel =
+    walletNames[walletInUse] || getDisplayName(activeChain, walletInUse);
 
   // Approve step tracks the ConfirmTxKey handshake modal.
   useEffect(() => {
@@ -419,6 +434,42 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
             </Form.Item>
           )}
 
+          {/* Sending-from wallet — always visible, tappable to switch. */}
+          <Form.Item label={t('common:from')}>
+            <Button
+              size="large"
+              onClick={() => setOpenWalletSwitcher(true)}
+              // Swap flows lock the sender the same way they lock the
+              // receiver — the quote is bound to the current wallet.
+              disabled={strategy.receiver.disabled}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                textAlign: 'left',
+              }}
+              title={t('common:change')}
+            >
+              <span
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  minWidth: 0,
+                }}
+              >
+                <Identicon value={senderAddress} size={20} />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {senderLabel} · {truncateAddress(senderAddress)}
+                </span>
+              </span>
+              <span style={{ color: token.colorPrimary, fontSize: 12 }}>
+                {t('common:change')}
+              </span>
+            </Button>
+          </Form.Item>
+
           <Form.Item
             label={t('send:receiver_address')}
             name="receiver"
@@ -466,26 +517,41 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
               />
             </Space.Compact>
           </Form.Item>
-          {strategy.receiver.valid && strategy.receiver.value && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                marginTop: -18,
-                marginBottom: 12,
-                marginLeft: 3,
-                fontSize: 12,
-                color: token.colorTextSecondary,
-              }}
-            >
-              <Identicon value={strategy.receiver.value} size={20} />
-              <span>
-                {recipientName ? `${recipientName} · ` : ''}
-                {truncateAddress(strategy.receiver.value)}
-              </span>
-            </div>
-          )}
+          {/* Recipient preview row. Always mounted with a fixed height and
+              only toggled via visibility, so a valid address appearing (e.g.
+              picking a contact) never shifts the fields below it. */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              marginTop: -18,
+              marginBottom: 12,
+              marginLeft: 3,
+              fontSize: 12,
+              color: token.colorTextSecondary,
+              minHeight: 20,
+              visibility:
+                strategy.receiver.valid && strategy.receiver.value
+                  ? 'visible'
+                  : 'hidden',
+            }}
+            aria-hidden={
+              strategy.receiver.valid && strategy.receiver.value
+                ? undefined
+                : true
+            }
+          >
+            {strategy.receiver.valid && strategy.receiver.value ? (
+              <>
+                <Identicon value={strategy.receiver.value} size={20} />
+                <span>
+                  {recipientName ? `${recipientName} · ` : ''}
+                  {truncateAddress(strategy.receiver.value)}
+                </span>
+              </>
+            ) : null}
+          </div>
 
           <Form.Item
             label={t('send:amount_to_send')}
@@ -728,6 +794,38 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
               background: token.colorBgContainer,
             }}
           >
+            {/* Sending wallet — mirrors the compose "From" row so the user
+                verifies the source as well as the destination. Truncated:
+                it is the user's own wallet, the name is the key info. */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: 10,
+              }}
+            >
+              <Identicon value={senderAddress} size={36} />
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: token.colorTextSecondary,
+                  }}
+                >
+                  {t('common:from')} · {senderLabel}
+                </div>
+                <div
+                  style={{
+                    fontFamily: 'var(--ssp-mono)',
+                    fontSize: 13,
+                    wordBreak: 'break-all',
+                  }}
+                >
+                  {truncateAddress(senderAddress)}
+                </div>
+              </div>
+            </div>
             <div
               style={{
                 display: 'flex',
@@ -965,6 +1063,13 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
         }}
       />
       <SspConnect />
+      {/* In-place sending-wallet switcher: stays on /send; a wallet switch
+          remounts the flow via the walletInUse key on SendFlowInner. */}
+      <WalletSwitcher
+        open={openWalletSwitcher}
+        openAction={setOpenWalletSwitcher}
+        stayOnRoute
+      />
     </div>
   );
 }
