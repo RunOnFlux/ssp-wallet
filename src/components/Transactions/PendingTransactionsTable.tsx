@@ -80,9 +80,8 @@ function PendingTransactionsTable(props: {
             {t('home:activityFeed.pending')}
           </>
         }
-        amount={`-${formatCrypto(new BigNumber(record.amount))} ${
-          record.tokenSymbol || blockchainConfig.symbol
-        }`}
+        amount={`-${formatCrypto(new BigNumber(record.amount))}`}
+        unit={record.tokenSymbol || blockchainConfig.symbol}
         fiat={`-${formatFiatWithSymbol(
           new BigNumber(Math.abs(+record.amount)).multipliedBy(
             new BigNumber(rate),

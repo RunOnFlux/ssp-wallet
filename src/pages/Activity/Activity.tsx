@@ -173,10 +173,12 @@ function Activity() {
         sub={
           <>
             <img className="arow-sub-logo" src={cfg.logo} alt="" />
-            {cfg.name}
-            {' · '}
-            <span title={formatFullTimestamp(item.timestamp, i18n.language)}>
-              {formatRelativeTime(item.timestamp, i18n.language)}
+            <span className="arow-sub-text">
+              {cfg.name}
+              {' · '}
+              <span title={formatFullTimestamp(item.timestamp, i18n.language)}>
+                {formatRelativeTime(item.timestamp, i18n.language)}
+              </span>
             </span>
             {identity.total > 1 && (
               <span className="arow-txpart">
@@ -188,9 +190,8 @@ function Activity() {
             )}
           </>
         }
-        amount={`${received ? '+' : ''}${formatCrypto(amount)} ${
-          item.tokenSymbol || cfg.symbol
-        }`}
+        amount={`${received ? '+' : ''}${formatCrypto(amount)}`}
+        unit={item.tokenSymbol || cfg.symbol}
         fiat={`${received ? '' : '-'}${formatFiatWithSymbol(
           amount.abs().multipliedBy(fiatRateFor(item)),
         )}`}

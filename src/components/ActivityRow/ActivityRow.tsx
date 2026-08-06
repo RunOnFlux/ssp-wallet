@@ -27,8 +27,14 @@ export interface ActivityRowProps {
   label: ReactNode;
   /** Meta line, e.g. chain badge + relative time. */
   sub: ReactNode;
-  /** Right-aligned formatted crypto amount (signed). */
+  /** Right-aligned formatted crypto amount (signed), WITHOUT the symbol. */
   amount: ReactNode;
+  /**
+   * Asset symbol rendered after the amount. Kept separate so a
+   * pathologically long number (spam-token supplies) ellipsizes while the
+   * unit — the part that gives the number meaning — always stays visible.
+   */
+  unit?: string;
   /** Right-aligned fiat value under the amount. */
   fiat?: ReactNode;
   /** Standard state chip; use statusNode to render something custom. */
@@ -81,9 +87,18 @@ function ActivityRow(props: ActivityRowProps) {
         <span className="arow-end">
           <span
             className="arow-amount privacy-sensitive"
-            title={typeof props.amount === 'string' ? props.amount : undefined}
+            title={
+              typeof props.amount === 'string'
+                ? props.unit
+                  ? `${props.amount} ${props.unit}`
+                  : props.amount
+                : undefined
+            }
           >
-            {props.amount}
+            <span className="arow-amount-num">{props.amount}</span>
+            {props.unit && (
+              <span className="arow-amount-unit">{props.unit}</span>
+            )}
           </span>
           {props.fiat !== undefined && (
             <span

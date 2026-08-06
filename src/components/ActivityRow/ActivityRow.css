@@ -130,14 +130,39 @@
   line-height: 1.35;
 }
 
+/* Number + unit as separate flex parts: a pathologically long number
+   ellipsizes, the UNIT (which gives the number meaning) never does. */
 .arow-amount {
   font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.arow-amount-num {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
+  min-width: 0;
+}
+
+.arow-amount-unit {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* The shrinkable text portion of the meta line (chain · time). Without this
+   wrapper the LAST flex child — the "1 of 2" tx-part chip — was the one the
+   container clipped, cutting it mid-word ("2 o"). */
+.arow-sub-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .arow-fiat {

@@ -142,7 +142,10 @@ function TransactionsTable(props: {
         }
         sub={
           <>
-            <span title={formatFullTimestamp(timestamp, i18n.language)}>
+            <span
+              className="arow-sub-text"
+              title={formatFullTimestamp(timestamp, i18n.language)}
+            >
               {formatRelativeTime(timestamp, i18n.language)}
             </span>
             {identity.total > 1 && (
@@ -155,9 +158,8 @@ function TransactionsTable(props: {
             )}
           </>
         }
-        amount={`${received ? '+' : ''}${formatCrypto(amount)} ${
-          record.tokenSymbol || blockchainConfig.symbol
-        }`}
+        amount={`${received ? '+' : ''}${formatCrypto(amount)}`}
+        unit={record.tokenSymbol || blockchainConfig.symbol}
         fiat={`${received ? '' : '-'}${formatFiatWithSymbol(
           amount.abs().multipliedBy(new BigNumber(rate)),
         )}`}
