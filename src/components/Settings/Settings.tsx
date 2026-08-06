@@ -4,6 +4,7 @@ import {
   App,
   Button,
   Input,
+  InputNumber,
   Space,
   Select,
   Switch,
@@ -93,6 +94,17 @@ interface EnterpriseNotificationApiResponse {
     isNewSubscription?: boolean;
   };
 }
+
+// The six on/off categories. The USD thresholds on
+// enterpriseNotificationPreferences are numbers and get their own control, so
+// the switch rows are typed against this subset, not keyof the whole interface.
+type enterpriseBooleanPreferenceKey =
+  | 'incomingTx'
+  | 'outgoingTx'
+  | 'largeTransactions'
+  | 'lowBalance'
+  | 'weeklyReport'
+  | 'marketing';
 
 function Section({
   title,
@@ -226,7 +238,16 @@ function Settings() {
       enterpriseConfigData?.preferences ??
         getDefaultEnterpriseNotificationPreferences(),
     );
+  // Last-known server-side preferences (the sync hook mirrors the relay's
+  // stored state into local config on login). "Save Preferences" diffs against
+  // this baseline and only POSTs the changed fields.
+  const [savedEnterprisePreferences, setSavedEnterprisePreferences] =
+    useState<enterpriseNotificationPreferences>(
+      enterpriseConfigData?.preferences ??
+        getDefaultEnterpriseNotificationPreferences(),
+    );
   const [enterpriseLoading, setEnterpriseLoading] = useState(false);
+  const [savingPreferences, setSavingPreferences] = useState(false);
   const [subscriptionStep, setSubscriptionStep] = useState<
     'email' | 'verification' | 'signing'
   >('email');
@@ -257,6 +278,9 @@ function Settings() {
     setEnterpriseEmail(config?.email ?? '');
     setIsEnterpriseSubscribed(!!(config?.isSubscribed && config?.email));
     setEnterprisePreferences(
+      config?.preferences ?? getDefaultEnterpriseNotificationPreferences(),
+    );
+    setSavedEnterprisePreferences(
       config?.preferences ?? getDefaultEnterpriseNotificationPreferences(),
     );
   }, []);
@@ -299,13 +323,21 @@ function Settings() {
         }
       }
 
+      // The user's own selection, not the shipped defaults. The USD minimum
+      // only rides along when the user actually set one (> 0) — an absent
+      // field is never asserted over server-side state.
+      const preferencesPayload: enterpriseNotificationPreferences = {
+        ...enterprisePreferences,
+      };
+      if (!preferencesPayload.minTxNotificationUsd) {
+        delete preferencesPayload.minTxNotificationUsd;
+      }
       const requestBody: Record<string, unknown> = {
         wkIdentity: sspWalletKeyInternalIdentity,
         walletIdentity: sspWalletInternalIdentity,
         email: verifiedEmail,
         chains,
-        // The user's own selection, not the shipped defaults.
-        preferences: enterprisePreferences,
+        preferences: preferencesPayload,
         subscriptionMessage: result.message,
         walletSignature: result.walletSignature,
         walletPubKey: result.walletPubKey,
@@ -331,6 +363,7 @@ function Settings() {
           enterprisePreferences,
         );
         setIsEnterpriseSubscribed(true);
+        setSavedEnterprisePreferences(enterprisePreferences);
         setSubscriptionStep('email');
         setVerifiedEmail(null);
         setVerificationCode('');
@@ -381,6 +414,9 @@ function Settings() {
         setIsEnterpriseSubscribed(false);
         setEnterpriseEmail('');
         setEnterprisePreferences(getDefaultEnterpriseNotificationPreferences());
+        setSavedEnterprisePreferences(
+          getDefaultEnterpriseNotificationPreferences(),
+        );
         displayMessage(
           'success',
           t('home:settings.sspEnterprise.unsubscribe_success'),
@@ -818,7 +854,7 @@ function Settings() {
   // them. `marketing` is last and ships OFF (see storage/ssp.ts) — it is not a
   // wallet alert and the feature description never promised it.
   const enterprisePreferenceRows: {
-    key: keyof enterpriseNotificationPreferences;
+    key: enterpriseBooleanPreferenceKey;
     label: string;
   }[] = [
     { key: 'incomingTx', label: t('common:notification_categories.incoming') },
@@ -838,6 +874,163 @@ function Settings() {
     { key: 'marketing', label: t('common:notification_categories.marketing') },
   ];
 
+  // The PARTIAL update for POST /v1/enterprise/preferences: only the fields
+  // that differ from the last-known server state. The server merges — an
+  // absent field keeps its stored value.
+  const buildEnterprisePreferenceDiff =
+    (): Partial<enterpriseNotificationPreferences> => {
+      const diff: Partial<enterpriseNotificationPreferences> = {};
+      for (const { key } of enterprisePreferenceRows) {
+        if (enterprisePreferences[key] !== savedEnterprisePreferences[key]) {
+          diff[key] = enterprisePreferences[key];
+        }
+      }
+      const currentMin = enterprisePreferences.minTxNotificationUsd ?? 0;
+      const savedMin = savedEnterprisePreferences.minTxNotificationUsd ?? 0;
+      if (currentMin !== savedMin) {
+        diff.minTxNotificationUsd = currentMin;
+      }
+      return diff;
+    };
+
+  const isEnterprisePreferencesDirty =
+    Object.keys(buildEnterprisePreferenceDiff()).length > 0;
+
+  // Saving preferences after subscribing needs only the standard signed-body
+  // relay auth (createWkIdentityAuth) — the same authentication the status
+  // check uses. No fresh 2-of-2 WkSign round-trip to the SSP Key is required.
+  const handleSaveEnterprisePreferences = async () => {
+    const diff = buildEnterprisePreferenceDiff();
+    if (Object.keys(diff).length === 0) {
+      return;
+    }
+    setSavingPreferences(true);
+    try {
+      const requestBody: Record<string, unknown> = {
+        wkIdentity: sspWalletKeyInternalIdentity,
+        preferences: diff,
+      };
+      const auth = await createWkIdentityAuth(
+        'action',
+        sspWalletKeyInternalIdentity,
+        requestBody,
+      );
+      if (auth) {
+        Object.assign(requestBody, auth);
+      }
+      const response = await axios.post<EnterpriseNotificationApiResponse>(
+        `https://${sspConfig().relay}/v1/enterprise/preferences`,
+        requestBody,
+      );
+      if (response.data?.status === 'success' && response.data?.data?.success) {
+        await subscribeToEnterpriseNotifications(
+          enterpriseEmail,
+          enterprisePreferences,
+        );
+        setSavedEnterprisePreferences(enterprisePreferences);
+        displayMessage(
+          'success',
+          t('home:settings.sspEnterprise.preferences_saved'),
+        );
+      } else {
+        displayMessage(
+          'error',
+          response.data?.data?.message ||
+            t('home:settings.sspEnterprise.err_save_preferences'),
+        );
+      }
+    } catch (error) {
+      console.error('[Settings saveEnterprisePreferences]', error);
+      displayMessage(
+        'error',
+        t('home:settings.sspEnterprise.err_save_preferences'),
+      );
+    } finally {
+      setSavingPreferences(false);
+    }
+  };
+
+  // Category switches + the USD minimum — shared by the pre-subscribe form
+  // and the subscribed view, so preferences stay editable after subscribing.
+  const renderEnterprisePreferenceControls = () => {
+    const controlsBusy = enterpriseLoading || savingPreferences;
+    const minTxLabel = t('home:settings.sspEnterprise.min_tx_notification');
+    const minTxHelp = t('home:settings.sspEnterprise.min_tx_notification_help');
+    return (
+      <div>
+        <div className="settings-caption">
+          {t('common:notification_categories.title')}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {enterprisePreferenceRows.map(({ key, label }) => (
+            <div
+              key={key}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                fontSize: 13,
+              }}
+            >
+              <span>{label}</span>
+              <Switch
+                size="small"
+                aria-label={label}
+                checked={enterprisePreferences[key]}
+                disabled={controlsBusy}
+                onChange={(checked) =>
+                  setEnterprisePreferences((prev) => ({
+                    ...prev,
+                    [key]: checked,
+                  }))
+                }
+              />
+            </div>
+          ))}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              fontSize: 13,
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              {minTxLabel}
+              <Tooltip title={minTxHelp} trigger={['hover', 'focus', 'click']}>
+                <Button
+                  type="text"
+                  size="small"
+                  aria-label={minTxHelp}
+                  style={{ marginLeft: 2, color: token.colorLink }}
+                  icon={<CircleHelpIcon size={16} />}
+                />
+              </Tooltip>
+            </span>
+            <InputNumber
+              size="small"
+              min={0}
+              max={10000000}
+              prefix="$"
+              aria-label={minTxLabel}
+              value={enterprisePreferences.minTxNotificationUsd ?? 0}
+              disabled={controlsBusy}
+              onChange={(value) =>
+                setEnterprisePreferences((prev) => ({
+                  ...prev,
+                  minTxNotificationUsd: typeof value === 'number' ? value : 0,
+                }))
+              }
+              style={{ width: 120 }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // The multi-step SSP Enterprise subscribe/verify/sign block — now rendered
   // inside the collapsed Tools expander, with the category switches the
   // subscription always silently enabled.
@@ -855,41 +1048,7 @@ function Settings() {
                 disabled={enterpriseLoading}
                 onPressEnter={handleEnterpriseRequestCode}
               />
-              <div>
-                <div className="settings-caption">
-                  {t('common:notification_categories.title')}
-                </div>
-                <div
-                  style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
-                >
-                  {enterprisePreferenceRows.map(({ key, label }) => (
-                    <div
-                      key={key}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 12,
-                        fontSize: 13,
-                      }}
-                    >
-                      <span>{label}</span>
-                      <Switch
-                        size="small"
-                        aria-label={label}
-                        checked={enterprisePreferences[key]}
-                        disabled={enterpriseLoading}
-                        onChange={(checked) =>
-                          setEnterprisePreferences((prev) => ({
-                            ...prev,
-                            [key]: checked,
-                          }))
-                        }
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {renderEnterprisePreferenceControls()}
               <Button
                 type="primary"
                 onClick={handleEnterpriseRequestCode}
@@ -984,13 +1143,25 @@ function Settings() {
               email: enterpriseEmail,
             })}
           </div>
-          <Button
-            danger
-            onClick={handleEnterpriseUnsubscribe}
-            loading={enterpriseLoading}
-          >
-            {t('home:settings.sspEnterprise.unsubscribe')}
-          </Button>
+          {renderEnterprisePreferenceControls()}
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => void handleSaveEnterprisePreferences()}
+              loading={savingPreferences}
+              disabled={!isEnterprisePreferencesDirty || enterpriseLoading}
+            >
+              {t('home:settings.sspEnterprise.save_preferences')}
+            </Button>
+            <Button
+              danger
+              onClick={handleEnterpriseUnsubscribe}
+              loading={enterpriseLoading}
+              disabled={savingPreferences}
+            >
+              {t('home:settings.sspEnterprise.unsubscribe')}
+            </Button>
+          </Space>
         </>
       )}
     </Space>

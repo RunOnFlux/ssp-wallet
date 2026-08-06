@@ -17,6 +17,11 @@ export interface enterpriseNotificationPreferences {
   lowBalance: boolean;
   weeklyReport: boolean;
   marketing: boolean;
+  // USD thresholds, clamped server-side. Absent = server defaults; they are
+  // deliberately NOT part of the shipped defaults object so an unset value is
+  // never re-asserted over a choice made elsewhere (e.g. the Enterprise app).
+  largeTransactionThresholdUsd?: number; // clamped [100, 10M]
+  minTxNotificationUsd?: number; // clamped [0, 10M]; 0 = no minimum
 }
 
 export interface enterpriseNotificationConfig {

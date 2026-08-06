@@ -218,7 +218,12 @@
       "remaining_attempts": "{{count}} attempts remaining",
       "email_verified": "Email verified!",
       "sign_and_subscribe": "Sign & Subscribe",
-      "waiting_signature": "Awaiting SSP Key..."
+      "waiting_signature": "Awaiting SSP Key...",
+      "save_preferences": "Save Preferences",
+      "preferences_saved": "Notification preferences updated.",
+      "err_save_preferences": "Error saving notification preferences. Please try again.",
+      "min_tx_notification": "Minimum transaction amount (USD)",
+      "min_tx_notification_help": "Skip emails for transactions below this amount — e.g. frequent node rewards. 0 = notify for everything."
     },
     "security": "Security",
     "verify_backup": "Verify seed backup",

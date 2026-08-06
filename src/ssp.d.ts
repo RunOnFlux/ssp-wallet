@@ -58,6 +58,9 @@ declare module '@storage/ssp' {
     lowBalance: boolean;
     weeklyReport: boolean;
     marketing: boolean;
+    // USD thresholds, clamped server-side; absent = server defaults.
+    largeTransactionThresholdUsd?: number;
+    minTxNotificationUsd?: number;
   }
 
   interface enterpriseNotificationConfig {

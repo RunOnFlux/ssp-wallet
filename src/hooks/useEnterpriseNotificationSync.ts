@@ -20,7 +20,6 @@ import { blockchains } from '@storage/blockchains';
 import {
   sspConfig,
   updateEnterpriseNotificationFromStatus,
-  getDefaultEnterpriseNotificationPreferences,
 } from '@storage/ssp';
 import { cryptos } from '../types';
 
@@ -37,6 +36,8 @@ interface EnterpriseNotificationStatusResponse {
       lowBalance: boolean;
       weeklyReport: boolean;
       marketing: boolean;
+      largeTransactionThresholdUsd?: number;
+      minTxNotificationUsd?: number;
     };
     syncedChains: string[];
   };
@@ -160,14 +161,14 @@ export function useEnterpriseNotificationSync(): void {
             `[EnterpriseNotificationSync] Syncing ${Object.keys(chainsToSync).length} missing chains`,
           );
 
+          // No `preferences` field on purpose: the server preserves the stored
+          // preferences when the field is absent. Re-posting defaults here used
+          // to clobber choices made in Settings or the SSP Enterprise app.
           const subscribeData: Record<string, unknown> = {
             wkIdentity: sspWalletKeyInternalIdentity,
             walletIdentity: sspWalletInternalIdentity,
             email: status.email,
             chains: chainsToSync,
-            preferences:
-              status.preferences ||
-              getDefaultEnterpriseNotificationPreferences(),
           };
 
           const subscribeAuth = await createWkIdentityAuth(

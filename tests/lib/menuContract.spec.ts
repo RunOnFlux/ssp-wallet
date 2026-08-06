@@ -43,7 +43,31 @@ describe('batch E — enterprise notification defaults', () => {
     )) {
       expect(settings).toContain(`key: '${key}'`);
     }
-    expect(settings).toContain('preferences: enterprisePreferences');
+    expect(settings).toContain('preferences: preferencesPayload');
+  });
+
+  it('keeps preferences editable after subscribing via a partial-diff save', () => {
+    // Before this existed, the switches only rendered in the NOT-subscribed
+    // branch — the only way to change a preference post-subscribe was a full
+    // unsubscribe/resubscribe (two fresh 2-of-2 signatures).
+    const settings = read('components/Settings/Settings.tsx');
+    expect(settings).toContain('/v1/enterprise/preferences');
+    expect(settings).toContain('buildEnterprisePreferenceDiff');
+    expect(settings).toContain('minTxNotificationUsd');
+  });
+
+  it('login chain-sync re-subscribe omits preferences so stored choices survive', () => {
+    // The server preserves stored preferences when the field is absent; this
+    // hook used to re-POST all-on defaults over choices made in Settings or
+    // the SSP Enterprise app whenever it back-filled missing chain xpubs.
+    const hook = read('hooks/useEnterpriseNotificationSync.ts');
+    expect(hook).not.toContain('getDefaultEnterpriseNotificationPreferences');
+    const payload = hook.slice(
+      hook.indexOf('const subscribeData'),
+      hook.indexOf('subscribeAuth'),
+    );
+    expect(payload.length).toBeGreaterThan(0);
+    expect(payload).not.toContain('preferences:');
   });
 });
 
