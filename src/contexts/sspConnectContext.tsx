@@ -1089,6 +1089,117 @@ export const SspConnectProvider = ({
           setType('enterprise_flux_node_start');
 
           setRequesterInfo(buildRequesterInfo(request.data.params));
+        } else if (request.data.method === 'flux_node_start') {
+          // Consumer variant of enterprise_flux_node_start: signs the node
+          // start with the collateral key of a regular wallet address
+          // (account 0'). The wallet locates the collateral address among its
+          // own synced wallets, so no derivation indices or redeemScript are
+          // accepted from the page.
+          const cnChain = request.data.params.chain;
+          const cnCollateralAddress = request.data.params.collateralAddress;
+          const cnCollateralTxid = request.data.params.collateralTxid;
+          const cnCollateralVout = request.data.params.collateralVout;
+          const cnIdentityPubKey = request.data.params.identityPubKey;
+          const cnDelegates = request.data.params.delegates;
+          const cnNodeName = request.data.params.nodeName;
+
+          if (
+            !cnChain ||
+            !blockchains[cnChain] ||
+            (cnChain !== 'flux' && cnChain !== 'fluxTestnet')
+          ) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result: 'Invalid chain — must be flux or fluxTestnet',
+              },
+            });
+            return;
+          }
+
+          if (
+            typeof cnCollateralAddress !== 'string' ||
+            cnCollateralAddress.length < 20 ||
+            cnCollateralAddress.length > 100
+          ) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid collateral address' },
+            });
+            return;
+          }
+
+          if (
+            typeof cnCollateralTxid !== 'string' ||
+            !/^[0-9a-fA-F]{64}$/.test(cnCollateralTxid)
+          ) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid collateral txid' },
+            });
+            return;
+          }
+
+          if (typeof cnCollateralVout !== 'number') {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid collateral vout' },
+            });
+            return;
+          }
+
+          if (
+            typeof cnIdentityPubKey !== 'string' ||
+            !/^0[23][0-9a-fA-F]{64}$/.test(cnIdentityPubKey)
+          ) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid identity public key' },
+            });
+            return;
+          }
+
+          if (cnDelegates !== undefined) {
+            if (
+              !Array.isArray(cnDelegates) ||
+              cnDelegates.length > 25 ||
+              cnDelegates.some(
+                (d) =>
+                  typeof d !== 'string' || !/^0[23][0-9a-fA-F]{64}$/.test(d),
+              )
+            ) {
+              void browser.runtime.sendMessage({
+                origin: 'ssp',
+                data: { status: 'ERROR', result: 'Invalid delegates' },
+              });
+              return;
+            }
+          }
+
+          if (cnNodeName !== undefined && typeof cnNodeName !== 'string') {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid node name' },
+            });
+            return;
+          }
+
+          setChain(cnChain);
+          setMessage(cnIdentityPubKey); // identity pub key via message field
+          setAddress(cnCollateralTxid); // collateral txid via address field
+          setAmount(String(cnCollateralVout)); // collateral vout via amount field
+          setSourceAddress(cnCollateralAddress); // collateral address
+          setVaultName(typeof cnNodeName === 'string' ? cnNodeName : '');
+          setOrgName(
+            typeof request.data.params.collateralAmount === 'string'
+              ? request.data.params.collateralAmount
+              : '',
+          ); // collateral amount via orgName
+          setRecipients(JSON.stringify(cnDelegates || [])); // delegates via recipients
+          setType('flux_node_start');
+
+          setRequesterInfo(buildRequesterInfo(request.data.params));
         } else if (request.data.method === 'enterprise_nonce_sync') {
           // Wallet must be synced with Key before enterprise operations
           if (!wkIdentity) {

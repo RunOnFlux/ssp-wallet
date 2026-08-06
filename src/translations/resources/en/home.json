@@ -528,6 +528,26 @@
     "err_decrypt_password": "Failed to decrypt password",
     "err_decrypt_seed": "Failed to decrypt wallet seed"
   },
+  "fluxNodeStart": {
+    "title": "Start Flux Node",
+    "description": "A website is requesting to start a Flux node using collateral held in this wallet. Please review the details below.",
+    "node": "Node",
+    "chain": "Chain",
+    "collateral": "Collateral",
+    "collateral_address": "Collateral Address",
+    "collateral_utxo": "Collateral UTXO",
+    "delegates": "Delegates",
+    "delegate_notice": "The listed delegate keys will be granted permission to manage this node (start and maintain it). Delegates can NOT spend or move your collateral.",
+    "approve": "Approve & Start Node",
+    "err_failed": "Failed to start node",
+    "err_not_logged_in": "Not logged in",
+    "err_invalid_chain": "Invalid chain",
+    "err_address_not_found": "The collateral address does not belong to this wallet. Make sure the Flux chain is synced and the address is correct.",
+    "err_redeem_unavailable": "Redeem script unavailable for this address",
+    "err_xpriv_unavailable": "Could not retrieve wallet key",
+    "err_decrypt_password": "Failed to decrypt password",
+    "err_decrypt_xpriv": "Failed to decrypt wallet key"
+  },
   "sspConnect": {
     "invalid_chain": "Invalid chain.",
     "invalid_method": "Invalid method.",
