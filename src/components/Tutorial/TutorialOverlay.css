@@ -13,7 +13,7 @@
   border-radius: 6px;
   background-color: transparent;
   animation: tutorial-pulse 3s infinite;
-  box-shadow: 0 0 0 1px rgba(24, 144, 255, 0.2);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25);
   pointer-events: none;
 }
 
@@ -89,12 +89,12 @@
   0%,
   100% {
     border-color: #fbbf24;
-    box-shadow: 0 0 0 1px rgba(24, 144, 255, 0.2);
+    box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.25);
     opacity: 1;
   }
   50% {
     border-color: #fbbf24;
-    box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.45);
     opacity: 0.8;
   }
 }
@@ -107,6 +107,16 @@
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-highlight {
+    animation: none;
+  }
+
+  .tutorial-card {
+    animation: none;
   }
 }
 
@@ -170,7 +180,8 @@
   overflow: hidden;
 }
 
-.tutorial-intro-button > span > .anticon {
+.tutorial-intro-button > span > .anticon,
+.tutorial-intro-button > span > .lucide {
   flex-shrink: 0;
   margin-right: 6px;
 }

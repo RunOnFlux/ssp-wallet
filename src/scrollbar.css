@@ -1,3 +1,16 @@
-::-webkit-scrollbar {
+/* Imported from main.tsx only when the UA is not a Mac — Chromium on
+   Windows/Linux paints a classic, space-consuming scrollbar inside the fixed
+   420px popup and this file exists to hide it.
+
+   `scrollbar-width` applies to the scroll CONTAINER, not to the
+   ::-webkit-scrollbar pseudo-element, so declaring it there did nothing at
+   all. Use the pair index.css already uses for modal bodies: the property on
+   the container (Firefox) plus display:none on the pseudo-element
+   (Chromium/WebKit). Scrolling itself still works via wheel/touch/keyboard. */
+* {
   scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }

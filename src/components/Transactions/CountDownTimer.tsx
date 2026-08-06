@@ -31,13 +31,13 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
 
   const getColor = (remainingTimeInSeconds: number) => {
     if (remainingTimeInSeconds > 12 * 60) {
-      return '#2B61D1'; // blue
+      return '#3b82f6'; // info
     } else if (remainingTimeInSeconds > 8 * 60) {
-      return '#63A375'; // green
+      return '#22c55e'; // success
     } else if (remainingTimeInSeconds > 4 * 60) {
       return '#f59e0b'; // yellow
     } else {
-      return '#E03109'; // red
+      return '#ef4444'; // error
     }
   };
 

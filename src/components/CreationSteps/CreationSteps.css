@@ -1,9 +1,53 @@
+/* antd lays the 5 items out as equal flex cells; letting them share the row
+   width (instead of a fixed 62px cell + a -20px nudge) keeps the stepper
+   centered with symmetric left/right gutters at every panel width. */
 .creation-steps > div {
-  width: 80px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .creation-steps {
   margin-bottom: 35px;
-  margin-top: 25px;
-  margin-left: -20px;
+  margin-top: 18px;
+}
+
+/* Goal-gradient progress readout — never 0%. */
+.creation-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 4px 0;
+}
+
+.creation-progress-track {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(120, 113, 108, 0.2);
+  overflow: hidden;
+}
+
+.creation-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #f59e0b, #fcd34d);
+  transition: width 260ms ease-out;
+}
+
+.creation-progress-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b45309;
+  min-width: 30px;
+  text-align: right;
+}
+
+:root[data-theme='dark'] .creation-progress-label {
+  color: #fcd34d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creation-progress-fill {
+    transition: none;
+  }
 }

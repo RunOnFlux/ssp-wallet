@@ -8,8 +8,6 @@ function LanguageSelector(props: { label: boolean }) {
   const { i18n } = useTranslation();
   const { t } = useTranslation(['home', 'common']);
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
-  console.log(i18n.languages);
-  console.log(i18n);
 
   const handleChange = async (value: string): Promise<void> => {
     let lng = value;
@@ -38,7 +36,11 @@ function LanguageSelector(props: { label: boolean }) {
         suffixIcon={props.label ? undefined : null}
         variant={'outlined'}
         value={currentLanguage}
-        optionLabelProp={props.label ? 'desc' : 'label'}
+        // Always show the language's own name in its OWN language ("Polski",
+        // not "Polish") and never the raw ISO code ("en") — both in the
+        // dropdown and as the selected value. A speaker scanning the list is
+        // looking for their endonym, not for an English exonym.
+        optionLabelProp={'desc'}
         onChange={handleChange}
         style={{ width: 'fit-content' }}
         dropdownStyle={{ minWidth: '130px' }}
@@ -51,10 +53,12 @@ function LanguageSelector(props: { label: boolean }) {
           { value: 'bg', label: 'bg', desc: 'Български' },
           { value: 'bn', label: 'bn', desc: 'বাংলা' },
           { value: 'zh', label: 'zh', desc: '简体中文' },
-          { value: 'zh_TW', label: 'zh_TW', desc: '繁体中文' },
+          // 繁體 in traditional characters — the script distinction IS the
+          // entry (繁体 spells it with the simplified form of 體).
+          { value: 'zh_TW', label: 'zh_TW', desc: '繁體中文' },
           { value: 'cs', label: 'cs', desc: 'Čeština' },
           { value: 'de', label: 'de', desc: 'Deutsch' },
-          { value: 'nl', label: 'nl', desc: 'Dutch' },
+          { value: 'nl', label: 'nl', desc: 'Nederlands' },
           { value: 'es', label: 'es', desc: 'Español' },
           { value: 'fi', label: 'fi', desc: 'Suomen kieli' },
           { value: 'sl', label: 'sl', desc: 'Slovenščina' },
@@ -66,14 +70,14 @@ function LanguageSelector(props: { label: boolean }) {
           { value: 'it', label: 'it', desc: 'Italiano' },
           { value: 'ko', label: 'ko', desc: '한국어' },
           { value: 'hu', label: 'hu', desc: 'Magyar' },
-          { value: 'no', label: 'no', desc: 'Norwegian' },
+          { value: 'no', label: 'no', desc: 'Norsk' },
           { value: 'ja', label: 'ja', desc: '日本語' },
-          { value: 'pl', label: 'pl', desc: 'Polish' },
+          { value: 'pl', label: 'pl', desc: 'Polski' },
           { value: 'pt', label: 'pt', desc: 'Português' },
           { value: 'ru', label: 'ru', desc: 'Русский' },
-          { value: 'ro', label: 'ro', desc: 'Romanian' },
-          { value: 'sk', label: 'sk', desc: 'Slovak' },
-          { value: 'sv', label: 'sv', desc: 'Swedish' },
+          { value: 'ro', label: 'ro', desc: 'Română' },
+          { value: 'sk', label: 'sk', desc: 'Slovenčina' },
+          { value: 'sv', label: 'sv', desc: 'Svenska' },
           { value: 'uk', label: 'uk', desc: 'Українська' },
           { value: 'ta', label: 'ta', desc: 'தமிழ்' },
           { value: 'th', label: 'th', desc: 'ไทย' },

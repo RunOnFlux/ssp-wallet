@@ -332,7 +332,7 @@ function EnterpriseFluxNodeStart({
             )}
             <Text
               type="secondary"
-              style={{ fontSize: '12px', fontFamily: 'monospace' }}
+              style={{ fontSize: '12px', fontFamily: 'var(--ssp-mono)' }}
             >
               {requesterInfo.origin}
             </Text>
@@ -370,7 +370,7 @@ function EnterpriseFluxNodeStart({
                     strong
                     copyable={{ text: collateralAddress }}
                     style={{
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--ssp-mono)',
                       fontSize: 12,
                       wordBreak: 'break-all',
                     }}
@@ -387,7 +387,7 @@ function EnterpriseFluxNodeStart({
                   <Text
                     strong
                     copyable={{ text: utxoFull }}
-                    style={{ fontFamily: 'monospace', fontSize: 12 }}
+                    style={{ fontFamily: 'var(--ssp-mono)', fontSize: 12 }}
                   >
                     {utxoDisplay}
                   </Text>
@@ -419,7 +419,7 @@ function EnterpriseFluxNodeStart({
           <Text
             strong
             style={{
-              fontFamily: 'monospace',
+              fontFamily: 'var(--ssp-mono)',
               fontSize: '12px',
               wordBreak: 'break-all',
             }}

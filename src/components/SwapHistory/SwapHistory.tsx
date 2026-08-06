@@ -5,8 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { getSwapHistory } from '../../lib/ABEController';
 import { swapHistoryOrder } from '../../types';
-import { LoadingOutlined } from '@ant-design/icons';
+import {
+  LoaderCircle as LoaderCircleIcon,
+  ArrowDownUp as ArrowDownUpIcon,
+} from 'lucide-react';
 import SwapBox from './SwapBox';
+import EmptyState from '../EmptyState/EmptyState';
 
 function SwapHistory(props: {
   open: boolean;
@@ -65,19 +69,22 @@ function SwapHistory(props: {
       <Modal
         title={t('home:navbar.swap_history')}
         open={props.open}
-        style={{ textAlign: 'center', top: 60 }}
-        styles={{ container: { paddingLeft: 0, paddingRight: 0 } }}
+        style={{ textAlign: 'center' }}
         onCancel={handleExit}
         footer={[]}
+        width="min(560px, calc(100vw - 32px))"
       >
         <Space
           direction="vertical"
           size="small"
-          style={{ marginBottom: 16, marginTop: 16 }}
+          style={{ width: '100%', marginBottom: 16, marginTop: 16 }}
         >
           {loading ? (
             <>
-              <LoadingOutlined style={{ fontSize: '24px' }} />
+              <LoaderCircleIcon
+                className="lucide-spin"
+                style={{ fontSize: '24px' }}
+              />
               <Text strong style={{ fontSize: '16px' }}>
                 {t('common:loading')}
               </Text>
@@ -92,12 +99,13 @@ function SwapHistory(props: {
             ))
           )}
           {!loading && !errorMessage && swapHistory.length === 0 && (
-            <Text style={{ fontSize: '16px' }}>
-              {t('home:swap.no_swap_history')}
-            </Text>
+            <EmptyState
+              icon={<ArrowDownUpIcon />}
+              description={t('home:swap.no_swap_history')}
+            />
           )}
           {errorMessage && (
-            <Text style={{ color: 'red', fontSize: '16px' }}>
+            <Text style={{ color: '#ef4444', fontSize: 14 }}>
               {errorMessage}
             </Text>
           )}

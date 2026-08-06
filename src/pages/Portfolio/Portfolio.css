@@ -1,0 +1,266 @@
+.portfolio-tab {
+  text-align: left;
+  padding: 4px 2px;
+}
+
+.portfolio-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.portfolio-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Refresh affordance — identical glyph (RotateCw), tint (full strength) and
+   spin (svg.lucide-spin in index.css, reduced-motion aware) as the Activity
+   tab's refresh button. A dimmed variant read as a different/disabled control. */
+.portfolio-refresh {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.portfolio-refresh:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.portfolio-refresh:disabled {
+  cursor: default;
+}
+
+.portfolio-total {
+  margin-top: 6px;
+  cursor: pointer;
+  /* real <button> reset — keeps the block layout it had as a div */
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  padding: 0;
+}
+
+.portfolio-total-amount {
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  display: block;
+  line-height: 1.2;
+}
+
+.portfolio-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.portfolio-change.up {
+  color: #22c55e;
+}
+
+.portfolio-change.down {
+  color: #ef4444;
+}
+
+.portfolio-allocation {
+  margin: 18px 0 10px;
+}
+
+.allocation-bar {
+  display: flex;
+  height: 10px;
+  width: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.allocation-seg {
+  height: 100%;
+  display: block;
+}
+
+.allocation-seg:not(:last-child) {
+  border-right: 1.5px solid #fafaf9;
+}
+
+:root[data-theme='dark'] .allocation-seg:not(:last-child) {
+  border-right-color: #0c0a09;
+}
+
+.allocation-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 10px;
+}
+
+.allocation-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.allocation-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.portfolio-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65; /* ≥4.5:1 on both themes (0.5 fell to ~3.4:1 on light) */
+  /* no left offset — shares the page gutter with the title, total, allocation
+     bar and (via its negative margin) the row content it heads */
+  margin: 16px 0 6px;
+}
+
+.portfolio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.portfolio-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* The 10px hover padding is pulled back out with a negative margin so row
+     CONTENT sits on the same gutter as the page title, the total, the
+     allocation bar and the "not yet activated" label that heads these rows —
+     without shrinking the hover/focus target. The 8px that spills past
+     .portfolio-tab's 2px gutter lands inside the shell's own side padding
+     (#root 16px in the popup, .wallet-shell-main 20px in the panel), so no
+     row can cause horizontal overflow. */
+  width: calc(100% + 20px);
+  margin: 0 -10px;
+  padding: 10px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  transition: background 0.12s ease;
+}
+
+.portfolio-row:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+/* One switch at a time (Portfolio.tsx) — the other rows are inert while a
+   chain derivation runs. No dimming: the spinner on the tapped row is the
+   state cue, and stacked opacity is exactly what broke contrast below. */
+.portfolio-row:disabled {
+  cursor: default;
+}
+
+.portfolio-row-spinner {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.portfolio-total:focus-visible,
+.portfolio-refresh:focus-visible,
+.portfolio-row:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
+/* Not-yet-activated rows: dim the LOGO only. A row-level opacity composited
+   with .portfolio-row-crypto's 0.65 below (~0.36 effective) and dropped the
+   "Tap to activate" affordance to 2.25:1 on light. Explicit per-theme colours
+   keep the hierarchy without stacking alpha:
+   #6b6663 on #fafaf9 = 5.43:1, #a8a29e on #0c0a09 = 7.83:1 (12px hint);
+   #44403c on #fafaf9 = 9.84:1, #d6d3d1 on #0c0a09 = 13.26:1 (14px/600 name). */
+.portfolio-row-inactive .ant-image {
+  opacity: 0.6;
+}
+
+.portfolio-row-inactive .portfolio-row-name {
+  color: #44403c;
+}
+
+.portfolio-row-inactive .portfolio-row-crypto {
+  opacity: 1;
+  color: #6b6663;
+}
+
+:root[data-theme='dark'] .portfolio-row-inactive .portfolio-row-name {
+  color: #d6d3d1;
+}
+
+:root[data-theme='dark'] .portfolio-row-inactive .portfolio-row-crypto {
+  color: #a8a29e;
+}
+
+.portfolio-row-meta {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.portfolio-row-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.portfolio-row-crypto {
+  font-size: 12px;
+  opacity: 0.65; /* contrast: 0.6 on light was ~4.4:1, just under 4.5 */
+  font-variant-numeric: tabular-nums;
+}
+
+.portfolio-row-fiat-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.3;
+}
+
+.portfolio-row-fiat {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.portfolio-row-tokens {
+  font-size: 11px;
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Honour the OS reduce-motion preference, like the rest of the app's
+ * stylesheets. Scoped to this file's own animated selectors rather than a
+ * global override, which would also freeze antd's loading spinners. */
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-row {
+    transition: none;
+  }
+}

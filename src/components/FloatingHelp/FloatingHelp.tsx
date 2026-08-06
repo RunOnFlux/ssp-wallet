@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { FloatButton, Dropdown, Space, Typography } from 'antd';
 import {
-  QuestionCircleOutlined,
-  BookOutlined,
-  CustomerServiceOutlined,
-  GlobalOutlined,
-  FileTextOutlined,
-  SafetyOutlined,
-} from '@ant-design/icons';
+  Book as BookIcon,
+  CircleHelp as CircleHelpIcon,
+  FileText as FileTextIcon,
+  Globe as GlobeIcon,
+  Headset as HeadsetIcon,
+  ShieldCheck as ShieldCheckIcon,
+} from 'lucide-react';
 import type { MenuProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 
@@ -35,7 +35,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
             key: 'guide',
             label: (
               <Space>
-                <BookOutlined style={{ color: '#22c55e' }} />
+                <BookIcon style={{ color: '#22c55e' }} />
                 <div>
                   <div>{t('welcome:watch_guide')}</div>
                   <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -52,7 +52,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
       key: 'website',
       label: (
         <Space>
-          <GlobalOutlined style={{ color: '#722ed1' }} />
+          <GlobeIcon style={{ color: '#a855f7' }} />
           <div>
             <div>{t('welcome:help.website')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -67,7 +67,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
       key: 'support',
       label: (
         <Space>
-          <CustomerServiceOutlined style={{ color: '#f97316' }} />
+          <HeadsetIcon style={{ color: '#f97316' }} />
           <div>
             <div>{t('welcome:help.support')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -85,7 +85,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
       key: 'privacy',
       label: (
         <Space>
-          <SafetyOutlined style={{ color: '#13c2c2' }} />
+          <ShieldCheckIcon style={{ color: '#14b8a6' }} />
           <div>
             <div>{t('welcome:help.privacy')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -100,7 +100,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
       key: 'terms',
       label: (
         <Space>
-          <FileTextOutlined style={{ color: '#eb2f96' }} />
+          <FileTextIcon style={{ color: '#ec4899' }} />
           <div>
             <div>{t('welcome:help.terms')}</div>
             <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -123,7 +123,7 @@ export const FloatingHelp: React.FC<FloatingHelpProps> = ({
       overlayStyle={{ minWidth: '250px' }}
     >
       <FloatButton
-        icon={<QuestionCircleOutlined />}
+        icon={<CircleHelpIcon />}
         tooltip={t('welcome:help.tooltip')}
         style={{
           right: 6,

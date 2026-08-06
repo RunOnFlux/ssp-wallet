@@ -6,6 +6,8 @@ import { toLegacyAddress } from 'bchaddrjs';
 import {
   http as viemHttp,
   parseUnits,
+  formatUnits,
+  getAddress,
   encodeFunctionData,
   erc20Abi,
 } from 'viem';
@@ -388,7 +390,11 @@ export function buildUnsignedRawTx(
     }
 
     // absurd fee check, we define absurd fee as 100 USD sspConfig().maxTxFeeUSD in send.tsx
-    if (actualTxFee.isGreaterThan(new BigNumber(maxFee))) {
+    // Guard against a non-finite cap (e.g. a poisoned/zero rate producing a NaN
+    // maxFee): isGreaterThan(NaN) is always false, which would silently DISABLE
+    // this backstop — so treat a non-finite cap as "reject" (fail closed).
+    const maxFeeBn = new BigNumber(maxFee);
+    if (!maxFeeBn.isFinite() || actualTxFee.isGreaterThan(maxFeeBn)) {
       throw new Error(`Fee is absurdly too high ${actualTxFee.toFixed()}`);
     }
 
@@ -1112,6 +1118,122 @@ interface publicNonces {
   kTwoPublic: string;
 }
 
+/**
+ * Parse a dApp-supplied 256-bit quantity (`value`, `gas`, `gasPrice`, …),
+ * given as hex or as a decimal string.
+ *
+ * CRITICAL: never route these through parseInt(). It is a 64-bit float and
+ * Number.MAX_SAFE_INTEGER is only ~9.007e15 wei (≈0.009 ETH), so any larger
+ * quantity would be snapped to the nearest representable double - and that
+ * corrupted number is what would end up signed into the user operation.
+ *
+ * Throws on malformed input rather than guessing, so callers can decide
+ * between failing the request and falling back to a default.
+ */
+export function parseUnsignedQuantity(value: string | undefined): bigint {
+  if (!value || value === '0x') {
+    return BigInt(0);
+  }
+  const parsed = BigInt(value); // throws on malformed input
+  if (parsed < BigInt(0)) {
+    throw new Error(`Negative quantity in transaction request: ${value}`);
+  }
+  return parsed;
+}
+
+// ERC-20 `transfer(address,uint256)` selector. dApps send token transfers
+// through eth_sendTransaction as an ordinary contract call: `to` is the token
+// contract and the real recipient + amount live in the calldata.
+export const ERC20_TRANSFER_SELECTOR = '0xa9059cbb';
+
+export interface erc20TransferIntent {
+  token: Token;
+  recipient: `0x${string}`;
+  amount: string; // human units, exactly what the send screen displays
+}
+
+/**
+ * Decode a canonical `transfer(address,uint256)` calldata.
+ *
+ * Deliberately strict: only the exact ABI encoding is accepted (4-byte
+ * selector + a zero-padded address word + an amount word = 68 bytes). Dirty
+ * padding above the address or trailing bytes mean the payload is not what it
+ * looks like, and such a call must stay an opaque contract interaction that is
+ * signed byte-for-byte instead of being re-interpreted as a token transfer.
+ */
+export function decodeErc20Transfer(
+  data: string | undefined,
+): { recipient: `0x${string}`; rawAmount: bigint } | null {
+  if (!data) {
+    return null;
+  }
+  const hex = data.toLowerCase();
+  // 0x + 68 bytes
+  if (hex.length !== 2 + 68 * 2 || !hex.startsWith(ERC20_TRANSFER_SELECTOR)) {
+    return null;
+  }
+  if (!/^0x[0-9a-f]+$/.test(hex)) {
+    return null;
+  }
+  const recipientWord = hex.slice(10, 74);
+  if (!/^0{24}[0-9a-f]{40}$/.test(recipientWord)) {
+    return null;
+  }
+  return {
+    recipient: getAddress(`0x${recipientWord.slice(24)}`),
+    rawAmount: BigInt(`0x${hex.slice(74)}`),
+  };
+}
+
+/**
+ * Decide whether a dApp transaction request can be safely re-presented in the
+ * send flow as a plain "send <amount> <token> to <recipient>".
+ *
+ * Returns non-null ONLY when the wallet can rebuild the dApp's calldata
+ * byte-for-byte out of the very values it is about to display, so the review
+ * screen and the signed user operation cannot disagree. Everything else — an
+ * unknown token, a non-canonical encoding, an attached native value — is a no,
+ * and the caller must pass the raw calldata straight through instead.
+ *
+ * The registered `decimals` only scale how the amount is RENDERED (the same
+ * scaling the wallet already applies to that token's balances); the bytes that
+ * get signed come back out of this round trip unchanged either way.
+ *
+ * `token` comes back from the registry, so its `contract` spelling is the one
+ * the send flow and constructAndSignEVMTransaction look tokens up by (both
+ * match case-sensitively, and dApps send whatever casing they like).
+ */
+export function describeErc20Transfer(
+  transaction: { to?: string; data?: string; value: bigint },
+  tokens: Token[],
+): erc20TransferIntent | null {
+  const data = transaction.data;
+  const decoded = decodeErc20Transfer(data);
+  if (!decoded || !data || !transaction.to || transaction.value !== BigInt(0)) {
+    return null;
+  }
+  const to = transaction.to.toLowerCase();
+  const token = tokens.find(
+    (tk) => !!tk.contract && tk.contract.toLowerCase() === to,
+  );
+  if (!token) {
+    return null;
+  }
+  const amount = formatUnits(decoded.rawAmount, token.decimals);
+  // The displayed recipient + amount must re-encode to the exact bytes the
+  // dApp asked us to sign - otherwise we would be showing one transfer and
+  // signing another.
+  const reEncoded = encodeFunctionData({
+    abi: erc20Abi,
+    functionName: 'transfer',
+    args: [decoded.recipient, parseUnits(amount, token.decimals)],
+  });
+  if (reEncoded.toLowerCase() !== data.toLowerCase()) {
+    return null;
+  }
+  return { token, recipient: decoded.recipient, amount };
+}
+
 // return stringified multisig user operation
 export async function constructAndSignEVMTransaction(
   chain: keyof cryptos,
@@ -1242,7 +1364,14 @@ export async function constructAndSignEVMTransaction(
 
     let uoStruct;
 
-    if (token) {
+    // Supplied calldata is the authoritative description of what the
+    // transaction does: re-encoding a `transfer()` on top of it would throw
+    // the caller's real recipient and amount away and send a zero-amount
+    // transfer to the token contract instead. Custom data therefore always
+    // wins over the ERC-20 fast path.
+    const hasCustomData = !!customData && customData !== '0x';
+
+    if (token && !hasCustomData) {
       const tokenInfo = blockchainConfig.tokens
         .concat(importedTokens)
         .find((x) => x.contract === token);
@@ -1268,8 +1397,12 @@ export async function constructAndSignEVMTransaction(
     } else {
       // Handle custom data for contract calls (like WalletConnect)
       const txData = (customData || '0x') as `0x${string}`;
-      // Parse the amount properly - use ETH value if provided, otherwise 0
-      const txValue = parseUnits(amount, blockchainConfig.decimals);
+      // Parse the amount properly - use ETH value if provided, otherwise 0.
+      // With a token selected the amount is denominated in that token, so it
+      // must NOT be spent as native value on a calldata pass-through.
+      const txValue = token
+        ? BigInt(0)
+        : parseUnits(amount, blockchainConfig.decimals);
 
       uoStruct = await smartAccountClient.buildUserOperation({
         account: multiSigSmartAccount,

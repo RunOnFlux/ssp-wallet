@@ -1,16 +1,25 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Button, Space, Tooltip } from 'antd';
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { Tooltip } from 'antd';
+import {
+  ArrowDown as ArrowDownIcon,
+  ArrowLeftRight as ArrowLeftRightIcon,
+  ArrowUp as ArrowUpIcon,
+  CreditCard as CreditCardIcon,
+} from 'lucide-react';
 import Receive from '../Receive/Receive';
 import PurchaseCrypto from '../Onramper/PurchaseCrypto';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../hooks';
-import { useThemeMode } from '../../contexts/ThemeContext';
 import { blockchains } from '@storage/blockchains';
 
 import './Navigation.css';
 
+/**
+ * Home action row — the wallet verbs (Send · Receive · Swap · Buy/Sell) as
+ * equal-width tokenized tiles: amber-tinted surface, amber icon, neutral
+ * label. No gradients, no off-brand hues (DESIGN_TOKENS §1).
+ */
 function Navigation() {
   const { t } = useTranslation(['home']);
   const navigate = useNavigate();
@@ -19,31 +28,11 @@ function Navigation() {
   const receiveAction = (status: boolean) => {
     setOpenReceive(status);
   };
-  const firstSpaceRef = useRef<HTMLDivElement>(null);
-  const [isOverflow, setIsOverflow] = useState(true); // always use overflow design
-  const { isDark } = useThemeMode();
-
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (firstSpaceRef.current) {
-        setIsOverflow(firstSpaceRef.current.scrollWidth > 0); // always use overflow design // 388
-      }
-    };
-
-    checkOverflow();
-  }, []);
   const openBuyAction = (status: boolean) => {
     // ANTd fix: https://github.com/ant-design/ant-design/issues/43327
-    if (status) {
-      const elem = document.getElementById('root');
-      if (elem) {
-        elem.style.overflow = 'hidden';
-      }
-    } else {
-      const elem = document.getElementById('root');
-      if (elem) {
-        elem.style.overflow = 'unset';
-      }
+    const elem = document.getElementById('root');
+    if (elem) {
+      elem.style.overflow = status ? 'hidden' : 'unset';
     }
     setOpenBuyCryptoDialog(status);
   };
@@ -57,15 +46,45 @@ function Navigation() {
   const blockchainConfig = blockchains[activeChain];
   const isEVM = blockchainConfig.chainType === 'evm';
   const isSOL = blockchainConfig.chainType === 'sol';
+  const buySellAvailable =
+    servicesAvailability.onramp && servicesAvailability.offramp;
+  // Onramper support is the ONLY thing that enables the tile, so it must also
+  // be the thing that explains a disabled one. Gating the tooltip on
+  // "mainnet without an onramp" instead made it dead code — every chain
+  // lacking onramperNetwork is a test network — leaving Solana (devnet-only)
+  // and every other test chain with a dead tile that explained nothing.
+  const buySellUnavailable = !blockchainConfig.onramperNetwork;
+  const isTestNetwork = blockchainConfig.symbol.includes('TEST');
+
+  const buySellButton = (
+    <button
+      type="button"
+      className="action-row-button"
+      /* aria-disabled, NOT the `disabled` attribute. A natively disabled button
+         is removed from the tab order, so the tooltip explaining WHY Buy/Sell is
+         unavailable could only be reached by hovering a mouse. This keeps the
+         tile focusable — and therefore explainable to keyboard and screen-reader
+         users — while still refusing the action. */
+      aria-disabled={buySellUnavailable || undefined}
+      onClick={() => {
+        if (buySellUnavailable) return;
+        openBuyAction(true);
+      }}
+      data-tutorial="buy-sell-button"
+    >
+      <CreditCardIcon className="action-row-icon" />
+      <span className="action-row-label">
+        {t('home:navigation.buy')} / {t('home:navigation.sell')}
+      </span>
+    </button>
+  );
 
   return (
     <>
-      <Space direction="horizontal" size="small" style={{ marginBottom: 10 }}>
-        <Button
-          type="default"
-          icon={<ArrowUpOutlined />}
-          size={'middle'}
-          style={{ minWidth: '105px' }}
+      <div className="action-row">
+        <button
+          type="button"
+          className="action-row-button"
           onClick={() =>
             navigate(isSOL ? '/sendsol' : isEVM ? '/sendevm' : '/send', {
               state: { receiver: '' },
@@ -73,63 +92,60 @@ function Navigation() {
           }
           data-tutorial="send-button"
         >
-          <span>{t('home:navigation.send')}</span>
-        </Button>
-        <Space direction={isOverflow ? 'vertical' : 'horizontal'}>
-          {servicesAvailability.onramp && servicesAvailability.offramp && (
-            <Tooltip
-              title={
-                !blockchainConfig.onramperNetwork &&
-                !blockchainConfig.symbol.includes('TEST')
-                  ? t('home:buy_sell_crypto.coming_soon')
-                  : ''
-              }
-            >
-              <Button
-                type="default"
-                size={'small'}
-                disabled={!blockchainConfig.onramperNetwork}
-                className="linearGradientButton"
-                onClick={() => {
-                  openBuyAction(true);
-                }}
-                data-tutorial="buy-sell-button"
-              >
-                <span>
-                  {t('home:navigation.buy')} / {t('home:navigation.sell')}
-                </span>
-              </Button>
-            </Tooltip>
-          )}
-          {servicesAvailability.swap && (
-            <Button
-              type="default"
-              className={isDark ? 'buttonSwapLight' : 'buttonSwap'}
-              size={'small'}
-              variant="filled"
-              color={isDark ? 'yellow' : 'purple'}
-              onClick={() => {
-                navigate('/swap', { state: { buyAsset: activeChain } });
-              }}
-              data-tutorial="swap-button"
-            >
-              <span>{t('home:navigation.swap')}</span>
-            </Button>
-          )}
-        </Space>
-        <Button
-          type="default"
-          icon={<ArrowDownOutlined />}
-          size={'middle'}
-          style={{ minWidth: '105px' }}
-          onClick={() => {
-            receiveAction(true);
-          }}
+          <ArrowUpIcon className="action-row-icon" />
+          <span className="action-row-label">{t('home:navigation.send')}</span>
+        </button>
+        <button
+          type="button"
+          className="action-row-button"
+          onClick={() => receiveAction(true)}
           data-tutorial="receive-button"
         >
-          <span>{t('home:navigation.receive')}</span>
-        </Button>
-      </Space>
+          <ArrowDownIcon className="action-row-icon" />
+          <span className="action-row-label">
+            {t('home:navigation.receive')}
+          </span>
+        </button>
+        {servicesAvailability.swap && (
+          <button
+            type="button"
+            className="action-row-button"
+            onClick={() => {
+              navigate('/swap', { state: { buyAsset: activeChain } });
+            }}
+            data-tutorial="swap-button"
+          >
+            <ArrowLeftRightIcon className="action-row-icon" />
+            <span className="action-row-label">
+              {t('home:navigation.swap')}
+            </span>
+          </button>
+        )}
+        {buySellAvailable &&
+          (buySellUnavailable ? (
+            <Tooltip
+              title={
+                isTestNetwork
+                  ? t(
+                      'home:buy_sell_crypto.not_on_test_networks',
+                      'Not available on test networks',
+                    )
+                  : t('home:buy_sell_crypto.coming_soon')
+              }
+              /* focus as well as hover: the tile is aria-disabled rather than
+                 natively disabled precisely so a keyboard user can reach this
+                 explanation. */
+              trigger={['hover', 'focus']}
+            >
+              {/* span wrapper kept: antd attaches its trigger handlers to the
+                  child, and the wrapper also gives the tooltip a stable anchor
+                  box around the tile. */}
+              <span className="action-row-tooltip-target">{buySellButton}</span>
+            </Tooltip>
+          ) : (
+            buySellButton
+          ))}
+      </div>
       <Receive open={openReceive} openAction={receiveAction} />
       <PurchaseCrypto
         open={openBuyCryptoDialog}

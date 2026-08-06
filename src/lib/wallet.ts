@@ -424,14 +424,14 @@ export function generateAddressKeypairSOL(
  * both wallet and key send each other their 20-pubkey arrays so each side
  * can compute multisig vault addresses for any address index 0-19.
  *
- * 20 matches the wallet-count UI cap (Navbar.tsx).
+ * 20 matches the wallet-count UI cap (WalletSwitcher.tsx).
  *
  * ⚠️  CHANGING THIS LIMIT — the value is mirrored in several places that
  *    must stay in lockstep:
  *      - this loop bound
  *      - generateMultisigAddress sol length check + index bound (this file)
  *      - Key.tsx isSolanaPubkeyArrayString length check + QR errorLevel
- *      - Navbar.tsx max-wallet guard
+ *      - WalletSwitcher.tsx max-wallet guard
  *      - TokenBoxImport.tsx activated-tokens cleanup loop
  *      - ssp-key wallet.ts (mirror functions)
  *      - ssp-key Home.tsx isSolanaPubkeyArrayString

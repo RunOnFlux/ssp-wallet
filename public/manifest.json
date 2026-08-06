@@ -1,11 +1,11 @@
 {
-  "version": "1.40.0",
+  "version": "2.0.0",
   "manifest_version": 3,
   "name": "SSP Wallet",
   "short_name": "SSP",
   "description": "Secure. Simple. Powerful.",
   "action": {
-    "default_popup": "index.html",
+    "default_popup": "index.html?ctx=popup",
     "default_title": "SSP Wallet"
   },
   "author": "https://sspwallet.io",
@@ -13,7 +13,7 @@
     "service_worker": "scripts/background.js"
   },
   "side_panel": {
-    "default_path": "index.html"
+    "default_path": "index.html?ctx=sidepanel"
   },
   "icons": {
     "256": "ssp-logo-black-256x256.png"

@@ -11,13 +11,23 @@ import {
   decryptRecoveryEnvelope,
   persistRecoveryEnvelope,
   readRecoveryEnvelope,
+  storeRecoveryXpub,
+  readRecoveryXpub,
+  advanceRecoveryIndex,
+  clearRecoveryEnvelope,
 } from '../../src/lib/recoveryEnvelope';
+import { recoveryXpubMessage } from '../../src/lib/recoveryXpubVerify';
+import { fluxnode } from '@runonflux/flux-sdk';
 import {
   generateEphemeralKeypair,
   generateRecoveryNonce,
   wrapSkRForTransit,
   unwrapSkRFromTransit,
 } from '../../src/lib/recoveryCrypto';
+import { hmac } from '@noble/hashes/hmac.js';
+import { sha512 } from '@noble/hashes/sha2.js';
+import { secp256k1 } from '@noble/curves/secp256k1.js';
+
 import { blockchains } from '../../src/storage/blockchains';
 
 /**
@@ -45,28 +55,34 @@ function installLocalStorageShim() {
   };
 }
 
-// Derive a chain-identity HDKey from a mnemonic, mirroring wallet.ts
-// `generatexPubxPriv` at m/48'/coin'/0'/scriptType'.
-function deriveIdentityMaster(mnemonic, identityChain = 'btc') {
+// Derive both accounts a Key holds from one mnemonic, mirroring wallet.ts
+// `generatexPubxPriv` at m/48'/coin'/0'/scriptType' (the signing/identity
+// account) and ssp-key's lib/recoveryAccount.ts at m/48'/coin'/99'/scriptType'
+// (the account whose keys are released).
+function deriveKeyAccounts(mnemonic, identityChain = 'btc') {
   const chain = blockchains[identityChain];
   const seed = bip39.mnemonicToSeedSync(mnemonic);
   const master = HDKey.fromMasterSeed(seed, chain.bip32);
-  const path = `m/48'/${chain.slip}'/0'/${2}'`;
-  const identityMaster = master.derive(path);
+  const identityMaster = master.derive(`m/48'/${chain.slip}'/0'/${2}'`);
+  const recoveryAccount = master.derive(`m/48'/${chain.slip}'/99'/${2}'`);
   return {
     xpub: identityMaster.publicExtendedKey,
     xpriv: identityMaster.privateExtendedKey,
     hdkey: identityMaster,
+    recoveryXpub: recoveryAccount.publicExtendedKey,
+    recoveryHdkey: recoveryAccount,
   };
 }
 
-// Simulates the ssp-key side: receive a recovery request, derive sk_r
-// from the seed at /11/0, wrap it under ECDH(identityPriv, walletEphPub).
+// Simulates the ssp-key side: receive a recovery request, derive sk_r(i) from
+// the recovery account at /0/i, wrap it under ECDH(identityPriv, walletEphPub).
+// Mirrors ssp-key lib/recoveryHandler.ts buildRecoveryResponse.
 function simulateSspKeyResponse(params) {
-  const { sspKeyMaster, request } = params;
+  const { sspKey, request } = params;
+  const index = request.recoveryIndex ?? 0;
 
-  const recoveryChild = sspKeyMaster.deriveChild(11).deriveChild(0);
-  const identityChild = sspKeyMaster.deriveChild(10).deriveChild(0);
+  const recoveryChild = sspKey.recoveryHdkey.deriveChild(0).deriveChild(index);
+  const identityChild = sspKey.hdkey.deriveChild(10).deriveChild(0);
 
   const skR = Buffer.from(recoveryChild.privateKey);
   const sspKeyIdentityPriv = Buffer.from(identityChild.privateKey);
@@ -75,9 +91,11 @@ function simulateSspKeyResponse(params) {
   const transit = wrapSkRForTransit(sspKeyIdentityPriv, walletEphPub, skR);
 
   return {
+    version: 2,
     transit,
     nonce: request.nonce,
     timestamp: request.timestamp,
+    recoveryIndex: index,
   };
 }
 
@@ -98,11 +116,12 @@ describe('recovery round-trip (integration)', () => {
     // ---------------------------------------------------------------------
     // 1) SETUP: wallet builds envelope once WK pairing delivers ssp-key xpub.
     // ---------------------------------------------------------------------
-    const sspKey = deriveIdentityMaster(SSPKEY_MNEMONIC);
+    const sspKey = deriveKeyAccounts(SSPKEY_MNEMONIC);
     const envelope = await buildRecoveryEnvelope({
       userPassword: USER_PASSWORD,
       randomParams: RANDOM_PARAMS,
       xpubKeyIdentity: sspKey.xpub,
+      recoveryXpub: sspKey.recoveryXpub,
       wkIdentity: 'bc1qtest00000wkidentity000000',
       identityChain: 'btc',
     });
@@ -136,7 +155,7 @@ describe('recovery round-trip (integration)', () => {
     // 4) SSP KEY: derive sk_r from its seed, wrap under ECDH, reply.
     // ---------------------------------------------------------------------
     const response = simulateSspKeyResponse({
-      sspKeyMaster: sspKey.hdkey,
+      sspKey,
       request,
     });
 
@@ -164,11 +183,12 @@ describe('recovery round-trip (integration)', () => {
   });
 
   it('rejects recovery when a different ssp-key seed responds', async () => {
-    const legitSspKey = deriveIdentityMaster(SSPKEY_MNEMONIC);
+    const legitSspKey = deriveKeyAccounts(SSPKEY_MNEMONIC);
     const envelope = await buildRecoveryEnvelope({
       userPassword: USER_PASSWORD,
       randomParams: RANDOM_PARAMS,
       xpubKeyIdentity: legitSspKey.xpub,
+      recoveryXpub: legitSspKey.recoveryXpub,
       wkIdentity: 'bc1qvictim',
       identityChain: 'btc',
     });
@@ -182,9 +202,9 @@ describe('recovery round-trip (integration)', () => {
     };
 
     // Attacker-controlled ssp-key with a different seed.
-    const attackerSspKey = deriveIdentityMaster(WALLET_MNEMONIC);
+    const attackerSspKey = deriveKeyAccounts(WALLET_MNEMONIC);
     const response = simulateSspKeyResponse({
-      sspKeyMaster: attackerSspKey.hdkey,
+      sspKey: attackerSspKey,
       request,
     });
 
@@ -200,11 +220,12 @@ describe('recovery round-trip (integration)', () => {
   });
 
   it('rejects envelope decrypt with wrong user password even after sk_r is recovered', async () => {
-    const sspKey = deriveIdentityMaster(SSPKEY_MNEMONIC);
+    const sspKey = deriveKeyAccounts(SSPKEY_MNEMONIC);
     const envelope = await buildRecoveryEnvelope({
       userPassword: USER_PASSWORD,
       randomParams: RANDOM_PARAMS,
       xpubKeyIdentity: sspKey.xpub,
+      recoveryXpub: sspKey.recoveryXpub,
       wkIdentity: 'bc1qtest',
       identityChain: 'btc',
     });
@@ -217,7 +238,7 @@ describe('recovery round-trip (integration)', () => {
       timestamp: Date.now(),
     };
     const response = simulateSspKeyResponse({
-      sspKeyMaster: sspKey.hdkey,
+      sspKey,
       request,
     });
     const skR = unwrapSkRFromTransit(
@@ -237,20 +258,22 @@ describe('recovery round-trip (integration)', () => {
 
   it('survives ssp-key "reinstall from same seed" — envelope still decrypts', async () => {
     // Setup against the first ssp-key instance.
-    const sspKeyV1 = deriveIdentityMaster(SSPKEY_MNEMONIC);
+    const sspKeyV1 = deriveKeyAccounts(SSPKEY_MNEMONIC);
     const envelope = await buildRecoveryEnvelope({
       userPassword: USER_PASSWORD,
       randomParams: RANDOM_PARAMS,
       xpubKeyIdentity: sspKeyV1.xpub,
+      recoveryXpub: sspKeyV1.recoveryXpub,
       wkIdentity: 'bc1qtest',
       identityChain: 'btc',
     });
 
     // Later: user restores ssp-key from the same mnemonic on a new device.
-    // Derivation is deterministic, so the derived keys at /10/0 and /11/0
-    // are identical — recovery proceeds with no re-setup needed.
-    const sspKeyV2 = deriveIdentityMaster(SSPKEY_MNEMONIC);
+    // Derivation is deterministic, so both accounts come out identical —
+    // recovery proceeds with no re-setup needed.
+    const sspKeyV2 = deriveKeyAccounts(SSPKEY_MNEMONIC);
     expect(sspKeyV2.xpub).toBe(sspKeyV1.xpub);
+    expect(sspKeyV2.recoveryXpub).toBe(sspKeyV1.recoveryXpub);
 
     const eph = generateEphemeralKeypair();
     const request = {
@@ -259,7 +282,7 @@ describe('recovery round-trip (integration)', () => {
       timestamp: Date.now(),
     };
     const response = simulateSspKeyResponse({
-      sspKeyMaster: sspKeyV2.hdkey,
+      sspKey: sspKeyV2,
       request,
     });
     const skR = unwrapSkRFromTransit(
@@ -279,7 +302,7 @@ describe('recovery round-trip (integration)', () => {
     // User restores wallet from mnemonic: Create.tsx generates fresh
     // randomParams, fresh password is entered. Envelope is rebuilt in
     // Home.tsx after WK pairing delivers the (same) ssp-key xpub.
-    const sspKey = deriveIdentityMaster(SSPKEY_MNEMONIC);
+    const sspKey = deriveKeyAccounts(SSPKEY_MNEMONIC);
 
     const newRandomParams = '12'.repeat(64);
     const newPassword = 'fresh-password-after-restore';
@@ -288,6 +311,7 @@ describe('recovery round-trip (integration)', () => {
       userPassword: newPassword,
       randomParams: newRandomParams,
       xpubKeyIdentity: sspKey.xpub,
+      recoveryXpub: sspKey.recoveryXpub,
       wkIdentity: 'bc1qrestoredwallet',
       identityChain: 'btc',
     });
@@ -299,7 +323,7 @@ describe('recovery round-trip (integration)', () => {
       timestamp: Date.now(),
     };
     const response = simulateSspKeyResponse({
-      sspKeyMaster: sspKey.hdkey,
+      sspKey,
       request,
     });
     const skR = unwrapSkRFromTransit(
@@ -313,5 +337,286 @@ describe('recovery round-trip (integration)', () => {
       skR,
     });
     expect(recovered).toBe(newRandomParams);
+  });
+
+  it('a released child determines its account, so the account is dedicated', async () => {
+    // DESIGN CONSTRAINT, pinned here so it cannot be optimised away later.
+    //
+    // BIP-32 defines a non-hardened child as k_child = (k_parent + IL) mod n
+    // with IL = HMAC-SHA512(cc_parent, serP(K_parent) || ser32(i)), and IL is
+    // computable from the parent xpub alone. Handing out any non-hardened
+    // private child of an account is therefore equivalent to handing out that
+    // whole account.
+    //
+    // The recovery exchange hands out exactly such a child, which is why the
+    // account it comes from is provisioned for nothing else.
+    const sspKey = deriveKeyAccounts(SSPKEY_MNEMONIC);
+
+    const eph = generateEphemeralKeypair();
+    const request = {
+      pkEph: eph.pub.toString('hex'),
+      nonce: generateRecoveryNonce().toString('hex'),
+      timestamp: Date.now(),
+      recoveryIndex: 0,
+    };
+    const response = simulateSspKeyResponse({ sspKey, request });
+    const skR = unwrapSkRFromTransit(
+      eph.priv,
+      Buffer.from(sspKey.hdkey.deriveChild(10).deriveChild(0).publicKey),
+      response.transit,
+    );
+
+    // Curve order: @noble/curves v1 exposes CURVE.n, v2 Point.Fn.ORDER.
+    const N = secp256k1.CURVE?.n ?? secp256k1.Point.Fn.ORDER;
+    const toScalar = (bytes) =>
+      BigInt('0x' + Buffer.from(bytes).toString('hex'));
+
+    // Reconstruct an account's private key from one released child of it,
+    // using only that account's xpub — the relation quoted above, applied to
+    // the two non-hardened levels.
+    const invert = (accountXpub, child, change, index) => {
+      const account = HDKey.fromExtendedKey(accountXpub, blockchains.btc.bip32);
+      const level1 = account.deriveChild(change);
+      const step = (parentPub, parentCc, i, k) => {
+        const data = new Uint8Array(37);
+        data.set(parentPub, 0);
+        data[33] = (i >>> 24) & 0xff;
+        data[34] = (i >>> 16) & 0xff;
+        data[35] = (i >>> 8) & 0xff;
+        data[36] = i & 0xff;
+        const IL = hmac(sha512, parentCc, data).slice(0, 32);
+        return (((k - toScalar(IL)) % N) + N) % N;
+      };
+      const k = step(
+        account.publicKey,
+        account.chainCode,
+        change,
+        step(level1.publicKey, level1.chainCode, index, toScalar(child)),
+      );
+      return k;
+    };
+
+    // The released child determines its whole account.
+    const recoveredRecoveryK = invert(sspKey.recoveryXpub, skR, 0, 0);
+    expect(recoveredRecoveryK).toBe(toScalar(sspKey.recoveryHdkey.privateKey));
+
+    // And it stops there: the signing account is a hardened sibling, so the
+    // identity xpub the wallet holds cannot address 99' at all.
+    expect(recoveredRecoveryK).not.toBe(toScalar(sspKey.hdkey.privateKey));
+    const identityFromXpub = HDKey.fromExtendedKey(
+      sspKey.xpub,
+      blockchains.btc.bip32,
+    );
+    expect(() => identityFromXpub.deriveChild(99 + 0x80000000)).toThrow();
+  });
+  /**
+   * The whole sequence in one test, in the order it happens in production, with
+   * the real wallet-side modules at every step:
+   *
+   *   1. ssp-key derives the recovery account and signs its xpub
+   *   2. relay stores that record (modelled as a plain object here)
+   *   3. wallet fetches it and gates storage on verifying the signature
+   *   4. wallet seals an envelope to pk_r(i) derived from the stored xpub
+   *   5. fingerprint drifts; wallet asks for sk_r(i) and unwraps the response
+   *   6. envelope opens, wallet rotates to i+1
+   *   7. the released key no longer opens anything
+   */
+  it('runs the full publish -> verify -> seal -> release -> rotate sequence', async () => {
+    const sspKey = deriveKeyAccounts(SSPKEY_MNEMONIC);
+    const wkIdentity = 'bc1qsequencewkidentity0000000000';
+
+    // --- 1. ssp-key signs its recovery account xpub (lib/recoveryPublish.ts) --
+    const identityLeaf = sspKey.hdkey.deriveChild(10).deriveChild(0);
+    const xpubSignature = fluxnode.signMessage(
+      recoveryXpubMessage(wkIdentity, sspKey.recoveryXpub),
+      Buffer.from(identityLeaf.privateKey).toString('hex'),
+      true,
+      blockchains.btc.messagePrefix,
+    );
+
+    // --- 2/3. the wallet stores it ONLY if the signature verifies ------------
+    expect(readRecoveryXpub()).toBeNull();
+    const accepted = storeRecoveryXpub({
+      recoveryXpub: sspKey.recoveryXpub,
+      signature: xpubSignature,
+      wkIdentity,
+      xpubKeyIdentity: sspKey.xpub,
+      identityChain: 'btc',
+    });
+    expect(accepted).toBe(true);
+    expect(readRecoveryXpub()).toBe(sspKey.recoveryXpub);
+
+    // A record for the same identity signed by a DIFFERENT key is refused, and
+    // leaves the good one in place.
+    const attacker = deriveKeyAccounts(WALLET_MNEMONIC);
+    const attackerLeaf = attacker.hdkey.deriveChild(10).deriveChild(0);
+    expect(
+      storeRecoveryXpub({
+        recoveryXpub: attacker.recoveryXpub,
+        signature: fluxnode.signMessage(
+          recoveryXpubMessage(wkIdentity, attacker.recoveryXpub),
+          Buffer.from(attackerLeaf.privateKey).toString('hex'),
+          true,
+          blockchains.btc.messagePrefix,
+        ),
+        wkIdentity,
+        xpubKeyIdentity: sspKey.xpub,
+        identityChain: 'btc',
+      }),
+    ).toBe(false);
+    expect(readRecoveryXpub()).toBe(sspKey.recoveryXpub);
+
+    // --- 4. seal the envelope to pk_r(0) from the stored account xpub --------
+    const envelope = await buildRecoveryEnvelope({
+      userPassword: USER_PASSWORD,
+      randomParams: RANDOM_PARAMS,
+      xpubKeyIdentity: sspKey.xpub,
+      recoveryXpub: readRecoveryXpub(),
+      recoveryIndex: 0,
+      wkIdentity,
+      identityChain: 'btc',
+    });
+    persistRecoveryEnvelope(envelope);
+    expect(readRecoveryEnvelope().recoveryIndex).toBe(0);
+
+    // --- 5. fingerprint drifts: request, respond, unwrap --------------------
+    const eph = generateEphemeralKeypair();
+    const request = {
+      pkEph: eph.pub.toString('hex'),
+      nonce: generateRecoveryNonce().toString('hex'),
+      timestamp: Date.now(),
+      recoveryIndex: readRecoveryEnvelope().recoveryIndex,
+    };
+    const response = simulateSspKeyResponse({ sspKey, request });
+    expect(response.version).toBe(2);
+    expect(response.recoveryIndex).toBe(0);
+
+    const skR0 = unwrapSkRFromTransit(
+      eph.priv,
+      Buffer.from(readRecoveryEnvelope().keyIdentityPubKey, 'hex'),
+      response.transit,
+    );
+
+    // --- 6. the envelope opens, then the wallet rotates ---------------------
+    expect(
+      await decryptRecoveryEnvelope({
+        envelope: readRecoveryEnvelope(),
+        userPassword: USER_PASSWORD,
+        skR: skR0,
+      }),
+    ).toBe(RANDOM_PARAMS);
+
+    advanceRecoveryIndex();
+    // Rotation drops the envelope, so the next unlock rebuilds it.
+    expect(readRecoveryEnvelope()).toBeNull();
+    // The account xpub survives, so no second round trip is needed.
+    expect(readRecoveryXpub()).toBe(sspKey.recoveryXpub);
+
+    const rebuilt = await buildRecoveryEnvelope({
+      userPassword: USER_PASSWORD,
+      randomParams: RANDOM_PARAMS,
+      xpubKeyIdentity: sspKey.xpub,
+      recoveryXpub: readRecoveryXpub(),
+      recoveryIndex: 1,
+      wkIdentity,
+      identityChain: 'btc',
+    });
+    persistRecoveryEnvelope(rebuilt);
+    expect(readRecoveryEnvelope().recoveryIndex).toBe(1);
+
+    // --- 7. the key that was already handed over is of no further use -------
+    await expect(
+      decryptRecoveryEnvelope({
+        envelope: rebuilt,
+        userPassword: USER_PASSWORD,
+        skR: skR0,
+      }),
+    ).rejects.toThrow();
+
+    // ...and the next index does open it.
+    const nextRequest = {
+      pkEph: eph.pub.toString('hex'),
+      nonce: generateRecoveryNonce().toString('hex'),
+      timestamp: Date.now(),
+      recoveryIndex: 1,
+    };
+    const nextResponse = simulateSspKeyResponse({
+      sspKey,
+      request: nextRequest,
+    });
+    const skR1 = unwrapSkRFromTransit(
+      eph.priv,
+      Buffer.from(rebuilt.keyIdentityPubKey, 'hex'),
+      nextResponse.transit,
+    );
+    expect(
+      await decryptRecoveryEnvelope({
+        envelope: rebuilt,
+        userPassword: USER_PASSWORD,
+        skR: skR1,
+      }),
+    ).toBe(RANDOM_PARAMS);
+
+    clearRecoveryEnvelope();
+    expect(readRecoveryEnvelope()).toBeNull();
+  });
+  /**
+   * Delivery over the ordinary sync payload — the path the wallet takes from
+   * now on. The Key attaches its recovery account xpub plus a signature to the
+   * sync record; the wallet verifies against the identity key it derives from
+   * the xpub it already holds, so a doc altered in transit is refused.
+   */
+  it('accepts a recovery xpub delivered on a sync payload, and refuses a tampered one', () => {
+    const sspKey = deriveKeyAccounts(SSPKEY_MNEMONIC);
+    const wkIdentity = 'bc1qsyncdeliverywkidentity00000';
+    const identityLeaf = sspKey.hdkey.deriveChild(10).deriveChild(0);
+
+    const sign = (xpub, signer = identityLeaf) =>
+      fluxnode.signMessage(
+        recoveryXpubMessage(wkIdentity, xpub),
+        Buffer.from(signer.privateKey).toString('hex'),
+        true,
+        blockchains.btc.messagePrefix,
+      );
+
+    // What ssp-key puts on the sync payload.
+    const syncDoc = {
+      recoveryXpub: sspKey.recoveryXpub,
+      xpubSignature: sign(sspKey.recoveryXpub),
+    };
+
+    const accept = (doc) =>
+      storeRecoveryXpub({
+        recoveryXpub: doc.recoveryXpub,
+        signature: doc.xpubSignature,
+        wkIdentity,
+        // Derived from the xpub the wallet already stores for this pairing.
+        xpubKeyIdentity: sspKey.xpub,
+        identityChain: 'btc',
+      });
+
+    expect(accept(syncDoc)).toBe(true);
+    expect(readRecoveryXpub()).toBe(sspKey.recoveryXpub);
+
+    // A doc carrying someone else's account, signed by that someone else.
+    const attacker = deriveKeyAccounts(WALLET_MNEMONIC);
+    const attackerLeaf = attacker.hdkey.deriveChild(10).deriveChild(0);
+    expect(
+      accept({
+        recoveryXpub: attacker.recoveryXpub,
+        xpubSignature: sign(attacker.recoveryXpub, attackerLeaf),
+      }),
+    ).toBe(false);
+
+    // A doc whose xpub was swapped but whose signature was left alone.
+    expect(
+      accept({
+        recoveryXpub: attacker.recoveryXpub,
+        xpubSignature: syncDoc.xpubSignature,
+      }),
+    ).toBe(false);
+
+    // The good value is still the one cached.
+    expect(readRecoveryXpub()).toBe(sspKey.recoveryXpub);
   });
 });

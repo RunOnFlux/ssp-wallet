@@ -1,5 +1,6 @@
 import { useAppSelector } from '../../hooks';
 import { Typography } from 'antd';
+import { truncateAddress } from '../../lib/addressDisplay';
 const { Paragraph, Text } = Typography;
 
 function AddressContainer() {
@@ -14,12 +15,7 @@ function AddressContainer() {
         copyable={{ text: wallets[walletInUse].address }}
         className="copyableAddress"
       >
-        <Text>
-          {wallets[walletInUse].address.substring(0, 8)}...
-          {wallets[walletInUse].address.substring(
-            wallets[walletInUse].address.length - 6,
-          )}
-        </Text>
+        <Text>{truncateAddress(wallets[walletInUse].address)}</Text>
       </Paragraph>
     </div>
   );

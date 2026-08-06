@@ -588,7 +588,11 @@ async function fetchSolanaTransactionsPage(
       txs.push({
         txid: sigEntry.signature,
         blockheight: tx.slot,
-        timestamp: tx.blockTime ?? 0,
+        // blockTime is Unix SECONDS — every other chain path stores ms, and
+        // the merged activity feed sorts on this value (raw seconds would
+        // sink Solana txs below all other chains and render as 1970). Stale
+        // cached seconds-records self-heal on the next wholesale cache write.
+        timestamp: (tx.blockTime ?? 0) * 1000,
         fee: String(paymasterFeeLamports + networkFee),
         amount,
         message: memoText,

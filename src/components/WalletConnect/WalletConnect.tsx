@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from '../../lib/toast';
-import {
-  Modal,
-  Button,
-  Input,
-  Typography,
-  List,
-  Card,
-  Tag,
-  Space,
-  Tabs,
-} from 'antd';
-import { LinkOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Modal, Button, Input, Typography, Tag, Space, Tabs } from 'antd';
+import { Link as LinkIcon, Trash2 as Trash2Icon } from 'lucide-react';
 import { useWalletConnect } from '../../contexts/WalletConnectContext';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
+import EmptyState from '../EmptyState/EmptyState';
+import DappOrigin from '../DappRequest/DappOrigin';
 import './WalletConnect.css';
 
 const { Title, Text } = Typography;
@@ -129,7 +121,7 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
           {Object.values(blockchains)
             .filter((chain) => chain.chainType === 'evm')
             .map((chain) => (
-              <Tag key={chain.chainId} icon={<LinkOutlined />}>
+              <Tag key={chain.chainId} icon={<LinkIcon />}>
                 {chain.name}
               </Tag>
             ))}
@@ -141,54 +133,36 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
   const renderSessionsTab = () => (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       {Object.keys(activeSessions).length === 0 ? (
-        <div className="empty-sessions">
-          <LinkOutlined
-            style={{ fontSize: 48, color: '#d9d9d9', marginBottom: 16 }}
-          />
-          <Title level={4} type="secondary">
-            {t('home:walletconnect.no_sessions')}
-          </Title>
-          <Text type="secondary">
-            {t('home:walletconnect.manage_sessions')}
-          </Text>
-        </div>
-      ) : (
-        <List
-          dataSource={Object.values(activeSessions)}
-          renderItem={(session) => (
-            <List.Item>
-              <Card
-                size="small"
-                style={{ width: '100%' }}
-                actions={[
-                  <Button
-                    key="disconnect"
-                    type="text"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDisconnect(session.topic)}
-                  >
-                    {t('home:walletconnect.disconnect')}
-                  </Button>,
-                ]}
-              >
-                <Card.Meta
-                  title={session.peer.metadata.name}
-                  description={
-                    <Space direction="vertical" size="small">
-                      <Text type="secondary">
-                        {session.peer.metadata.description}
-                      </Text>
-                      <Text type="secondary" style={{ fontSize: '12px' }}>
-                        {session.peer.metadata.url}
-                      </Text>
-                    </Space>
-                  }
-                />
-              </Card>
-            </List.Item>
-          )}
+        <EmptyState
+          icon={<LinkIcon />}
+          description={
+            <>
+              <div>{t('home:walletconnect.no_sessions')}</div>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {t('home:walletconnect.manage_sessions')}
+              </Text>
+            </>
+          }
         />
+      ) : (
+        <div className="feed-list">
+          {Object.values(activeSessions).map((session) => (
+            <div key={session.topic} className="wc-session-row">
+              <DappOrigin
+                name={session.peer.metadata.name}
+                url={session.peer.metadata.url}
+                icon={session.peer.metadata.icons?.[0]}
+              />
+              <Button
+                type="text"
+                danger
+                icon={<Trash2Icon />}
+                aria-label={t('home:walletconnect.disconnect')}
+                onClick={() => handleDisconnect(session.topic)}
+              />
+            </div>
+          ))}
+        </div>
       )}
     </Space>
   );
@@ -216,7 +190,6 @@ const WalletConnect: React.FC<Props> = ({ open, openAction }) => {
       open={open}
       onCancel={() => openAction(false)}
       footer={null}
-      style={{ textAlign: 'center', top: 60 }}
     >
       <div style={{ textAlign: 'left' }}>
         <Tabs

@@ -1,0 +1,70 @@
+/* Phase 3 IA shell — identity bar (top) + content + tab bar (bottom). */
+
+.wallet-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  width: 100%;
+  text-align: left;
+}
+
+.wallet-shell-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.wallet-shell-content {
+  flex: 1 1 auto;
+  /* Clear the fixed bottom tab bar (44px) plus breathing room. */
+  padding-bottom: 60px;
+  min-height: 0;
+}
+
+/* Pillar-motion tab transition — the content settles up with the same slight
+   skew as the pillar mark, calm (200 ms) and CSS-only. */
+.wallet-shell-page {
+  animation: wallet-shell-enter 200ms ease-out;
+}
+
+@keyframes wallet-shell-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px) skewY(-0.6deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wallet-shell-page {
+    animation: none;
+  }
+}
+
+/* ---- Side-panel mode: two-column layout (left nav rail + right column).
+   Only at ≥500px — a phone-width panel falls back to the popup layout. ---- */
+@media (min-width: 500px) {
+  body.extension-sidepanel .wallet-shell {
+    flex-direction: row;
+    min-height: 100%;
+    align-items: stretch;
+  }
+
+  body.extension-sidepanel .wallet-shell-main {
+    flex: 1 1 auto;
+    max-width: 760px;
+    margin: 0 auto;
+    /* Symmetric horizontal padding around the content: #root padding is zeroed
+       in panel mode (index.css), so the gap rail→content equals content→edge. */
+    padding: 0 20px;
+  }
+
+  body.extension-sidepanel .wallet-shell-content {
+    padding-bottom: 24px;
+  }
+}

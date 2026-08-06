@@ -4,6 +4,7 @@ import { useAppSelector } from '../../hooks';
 import './EnterpriseVaultSignTx.css';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { useSocket } from '../../hooks/useSocket';
+import HandshakeAnimation from '../HandshakeAnimation/HandshakeAnimation';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { getFingerprint } from '../../lib/fingerprint';
@@ -14,6 +15,10 @@ import {
   deriveEVMPublicKey,
 } from '../../lib/wallet';
 import { signVaultMessageWithSchnorr } from '../../lib/evmSigning';
+import {
+  userOpHashMatches,
+  messageDigestMatches,
+} from '../../lib/userOpVerify';
 import {
   decodeVaultTransaction,
   type VaultDecodedTx,
@@ -828,7 +833,47 @@ function EnterpriseVaultSignTx({
         | undefined;
 
       if (isEvm) {
-        // EVM: Schnorr signing with enterprise nonces
+        // EVM: Schnorr signing with enterprise nonces.
+        // TRUSTLESS BINDING (parity with the Solana vault path): the approval
+        // UI decodes/displays evmUserOp (tx) or signMessage (personal_sign),
+        // but the Schnorr sign consumes rawUnsignedTx — an opaque hash. A
+        // compromised relay could show a benign operation while the wallet
+        // co-signs a vault-draining one. Recompute the hash on-device from
+        // what was DISPLAYED and refuse on mismatch (same primitives the
+        // honest wallet builds with, so a legitimate proposal always matches).
+        if (isMessageSign) {
+          if (!messageDigestMatches(signMessage, rawUnsignedTx)) {
+            throw new Error(t('home:enterpriseVaultSignTx.err_sign_mismatch'));
+          }
+        } else if (evmUserOp) {
+          let parsedUserOp: unknown;
+          try {
+            parsedUserOp = JSON.parse(evmUserOp);
+          } catch {
+            throw new Error(
+              t('home:enterpriseVaultSignTx.err_sign_unverifiable'),
+            );
+          }
+          const userOpRequest =
+            parsedUserOp &&
+            typeof parsedUserOp === 'object' &&
+            'userOpRequest' in parsedUserOp
+              ? parsedUserOp.userOpRequest
+              : parsedUserOp;
+          if (
+            !userOpHashMatches(
+              userOpRequest,
+              chain as keyof cryptos,
+              rawUnsignedTx,
+            )
+          ) {
+            throw new Error(t('home:enterpriseVaultSignTx.err_sign_mismatch'));
+          }
+        } else {
+          throw new Error(
+            t('home:enterpriseVaultSignTx.err_sign_unverifiable'),
+          );
+        }
 
         // Key-only mode: wallet nonce is empty placeholder — wallet skips
         // Schnorr signing entirely, Key signs independently.
@@ -1133,7 +1178,7 @@ function EnterpriseVaultSignTx({
             )}
             <Text
               type="secondary"
-              style={{ fontSize: '12px', fontFamily: 'monospace' }}
+              style={{ fontSize: '12px', fontFamily: 'var(--ssp-mono)' }}
             >
               {requesterInfo.origin}
             </Text>
@@ -1177,7 +1222,7 @@ function EnterpriseVaultSignTx({
                   </Text>
                   <Text
                     style={{
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--ssp-mono)',
                       fontSize: '11px',
                       wordBreak: 'break-all',
                     }}
@@ -1215,7 +1260,7 @@ function EnterpriseVaultSignTx({
                   overflow: 'auto',
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--ssp-mono)',
                   fontSize: '12px',
                 }}
               >
@@ -1301,7 +1346,7 @@ function EnterpriseVaultSignTx({
                   <Text
                     copyable={{ text: recipient.address }}
                     style={{
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--ssp-mono)',
                       fontSize: '13px',
                       wordBreak: 'break-all',
                       display: 'block',
@@ -1344,7 +1389,9 @@ function EnterpriseVaultSignTx({
                 <Text type="secondary">
                   {t('home:enterpriseVaultSignTx.memo')}:{' '}
                 </Text>
-                <Text style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                <Text
+                  style={{ fontFamily: 'var(--ssp-mono)', fontSize: '12px' }}
+                >
                   {memo}
                 </Text>
               </Space>
@@ -1382,7 +1429,10 @@ function EnterpriseVaultSignTx({
           <Text type="secondary">
             {t('home:enterpriseVaultSignTx.ssp_identity')}:
           </Text>
-          <Text strong style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+          <Text
+            strong
+            style={{ fontFamily: 'var(--ssp-mono)', fontSize: '12px' }}
+          >
             {wkIdentity.substring(0, 12)}...
             {wkIdentity.substring(wkIdentity.length - 12)}
           </Text>
@@ -1398,15 +1448,22 @@ function EnterpriseVaultSignTx({
           />
         )}
 
-        {/* Waiting for Key indicator */}
+        {/* Waiting for Key indicator — 2-of-2 handshake motif */}
         {waitingForKey && (
-          <Alert
-            type="info"
-            message={t('home:enterpriseVaultSignTx.waiting_for_key')}
-            icon={<Spin size="small" />}
-            showIcon
-            style={{ textAlign: 'left' }}
-          />
+          <>
+            <HandshakeAnimation
+              state="waiting"
+              size={56}
+              ariaLabel={t('home:enterpriseVaultSignTx.waiting_for_key')}
+            />
+            <Alert
+              type="info"
+              message={t('home:enterpriseVaultSignTx.waiting_for_key')}
+              icon={<Spin size="small" />}
+              showIcon
+              style={{ textAlign: 'left' }}
+            />
+          </>
         )}
 
         {/* Action buttons */}

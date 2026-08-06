@@ -1,9 +1,10 @@
-import { Button, Space } from 'antd';
+import { Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useAppSelector } from '../../hooks';
 import TokensTable from './TokensTable';
 import ImportToken from './ImportToken';
+import './TokenBox.css';
 
 function Tokens() {
   const { t } = useTranslation(['home']);
@@ -14,7 +15,6 @@ function Tokens() {
   );
 
   const importToken = () => {
-    console.log('import token');
     setOpenImportTokenDialog(true);
   };
 
@@ -25,8 +25,7 @@ function Tokens() {
   return (
     <div>
       <TokensTable />
-      {openImportTokenDialog}
-      <Space size={'large'} style={{ marginTop: 16, marginBottom: 8 }}>
+      <div className="tokens-actions">
         <Button
           type="primary"
           size="middle"
@@ -35,7 +34,7 @@ function Tokens() {
         >
           {t('home:tokens.import_token')}
         </Button>
-      </Space>
+      </div>
       {openImportTokenDialog && (
         <ImportToken
           open={openImportTokenDialog}

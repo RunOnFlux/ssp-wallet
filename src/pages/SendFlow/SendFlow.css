@@ -1,0 +1,26 @@
+.no-text-select .ant-select-selection-item {
+  display: none !important;
+}
+
+/* The contacts dropdown hides its selected value and shows only the chevron.
+   antd 6 renamed the arrow wrapper to .ant-select-suffix and pins it at an 11px
+   RIGHT inset — off-centre in this 40px control. Re-centre it horizontally
+   (vertical centring from antd is already correct). */
+.no-text-select .ant-select-suffix {
+  /* antd renders this arrow as a flex item padded to the right (its natural
+     spot sits ~4px right of centre in this 40px control, and it isn't
+     inset-positioned, so only a transform nudge moves it). Shift it back to
+     dead-centre. */
+  transform: translateX(-4px);
+}
+
+/* Fee preset tiles are keyboard-operable (role=button) — give them the
+   shared amber focus ring; colors/borders stay token-driven inline. */
+.fee-preset {
+  border-radius: 8px; /* controls radius (DESIGN_TOKENS §4) */
+}
+
+.fee-preset:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 1px;
+}

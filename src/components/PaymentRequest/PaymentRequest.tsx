@@ -1,5 +1,6 @@
-import { Typography, Button, Space, Modal } from 'antd';
+import { Typography, Button, Modal } from 'antd';
 import { toast } from '../../lib/toast';
+import '../DappRequest/DappRequest.css';
 import { useState, useEffect } from 'react';
 import localForage from 'localforage';
 const { Text } = Typography;
@@ -68,7 +69,7 @@ function PaymentRequest(props: {
 }) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(['home', 'common']);
+  const { t } = useTranslation(['home', 'common', 'send']);
   const { open, openAction, address, chain, amount, contract } = props;
   const blockchainConfig = blockchains[chain];
   const { identityChain } = useAppSelector((state) => state.sspState);
@@ -418,58 +419,70 @@ function PaymentRequest(props: {
       <Modal
         title={t('home:payment_request.payment_request')}
         open={open}
-        style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancel}
         footer={[]}
       >
-        <Space
-          direction="vertical"
-          size={64}
-          style={{ marginBottom: 16, marginTop: 16 }}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            marginTop: 16,
+          }}
         >
-          <Space direction="vertical" size={32}>
-            <Space direction="vertical" size="small">
-              <Text>
-                <Text strong>{blockchainConfig?.name}</Text>{' '}
-                {t('home:payment_request.pay_for')}{' '}
-                <Text strong>
-                  {amount}{' '}
-                  {contract
-                    ? blockchainConfig?.tokens?.find(
-                        (t) => t.contract === contract,
-                      )?.symbol
-                    : blockchainConfig?.symbol}
-                  {contract && (
-                    <>
-                      {' '}
-                      {t('home:payment_request.on_chain', {
-                        chain: blockchainConfig?.name,
-                      })}
-                    </>
-                  )}
-                </Text>{' '}
-                {t('home:payment_request.to')}
-                <Text strong> {address} </Text>
-                {t('home:payment_request.received')}.
+          <p className="dapp-ask">{t('home:payment_request.review_details')}</p>
+          <div className="dapp-summary">
+            <div className="dapp-summary-row">
+              <span className="dapp-summary-label">
+                {t('send:review_amount')}
+              </span>
+              <span
+                className="dapp-summary-value"
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {amount}{' '}
+                {contract
+                  ? blockchainConfig?.tokens?.find(
+                      (t) => t.contract === contract,
+                    )?.symbol
+                  : blockchainConfig?.symbol}
+              </span>
+            </div>
+            <div className="dapp-summary-row">
+              <span className="dapp-summary-label">{t('common:chain')}</span>
+              <span className="dapp-summary-value">
+                {blockchainConfig?.name}
+              </span>
+            </div>
+            <div className="dapp-summary-row">
+              <span className="dapp-summary-label">{t('send:review_to')}</span>
+              <Text
+                className="dapp-summary-value dapp-mono"
+                copyable={{ text: address }}
+              >
+                {address}
               </Text>
-              {props.message && (
-                <Text>
-                  {t('home:payment_request.attached_message', {
-                    message: props.message,
-                  })}
-                </Text>
-              )}
-            </Space>
-          </Space>
-          <Space direction="vertical" size="large">
-            <Button type="primary" size="large" onClick={handleOk}>
+            </div>
+            {props.message && (
+              <div className="dapp-summary-row">
+                <span className="dapp-summary-label">{t('send:message')}</span>
+                <span className="dapp-summary-value">{props.message}</span>
+              </div>
+            )}
+          </div>
+          <div className="dapp-actions">
+            <Button type="primary" size="large" block onClick={handleOk}>
               {t('home:payment_request.proceed_to_pay')}
             </Button>
-            <Button type="link" block size="small" onClick={handleCancel}>
+            <Button type="text" block onClick={handleCancel}>
               {t('common:cancel')}
             </Button>
-          </Space>
-        </Space>
+          </div>
+        </div>
       </Modal>
     </>
   );

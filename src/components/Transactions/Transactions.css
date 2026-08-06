@@ -1,25 +1,13 @@
-.table-icon {
-  width: 32px;
-  text-align: center;
+/* Home per-chain Activity sub-tab — rows are the shared ActivityRow
+   component (.arow-*); the list container lives in index.css (.feed-list). */
+
+/* Pending-approval rows render as their own list above the history feed. */
+.transactions-pending-list {
+  margin-bottom: 12px;
 }
 
-.table-time {
-  text-align: center;
-}
-
-.table-amount {
-  line-break: initial;
-  word-break: none;
-  white-space: nowrap;
-  text-align: center;
-}
-
-@media (max-width: 400px) {
-  .table-time {
-    font-size: 12px;
-  }
-
-  .table-amount {
-    font-size: 12px;
-  }
+.transactions-actions {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 8px;
 }

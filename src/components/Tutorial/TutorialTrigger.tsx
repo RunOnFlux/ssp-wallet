@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Typography, Space, Row, Col } from 'antd';
+import { Button, Modal, Typography, Space, Row, Col } from 'antd';
 import {
-  PlayCircleOutlined,
-  CloseOutlined,
-  GlobalOutlined,
-  BookOutlined,
-  CustomerServiceOutlined,
-  MessageOutlined,
-} from '@ant-design/icons';
+  Book as BookIcon,
+  CirclePlay as CirclePlayIcon,
+  Globe as GlobeIcon,
+  Headset as HeadsetIcon,
+  MessageCircle as MessageCircleIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTutorial } from './TutorialProvider';
 import { sspConfig, updateTutorialConfig } from '../../storage/ssp';
 import { version } from '../../../package.json';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface TutorialTriggerProps {
   autoStart?: boolean;
@@ -110,184 +109,148 @@ export const TutorialTrigger: React.FC<TutorialTriggerProps> = ({
     return null;
   }
 
+  // A real dialog, not a hand-rolled fixed scrim: antd Modal brings
+  // role="dialog" + aria-modal, focus move/trap/return, Escape and mask
+  // dismissal, a labelled close button, and the shared modal geometry from
+  // index.css (viewport-centred, internally scrollable when tall).
   return (
-    <>
-      {showWelcome && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            zIndex: 99999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-          }}
-        >
-          <Card
+    <Modal
+      open={showWelcome}
+      title={t('home:tutorial.tutorial_help')}
+      onCancel={handleDismissWelcome}
+      footer={null}
+      centered
+      width={500}
+      styles={{ body: { textAlign: 'center' } }}
+    >
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <div>
+          {/* svg.lucide sizes icons at 1em (index.css antd parity), so
+              fontSize IS the size control here. Block + auto margins put the
+              icon centered ABOVE the text instead of inline beside its
+              first line. */}
+          <CirclePlayIcon
             style={{
-              maxWidth: 500,
-              width: '100%',
-              textAlign: 'center',
-              position: 'relative',
+              fontSize: '48px',
+              color: '#fbbf24',
+              marginBottom: '16px',
+              display: 'block',
+              marginLeft: 'auto',
+              marginRight: 'auto',
             }}
-            extra={
-              <Button
-                type="text"
-                icon={<CloseOutlined />}
-                onClick={handleDismissWelcome}
-                size="small"
-              />
-            }
-          >
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              <div>
-                <PlayCircleOutlined
-                  style={{
-                    fontSize: '48px',
-                    color: '#fbbf24',
-                    marginBottom: '16px',
-                  }}
-                />
-                <Title level={3} style={{ margin: '0 0 8px 0' }}>
-                  {t('home:tutorial.tutorial_help')}
-                </Title>
-                <Text type="secondary">
-                  {t('home:tutorial.wallet_synchronized_desc')}
-                </Text>
-              </div>
-
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Button
-                  type="primary"
-                  size="large"
-                  onClick={() => handleStartTutorial('onboarding')}
-                  style={{ width: '100%' }}
-                  icon={<PlayCircleOutlined />}
-                >
-                  {t('home:tutorial.start_wallet_tour')}
-                </Button>
-
-                <Row
-                  gutter={[8, 8]}
-                  style={{ width: '100%', marginTop: '16px' }}
-                >
-                  <Col span={12}>
-                    <Button
-                      icon={<GlobalOutlined />}
-                      onClick={() => openExternalLink('https://sspwallet.io')}
-                      className="tutorial-intro-button"
-                    >
-                      {t('home:tutorial.visit_website')}
-                    </Button>
-                  </Col>
-                  <Col span={12}>
-                    <Button
-                      icon={<BookOutlined />}
-                      onClick={() =>
-                        openExternalLink('https://sspwallet.io/guide')
-                      }
-                      className="tutorial-intro-button"
-                    >
-                      {t('home:tutorial.user_guide')}
-                    </Button>
-                  </Col>
-                  <Col span={12}>
-                    <Button
-                      icon={<CustomerServiceOutlined />}
-                      onClick={() =>
-                        openExternalLink('https://sspwallet.io/support')
-                      }
-                      className="tutorial-intro-button"
-                    >
-                      {t('home:tutorial.support')}
-                    </Button>
-                  </Col>
-                  <Col span={12}>
-                    <Button
-                      icon={<MessageOutlined />}
-                      onClick={() =>
-                        openExternalLink('https://sspwallet.io/contact')
-                      }
-                      className="tutorial-intro-button"
-                    >
-                      {t('home:tutorial.contact')}
-                    </Button>
-                  </Col>
-                </Row>
-
-                <div style={{ marginTop: '16px', textAlign: 'center' }}>
-                  <Space
-                    direction="horizontal"
-                    size="small"
-                    style={{ fontSize: '12px' }}
-                  >
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={() =>
-                        openExternalLink('https://sspwallet.io/privacy-policy')
-                      }
-                      style={{ padding: '0', height: 'auto', fontSize: '12px' }}
-                    >
-                      {t('home:tutorial.privacy_policy')}
-                    </Button>
-                    <span style={{ color: '#ccc' }}>|</span>
-                    <Button
-                      type="link"
-                      size="small"
-                      onClick={() =>
-                        openExternalLink(
-                          'https://sspwallet.io/terms-of-service',
-                        )
-                      }
-                      style={{ padding: '0', height: 'auto', fontSize: '12px' }}
-                    >
-                      {t('home:tutorial.terms_of_service')}
-                    </Button>
-                  </Space>
-                </div>
-
-                <Space
-                  direction="horizontal"
-                  size="large"
-                  style={{ marginTop: '16px' }}
-                >
-                  <Button type="text" onClick={handleDismissWelcome}>
-                    {t('home:tutorial.maybe_later')}
-                  </Button>
-                  <Button type="text" onClick={handleSkipTutorial}>
-                    {t('home:tutorial.skip_tutorial')}
-                  </Button>
-                </Space>
-              </Space>
-            </Space>
-
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '8px',
-                left: '12px',
-              }}
-            >
-              <Text
-                type="secondary"
-                style={{
-                  fontSize: '10px',
-                  opacity: 0.6,
-                }}
-              >
-                v{version}
-              </Text>
-            </div>
-          </Card>
+          />
+          <Text type="secondary">
+            {t('home:tutorial.wallet_synchronized_desc')}
+          </Text>
         </div>
-      )}
-    </>
+
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Button
+            type="primary"
+            size="large"
+            onClick={() => handleStartTutorial('onboarding')}
+            style={{ width: '100%' }}
+            icon={<CirclePlayIcon />}
+          >
+            {t('home:tutorial.start_wallet_tour')}
+          </Button>
+
+          <Row gutter={[8, 8]} style={{ width: '100%', marginTop: '16px' }}>
+            <Col span={12}>
+              <Button
+                icon={<GlobeIcon />}
+                onClick={() => openExternalLink('https://sspwallet.io')}
+                className="tutorial-intro-button"
+              >
+                {t('home:tutorial.visit_website')}
+              </Button>
+            </Col>
+            <Col span={12}>
+              <Button
+                icon={<BookIcon />}
+                onClick={() => openExternalLink('https://sspwallet.io/guide')}
+                className="tutorial-intro-button"
+              >
+                {t('home:tutorial.user_guide')}
+              </Button>
+            </Col>
+            <Col span={12}>
+              <Button
+                icon={<HeadsetIcon />}
+                onClick={() => openExternalLink('https://sspwallet.io/support')}
+                className="tutorial-intro-button"
+              >
+                {t('home:tutorial.support')}
+              </Button>
+            </Col>
+            <Col span={12}>
+              <Button
+                icon={<MessageCircleIcon />}
+                onClick={() => openExternalLink('https://sspwallet.io/contact')}
+                className="tutorial-intro-button"
+              >
+                {t('home:tutorial.contact')}
+              </Button>
+            </Col>
+          </Row>
+
+          <div style={{ marginTop: '16px', textAlign: 'center' }}>
+            <Space
+              direction="horizontal"
+              size="small"
+              style={{ fontSize: '12px' }}
+            >
+              <Button
+                type="link"
+                size="small"
+                onClick={() =>
+                  openExternalLink('https://sspwallet.io/privacy-policy')
+                }
+                style={{ padding: '0', height: 'auto', fontSize: '12px' }}
+              >
+                {t('home:tutorial.privacy_policy')}
+              </Button>
+              <span style={{ opacity: 0.4 }}>|</span>
+              <Button
+                type="link"
+                size="small"
+                onClick={() =>
+                  openExternalLink('https://sspwallet.io/terms-of-service')
+                }
+                style={{ padding: '0', height: 'auto', fontSize: '12px' }}
+              >
+                {t('home:tutorial.terms_of_service')}
+              </Button>
+            </Space>
+          </div>
+
+          <Space
+            direction="horizontal"
+            size="large"
+            style={{ marginTop: '16px' }}
+          >
+            <Button type="text" onClick={handleDismissWelcome}>
+              {t('home:tutorial.maybe_later')}
+            </Button>
+            <Button type="text" onClick={handleSkipTutorial}>
+              {t('home:tutorial.skip_tutorial')}
+            </Button>
+          </Space>
+        </Space>
+
+        <div style={{ textAlign: 'left' }}>
+          <Text
+            type="secondary"
+            style={{
+              fontSize: '10px',
+              opacity: 0.6,
+            }}
+          >
+            v{version}
+          </Text>
+        </div>
+      </Space>
+    </Modal>
   );
 };
 

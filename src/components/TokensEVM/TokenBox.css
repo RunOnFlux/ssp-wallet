@@ -1,12 +1,120 @@
-.token-box {
-  float: left;
+/* Activated token row — v2 feed row inside the shared .feed-list. */
+
+.token-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
   text-align: left;
-  font-size: 12px;
-  margin-top: 20px;
-  margin-bottom: 10px;
-  cursor: default;
+  transition: background 0.15s ease;
 }
 
-.remove-button {
-  float: right;
+.token-row:hover {
+  background: rgba(128, 128, 128, 0.07);
+}
+
+.token-row:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: -2px;
+}
+
+/* Token logo with chain-badge overlap (same pattern as the Activity page's
+   chain badges). */
+.token-row-logo {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.token-row-logo-main {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: block;
+}
+
+.token-row-logo-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background: #fafaf9;
+  outline: 2px solid #fafaf9;
+}
+
+:root[data-theme='dark'] .token-row-logo-badge {
+  background: #0c0a09;
+  outline-color: #0c0a09;
+}
+
+.token-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 auto;
+  line-height: 1.35;
+}
+
+.token-row-symbol {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.token-row-name {
+  font-size: 10px;
+  opacity: 0.65;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.token-row-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+  line-height: 1.35;
+}
+
+.token-row-balance {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.token-row-fiat {
+  font-size: 10px;
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.token-row-details {
+  margin: 0 12px 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .token-row {
+    transition: none;
+  }
+}
+
+.tokens-actions {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 8px;
 }

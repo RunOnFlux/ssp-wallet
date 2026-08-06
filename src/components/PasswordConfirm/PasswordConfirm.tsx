@@ -4,10 +4,10 @@ import { useSspLogo } from '../../hooks/useSspLogo';
 import { NoticeType } from 'antd/es/message/interface';
 
 import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-  LockOutlined,
-} from '@ant-design/icons';
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+  Lock as LockIcon,
+} from 'lucide-react';
 
 import secureLocalStorage from 'react-secure-storage';
 
@@ -136,9 +136,9 @@ function PasswordConfirm(props: {
               <Input.Password
                 size="large"
                 placeholder={t('home:passwordConfirm.confirm_with_pw')}
-                prefix={<LockOutlined />}
+                prefix={<LockIcon />}
                 iconRender={(visible) =>
-                  visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                  visible ? <EyeIcon /> : <EyeOffIcon />
                 }
                 className="password-input-modal"
               />

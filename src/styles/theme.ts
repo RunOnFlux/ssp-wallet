@@ -58,6 +58,11 @@ export const lightTheme: ThemeConfig = {
     colorTextSecondary: '#57534e',
     colorTextTertiary: '#78716c',
     colorTextQuaternary: '#a8a29e',
+    // Placeholders, set explicitly. antd otherwise falls back to
+    // colorTextQuaternary (#a8a29e), which is 2.41:1 on the #fafaf9 surface —
+    // and some inputs (the wallet-switcher search) have no visible label, so
+    // the placeholder IS the field's only description. #78716c is 4.59:1.
+    colorTextPlaceholder: '#78716c',
     // Fill (for backgrounds of interactive elements)
     colorFill: '#f5f5f4',
     colorFillSecondary: '#e7e5e4',
@@ -133,6 +138,10 @@ export const darkTheme: ThemeConfig = {
     colorTextSecondary: '#a8a29e',
     colorTextTertiary: '#78716c',
     colorTextQuaternary: '#57534e',
+    // Placeholders, set explicitly — see the light theme's note. The dark
+    // fallback (colorTextQuaternary #57534e) is 2.39:1 on the dark container;
+    // #8a8380 is 4.89:1.
+    colorTextPlaceholder: '#8a8380',
     // Fill
     colorFill: '#272524',
     colorFillSecondary: '#1a1918',
@@ -144,7 +153,14 @@ export const darkTheme: ThemeConfig = {
   components: {
     Button: {
       primaryColor: '#000000',
-      algorithm: true,
+      // Pin the primary fill to crisp brand amber in dark mode — the
+      // darkAlgorithm otherwise desaturates it to ~#bb8f20 (a muted ochre),
+      // and amber IS the brand identity, so the CTA must match #fbbf24 in
+      // both themes. Hover/active use adjacent ramp steps (black text stays legible).
+      colorPrimary: '#fbbf24',
+      colorPrimaryHover: '#fcd34d',
+      colorPrimaryActive: '#f59e0b',
+      algorithm: false,
       controlHeight: 32,
     },
     Modal: {

@@ -1,6 +1,151 @@
-.download-ssp-key {
-  font-size: 16px;
-  font-weight: 600;
+/* Full-screen pairing/sync step (replaces the old modal-in-modal) */
+.keySyncView {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow-y: auto;
+  text-align: center;
+}
+
+.keySyncViewInner {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+}
+
+.keySyncChips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.keySyncChipsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+/* Activation chips — clearly interactive toggles. Quiet bordered pill when
+   unselected; filled amber with dark text when selected (brand-400 passes
+   ≥4.5:1 with #0c0a09 text on both themes). */
+.keySyncChipsRow .ant-tag-checkable {
+  border: 1px solid #d6d3d1;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
-  text-decoration: italic;
+  user-select: none;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+:root[data-theme='dark'] .keySyncChipsRow .ant-tag-checkable {
+  border-color: #44403c;
+}
+
+.keySyncChipsRow .ant-tag-checkable:hover {
+  border-color: #f59e0b;
+  color: inherit;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.keySyncChipsRow .ant-tag-checkable:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
+.keySyncChipsRow .ant-tag-checkable-checked,
+.keySyncChipsRow .ant-tag-checkable-checked:hover {
+  background: #fbbf24;
+  border-color: #fbbf24;
+  color: #0c0a09;
+  font-weight: 600;
+}
+
+/* Locked while a request is being prepared or chains are arriving. */
+.keySyncChipsLocked .ant-tag-checkable {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .keySyncChipsRow .ant-tag-checkable {
+    transition: none;
+  }
+}
+
+/* compact vertical timeline — the steps are one-liners */
+.keySyncTimeline {
+  max-width: 280px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.keySyncTimeline .ant-steps-item {
+  padding-bottom: 0 !important;
+}
+
+.keySyncDownload {
+  margin-top: 8px;
+}
+
+/* Out-of-band pairing verification code — numbered word chips, rendered
+   consistently with SSP Key so a side-by-side eyeball comparison is easy. */
+.keyVerifyGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.keyVerifyChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.keyVerifyChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.keyVerifyChipIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.keyVerifyScan {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.keyVerifyChipWord {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  font-family: var(--ssp-mono);
 }

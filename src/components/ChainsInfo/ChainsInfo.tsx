@@ -1,6 +1,6 @@
-import { Typography, Button, Space, Modal } from 'antd';
-const { Text } = Typography;
+import { Button, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
+import '../DappRequest/DappRequest.css';
 import localForage from 'localforage';
 import { blockchains } from '@storage/blockchains';
 import { generatedWallets } from '../../types';
@@ -82,31 +82,31 @@ function ChainsInfo({ open, userOnly, openAction }: Props) {
       <Modal
         title={t('home:chainsInfo.chain_requests')}
         open={open}
-        style={{ textAlign: 'center', top: 60 }}
         onCancel={handleCancel}
         footer={[]}
       >
-        <Space
-          direction="vertical"
-          size="middle"
-          style={{ marginBottom: 16, marginTop: 16 }}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            marginTop: 16,
+          }}
         >
-          <Space direction="vertical" size="small">
-            {userOnly ? (
-              <Text>{t('home:chainsInfo.chain_requests_info_user')}</Text>
-            ) : (
-              <Text>{t('home:chainsInfo.chain_requests_info')}</Text>
-            )}
-          </Space>
-          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
-            <Button type="primary" size="large" onClick={handleOk}>
+          <p className="dapp-ask">
+            {userOnly
+              ? t('home:chainsInfo.chain_requests_info_user')
+              : t('home:chainsInfo.chain_requests_info')}
+          </p>
+          <div className="dapp-actions">
+            <Button type="primary" size="large" block onClick={handleOk}>
               {t('common:approve_request')}
             </Button>
-            <Button type="link" block size="small" onClick={handleCancel}>
+            <Button type="text" block onClick={handleCancel}>
               {t('common:reject_request')}
             </Button>
-          </Space>
-        </Space>
+          </div>
+        </div>
       </Modal>
     </>
   );

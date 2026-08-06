@@ -11,6 +11,7 @@ import EnterpriseVaultXpub from '../../components/EnterpriseVaultXpub/Enterprise
 import EnterpriseVaultSignTx from '../../components/EnterpriseVaultSignTx/EnterpriseVaultSignTx';
 import EnterpriseNonceSync from '../../components/EnterpriseNonceSync/EnterpriseNonceSync';
 import EnterpriseFluxNodeStart from '../../components/EnterpriseFluxNodeStart/EnterpriseFluxNodeStart';
+import FluxNodeStart from '../../components/FluxNodeStart/FluxNodeStart';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
 import { WkSignResponse, WkSignRequesterInfo } from '../../lib/wkSign';
@@ -131,6 +132,7 @@ function SspConnect() {
   const [openEnterpriseNonceSync, setOpenEnterpriseNonceSync] = useState(false);
   const [openEnterpriseFluxNodeStart, setOpenEnterpriseFluxNodeStart] =
     useState(false);
+  const [openFluxNodeStart, setOpenFluxNodeStart] = useState(false);
   const [orgIndex, setOrgIndex] = useState(0);
   const [vaultName, setVaultName] = useState('');
   const [orgName, setOrgName] = useState('');
@@ -266,6 +268,18 @@ function SspConnect() {
         setTxFee(sspConnectFee); // addressIndex
         setSourceAddress(sspConnectSourceAddress); // collateral (vault) address
         setOpenEnterpriseFluxNodeStart(true);
+      } else if (sspConnectType === 'flux_node_start') {
+        // Consumer Flux node start request
+        setRequesterInfo(sspConnectRequesterInfo);
+        setChain(sspConnectChain);
+        setMessage(sspConnectMessage); // identity pub key
+        setAddress(sspConnectAddress); // collateral txid
+        setAmount(sspConnectAmount); // collateral vout
+        setSourceAddress(sspConnectSourceAddress); // collateral address
+        setVaultName(sspConnectVaultName); // node name
+        setOrgName(sspConnectOrgName); // collateral amount
+        setRecipients(sspConnectRecipients); // delegates JSON
+        setOpenFluxNodeStart(true);
       } else if (sspConnectType === 'enterprise_nonce_sync') {
         // Enterprise nonce sync request — interactive dialog
         setRequesterInfo(sspConnectRequesterInfo);
@@ -387,6 +401,28 @@ function SspConnect() {
     data: { status: string; result?: { signedTxHex: string } } | null,
   ) => {
     setOpenEnterpriseFluxNodeStart(false);
+    if (browser?.runtime?.sendMessage) {
+      if (!data) {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data: {
+            status: 'ERROR',
+            result: t('common:request_rejected'),
+          },
+        });
+      } else {
+        void browser.runtime.sendMessage({
+          origin: 'ssp',
+          data,
+        });
+      }
+    }
+  };
+
+  const fluxNodeStartAction = (
+    data: { status: string; result?: { signedTxHex: string } } | null,
+  ) => {
+    setOpenFluxNodeStart(false);
     if (browser?.runtime?.sendMessage) {
       if (!data) {
         void browser.runtime.sendMessage({
@@ -536,6 +572,25 @@ function SspConnect() {
         open={openEnterpriseNonceSync}
         openAction={enterpriseNonceSyncAction}
         requesterInfo={requesterInfo}
+      />
+      <FluxNodeStart
+        open={openFluxNodeStart}
+        openAction={fluxNodeStartAction}
+        requesterInfo={requesterInfo}
+        chain={chain}
+        collateralAddress={sourceAddress ?? ''}
+        collateralTxid={address}
+        collateralVout={parseInt(amount, 10) || 0}
+        collateralAmount={orgName}
+        identityPubKey={message}
+        nodeName={vaultName}
+        delegates={(() => {
+          try {
+            return JSON.parse(recipients) as string[];
+          } catch {
+            return [];
+          }
+        })()}
       />
       <EnterpriseFluxNodeStart
         open={openEnterpriseFluxNodeStart}

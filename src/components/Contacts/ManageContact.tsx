@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from '../../lib/toast';
-import { Button, Modal, Input, Space } from 'antd';
+import { Button, Modal, Input } from 'antd';
 import { NoticeType } from 'antd/es/message/interface';
 import localForage from 'localforage';
 import { useTranslation } from 'react-i18next';
@@ -99,41 +99,38 @@ function ManageContact({ openAction, contactId = -1 }: Props) {
         }
         open={true}
         onCancel={handleNotOk}
-        style={{ textAlign: 'center', top: 60, width: 200 }}
         footer={[]}
       >
-        <br />
-        <br />
-        <h3>{t('common:name')}</h3>
-        <Space.Compact style={{ width: '100%' }}>
+        <div className="manage-contact-form">
+          <label className="manage-contact-label" htmlFor="contact-name">
+            {t('common:name')}
+          </label>
           <Input
+            id="contact-name"
             size="large"
-            placeholder={editedContact.name}
+            placeholder={editedContact.name || t('common:name')}
             value={contactName}
             onChange={(e) => setContactName(e.target.value)}
           />
-        </Space.Compact>
-        <h3>{t('common:address')}</h3>
-        <Space.Compact style={{ width: '100%' }}>
+          <label className="manage-contact-label" htmlFor="contact-address">
+            {t('common:address')}
+          </label>
           <Input
+            id="contact-address"
             size="large"
-            placeholder={editedContact.address}
+            placeholder={editedContact.address || t('common:address')}
             value={contactAddress}
             onChange={(e) => setContactAddress(e.target.value)}
           />
-        </Space.Compact>
-        <br />
-        <br />
-        <br />
-        <br />
-        <Space direction="vertical" size="large">
-          <Button type="primary" size="large" onClick={handleOk}>
+        </div>
+        <div className="manage-contact-footer">
+          <Button type="primary" size="large" block onClick={handleOk}>
             {t('common:save')}
           </Button>
           <Button type="link" block size="small" onClick={handleNotOk}>
             {t('common:cancel')}
           </Button>
-        </Space>
+        </div>
       </Modal>
     </>
   );

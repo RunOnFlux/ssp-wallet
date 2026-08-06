@@ -4,7 +4,7 @@
 }
 
 .walletconnect-form .ant-input {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: var(--ssp-mono);
   font-size: 12px;
 }
 
@@ -22,9 +22,19 @@
   gap: 4px;
 }
 
-.empty-sessions {
-  text-align: center;
-  padding: 40px 20px;
+/* Session rows: dapp-origin card rendered flat inside the shared feed-list */
+.wc-session-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.wc-session-row .dapp-origin {
+  border: none;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Address deployment status styles */
@@ -56,4 +66,14 @@
 
 .address-deployment-status .not-deployed-icon:hover {
   color: #f59e0b !important;
+}
+
+/* Honour the OS reduce-motion preference, like the rest of the app's
+ * stylesheets. Scoped to this file's own animated selectors rather than a
+ * global override, which would also freeze antd's loading spinners. */
+@media (prefers-reduced-motion: reduce) {
+  .address-deployment-status .deployed-icon,
+  .address-deployment-status .not-deployed-icon {
+    transition: none;
+  }
 }

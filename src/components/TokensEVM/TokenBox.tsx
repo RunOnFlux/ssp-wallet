@@ -1,25 +1,30 @@
-import { Card, Avatar, Flex, Button, Popconfirm, Badge } from 'antd';
+import { Button, Popconfirm, Typography } from 'antd';
 import BigNumber from 'bignumber.js';
 import { useTranslation } from 'react-i18next';
-import { QuestionCircleOutlined } from '@ant-design/icons';
-import { MouseEvent, useEffect, useState } from 'react';
+import { CircleHelp as CircleHelpIcon } from 'lucide-react';
+import { useState } from 'react';
 import { Token, blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import { useAppSelector } from '../../hooks';
 import { tokenBalanceEVM, cryptos } from '../../types';
 import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency';
+import { truncateAddress } from '../../lib/addressDisplay';
 
 import './TokenBox.css';
 
-const { Meta } = Card;
+const { Text } = Typography;
 
+/**
+ * One activated token — v2 feed row: token logo with chain-badge overlap,
+ * symbol/name left, balance + fiat right-aligned in tabular-nums. Expands
+ * into the shared inset detail card (contract, decimals, network, remove).
+ */
 function TokenBox(props: {
   chain: keyof cryptos;
   tokenInfo: Token;
   handleRemoveToken: (contract: string) => void;
 }) {
   const { t } = useTranslation(['home', 'common']);
-  const [fiatRate, setFiatRate] = useState(0);
   const [infoExpanded, setInfoExpanded] = useState(false);
   const { wallets, walletInUse } = useAppSelector(
     (state) => state[props.chain],
@@ -36,41 +41,21 @@ function TokenBox(props: {
   if (!props.tokenInfo.contract) {
     balance = balanceCOIN;
   }
+  // Derived during render, NOT held in state behind a mount-only effect.
+  // Previously this was state set by a `[]`-deps effect, so the rate froze at
+  // whatever cryptoRates/fiatRates held on mount — and pinned to $0.00 for the
+  // whole session when rates had not arrived yet. The component already
+  // subscribes to state.fiatCryptoRates, so it re-renders on every rates
+  // update; computing here is both correct and less code. (Balances.tsx does
+  // the same sum with [activeChain, cryptoRates, fiatRates] deps.)
+  const fiatRate =
+    (cryptoRates[
+      props.tokenInfo.symbol.toLowerCase() as keyof typeof cryptoRates
+    ] ?? 0) * (fiatRates[sspConfig().fiatCurrency] ?? 0);
+
   const balanceUsd = new BigNumber(balance)
     .dividedBy(10 ** props.tokenInfo.decimals)
     .multipliedBy(new BigNumber(fiatRate));
-
-  const openDetails = (
-    event: MouseEvent<HTMLDivElement, globalThis.MouseEvent>,
-  ) => {
-    const containingElement = document.querySelector(
-      '#token-id' + props.tokenInfo.contract,
-    );
-    if (containingElement) {
-      console.log('kappa');
-      if (containingElement.contains(event.target as Node)) {
-        // do not register clicks here
-        return;
-      }
-    }
-    setInfoExpanded(!infoExpanded);
-  };
-
-  useEffect(() => {
-    getCryptoRate(
-      props.tokenInfo.symbol.toLowerCase() as keyof typeof cryptoRates, // we use lower cased symbol as key
-      sspConfig().fiatCurrency,
-    );
-  }, []); // Run once on mount - token never changes within component instance
-
-  const getCryptoRate = (
-    crypto: keyof typeof cryptoRates,
-    fiat: keyof typeof fiatRates,
-  ) => {
-    const cr = cryptoRates[crypto] ?? 0;
-    const fi = fiatRates[fiat] ?? 0;
-    setFiatRate(cr * fi);
-  };
 
   const removeToken = () => {
     props.handleRemoveToken(props.tokenInfo.contract);
@@ -78,96 +63,90 @@ function TokenBox(props: {
 
   return (
     <div>
-      <Card
-        onClick={(e) => openDetails(e)}
-        hoverable
-        style={{ marginTop: 10 }}
-        size="small"
+      <button
+        type="button"
+        className="token-row"
+        onClick={() => setInfoExpanded(!infoExpanded)}
+        aria-expanded={infoExpanded}
       >
-        <Meta
-          avatar={
-            <div style={{ marginTop: '12px' }}>
-              <Badge
-                count={<Avatar src={blockchains[props.chain].logo} size={18} />}
-                size="small"
-                offset={[-2, 5]}
+        <span className="token-row-logo" aria-hidden="true">
+          <img
+            className="token-row-logo-main"
+            src={props.tokenInfo.logo}
+            alt=""
+          />
+          {/* Chain badge only for real tokens: a native asset IS the chain, so
+              badging it stuck a second, smaller copy of the same glyph on the
+              row — and next to an ERC-20 row the badge stopped reading as
+              "this token lives on <chain>". */}
+          {props.tokenInfo.contract && (
+            <img
+              className="token-row-logo-badge"
+              src={blockchains[props.chain].logo}
+              alt=""
+            />
+          )}
+        </span>
+        <span className="token-row-main">
+          <span className="token-row-symbol">{props.tokenInfo.symbol}</span>
+          <span className="token-row-name">{props.tokenInfo.name}</span>
+        </span>
+        <span className="token-row-end">
+          <span className="token-row-balance privacy-sensitive">
+            {formatCrypto(
+              new BigNumber(balance).dividedBy(10 ** props.tokenInfo.decimals),
+              props.tokenInfo.decimals,
+            ) +
+              ' ' +
+              props.tokenInfo.symbol}
+          </span>
+          <span className="token-row-fiat privacy-sensitive">
+            {formatFiatWithSymbol(balanceUsd)}
+          </span>
+        </span>
+      </button>
+      {infoExpanded && (
+        <div className="feed-details token-row-details">
+          {props.tokenInfo.contract && (
+            <div className="feed-detail-line">
+              <span className="feed-detail-label">{t('common:contract')}</span>
+              <Text
+                copyable={{ text: props.tokenInfo.contract }}
+                className="feed-detail-mono"
               >
-                <Avatar src={props.tokenInfo.logo} size={30} />
-              </Badge>
+                {truncateAddress(props.tokenInfo.contract, 10)}
+              </Text>
             </div>
-          }
-          title={
-            <>
-              <div style={{ float: 'left' }}>{props.tokenInfo.symbol}</div>
-              <div style={{ float: 'right' }} className="privacy-sensitive">
-                {formatCrypto(
-                  new BigNumber(balance).dividedBy(
-                    10 ** props.tokenInfo.decimals,
-                  ),
-                  props.tokenInfo.decimals,
-                ) +
-                  ' ' +
-                  props.tokenInfo.symbol}
-              </div>
-            </>
-          }
-          description={
-            <>
-              <Flex vertical>
-                <div>
-                  <div style={{ float: 'left' }}>{props.tokenInfo.name}</div>
-                  <div style={{ float: 'right' }} className="privacy-sensitive">
-                    {formatFiatWithSymbol(balanceUsd)}
-                  </div>
-                </div>
-                {infoExpanded && (
-                  <div
-                    className={'token-box'}
-                    id={'token-id' + props.tokenInfo.contract}
-                  >
-                    {props.tokenInfo.contract && (
-                      <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                        {t('common:contract')}: {props.tokenInfo.contract}
-                      </p>
-                    )}
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('common:decimals')}: {props.tokenInfo.decimals}
-                    </p>
-                    <p style={{ margin: 0, wordBreak: 'break-all' }}>
-                      {t('common:network')}: {blockchains[props.chain].name}
-                    </p>
-                    {props.tokenInfo.contract && (
-                      <div className={'remove-button'}>
-                        <Popconfirm
-                          title={t('home:tokens.remove_token')}
-                          description={
-                            <>{t('home:tokens.remove_token_info')}</>
-                          }
-                          overlayStyle={{ maxWidth: 360, margin: 10 }}
-                          okText={t('home:tokens.remove_token')}
-                          cancelText={t('common:cancel')}
-                          onConfirm={() => {
-                            void removeToken();
-                          }}
-                          icon={
-                            <QuestionCircleOutlined
-                              style={{ color: 'orange' }}
-                            />
-                          }
-                        >
-                          <Button type="default" danger size="small">
-                            {t('home:tokens.remove_token')}
-                          </Button>
-                        </Popconfirm>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </Flex>
-            </>
-          }
-        />
-      </Card>
+          )}
+          <div>
+            <span className="feed-detail-label">{t('common:decimals')}</span>{' '}
+            {props.tokenInfo.decimals}
+          </div>
+          <div>
+            <span className="feed-detail-label">{t('common:network')}</span>{' '}
+            {blockchains[props.chain].name}
+          </div>
+          {props.tokenInfo.contract && (
+            <div className="feed-detail-actions">
+              <Popconfirm
+                title={t('home:tokens.remove_token')}
+                description={<>{t('home:tokens.remove_token_info')}</>}
+                overlayStyle={{ maxWidth: 360, margin: 10 }}
+                okText={t('home:tokens.remove_token')}
+                cancelText={t('common:cancel')}
+                onConfirm={() => {
+                  void removeToken();
+                }}
+                icon={<CircleHelpIcon style={{ color: '#f59e0b' }} />}
+              >
+                <Button type="default" danger size="small">
+                  {t('home:tokens.remove_token')}
+                </Button>
+              </Popconfirm>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

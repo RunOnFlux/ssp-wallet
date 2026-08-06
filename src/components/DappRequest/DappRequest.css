@@ -1,0 +1,144 @@
+/* ---- Dapp approval language (v2) ----
+   Shared presentation for every dapp-facing approval surface (WalletConnect
+   modals + SspConnect prompts): origin header (who is asking), ask line
+   (what is asked), summary rows (the facts), mono payload box (the raw
+   data, behind an expander). Radius/spacing follow DESIGN_TOKENS §4:
+   12-radius cards, 8-radius inner boxes, 4-pt spacing. */
+
+.dapp-origin {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e7e5e4;
+  border-radius: 12px;
+  text-align: left;
+}
+
+:root[data-theme='dark'] .dapp-origin {
+  border-color: #272524;
+}
+
+.dapp-origin-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(251, 191, 36, 0.12);
+  color: #b45309;
+  overflow: hidden;
+}
+
+:root[data-theme='dark'] .dapp-origin-icon {
+  color: #fbbf24;
+}
+
+.dapp-origin-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dapp-origin-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dapp-origin-name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dapp-origin-host {
+  font-size: 12px;
+  opacity: 0.65;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* One-line statement of what is being asked. */
+.dapp-ask {
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+  margin: 0;
+}
+
+/* The facts of the request: label/value rows in a 12-radius card. */
+.dapp-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e7e5e4;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+:root[data-theme='dark'] .dapp-summary {
+  border-color: #272524;
+}
+
+.dapp-summary-row {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.dapp-summary-label {
+  opacity: 0.65;
+  flex-shrink: 0;
+}
+
+.dapp-summary-value {
+  min-width: 0;
+  text-align: right;
+  word-break: break-word;
+  font-weight: 500;
+}
+
+.dapp-summary-value.dapp-mono {
+  font-family: var(--ssp-mono);
+  font-size: 11px;
+  word-break: break-all;
+}
+
+/* Raw payload (message bytes, EIP-712 JSON, calldata) — always mono,
+   scrolls internally, quiet tinted background in both themes. */
+.dapp-payload {
+  font-family: var(--ssp-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: left;
+  word-break: break-all;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow: auto;
+  background: rgba(128, 128, 128, 0.07);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+/* Stacked action pair: amber primary above a quiet text reject. */
+.dapp-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 16px;
+}

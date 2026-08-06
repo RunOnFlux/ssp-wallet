@@ -15,6 +15,19 @@ export const getTutorialSteps = (
       skipable: true,
     },
     {
+      id: 'backup-health',
+      // Anchored on the hero — the amber backup-health card appears right
+      // below it whenever the seed is unverified or the SSP Key is unpaired,
+      // and hides itself once both hold (so the card itself is not a stable
+      // tutorial target).
+      target: '[data-tutorial="wallet-overview"]',
+      title: t('home:tutorial.steps.backup_health.title'),
+      content: t('home:tutorial.steps.backup_health.content'),
+      position: 'auto',
+      action: 'none',
+      skipable: false,
+    },
+    {
       id: 'multi-chain-intro',
       target: '[data-tutorial="wallet-selector"]',
       title: t('home:tutorial.steps.multi_chain_intro.title'),
@@ -29,7 +42,11 @@ export const getTutorialSteps = (
       title: t('home:tutorial.steps.find_switch_chain.title'),
       content: t('home:tutorial.steps.find_switch_chain.content'),
       position: 'auto',
-      action: 'click',
+      // 'none' (Next button): the target is the inert "Networks" section
+      // heading — with action 'click' the natural user action (tapping a
+      // network ROW) switched chains, closed the drawer and dead-ended the
+      // tour. The NEXT step highlights the Ethereum row for the real click.
+      action: 'none',
       skipable: false,
     },
     {
@@ -71,20 +88,21 @@ export const getTutorialSteps = (
       action: 'none',
       skipable: false,
     },
-    {
-      id: 'receive-intro',
-      target: '[data-tutorial="receive-button"]',
-      title: t('home:tutorial.steps.receive_intro.title'),
-      content: t('home:tutorial.steps.receive_intro.content'),
-      position: 'auto',
-      action: 'none',
-      skipable: false,
-    },
+    // Action row verbs in their on-screen order: Send · Receive · Swap · Buy/Sell.
     {
       id: 'send-intro',
       target: '[data-tutorial="send-button"]',
       title: t('home:tutorial.steps.send_intro.title'),
       content: t('home:tutorial.steps.send_intro.content'),
+      position: 'auto',
+      action: 'none',
+      skipable: false,
+    },
+    {
+      id: 'receive-intro',
+      target: '[data-tutorial="receive-button"]',
+      title: t('home:tutorial.steps.receive_intro.title'),
+      content: t('home:tutorial.steps.receive_intro.content'),
       position: 'auto',
       action: 'none',
       skipable: false,
@@ -109,7 +127,7 @@ export const getTutorialSteps = (
     },
     {
       id: 'activity-section',
-      target: '.ant-tabs-tab[data-node-key="activity"]',
+      target: '[data-tutorial-tab="activity"]',
       title: t('home:tutorial.steps.activity_section.title'),
       content: t('home:tutorial.steps.activity_section.content'),
       position: 'auto',
@@ -127,7 +145,7 @@ export const getTutorialSteps = (
     },
     {
       id: 'contacts-section',
-      target: '.ant-tabs-tab[data-node-key="contacts"]',
+      target: '[data-tutorial-tab="contacts"]',
       title: t('home:tutorial.steps.contacts_section.title'),
       content: t('home:tutorial.steps.contacts_section.content'),
       position: 'auto',
@@ -143,12 +161,33 @@ export const getTutorialSteps = (
       action: 'none',
       skipable: false,
     },
+    // The compact bottom nav = "places": Home · Portfolio · Activity · Menu.
+    {
+      id: 'places-nav',
+      target: '.tab-bar',
+      title: t('home:tutorial.steps.places_nav.title'),
+      content: t('home:tutorial.steps.places_nav.content'),
+      position: 'top',
+      action: 'none',
+      skipable: false,
+    },
+    {
+      id: 'portfolio-tab',
+      target: '[data-tutorial="tab-portfolio"]',
+      title: t('home:tutorial.steps.portfolio_tab.title'),
+      content: t('home:tutorial.steps.portfolio_tab.content'),
+      position: 'top',
+      action: 'none',
+      skipable: false,
+    },
     {
       id: 'extended-menu-intro',
-      target: '[data-tutorial="extended-menu"]',
+      // The 4th destination is the full extended menu ("Menu" tab): settings,
+      // address/SSP details, sign message, WalletConnect, tutorial.
+      target: '[data-tutorial="tab-settings"]',
       title: t('home:tutorial.steps.extended_menu_intro.title'),
       content: t('home:tutorial.steps.extended_menu_intro.content'),
-      position: 'left',
+      position: 'top',
       action: 'none',
       skipable: false,
     },

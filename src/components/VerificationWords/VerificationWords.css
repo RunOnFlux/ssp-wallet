@@ -1,0 +1,46 @@
+.sspVerifyGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.sspVerifyChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.sspVerifyChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.sspVerifyChipIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sspVerifyChipWord {
+  /* Deliberately monospace: fixed-width glyphs make a single-character
+     difference pop during the side-by-side check, and SSP Key renders its
+     words in the same stack. */
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  font-family: var(--ssp-mono);
+}

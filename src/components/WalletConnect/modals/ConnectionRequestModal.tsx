@@ -5,21 +5,23 @@ import {
   List,
   Card,
   Typography,
-  Divider,
   Alert,
   Spin,
   Tooltip,
   Space,
 } from 'antd';
 import {
-  CheckCircleOutlined,
-  ExclamationCircleOutlined,
-} from '@ant-design/icons';
+  CircleAlert as CircleAlertIcon,
+  CircleCheck as CircleCheckIcon,
+} from 'lucide-react';
+import DappOrigin from '../../DappRequest/DappOrigin';
+import '../../DappRequest/DappRequest.css';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { SessionProposal } from '../types/modalTypes';
 import localForage from 'localforage';
 import { isEVMContractDeployed } from '../../../lib/constructTx';
+import { truncateAddress } from '../../../lib/addressDisplay';
 import { cryptos } from '../../../types';
 import { useAppSelector } from '../../../hooks';
 
@@ -98,7 +100,7 @@ const AddressDeploymentStatus: React.FC<AddressDeploymentStatusProps> = ({
             mouseEnterDelay={0}
             mouseLeaveDelay={0}
           >
-            <CheckCircleOutlined
+            <CircleCheckIcon
               className="deployed-icon"
               style={{ color: '#22c55e', fontSize: '14px' }}
             />
@@ -111,7 +113,7 @@ const AddressDeploymentStatus: React.FC<AddressDeploymentStatusProps> = ({
             mouseEnterDelay={0}
             mouseLeaveDelay={0}
           >
-            <ExclamationCircleOutlined
+            <CircleAlertIcon
               className="not-deployed-icon"
               style={{ color: '#f59e0b', fontSize: '14px' }}
             />
@@ -447,11 +449,11 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
     <Modal
       title={t('home:walletconnect.connection_request')}
       open={true}
-      style={{ textAlign: 'center', top: 60 }}
       onOk={handleApprove}
       onCancel={handleReject}
       okText={t('home:walletconnect.approve')}
       cancelText={t('home:walletconnect.reject')}
+      cancelButtonProps={{ type: 'text' }}
       confirmLoading={loading}
       okButtonProps={{
         disabled: selectedChains.length === 0 || !hasRequiredChains,
@@ -459,49 +461,26 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
     >
       <Space
         direction="vertical"
-        size="small"
-        style={{ width: '100%', textAlign: 'left', marginTop: 24 }}
+        size="middle"
+        style={{ width: '100%', textAlign: 'left', marginTop: 16 }}
       >
-        <Space direction="vertical" size="small" style={{ marginBottom: 8 }}>
-          <div>
-            <strong>{t('home:walletconnect.dapp_wants_to_connect')}</strong>
-          </div>
-
-          <div>
-            <strong>{t('home:walletconnect.dapp_name')}:</strong>{' '}
-            {proposer.metadata.name}
-          </div>
-
-          <div>
-            <strong>{t('home:walletconnect.description')}:</strong>{' '}
-            {proposer.metadata.description}
-          </div>
-
-          <div>
-            <strong>{t('home:walletconnect.url')}:</strong>{' '}
-            {proposer.metadata.url}
-          </div>
-        </Space>
-
-        {/* Important info about chain-specific addresses */}
-        <Alert
-          message={t('home:walletconnect.chain_unique_addresses')}
-          description={t('home:walletconnect.chain_unique_addresses_desc')}
-          type="info"
-          style={{ marginBottom: 8 }}
-          showIcon
+        <DappOrigin
+          name={proposer.metadata.name}
+          url={proposer.metadata.url}
+          icon={proposer.metadata.icons?.[0]}
         />
 
-        {/* Account Abstraction deployment info */}
-        <Alert
-          message={t('home:walletconnect.account_abstraction_deployment_info')}
-          description={t(
-            'home:walletconnect.account_abstraction_deployment_desc',
-          )}
-          type="warning"
-          style={{ marginBottom: 8 }}
-          showIcon
-        />
+        <p className="dapp-ask" style={{ margin: 0 }}>
+          {t('home:walletconnect.dapp_wants_to_connect')}
+          {proposer.metadata.description ? (
+            <>
+              <br />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {proposer.metadata.description}
+              </Text>
+            </>
+          ) : null}
+        </p>
 
         {/* Show alert when defaulting to Ethereum */}
         {isDefaultingToEthereum && (
@@ -513,8 +492,6 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
             showIcon
           />
         )}
-
-        <Divider />
 
         {/* Show warnings for unsupported or unsynced chains */}
         {unsupportedChains.length > 0 && (
@@ -582,70 +559,77 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
             />
           )}
 
-        <div style={{ marginBottom: 8 }}>
-          <Title level={5}>{t('home:walletconnect.requested_chains')}:</Title>
-          <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-            {requestedChains.map((chain, index) => (
-              <span key={chain.chainId}>
-                {chain.chainName}
-                {chain.isRequired && (
-                  <span style={{ color: '#ef4444' }}> *</span>
-                )}
-                {chain.isOriginalUnsupported && (
-                  <span style={{ color: '#f59e0b' }}>
-                    {' '}
-                    ({t('home:walletconnect.unsupported')})
-                  </span>
-                )}
-                {chain.isDefault && (
-                  <span style={{ color: '#22c55e' }}>
-                    {' '}
-                    ({t('home:walletconnect.defaulting')})
-                  </span>
-                )}
-                {!chain.isSupported && !chain.isOriginalUnsupported && (
-                  <span style={{ color: '#f59e0b' }}>
-                    {' '}
-                    ({t('home:walletconnect.unsupported')})
-                  </span>
-                )}
-                {chain.isSupported && !chain.isSynced && !chain.isDefault && (
-                  <span style={{ color: '#3b82f6' }}>
-                    {' '}
-                    ({t('home:walletconnect.unsynced')})
-                  </span>
-                )}
-                {index < requestedChains.length - 1 && ', '}
-              </span>
-            ))}
-          </div>
-          {requestedChains.some((chain) => chain.isRequired) && (
-            <div style={{ fontSize: '11px', color: '#ef4444', marginTop: 8 }}>
-              <span style={{ color: '#ef4444' }}>*</span>{' '}
-              {t('home:walletconnect.required_explanation')}
+        <div className="dapp-summary">
+          <div>
+            <div className="dapp-summary-label" style={{ marginBottom: 4 }}>
+              {t('home:walletconnect.requested_chains')}
             </div>
-          )}
-        </div>
-
-        <div style={{ marginBottom: 8 }}>
-          <Title level={5}>{t('home:walletconnect.permissions')}:</Title>
-          <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-            {[
-              ...Object.values(proposal.params.requiredNamespaces || {}),
-              ...Object.values(proposal.params.optionalNamespaces || {}),
-            ]
-              .flatMap((ns) => (ns as { methods?: string[] }).methods || [])
-              .filter((method, index, array) => array.indexOf(method) === index) // Remove duplicates
-              .join(', ')}
+            <div>
+              {requestedChains.map((chain, index) => (
+                <span key={chain.chainId}>
+                  {chain.chainName}
+                  {chain.isRequired && (
+                    <span style={{ color: '#ef4444' }}> *</span>
+                  )}
+                  {chain.isOriginalUnsupported && (
+                    <span style={{ color: '#f59e0b' }}>
+                      {' '}
+                      ({t('home:walletconnect.unsupported')})
+                    </span>
+                  )}
+                  {chain.isDefault && (
+                    <span style={{ color: '#22c55e' }}>
+                      {' '}
+                      ({t('home:walletconnect.defaulting')})
+                    </span>
+                  )}
+                  {!chain.isSupported && !chain.isOriginalUnsupported && (
+                    <span style={{ color: '#f59e0b' }}>
+                      {' '}
+                      ({t('home:walletconnect.unsupported')})
+                    </span>
+                  )}
+                  {chain.isSupported && !chain.isSynced && !chain.isDefault && (
+                    <span style={{ color: '#3b82f6' }}>
+                      {' '}
+                      ({t('home:walletconnect.unsynced')})
+                    </span>
+                  )}
+                  {index < requestedChains.length - 1 && ', '}
+                </span>
+              ))}
+            </div>
+            {requestedChains.some((chain) => chain.isRequired) && (
+              <div style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>
+                * {t('home:walletconnect.required_explanation')}
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="dapp-summary-label" style={{ marginBottom: 4 }}>
+              {t('home:walletconnect.permissions')}
+            </div>
+            <div style={{ fontFamily: 'var(--ssp-mono)', fontSize: 11 }}>
+              {[
+                ...Object.values(proposal.params.requiredNamespaces || {}),
+                ...Object.values(proposal.params.optionalNamespaces || {}),
+              ]
+                .flatMap((ns) => (ns as { methods?: string[] }).methods || [])
+                .filter(
+                  (method, index, array) => array.indexOf(method) === index,
+                ) // Remove duplicates
+                .join(', ')}
+            </div>
           </div>
         </div>
-
-        <Divider />
 
         {syncedChains.length > 0 && (
           <div style={{ marginBottom: 8 }}>
-            <Title level={5}>
-              {t('home:walletconnect.select_chains_accounts')}:
+            <Title
+              level={5}
+              style={{ fontSize: 14, marginTop: 0, marginBottom: 8 }}
+            >
+              {t('home:walletconnect.select_chains_accounts')}
             </Title>
 
             {!hasRequiredChains && requiredChainIds.length > 0 && (
@@ -715,12 +699,11 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
                                   >
                                     <Text
                                       style={{
-                                        fontFamily: 'monospace',
+                                        fontFamily: 'var(--ssp-mono)',
                                         fontSize: '12px',
                                       }}
                                     >
-                                      {account.substring(0, 6)}...
-                                      {account.substring(account.length - 4)}
+                                      {truncateAddress(account)}
                                     </Text>
                                     {chainInfo.sspChainKey && (
                                       <AddressDeploymentStatus
@@ -745,11 +728,23 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
           </div>
         )}
 
+        {/* Educational footnotes — compact, quiet (was a wall of Alerts) */}
+        <div style={{ fontSize: 11, lineHeight: 1.5 }}>
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            {t('home:walletconnect.chain_unique_addresses')}{' '}
+            {t('home:walletconnect.chain_unique_addresses_desc')}
+          </Text>
+          <br />
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            {t('home:walletconnect.account_abstraction_deployment_info')}{' '}
+            {t('home:walletconnect.account_abstraction_deployment_desc')}
+          </Text>
+        </div>
+
         <Alert
           message={t('home:walletconnect.security_warning')}
           description={t('home:walletconnect.connection_warning')}
           type="warning"
-          style={{ marginTop: 16 }}
           showIcon
         />
       </Space>

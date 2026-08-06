@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Skeleton } from 'antd';
 import localForage from 'localforage';
 import axios from 'axios';
 import { sspConfig } from '@storage/ssp';
@@ -26,9 +27,18 @@ function Transactions() {
 
   const [pendingTxs, setPendingTxs] = useState<pendingTransaction[]>([]);
   const [fiatRate, setFiatRate] = useState(0);
+  // Cached-first, like the all-chains Activity page: until the cache read (or
+  // the first network fetch) lands there is nothing to say about this chain's
+  // history, so the feed shows a skeleton instead of claiming "no transaction
+  // history" — which is what a fresh unlock/restore or a chain switch did.
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!walletAddress) return;
+    if (!walletAddress) {
+      setLoading(false); // nothing to load for a chain that is not synced yet
+      return;
+    }
+    setLoading(true);
     setPendingTxs([]);
     getPendingTx();
     void (async function () {
@@ -38,6 +48,9 @@ function Transactions() {
         [];
       if (txsWallet) {
         setTransactions(activeChain, wInUse, txsWallet);
+      }
+      if (txsWallet.length) {
+        setLoading(false); // paint the cache, the live fetch refines it
       }
       getTransactions();
     })();
@@ -49,6 +62,14 @@ function Transactions() {
       getTransactions();
       getCryptoRate(activeChain, sspConfig().fiatCurrency);
     }, 20000);
+    // Home unmounts when switching tabs (Portfolio/Activity/Settings) — the
+    // poller must not keep firing after unmount (same cleanup as Balances).
+    return () => {
+      if (globalThis.refreshIntervalTransactions) {
+        clearInterval(globalThis.refreshIntervalTransactions);
+        globalThis.refreshIntervalTransactions = undefined;
+      }
+    };
   }, [activeChain, walletInUse, walletAddress]);
 
   useEffect(() => {
@@ -69,6 +90,9 @@ function Transactions() {
       })
       .catch((error) => {
         console.log(error);
+      })
+      .finally(() => {
+        setLoading(false); // settled either way — never leave the skeleton up
       });
   };
   const fetchBlockheight = () => {
@@ -130,6 +154,8 @@ function Transactions() {
     }, 2500);
   };
 
+  const txs = wallets[walletInUse]?.transactions ?? [];
+
   return (
     <div data-tutorial="transactions-table">
       <PendingTransactionsTable
@@ -138,14 +164,18 @@ function Transactions() {
         refresh={getPendingTx}
       />
 
-      <TransactionsTable
-        transactions={wallets[walletInUse].transactions || []}
-        blockheight={blockheight}
-        fiatRate={fiatRate}
-        address={wallets[walletInUse].address ?? ''}
-        chain={activeChain}
-        refresh={getTransactions}
-      />
+      {loading && txs.length === 0 ? (
+        <Skeleton active paragraph={{ rows: 5 }} title={false} />
+      ) : (
+        <TransactionsTable
+          transactions={txs}
+          blockheight={blockheight}
+          fiatRate={fiatRate}
+          address={wallets[walletInUse]?.address ?? ''}
+          chain={activeChain}
+          refresh={getTransactions}
+        />
+      )}
 
       <SocketListener
         txRejectedProp={onTxRejected}

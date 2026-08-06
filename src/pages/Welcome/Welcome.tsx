@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSspLogo } from '../../hooks/useSspLogo';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import secureLocalStorage from 'react-secure-storage';
-import { Button, Image, Space, Spin } from 'antd';
+import { Button, Image, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import './Welcome.css';
 import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
@@ -26,30 +26,43 @@ function Welcome() {
 
   return (
     <>
-      {isLoading && <Spin size="large" />}
+      {isLoading && (
+        <div className="auth-loading">
+          <Spin size="large" />
+        </div>
+      )}
       {!isLoading && (
-        <div style={{ paddingBottom: '43px' }}>
+        <div className="auth-page page-frame-onboarding">
           <Image
             width={120}
             preview={false}
             src={sspLogo}
-            style={{ paddingTop: 70 }}
+            className="auth-logo"
+            alt="SSP Wallet"
           />
-          <h1>{t('welcome:welcome_to')}</h1>
+          <h1 className="auth-title">{t('welcome:welcome_to')}</h1>
           <p className="welcome-text">
             {t('welcome:description')}
             <br />
             <br />
             {t('common:appName.moto')}
           </p>
-          <Space direction="vertical" size="large">
-            <Button type="primary" size="large">
-              <Link to={'/create'}>{t('welcome:get_started')}</Link>
+          {/* Navigation lives on the buttons themselves — a nested <Link> would
+              only be clickable on its own text glyphs and would leave the
+              button itself a dead keyboard stop. */}
+          <div className="auth-actions">
+            <Button
+              type="primary"
+              size="large"
+              block
+              onClick={() => navigate('/create')}
+            >
+              {t('welcome:get_started')}
             </Button>
-            <Button type="link" block size="small">
-              <Link to={'/restore'}>{t('welcome:restore_with_seed')}</Link>
+            <Button type="link" block onClick={() => navigate('/restore')}>
+              {t('welcome:restore_with_seed')}
             </Button>
-          </Space>
+          </div>
         </div>
       )}
       <PoweredByFlux isClickeable={true} />

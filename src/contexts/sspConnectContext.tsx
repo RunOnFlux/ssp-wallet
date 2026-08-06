@@ -2,12 +2,30 @@ import React, { createContext, useState, useEffect } from 'react';
 import { useAppSelector } from '../hooks';
 import { blockchains } from '@storage/blockchains';
 import { useTranslation } from 'react-i18next';
+import {
+  sanitizeRequest,
+  type bgRequest,
+  type dataBgParams,
+} from '../lib/sanitizeRequest';
 
 export interface WkSignRequesterInfo {
-  origin: string; // domain/origin of the requesting site (required)
-  siteName?: string; // friendly name of the site (optional)
-  description?: string; // what the site wants to authenticate for (optional)
-  iconUrl?: string; // site icon URL - HTTPS only (optional)
+  // Browser-verified origin of the requesting frame, stamped by background.js
+  // from the runtime `sender`. Never read from the request payload — a page can
+  // put anything it likes there. 'Unknown' when it could not be derived.
+  origin: string;
+  // Cosmetic, supplied by the requesting page and therefore UNVERIFIABLE.
+  // Must never be used to decide how much to trust a request.
+  siteName?: string;
+  description?: string;
+  iconUrl?: string;
+  // True only for in-app callers that construct this object themselves
+  // (Settings, Tutorial). Requests arriving over the page bridge can never set
+  // it, so it is safe to soften the "a website is requesting your signature"
+  // warning on it — which is NOT safe to do on a matchable origin string.
+  internal?: boolean;
+  // Top-level tab origin, when the request came from an embedded frame.
+  topOrigin?: string;
+  isSubframe?: boolean;
 }
 
 interface SspConnectContextType {
@@ -73,72 +91,6 @@ const defaultValue: SspConnectContextType = {
   rawUnsignedTx: '',
   inputDetails: '',
 };
-
-interface dataBgParams {
-  address: string;
-  message: string;
-  amount: string;
-  chain: string;
-  contract: string;
-  authMode?: number;
-  // Requester info for wk_sign_message
-  origin?: string; // domain of requesting site
-  siteName?: string; // friendly name
-  description?: string; // what the auth is for
-  iconUrl?: string; // site icon (HTTPS only)
-  // Enterprise vault xpub params
-  orgIndex?: number; // enterprise org index (positive integer)
-  vaultName?: string; // enterprise vault name
-  orgName?: string; // enterprise org name
-  // Enterprise vault sign tx params
-  vaultIndex?: number; // enterprise vault index (non-negative integer)
-  recipients?: string; // JSON string of recipients array
-  fee?: string; // transaction fee
-  memo?: string; // transaction memo
-  rawUnsignedTx?: string; // raw unsigned transaction hex
-  inputDetails?: string; // JSON string of input details array
-  reservedNonce?: { kPublic: string; kTwoPublic: string }; // EVM wallet nonce for signing
-  reservedKeyNonce?: { kPublic: string; kTwoPublic: string }; // EVM key nonce for Key signing
-  keyXpub?: string; // Key's vault xpub for EVM Schnorr signing
-  allSignerKeys?: string; // JSON string of all 2M public keys hex
-  allSignerNonces?: string; // JSON string of all 2M nonces
-  // ERC-20 token metadata (EVM only)
-  tokenContract?: string;
-  tokenSymbol?: string;
-  tokenDecimals?: number;
-  // Source vault address for display on Key
-  sourceAddress?: string;
-  // Full EVM UserOp struct (JSON string) for trustless decode
-  evmUserOp?: string;
-  // Vault signing mode (dual, key_only, wallet_only)
-  signingMode?: string;
-  // Server-computed advisory transaction simulation (JSON string)
-  simulation?: string;
-  // WalletConnect Phase 2 — vault message signing (personal_sign)
-  digest?: string; // 0x 32-byte EIP-191 message digest to sign
-  dappOrigin?: string; // requesting dApp name/url
-  // Enterprise Flux Node Start params
-  addressIndex?: number;
-  collateralTxid?: string;
-  collateralVout?: number;
-  collateralAmount?: string;
-  collateralAddress?: string;
-  identityPubKey?: string;
-  redeemScript?: string;
-  signingDevice?: string;
-  nodeName?: string;
-  delegates?: string[];
-}
-
-interface dataBgRequest {
-  method: string;
-  params: dataBgParams;
-}
-
-interface bgRequest {
-  origin: string;
-  data: dataBgRequest;
-}
 
 export const SspConnectContext =
   createContext<SspConnectContextType>(defaultValue);
@@ -238,138 +190,41 @@ export const SspConnectProvider = ({
     }
   };
 
-  const sanitizeRequest = (request: bgRequest) => {
-    // sanitize request
-    // must be an object of only data and origin, origin must be a string of max 50 characters
-    // data must be an object of only method and params
-    // params must be an object of only keys containing strings of max 50k characters
-    // method must be a string of max 50 characters
-    // return sanitized request
-    const sanitizedRequest = {
-      origin: request.origin,
-      data: request.data,
+  /**
+   * Build the requester identity shown on every approval dialog.
+   *
+   * The origin comes ONLY from the browser-verified value stamped by
+   * background.js. Previously each call site read `params.origin` — a value the
+   * requesting page supplied about itself — behind nothing but a length check,
+   * so any site could present itself as any other (including as 'SSP Wallet',
+   * which suppressed the website warning on the WkSign dialog).
+   *
+   * `internal` is deliberately never set here: it is reserved for in-app
+   * callers that construct this object directly, so nothing arriving over the
+   * page bridge can ever claim to be an internal request.
+   */
+  const buildRequesterInfo = (
+    params: dataBgParams,
+    fallbackOrigin?: string,
+  ): WkSignRequesterInfo => {
+    const verified = params.verifiedOrigin;
+    const origin =
+      typeof verified === 'string' && verified && verified.length <= 100
+        ? verified
+        : typeof fallbackOrigin === 'string' && fallbackOrigin
+          ? fallbackOrigin.substring(0, 100)
+          : 'Unknown';
+    return {
+      origin,
+      siteName: params.siteName?.substring(0, 100),
+      description: params.description?.substring(0, 500),
+      iconUrl: sanitizeIconUrl(params.iconUrl),
+      topOrigin:
+        typeof params.topOrigin === 'string' && params.topOrigin
+          ? params.topOrigin.substring(0, 100)
+          : undefined,
+      isSubframe: params.isSubframe === true,
     };
-    console.log('sanitizedRequest');
-    console.log(sanitizedRequest);
-    if (
-      typeof sanitizedRequest.origin !== 'string' ||
-      sanitizedRequest.origin.length > 50
-    ) {
-      console.log('Invalid origin type');
-      return null;
-    }
-    if (typeof sanitizedRequest.data !== 'object') {
-      console.log('Invalid data type');
-      return null;
-    }
-    if (
-      typeof sanitizedRequest.data.method !== 'string' ||
-      sanitizedRequest.data.method.length > 50
-    ) {
-      console.log('Invalid method type');
-      return null;
-    }
-    if (
-      sanitizedRequest.data.params &&
-      typeof sanitizedRequest.data.params !== 'object'
-    ) {
-      console.log('Invalid params type');
-      return null;
-    }
-    if (sanitizedRequest.data.params) {
-      for (const key in sanitizedRequest.data.params) {
-        const paramValue =
-          sanitizedRequest.data.params[key as keyof dataBgParams];
-        // Skip undefined/null values
-        if (paramValue === undefined || paramValue === null) {
-          continue;
-        }
-        // authMode, orgIndex, and vaultIndex are numbers, other params are strings
-        if (key === 'authMode') {
-          if (
-            typeof paramValue !== 'number' ||
-            (paramValue !== 1 && paramValue !== 2)
-          ) {
-            console.log('Invalid authMode value:', paramValue);
-            return null;
-          }
-        } else if (key === 'orgIndex') {
-          if (
-            typeof paramValue !== 'number' ||
-            !Number.isInteger(paramValue) ||
-            paramValue < 100 ||
-            paramValue > 99999
-          ) {
-            console.log('Invalid orgIndex value:', paramValue);
-            return null;
-          }
-        } else if (key === 'vaultIndex') {
-          if (
-            typeof paramValue !== 'number' ||
-            !Number.isInteger(paramValue) ||
-            paramValue < 0 ||
-            paramValue > 99
-          ) {
-            console.log('Invalid vaultIndex value:', paramValue);
-            return null;
-          }
-        } else if (key === 'reservedNonce' || key === 'reservedKeyNonce') {
-          // EVM enterprise nonce objects — validate structure
-          if (
-            typeof paramValue !== 'object' ||
-            typeof (paramValue as Record<string, unknown>).kPublic !==
-              'string' ||
-            typeof (paramValue as Record<string, unknown>).kTwoPublic !==
-              'string'
-          ) {
-            console.log('Invalid ' + key + ' value');
-            return null;
-          }
-        } else if (key === 'tokenDecimals') {
-          // ERC-20 token decimals — non-negative integer
-          if (
-            typeof paramValue !== 'number' ||
-            !Number.isInteger(paramValue) ||
-            paramValue < 0
-          ) {
-            console.log('Invalid tokenDecimals value:', paramValue);
-            return null;
-          }
-        } else if (key === 'addressIndex' || key === 'collateralVout') {
-          // Enterprise flux node start — non-negative integer
-          if (
-            typeof paramValue !== 'number' ||
-            !Number.isInteger(paramValue) ||
-            paramValue < 0
-          ) {
-            console.log('Invalid ' + key + ' value:', paramValue);
-            return null;
-          }
-        } else if (key === 'delegates') {
-          // Enterprise flux node start — array of pubkey hex strings
-          if (!Array.isArray(paramValue)) {
-            console.log('Invalid delegates value (not array)');
-            return null;
-          }
-          for (const d of paramValue) {
-            if (typeof d !== 'string' || d.length > 200) {
-              console.log('Invalid delegate entry');
-              return null;
-            }
-          }
-        } else {
-          if (typeof paramValue !== 'string') {
-            console.log('Invalid param type ' + key);
-            return null;
-          }
-          if (paramValue.length > 50000) {
-            console.log('Invalid param length ' + key);
-            return null;
-          }
-        }
-      }
-    }
-    return sanitizedRequest;
   };
 
   useEffect(() => {
@@ -418,26 +273,7 @@ export const SspConnectProvider = ({
             // Set authMode and requester info for wk_sign_message
             if (request.data.method === 'wk_sign_message') {
               setAuthMode(request.data.params.authMode ?? 2);
-              // Capture requester info - origin is required for wk_sign
-              const origin = request.data.params.origin;
-              if (
-                origin &&
-                typeof origin === 'string' &&
-                origin.length <= 100
-              ) {
-                setRequesterInfo({
-                  origin,
-                  siteName: request.data.params.siteName?.substring(0, 100),
-                  description: request.data.params.description?.substring(
-                    0,
-                    500,
-                  ),
-                  iconUrl: sanitizeIconUrl(request.data.params.iconUrl),
-                });
-              } else {
-                // Use a fallback if origin not provided
-                setRequesterInfo({ origin: 'Unknown' });
-              }
+              setRequesterInfo(buildRequesterInfo(request.data.params));
             }
           } else {
             console.log('Invalid chain' + request.data.params.chain);
@@ -642,17 +478,7 @@ export const SspConnectProvider = ({
           setOrgName(orgNameParam);
           setType('enterprise_vault_xpub');
 
-          // Capture requester info
-          const origin = request.data.params.origin;
-          if (origin && typeof origin === 'string' && origin.length <= 100) {
-            setRequesterInfo({
-              origin,
-              siteName: request.data.params.siteName?.substring(0, 100),
-              iconUrl: sanitizeIconUrl(request.data.params.iconUrl),
-            });
-          } else {
-            setRequesterInfo({ origin: 'Unknown' });
-          }
+          setRequesterInfo(buildRequesterInfo(request.data.params));
         } else if (request.data.method === 'enterprise_vault_sign_tx') {
           // Wallet must be synced with Key before enterprise vault operations
           if (!wkIdentity) {
@@ -937,21 +763,7 @@ export const SspConnectProvider = ({
 
           setType('enterprise_vault_sign_tx');
 
-          // Capture requester info
-          const signOrigin = request.data.params.origin;
-          if (
-            signOrigin &&
-            typeof signOrigin === 'string' &&
-            signOrigin.length <= 100
-          ) {
-            setRequesterInfo({
-              origin: signOrigin,
-              siteName: request.data.params.siteName?.substring(0, 100),
-              iconUrl: sanitizeIconUrl(request.data.params.iconUrl),
-            });
-          } else {
-            setRequesterInfo({ origin: 'Unknown' });
-          }
+          setRequesterInfo(buildRequesterInfo(request.data.params));
         } else if (request.data.method === 'enterprise_vault_sign_message') {
           // WalletConnect Phase 2 — vault MESSAGE signing (personal_sign). Reuses
           // the enterprise-vault-sign-tx modal/flow: the digest is signed exactly
@@ -1120,21 +932,14 @@ export const SspConnectProvider = ({
               : undefined,
           );
           setType('enterprise_vault_sign_tx');
-          const mOrigin = p.origin;
-          if (mOrigin && typeof mOrigin === 'string' && mOrigin.length <= 100) {
-            setRequesterInfo({
-              origin: mOrigin,
-              siteName: p.siteName?.substring(0, 100),
-              iconUrl: sanitizeIconUrl(p.iconUrl),
-            });
-          } else {
-            setRequesterInfo({
-              origin:
-                typeof mDappOrigin === 'string' && mDappOrigin
-                  ? mDappOrigin.substring(0, 100)
-                  : 'Unknown',
-            });
-          }
+          // mDappOrigin is the WalletConnect peer's self-declared URL, so it is
+          // only a fallback label when no verified frame origin exists.
+          setRequesterInfo(
+            buildRequesterInfo(
+              p,
+              typeof mDappOrigin === 'string' ? mDappOrigin : undefined,
+            ),
+          );
         } else if (request.data.method === 'enterprise_flux_node_start') {
           // Wallet must be synced with Key before enterprise operations
           if (!wkIdentity) {
@@ -1283,23 +1088,118 @@ export const SspConnectProvider = ({
           ); // collateral (vault) address
           setType('enterprise_flux_node_start');
 
-          // Capture requester info
+          setRequesterInfo(buildRequesterInfo(request.data.params));
+        } else if (request.data.method === 'flux_node_start') {
+          // Consumer variant of enterprise_flux_node_start: signs the node
+          // start with the collateral key of a regular wallet address
+          // (account 0'). The wallet locates the collateral address among its
+          // own synced wallets, so no derivation indices or redeemScript are
+          // accepted from the page.
+          const cnChain = request.data.params.chain;
+          const cnCollateralAddress = request.data.params.collateralAddress;
+          const cnCollateralTxid = request.data.params.collateralTxid;
+          const cnCollateralVout = request.data.params.collateralVout;
+          const cnIdentityPubKey = request.data.params.identityPubKey;
+          const cnDelegates = request.data.params.delegates;
+          const cnNodeName = request.data.params.nodeName;
+
           if (
-            typeof request.data.params === 'object' &&
-            request.data.params !== null
+            !cnChain ||
+            !blockchains[cnChain] ||
+            (cnChain !== 'flux' && cnChain !== 'fluxTestnet')
           ) {
-            const fnOrigin =
-              typeof request.data.params.origin === 'string'
-                ? request.data.params.origin.substring(0, 200)
-                : '';
-            setRequesterInfo({
-              origin: fnOrigin || 'Unknown',
-              siteName: request.data.params.siteName?.substring(0, 100),
-              iconUrl: sanitizeIconUrl(request.data.params.iconUrl),
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: {
+                status: 'ERROR',
+                result: 'Invalid chain — must be flux or fluxTestnet',
+              },
             });
-          } else {
-            setRequesterInfo({ origin: 'Unknown' });
+            return;
           }
+
+          if (
+            typeof cnCollateralAddress !== 'string' ||
+            cnCollateralAddress.length < 20 ||
+            cnCollateralAddress.length > 100
+          ) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid collateral address' },
+            });
+            return;
+          }
+
+          if (
+            typeof cnCollateralTxid !== 'string' ||
+            !/^[0-9a-fA-F]{64}$/.test(cnCollateralTxid)
+          ) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid collateral txid' },
+            });
+            return;
+          }
+
+          if (typeof cnCollateralVout !== 'number') {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid collateral vout' },
+            });
+            return;
+          }
+
+          if (
+            typeof cnIdentityPubKey !== 'string' ||
+            !/^0[23][0-9a-fA-F]{64}$/.test(cnIdentityPubKey)
+          ) {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid identity public key' },
+            });
+            return;
+          }
+
+          if (cnDelegates !== undefined) {
+            if (
+              !Array.isArray(cnDelegates) ||
+              cnDelegates.length > 25 ||
+              cnDelegates.some(
+                (d) =>
+                  typeof d !== 'string' || !/^0[23][0-9a-fA-F]{64}$/.test(d),
+              )
+            ) {
+              void browser.runtime.sendMessage({
+                origin: 'ssp',
+                data: { status: 'ERROR', result: 'Invalid delegates' },
+              });
+              return;
+            }
+          }
+
+          if (cnNodeName !== undefined && typeof cnNodeName !== 'string') {
+            void browser.runtime.sendMessage({
+              origin: 'ssp',
+              data: { status: 'ERROR', result: 'Invalid node name' },
+            });
+            return;
+          }
+
+          setChain(cnChain);
+          setMessage(cnIdentityPubKey); // identity pub key via message field
+          setAddress(cnCollateralTxid); // collateral txid via address field
+          setAmount(String(cnCollateralVout)); // collateral vout via amount field
+          setSourceAddress(cnCollateralAddress); // collateral address
+          setVaultName(typeof cnNodeName === 'string' ? cnNodeName : '');
+          setOrgName(
+            typeof request.data.params.collateralAmount === 'string'
+              ? request.data.params.collateralAmount
+              : '',
+          ); // collateral amount via orgName
+          setRecipients(JSON.stringify(cnDelegates || [])); // delegates via recipients
+          setType('flux_node_start');
+
+          setRequesterInfo(buildRequesterInfo(request.data.params));
         } else if (request.data.method === 'enterprise_nonce_sync') {
           // Wallet must be synced with Key before enterprise operations
           if (!wkIdentity) {
@@ -1319,23 +1219,7 @@ export const SspConnectProvider = ({
 
           // Interactive: show a dialog for nonce sync confirmation
           setType('enterprise_nonce_sync');
-          // Capture requester info for display
-          if (
-            typeof request.data.params === 'object' &&
-            request.data.params !== null
-          ) {
-            const syncOrigin =
-              typeof request.data.params.origin === 'string'
-                ? request.data.params.origin.substring(0, 200)
-                : '';
-            setRequesterInfo({
-              origin: syncOrigin || 'Unknown',
-              siteName: request.data.params.siteName?.substring(0, 100),
-              iconUrl: sanitizeIconUrl(request.data.params.iconUrl),
-            });
-          } else {
-            setRequesterInfo({ origin: 'Unknown' });
-          }
+          setRequesterInfo(buildRequesterInfo(request.data.params));
         } else {
           console.log('Invalid method' + request.data.method);
           void browser.runtime.sendMessage({

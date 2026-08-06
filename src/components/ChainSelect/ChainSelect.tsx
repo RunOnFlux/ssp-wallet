@@ -87,7 +87,7 @@ function ChainSelect(props: {
                     src={blockchains[chain].logo}
                   />
                 </Col>
-                <span style={{ fontSize: '16px', color: 'grey' }}>
+                <span style={{ fontSize: '16px', opacity: 0.65 }}>
                   {blockchains[chain].name}
                 </span>
               </Col>

@@ -1,14 +1,15 @@
 import { useRef, useState, useEffect } from 'react';
 import { toast } from '../../lib/toast';
 import { useSspLogo } from '../../hooks/useSspLogo';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
+import { getLastTab, tabToPath } from '../../storage/navPrefs';
 import { Input, Image, Button, Form, Spin } from 'antd';
 import localForage from 'localforage';
 import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-  LockOutlined,
-} from '@ant-design/icons';
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+  Lock as LockIcon,
+} from 'lucide-react';
 import secureLocalStorage from 'react-secure-storage';
 import { useTranslation } from 'react-i18next';
 import {
@@ -52,6 +53,7 @@ import {
 import {
   readRecoveryEnvelope,
   decryptRecoveryEnvelope,
+  advanceRecoveryIndex,
 } from '../../lib/recoveryEnvelope';
 import { requestRecovery, RecoveryError } from '../../lib/recoveryProtocol';
 import { sspConfig } from '@storage/ssp';
@@ -91,9 +93,19 @@ function Login() {
   const { t, i18n } = useTranslation(['login', 'common']);
   const sspLogo = useSspLogo();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Restore navigates here with { imported: true } right after a seed import —
+  // forwarded to the shell's pairing screen so it shows the Import labels.
+  const cameFromImport = Boolean(
+    (location.state as { imported?: boolean } | null)?.imported,
+  );
   const dispatch = useAppDispatch();
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  // Manual-unlock in-flight flag. Kept separate from `isLoading` (which swaps
+  // the whole form for a spinner) so the form stays on screen while the KDF
+  // work runs — the CTA reports the progress and blocks re-submits.
+  const [submitting, setSubmitting] = useState(false);
   const { activeChain, identityChain } = useAppSelector(
     (state) => state.sspState,
   );
@@ -101,6 +113,9 @@ function Login() {
   const [recoveryStatus, setRecoveryStatus] =
     useState<RecoveryDialogStatus | null>(null);
   const [recoveryErrorCode, setRecoveryErrorCode] = useState<string>('');
+  // Out-of-band code shown while ssp-key decides — the same six words appear on
+  // the phone, so a substituted request is visible before anything is released.
+  const [recoveryVerifyWords, setRecoveryVerifyWords] = useState<string[]>([]);
   // Raw user password stashed during recovery for retry. We can't keep it
   // in React state because that would trigger the `password` useEffect
   // which expects `password + randomParams`, not the raw form value.
@@ -240,6 +255,7 @@ function Login() {
     }
     recoveryCancelledRef.current = false;
     setRecoveryErrorCode('');
+    setRecoveryVerifyWords([]);
     setRecoveryStatus('waiting');
     try {
       const skR = await requestRecovery({
@@ -247,6 +263,8 @@ function Login() {
         keyIdentityPubKeyHex: envelope.keyIdentityPubKey,
         relay: sspConfig().relay,
         chain: identityChain,
+        recoveryIndex: envelope.recoveryIndex,
+        onVerificationWords: setRecoveryVerifyWords,
       });
       if (recoveryCancelledRef.current || !mountedRef.current) return;
 
@@ -267,6 +285,10 @@ function Login() {
       );
       if (recoveryCancelledRef.current || !mountedRef.current) return;
       secureLocalStorage.setItem('randomParams', newBlob);
+
+      // This index has been used, so step past it — the next envelope gets a
+      // fresh one.
+      advanceRecoveryIndex();
 
       setRecoveryStatus('approved');
       recoveryPasswordRef.current = '';
@@ -307,14 +329,24 @@ function Login() {
     recoveryCancelledRef.current = true;
     setRecoveryStatus(null);
     setRecoveryErrorCode('');
+    setRecoveryVerifyWords([]);
     recoveryPasswordRef.current = '';
   };
 
   const onFinish = (values: loginForm) => {
+    // rc-field-form swallows anything thrown in onFinish into a console.error,
+    // so never rely on the field rules alone — guard the value here too.
+    if (!values.password) {
+      return;
+    }
+    if (submitting) {
+      return;
+    }
     if (values.password.length < 8) {
       displayMessage('error', t('login:err_invalid_pw'));
       return;
     }
+    setSubmitting(true);
     // get random params from secure local storage, decrypt it with light device finger print and combine with password, use promise instead of await
     const randomParams = secureLocalStorage.getItem('randomParams');
     if (
@@ -329,6 +361,7 @@ function Login() {
           if (typeof decryptedRandomParams === 'string') {
             setPassword(values.password + decryptedRandomParams);
           } else {
+            setSubmitting(false);
             displayMessage('error', t('login:err_lx', { code: 'L4' }));
           }
         })
@@ -337,6 +370,8 @@ function Login() {
           // Our-fingerprint drift (L5): try the ssp-key recovery envelope.
           // Stash raw password in a ref so retry can replay it without
           // triggering the password-useEffect with a half-assembled value.
+          // The recovery dialog owns the progress from here on.
+          setSubmitting(false);
           recoveryPasswordRef.current = values.password;
           void runRecovery(values.password);
         });
@@ -377,6 +412,17 @@ function Login() {
     })();
   }, [password]);
 
+  // Every unlock failure must clear `password` as well as the in-flight flag:
+  // re-submitting the SAME string would otherwise be a no-op state write, the
+  // `password` effect would never re-run, and the CTA would spin forever.
+  // Clearing also drops the failed password out of state.
+  const failUnlock = (content: string) => {
+    setIsLoading(false);
+    setSubmitting(false);
+    setPassword('');
+    displayMessage('error', content);
+  };
+
   const decryptWallet = () => {
     // get SSP identity keys
     const xpubEncryptedIdentity = secureLocalStorage.getItem(
@@ -401,8 +447,7 @@ function Login() {
       )}-${blockchainConfig.id}`,
     ); // key xpub
     if (!xpubEncrypted || !xpubEncryptedIdentity) {
-      displayMessage('error', t('login:err_lx', { code: 'L3' }));
-      setIsLoading(false);
+      failUnlock(t('login:err_lx', { code: 'L3' }));
       return;
     }
     if (
@@ -456,7 +501,10 @@ function Login() {
                 setXpubKeyIdentity(xpub2Identity);
               } else {
                 // check if we have xpub2, if not, navigate to home immediately as there we run a check if to keep localforage or clear it
-                navigate('/home');
+                navigate(
+                  '/home',
+                  cameFromImport ? { state: { imported: true } } : undefined,
+                );
                 return;
               }
             }
@@ -530,20 +578,27 @@ function Login() {
                 setContacts(contacts as Record<keyof cryptos, contact[]>),
               );
             }
-            navigate('/home');
+            // Open where the user left off (append-only navPrefs; defaults to
+            // Home for fresh profiles — keeps the upgrade-in-place gate green).
+            const navState = cameFromImport
+              ? { state: { imported: true } }
+              : undefined;
+            try {
+              const lastTab = await getLastTab();
+              navigate(tabToPath(lastTab), navState);
+            } catch {
+              navigate('/home', navState);
+            }
           } else {
-            displayMessage('error', t('login:err_lx', { code: 'L2' }));
-            setIsLoading(false);
+            failUnlock(t('login:err_lx', { code: 'L2' }));
           }
         })
         .catch((error) => {
-          setIsLoading(false);
-          displayMessage('error', t('login:err_invalid_pw_2'));
+          failUnlock(t('login:err_invalid_pw_2'));
           console.log(error);
         });
     } else {
-      displayMessage('error', t('login:err_lx', { code: 'L1' }));
-      setIsLoading(false);
+      failUnlock(t('login:err_lx', { code: 'L1' }));
     }
   };
 
@@ -554,33 +609,46 @@ function Login() {
 
   return (
     <>
-      {isLoading && <Spin size="large" />}
+      {isLoading && (
+        <div className="auth-loading">
+          <Spin size="large" />
+        </div>
+      )}
       {!isLoading && (
-        <div style={{ paddingBottom: '43px' }}>
+        <div className="auth-page page-frame-onboarding">
           <Image
             width={80}
             preview={false}
             src={sspLogo}
-            style={{ paddingTop: 70 }}
+            className="auth-logo"
+            alt="SSP Wallet"
           />
-          <h2>{t('login:welcome_back')}</h2>
-          <h3>{t('login:to_secure_wallet')}</h3>
-          <br />
-          <br />
+          <h2 className="auth-title">{t('login:welcome_back')}</h2>
+          <h3 className="auth-subtitle">{t('login:to_secure_wallet')}</h3>
           <Form
             name="loginForm"
             onFinish={(values) => void onFinish(values as loginForm)}
             autoComplete="off"
             layout="vertical"
+            className="auth-form"
           >
             <div className="password-input-container">
-              <Form.Item label={t('login:unlock_with_pw')} name="password">
+              <Form.Item
+                label={t('login:unlock_with_pw')}
+                name="password"
+                rules={[
+                  {
+                    required: true,
+                    message: t('login:err_pw_required'),
+                  },
+                ]}
+              >
                 <Input.Password
                   size="large"
                   placeholder={t('login:enter_pw')}
-                  prefix={<LockOutlined />}
+                  prefix={<LockIcon />}
                   iconRender={(visible) =>
-                    visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
+                    visible ? <EyeIcon /> : <EyeOffIcon />
                   }
                   className="password-input"
                 />
@@ -588,19 +656,24 @@ function Login() {
             </div>
 
             <Form.Item>
-              <Button type="primary" size="large" htmlType="submit">
+              <Button
+                type="primary"
+                size="large"
+                htmlType="submit"
+                loading={submitting}
+              >
                 {t('login:unlock_wallet')}
               </Button>
             </Form.Item>
           </Form>
-          <br />
           <Button
             type="link"
             block
             size="small"
+            style={{ marginTop: 8 }}
             onClick={() => navigate('/restore')}
           >
-            {t('login:forgot_pw')} <i> {t('login:restore')}</i>
+            {t('login:forgot_pw')} {t('login:restore')}
           </Button>
         </div>
       )}
@@ -613,6 +686,7 @@ function Login() {
           open={true}
           status={recoveryStatus}
           errorCode={recoveryErrorCode}
+          verificationWords={recoveryVerifyWords}
           onClose={closeRecoveryDialog}
           onRetry={retryRecovery}
           onRestore={() => {

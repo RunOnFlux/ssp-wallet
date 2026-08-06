@@ -1,4 +1,4 @@
-import { Button, Modal, Flex, Space, Input, Divider } from 'antd';
+import { Button, Modal, Space, Input, Divider } from 'antd';
 import { toast } from '../../lib/toast';
 import { NoticeType } from 'antd/es/message/interface';
 import { useState, useEffect } from 'react';
@@ -117,14 +117,18 @@ function ImportToken(props: {
         title={t('home:tokens.import_token')}
         open={open && !openCustomImportTokenDialog}
         onOk={handleOk}
-        style={{ textAlign: 'center', top: 60 }}
+        style={{ textAlign: 'center' }}
         onCancel={handleCancel}
         footer={[]}
       >
-        <Flex
-          wrap
-          gap="middle"
-          style={{ marginTop: '20px', marginBottom: '40px' }}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            marginTop: 16,
+            marginBottom: 24,
+          }}
         >
           <Input
             id="searchToken"
@@ -134,25 +138,9 @@ function ImportToken(props: {
             onChange={(e) => setSearch(e.target.value)}
             size="large"
           />
-          {filteredTokens.map((item) => (
-            <TokenBoxImport
-              chain={props.chain}
-              walletInUse={props.wInUse}
-              tokenInfo={item}
-              key={item.contract + item.symbol}
-              active={
-                selectedContracts.includes(item.contract) || !item.contract
-              }
-              notSelectable={
-                props.contracts.includes(item.contract) || !item.contract
-              }
-              selectAction={contractChanged}
-            />
-          ))}
-          {filteredCustomTokens.length > 0 && (
-            <>
-              <Divider />
-              {filteredCustomTokens.map((item) => (
+          {filteredTokens.length > 0 && (
+            <div className="feed-list">
+              {filteredTokens.map((item) => (
                 <TokenBoxImport
                   chain={props.chain}
                   walletInUse={props.wInUse}
@@ -165,12 +153,37 @@ function ImportToken(props: {
                     props.contracts.includes(item.contract) || !item.contract
                   }
                   selectAction={contractChanged}
-                  deletePossible
                 />
               ))}
+            </div>
+          )}
+          {filteredCustomTokens.length > 0 && (
+            <>
+              <Divider style={{ margin: 0, fontSize: 12 }}>
+                {t('home:tokens.custom_tokens')}
+              </Divider>
+              <div className="feed-list">
+                {filteredCustomTokens.map((item) => (
+                  <TokenBoxImport
+                    chain={props.chain}
+                    walletInUse={props.wInUse}
+                    tokenInfo={item}
+                    key={item.contract + item.symbol}
+                    active={
+                      selectedContracts.includes(item.contract) ||
+                      !item.contract
+                    }
+                    notSelectable={
+                      props.contracts.includes(item.contract) || !item.contract
+                    }
+                    selectAction={contractChanged}
+                    deletePossible
+                  />
+                ))}
+              </div>
             </>
           )}
-        </Flex>
+        </div>
         <Space direction="vertical" size="large">
           <Button type="primary" size="large" onClick={handleOk}>
             {t('home:tokens.import_selected')}

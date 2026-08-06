@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { toast } from '../../lib/toast';
 import axios from 'axios';
 import {
-  Divider,
   InputNumber,
   Row,
   Col,
@@ -16,20 +15,22 @@ import {
   Tooltip,
 } from 'antd';
 import {
-  CaretDownOutlined,
-  LoadingOutlined,
-  PlusCircleOutlined,
-  MinusCircleOutlined,
-  SwapOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
-import Navbar from '../../components/Navbar/Navbar.tsx';
+  ArrowDownUp as ArrowDownUpIcon,
+  ChevronDown as ChevronDownIcon,
+  CircleMinus as CircleMinusIcon,
+  CirclePlus as CirclePlusIcon,
+  History as HistoryIcon,
+  Info as InfoIcon,
+  LoaderCircle as LoaderCircleIcon,
+} from 'lucide-react';
+import PageHeader from '../../components/PageHeader/PageHeader.tsx';
+import SwapHistory from '../../components/SwapHistory/SwapHistory.tsx';
 import { useTranslation } from 'react-i18next';
 import { blockchains, Token } from '@storage/blockchains';
 import secureLocalStorage from 'react-secure-storage';
 
-import PoweredByFlux from '../../components/PoweredByFlux/PoweredByFlux.tsx';
 import SspConnect from '../../components/SspConnect/SspConnect.tsx';
+import { useThemeMode } from '../../contexts/ThemeContext.tsx';
 import './Swap.css';
 import { useAppSelector, useAppDispatch } from '../../hooks.ts';
 import { pairDetailsSellAmount, createSwap } from '../../lib/ABEController.ts';
@@ -49,6 +50,7 @@ import {
 } from '../../types';
 import AddressBox from './AddressBox.tsx';
 import { getDisplayName } from '../../storage/walletNames';
+import { truncateAddress } from '../../lib/addressDisplay';
 import { NoticeType } from 'antd/es/message/interface';
 import BigNumber from 'bignumber.js';
 import {
@@ -98,6 +100,58 @@ const balancesObject = {
   confirmed: '0.00',
   unconfirmed: '0.00',
 };
+
+/**
+ * Blocked-action red. #ef4444 clears 4.5:1 on the dark page (#0c0a09 →
+ * 5.25:1) but only 3.6:1 on the light one (#fafaf9), so the light theme steps
+ * down the ramp to #b91c1c (6.2:1) — no single red clears 4.5:1 on both.
+ */
+const BLOCKED_TEXT_COLOR = { dark: '#ef4444', light: '#b91c1c' } as const;
+
+/** Ties the Continue button to the reason it is unavailable. */
+const BLOCKED_REASON_ID = 'swap-blocked-reason';
+
+/**
+ * One selectable row in a swap modal (asset / sending wallet / receiving
+ * wallet / provider). These were bare `div onClick`: Tab skipped them
+ * entirely — the boxes they wrap render antd Cards, which are plain divs — so
+ * the asset, the destination wallet and the exchange provider could not be
+ * changed without a mouse. The row itself therefore carries the option
+ * semantics, the tab stop, Enter/Space activation and the focus ring.
+ */
+function SwapOption(props: {
+  selected: boolean;
+  onSelect: () => void;
+  children: ReactNode;
+}) {
+  const { selected, onSelect, children } = props;
+  // Mouse clicks focus the row too, but every row closes its modal on select,
+  // so a ring is only ever seen after keyboard navigation.
+  const [showFocusRing, setShowFocusRing] = useState(false);
+  return (
+    <div
+      role="option"
+      aria-selected={selected}
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      onFocus={() => setShowFocusRing(true)}
+      onBlur={() => setShowFocusRing(false)}
+      style={{
+        borderRadius: 12,
+        outline: showFocusRing ? '2px solid var(--ssp-focus)' : 'none',
+        outlineOffset: 1,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 function Swap() {
   const { t } = useTranslation(['send', 'common', 'home']);
@@ -161,12 +215,11 @@ function Swap() {
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
+  const { isDark } = useThemeMode();
 
-  const refresh = () => {
-    console.log(
-      'just a placeholder, navbar has refresh disabled but refresh is required to be passed',
-    );
-  };
+  // Swap history — re-homed from the deleted Navbar burger to a first-class
+  // header action (the only load-bearing item the burger offered on /swap).
+  const [openSwapHistory, setOpenSwapHistory] = useState(false);
 
   const displayMessage = (type: NoticeType, content: string) => {
     void toast.open({
@@ -642,8 +695,9 @@ function Swap() {
       generatedWallets[walletToUse] = addrInfo.address;
       await localForage.setItem('wallets-' + chainToUse, generatedWallets);
     } catch (error) {
-      // if error, key is invalid! we should never end up here as it is validated before
-      displayMessage('error', t('home:err_panic'));
+      // if error, key is invalid! we should never end up here as it is validated
+      // before — so name what failed and what to do about it, not "PANIC".
+      displayMessage('error', t('send:err_derive_address'));
       console.log(error);
     }
   };
@@ -780,6 +834,15 @@ function Swap() {
         setLoadingSwap(false);
         return;
       }
+      // The balance was already computed for the red "Balance:" readout, but it
+      // was never consulted here — createSwap below registers a REAL order with
+      // the exchange provider, so an unfundable amount would leave a dead order
+      // in swap history and prefill /send with money that isn't there.
+      if (amountExceedsBalance) {
+        displayMessage('error', t('home:swap.insufficient_balance'));
+        setLoadingSwap(false);
+        return;
+      }
       // adjust send section that its swapping
       // swap history?
       console.log(selectedExchange);
@@ -889,6 +952,27 @@ function Swap() {
     return cr * fi;
   };
 
+  const sellChain = sellAsset.split('_')[0];
+  const buyChain = buyAsset.split('_')[0];
+
+  // Everything Continue needs before it may register a live order with the
+  // exchange: an amount, both wallets derived (createSwap indexes them for the
+  // deposit + refund address), a balance that can fund the sell amount, and a
+  // quote matching what is on screen. All of this was already computed and some
+  // of it already rendered as a blocker, yet Continue was only ever
+  // `disabled={loadingSwap}` and rendered at full primary amber regardless.
+  const blockedReason: string | null =
+    !amountSell || amountSell <= 0
+      ? t('send:input_amount')
+      : !userAddresses[sellChain]?.[sellAssetAddress] ||
+          !userAddresses[buyChain]?.[buyAssetAddress]
+        ? t('home:swap.chain_sync_required')
+        : amountExceedsBalance
+          ? t('home:swap.insufficient_balance')
+          : loading || rate <= 0 || !selectedExchange.exchangeId
+            ? t('send:swap_awaiting_quote')
+            : null;
+
   const changeDirection = () => {
     setTriggerSwapDirection(true);
     setTimeout(() => {
@@ -904,16 +988,22 @@ function Swap() {
   };
 
   return (
-    <>
+    <div className="flow-page">
       {loadingSwap && <Spin size="large" fullscreen />}
-      <Navbar
-        refresh={refresh}
-        hasRefresh={false}
-        allowChainSwitch={false}
-        hasSwapHistory={true}
-        header={t('home:swap.swap_crypto')}
+      <PageHeader
+        title={t('home:swap.swap_crypto')}
+        right={
+          <button
+            type="button"
+            className="page-header-action"
+            onClick={() => setOpenSwapHistory(true)}
+            aria-label={t('home:navbar.swap_history')}
+            title={t('home:navbar.swap_history')}
+          >
+            <HistoryIcon />
+          </button>
+        }
       />
-      <Divider />
       <div className="swap-area">
         <div className="swap-box">
           <Row gutter={[16, 16]} className="swap-box-row no-border-bottom">
@@ -975,7 +1065,7 @@ function Swap() {
                   {blockchains[sellAsset.split('_')[0]].tokens?.find(
                     (token) => token.symbol === sellAsset.split('_')[1],
                   )?.symbol ?? blockchains[sellAsset.split('_')[0]]?.symbol}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </div>
               </Button>
             </Col>
@@ -1008,7 +1098,7 @@ function Swap() {
                   }
                   placement="bottomLeft"
                 >
-                  <InfoCircleOutlined
+                  <InfoIcon
                     style={{
                       color: amountExceedsBalance ? '#ef4444' : 'inherit',
                       cursor: 'help',
@@ -1054,24 +1144,17 @@ function Swap() {
                     sellAssetAddress,
                   )}
                   :{' '}
-                  {userAddresses[sellAsset.split('_')[0]][
-                    sellAssetAddress
-                  ].substring(0, 8)}
-                  ...
-                  {userAddresses[sellAsset.split('_')[0]][
-                    sellAssetAddress
-                  ].substring(
-                    userAddresses[sellAsset.split('_')[0]][sellAssetAddress]
-                      .length - 6,
+                  {truncateAddress(
+                    userAddresses[sellAsset.split('_')[0]][sellAssetAddress],
                   )}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </Button>
               ) : (
                 <Button
                   size="small"
                   type="text"
                   className="swap-box-row-sub-selection"
-                  style={{ color: 'red' }}
+                  style={{ color: '#ef4444' }}
                   disabled={true}
                 >
                   {t('home:swap.chain_sync_required')}
@@ -1086,10 +1169,10 @@ function Swap() {
               <div className="swap-switch-container">
                 <Button
                   className="swap-switch-button"
+                  icon={<ArrowDownUpIcon />}
+                  aria-label={t('home:swap.swap_crypto')}
                   onClick={() => changeDirection()}
-                >
-                  <SwapOutlined rotate={90} />
-                </Button>
+                />
               </div>
               {selectedExchange.exchangeId?.slice(-3) !== 'fix' ? (
                 <Popover
@@ -1102,7 +1185,10 @@ function Swap() {
                 >
                   {t('home:swap.you_get')} ~ &nbsp;
                   {loading ? (
-                    <Spin indicator={<LoadingOutlined spin />} size="small" />
+                    <Spin
+                      indicator={<LoaderCircleIcon className="lucide-spin" />}
+                      size="small"
+                    />
                   ) : (
                     ''
                   )}
@@ -1111,7 +1197,10 @@ function Swap() {
                 <>
                   {t('home:swap.you_get')} &nbsp;
                   {loading ? (
-                    <Spin indicator={<LoadingOutlined spin />} size="small" />
+                    <Spin
+                      indicator={<LoaderCircleIcon className="lucide-spin" />}
+                      size="small"
+                    />
                   ) : (
                     ''
                   )}
@@ -1173,7 +1262,7 @@ function Swap() {
                   {blockchains[buyAsset.split('_')[0]].tokens?.find(
                     (token) => token.symbol === buyAsset.split('_')[1],
                   )?.symbol ?? blockchains[buyAsset.split('_')[0]]?.symbol}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </div>
               </Button>
             </Col>
@@ -1213,24 +1302,17 @@ function Swap() {
                     buyAssetAddress,
                   )}
                   :{' '}
-                  {userAddresses[buyAsset.split('_')[0]][
-                    buyAssetAddress
-                  ].substring(0, 8)}
-                  ...
-                  {userAddresses[buyAsset.split('_')[0]][
-                    buyAssetAddress
-                  ].substring(
-                    userAddresses[buyAsset.split('_')[0]][buyAssetAddress]
-                      .length - 6,
+                  {truncateAddress(
+                    userAddresses[buyAsset.split('_')[0]][buyAssetAddress],
                   )}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </Button>
               ) : (
                 <Button
                   size="small"
                   type="text"
                   className="swap-box-row-sub-selection"
-                  style={{ color: 'red' }}
+                  style={{ color: '#ef4444' }}
                   disabled={true}
                 >
                   {t('home:swap.chain_sync_required')}
@@ -1271,7 +1353,7 @@ function Swap() {
                       ? ` - ${t('home:swap.best_rate')}`
                       : ` - ${t('home:swap.user_choice')}`
                     : ''}
-                  <CaretDownOutlined />
+                  <ChevronDownIcon />
                 </Button>
               </Col>
             </Row>
@@ -1280,21 +1362,16 @@ function Swap() {
         <div className="rate-value">
           {rate > 0 && loading === false ? (
             <>
-              {showAdvancedOptions ? (
-                <>
-                  <MinusCircleOutlined
-                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                  />
-                  &nbsp;
-                </>
-              ) : (
-                <>
-                  <PlusCircleOutlined
-                    onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                  />
-                  &nbsp;
-                </>
-              )}
+              <button
+                type="button"
+                className="swap-advanced-toggle"
+                aria-label={t('home:swap.advanced_options')}
+                aria-expanded={showAdvancedOptions}
+                onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+              >
+                {showAdvancedOptions ? <CircleMinusIcon /> : <CirclePlusIcon />}
+              </button>
+              &nbsp;
               <Popover
                 content={
                   selectedExchange.exchangeId?.slice(-3) === 'fix'
@@ -1315,11 +1392,16 @@ function Swap() {
             <span>&nbsp;</span>
           )}
           <span style={{ float: 'right' }}>
+            {/* This is the only link on the screen and it is the terms the user
+                is agreeing to by swapping, so it has to look like a link.
+                `color: inherit` + `textDecoration: none` made it identical to
+                the caption beside it — colour alone is not a permitted
+                affordance anyway, and here there was not even colour. */}
             <a
               href="https://sspwallet.io/terms-of-service"
               target="_blank"
-              rel="noreferrer"
-              style={{ color: 'inherit', textDecoration: 'none' }}
+              rel="noopener noreferrer"
+              className="swap-tos-link"
             >
               {t('home:swap.proceeding_agree_tos')}
             </a>
@@ -1335,11 +1417,27 @@ function Swap() {
           width: '100%',
         }}
       >
+        {/* Why Continue is unavailable, in the flow right above it — a disabled
+            button cannot be focused, so a tooltip would never reach a keyboard
+            or screen-reader user. */}
+        {blockedReason && (
+          <div
+            id={BLOCKED_REASON_ID}
+            role="status"
+            style={{
+              fontSize: 12,
+              color: BLOCKED_TEXT_COLOR[isDark ? 'dark' : 'light'],
+            }}
+          >
+            {blockedReason}
+          </div>
+        )}
         <Button
           type="primary"
           size="large"
           onClick={proceed}
-          disabled={loadingSwap}
+          disabled={loadingSwap || blockedReason !== null}
+          aria-describedby={blockedReason ? BLOCKED_REASON_ID : undefined}
         >
           {t('common:continue')}
         </Button>
@@ -1369,36 +1467,39 @@ function Swap() {
               size="large"
               style={{ marginBottom: '16px', width: '100%' }}
             />
-            {buyAssets[buyAsset]
-              .filter(
-                (asset) =>
-                  (
-                    blockchains[asset.split('_')[0]].tokens?.find(
-                      (token) => token.symbol === asset.split('_')[1],
-                    )?.symbol ?? blockchains[asset.split('_')[0]]?.symbol
-                  )
-                    ?.toLowerCase()
-                    ?.includes(sellAssetFilter.toLowerCase()) ||
-                  (
-                    blockchains[asset.split('_')[0]].tokens?.find(
-                      (token) => token.symbol === asset.split('_')[1],
-                    )?.name ?? blockchains[asset.split('_')[0]]?.name
-                  )
-                    ?.toLowerCase()
-                    ?.includes(sellAssetFilter.toLowerCase()),
-              )
-              .map((asset) => (
-                <div
-                  onClick={() => {
-                    setSellAsset(asset);
-                    setSellAssetAddress('0-0');
-                    handleCancelSellAsset();
-                  }}
-                  key={asset}
-                >
-                  <AssetBox asset={asset} />
-                </div>
-              ))}
+            <div role="listbox" aria-label={t('home:swap.select_sell_asset')}>
+              {buyAssets[buyAsset]
+                .filter(
+                  (asset) =>
+                    (
+                      blockchains[asset.split('_')[0]].tokens?.find(
+                        (token) => token.symbol === asset.split('_')[1],
+                      )?.symbol ?? blockchains[asset.split('_')[0]]?.symbol
+                    )
+                      ?.toLowerCase()
+                      ?.includes(sellAssetFilter.toLowerCase()) ||
+                    (
+                      blockchains[asset.split('_')[0]].tokens?.find(
+                        (token) => token.symbol === asset.split('_')[1],
+                      )?.name ?? blockchains[asset.split('_')[0]]?.name
+                    )
+                      ?.toLowerCase()
+                      ?.includes(sellAssetFilter.toLowerCase()),
+                )
+                .map((asset) => (
+                  <SwapOption
+                    key={asset}
+                    selected={asset === sellAsset}
+                    onSelect={() => {
+                      setSellAsset(asset);
+                      setSellAssetAddress('0-0');
+                      handleCancelSellAsset();
+                    }}
+                  >
+                    <AssetBox asset={asset} />
+                  </SwapOption>
+                ))}
+            </div>
           </div>
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button
@@ -1434,36 +1535,39 @@ function Swap() {
               size="large"
               style={{ marginBottom: '16px', width: '100%' }}
             />
-            {sellAssets[sellAsset]
-              .filter(
-                (asset) =>
-                  (
-                    blockchains[asset.split('_')[0]].tokens?.find(
-                      (token) => token.symbol === asset.split('_')[1],
-                    )?.symbol ?? blockchains[asset.split('_')[0]]?.symbol
-                  )
-                    ?.toLowerCase()
-                    ?.includes(buyAssetFilter.toLowerCase()) ||
-                  (
-                    blockchains[asset.split('_')[0]].tokens?.find(
-                      (token) => token.symbol === asset.split('_')[1],
-                    )?.name ?? blockchains[asset.split('_')[0]]?.name
-                  )
-                    ?.toLowerCase()
-                    ?.includes(buyAssetFilter.toLowerCase()),
-              )
-              .map((asset) => (
-                <div
-                  onClick={() => {
-                    setBuyAsset(asset);
-                    setBuyAssetAddress('0-0');
-                    handleCancelBuyAsset();
-                  }}
-                  key={asset}
-                >
-                  <AssetBox asset={asset} />
-                </div>
-              ))}
+            <div role="listbox" aria-label={t('home:swap.select_buy_asset')}>
+              {sellAssets[sellAsset]
+                .filter(
+                  (asset) =>
+                    (
+                      blockchains[asset.split('_')[0]].tokens?.find(
+                        (token) => token.symbol === asset.split('_')[1],
+                      )?.symbol ?? blockchains[asset.split('_')[0]]?.symbol
+                    )
+                      ?.toLowerCase()
+                      ?.includes(buyAssetFilter.toLowerCase()) ||
+                    (
+                      blockchains[asset.split('_')[0]].tokens?.find(
+                        (token) => token.symbol === asset.split('_')[1],
+                      )?.name ?? blockchains[asset.split('_')[0]]?.name
+                    )
+                      ?.toLowerCase()
+                      ?.includes(buyAssetFilter.toLowerCase()),
+                )
+                .map((asset) => (
+                  <SwapOption
+                    key={asset}
+                    selected={asset === buyAsset}
+                    onSelect={() => {
+                      setBuyAsset(asset);
+                      setBuyAssetAddress('0-0');
+                      handleCancelBuyAsset();
+                    }}
+                  >
+                    <AssetBox asset={asset} />
+                  </SwapOption>
+                ))}
+            </div>
           </div>
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button
@@ -1489,23 +1593,24 @@ function Swap() {
           size="middle"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
-          <div>
+          <div role="listbox" aria-label={t('home:swap.select_sending_wallet')}>
             {userAddresses[sellAsset.split('_')[0]] &&
               Object.keys(userAddresses[sellAsset.split('_')[0]]).map(
                 (wallet) => (
-                  <div
-                    onClick={() => {
+                  <SwapOption
+                    key={wallet}
+                    selected={wallet === sellAssetAddress}
+                    onSelect={() => {
                       setSellAssetAddress(wallet);
                       handleCancelSendingWallet();
                     }}
-                    key={wallet}
                   >
                     <AddressBox
                       asset={sellAsset}
                       wallet={wallet}
                       address={userAddresses[sellAsset.split('_')[0]][wallet]}
                     />
-                  </div>
+                  </SwapOption>
                 ),
               )}
           </div>
@@ -1533,23 +1638,27 @@ function Swap() {
           size="middle"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
-          <div>
+          <div
+            role="listbox"
+            aria-label={t('home:swap.select_receiving_wallet')}
+          >
             {userAddresses[buyAsset.split('_')[0]] &&
               Object.keys(userAddresses[buyAsset.split('_')[0]]).map(
                 (wallet) => (
-                  <div
-                    onClick={() => {
+                  <SwapOption
+                    key={wallet}
+                    selected={wallet === buyAssetAddress}
+                    onSelect={() => {
                       setBuyAssetAddress(wallet);
                       handleCancelReceivingWallet();
                     }}
-                    key={wallet}
                   >
                     <AddressBox
                       asset={buyAsset}
                       wallet={wallet}
                       address={userAddresses[buyAsset.split('_')[0]][wallet]}
                     />
-                  </div>
+                  </SwapOption>
                 ),
               )}
           </div>
@@ -1578,7 +1687,7 @@ function Swap() {
           size="middle"
           style={{ marginBottom: 16, marginTop: 16 }}
         >
-          <div>
+          <div role="listbox" aria-label={t('home:swap.select_swap_provider')}>
             {possibleExchangeProviders
               .sort((a, b) => {
                 const aAmount = parseFloat(a.buyAmount ?? '0');
@@ -1586,19 +1695,20 @@ function Swap() {
                 return bAmount - aAmount;
               })
               .map((provider) => (
-                <div
-                  onClick={() => {
+                <SwapOption
+                  key={provider.exchangeId}
+                  selected={provider.exchangeId === selectedExchange.exchangeId}
+                  onSelect={() => {
                     onChangeExchangeProvider(provider.exchangeId ?? '');
                     handleCancelExchangeProvider();
                   }}
-                  key={provider.exchangeId}
                 >
                   <ProviderBox
                     provider={provider}
                     buySymbol={buyAsset.split('_')[1]}
                     sellSymbol={sellAsset.split('_')[1]}
                   />
-                </div>
+                </SwapOption>
               ))}
           </div>
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
@@ -1613,9 +1723,9 @@ function Swap() {
           </Space>
         </Space>
       </Modal>
+      <SwapHistory open={openSwapHistory} openAction={setOpenSwapHistory} />
       <SspConnect />
-      <PoweredByFlux />
-    </>
+    </div>
   );
 }
 

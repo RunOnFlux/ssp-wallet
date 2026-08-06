@@ -1,9 +1,51 @@
 import * as accountAbstraction from '@runonflux/aa-schnorr-multisig-sdk';
+import { ethers } from 'ethers';
 import type { keyPair, publicPrivateNonce } from '../types';
 
 interface publicNonces {
   kPublic: string;
   kTwoPublic: string;
+}
+
+/**
+ * Build the EIP-191 preimage for a dApp `personal_sign` payload.
+ *
+ * The prefix carries the message's UTF-8 BYTE length, NOT the JS string
+ * length in UTF-16 code units. Those differ for every non-ASCII message
+ * (emoji, CJK, accented characters), and the wrong length produces a digest
+ * no dApp can verify.
+ *
+ * The returned string is the exact preimage the Schnorr SDK hashes
+ * (`solidityPackedKeccak256(['string'], [preimage])`, i.e.
+ * `keccak256(toUtf8Bytes(preimage))`), so by construction
+ * `keccak256(toUtf8Bytes(buildPersonalSignPreimage(m))) === hashMessage(m)`.
+ *
+ * A 0x-prefixed payload is hex-encoded bytes, and it is only accepted when
+ * those bytes are valid UTF-8 that re-encodes byte-for-byte: SSP's 2-of-2
+ * flow transports the preimage to the SSP Key as a string, so a binary
+ * payload has no representation here. Refusing it beats signing the literal
+ * '0x…' hex text against a digest the dApp will never check.
+ */
+export function buildPersonalSignPreimage(message: string): string {
+  let text: string;
+  if (/^0x[0-9a-fA-F]*$/.test(message)) {
+    let decoded: string;
+    let bytes: Uint8Array;
+    try {
+      bytes = ethers.getBytes(message);
+      decoded = ethers.toUtf8String(bytes);
+    } catch {
+      throw new Error('personal_sign payload is not valid UTF-8 text');
+    }
+    if (ethers.hexlify(ethers.toUtf8Bytes(decoded)) !== ethers.hexlify(bytes)) {
+      throw new Error('personal_sign payload is not valid UTF-8 text');
+    }
+    text = decoded;
+  } else {
+    text = message;
+  }
+  const byteLength = ethers.toUtf8Bytes(text).length;
+  return `${ethers.MessagePrefix}${byteLength}${text}`;
 }
 
 export function signMessageWithSchnorrMultisig(

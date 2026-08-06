@@ -12,6 +12,89 @@ const OPEN_MODE_SIDEPANEL = 'sidepanel';
 
 const isSidePanelSupported = typeof ext.sidePanel !== 'undefined';
 
+// ---------------------------------------------------------------------------
+// Sender trust
+//
+// The extension UI and injected content scripts share one runtime.onMessage
+// channel. Telling them apart is the job of the `sender` argument, which the
+// browser process populates: fields inside the message body are page-supplied,
+// since contentscript.js forwards page payloads verbatim. Every privileged path
+// below therefore keys off `sender`.
+// ---------------------------------------------------------------------------
+
+const EXT_BASE_URL = ext.runtime.getURL('');
+
+/** True only for our own extension pages (popup, side panel, options). */
+function isFromExtensionUI(sender) {
+  return (
+    sender?.id === ext.runtime.id &&
+    typeof sender.url === 'string' &&
+    sender.url.startsWith(EXT_BASE_URL)
+  );
+}
+
+/** True only for our content script running in a web page/frame. */
+function isFromContentScript(sender) {
+  return (
+    sender?.id === ext.runtime.id &&
+    !!sender.tab &&
+    typeof sender.url === 'string' &&
+    !sender.url.startsWith(EXT_BASE_URL)
+  );
+}
+
+/**
+ * The requesting frame's real origin, as reported by the browser.
+ * `sender.origin` is Chrome-only, so fall back to parsing the frame URL —
+ * with all_frames:true this is the IFRAME's origin, which is the correct thing
+ * to show the user. Returns null when the origin is opaque (sandboxed frame,
+ * data:/about: URL), which callers must treat as untrusted rather than absent.
+ */
+function verifiedOrigin(sender) {
+  if (typeof sender?.origin === 'string' && sender.origin !== 'null') {
+    return sender.origin;
+  }
+  const url = sender?.url || sender?.tab?.url;
+  if (typeof url !== 'string') return null;
+  try {
+    const { origin } = new URL(url);
+    return origin && origin !== 'null' ? origin : null;
+  } catch (_err) {
+    return null;
+  }
+}
+
+/**
+ * Replace any caller-supplied origin/site identity with browser-verified
+ * values. `siteName` and `iconUrl` stay page-supplied — they are cosmetic and
+ * cannot be verified — but they are marked so the UI can label them as such
+ * and must never be used to decide how much to trust a request.
+ */
+function stampVerifiedOrigin(request, sender) {
+  const origin = verifiedOrigin(sender);
+  const topUrl = sender?.tab?.url;
+  let topOrigin = null;
+  try {
+    topOrigin = topUrl ? new URL(topUrl).origin : null;
+  } catch (_err) {
+    topOrigin = null;
+  }
+  return {
+    ...request,
+    params: {
+      ...(request && typeof request.params === 'object' ? request.params : {}),
+      // Authoritative. Overwrites whatever the page sent.
+      origin,
+      verifiedOrigin: origin,
+      topOrigin,
+      // NOTE: every key added here must also be accepted by sanitizeRequest()
+      // (src/lib/sanitizeRequest.ts). Its param loop rejects any value that is
+      // not a string unless the key has an explicit branch.
+      isSubframe: typeof sender?.frameId === 'number' && sender.frameId !== 0,
+    },
+  };
+}
+
 async function getDefaultOpenBehavior() {
   try {
     const result = await ext.storage.local.get(STORAGE_KEY_DEFAULT_OPEN);
@@ -285,9 +368,11 @@ const registerInPageContentScript = async () => {
 
 registerInPageContentScript();
 
-// UI listener is ready — forward any buffered message
-ext.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+// UI listener is ready — forward any buffered message.
+// Only our own extension pages may claim this origin.
+ext.runtime.onMessage.addListener((message, sender, _sendResponse) => {
   if (message.origin !== 'ssp-ui-ready') return false;
+  if (!isFromExtensionUI(sender)) return false;
 
   if (pendingMessageData) {
     const data = pendingMessageData;
@@ -301,8 +386,12 @@ ext.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
   return false;
 });
 
-ext.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+// The wallet UI's answer to a pending dapp request. This resolves the dapp's
+// sendResponse, so it MUST come from our own UI — otherwise any web page could
+// resolve another site's in-flight request with data of its choosing.
+ext.runtime.onMessage.addListener((message, sender, _sendResponse) => {
   if (message.origin !== 'ssp') return false;
+  if (!isFromExtensionUI(sender)) return false;
 
   if (pendingRequest) {
     pendingRequest(message.data);
@@ -326,6 +415,17 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return false;
   }
 
+  // Only our content script may raise a dapp request. Anything else reaching
+  // here is not a web page asking for something.
+  if (!isFromContentScript(sender)) {
+    return false;
+  }
+
+  // Overwrite the page's self-declared identity with the browser-verified
+  // origin BEFORE the request is buffered or forwarded, so every consumer —
+  // the approval UI, and the SSP Key via the relay — sees the real requester.
+  const verifiedRequest = stampVerifiedOrigin(request, sender);
+
   pendingRequest = sendResponse;
 
   void (async () => {
@@ -333,7 +433,7 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     if (!hasActiveUI) {
       // Buffer message — it will be sent when the UI port connects
-      pendingMessageData = request;
+      pendingMessageData = verifiedRequest;
 
       const defaultMode = await getDefaultOpenBehavior();
       if (defaultMode === OPEN_MODE_SIDEPANEL && isSidePanelSupported) {
@@ -349,7 +449,7 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
       setTimeout(() => {
         void ext.runtime.sendMessage({
           origin: 'ssp-background',
-          data: request,
+          data: verifiedRequest,
         });
       }, 100);
     }

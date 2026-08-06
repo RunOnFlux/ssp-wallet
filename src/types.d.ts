@@ -401,6 +401,10 @@ export interface syncSSPRelay {
   // Scripts from first address (index 0) - not strictly needed but extra assurance
   redeemScript?: string;
   witnessScript?: string;
+  // ssp-key's recovery account xpub (m/48'/coin'/99'/scriptType') and its
+  // signature over it, verified against the identity key before use.
+  recoveryXpub?: string;
+  xpubSignature?: string;
   // Enterprise nonce pool status (enriched by relay)
   enterpriseNoncesNeeded?: {
     wallet: boolean;

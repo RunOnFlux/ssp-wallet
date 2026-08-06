@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from '../../lib/toast';
 import { Modal, Input, Button, Typography } from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Plus as PlusIcon, Trash2 as Trash2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import localForage from 'localforage';
 import { blockchains } from '@storage/blockchains';
@@ -160,7 +160,8 @@ function ConfigureDelegates(props: {
             />
             <Button
               type="primary"
-              icon={<PlusOutlined />}
+              icon={<PlusIcon />}
+              aria-label={t('home:nodesTable.configure_delegates')}
               onClick={() => void handleAddDelegate()}
               disabled={
                 delegates.length >= MAX_DELEGATES || !newDelegate.trim()
@@ -172,7 +173,7 @@ function ConfigureDelegates(props: {
         {delegates.length === 0 ? (
           <Text type="secondary">{t('home:nodesTable.no_delegates')}</Text>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="feed-list">
             {delegates.map((item, index) => (
               <div
                 key={index}
@@ -180,11 +181,17 @@ function ConfigureDelegates(props: {
                   display: 'flex',
                   alignItems: 'flex-start',
                   gap: 12,
+                  padding: '10px 12px',
                 }}
               >
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <Text
-                    style={{ fontSize: 12, marginBottom: 4, display: 'block' }}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      marginBottom: 4,
+                      display: 'block',
+                    }}
                   >
                     {item.name ||
                       t('home:nodesTable.delegate_n', { index: index + 1 })}
@@ -194,7 +201,7 @@ function ConfigureDelegates(props: {
                     type="secondary"
                     style={{
                       fontSize: 11,
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--ssp-mono)',
                       wordBreak: 'break-all',
                       display: 'block',
                     }}
@@ -206,9 +213,10 @@ function ConfigureDelegates(props: {
                   type="text"
                   danger
                   size="small"
-                  icon={<DeleteOutlined />}
+                  icon={<Trash2Icon />}
+                  aria-label={t('common:delete')}
                   onClick={() => void handleRemoveDelegate(index)}
-                  style={{ marginTop: 18 }}
+                  style={{ marginTop: 10 }}
                 />
               </div>
             ))}

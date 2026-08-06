@@ -1,5 +1,5 @@
 import { Typography, Button, Space, Modal } from 'antd';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { CircleCheck as CircleCheckIcon } from 'lucide-react';
 const { Text } = Typography;
 import { useTranslation } from 'react-i18next';
 
@@ -30,7 +30,7 @@ function PublicNoncesReceived(props: {
           size={32}
           style={{ marginBottom: 16, marginTop: 16 }}
         >
-          <CheckCircleOutlined style={{ fontSize: '48px' }} />
+          <CircleCheckIcon style={{ fontSize: '48px' }} />
           <Text>
             {t('home:publicNoncesReceived.public_nonces_received_info')}
           </Text>

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Typography, Card, Space, Flex, Modal, Input } from 'antd';
 import {
-  CloseOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  CheckCircleOutlined,
-  MailOutlined,
-} from '@ant-design/icons';
+  ArrowLeft as ArrowLeftIcon,
+  ArrowRight as ArrowRightIcon,
+  CircleCheck as CircleCheckIcon,
+  Mail as MailIcon,
+  X as XIcon,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './TutorialOverlay.css';
 
@@ -76,7 +76,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   onEnterpriseVerifyCode,
   onEnterpriseSignAndSubscribe,
 }) => {
-  const { t } = useTranslation(['home']);
+  const { t } = useTranslation(['home', 'common']);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const [cardPosition, setCardPosition] = useState({ top: 0, left: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -587,7 +587,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <div>
-            <CheckCircleOutlined
+            <CircleCheckIcon
               style={{
                 fontSize: '48px',
                 color: '#22c55e',
@@ -616,7 +616,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 strong
                 style={{ display: 'block', marginBottom: 8 }}
               >
-                <MailOutlined style={{ marginRight: 8 }} />
+                <MailIcon style={{ marginRight: 8 }} />
                 {t('home:settings.sspEnterprise.title')}
               </Typography.Text>
               <Typography.Text
@@ -736,7 +736,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                     type="success"
                     style={{ display: 'block', marginBottom: 4, fontSize: 12 }}
                   >
-                    <CheckCircleOutlined style={{ marginRight: 4 }} />
+                    <CircleCheckIcon style={{ marginRight: 4 }} />
                     {t('home:settings.sspEnterprise.email_verified')}
                   </Typography.Text>
                   <Typography.Text
@@ -770,7 +770,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               }}
             >
               <Typography.Text type="success">
-                <CheckCircleOutlined style={{ marginRight: 8 }} />
+                <CircleCheckIcon style={{ marginRight: 8 }} />
                 {t('home:settings.sspEnterprise.subscribe_success')}
               </Typography.Text>
             </div>
@@ -787,7 +787,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               }
             }}
             style={{ width: '100%' }}
-            icon={<CheckCircleOutlined />}
+            icon={<CircleCheckIcon />}
           >
             {t('home:tutorial.complete')}
           </Button>
@@ -803,7 +803,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         >
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <div style={{ textAlign: 'center' }}>
-              <MailOutlined
+              <MailIcon
                 style={{ fontSize: 32, color: '#fbbf24', marginBottom: 12 }}
               />
               <Typography.Title level={5} style={{ margin: 0 }}>
@@ -898,9 +898,14 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               </Text>
               <Button
                 type="text"
-                icon={<CloseOutlined />}
+                icon={<XIcon />}
                 onClick={handleClose}
                 size="small"
+                /* Icon-only: without a name a screen reader announced only
+                   "button". Matches the aria-label + title convention the
+                   other icon-only buttons in this codebase already use. */
+                aria-label={t('common:close')}
+                title={t('common:close')}
               />
             </Flex>
           </Flex>
@@ -928,7 +933,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               <div>
                 {!currentStepData.hidePrevious && (
                   <Button
-                    icon={<ArrowLeftOutlined />}
+                    icon={<ArrowLeftIcon />}
                     onClick={onPrevious}
                     disabled={currentStep === 0}
                     size="small"
@@ -941,7 +946,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 {currentStepData.action !== 'click' && (
                   <Button
                     type="primary"
-                    icon={<ArrowRightOutlined />}
+                    icon={<ArrowRightIcon />}
                     onClick={handleNext}
                     size="small"
                   >

@@ -1,0 +1,40 @@
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 16px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.14);
+  color: #b45309;
+}
+
+:root[data-theme='dark'] .empty-state-icon {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+
+.empty-state-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.empty-state-desc {
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0.65;
+  max-width: 280px;
+}
+
+.empty-state-action {
+  margin-top: 4px;
+}

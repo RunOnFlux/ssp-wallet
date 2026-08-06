@@ -1,22 +1,52 @@
+/* Import-token rows — v2 row/checkbox language inside the shared .feed-list */
+.token-import-row {
+  /* Block-level flex row — no explicit width; width:100% + padding would
+     overflow (divs are content-box, unlike the button-based .node-row). */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.token-import-row:hover {
+  background: rgba(128, 128, 128, 0.07);
+}
+
+.token-import-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 auto;
+  line-height: 1.35;
+}
+
+.token-import-symbol {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.token-import-name {
+  font-size: 11px;
+  opacity: 0.65;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .not-selectable {
+  cursor: default;
   filter: opacity(0.7) grayscale(0.7);
 }
 
-.token-box-import {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  max-width: 100%;
-}
-
-.token-box-import-container {
-  min-width: 170px;
-  width: calc(50% - 8px);
-  position: relative;
-}
-
-@media (max-width: 419px) {
-  .token-box-import-container {
-    width: 100%;
+@media (prefers-reduced-motion: reduce) {
+  .token-import-row {
+    transition: none;
   }
 }
