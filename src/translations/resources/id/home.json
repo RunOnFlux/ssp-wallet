@@ -1,17 +1,17 @@
 {
   "err_panic": "PANIK: Kunci SSP tidak valid.",
   "backupHealth": {
-    "verify": "Verify",
-    "verify_title": "Verify your backup",
-    "verify_lead": "Confirm you still have your seed phrase backup. No one can recover it for you.",
-    "verify_decrypt_error": "Could not read your wallet. Please try again.",
-    "verified_toast": "Backup verified. Your wallet is safe."
+    "verify": "Verifikasi",
+    "verify_title": "Verifikasi cadangan Anda",
+    "verify_lead": "Pastikan Anda masih memiliki cadangan frasa benih Anda. Tidak ada yang bisa memulihkannya untuk Anda.",
+    "verify_decrypt_error": "Tidak dapat membaca dompet Anda. Silakan coba lagi.",
+    "verified_toast": "Cadangan telah diverifikasi. Dompet Anda aman."
   },
   "backupCheckup": {
-    "title": "Backup checkup",
-    "body": "It's been a while — take 30 seconds to confirm your seed words still match your backup.",
-    "protecting": "Your backup protects {{amount}} across your wallets.",
-    "later": "Later"
+    "title": "Pemeriksaan cadangan",
+    "body": "Sudah lama sekali — luangkan waktu 30 detik untuk memastikan kata-kata seed milik Anda masih sesuai dengan cadangan Anda.",
+    "protecting": "Cadangan Anda melindungi {{amount}} di seluruh dompet Anda.",
+    "later": "Nanti"
   },
   "balances": {
     "locked": "Terkunci: {{balance}} {{symbol}}",
@@ -49,12 +49,12 @@
     "date": "Tanggal",
     "amount": "Jumlah",
     "confirmations": "Konfirmasi",
-    "fee": "Fee",
-    "to_address": "To",
-    "block_height": "Block height",
-    "token_contract": "Token contract",
-    "note": "Note",
-    "tx_part": "{{ord}} of {{total}}",
+    "fee": "Biaya",
+    "to_address": "Kepada",
+    "block_height": "Tinggi blok",
+    "token_contract": "Kontrak token",
+    "note": "Catatan",
+    "tx_part": "{{ord}} dari {{total}}",
     "export_tx": "Ekspor Transaksi",
     "tx_confirmed": "Dikonfirmasi.",
     "tx_unconfirmed": "Belum dikonfirmasi.",
@@ -132,7 +132,7 @@
     "delegates_count_one": "{{count}} delegasi dikonfigurasi",
     "delegates_count_other": "{{count}} delegasi dikonfigurasi",
     "redeem_script": "Skrip Penukaran",
-    "node_actions": "Node actions"
+    "node_actions": "Tindakan node"
   },
   "setupNode": {
     "setup_node": "Mempersiapkan {{chainName}} simpul",
@@ -219,28 +219,28 @@
       "email_verified": "Email terverifikasi!",
       "sign_and_subscribe": "Daftar & Berlangganan",
       "waiting_signature": "Menunggu SSP Key...",
-      "save_preferences": "Save Preferences",
-      "preferences_saved": "Notification preferences updated.",
-      "err_save_preferences": "Error saving notification preferences. Please try again.",
-      "min_tx_notification": "Minimum transaction amount (USD)",
-      "min_tx_notification_help": "Skip emails for transactions below this amount — e.g. frequent node rewards. 0 = notify for everything."
+      "save_preferences": "Simpan Preferensi",
+      "preferences_saved": "Preferensi notifikasi telah diperbarui.",
+      "err_save_preferences": "Terjadi kesalahan saat menyimpan preferensi notifikasi. Silakan coba lagi.",
+      "min_tx_notification": "Jumlah transaksi minimum (USD)",
+      "min_tx_notification_help": "Lewati email untuk transaksi di bawah jumlah ini — misalnya, hadiah node yang sering diterima. 0 = beri notifikasi untuk semua transaksi."
     },
-    "security": "Security",
-    "verify_backup": "Verify seed backup",
-    "verify_backup_help": "Confirm your seed phrase backup by matching one of its words — the phrase itself is never shown.",
-    "backup_verified": "Verified",
-    "preferences": "Preferences",
-    "tools": "Tools",
-    "advanced": "Advanced",
-    "advanced_hint": "Network endpoints & expert tools",
-    "wallet_key_details": "Wallet & Key details",
-    "about": "About",
-    "enterprise_email_alerts": "SSP Enterprise email alerts",
-    "change_pw_help": "Changing your password re-imports the wallet from your seed phrase — have it ready before you start.",
-    "change_pw_confirm": "Changing your password means re-entering your seed phrase and re-encrypting your wallet. You'll need your seed phrase. Continue?",
-    "popular_currencies": "Popular",
-    "all_currencies": "All currencies",
-    "public_nonces_plain": "One-time signing numbers your SSP Key pre-shares so transactions on EVM chains can be co-signed. Sync them again if EVM signing ever gets stuck."
+    "security": "Keamanan",
+    "verify_backup": "Verifikasi cadangan seed",
+    "verify_backup_help": "Konfirmasikan cadangan frasa benih Anda dengan mencocokkan salah satu kata di dalamnya — frasa tersebut sendiri tidak pernah ditampilkan.",
+    "backup_verified": "Terverifikasi",
+    "preferences": "Preferensi",
+    "tools": "Peralatan",
+    "advanced": "Lanjutan",
+    "advanced_hint": "Titik akhir jaringan & perangkat ahli",
+    "wallet_key_details": "Detail Dompet & Kunci",
+    "about": "Tentang",
+    "enterprise_email_alerts": "Notifikasi email SSP Enterprise",
+    "change_pw_help": "Mengubah kata sandi Anda akan mengimpor ulang dompet dari frasa benih Anda — pastikan frasa benih tersebut sudah siap sebelum Anda mulai.",
+    "change_pw_confirm": "Mengubah kata sandi berarti memasukkan kembali frasa benih Anda dan mengenkripsi ulang dompet Anda. Anda akan memerlukan frasa benih tersebut. Lanjutkan?",
+    "popular_currencies": "Populer",
+    "all_currencies": "Semua mata uang",
+    "public_nonces_plain": "Angka penandatanganan sekali pakai yang dibagikan sebelumnya oleh SSP Key Anda memungkinkan transaksi di jaringan EVM untuk ditandatangani bersama. Lakukan sinkronisasi ulang jika proses penandatanganan EVM mengalami kendala."
   },
   "receive": {
     "receive_chain_wallet": "Terima ke {{chain}} {{wallet}}",
@@ -260,26 +260,26 @@
     "swap": "Tukar"
   },
   "keyHandshake": {
-    "title": "Approve on your SSP Key",
-    "step_sent": "Sent to your SSP Key",
-    "step_awaiting": "Awaiting approval on your phone…",
-    "step_approved": "Approved",
-    "step_rejected": "Rejected",
-    "expires_in": "Expires in",
-    "expired": "This request has expired. Close this dialog and try again.",
-    "show_qr": "Show QR instead",
-    "hide_qr": "Hide QR"
+    "title": "Setujui pada SSP Key Anda",
+    "step_sent": "Dikirim ke SSP Key Anda",
+    "step_awaiting": "Menunggu persetujuan di ponsel Anda…",
+    "step_approved": "Disetujui",
+    "step_rejected": "Ditolak",
+    "expires_in": "Kedaluwarsa dalam",
+    "expired": "Permintaan ini telah kedaluwarsa. Tutup dialog ini dan coba lagi.",
+    "show_qr": "Tampilkan QR-nya saja",
+    "hide_qr": "Sembunyikan QR"
   },
   "confirmTxKey": {
     "info_1": "Untuk dapat mengonfirmasi transaksi pada Kunci SSP milik Anda, buka Kunci SSP di ponsel milik Anda dan konfirmasikan tindakan tersebut. Anda dapat mengetuk untuk menyegarkan atau memindai kode QR berikut ini.",
     "info_2": "Untuk mengonfirmasi transaksi pada Kunci SSP Anda, buka Kunci SSP di ponsel Anda dan konfirmasikan tindakannya.",
     "soft_timeout_title": "Memakan waktu lebih lama dari biasanya?",
-    "soft_timeout_description": "Make sure SSP Key is open and online. You can also show the QR fallback below to load the request manually."
+    "soft_timeout_description": "Pastikan SSP Key dalam keadaan terbuka dan online. Anda juga dapat menampilkan QR cadangan di bawah ini untuk memuat permintaan secara manual."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "Konfirmasikan Nonce Publik pada Kunci SSP",
     "confirm_public_nonces_key_info": "Untuk mengirim transaksi EVM, pertama-tama kita perlu mendapatkan nonce publik dari SSP Key yang digunakan untuk konstruksi transaksi.",
-    "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
+    "confirm_public_nonces_key_info_2": "Untuk mengonfirmasi nonce publik pada SSP Key Anda, buka aplikasi SSP Key di ponsel Anda dan konfirmasikan tindakan tersebut. Anda dapat mengetuk untuk memperbarui halaman atau memindai kode QR berikut.",
     "manual_input": "Masukkan Nonce Publik secara manual",
     "public_nonces_stored": "Nonce Publik Disimpan!",
     "invalid_public_nonces": "Nonce Publik Tidak Valid."
@@ -287,15 +287,15 @@
   "navbar": {
     "refresh": "Segarkan",
     "chain_wallet": "{{chain}} {{wallet}}",
-    "addr_details": "Address details",
+    "addr_details": "Rincian alamat",
     "generate_new_wallet": "Hasilkan Dompet Baru",
     "remove_last_wallet": "Hapus Dompet Terakhir",
     "remove": "Menghapus",
     "remove_last_wallet_desc": "Tindakan ini akan menghapus dompet Anda yang terakhir dibuat.",
     "max_wallets": "42. Jawaban atas pertanyaan utama tentang kehidupan, alam semesta, dan segalanya.",
-    "ssp_message_sign": "Message signing",
+    "ssp_message_sign": "Penandatanganan pesan",
     "swap_history": "Riwayat Penukaran",
-    "lock": "Lock"
+    "lock": "Kunci"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Kata sandi tidak valid.",
@@ -307,8 +307,8 @@
   },
   "key": {
     "sync_key": "Kunci Sinkronisasi",
-    "err_sync_fail": "Synchronization failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
-    "warn_await_sync": "Awaiting SSP Key synchronization or manual input.",
+    "err_sync_fail": "Sinkronisasi gagal. Alamat yang dihasilkan tidak cocok. Coba lagi secara manual dan pastikan alamat yang sama telah dibuat baik di SSP Wallet maupun SSP Key. SSP Wallet dan SSP Key harus sama-sama menggunakan frasa seed yang unik dan berbeda.",
+    "warn_await_sync": "Menunggu sinkronisasi SSP Key atau input manual.",
     "err_sync_1": "Silakan masukkan Kunci SSP XPUB. Kunci SSP XPUB yang berbeda dengan SSP Wallet XPUB. Pastikan Dompet SSP dan Kunci SSP menggunakan frasa awal yang unik dan berbeda.",
     "err_invalid_key": "Kunci SSP tidak valid.",
     "err_k2": "Kode K2: Ada yang tidak beres saat mendekripsi kata sandi.",
@@ -317,14 +317,14 @@
     "cancel_sync": "Batalkan Sinkronisasi SSP",
     "back_to_sync": "Kembali ke Sinkronisasi Kunci SSP",
     "sync_info_content": "Dompet SSP tidak dapat digunakan tanpa Kunci SSP.",
-    "dual_factor_key": "Dual Signature SSP Key",
+    "dual_factor_key": "SSP Key Tanda Tangan Ganda",
     "sync_info_1": "Dompet SSP adalah Dompet Tanda Tangan Ganda.",
-    "sync_info_2": "Scan the following QR code using your SSP Key mobile app to synchronize your SSP Wallet with your SSP Key.",
+    "sync_info_2": "Pindai kode QR berikut ini menggunakan aplikasi seluler SSP Key Anda untuk menyinkronkan SSP Wallet Anda dengan SSP Key Anda.",
     "issues_syncing": "Masalah sinkronisasi?",
-    "dual_factor_key_chain": "Dual Signature SSP Key for {{chain}}",
+    "dual_factor_key_chain": "SSP Key Tanda Tangan Ganda untuk {{chain}}",
     "input_xpub": "Masukkan Kunci SSP {{chain}} Kunci Publik yang Diperluas {{path}} Di Sini",
     "sync_key_chain": "Kunci Sinkronisasi untuk {{chain}}",
-    "warn_await_sync_chain": "Awaiting SSP Key synchronization or manual input.",
+    "warn_await_sync_chain": "Menunggu sinkronisasi SSP Key atau input manual.",
     "err_sync_1_chain": "Silakan masukan SSP Key XPUB {{chain}} rantai.",
     "cancel_sync_q_chain": "Batalkan Sinkronisasi Kunci SSP untuk {{chain}}?",
     "sync_info_content_chain": "Dompet SSP untuk rantai {{chain}} tidak dapat digunakan tanpa Kunci SSP.",
@@ -332,36 +332,36 @@
     "setup_ssp_key": "Siapkan Kunci SSP",
     "ssp_key_download_here": "Tidak memiliki SSP Key? Klik di sini untuk mengunduh!",
     "ssp_key_ready": "SSP Key milik saya sudah siap!",
-    "ssp_key_2fa": "SSP Key is the second signature for your SSP Wallet",
+    "ssp_key_2fa": "SSP Key adalah tanda tangan kedua untuk Dompet SSP Anda",
     "ssp_key_download": "Unduh dan sinkronkan Kunci SSP milik Anda dengan Dompet SSP milik Anda dengan memindai kode QR di bawah ini menggunakan Kamera atau pembaca kode QR milik Anda.",
-    "ssp_key_download_2": "SSP Key has its own recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
-    "tab_scan": "Scan with SSP Key",
-    "tab_manual": "Enter manually",
-    "chips_label_identity": "Also activate these chains with one approval on your SSP Key:",
-    "chips_label_chain": "Activate more chains in the same approval:",
-    "timeline_waiting_scan": "Waiting for scan",
-    "timeline_phone_detected": "Phone detected",
-    "timeline_verifying": "Verifying keys",
-    "timeline_activating": "Activating {{total}} chains",
-    "timeline_syncing_chains": "Syncing chains ({{done}}/{{total}})",
-    "timeline_ready": "Ready",
-    "timeline_request_sent": "Request sent to your SSP Key",
-    "timeline_approved_phone": "Approved on your phone",
-    "batch_preparing": "Preparing request…",
-    "batch_resend_request": "Send request again",
-    "batch_fallback_info": "Your SSP Key app might need an update for one-tap sync — or scan the QR code below to sync {{chain}}.",
-    "batch_rejected_info": "The request was declined on your SSP Key. You can scan the QR code below instead.",
-    "batch_partial_failed": "Some chains did not sync. Switch to a chain later to activate it.",
-    "continue_to_wallet": "Continue to wallet",
-    "verify_words_heading": "Verify this matches your SSP Key",
-    "verify_words_body": "Scan this with your SSP Key to verify — or compare the 6 words below. If they differ, do NOT use this wallet — stop and start the sync again.",
-    "verify_words_session_label_one": "Verification code",
-    "verify_words_session_label_other": "Verification code ({{count}} chains)",
-    "verify_words_match": "They match — continue",
-    "verify_words_mismatch": "They don't match",
-    "verify_mismatch_warning": "Verification codes did not match. This vault was not activated — start the sync again to retry.",
-    "batch_request_selected_one": "Request {{count}} selected chain",
-    "batch_request_selected_other": "Request {{count}} selected chains"
+    "ssp_key_download_2": "SSP Key memiliki frasa benih pemulihan tersendiri. Frasa benih ini berbeda dengan frasa benih dompet SSP Anda.",
+    "tab_scan": "Pindai dengan SSP Key",
+    "tab_manual": "Ketikkan secara manual",
+    "chips_label_identity": "Aktifkan juga rangkaian ini dengan satu kali persetujuan pada SSP Key Anda:",
+    "chips_label_chain": "Aktifkan lebih banyak rantai dalam persetujuan yang sama:",
+    "timeline_waiting_scan": "Menunggu pemindaian",
+    "timeline_phone_detected": "Ponsel terdeteksi",
+    "timeline_verifying": "Memverifikasi kunci",
+    "timeline_activating": "Mengaktifkan {{total}} rantai",
+    "timeline_syncing_chains": "Menyinkronkan rantai ({{done}}/{{total}})",
+    "timeline_ready": "Siap",
+    "timeline_request_sent": "Permintaan telah dikirim ke SSP Key Anda",
+    "timeline_approved_phone": "Disetujui di ponsel Anda",
+    "batch_preparing": "Menyiapkan permintaan…",
+    "batch_resend_request": "Kirim ulang permintaan",
+    "batch_fallback_info": "Aplikasi SSP Key Anda mungkin memerlukan pembaruan untuk sinkronisasi sekali ketuk — atau pindai kode QR di bawah ini untuk menyinkronkan {{chain}}.",
+    "batch_rejected_info": "Permintaan tersebut ditolak untuk SSP Key Anda. Sebagai gantinya, Anda dapat memindai kode QR di bawah ini.",
+    "batch_partial_failed": "Beberapa rantai tidak tersinkronisasi. Beralihlah ke rantai tersebut nanti untuk mengaktifkannya.",
+    "continue_to_wallet": "Lanjut ke dompet",
+    "verify_words_heading": "Pastikan ini sesuai dengan SSP Key Anda",
+    "verify_words_body": "Pindai kode ini menggunakan SSP Key Anda untuk memverifikasi — atau bandingkan 6 kata di bawah ini. Jika ada perbedaan, JANGAN gunakan dompet ini — hentikan proses sinkronisasi dan mulai ulang.",
+    "verify_words_session_label_one": "Kode verifikasi",
+    "verify_words_session_label_other": "Kode verifikasi ({{count}} rantai)",
+    "verify_words_match": "Keduanya cocok — lanjutkan",
+    "verify_words_mismatch": "Keduanya tidak cocok",
+    "verify_mismatch_warning": "Kode verifikasi tidak cocok. Brankas ini tidak diaktifkan — mulai ulang sinkronisasi untuk mencoba lagi.",
+    "batch_request_selected_one": "Minta {{count}} rantai yang dipilih",
+    "batch_request_selected_other": "Minta {{count}} rantai yang dipilih"
   },
   "chainSelect": {
     "select_chain": "Pilih Rantai",
@@ -379,7 +379,7 @@
     "tx_rejected": "Transaksi Ditolak",
     "invalid_request": "Permintaan Tidak Valid",
     "transaction_sent": "Transaksi Terkirim",
-    "review_details": "Review the payment below. You will still confirm the transaction before anything is sent."
+    "review_details": "Tinjau pembayaran di bawah ini. Anda tetap akan mengkonfirmasi transaksi sebelum ada yang dikirim."
   },
   "signMessage": {
     "sign_message": "Tandatangani Pesan",
@@ -409,14 +409,14 @@
     "requesting_from": "Meminta dari",
     "manual_input": "Input Manual untuk SSP Key",
     "manual_input_desc": "Jika sinkronisasi otomatis tidak berfungsi, pindai kode QR atau salin data untuk SSP Key.",
-    "site_provided": "Provided by the site, not verified:",
-    "embedded_frame": "Requested by an embedded frame inside {{top}}"
+    "site_provided": "Disediakan oleh situs, tidak diverifikasi:",
+    "embedded_frame": "Diminta oleh bingkai tersemat di dalam {{top}}"
   },
   "enterpriseVaultXpub": {
     "title": "Permohonan Kunci Brankas Enterprise",
     "description": "Permohonan untuk menyediakan kunci publik untuk brankas perusahaan telah diterima. Silakan periksa detail di bawah ini.",
     "vault_name": "Brankas",
-    "org_name": "Organization",
+    "org_name": "Organisasi",
     "chain": "Rantai",
     "ssp_identity": "Identitas SSP",
     "approve": "Setujui",
@@ -424,7 +424,7 @@
     "waiting_for_key": "Menunggu persetujuan SSP Key...",
     "key_rejected": "Permohonan ditolak oleh Kunci SSP",
     "err_not_logged_in": "Belum masuk",
-    "err_not_synced": "SSP Wallet is not yet synchronized with SSP Key. Please complete the sync first.",
+    "err_not_synced": "Dompet SSP belum tersinkronisasi dengan SSP Key. Silakan selesaikan proses sinkronisasi terlebih dahulu.",
     "err_invalid_chain": "Rantai tidak valid",
     "err_seed_unavailable": "Tidak dapat mengambil seed dompet",
     "err_decrypt_password": "Gagal mendekripsi kata sandi",
@@ -433,14 +433,14 @@
     "err_decrypt_identity_key": "Gagal mendekripsi kunci identitas"
   },
   "enterpriseNonceSync": {
-    "title": "Enterprise Nonce Synchronization",
-    "description": "SSP Enterprise is requesting to synchronize cryptographic nonces used for vault transaction signing. This will sync both your wallet and SSP Key nonces.",
+    "title": "Sinkronisasi Nonce Perusahaan",
+    "description": "SSP Enterprise meminta untuk menyinkronkan nonce kriptografi yang digunakan untuk menandatangani transaksi vault. Tindakan ini akan menyinkronkan nonce dompet Anda dan nonce SSP Key.",
     "info": "Ini akan menghasilkan nonce penandatanganan baru dan menyinkronkannya dengan server relai. Tidak ada dana yang akan dipindahkan.",
     "approve": "Sinkronisasi Nonce",
-    "syncing": "Synchronizing nonces...",
-    "syncing_wallet": "Synchronizing wallet nonces...",
+    "syncing": "Menyinkronkan nonce...",
+    "syncing_wallet": "Menyinkronkan nonce dompet...",
     "syncing_key": "Menunggu SSP Key untuk menyinkronkan nonce...",
-    "success": "Wallet and Key nonces synchronized successfully!",
+    "success": "Nonce dompet dan Key berhasil disinkronkan!",
     "wallet_not_ready": "Dompet belum dibuka kuncinya. Harap buka kunci dompet Anda terlebih dahulu.",
     "key_sync_failed": "Sinkronisasi nonce SSP Key gagal. Silakan coba lagi.",
     "key_sync_timeout": "SSP Key tidak merespons. Buka SSP Key dan coba lagi.",
@@ -451,7 +451,7 @@
     "title": "Penandatanganan Transaksi Brankas Enterprise",
     "description": "Permohonan untuk menandatangani transaksi brankas telah diterima. Silakan periksa rincian transaksi di bawah ini.",
     "vault_name": "Brankas",
-    "org_name": "Organization",
+    "org_name": "Organisasi",
     "chain": "Rantai",
     "source_address": "Alamat Sumber",
     "ssp_identity": "Identitas SSP",
@@ -505,8 +505,8 @@
         "SIMULATION_UNAVAILABLE": "Pemeriksaan risiko tidak dapat diselesaikan; pratinjau ini merupakan upaya terbaik."
       }
     },
-    "err_sign_mismatch": "Signing blocked: the transaction does not match what was shown for approval. Do not retry — contact support.",
-    "err_sign_unverifiable": "Signing blocked: this request could not be independently verified on your device."
+    "err_sign_mismatch": "Penandatanganan diblokir: transaksi tidak sesuai dengan apa yang ditampilkan untuk disetujui. Jangan coba lagi — hubungi dukungan layanan.",
+    "err_sign_unverifiable": "Penandatanganan diblokir: permintaan ini tidak dapat diverifikasi secara independen di perangkat Anda."
   },
   "enterpriseFluxNodeStart": {
     "title": "Mulai Node Flux",
@@ -534,24 +534,24 @@
     "err_decrypt_seed": "Gagal mendekripsi seed dompet"
   },
   "fluxNodeStart": {
-    "title": "Start Flux Node",
-    "description": "A website is requesting to start a Flux node using collateral held in this wallet. Please review the details below.",
+    "title": "Mulai Node Flux",
+    "description": "Sebuah situs web meminta untuk menjalankan node Flux menggunakan jaminan yang tersimpan di dompet ini. Harap tinjau detail di bawah ini.",
     "node": "Node",
-    "chain": "Chain",
-    "collateral": "Collateral",
-    "collateral_address": "Collateral Address",
-    "collateral_utxo": "Collateral UTXO",
-    "delegates": "Delegates",
-    "delegate_notice": "The listed delegate keys will be granted permission to manage this node (start and maintain it). Delegates can NOT spend or move your collateral.",
-    "approve": "Approve & Start Node",
-    "err_failed": "Failed to start node",
-    "err_not_logged_in": "Not logged in",
-    "err_invalid_chain": "Invalid chain",
-    "err_address_not_found": "The collateral address does not belong to this wallet. Make sure the Flux chain is synced and the address is correct.",
-    "err_redeem_unavailable": "Redeem script unavailable for this address",
-    "err_xpriv_unavailable": "Could not retrieve wallet key",
-    "err_decrypt_password": "Failed to decrypt password",
-    "err_decrypt_xpriv": "Failed to decrypt wallet key"
+    "chain": "Rantai",
+    "collateral": "Jaminan",
+    "collateral_address": "Alamat Jaminan",
+    "collateral_utxo": "Jaminan UTXO",
+    "delegates": "Delegasi",
+    "delegate_notice": "Kunci delegasi yang tercantum akan diberikan izin untuk mengelola node ini (menjalankan dan memeliharanya). Delegasi TIDAK dapat membelanjakan atau memindahkan agunan Anda.",
+    "approve": "Setujui & Mulai Node",
+    "err_failed": "Gagal memulai node",
+    "err_not_logged_in": "Belum masuk",
+    "err_invalid_chain": "Rantai tidak valid",
+    "err_address_not_found": "Alamat kolateral tidak termasuk dalam dompet ini. Pastikan rantai Flux telah tersinkronisasi dan alamatnya benar.",
+    "err_redeem_unavailable": "Skrip penukaran tidak tersedia untuk alamat ini",
+    "err_xpriv_unavailable": "Tidak dapat mengambil kunci dompet",
+    "err_decrypt_password": "Gagal mendekripsi kata sandi",
+    "err_decrypt_xpriv": "Gagal mendekripsi key dompet"
   },
   "sspConnect": {
     "invalid_chain": "Rantai tidak valid.",
@@ -562,7 +562,7 @@
   "chainsInfo": {
     "chain_requests": "Permintaan Informasi Rantai",
     "chain_requests_info": "Permintaan untuk mendapatkan informasi tentang semua rantai yang terintegrasi di SSP telah diterima. Data berikut dari setiap rantai akan dibagikan: id, nama, simbol, desimal, dan chainId. Tidak ada data pribadi yang dibagikan.",
-    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronized was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
+    "chain_requests_info_user": "Telah diterima permintaan untuk mendapatkan informasi mengenai rantai yang telah disinkronkan oleh Dompet SSP Anda. Data berikut dari masing-masing rantai akan dibagikan: id, nama, simbol, desimal, dan chainId. Meskipun tidak ada data pribadi yang dibagikan, permintaan ini dapat digunakan untuk mengetahui rantai apa saja yang Anda gunakan.",
     "chain_requests_info_error": "Terjadi kesalahan saat mendapatkan informasi rantai."
   },
   "tokensInfo": {
@@ -575,10 +575,10 @@
   },
   "addressesInfo": {
     "addresses_requests": "Alamat Permintaan Informasi",
-    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Exercise caution as your addresses will be shared with the requester.",
-    "addresses_requests_info_all": "A request to get a list of addresses for all synchronized blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Exercise caution as your addresses will be shared with the requester.",
+    "addresses_requests_info": "Permintaan untuk mendapatkan daftar alamat bagi jaringan {{chain}} telah diterima. Permintaan ini akan membagikan alamat-alamat yang Anda pilih. Harap berhati-hati, karena alamat Anda akan dibagikan kepada pihak peminta.",
+    "addresses_requests_info_all": "Permintaan untuk mendapatkan daftar alamat bagi semua blockchain yang tersinkronisasi telah diterima. Permintaan ini akan membagikan alamat yang Anda pilih beserta informasi rantai seperti Id, nama, simbol, desimal, dan chainID. Harap berhati-hati, karena alamat Anda akan dibagikan kepada pihak peminta.",
     "addresses_requests_info_error": "Terjadi kesalahan saat mendapatkan informasi alamat.",
-    "no_addresses": "Chain not synchronized. No addresses found.",
+    "no_addresses": "Rantai tidak tersinkronisasi. Tidak ada alamat yang ditemukan.",
     "select_addresses": "Pilih Alamat untuk Dibagikan"
   },
   "fusion": {
@@ -610,8 +610,8 @@
     "err_saving_contacts": "Terjadi kesalahan saat menyimpan kontak.",
     "contact_deleted": "Kontak Dihapus",
     "created_at": "Dibuat di",
-    "address_copied": "Address copied to clipboard",
-    "copy_address": "Copy address"
+    "address_copied": "Alamat disalin ke papan klip",
+    "copy_address": "Salin alamat"
   },
   "tokens": {
     "import_token": "Impor Token",
@@ -630,8 +630,8 @@
     "delete_token": "Hapus Token",
     "token_deleted": "Token Telah Dihapus!",
     "err_delete_token": "Terjadi kesalahan saat menghapus token. Silakan coba lagi.",
-    "no_tokens": "No tokens on this wallet yet",
-    "custom_tokens": "Custom tokens"
+    "no_tokens": "Belum ada token di dompet ini",
+    "custom_tokens": "Token kustom"
   },
   "buy_sell_crypto": {
     "third_party_service": "Layanan Pihak Ketiga",
@@ -645,7 +645,7 @@
     "search_asset": "Cari Asset",
     "you_send": "Anda Mengirim",
     "you_get": "Anda Mendapatkan",
-    "chain_sync_required": "Chain synchronization required first",
+    "chain_sync_required": "Sinkronisasi rantai diperlukan terlebih dahulu",
     "select_receiving_wallet": "Pilih Dompet Penerima",
     "select_sending_wallet": "Pilih Dompet Pengirim",
     "select_buy_asset": "Pilih Aset untuk Dibeli",
@@ -691,7 +691,7 @@
     "max_tooltip_token": "Kirim seluruh saldo token Anda. Biaya jaringan dibayarkan secara terpisah dalam mata uang asli.",
     "max_tooltip_native": "Kirim saldo maksimum yang tersedia. Biaya jaringan akan dipotong secara otomatis.",
     "insufficient_balance": "Saldo tidak mencukupi. Jumlahnya melebihi dana yang tersedia termasuk biaya jaringan.",
-    "advanced_options": "Advanced options"
+    "advanced_options": "Opsi lanjutan"
   },
   "walletconnect": {
     "title": "WalletConnect",
@@ -837,7 +837,7 @@
     "walletconnect_transaction_approved": "Transaksi disetujui dan dikirim berhasil!",
     "eth_sign_transaction_not_supported": "eth_signTransaction tidak didukung oleh dompet Abstraksi Akun. Sebagai gantinya, gunakan eth_sendTransaction.",
     "eth_sign_transaction_error": "eth_signTransaction tidak didukung oleh dompet Abstraksi Akun. Dompet Abstraksi Akun menggunakan UserOperations, bukan transaksi tradisional. Harap gunakan eth_sendTransaction untuk menjalankan transaksi secara langsung.",
-    "evm_only": "EVM chains only"
+    "evm_only": "Hanya rantai EVM"
   },
   "walletconnect_tx_modal": {
     "simple_transfer": "Transfer Sederhana",
@@ -912,23 +912,23 @@
     "steps": {
       "welcome_overview": {
         "title": "Selamat Datang di Dompet SSP!",
-        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! This is Home — your wallet address and balance for the active wallet. Always verify that the address shown here matches the address on your SSP Key device."
+        "content": "Telah diterima permintaan untuk mendapatkan informasi mengenai rantai yang telah disinkronkan oleh Dompet SSP Anda. Data berikut dari masing-masing rantai akan dibagikan: id, nama, simbol, desimal, dan chainId. Meskipun tidak ada data pribadi yang dibagikan, permintaan ini dapat digunakan untuk mengetahui rantai apa saja yang Anda gunakan."
       },
       "backup_health": {
-        "title": "Backup Health",
-        "content": "Whenever something still needs securing — your seed phrase not yet verified or your SSP Key not yet paired — an amber backup-health card appears right here under your balance, showing exactly what is at stake. Once everything is secured, it disappears."
+        "title": "Kesehatan Cadangan",
+        "content": "Setiap kali masih ada hal yang perlu diamankan — frasa benih Anda belum diverifikasi atau Kunci SSP Anda belum dipasangkan — kartu status cadangan berwarna kuning akan muncul tepat di sini, di bawah saldo Anda, yang menunjukkan dengan tepat apa yang sedang dipertaruhkan. Begitu semuanya sudah aman, kartu tersebut akan menghilang."
       },
       "multi_chain_intro": {
-        "title": "Your Wallet & Chain Pill",
-        "content": "This pill shows the active wallet and chain — its color dot and identicon make your wallet recognizable at a glance. Tap it to open the switcher for wallets and networks."
+        "title": "Dompet & Pil Rantai Anda",
+        "content": "Pil ini menampilkan dompet dan rantai yang aktif — titik berwarna dan identikonnya membuat dompet Anda mudah dikenali sekilas. Ketuk ikon ini untuk membuka menu pengalih dompet dan jaringan."
       },
       "find_switch_chain": {
-        "title": "Networks",
-        "content": "This is the switcher. Your wallets are listed on top; the Networks section below lets you jump to another blockchain. Click the Networks header to continue."
+        "title": "Jaringan",
+        "content": "Ini adalah alat pengalih. Dompet Anda tercantum di bagian atas; bagian Jaringan di bawahnya memungkinkan Anda beralih ke blockchain lain. Klik judul Jaringan untuk melanjutkan."
       },
       "select_ethereum": {
         "title": "Pilih Ethereum",
-        "content": "Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
+        "content": "Sekarang, klik Ethereum untuk beralih ke blockchain Ethereum. Tindakan ini akan memicu sinkronisasi dengan jaringan Ethereum."
       },
       "ethereum_sync_waiting": {
         "title": "Sinkronisasi dengan Kunci SSP",
@@ -945,11 +945,11 @@
       },
       "receive_intro": {
         "title": "Menerima Dana",
-        "content": "Receive shows your address for the active chain — copy it or share the QR code. On Ethereum it accepts ETH and any ERC-20 tokens."
+        "content": "Bagian Terima menampilkan alamat Anda untuk rantai yang sedang aktif — salin alamat tersebut atau bagikan kode QR-nya. Di Ethereum, fitur ini mendukung ETH dan semua token ERC-20."
       },
       "send_intro": {
         "title": "Pengiriman Dana",
-        "content": "Send opens a guided three-step flow: enter the recipient and amount, review the fee and details, then confirm on your SSP Key. Every transaction needs both devices — that's the dual-signature security."
+        "content": "Bagian Kirim akan membuka alur tiga langkah yang dipandu: masukkan penerima dan jumlah, periksa biaya serta rinciannya, lalu konfirmasi melalui SSP Key Anda. Setiap transaksi memerlukan kedua perangkat tersebut — itulah sistem keamanan tanda tangan ganda."
       },
       "swap_feature": {
         "title": "Fitur Swap",
@@ -976,20 +976,20 @@
         "content": "Simpan alamat yang sering Anda kirimkan. Setiap kontak memiliki nama dan alamat, sehingga transaksi menjadi lebih mudah dan mengurangi kesalahan."
       },
       "places_nav": {
-        "title": "Getting Around",
-        "content": "The bottom bar is your navigation: Home for the active wallet, Portfolio for everything you hold, Activity for history, and Menu for settings and tools. Hover any icon for its name."
+        "title": "Berkeliling",
+        "content": "Bilah bagian bawah adalah navigasi Anda: Beranda untuk dompet yang sedang aktif, Portofolio untuk semua aset yang Anda miliki, Aktivitas untuk riwayat, serta Menu untuk pengaturan dan alat. Arahkan kursor ke ikon mana pun untuk melihat namanya."
       },
       "portfolio_tab": {
-        "title": "Portfolio",
-        "content": "Portfolio shows your total value across all chains, wallets and tokens in one place — with allocation at a glance. Chains you haven't activated yet can be activated right from the list."
+        "title": "Portofolio",
+        "content": "Portfolio menampilkan total nilai Anda di seluruh jaringan, dompet, dan token dalam satu tampilan—lengkap dengan gambaran sekilas mengenai alokasinya. Jaringan yang belum Anda aktifkan dapat langsung diaktifkan dari daftar tersebut."
       },
       "extended_menu_intro": {
-        "title": "The Menu Tab",
-        "content": "Menu is the full toolbox: settings (language, currency, theme), WalletConnect for dApps, Address & SSP Wallet details, message signing, network configuration and this tutorial. The lock icon at the top right securely logs you out."
+        "title": "Tab Menu",
+        "content": "Menu adalah kotak alat lengkap: pengaturan (bahasa, mata uang, tema), WalletConnect untuk dApps, detail Alamat & Dompet SSP, penandatanganan pesan, konfigurasi jaringan, dan tutorial ini. Ikon gembok di kanan atas akan mengeluarkan Anda dengan aman."
       },
       "address_management": {
         "title": "Manajemen Dompet",
-        "content": "The wallet pill at the top opens the switcher, where you manage multiple wallets per blockchain: create new ones, name and color them, switch between them, or remove the last created one. Each wallet is independent with its own balance and history."
+        "content": "Pil dompet di bagian atas membuka fitur pengalih tempat Anda mengelola beberapa dompet untuk setiap blockchain: membuat dompet baru, menentukan nama dan warnanya, beralih antar-dompet, atau menghapus dompet yang terakhir dibuat. Setiap dompet bersifat independen dengan saldo dan riwayatnya masing-masing."
       },
       "tutorial_complete": {
         "title": "Tutorial Selesai!",
@@ -998,33 +998,33 @@
     }
   },
   "tabs": {
-    "home": "Home",
-    "portfolio": "Portfolio",
+    "home": "Beranda",
+    "portfolio": "Portofolio",
     "menu": "Menu",
-    "nav": "Wallet sections"
+    "nav": "Bagian dompet"
   },
   "switcher": {
-    "open": "Switch wallet or network",
-    "title": "Wallets & networks",
-    "search": "Search wallets or networks",
-    "wallets": "wallets",
-    "networks": "Networks",
-    "new_wallet": "New wallet",
-    "remove_last": "Remove last"
+    "open": "Ganti dompet atau jaringan",
+    "title": "Dompet & jaringan",
+    "search": "Cari dompet atau jaringan",
+    "wallets": "dompet",
+    "networks": "Jaringan",
+    "new_wallet": "Dompet baru",
+    "remove_last": "Hapus yang terakhir"
   },
   "portfolio": {
-    "not_activated": "Not yet activated",
-    "tap_to_activate": "Tap to activate",
-    "activating": "Activating…",
-    "refresh_failed": "Couldn't refresh — showing the last saved values.",
-    "incl_tokens": "incl. {{amount}} tokens"
+    "not_activated": "Belum diaktifkan",
+    "tap_to_activate": "Ketuk untuk mengaktifkan",
+    "activating": "Mengaktifkan…",
+    "refresh_failed": "Tidak dapat memuat ulang — menampilkan nilai yang terakhir disimpan.",
+    "incl_tokens": "termasuk {{amount}} token"
   },
   "activityFeed": {
-    "all": "All",
-    "chains_scope_one": "{{count}} synced chain",
-    "chains_scope_other": "{{count}} synced chains",
-    "sent": "Sent",
-    "received": "Received",
-    "pending": "Pending"
+    "all": "Semua",
+    "chains_scope_one": "{{count}} rantai yang disinkronkan",
+    "chains_scope_other": "{{count}} rantai yang disinkronkan",
+    "sent": "Terkirim",
+    "received": "Diterima",
+    "pending": "Tertunda"
   }
 }
