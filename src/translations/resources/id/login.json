@@ -1,5 +1,5 @@
 {
-  "err_pw_required": "Please enter your password.",
+  "err_pw_required": "Silahkan masukkan kata sandi anda.",
   "err_invalid_pw": "Kata sandi tidak valid. Silakan coba lagi.",
   "err_invalid_pw_2": "Kata sandi tidak valid. Silakan coba lagi.",
   "err_lx": "Kode {{code}}: Data dompet hilang. Silakan pulihkan dompet milik Anda.",
@@ -13,8 +13,8 @@
   "recovery_dialog_title": "Perubahan browser terdeteksi",
   "recovery_dialog_body": "Lingkungan browser milik Anda telah berubah. Buka SSP Key di ponsel milik Anda dan setujui permintaan pemulihan untuk membuka kunci dompet milik Anda.",
   "recovery_waiting": "Menunggu persetujuan SSP Key…",
-  "recovery_verify_heading": "Check these words match SSP Key",
-  "recovery_verify_body": "SSP Key shows the same six words. If they differ, reject the request on your phone.",
+  "recovery_verify_heading": "Pastikan kata-kata ini sesuai dengan SSP Key",
+  "recovery_verify_body": "SSP Key menampilkan enam kata yang sama. Jika berbeda, tolak permintaan tersebut di ponsel Anda.",
   "recovery_approved": "Pemulihan disetujui. Membuka dompet milik Anda…",
   "recovery_denied_body": "Permintaan pemulihan telah ditolak pada SSP Key.",
   "recovery_timeout_body": "SSP Key tidak merespons tepat waktu. Pastikan aplikasi terbuka dan cobalah lagi.",
