@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useMemo,
   ReactNode,
 } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -605,11 +606,21 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
     }
   }, [pendingTutorialType]);
 
-  // Auto-advance from ethereum-sync-waiting (step 5) to ethereum-tokens (step 6)
+  // Auto-advance from ethereum-sync-waiting to ethereum-tokens. Resolve the
+  // step by ID — a hardcoded index silently broke once when a step was added
+  // before it, leaving every user stuck on "continues automatically".
+  const syncWaitingStepIndex = useMemo(() => {
+    const tutorialSteps = getTutorialSteps(t as (key: string) => string);
+    const steps =
+      tutorialSteps[tutorialState.tutorialType] || tutorialSteps.onboarding;
+    return steps.findIndex((step) => step.id === 'ethereum-sync-waiting');
+  }, [t, tutorialState.tutorialType]);
+
   useEffect(() => {
     if (
       tutorialState.isActive &&
-      tutorialState.currentStep === 4 && // Step 5 (ethereum-sync-waiting) is index 4
+      syncWaitingStepIndex !== -1 &&
+      tutorialState.currentStep === syncWaitingStepIndex &&
       activeChain === 'eth' &&
       ethXpubKey // Ensure Ethereum SSP Key is actually synced
     ) {
@@ -657,6 +668,7 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
   }, [
     tutorialState.isActive,
     tutorialState.currentStep,
+    syncWaitingStepIndex,
     activeChain,
     ethXpubKey,
     nextStep,
