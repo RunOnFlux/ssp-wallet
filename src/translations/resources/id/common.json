@@ -20,8 +20,8 @@
   "password": "Kata sandi",
   "backup": "Cadangan",
   "sync": "Sinkronisasi",
-  "make_it": "Make it",
-  "yours": "Yours",
+  "make_it": "Buatlah",
+  "yours": "Milik Anda",
   "ssp_key": "Kunci SSP",
   "start": "Mulai",
   "delete": "Hapus",
@@ -51,19 +51,19 @@
   "my_wallets": "Dompet Saya",
   "rename_wallet": "Ubah nama dompet",
   "retry": "Coba Lagi",
-  "done": "Done",
-  "saved": "Saved",
-  "show": "Show",
-  "hide": "Hide",
-  "copy": "Copy",
+  "done": "Selesai",
+  "saved": "Tersimpan",
+  "show": "Tampilkan",
+  "hide": "Sembunyikan",
+  "copy": "Salin",
   "notification_categories": {
-    "title": "Choose which emails to receive",
-    "incoming": "Incoming transactions",
-    "outgoing": "Outgoing transactions",
-    "large_tx": "Large transactions",
-    "low_balance": "Low balance",
-    "weekly_report": "Weekly summary",
-    "marketing": "SSP product news and offers"
+    "title": "Pilih email mana yang ingin diterima",
+    "incoming": "Transaksi masuk",
+    "outgoing": "Transaksi keluar",
+    "large_tx": "Transaksi besar",
+    "low_balance": "Saldo rendah",
+    "weekly_report": "Ringkasan mingguan",
+    "marketing": "Berita produk dan penawaran SSP"
   },
-  "powered_by_flux_link": "Powered by Flux — visit runonflux.com"
+  "powered_by_flux_link": "Didukung oleh Flux — kunjungi runonflux.com"
 }
