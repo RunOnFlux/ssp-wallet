@@ -19,6 +19,9 @@
   align-items: center;
   gap: 12px;
   width: 100%;
+  /* no global border-box reset in this app — without this, 100% + padding
+     overflows the drawer body and makes the whole sheet scroll sideways */
+  box-sizing: border-box;
   padding: 8px 10px;
   border: none;
   border-radius: 12px;
@@ -242,6 +245,7 @@
   align-items: center;
   gap: 12px;
   width: 100%;
+  box-sizing: border-box; /* see .switcher-wallet */
   padding: 8px 10px;
   border: none;
   border-radius: 12px;
@@ -307,4 +311,10 @@
 /* Hide WalletName's inline editor inside the compact switcher rows */
 .switcher-wallet-name .ant-input {
   display: none;
+}
+
+/* The sheet must never scroll sideways — vertical only. Guards against any
+   future stray few-px overflow re-introducing the horizontal scrollbar. */
+.wallet-switcher .ant-drawer-body {
+  overflow-x: hidden;
 }
