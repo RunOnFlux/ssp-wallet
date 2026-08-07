@@ -213,8 +213,11 @@ export function processTransactionTokenScan(
   tx: etherscan_token_tx,
   address: string,
 ): transaction {
+  // Contract creations (and some explorer variants) omit `to` — fall back to
+  // the created contract address so the transfer correctly shows as outgoing.
+  const receiver = tx.to || tx.contractAddress || '';
   let amount = tx.value;
-  if (address.toLowerCase() !== tx.to.toLowerCase()) {
+  if (address.toLowerCase() !== receiver.toLowerCase()) {
     amount = '-' + amount;
   }
   const { gasUsed, gasPrice } = tx;
@@ -229,7 +232,7 @@ export function processTransactionTokenScan(
     timestamp: Number(tx.timeStamp) * 1000,
     amount,
     message: '',
-    receiver: tx.to,
+    receiver,
     isError: false,
     decimals: Number(tx.tokenDecimal),
     tokenSymbol: tx.tokenSymbol,
@@ -332,8 +335,11 @@ export function processTransactionExternalScan(
   tx: etherscan_external_tx,
   address: string,
 ): transaction {
+  // Contract creations (and some explorer variants) omit `to` — an absent
+  // receiver can never equal our address, so the value shows as outgoing.
+  const receiver = tx.to || '';
   let amount = tx.value;
-  if (address.toLowerCase() !== tx.to.toLowerCase()) {
+  if (address.toLowerCase() !== receiver.toLowerCase()) {
     amount = '-' + amount;
   }
   const { gasUsed, gasPrice } = tx;
@@ -348,7 +354,7 @@ export function processTransactionExternalScan(
     timestamp: Number(tx.timeStamp) * 1000,
     amount,
     message: '',
-    receiver: tx.to,
+    receiver,
     isError: !!tx.isError,
   };
   return tran;

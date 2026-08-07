@@ -8,6 +8,7 @@ import {
   processTransactionsInternalScan,
   processTransactionExternalScan,
   processTransactionsExternalScan,
+  processTransactionTokenScan,
   fetchAddressTransactions,
   fetchAllAddressTransactions,
   decodeTransactionForApproval,
@@ -156,6 +157,43 @@ describe('Transactions Lib', () => {
       expect(res.message).toBe('');
       expect(res.isError).toBe(false);
       expect(res.receiver).toBe('0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1');
+    });
+
+    it('handles contract-creation txs without `to` in processTransactionExternalScan', () => {
+      const res = processTransactionExternalScan(
+        {
+          hash: '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
+          blockNumber: 20597003,
+          timeStamp: 1724488730,
+          value: 1000,
+          // contract creation: no `to` field at all
+        },
+        '0xE6F30E1B28C67d787Bf8Bd21bA8E9756707E4713',
+        'ETH',
+      );
+      expect(res).toBeDefined();
+      expect(res.receiver).toBe('');
+      // absent receiver can never be us → value shows as outgoing
+      expect(res.amount).toBe('-1000');
+    });
+
+    it('handles token txs without `to` in processTransactionTokenScan', () => {
+      const res = processTransactionTokenScan(
+        {
+          hash: '0xee2d88632242c178707e6ed3577548041e0efa761035a84151c59364e8ba76f3',
+          blockNumber: 20597003,
+          timeStamp: 1724488730,
+          value: 5,
+          tokenDecimal: 18,
+          tokenSymbol: 'TST',
+          contractAddress: '0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1',
+          // no `to` field — falls back to the created contract address
+        },
+        '0xE6F30E1B28C67d787Bf8Bd21bA8E9756707E4713',
+      );
+      expect(res).toBeDefined();
+      expect(res.receiver).toBe('0x8092557902BA4dE6f83a7E27e14b8F0bF8ADFeA1');
+      expect(res.amount).toBe('-5');
     });
 
     it('should return processTransactionsExternalScan data when value is valid', () => {
