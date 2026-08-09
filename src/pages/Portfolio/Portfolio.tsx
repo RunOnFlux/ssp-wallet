@@ -6,6 +6,7 @@ import {
   ArrowDown as ArrowDownIcon,
   ArrowUp as ArrowUpIcon,
   LoaderCircle as LoaderCircleIcon,
+  QrCode as QrCodeIcon,
   RotateCw as RotateCwIcon,
 } from 'lucide-react';
 import BigNumber from 'bignumber.js';
@@ -14,6 +15,7 @@ import { toast } from '../../lib/toast';
 import { useAppSelector } from '../../hooks';
 import { usePrivacyMode } from '../../contexts/PrivacyContext';
 import { sspConfig } from '@storage/ssp';
+import { isTestnetChain } from '@storage/blockchains';
 import { switchToChain } from '../../lib/chainSwitching';
 import {
   loadPortfolio,
@@ -42,6 +44,15 @@ function Portfolio() {
   const navigate = useNavigate();
   const { hidden, togglePrivacy } = usePrivacyMode();
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
+  const { activeChain } = useAppSelector((state) => state.sspState);
+  // The active chain's current address — empty until the shell has derived it.
+  // Right after onboarding the app lands here BEFORE address generation
+  // finishes; the load effect below keys on this so the freshly paired chain
+  // moves out of "Not yet activated" the moment its address exists.
+  const activeAddress = useAppSelector((state) => {
+    const chainState = state[activeChain];
+    return chainState?.wallets?.[chainState.walletInUse]?.address ?? '';
+  });
   const { cryptoRates, fiatRates } = useAppSelector(
     (state) => state.fiatCryptoRates,
   );
@@ -122,7 +133,8 @@ function Portfolio() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      // Instant paint from cache, then a live concurrent refresh.
+      // Instant paint from cache, then a live concurrent refresh. Re-runs if
+      // the active chain's address materializes after mount (fresh pairing).
       await load(false);
       if (cancelled) return;
       await load(true);
@@ -130,7 +142,7 @@ function Portfolio() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeAddress]);
 
   // Re-value (not re-fetch) when rates change. Also re-fires once data first
   // loads, so rates that arrived while data was still null are applied. Once
@@ -182,11 +194,32 @@ function Portfolio() {
     () => (data ? data.chains.filter((c) => !c.needsActivation) : []),
     [data],
   );
+  // Testnets stay out of the activation list unless enabled in Settings.
+  // A testnet the user already synced is active and therefore always shown.
+  const showTestnets = Boolean(sspConfig().showTestnets);
   const inactiveChains = useMemo(
-    () => (data ? data.chains.filter((c) => c.needsActivation) : []),
-    [data],
+    () =>
+      data
+        ? data.chains.filter(
+            (c) =>
+              c.needsActivation && (showTestnets || !isTestnetChain(c.chain)),
+          )
+        : [],
+    [data, showTestnets],
   );
   const totalFiat = data?.totalFiat ?? 0;
+
+  // Truly-empty wallet: every active chain holds zero native AND zero tokens.
+  // Judged on crypto amounts, not fiat — fiat is also 0 while rates are still
+  // loading, and the CTA must not flash for funded wallets during that window.
+  const isEmptyWallet = useMemo(
+    () =>
+      activeChains.length > 0 &&
+      activeChains.every(
+        (c) => c.crypto.isZero() && c.tokens.every((tk) => tk.crypto.isZero()),
+      ),
+    [activeChains],
+  );
 
   const allocation = useMemo(() => {
     if (!data || totalFiat <= 0) return [];
@@ -280,6 +313,30 @@ function Portfolio() {
           )}
         </button>
       </div>
+
+      {isEmptyWallet && (
+        <button
+          type="button"
+          className="portfolio-empty-cta"
+          onClick={() => navigate('/home', { state: { openReceive: true } })}
+        >
+          <QrCodeIcon className="portfolio-empty-cta-icon" aria-hidden="true" />
+          <span className="portfolio-empty-cta-meta">
+            <span className="portfolio-empty-cta-title">
+              {t(
+                'home:portfolio.receive_first_title',
+                'Receive your first crypto',
+              )}
+            </span>
+            <span className="portfolio-empty-cta-sub">
+              {t(
+                'home:portfolio.receive_first_sub',
+                'Show your address to get started',
+              )}
+            </span>
+          </span>
+        </button>
+      )}
 
       {allocation.length > 0 && (
         <div className="portfolio-allocation">

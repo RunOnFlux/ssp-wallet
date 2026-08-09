@@ -21,6 +21,7 @@ import {
   Cloud as CloudIcon,
   Coins as CoinsIcon,
   Compass as CompassIcon,
+  FlaskConical as FlaskConicalIcon,
   HardDrive as HardDriveIcon,
   Hash as HashIcon,
   KeyRound as KeyRoundIcon,
@@ -196,6 +197,9 @@ function Settings() {
   const [sspConfigRelay, setSspConfigRelay] = useState(sspConfig().relay);
   const SSPFC = sspConfig().fiatCurrency;
   const [sspFiatCurrency, setSspFiatCurrency] = useState(SSPFC);
+  const [showTestnets, setShowTestnets] = useState(
+    Boolean(sspConfig().showTestnets),
+  );
   const [nodeConfig, setNodeConfig] = useState(NC);
   const [apiConfig, setApiConfig] = useState(API);
   const [explorerConfig, setExplorerConfig] = useState(EXPLORER);
@@ -469,6 +473,24 @@ function Settings() {
     } catch (error) {
       console.log(error);
       setSspFiatCurrency(previous); // never leave the row showing an unsaved value
+      displayMessage('error', t('home:settings.err_saving_conf'));
+    }
+  };
+
+  /**
+   * Testnet visibility applies IMMEDIATELY, like the other Preferences rows —
+   * chain lists (Portfolio, wallet switcher) read `sspConfig().showTestnets`
+   * on their next render.
+   */
+  const applyShowTestnets = async (checked: boolean) => {
+    const previous = showTestnets;
+    setShowTestnets(checked);
+    try {
+      await updateUserPreferences({ showTestnets: checked });
+      loadSSPConfig();
+    } catch (error) {
+      console.log(error);
+      setShowTestnets(previous); // never leave the row showing an unsaved value
       displayMessage('error', t('home:settings.err_saving_conf'));
     }
   };
@@ -1210,6 +1232,21 @@ function Settings() {
               { value: 'light', label: t('home:settings.theme_light') },
               { value: 'dark', label: t('home:settings.theme_dark') },
             ]}
+          />
+        </Row>
+        <Row
+          icon={<FlaskConicalIcon />}
+          label={t('home:settings.show_testnets', 'Show testnet networks')}
+        >
+          <Switch
+            checked={showTestnets}
+            aria-label={t(
+              'home:settings.show_testnets',
+              'Show testnet networks',
+            )}
+            onChange={(checked) => {
+              void applyShowTestnets(checked);
+            }}
           />
         </Row>
       </Section>

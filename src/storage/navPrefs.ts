@@ -6,7 +6,7 @@ import localForage from 'localforage';
  * Invariant 6 (storage is append-only): these live in a NEW localForage key,
  * completely separate from `sspConfig`, wallet state, `themeMode`, etc. Nothing
  * here is required for correctness — a missing/corrupt value falls back to the
- * safe default (Home). Losing it never affects funds, keys or pairing.
+ * safe default (Portfolio). Losing it never affects funds, keys or pairing.
  *
  * Note: the Menu (settings) tab is a single scrolling page, so only the last
  * TAB is remembered — there is no per-section position to restore.
@@ -42,7 +42,9 @@ export async function getNavPrefs(): Promise<NavPrefs> {
   } catch (error) {
     console.log('[navPrefs] read failed', error);
   }
-  return { lastTab: 'home' };
+  // Portfolio is the chain-neutral landing view — the default until the user
+  // has actually left off somewhere else.
+  return { lastTab: 'portfolio' };
 }
 
 export async function getLastTab(): Promise<WalletTab> {

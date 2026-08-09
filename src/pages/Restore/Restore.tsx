@@ -344,7 +344,7 @@ function Restore() {
     } else if (!Object.keys(wallets).length) {
       // Router state only — tells the shell's pairing screen to show the
       // "Import Wallet" wizard labels instead of the Create ones.
-      navigate('/home', { state: { imported: true } });
+      navigate('/portfolio', { state: { imported: true } });
     } else {
       navigate('/welcome');
     }

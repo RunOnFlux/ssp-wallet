@@ -74,6 +74,8 @@ declare module '@storage/ssp' {
     fiatCurrency: keyof currency;
     fiatSymbol: string;
     relay: string;
+    // testnet networks stay out of chain lists unless enabled
+    showTestnets: boolean;
     enterpriseNotification?: enterpriseNotificationConfig;
   }
 
@@ -87,6 +89,7 @@ declare module '@storage/ssp' {
   let updateUserPreferences: (prefs: {
     relay?: string;
     fiatCurrency?: keyof currency;
+    showTestnets?: boolean;
   }) => Promise<void>;
   let getEnterpriseNotificationConfig: () => enterpriseNotificationConfig | null;
   let updateEnterpriseNotificationConfig: (

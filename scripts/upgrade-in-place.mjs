@@ -220,6 +220,24 @@ async function unlockWithPassword(page) {
 }
 
 async function readHomeAddress(page) {
+  // New builds land on Portfolio (chain-neutral landing) when no lastTab is
+  // stored — the address container lives on Home, so switch tabs if needed.
+  // Old builds have no tab bar button; the wait just falls through.
+  const addressVisible = await page
+    .locator('[data-tutorial="wallet-address"]')
+    .isVisible()
+    .catch(() => false);
+  if (!addressVisible) {
+    const homeTab = page.locator('button[data-tutorial="tab-home"]');
+    if (
+      await homeTab
+        .waitFor({ timeout: 5_000 })
+        .then(() => true)
+        .catch(() => false)
+    ) {
+      await homeTab.click().catch(() => {});
+    }
+  }
   const container = page.locator('[data-tutorial="wallet-address"]');
   await container.waitFor({ timeout: NAV_TIMEOUT });
   const text = (await container.innerText()).trim();

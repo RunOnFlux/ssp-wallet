@@ -579,7 +579,7 @@ function Login() {
               );
             }
             // Open where the user left off (append-only navPrefs; defaults to
-            // Home for fresh profiles — keeps the upgrade-in-place gate green).
+            // Portfolio — the chain-neutral landing view — for fresh profiles).
             const navState = cameFromImport
               ? { state: { imported: true } }
               : undefined;
@@ -587,7 +587,7 @@ function Login() {
               const lastTab = await getLastTab();
               navigate(tabToPath(lastTab), navState);
             } catch {
-              navigate('/home', navState);
+              navigate('/portfolio', navState);
             }
           } else {
             failUnlock(t('login:err_lx', { code: 'L2' }));
