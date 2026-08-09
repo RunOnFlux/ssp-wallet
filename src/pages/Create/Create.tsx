@@ -510,30 +510,35 @@ function Create() {
     const columns = isNarrowScreen ? 3 : 4;
     const columnWidth = isNarrowScreen ? 90 : 82;
 
-    useEffect(() => {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // antd mounts the modal body in a portal AFTER `open` flips, so a paint
+    // effect keyed on state finds no canvas on the opening render and the grid
+    // stays blank until the next Show/Hide toggle. Painting from the canvas
+    // ref callback covers the mount; the effect covers later state changes.
+    const paintSeedGrid = (canvas: HTMLCanvasElement | null) => {
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font =
+        '9px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
+      ctx.fillStyle = isDark ? '#fff' : '#000';
+      new TextDecoder()
+        .decode(mnemonic)
+        .split(' ')
+        .forEach((word, index) => {
+          const x = (index % columns) * columnWidth + 5;
+          const y = Math.floor(index / columns) * rowPitch + 18;
+          ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
           ctx.font =
-            '9px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace';
-          ctx.fillStyle = isDark ? '#fff' : '#000';
-          new TextDecoder()
-            .decode(mnemonic)
-            .split(' ')
-            .forEach((word, index) => {
-              const x = (index % columns) * columnWidth + 5;
-              const y = Math.floor(index / columns) * rowPitch + 18;
-              ctx.fillText(`${index + 1}.`, x, y); // Smaller number above the word
-              ctx.font =
-                '13px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
-              ctx.fillText(mnemonicShow ? word : '*****', x + 18, y);
-              ctx.font =
-                '9px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Reset font for the next number
-            });
-        }
-      }
+            '13px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Larger font for the word
+          ctx.fillText(mnemonicShow ? word : '*****', x + 18, y);
+          ctx.font =
+            '9px "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace'; // Reset font for the next number
+        });
+    };
+
+    useEffect(() => {
+      paintSeedGrid(canvasRef.current);
     }, [mnemonic, mnemonicShow, isNarrowScreen, isDark]);
 
     return (
@@ -560,7 +565,10 @@ function Create() {
           </div>
           <Divider />
           <canvas
-            ref={canvasRef}
+            ref={(node) => {
+              canvasRef.current = node;
+              paintSeedGrid(node); // paint on portal mount — see paintSeedGrid
+            }}
             width={canvasWidth}
             height={canvasHeight}
             style={{ display: 'block', margin: '2px auto 0', maxWidth: '100%' }}

@@ -98,8 +98,10 @@ let pollingSyncInterval: string | number | NodeJS.Timeout | undefined;
 let syncRunning = false;
 let nonceReplenishRunning = false;
 
-// Sensible default extra chains preselected during first (identity) pairing.
-const POPULAR_CHAINS = ['eth', 'flux', 'polygon'];
+// Extra chains preselected during first (identity) pairing. Bitcoin is the
+// identity chain itself, so the out-of-box pair is exactly BTC + ETH — other
+// chains stay one tap away on the chips.
+const POPULAR_CHAINS = ['eth'];
 
 interface BatchChainState {
   xpubWallet: string;
