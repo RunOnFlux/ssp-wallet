@@ -572,3 +572,9 @@ export const blockchains = {
   amoy,
   solDevnet,
 };
+
+// SLIP-44 coin type 1 is the universal testnet marker — every testnet config
+// in this file carries it (btcTestnet, btcSignet, fluxTestnet, sepolia, amoy,
+// solDevnet) and no mainnet ever does.
+export const isTestnetChain = (chain: keyof typeof blockchains): boolean =>
+  blockchains[chain].slip === 1;

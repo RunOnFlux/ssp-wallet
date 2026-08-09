@@ -6,7 +6,7 @@ import {
   SendHorizontal as SendHorizontalIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { blockchains } from '@storage/blockchains';
+import { blockchains, isTestnetChain } from '@storage/blockchains';
 import localForage from 'localforage';
 import {
   App,
@@ -1159,13 +1159,16 @@ function Key(props: {
     batch.phase !== 'preparing' && batch.phase !== 'syncing';
 
   // Chains offered for extra activation: everything except the identity
-  // chain, the chain being activated, and chains that are already synced.
+  // chain, the chain being activated, chains that are already synced, and —
+  // unless enabled in Settings — testnets.
   // "Already synced" must consult secure storage (2-xpub-48-* present), not
   // just redux — the store only hydrates a chain's key xpub once the chain
   // has been switched to this session.
+  const showTestnets = Boolean(sspConfig().showTestnets);
   const offeredChains = (Object.keys(blockchains) as (keyof cryptos)[]).filter(
     (chain) => {
       if (chain === identityChain || chain === activeChain) return false;
+      if (!showTestnets && isTestnetChain(chain)) return false;
       if (store.getState()[chain]?.xpubKey) return false;
       return !hasStoredKeyXpub(chain);
     },

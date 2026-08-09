@@ -57,4 +57,6 @@ declare module '@storage/blockchains' {
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;
+  // SLIP-44 coin type 1 — the universal testnet marker
+  let isTestnetChain: (chain: string) => boolean;
 }

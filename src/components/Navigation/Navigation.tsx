@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { Tooltip } from 'antd';
 import {
   ArrowDown as ArrowDownIcon,
@@ -23,7 +23,13 @@ import './Navigation.css';
 function Navigation() {
   const { t } = useTranslation(['home']);
   const navigate = useNavigate();
-  const [openReceive, setOpenReceive] = useState(false);
+  const location = useLocation();
+  // Portfolio's zero-balance "Receive your first crypto" CTA lands on Home
+  // with this router state — open the Receive sheet right away (captured once
+  // at mount, same pattern as the shell's `imported` flag).
+  const [openReceive, setOpenReceive] = useState(() =>
+    Boolean((location.state as { openReceive?: boolean } | null)?.openReceive),
+  );
   const [openBuyCryptoDialog, setOpenBuyCryptoDialog] = useState(false);
   const receiveAction = (status: boolean) => {
     setOpenReceive(status);

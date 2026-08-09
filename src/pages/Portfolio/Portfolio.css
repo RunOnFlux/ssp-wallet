@@ -256,11 +256,76 @@
   white-space: nowrap;
 }
 
+/* Zero-balance funding CTA — amber-tinted tile in the Home action row's
+   design language, shown only while every active chain holds nothing. */
+.portfolio-empty-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 14px 0 2px;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.12);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.portfolio-empty-cta:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.portfolio-empty-cta:focus-visible {
+  outline: 2px solid var(--ssp-focus);
+  outline-offset: 2px;
+}
+
+.portfolio-empty-cta-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #b45309; /* amber-700 — ≥4.5:1 on the tinted light surface */
+}
+
+:root[data-theme='dark'] .portfolio-empty-cta {
+  background: rgba(245, 158, 11, 0.14);
+}
+
+:root[data-theme='dark'] .portfolio-empty-cta:hover {
+  background: rgba(245, 158, 11, 0.22);
+}
+
+:root[data-theme='dark'] .portfolio-empty-cta-icon {
+  color: #fbbf24; /* brand amber-400 on dark */
+}
+
+.portfolio-empty-cta-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+
+.portfolio-empty-cta-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.portfolio-empty-cta-sub {
+  font-size: 12px;
+  opacity: 0.65;
+}
+
 /* Honour the OS reduce-motion preference, like the rest of the app's
  * stylesheets. Scoped to this file's own animated selectors rather than a
  * global override, which would also freeze antd's loading spinners. */
 @media (prefers-reduced-motion: reduce) {
-  .portfolio-row {
+  .portfolio-row,
+  .portfolio-empty-cta {
     transition: none;
   }
 }

@@ -29,7 +29,7 @@ import {
   setActivatedTokens,
   setImportedTokens,
 } from '../../store';
-import { blockchains, Token } from '@storage/blockchains';
+import { blockchains, isTestnetChain, Token } from '@storage/blockchains';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
 import { switchToChain } from '../../lib/chainSwitching';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
@@ -130,7 +130,16 @@ function WalletSwitcher({ open, openAction, stayOnRoute }: Props) {
     });
   }, [walletIds, query, walletNamesForChain, wallets, activeChain]);
 
-  const chainKeys = Object.keys(blockchains) as (keyof cryptos)[];
+  // Testnets stay hidden unless enabled in Settings — except the chain the
+  // user is currently ON, which must always be visible (and returnable-to).
+  const showTestnets = Boolean(sspConfig().showTestnets);
+  const chainKeys = useMemo(
+    () =>
+      (Object.keys(blockchains) as (keyof cryptos)[]).filter(
+        (c) => showTestnets || c === activeChain || !isTestnetChain(c),
+      ),
+    [showTestnets, activeChain],
+  );
   const filteredChains = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return chainKeys;

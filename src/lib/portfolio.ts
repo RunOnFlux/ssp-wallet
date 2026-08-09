@@ -3,6 +3,7 @@ import localForage from 'localforage';
 import { blockchains } from '@storage/blockchains';
 import type { Token } from '@storage/blockchains';
 import { hasStoredKeyXpub } from './chainSync';
+import { store } from '../store';
 import { fetchAddressBalance, fetchAddressTokenBalances } from './balances';
 import type {
   cryptos,
@@ -103,6 +104,17 @@ async function discoverChains(): Promise<
         `wallets-${chain}`,
         {},
       );
+      // The shell writes a freshly generated address to redux synchronously
+      // but to localForage asynchronously — right after onboarding (which now
+      // lands directly on Portfolio) the durable map can lag a beat behind.
+      // Merge the in-memory map so a just-paired chain is never misread as
+      // "not yet activated".
+      const memWallets = store.getState()[chain]?.wallets ?? {};
+      for (const [id, wal] of Object.entries(memWallets)) {
+        if (wal?.address && !wallets[id]) {
+          wallets[id] = wal.address;
+        }
+      }
       const walletInUse = await safeGetItem<string>(
         `walletInUse-${chain}`,
         '0-0',

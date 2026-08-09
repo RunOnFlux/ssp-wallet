@@ -35,6 +35,9 @@ interface config {
   fiatCurrency?: keyof currency; // user adjustable
   maxTxFeeUSD?: number;
   fiatSymbol?: string;
+  // user adjustable — testnet networks stay out of chain lists unless enabled
+  // (absent = false)
+  showTestnets?: boolean;
   tutorial: tutorialConfig;
   enterpriseNotification?: enterpriseNotificationConfig;
 }
@@ -72,6 +75,7 @@ export function sspConfig(): config {
     relay: storedLocalForgeSSPConfig?.relay ?? ssp.relay,
     fiatCurrency: storedLocalForgeSSPConfig?.fiatCurrency ?? ssp.fiatCurrency,
     maxTxFeeUSD: storedLocalForgeSSPConfig?.maxTxFeeUSD ?? ssp.maxTxFeeUSD,
+    showTestnets: storedLocalForgeSSPConfig?.showTestnets ?? false,
     tutorial: storedLocalForgeSSPConfig?.tutorial ?? ssp.tutorial,
     fiatSymbol: getFiatSymbol(
       storedLocalForgeSSPConfig?.fiatCurrency ?? ssp.fiatCurrency ?? 'USD',
@@ -106,6 +110,7 @@ async function readStoredConfig(): Promise<Partial<config>> {
 export async function updateUserPreferences(prefs: {
   relay?: string;
   fiatCurrency?: keyof currency;
+  showTestnets?: boolean;
 }) {
   const next: Partial<config> = { ...(await readStoredConfig()) };
 
@@ -121,6 +126,14 @@ export async function updateUserPreferences(prefs: {
       delete next.fiatCurrency;
     } else {
       next.fiatCurrency = prefs.fiatCurrency;
+    }
+  }
+  if (prefs.showTestnets !== undefined) {
+    // shipped default is "hidden" — store the key only when enabled
+    if (!prefs.showTestnets) {
+      delete next.showTestnets;
+    } else {
+      next.showTestnets = true;
     }
   }
 
