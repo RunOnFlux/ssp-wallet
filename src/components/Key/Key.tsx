@@ -1312,15 +1312,14 @@ function Key(props: {
           <div
             className={`keySyncChipsRow${chipsEditable ? '' : ' keySyncChipsLocked'}`}
           >
-            {/* The chain being activated leads the row: always checked and
-                not toggleable — it IS the request. Without it the syncing
-                chain was invisible here and the row read as if the request
-                did not include it. */}
-            {!isIdentityChain && (
-              <Tag.CheckableTag checked style={{ cursor: 'default' }}>
-                {blockchainConfig.name}
-              </Tag.CheckableTag>
-            )}
+            {/* The chain being synced leads the row: always checked and not
+                toggleable — it IS the request. On identity pairing that is
+                Bitcoin (the identity chain always syncs); on single-chain
+                activation it is the chain being activated. Without it the
+                row read as if the request did not include that chain. */}
+            <Tag.CheckableTag checked style={{ cursor: 'default' }}>
+              {blockchainConfig.name}
+            </Tag.CheckableTag>
             {offeredChains.map((chain) => (
               <Tag.CheckableTag
                 key={chain}
