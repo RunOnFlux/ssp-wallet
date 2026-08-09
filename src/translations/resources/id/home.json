@@ -191,6 +191,7 @@
     "theme_system": "Sistem",
     "theme_light": "Terang",
     "theme_dark": "Gelap",
+    "show_testnets": "Show testnet networks",
     "use_system_language": "Gunakan Bahasa Sistem",
     "public_nonces_sync": "Nonces Publik",
     "sync_public_nonces": "Sinkronisasi Nonces Publik",
@@ -1017,7 +1018,9 @@
     "tap_to_activate": "Ketuk untuk mengaktifkan",
     "activating": "Mengaktifkan…",
     "refresh_failed": "Tidak dapat memuat ulang — menampilkan nilai yang terakhir disimpan.",
-    "incl_tokens": "termasuk {{amount}} token"
+    "incl_tokens": "termasuk {{amount}} token",
+    "receive_first_title": "Receive your first crypto",
+    "receive_first_sub": "Show your address to get started"
   },
   "activityFeed": {
     "all": "Semua",
