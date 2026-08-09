@@ -191,6 +191,7 @@
     "theme_system": "System",
     "theme_light": "Light",
     "theme_dark": "Dark",
+    "show_testnets": "Show testnet networks",
     "use_system_language": "Använd systemets språk",
     "public_nonces_sync": "Public Nonces",
     "sync_public_nonces": "Sync Public Nonces",
@@ -1017,7 +1018,9 @@
     "tap_to_activate": "Tap to activate",
     "activating": "Activating…",
     "refresh_failed": "Couldn't refresh — showing the last saved values.",
-    "incl_tokens": "incl. {{amount}} tokens"
+    "incl_tokens": "incl. {{amount}} tokens",
+    "receive_first_title": "Receive your first crypto",
+    "receive_first_sub": "Show your address to get started"
   },
   "activityFeed": {
     "all": "All",
