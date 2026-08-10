@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@alchemy/aa-core": "3.19.0",
-    "@fontsource/inter": "5.2.8",
+    "@fontsource/inter": "5.3.0",
     "@metamask/browser-passworder": "6.0.0",
     "@noble/curves": "2.2.0",
     "@noble/hashes": "2.2.0",
