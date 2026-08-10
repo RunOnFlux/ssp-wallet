@@ -1597,20 +1597,23 @@ function Key(props: {
                     </p>
                     <p>{t('home:key.ssp_key_download')}</p>
                     <Space direction="vertical" size="small">
+                      {/* #mobile jumps straight to the App Store / Play Store
+                          buttons on the live /download page (the old
+                          /download/ssp-key path never existed and 404'd). */}
                       <QRCode
                         errorLevel="H"
-                        value="https://sspwallet.io/download/ssp-key"
+                        value="https://sspwallet.io/download#mobile"
                         icon={sspLogo}
                         size={qrSize}
                         style={{ margin: '0 auto' }}
                       />
                       <Paragraph
                         copyable={{
-                          text: 'https://sspwallet.io/download/ssp-key',
+                          text: 'https://sspwallet.io/download#mobile',
                         }}
                         className="copyableAddress"
                       >
-                        <Text>https://sspwallet.io/download/ssp-key</Text>
+                        <Text>https://sspwallet.io/download#mobile</Text>
                       </Paragraph>
                     </Space>
                     <p>{t('home:key.ssp_key_download_2')}</p>
