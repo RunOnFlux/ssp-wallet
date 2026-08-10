@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import BigNumber from 'bignumber.js';
 import localForage from 'localforage';
@@ -31,6 +31,7 @@ import {
 } from '../../store';
 import { blockchains, isTestnetChain, Token } from '@storage/blockchains';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
+import { fetchAddressBalance } from '../../lib/balances';
 import { switchToChain } from '../../lib/chainSwitching';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import { sspConfig } from '@storage/ssp';
@@ -117,6 +118,33 @@ function WalletSwitcher({ open, openAction, stayOnRoute }: Props) {
     ids.sort((a, b) => +a.split('-')[0] - +b.split('-')[0]);
     return ids;
   }, [wallets]);
+
+  // Balances in the store are only ever fetched for the wallet IN USE — every
+  // other wallet of the chain sat at 0 here until first switched to. Refresh
+  // all of them whenever the sheet opens, so the rows show real balances.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    void Promise.all(
+      Object.entries(wallets).map(async ([id, wal]) => {
+        if (!wal?.address) return;
+        try {
+          const bal = await fetchAddressBalance(wal.address, activeChain);
+          if (cancelled) return;
+          setBalance(activeChain, id, bal.confirmed);
+          setUnconfirmedBalance(activeChain, id, bal.unconfirmed);
+        } catch (error) {
+          // a row that cannot refresh keeps its last stored value
+          console.log('[switcher] balance refresh failed', id, error);
+        }
+      }),
+    );
+    return () => {
+      cancelled = true;
+    };
+    // deliberately NOT keyed on `wallets` — the setBalance dispatches above
+    // change that object and would re-trigger the fetch loop
+  }, [open, activeChain]);
 
   const filteredWalletIds = useMemo(() => {
     const q = query.trim().toLowerCase();
