@@ -26,68 +26,68 @@ loadBackendsConfig();
 // *** BACKENDS ***
 const assetBackends: backends = {
   flux: {
-    node: 'explorer.runonflux.io',
+    node: 'flux-explorer.sspwallet.io',
   },
   fluxTestnet: {
-    node: 'testnet.runonflux.io',
+    node: 'flux-testnet.sspwallet.io',
   },
   rvn: {
-    node: 'blockbookravencoin.app.runonflux.io',
+    node: 'blockbook-rvn.sspwallet.io',
   },
   ltc: {
-    node: 'blockbooklitecoin.app.runonflux.io',
+    node: 'blockbook-ltc.sspwallet.io',
   },
   btc: {
-    node: 'blockbookbitcoin.app.runonflux.io',
+    node: 'blockbook-btc.sspwallet.io',
   },
   doge: {
-    node: 'blockbookdogecoin.app.runonflux.io',
+    node: 'blockbook-doge.sspwallet.io',
   },
   zec: {
-    node: 'blockbookzcash.app.runonflux.io',
+    node: 'blockbook-zec.sspwallet.io',
   },
   bch: {
-    node: 'blockbookbitcoincash.app.runonflux.io',
+    node: 'blockbook-bch.sspwallet.io',
   },
   btcTestnet: {
-    node: 'blockbookbitcointestnet.app.runonflux.io',
+    node: 'blockbook-btc-testnet.sspwallet.io',
   },
   btcSignet: {
-    node: 'blockbookbitcoinsignet.app.runonflux.io',
+    node: 'blockbook-btc-signet.sspwallet.io',
   },
   sepolia: {
-    node: 'node.ethereum-sepolia.runonflux.io',
-    api: 'api.ethereum-sepolia.runonflux.io/api',
+    node: 'node-sepolia.sspwallet.io',
+    api: 'api-sepolia.sspwallet.io/api',
     explorer: 'sepolia.etherscan.io',
   },
   eth: {
-    node: 'node.ethereum-mainnet.runonflux.io',
-    api: 'api.ethereum-mainnet.runonflux.io/api',
+    node: 'node-eth.sspwallet.io',
+    api: 'api-eth.sspwallet.io/api',
     explorer: 'etherscan.io',
   },
   amoy: {
-    node: 'node.polygon-amoy.runonflux.io',
-    api: 'api.polygon-amoy.runonflux.io/api',
+    node: 'node-amoy.sspwallet.io',
+    api: 'api-amoy.sspwallet.io/api',
     explorer: 'amoy.polygonscan.com',
   },
   polygon: {
-    node: 'node.polygon-mainnet.runonflux.io',
-    api: 'api.polygon-mainnet.runonflux.io/api',
+    node: 'node-polygon.sspwallet.io',
+    api: 'api-polygon.sspwallet.io/api',
     explorer: 'polygonscan.com',
   },
   base: {
-    node: 'node.base-mainnet.runonflux.io',
-    api: 'api.base-mainnet.runonflux.io/api',
+    node: 'node-base.sspwallet.io',
+    api: 'api-base.sspwallet.io/api',
     explorer: 'basescan.org',
   },
   avax: {
-    node: 'node.avax-mainnet.runonflux.io',
-    api: 'api.avax-mainnet.runonflux.io/api',
+    node: 'node-avax.sspwallet.io',
+    api: 'api-avax.sspwallet.io/api',
     explorer: 'snowtrace.io',
   },
   bsc: {
-    node: 'node.bsc-mainnet.runonflux.io',
-    api: 'api.bsc-mainnet.runonflux.io/api',
+    node: 'node-bsc.sspwallet.io',
+    api: 'api-bsc.sspwallet.io/api',
     explorer: 'bscscan.com',
   },
   solDevnet: {
