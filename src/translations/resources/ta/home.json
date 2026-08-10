@@ -275,12 +275,12 @@
     "info_1": "To confirm the transaction on your SSP Key, open your SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "info_2": "உங்கள் SSP முக்கியத்தில் பரிவர்த்தனையை உறுதிப்படுத்த, உங்கள் SSP முக்கியத்தை மொபைல் போனில் திறந்து, செயல்திறன் உறுதிப்படுத்தவும். புதுப்பிக்கக் கிளிக் செய்யலாம் அல்லது கைமுறை உள்ளீட்டைப் பயன்படுத்தலாம்.",
     "soft_timeout_title": "Taking longer than usual?",
-    "soft_timeout_description": "Make sure SSP Key is open and online. You can also show the QR fallback below to load the request manually."
+    "soft_timeout_description": "Make sure SSP Key is open and online. You can also scan the QR code below to load the request manually."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "SSP முக்கியத்தில் பொதுவான நான்சுகளை உறுதிப்படுத்தவும்",
     "confirm_public_nonces_key_info": "EVM பரிவர்த்தனையை அனுப்புவதற்காக, முதலில் SSP முக்கியத்திலிருந்து பரிவர்த்தனை கட்டமைப்புக்குப் பயன்படுத்தப்படும் பொதுவான நான்சுகளை பெற வேண்டும்.",
-    "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
+    "confirm_public_nonces_key_info_2": "உங்கள் SSP முக்கியத்தில் பொதுவான நான்சுகளை உறுதிப்படுத்த, உங்கள் SSP முக்கியத்தை மொபைல் போனில் திறந்து, செயல்திறன் உறுதிப்படுத்தவும். புதுப்பிக்கக் கிளிக் செய்யலாம் அல்லது கீழே உள்ள QR குறியீட்டை ஸ்கேன் செய்யலாம்.",
     "manual_input": "பொதுவான நான்சுகளை கைமுறை மூலம் உள்ளிடவும்",
     "public_nonces_stored": "பொதுவான நான்சுகள் சேமிக்கப்பட்டது!",
     "invalid_public_nonces": "செல்லாத பொதுவான நான்சுகள்."
@@ -288,13 +288,13 @@
   "navbar": {
     "refresh": "புதுப்பிக்கவும்",
     "chain_wallet": "{{chain}}{{wallet}}",
-    "addr_details": "Address details",
+    "addr_details": "முகவரி விவரங்கள்",
     "generate_new_wallet": "புதிய வாலட்டை உருவாக்கவும்",
     "remove_last_wallet": "கடைசி வாலட்டை அகற்றவும்",
     "remove": "அகற்றவும்",
     "remove_last_wallet_desc": "இந்தச் செயல்பாடு உங்கள் அண்மையெடுத்த வாலட்டை அகற்றும். நீங்கள் எப்போது வேண்டுமானாலும் அதே புதிய வாலட்டை உருவாக்கலாம்.",
     "max_wallets": "42. வாழ்க்கை, பிரபஞ்சம், மற்றும் அனைத்திற்கும் ultimate கேள்விக்கான பதில். நீங்கள் அதிகபட்ச வாலட் எண்ணிக்கையை அடைந்துள்ளீர்கள்.",
-    "ssp_message_sign": "Message signing",
+    "ssp_message_sign": "செயல்பாட்டு கையொப்பம்",
     "swap_history": "Swap History",
     "lock": "Lock"
   },
@@ -308,8 +308,8 @@
   },
   "key": {
     "sync_key": "கீயை ஒத்திசைக்கவும்",
-    "err_sync_fail": "Synchronization failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
-    "warn_await_sync": "Awaiting SSP Key synchronization or manual input.",
+    "err_sync_fail": "ஒத்திசைவு தோல்வி. உருவாக்கிய முகவரி பொருந்தவில்லை. மீண்டும் கைமுறை முயற்சிக்கவும் மற்றும் SSP வாலட் மற்றும் SSP முக்கியத்தில் ஒரே முகவரி கட்டமைக்கப்படுகிறதா என்பதை மீண்டும் சரிபார்க்கவும். SSP வாலட் மற்றும் SSP முக்கியம் இரண்டும் தனித்தனி, வேறுபட்ட விதை வாசகங்களைப் பயன்படுத்த வேண்டும்.",
+    "warn_await_sync": "SSP கீ ஒத்திசைவு அல்லது கைமுறை உள்ளீட்டிற்கு காத்திருக்கிறது.",
     "err_sync_1": "தயவுசெய்து SSP கீ XPUB ஐ உள்ளிடவும். SSP கீ XPUB என்பது SSP வாலட் XPUB க்கு வேறுபட்டது. SSP வாலட் மற்றும் SSP கீ இரண்டும் தனித்தனி, வேறுபட்ட விதை வாசகங்களைப் பயன்படுத்துகிறதா என்பதை உறுதிப்படுத்தவும்.",
     "err_invalid_key": "செல்லாத SSP கீ.",
     "err_k2": "கோடு K2: பாஸ்வர்டை படியிடும்போது ஏதோ தவறு ஏற்பட்டது.",
@@ -318,14 +318,14 @@
     "cancel_sync": "SSP ஒத்திசைவை ரத்து செய்யவா",
     "back_to_sync": "SSP கீ ஒத்திசைவிற்கு திரும்பவும்",
     "sync_info_content": "SSP கீ இல்லாமல் SSP வாலட்டை பயன்படுத்த முடியாது. இது SSP வாலட்டில் உங்களை லாக் அவுட் செய்யும்.",
-    "dual_factor_key": "Dual Signature SSP Key",
+    "dual_factor_key": "இரட்டை காரிய SSP கீ",
     "sync_info_1": "\"SSP வாலட் என்பது இரட்டை கையொப்ப வாலட் ஆகும். உங்கள் வாலட்டிற்கு அணுகும்பதற்காக SSP கீயை உங்கள் மொபைல் சாதனத்தில் பதிவிறக்க வேண்டும்.",
-    "sync_info_2": "Scan the following QR code using your SSP Key mobile app to synchronize your SSP Wallet with your SSP Key.",
+    "sync_info_2": "Scan the following QR code using your 2FA SSP Key mobile app to synchronise your SSP Wallet with your SSP Key.",
     "issues_syncing": "ஒத்திசைவு செய்யச் சிக்கல்கள்? கைமுறை உள்ளீடு",
-    "dual_factor_key_chain": "Dual Signature SSP Key for {{chain}}",
+    "dual_factor_key_chain": "{{chain}} க்கான இரட்டை காரிய SSP கீ",
     "input_xpub": "இங்கே SSP கீ {{chain}} விரிவான பொது விசை {{path}} உள்ளிடவும்",
     "sync_key_chain": "{{chain}} க்கான கீ ஒத்திசைவு",
-    "warn_await_sync_chain": "Awaiting SSP Key synchronization or manual input.",
+    "warn_await_sync_chain": "SSP கீ ஒத்திசைவு அல்லது கைமுறை உள்ளீட்டிற்கு காத்திருக்கிறது.",
     "err_sync_1_chain": "தயவுசெய்து {{chain}} செயினின் SSP கீ XPUB ஐ உள்ளிடவும். SSP கீ XPUB என்பது SSP வாலட் XPUB க்கு வேறுபட்டது.",
     "cancel_sync_q_chain": "{{chain}} க்கான SSP கீ ஒத்திசைவை ரத்து செய்யவா?",
     "sync_info_content_chain": "{{chain}} செயினுக்கான SSP வாலட்டை SSP கீ இல்லாமல் பயன்படுத்த முடியாது. இது Bitcoin செயினுக்கு திரும்ப மாற்றப்படும்",
@@ -333,9 +333,9 @@
     "setup_ssp_key": "Setup SSP Key",
     "ssp_key_download_here": "Don't have SSP Key? Click here to download!",
     "ssp_key_ready": "My SSP Key is ready!",
-    "ssp_key_2fa": "SSP Key is the second signature for your SSP Wallet",
+    "ssp_key_2fa": "SSP Key is a 2FA for your SSP Wallet",
     "ssp_key_download": "Download and synchronize your SSP Key with your SSP Wallet using scanning the QR code below using your Camera or QR code reader.",
-    "ssp_key_download_2": "SSP Key has its own recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_2": "SSP Key has it's own SSP Key recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
     "tab_scan": "Scan with SSP Key",
     "tab_manual": "Enter manually",
     "chips_label_identity": "Also activate these chains with one approval on your SSP Key:",
@@ -417,7 +417,7 @@
     "title": "Enterprise Vault Key Request",
     "description": "A request to provide public keys for an enterprise vault has been received. Please review the details below.",
     "vault_name": "Vault",
-    "org_name": "Organization",
+    "org_name": "Organisation",
     "chain": "Chain",
     "ssp_identity": "SSP Identity",
     "approve": "Approve",
@@ -425,7 +425,7 @@
     "waiting_for_key": "Waiting for SSP Key approval...",
     "key_rejected": "Request rejected by SSP Key",
     "err_not_logged_in": "Not logged in",
-    "err_not_synced": "SSP Wallet is not yet synchronized with SSP Key. Please complete the sync first.",
+    "err_not_synced": "SSP Wallet is not yet synchronised with SSP Key. Please complete the sync first.",
     "err_invalid_chain": "Invalid chain",
     "err_seed_unavailable": "Could not retrieve wallet seed",
     "err_decrypt_password": "Failed to decrypt password",
@@ -434,14 +434,14 @@
     "err_decrypt_identity_key": "Failed to decrypt identity key"
   },
   "enterpriseNonceSync": {
-    "title": "Enterprise Nonce Synchronization",
-    "description": "SSP Enterprise is requesting to synchronize cryptographic nonces used for vault transaction signing. This will sync both your wallet and SSP Key nonces.",
+    "title": "Enterprise Nonce Synchronisation",
+    "description": "SSP Enterprise is requesting to synchronise cryptographic nonces used for vault transaction signing. This will sync both your wallet and SSP Key nonces.",
     "info": "This will generate fresh signing nonces and sync them with the relay server. No funds will be moved.",
     "approve": "Sync Nonces",
-    "syncing": "Synchronizing nonces...",
-    "syncing_wallet": "Synchronizing wallet nonces...",
+    "syncing": "Synchronising nonces...",
+    "syncing_wallet": "Synchronising wallet nonces...",
     "syncing_key": "Waiting for SSP Key to sync nonces...",
-    "success": "Wallet and Key nonces synchronized successfully!",
+    "success": "Wallet and Key nonces synchronised successfully!",
     "wallet_not_ready": "Wallet is not unlocked. Please unlock your wallet first.",
     "key_sync_failed": "SSP Key nonce sync failed. Please try again.",
     "key_sync_timeout": "SSP Key did not respond. Open SSP Key and try again.",
@@ -452,7 +452,7 @@
     "title": "Enterprise Vault Transaction Signing",
     "description": "A request to sign a vault transaction has been received. Please review the transaction details below.",
     "vault_name": "Vault",
-    "org_name": "Organization",
+    "org_name": "Organisation",
     "chain": "Chain",
     "source_address": "Source Address",
     "ssp_identity": "SSP Identity",
@@ -563,7 +563,7 @@
   "chainsInfo": {
     "chain_requests": "Chains Information Request",
     "chain_requests_info": "A request to get information about all integrated chains in SSP was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. No personal data is shared.",
-    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronized was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
+    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronised was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
     "chain_requests_info_error": "Error getting chains information."
   },
   "tokensInfo": {
@@ -576,10 +576,10 @@
   },
   "addressesInfo": {
     "addresses_requests": "Addresses Information Request",
-    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Exercise caution as your addresses will be shared with the requester.",
-    "addresses_requests_info_all": "A request to get a list of addresses for all synchronized blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Exercise caution as your addresses will be shared with the requester.",
+    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Excersice caution as your addresses will be shared with the requester.",
+    "addresses_requests_info_all": "A request to get a list of addresses for all synchronised blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Excersice caution as your addresses will be shared with the requester.",
     "addresses_requests_info_error": "Error getting addresses information.",
-    "no_addresses": "Chain not synchronized. No addresses found.",
+    "no_addresses": "Chain not synchronised. No addresses found.",
     "select_addresses": "Select Addresses to Share"
   },
   "fusion": {
@@ -646,7 +646,7 @@
     "search_asset": "Search Asset",
     "you_send": "You Send",
     "you_get": "You Get",
-    "chain_sync_required": "Chain synchronization required first",
+    "chain_sync_required": "Chain synchronisation required first",
     "select_receiving_wallet": "Select Receiving Wallet",
     "select_sending_wallet": "Select Sending Wallet",
     "select_buy_asset": "Select Asset to Buy",
@@ -913,23 +913,23 @@
     "steps": {
       "welcome_overview": {
         "title": "Welcome to SSP Wallet!",
-        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! This is Home — your wallet address and balance for the active wallet. Always verify that the address shown here matches the address on your SSP Key device."
+        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! Your wallet is now ready to use. Here you can see your wallet address and balance. Always verify that the wallet address displayed here matches the address shown on your SSP Key device."
       },
       "backup_health": {
         "title": "Backup Health",
         "content": "Whenever something still needs securing — your seed phrase not yet verified or your SSP Key not yet paired — an amber backup-health card appears right here under your balance, showing exactly what is at stake. Once everything is secured, it disappears."
       },
       "multi_chain_intro": {
-        "title": "Your Wallet & Chain Pill",
-        "content": "This pill shows the active wallet and chain — its color dot and identicon make your wallet recognizable at a glance. Tap it to open the switcher for wallets and networks."
+        "title": "Multiple Blockchain Support",
+        "content": "SSP Wallet supports multiple blockchains! This dropdown shows your current wallet and chain. Click on it to access chain switching options."
       },
       "find_switch_chain": {
-        "title": "Networks",
-        "content": "This is the switcher. Your wallets are listed on top; the Networks section below lets you jump to another blockchain. Click the Networks header to continue."
+        "title": "Switch Chain Button",
+        "content": "Perfect! Now click on \"Switch Chain\" to open the blockchain selection where you can choose different networks."
       },
       "select_ethereum": {
         "title": "Select Ethereum",
-        "content": "Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
+        "content": "Great! The chain selection modal is open. Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
       },
       "ethereum_sync_waiting": {
         "title": "Sync with SSP Key",
@@ -946,11 +946,11 @@
       },
       "receive_intro": {
         "title": "Receiving Funds",
-        "content": "Receive shows your address for the active chain — copy it or share the QR code. On Ethereum it accepts ETH and any ERC-20 tokens."
+        "content": "Click Receive to get your Ethereum address. This address can receive ETH and any ERC-20 tokens. You can copy the address or use the QR code."
       },
       "send_intro": {
         "title": "Sending Funds",
-        "content": "Send opens a guided three-step flow: enter the recipient and amount, review the fee and details, then confirm on your SSP Key. Every transaction needs both devices — that's the dual-signature security."
+        "content": "The Send button opens the transaction interface where you can send cryptocurrency to other addresses. It includes fields for recipient, amount, and fees."
       },
       "swap_feature": {
         "title": "Swap Feature",
@@ -985,12 +985,12 @@
         "content": "Portfolio shows your total value across all chains, wallets and tokens in one place — with allocation at a glance. Chains you haven't activated yet can be activated right from the list."
       },
       "extended_menu_intro": {
-        "title": "The Menu Tab",
-        "content": "Menu is the full toolbox: settings (language, currency, theme), WalletConnect for dApps, Address & SSP Wallet details, message signing, network configuration and this tutorial. The lock icon at the top right securely logs you out."
+        "title": "Advanced Menu Features",
+        "content": "This menu provides access to advanced features: WalletConnect for connecting to dApps, Address Details, SSP Wallet Details, Settings and more. The lock icon on the right securely logs you out."
       },
       "address_management": {
         "title": "Wallets Management",
-        "content": "The wallet pill at the top opens the switcher, where you manage multiple wallets per blockchain: create new ones, name and color them, switch between them, or remove the last created one. Each wallet is independent with its own balance and history."
+        "content": "This dropdown manages multiple addresses per blockchain. You can create new addresses, switch between existing ones, or remove the last created address. Each address is independent with its own balance and transaction history."
       },
       "tutorial_complete": {
         "title": "Tutorial Complete!",
