@@ -1,4 +1,5 @@
 {
+  "err_pw_required": "Please enter your password.",
   "err_invalid_pw": "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่",
   "err_invalid_pw_2": "รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่",
   "err_lx": "รหัส {{code}}: ข้อมูลกระเป๋าหาย กรุณากู้คืนกระเป๋าของคุณ",
@@ -12,6 +13,8 @@
   "recovery_dialog_title": "Browser change detected",
   "recovery_dialog_body": "Your browser environment has changed. Open SSP Key on your phone and approve the recovery request to unlock your wallet.",
   "recovery_waiting": "Waiting for SSP Key approval…",
+  "recovery_verify_heading": "Check these words match SSP Key",
+  "recovery_verify_body": "SSP Key shows the same six words. If they differ, reject the request on your phone.",
   "recovery_approved": "Recovery approved. Unlocking your wallet…",
   "recovery_denied_body": "The recovery request was denied on SSP Key.",
   "recovery_timeout_body": "SSP Key didn't respond in time. Make sure the app is open and try again.",

@@ -1,7 +1,22 @@
 {
   "err_panic": "PANIKA: Neplatný SSP Klíč.",
+  "backupHealth": {
+    "verify": "Verify",
+    "verify_title": "Verify your backup",
+    "verify_lead": "Confirm you still have your seed phrase backup. No one can recover it for you.",
+    "verify_decrypt_error": "Could not read your wallet. Please try again.",
+    "verified_toast": "Backup verified. Your wallet is safe."
+  },
+  "backupCheckup": {
+    "title": "Backup checkup",
+    "body": "It's been a while — take 30 seconds to confirm your seed words still match your backup.",
+    "protecting": "Your backup protects {{amount}} across your wallets.",
+    "later": "Later"
+  },
   "balances": {
     "locked": "Uzamčeno: {{balance}} {{symbol}}",
+    "hide": "Hide balances",
+    "show": "Show balances",
     "fiat_value": "{{fiatSymbol}}{{fiatValue}} {{fiatCurrency}}"
   },
   "txSent": {
@@ -34,6 +49,12 @@
     "date": "Datum",
     "amount": "Částka",
     "confirmations": "Potvrzení",
+    "fee": "Fee",
+    "to_address": "To",
+    "block_height": "Block height",
+    "token_contract": "Token contract",
+    "note": "Note",
+    "tx_part": "{{ord}} of {{total}}",
     "export_tx": "Export transakcí",
     "tx_confirmed": "Potvrzeno.",
     "tx_unconfirmed": "Nepotvrzeno. Transakce ještě nebyla vytěžena.",
@@ -110,7 +131,8 @@
     "err_duplicate_delegate": "Tento delegát je již přidán.",
     "delegates_count_one": "{{count}} delegát nakonfigurován",
     "delegates_count_other": "{{count}} delegátů nakonfigurováno",
-    "redeem_script": "Redeem Skript"
+    "redeem_script": "Redeem Skript",
+    "node_actions": "Node actions"
   },
   "setupNode": {
     "setup_node": "Nastavit {{chainName}} Node",
@@ -158,9 +180,7 @@
   },
   "settings": {
     "err_saving_conf": "Chyba při ukládání nastavení. Prosím zkuste později.",
-    "settings": "Nastavení",
     "change_pw": "Změnit heslo",
-    "change_pw_restore": "Změna Hesla? Obnovit!",
     "ssp_relay": "SSP Relay Server",
     "chain_node_service": "{{chain}} Node Služba",
     "chain_api_service": "{{chain}} API Služba",
@@ -171,10 +191,10 @@
     "theme_system": "System",
     "theme_light": "Light",
     "theme_dark": "Dark",
+    "show_testnets": "Show testnet networks",
     "use_system_language": "Použít Systémový Jazyk",
     "public_nonces_sync": "Veřejná nonce",
     "sync_public_nonces": "Synchronizovat veřejné nonce",
-    "public_nonces_sync_help": "Veřejné nonce jsou vyžadovány pro EVM transakce. Tato akce spustí synchronizaci noncí z vašeho SSP klíče pro správnou funkci podepisování transakcí EVM.",
     "sspEnterprise": {
       "title": "SSP Enterprise",
       "description": "Propojte vaši peněženku se SSP Enterprise pro příjem e-mailových oznámení o transakcích, upozornění na zůstatek a týdenní hlášení. Můžete také spravovat organizace a peněženky týmů prostřednictvím webové aplikace SSP Enterprise.",
@@ -199,8 +219,29 @@
       "remaining_attempts": "Zbývá {{count}} pokusů",
       "email_verified": "E-mail ověřen!",
       "sign_and_subscribe": "Podepsat a Odebírat",
-      "waiting_signature": "Čeká se na SSP Klíč..."
-    }
+      "waiting_signature": "Čeká se na SSP Klíč...",
+      "save_preferences": "Save Preferences",
+      "preferences_saved": "Notification preferences updated.",
+      "err_save_preferences": "Error saving notification preferences. Please try again.",
+      "min_tx_notification": "Minimum transaction amount (USD)",
+      "min_tx_notification_help": "Skip emails for transactions below this amount — e.g. frequent node rewards. 0 = notify for everything."
+    },
+    "security": "Security",
+    "verify_backup": "Verify seed backup",
+    "verify_backup_help": "Confirm your seed phrase backup by matching one of its words — the phrase itself is never shown.",
+    "backup_verified": "Verified",
+    "preferences": "Preferences",
+    "tools": "Tools",
+    "advanced": "Advanced",
+    "advanced_hint": "Network endpoints & expert tools",
+    "wallet_key_details": "Wallet & Key details",
+    "about": "About",
+    "enterprise_email_alerts": "SSP Enterprise email alerts",
+    "change_pw_help": "Changing your password re-imports the wallet from your seed phrase — have it ready before you start.",
+    "change_pw_confirm": "Changing your password means re-entering your seed phrase and re-encrypting your wallet. You'll need your seed phrase. Continue?",
+    "popular_currencies": "Popular",
+    "all_currencies": "All currencies",
+    "public_nonces_plain": "One-time signing numbers your SSP Key pre-shares so transactions on EVM chains can be co-signed. Sync them again if EVM signing ever gets stuck."
   },
   "receive": {
     "receive_chain_wallet": "Obdržet do {{chain}} {{wallet}}",
@@ -219,22 +260,27 @@
     "sell": "Prodat",
     "swap": "Směnit"
   },
+  "keyHandshake": {
+    "title": "Approve on your SSP Key",
+    "step_sent": "Sent to your SSP Key",
+    "step_awaiting": "Awaiting approval on your phone…",
+    "step_approved": "Approved",
+    "step_rejected": "Rejected",
+    "expires_in": "Expires in",
+    "expired": "This request has expired. Close this dialog and try again.",
+    "show_qr": "Show QR instead",
+    "hide_qr": "Hide QR"
+  },
   "confirmTxKey": {
-    "confirm_tx_key": "Potvrďte Transakci na SSP Klíči",
     "info_1": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo naskenovat následující QR Kód.",
     "info_2": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo použít ruční zadání.",
-    "waiting_title": "Waiting for approval on your SSP Key…",
-    "elapsed": "Elapsed: {{time}}",
-    "step_open": "Open SSP Key on your phone",
-    "step_review": "Review the request",
-    "step_approve": "Approve",
     "soft_timeout_title": "Taking longer than usual?",
-    "soft_timeout_description": "Make sure SSP Key is open and online. You can also scan the QR code below to load the request manually."
+    "soft_timeout_description": "Make sure SSP Key is open and online. You can also show the QR fallback below to load the request manually."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "Potvrďte Veřejné Nonce na SSP Klíči",
     "confirm_public_nonces_key_info": "Jestliže chcete odesílat transakce na EVM blockchainu, je zapotřebí nejprve obdržet veřejné nonce z SSP Klíče. Veřejné nonce se používají ke konstrukci transakcí.",
-    "confirm_public_nonces_key_info_2": "Pro potvrzení veřejných noncí na vašem SSP Klíči, otevřete SSP Klíč na mobilním zařízení a potvrďte akci. Můžete kliknout na tlačítko Obnovit nebo naskenovat následující QR kód.",
+    "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
     "manual_input": "Zadat Veřejné Nonce ručně",
     "public_nonces_stored": "Veřejné Nonce Uloženy!",
     "invalid_public_nonces": "Neplatné Veřejné Nonce."
@@ -242,16 +288,15 @@
   "navbar": {
     "refresh": "Obnovit",
     "chain_wallet": "{{chain}} {{wallet}}",
-    "ssp_details": "Detaily SSP Peněženky",
-    "addr_details": "Detaily Adresy",
+    "addr_details": "Address details",
     "generate_new_wallet": "Generovat Peněženku",
     "remove_last_wallet": "Odebrat Peněženku",
     "remove": "Odebrat",
     "remove_last_wallet_desc": "Tato akce odebere vaši poslední vygenerovanou peněženku. Kdykoliv později můžete vygenerovat tu samou peněženku.",
-    "switch_chain": "Změnit Chain",
     "max_wallets": "42. Odpověď na otázku celého života, vesmíru a tak nějak čehokoliv. Dosáhli jste maximální počtu peněženek.",
-    "ssp_message_sign": "Podepisování Zpráv",
-    "swap_history": "Historie Směn"
+    "ssp_message_sign": "Message signing",
+    "swap_history": "Historie Směn",
+    "lock": "Lock"
   },
   "passwordConfirm": {
     "err_pw_not_valid_try": "Heslo není platné. Zkuste prosím později.",
@@ -263,8 +308,8 @@
   },
   "key": {
     "sync_key": "Synchronizovat Klíč",
-    "err_sync_fail": "Synchronizace se nezdařila. Vygenerovaná adresa se neshoduje. Zkuste znovu s ručním zadáním a zkontrolujte, že vygenerovaná adresa je stejná jak v SSP Peněžence tak i v SSP Klíči. SSP Peněženka i SSP Klíč musí mít jinou unikátní seed frázi.",
-    "warn_await_sync": "Čekání na synchronizaci SSP Klíče nebo ruční zadání.",
+    "err_sync_fail": "Synchronization failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
+    "warn_await_sync": "Awaiting SSP Key synchronization or manual input.",
     "err_sync_1": "Prosím zadejte XPUB SSP Klíče. XPUB SSP Klíče je rozdílný oproti XPUB SSP Peněženky. Ujistěte se, že SSP Peněženka a SSP Klíč mají jinou unikátní seed frázi.",
     "err_invalid_key": "Neplatný SSP Klíč.",
     "err_k2": "Kód K2: Něco se pokazilo při dešifrování hesla.",
@@ -273,14 +318,14 @@
     "cancel_sync": "Zrušit SSP Synchronizaci",
     "back_to_sync": "Zpět do synchronizace SSP Klíče",
     "sync_info_content": "SSP Peněženku nelze používat bez SSP Klíče. Tato akce vás odhlásí z SSP Peněženky.",
-    "dual_factor_key": "Dvoufázové ověření SSP Klíč",
+    "dual_factor_key": "Dual Signature SSP Key",
     "sync_info_1": "SSP Peněženka je Dvou Podpisová Peněženka. Budete si muset stáhnout SSP Klíč do vašeho mobilního zařízení abyste peněženku mohli používat.",
-    "sync_info_2": "Naskenujte následující QR kód pomocí mobilní aplikace 2FA SSP Klíče pro synchronizaci vaší SSP Peněženky s SSP Klíčem.",
+    "sync_info_2": "Scan the following QR code using your SSP Key mobile app to synchronize your SSP Wallet with your SSP Key.",
     "issues_syncing": "Problémy se synchronizací? Ruční zadání",
-    "dual_factor_key_chain": "Dvoufázové ověření SSP Klíč pro {{chain}}",
+    "dual_factor_key_chain": "Dual Signature SSP Key for {{chain}}",
     "input_xpub": "Vložte Rozšířený Veřejný Klíč blockchainu {{chain}}, který má odvozenou cestu {{path}} zde",
     "sync_key_chain": "Synchronizovat SSP Klíč pro {{chain}}",
-    "warn_await_sync_chain": "Čekání na synchronizaci SSP Klíče nebo ruční zadání.",
+    "warn_await_sync_chain": "Awaiting SSP Key synchronization or manual input.",
     "err_sync_1_chain": "Prosím vložte XPUB blockchainu {{chain}} vašeho SSP Klíče. XPUB SSP Klíče je jiný než XPUB SSP Peněženky.",
     "cancel_sync_q_chain": "Zrušit synchronizaci SSP Klíče pro {{chain}}?",
     "sync_info_content_chain": "SSP Peněženka pro blockchain {{chain}} nemůže být použita bez SSP Klíče. Tato akce změní blockchain zpět na Bitcoin Chain.",
@@ -288,10 +333,36 @@
     "setup_ssp_key": "Nastavit SSP Klíč",
     "ssp_key_download_here": "Nemáte SSP Klíč? Klikněte zde pro stažení!",
     "ssp_key_ready": "Můj SSP Klíč je připraven!",
-    "ssp_key_2fa": "SSP Klíč je 2FA pro vaši SSP Peněženku",
+    "ssp_key_2fa": "SSP Key is the second signature for your SSP Wallet",
     "ssp_key_download": "Stáhněte si a synchronizujte svůj SSP Klíč s vaší SSP Peněženkou pomocí skenování QR kódu níže použitím vaší kamery nebo čtečky QR kódů.",
-    "ssp_key_download_2": "SSP Klíč má vlastní obnovovací seed frázi SSP Klíče. Toto seed fráze je jiná než seed fráze vaší SSP Peněženky.",
-    "ssp_key_download_3": "Jakmile máte stažený SSP Klíč, klikněte na \"Synchronizovat Klíč!\" a pokračujte v nastavování SSP Klíče."
+    "ssp_key_download_2": "SSP Key has its own recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "tab_scan": "Scan with SSP Key",
+    "tab_manual": "Enter manually",
+    "chips_label_identity": "Also activate these chains with one approval on your SSP Key:",
+    "chips_label_chain": "Activate more chains in the same approval:",
+    "timeline_waiting_scan": "Waiting for scan",
+    "timeline_phone_detected": "Phone detected",
+    "timeline_verifying": "Verifying keys",
+    "timeline_activating": "Activating {{total}} chains",
+    "timeline_syncing_chains": "Syncing chains ({{done}}/{{total}})",
+    "timeline_ready": "Ready",
+    "timeline_request_sent": "Request sent to your SSP Key",
+    "timeline_approved_phone": "Approved on your phone",
+    "batch_preparing": "Preparing request…",
+    "batch_resend_request": "Send request again",
+    "batch_fallback_info": "Your SSP Key app might need an update for one-tap sync — or scan the QR code below to sync {{chain}}.",
+    "batch_rejected_info": "The request was declined on your SSP Key. You can scan the QR code below instead.",
+    "batch_partial_failed": "Some chains did not sync. Switch to a chain later to activate it.",
+    "continue_to_wallet": "Continue to wallet",
+    "verify_words_heading": "Verify this matches your SSP Key",
+    "verify_words_body": "Scan this with your SSP Key to verify — or compare the 6 words below. If they differ, do NOT use this wallet — stop and start the sync again.",
+    "verify_words_session_label_one": "Verification code",
+    "verify_words_session_label_other": "Verification code ({{count}} chains)",
+    "verify_words_match": "They match — continue",
+    "verify_words_mismatch": "They don't match",
+    "verify_mismatch_warning": "Verification codes did not match. This vault was not activated — start the sync again to retry.",
+    "batch_request_selected_one": "Request {{count}} selected chain",
+    "batch_request_selected_other": "Request {{count}} selected chains"
   },
   "chainSelect": {
     "select_chain": "Vybrat Chain",
@@ -308,7 +379,8 @@
     "proceed_to_pay": "Pokračovat k Platbě",
     "tx_rejected": "Transakce Odmítnuta",
     "invalid_request": "Neplatný Požadavek",
-    "transaction_sent": "Transakce Odeslána"
+    "transaction_sent": "Transakce Odeslána",
+    "review_details": "Review the payment below. You will still confirm the transaction before anything is sent."
   },
   "signMessage": {
     "sign_message": "Podepsat Zprávu",
@@ -337,13 +409,15 @@
     "verified_origin": "Původ",
     "requesting_from": "Požadavek od",
     "manual_input": "Manuální zadávání pro SSP klíč",
-    "manual_input_desc": "Pokud automatická synchronizace nefunguje, naskenujte QR kód nebo zkopírujte data pro SSP klíč."
+    "manual_input_desc": "Pokud automatická synchronizace nefunguje, naskenujte QR kód nebo zkopírujte data pro SSP klíč.",
+    "site_provided": "Provided by the site, not verified:",
+    "embedded_frame": "Requested by an embedded frame inside {{top}}"
   },
   "enterpriseVaultXpub": {
     "title": "Požadavek o klíč enterprise vaultu",
     "description": "Byl přijat požadavek na poskytnutí veřejných klíčů pro enterprise vault. Zkontrolujte prosím níže uvedené údaje.",
     "vault_name": "Vault",
-    "org_name": "Organizace",
+    "org_name": "Organization",
     "chain": "Řetězec",
     "ssp_identity": "SSP Identita",
     "approve": "Potvrdit",
@@ -351,7 +425,7 @@
     "waiting_for_key": "Čeká se na schválení SSP Klíčem...",
     "key_rejected": "Žádost zamítnuta SSP Klíčem",
     "err_not_logged_in": "Nejste přihlášeni",
-    "err_not_synced": "SSP Peněženka ještě není synchronizována s SSP klíčem. Nejprve prosím dokončete synchronizaci.",
+    "err_not_synced": "SSP Wallet is not yet synchronized with SSP Key. Please complete the sync first.",
     "err_invalid_chain": "Neplatný řetězec",
     "err_seed_unavailable": "Nelze načíst seed peněženky",
     "err_decrypt_password": "Nepodařilo se dešifrovat heslo",
@@ -360,14 +434,14 @@
     "err_decrypt_identity_key": "Nepodařilo se dešifrovat identitu klíče"
   },
   "enterpriseNonceSync": {
-    "title": "Syncrhonizace Enterprise Noncí",
-    "description": "SSP Enterprise požaduje synchronizaci kryptografických noncí používaných pro podepisování transakcí. Tato akce bude synchronizovat jednak nonce vaší peněženku, tak i nonce SSP klíče.",
+    "title": "Enterprise Nonce Synchronization",
+    "description": "SSP Enterprise is requesting to synchronize cryptographic nonces used for vault transaction signing. This will sync both your wallet and SSP Key nonces.",
     "info": "Toto vygeneruje nové podpisové nonce a synchronizuje je se serverem. Žádné finanční prostředky nebudou přesunuty.",
     "approve": "Syncrhonizovat Nonce",
-    "syncing": "Synchronizace noncí...",
-    "syncing_wallet": "Synchronizace noncí peněženky...",
+    "syncing": "Synchronizing nonces...",
+    "syncing_wallet": "Synchronizing wallet nonces...",
     "syncing_key": "Čekání na SSP klíč pro synchronizaci noncí...",
-    "success": "Nonce peněženky a klíče byly úspěšně synchronizovány!",
+    "success": "Wallet and Key nonces synchronized successfully!",
     "wallet_not_ready": "Peněženka není odemčena. Nejprve prosím odemkněte Vaši peněženku.",
     "key_sync_failed": "Syncrhonizace noncí SSP Kliče selhala. Zkuste to znovu.",
     "key_sync_timeout": "SSP Klíč neodpovídá. Otevřete SSP Klíč a zkuste to znovu.",
@@ -378,7 +452,7 @@
     "title": "Podpis Transakce Enterprise Vaultu",
     "description": "Byl přijat požadavek na podepsání transakce vaultu. Zkontrolujte prosím níže uvedené údaje o transakci.",
     "vault_name": "Vault",
-    "org_name": "Organizace",
+    "org_name": "Organization",
     "chain": "Řetězec",
     "source_address": "Zdrojová adresa",
     "ssp_identity": "SSP Identita",
@@ -431,7 +505,9 @@
         "SIMULATION_DECODE_MISMATCH": "The advisory risk preview disagrees with this device's own decode of the transaction. Trust the recipients and amounts decoded above, not the preview.",
         "SIMULATION_UNAVAILABLE": "Risk checks could not be completed; the preview is best-effort."
       }
-    }
+    },
+    "err_sign_mismatch": "Signing blocked: the transaction does not match what was shown for approval. Do not retry — contact support.",
+    "err_sign_unverifiable": "Signing blocked: this request could not be independently verified on your device."
   },
   "enterpriseFluxNodeStart": {
     "title": "Spustit Flux Node",
@@ -458,6 +534,26 @@
     "err_decrypt_password": "Nepodařilo se dešifrovat heslo",
     "err_decrypt_seed": "Nepodařilo se dešifrovat seed peněženky"
   },
+  "fluxNodeStart": {
+    "title": "Start Flux Node",
+    "description": "A website is requesting to start a Flux node using collateral held in this wallet. Please review the details below.",
+    "node": "Node",
+    "chain": "Chain",
+    "collateral": "Collateral",
+    "collateral_address": "Collateral Address",
+    "collateral_utxo": "Collateral UTXO",
+    "delegates": "Delegates",
+    "delegate_notice": "The listed delegate keys will be granted permission to manage this node (start and maintain it). Delegates can NOT spend or move your collateral.",
+    "approve": "Approve & Start Node",
+    "err_failed": "Failed to start node",
+    "err_not_logged_in": "Not logged in",
+    "err_invalid_chain": "Invalid chain",
+    "err_address_not_found": "The collateral address does not belong to this wallet. Make sure the Flux chain is synced and the address is correct.",
+    "err_redeem_unavailable": "Redeem script unavailable for this address",
+    "err_xpriv_unavailable": "Could not retrieve wallet key",
+    "err_decrypt_password": "Failed to decrypt password",
+    "err_decrypt_xpriv": "Failed to decrypt wallet key"
+  },
   "sspConnect": {
     "invalid_chain": "Neplatný chain.",
     "invalid_method": "Neplatná metoda.",
@@ -467,7 +563,7 @@
   "chainsInfo": {
     "chain_requests": "Žádost o informace o řetězcích",
     "chain_requests_info": "Byl přijat požadavek na získání informací o všech integrovaných řetězcích v SSP. Budou sdíleny následující údaje každého řetězce: id, název, symbol, desetinná místa a id řetězce. Žádné osobní údaje nejsou sdíleny.",
-    "chain_requests_info_user": "Byl přijat požadavek na získání informací o řetězcích, které vaše SSP Peněženka synchronizovala. Budou sdíleny následující údaje každého řetězce: id, název, symbol, desetinná místa a řetězová Id. I když nejsou žádné osobní údaje sdíleny, tento požadavek může být použit k získání informací o tom, jaké řetězce používáte.",
+    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronized was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
     "chain_requests_info_error": "Chyba při získávání informací o řetězcích."
   },
   "tokensInfo": {
@@ -480,10 +576,10 @@
   },
   "addressesInfo": {
     "addresses_requests": "Požadavek na informace o adresách",
-    "addresses_requests_info": "Byl přijat požadavek na získání seznamu adres řetězce {{chain}} . Tento požadavek bude sdílet vybrané adresy. Buďte opatrní, protože vaše adresy budou sdíleny s žadatelem.",
-    "addresses_requests_info_all": "Byl přijat požadavek na získání adres ode všech vašich synchronizovaných blockchainů. Tato akce bude sdílet vaše vybrané adresy spolu s informacemi ohledně blockchainu jakožto id, jméno, symbol, desetinná čísla a číslo chainu. Buďte opatrní, protože vaše adresy budou sdíleny s žadatelem.",
+    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Exercise caution as your addresses will be shared with the requester.",
+    "addresses_requests_info_all": "A request to get a list of addresses for all synchronized blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Exercise caution as your addresses will be shared with the requester.",
     "addresses_requests_info_error": "Chyba při získávání informací o adresách.",
-    "no_addresses": "Řetězec není synchronizován. Nebyly nalezeny žádné adresy.",
+    "no_addresses": "Chain not synchronized. No addresses found.",
     "select_addresses": "Vyberte adresy ke sdílení"
   },
   "fusion": {
@@ -514,7 +610,9 @@
     "contacts_updated": "Kontakty Aktualizovány",
     "err_saving_contacts": "Chyba při ukládání kontaktů. Zkuste prosím později.",
     "contact_deleted": "Kontakt Smazán",
-    "created_at": "Přidáno"
+    "created_at": "Přidáno",
+    "address_copied": "Address copied to clipboard",
+    "copy_address": "Copy address"
   },
   "tokens": {
     "import_token": "Importovat Token",
@@ -532,7 +630,9 @@
     "invalid_token_contract": "Neplatný kontrakt tokenu.",
     "delete_token": "Odebrat Token",
     "token_deleted": "Token Odebrán!",
-    "err_delete_token": "Chyba při odebírání tokenu. Zkuste prosím později."
+    "err_delete_token": "Chyba při odebírání tokenu. Zkuste prosím později.",
+    "no_tokens": "No tokens on this wallet yet",
+    "custom_tokens": "Custom tokens"
   },
   "buy_sell_crypto": {
     "third_party_service": "Služba Třetí Strany",
@@ -546,7 +646,7 @@
     "search_asset": "Vyhledat aktiva",
     "you_send": "Vy Pošlete",
     "you_get": "Vy Obdržíte",
-    "chain_sync_required": "Nejprve je nutná synchronizace řetězce",
+    "chain_sync_required": "Chain synchronization required first",
     "select_receiving_wallet": "Zvolte Přijímající Peněženku",
     "select_sending_wallet": "Zvolte Odesílací Peněženku",
     "select_buy_asset": "Vyberte Aktivum pro Nákup",
@@ -591,7 +691,8 @@
     "balance": "Zůstatek",
     "max_tooltip_token": "Poslat celý zůstatek tokenu. Síťové poplatky jsou hrazeny samostatně v nativní minci.",
     "max_tooltip_native": "Poslat maximální dostupný zůstatek. Síťové poplatky jsou automaticky rezervovány.",
-    "insufficient_balance": "Nedostatečný zůstatek. Částka přesahuje Vaše dostupné prostředky, včetně síťových poplatků."
+    "insufficient_balance": "Nedostatečný zůstatek. Částka přesahuje Vaše dostupné prostředky, včetně síťových poplatků.",
+    "advanced_options": "Advanced options"
   },
   "walletconnect": {
     "title": "WalletConnect",
@@ -736,7 +837,8 @@
     "redirected_to_send_page": "Přesměrováno k stránku odesílání",
     "walletconnect_transaction_approved": "Transakce byla schválena a úspěšně odeslána!",
     "eth_sign_transaction_not_supported": "eth_signTransaction není podporována peněženkami Abstrakce Účtu. Použijte místo toho eth_sendTransaction.",
-    "eth_sign_transaction_error": "eth_signTransaction není podporována peněženkami Abstrakce Účtu. Abstrakční peněženky účtu používají UserOperations namísto tradičních transakcí. Pro přímé provedení transakce použijte eth_sendTransaction."
+    "eth_sign_transaction_error": "eth_signTransaction není podporována peněženkami Abstrakce Účtu. Abstrakční peněženky účtu používají UserOperations namísto tradičních transakcí. Pro přímé provedení transakce použijte eth_sendTransaction.",
+    "evm_only": "EVM chains only"
   },
   "walletconnect_tx_modal": {
     "simple_transfer": "Jednoduchý převod",
@@ -811,19 +913,23 @@
     "steps": {
       "welcome_overview": {
         "title": "Vítejte do SSP Peněženky!",
-        "content": "Úspěšně jste synchronizovali SSP Peněženku s SSP Klíčem a připojili k Bitcoin blockchainu! Vaše peněženka je nyní připravena k použití. Zde můžete vidět adresu a zůstatek peněženky. Vždy ověřte, zda se zde zobrazená adresa peněženky shoduje s adresou zobrazenou na vašem SSP Klíči."
+        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! This is Home — your wallet address and balance for the active wallet. Always verify that the address shown here matches the address on your SSP Key device."
+      },
+      "backup_health": {
+        "title": "Backup Health",
+        "content": "Whenever something still needs securing — your seed phrase not yet verified or your SSP Key not yet paired — an amber backup-health card appears right here under your balance, showing exactly what is at stake. Once everything is secured, it disappears."
       },
       "multi_chain_intro": {
-        "title": "Podpora Více Blockchainů",
-        "content": "Peněženka SSP podporuje více blockchainů! Tato nabídka zobrazuje vaši aktuální peněženku a síť. Klikněte na ni pro přístup k možnosti přepnutí sítě."
+        "title": "Your Wallet & Chain Pill",
+        "content": "This pill shows the active wallet and chain — its color dot and identicon make your wallet recognizable at a glance. Tap it to open the switcher for wallets and networks."
       },
       "find_switch_chain": {
-        "title": "Tačítko Přepnutí Sítě",
-        "content": "Výborně! Nyní klikněte na \"Přepnout Síť\" pro otevření výběru blockchainu, kde si můžete vybrat jiné sítě."
+        "title": "Networks",
+        "content": "This is the switcher. Your wallets are listed on top; the Networks section below lets you jump to another blockchain. Click the Networks header to continue."
       },
       "select_ethereum": {
         "title": "Vyberte Ethereum",
-        "content": "Skvělé! Okno výběru sítě je otevřené. Nyní klikněte na Ethereum pro přepnutí na Ethereum blockchain. Tím se spustí synchronizace se sítí Ethereum."
+        "content": "Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
       },
       "ethereum_sync_waiting": {
         "title": "Synchronizace s SSP Klíčem",
@@ -840,11 +946,11 @@
       },
       "receive_intro": {
         "title": "Přijímání prostředků",
-        "content": "Klikněte na tlačítko Přijmout pro zobrazení vaší Ethereum adresy. Tato adresa může přijímat ETH a libovolné tokeny ERC-20. Můžete zkopírovat adresu nebo použít QR kód."
+        "content": "Receive shows your address for the active chain — copy it or share the QR code. On Ethereum it accepts ETH and any ERC-20 tokens."
       },
       "send_intro": {
         "title": "Odesílání prostředků",
-        "content": "Tlačítko Odeslat otevírá možnosti transakce, kde můžete posílat kryptoměny na jiné adresy. Obsahuje pole pro příjemce, částku a poplatky."
+        "content": "Send opens a guided three-step flow: enter the recipient and amount, review the fee and details, then confirm on your SSP Key. Every transaction needs both devices — that's the dual-signature security."
       },
       "swap_feature": {
         "title": "Funkce Obchodování",
@@ -870,18 +976,58 @@
         "title": "Váš adresář",
         "content": "Uložte si adresy, kterým často posíláte. Každý kontakt má jméno a adresu, což dělá transakce pohodlnější a snižuje chyby."
       },
+      "places_nav": {
+        "title": "Getting Around",
+        "content": "The bottom bar is your navigation: Home for the active wallet, Portfolio for everything you hold, Activity for history, and Menu for settings and tools. Hover any icon for its name."
+      },
+      "portfolio_tab": {
+        "title": "Portfolio",
+        "content": "Portfolio shows your total value across all chains, wallets and tokens in one place — with allocation at a glance. Chains you haven't activated yet can be activated right from the list."
+      },
       "extended_menu_intro": {
-        "title": "Rozšířené Funkce",
-        "content": "Toto menu poskytuje přístup k pokročilým funkcím: WalletConnect pro připojení k dApps, detaily adresy, detaily SSP Peněženky a další. Ikona zámku na pravé straně vás bezpečně odhlásí."
+        "title": "The Menu Tab",
+        "content": "Menu is the full toolbox: settings (language, currency, theme), WalletConnect for dApps, Address & SSP Wallet details, message signing, network configuration and this tutorial. The lock icon at the top right securely logs you out."
       },
       "address_management": {
         "title": "Správa peněženek",
-        "content": "Tento rozbalovací seznam vám umožní správu více adres na každém blockchainu. Můžete vytvořit nové adresy, přepínat mezi stávajícími adresami nebo odstranit poslední vytvořenou adresu. Každá adresa je nezávislá s vlastní bilancí a transakční historií."
+        "content": "The wallet pill at the top opens the switcher, where you manage multiple wallets per blockchain: create new ones, name and color them, switch between them, or remove the last created one. Each wallet is independent with its own balance and history."
       },
       "tutorial_complete": {
         "title": "Tutoriál dokončen!",
         "content": "Gratulujeme! Nyní už víte, jak používat všechny hlavní funkce SSP Peněženky. Spravujte své krypto jednoduše a bezpečně díky SSP."
       }
     }
+  },
+  "tabs": {
+    "home": "Home",
+    "portfolio": "Portfolio",
+    "menu": "Menu",
+    "nav": "Wallet sections"
+  },
+  "switcher": {
+    "open": "Switch wallet or network",
+    "title": "Wallets & networks",
+    "search": "Search wallets or networks",
+    "wallets": "wallets",
+    "networks": "Networks",
+    "new_wallet": "New wallet",
+    "remove_last": "Remove last"
+  },
+  "portfolio": {
+    "not_activated": "Not yet activated",
+    "tap_to_activate": "Tap to activate",
+    "activating": "Activating…",
+    "refresh_failed": "Couldn't refresh — showing the last saved values.",
+    "incl_tokens": "incl. {{amount}} tokens",
+    "receive_first_title": "Receive your first crypto",
+    "receive_first_sub": "Show your address to get started"
+  },
+  "activityFeed": {
+    "all": "All",
+    "chains_scope_one": "{{count}} synced chain",
+    "chains_scope_other": "{{count}} synced chains",
+    "sent": "Sent",
+    "received": "Received",
+    "pending": "Pending"
   }
 }
