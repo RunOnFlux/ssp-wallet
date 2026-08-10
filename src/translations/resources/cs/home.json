@@ -275,12 +275,12 @@
     "info_1": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo naskenovat následující QR Kód.",
     "info_2": "Pro potvrzení transakce na vašem SSP Klíči, otevřete SSP Klíč na vašem mobilním zařízení a potvrďte akci. Můžete zmáčknout tlačítko Obnovit nebo použít ruční zadání.",
     "soft_timeout_title": "Taking longer than usual?",
-    "soft_timeout_description": "Make sure SSP Key is open and online. You can also show the QR fallback below to load the request manually."
+    "soft_timeout_description": "Make sure SSP Key is open and online. You can also scan the QR code below to load the request manually."
   },
   "confirmPublicNoncesKey": {
     "confirm_public_nonces_key": "Potvrďte Veřejné Nonce na SSP Klíči",
     "confirm_public_nonces_key_info": "Jestliže chcete odesílat transakce na EVM blockchainu, je zapotřebí nejprve obdržet veřejné nonce z SSP Klíče. Veřejné nonce se používají ke konstrukci transakcí.",
-    "confirm_public_nonces_key_info_2": "To confirm the public nonces on your SSP Key, open SSP Key on your mobile phone and confirm the action. You can tap to refresh or scan the following QR code.",
+    "confirm_public_nonces_key_info_2": "Pro potvrzení veřejných noncí na vašem SSP Klíči, otevřete SSP Klíč na mobilním zařízení a potvrďte akci. Můžete kliknout na tlačítko Obnovit nebo naskenovat následující QR kód.",
     "manual_input": "Zadat Veřejné Nonce ručně",
     "public_nonces_stored": "Veřejné Nonce Uloženy!",
     "invalid_public_nonces": "Neplatné Veřejné Nonce."
@@ -288,13 +288,13 @@
   "navbar": {
     "refresh": "Obnovit",
     "chain_wallet": "{{chain}} {{wallet}}",
-    "addr_details": "Address details",
+    "addr_details": "Detaily Adresy",
     "generate_new_wallet": "Generovat Peněženku",
     "remove_last_wallet": "Odebrat Peněženku",
     "remove": "Odebrat",
     "remove_last_wallet_desc": "Tato akce odebere vaši poslední vygenerovanou peněženku. Kdykoliv později můžete vygenerovat tu samou peněženku.",
     "max_wallets": "42. Odpověď na otázku celého života, vesmíru a tak nějak čehokoliv. Dosáhli jste maximální počtu peněženek.",
-    "ssp_message_sign": "Message signing",
+    "ssp_message_sign": "Podepisování Zpráv",
     "swap_history": "Historie Směn",
     "lock": "Lock"
   },
@@ -308,8 +308,8 @@
   },
   "key": {
     "sync_key": "Synchronizovat Klíč",
-    "err_sync_fail": "Synchronization failed. Generated address does not match. Try again manually and recheck that the same address is constructed in both SSP Wallet and SSP Key. SSP Wallet and SSP Key must both be using unique, different seed phrases.",
-    "warn_await_sync": "Awaiting SSP Key synchronization or manual input.",
+    "err_sync_fail": "Synchronizace se nezdařila. Vygenerovaná adresa se neshoduje. Zkuste znovu s ručním zadáním a zkontrolujte, že vygenerovaná adresa je stejná jak v SSP Peněžence tak i v SSP Klíči. SSP Peněženka i SSP Klíč musí mít jinou unikátní seed frázi.",
+    "warn_await_sync": "Čekání na synchronizaci SSP Klíče nebo ruční zadání.",
     "err_sync_1": "Prosím zadejte XPUB SSP Klíče. XPUB SSP Klíče je rozdílný oproti XPUB SSP Peněženky. Ujistěte se, že SSP Peněženka a SSP Klíč mají jinou unikátní seed frázi.",
     "err_invalid_key": "Neplatný SSP Klíč.",
     "err_k2": "Kód K2: Něco se pokazilo při dešifrování hesla.",
@@ -318,14 +318,14 @@
     "cancel_sync": "Zrušit SSP Synchronizaci",
     "back_to_sync": "Zpět do synchronizace SSP Klíče",
     "sync_info_content": "SSP Peněženku nelze používat bez SSP Klíče. Tato akce vás odhlásí z SSP Peněženky.",
-    "dual_factor_key": "Dual Signature SSP Key",
+    "dual_factor_key": "Dvoufázové ověření SSP Klíč",
     "sync_info_1": "SSP Peněženka je Dvou Podpisová Peněženka. Budete si muset stáhnout SSP Klíč do vašeho mobilního zařízení abyste peněženku mohli používat.",
-    "sync_info_2": "Scan the following QR code using your SSP Key mobile app to synchronize your SSP Wallet with your SSP Key.",
+    "sync_info_2": "Naskenujte následující QR kód pomocí mobilní aplikace 2FA SSP Klíče pro synchronizaci vaší SSP Peněženky s SSP Klíčem.",
     "issues_syncing": "Problémy se synchronizací? Ruční zadání",
-    "dual_factor_key_chain": "Dual Signature SSP Key for {{chain}}",
+    "dual_factor_key_chain": "Dvoufázové ověření SSP Klíč pro {{chain}}",
     "input_xpub": "Vložte Rozšířený Veřejný Klíč blockchainu {{chain}}, který má odvozenou cestu {{path}} zde",
     "sync_key_chain": "Synchronizovat SSP Klíč pro {{chain}}",
-    "warn_await_sync_chain": "Awaiting SSP Key synchronization or manual input.",
+    "warn_await_sync_chain": "Čekání na synchronizaci SSP Klíče nebo ruční zadání.",
     "err_sync_1_chain": "Prosím vložte XPUB blockchainu {{chain}} vašeho SSP Klíče. XPUB SSP Klíče je jiný než XPUB SSP Peněženky.",
     "cancel_sync_q_chain": "Zrušit synchronizaci SSP Klíče pro {{chain}}?",
     "sync_info_content_chain": "SSP Peněženka pro blockchain {{chain}} nemůže být použita bez SSP Klíče. Tato akce změní blockchain zpět na Bitcoin Chain.",
@@ -333,9 +333,9 @@
     "setup_ssp_key": "Nastavit SSP Klíč",
     "ssp_key_download_here": "Nemáte SSP Klíč? Klikněte zde pro stažení!",
     "ssp_key_ready": "Můj SSP Klíč je připraven!",
-    "ssp_key_2fa": "SSP Key is the second signature for your SSP Wallet",
+    "ssp_key_2fa": "SSP Klíč je 2FA pro vaši SSP Peněženku",
     "ssp_key_download": "Stáhněte si a synchronizujte svůj SSP Klíč s vaší SSP Peněženkou pomocí skenování QR kódu níže použitím vaší kamery nebo čtečky QR kódů.",
-    "ssp_key_download_2": "SSP Key has its own recovery seed phrase. This is a different seed phrase than your SSP Wallet.",
+    "ssp_key_download_2": "SSP Klíč má vlastní obnovovací seed frázi SSP Klíče. Toto seed fráze je jiná než seed fráze vaší SSP Peněženky.",
     "tab_scan": "Scan with SSP Key",
     "tab_manual": "Enter manually",
     "chips_label_identity": "Also activate these chains with one approval on your SSP Key:",
@@ -417,7 +417,7 @@
     "title": "Požadavek o klíč enterprise vaultu",
     "description": "Byl přijat požadavek na poskytnutí veřejných klíčů pro enterprise vault. Zkontrolujte prosím níže uvedené údaje.",
     "vault_name": "Vault",
-    "org_name": "Organization",
+    "org_name": "Organizace",
     "chain": "Řetězec",
     "ssp_identity": "SSP Identita",
     "approve": "Potvrdit",
@@ -425,7 +425,7 @@
     "waiting_for_key": "Čeká se na schválení SSP Klíčem...",
     "key_rejected": "Žádost zamítnuta SSP Klíčem",
     "err_not_logged_in": "Nejste přihlášeni",
-    "err_not_synced": "SSP Wallet is not yet synchronized with SSP Key. Please complete the sync first.",
+    "err_not_synced": "SSP Peněženka ještě není synchronizována s SSP klíčem. Nejprve prosím dokončete synchronizaci.",
     "err_invalid_chain": "Neplatný řetězec",
     "err_seed_unavailable": "Nelze načíst seed peněženky",
     "err_decrypt_password": "Nepodařilo se dešifrovat heslo",
@@ -434,14 +434,14 @@
     "err_decrypt_identity_key": "Nepodařilo se dešifrovat identitu klíče"
   },
   "enterpriseNonceSync": {
-    "title": "Enterprise Nonce Synchronization",
-    "description": "SSP Enterprise is requesting to synchronize cryptographic nonces used for vault transaction signing. This will sync both your wallet and SSP Key nonces.",
+    "title": "Syncrhonizace Enterprise Noncí",
+    "description": "SSP Enterprise požaduje synchronizaci kryptografických noncí používaných pro podepisování transakcí. Tato akce bude synchronizovat jednak nonce vaší peněženku, tak i nonce SSP klíče.",
     "info": "Toto vygeneruje nové podpisové nonce a synchronizuje je se serverem. Žádné finanční prostředky nebudou přesunuty.",
     "approve": "Syncrhonizovat Nonce",
-    "syncing": "Synchronizing nonces...",
-    "syncing_wallet": "Synchronizing wallet nonces...",
+    "syncing": "Synchronizace noncí...",
+    "syncing_wallet": "Synchronizace noncí peněženky...",
     "syncing_key": "Čekání na SSP klíč pro synchronizaci noncí...",
-    "success": "Wallet and Key nonces synchronized successfully!",
+    "success": "Nonce peněženky a klíče byly úspěšně synchronizovány!",
     "wallet_not_ready": "Peněženka není odemčena. Nejprve prosím odemkněte Vaši peněženku.",
     "key_sync_failed": "Syncrhonizace noncí SSP Kliče selhala. Zkuste to znovu.",
     "key_sync_timeout": "SSP Klíč neodpovídá. Otevřete SSP Klíč a zkuste to znovu.",
@@ -452,7 +452,7 @@
     "title": "Podpis Transakce Enterprise Vaultu",
     "description": "Byl přijat požadavek na podepsání transakce vaultu. Zkontrolujte prosím níže uvedené údaje o transakci.",
     "vault_name": "Vault",
-    "org_name": "Organization",
+    "org_name": "Organizace",
     "chain": "Řetězec",
     "source_address": "Zdrojová adresa",
     "ssp_identity": "SSP Identita",
@@ -563,7 +563,7 @@
   "chainsInfo": {
     "chain_requests": "Žádost o informace o řetězcích",
     "chain_requests_info": "Byl přijat požadavek na získání informací o všech integrovaných řetězcích v SSP. Budou sdíleny následující údaje každého řetězce: id, název, symbol, desetinná místa a id řetězce. Žádné osobní údaje nejsou sdíleny.",
-    "chain_requests_info_user": "A request to get information about chains that your SSP Wallet has synchronized was received. Following data of each chain will be shared: id, name, symbol, decimals and chainId. While no personal data is shared, this request can be used to get information of what chains you are using.",
+    "chain_requests_info_user": "Byl přijat požadavek na získání informací o řetězcích, které vaše SSP Peněženka synchronizovala. Budou sdíleny následující údaje každého řetězce: id, název, symbol, desetinná místa a řetězová Id. I když nejsou žádné osobní údaje sdíleny, tento požadavek může být použit k získání informací o tom, jaké řetězce používáte.",
     "chain_requests_info_error": "Chyba při získávání informací o řetězcích."
   },
   "tokensInfo": {
@@ -576,10 +576,10 @@
   },
   "addressesInfo": {
     "addresses_requests": "Požadavek na informace o adresách",
-    "addresses_requests_info": "A request to get the list of addresses for {{chain}} chain was received. This request will share your selected addresses. Exercise caution as your addresses will be shared with the requester.",
-    "addresses_requests_info_all": "A request to get a list of addresses for all synchronized blockchains was received. This request will share your selected addresses as well as chain information such as id, name, symbol, decimals and chainId. Exercise caution as your addresses will be shared with the requester.",
+    "addresses_requests_info": "Byl přijat požadavek na získání seznamu adres řetězce {{chain}} . Tento požadavek bude sdílet vybrané adresy. Buďte opatrní, protože vaše adresy budou sdíleny s žadatelem.",
+    "addresses_requests_info_all": "Byl přijat požadavek na získání adres ode všech vašich synchronizovaných blockchainů. Tato akce bude sdílet vaše vybrané adresy spolu s informacemi ohledně blockchainu jakožto id, jméno, symbol, desetinná čísla a číslo chainu. Buďte opatrní, protože vaše adresy budou sdíleny s žadatelem.",
     "addresses_requests_info_error": "Chyba při získávání informací o adresách.",
-    "no_addresses": "Chain not synchronized. No addresses found.",
+    "no_addresses": "Řetězec není synchronizován. Nebyly nalezeny žádné adresy.",
     "select_addresses": "Vyberte adresy ke sdílení"
   },
   "fusion": {
@@ -646,7 +646,7 @@
     "search_asset": "Vyhledat aktiva",
     "you_send": "Vy Pošlete",
     "you_get": "Vy Obdržíte",
-    "chain_sync_required": "Chain synchronization required first",
+    "chain_sync_required": "Nejprve je nutná synchronizace řetězce",
     "select_receiving_wallet": "Zvolte Přijímající Peněženku",
     "select_sending_wallet": "Zvolte Odesílací Peněženku",
     "select_buy_asset": "Vyberte Aktivum pro Nákup",
@@ -913,23 +913,23 @@
     "steps": {
       "welcome_overview": {
         "title": "Vítejte do SSP Peněženky!",
-        "content": "You've successfully synced SSP Wallet with SSP Key and connected to the Bitcoin blockchain! This is Home — your wallet address and balance for the active wallet. Always verify that the address shown here matches the address on your SSP Key device."
+        "content": "Úspěšně jste synchronizovali SSP Peněženku s SSP Klíčem a připojili k Bitcoin blockchainu! Vaše peněženka je nyní připravena k použití. Zde můžete vidět adresu a zůstatek peněženky. Vždy ověřte, zda se zde zobrazená adresa peněženky shoduje s adresou zobrazenou na vašem SSP Klíči."
       },
       "backup_health": {
         "title": "Backup Health",
         "content": "Whenever something still needs securing — your seed phrase not yet verified or your SSP Key not yet paired — an amber backup-health card appears right here under your balance, showing exactly what is at stake. Once everything is secured, it disappears."
       },
       "multi_chain_intro": {
-        "title": "Your Wallet & Chain Pill",
-        "content": "This pill shows the active wallet and chain — its color dot and identicon make your wallet recognizable at a glance. Tap it to open the switcher for wallets and networks."
+        "title": "Podpora Více Blockchainů",
+        "content": "Peněženka SSP podporuje více blockchainů! Tato nabídka zobrazuje vaši aktuální peněženku a síť. Klikněte na ni pro přístup k možnosti přepnutí sítě."
       },
       "find_switch_chain": {
-        "title": "Networks",
-        "content": "This is the switcher. Your wallets are listed on top; the Networks section below lets you jump to another blockchain. Click the Networks header to continue."
+        "title": "Tačítko Přepnutí Sítě",
+        "content": "Výborně! Nyní klikněte na \"Přepnout Síť\" pro otevření výběru blockchainu, kde si můžete vybrat jiné sítě."
       },
       "select_ethereum": {
         "title": "Vyberte Ethereum",
-        "content": "Now click on Ethereum to switch to the Ethereum blockchain. This will trigger synchronization with the Ethereum network."
+        "content": "Skvělé! Okno výběru sítě je otevřené. Nyní klikněte na Ethereum pro přepnutí na Ethereum blockchain. Tím se spustí synchronizace se sítí Ethereum."
       },
       "ethereum_sync_waiting": {
         "title": "Synchronizace s SSP Klíčem",
@@ -946,11 +946,11 @@
       },
       "receive_intro": {
         "title": "Přijímání prostředků",
-        "content": "Receive shows your address for the active chain — copy it or share the QR code. On Ethereum it accepts ETH and any ERC-20 tokens."
+        "content": "Klikněte na tlačítko Přijmout pro zobrazení vaší Ethereum adresy. Tato adresa může přijímat ETH a libovolné tokeny ERC-20. Můžete zkopírovat adresu nebo použít QR kód."
       },
       "send_intro": {
         "title": "Odesílání prostředků",
-        "content": "Send opens a guided three-step flow: enter the recipient and amount, review the fee and details, then confirm on your SSP Key. Every transaction needs both devices — that's the dual-signature security."
+        "content": "Tlačítko Odeslat otevírá možnosti transakce, kde můžete posílat kryptoměny na jiné adresy. Obsahuje pole pro příjemce, částku a poplatky."
       },
       "swap_feature": {
         "title": "Funkce Obchodování",
@@ -985,12 +985,12 @@
         "content": "Portfolio shows your total value across all chains, wallets and tokens in one place — with allocation at a glance. Chains you haven't activated yet can be activated right from the list."
       },
       "extended_menu_intro": {
-        "title": "The Menu Tab",
-        "content": "Menu is the full toolbox: settings (language, currency, theme), WalletConnect for dApps, Address & SSP Wallet details, message signing, network configuration and this tutorial. The lock icon at the top right securely logs you out."
+        "title": "Rozšířené Funkce",
+        "content": "Toto menu poskytuje přístup k pokročilým funkcím: WalletConnect pro připojení k dApps, detaily adresy, detaily SSP Peněženky a další. Ikona zámku na pravé straně vás bezpečně odhlásí."
       },
       "address_management": {
         "title": "Správa peněženek",
-        "content": "The wallet pill at the top opens the switcher, where you manage multiple wallets per blockchain: create new ones, name and color them, switch between them, or remove the last created one. Each wallet is independent with its own balance and history."
+        "content": "Tento rozbalovací seznam vám umožní správu více adres na každém blockchainu. Můžete vytvořit nové adresy, přepínat mezi stávajícími adresami nebo odstranit poslední vytvořenou adresu. Každá adresa je nezávislá s vlastní bilancí a transakční historií."
       },
       "tutorial_complete": {
         "title": "Tutoriál dokončen!",
