@@ -120,25 +120,62 @@ function WalletSwitcher({ open, openAction, stayOnRoute }: Props) {
   }, [wallets]);
 
   // Balances in the store are only ever fetched for the wallet IN USE — every
-  // other wallet of the chain sat at 0 here until first switched to. Refresh
-  // all of them whenever the sheet opens, so the rows show real balances.
+  // other wallet of the chain sat at 0 here until first switched to.
+  // Stale-while-revalidate on sheet open: (1) instantly hydrate rows from the
+  // durable per-wallet cache (`balances-<chain>-<id>`, the same records
+  // Balances.tsx maintains), then (2) refresh live — throttled to once per
+  // chain per 30s so rapid open/close never spams the backends. Addresses are
+  // public data already sitting in plain storage — no key material is read,
+  // decrypted or derived here.
+  const lastBalanceRefresh = useRef<Partial<Record<keyof cryptos, number>>>({});
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    void Promise.all(
-      Object.entries(wallets).map(async ([id, wal]) => {
-        if (!wal?.address) return;
-        try {
-          const bal = await fetchAddressBalance(wal.address, activeChain);
-          if (cancelled) return;
-          setBalance(activeChain, id, bal.confirmed);
-          setUnconfirmedBalance(activeChain, id, bal.unconfirmed);
-        } catch (error) {
-          // a row that cannot refresh keeps its last stored value
-          console.log('[switcher] balance refresh failed', id, error);
-        }
-      }),
-    );
+    void (async () => {
+      await Promise.all(
+        Object.entries(wallets).map(async ([id, wal]) => {
+          if (!wal?.address) return;
+          // hydrate only rows the store knows nothing about — never overwrite
+          // a live value with an older cached one
+          if (new BigNumber(wal.balance || 0).gt(0)) return;
+          try {
+            const cached: balancesObj | null = await localForage.getItem(
+              `balances-${activeChain}-${id}`,
+            );
+            if (cancelled || !cached) return;
+            setBalance(activeChain, id, cached.confirmed);
+            setUnconfirmedBalance(activeChain, id, cached.unconfirmed);
+          } catch (error) {
+            console.log('[switcher] balance cache read failed', id, error);
+          }
+        }),
+      );
+      if (cancelled) return;
+      const now = Date.now();
+      if (now - (lastBalanceRefresh.current[activeChain] ?? 0) < 30_000) {
+        return; // cache is fresh enough — no network round
+      }
+      lastBalanceRefresh.current[activeChain] = now;
+      await Promise.all(
+        Object.entries(wallets).map(async ([id, wal]) => {
+          if (!wal?.address) return;
+          try {
+            const bal = await fetchAddressBalance(wal.address, activeChain);
+            if (cancelled) return;
+            setBalance(activeChain, id, bal.confirmed);
+            setUnconfirmedBalance(activeChain, id, bal.unconfirmed);
+            // persist so the next session's sheet opens warm
+            await localForage.setItem(`balances-${activeChain}-${id}`, {
+              confirmed: bal.confirmed,
+              unconfirmed: bal.unconfirmed,
+            });
+          } catch (error) {
+            // a row that cannot refresh keeps its last stored value
+            console.log('[switcher] balance refresh failed', id, error);
+          }
+        }),
+      );
+    })();
     return () => {
       cancelled = true;
     };
