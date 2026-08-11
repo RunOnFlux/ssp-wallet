@@ -1,5 +1,7 @@
 # SSP Wallet v2.0.0
 
+_Release date: 11 August 2026_
+
 The biggest release in SSP's history — a complete redesign of the wallet on the
 new SSP design system, with major security-UX additions. Same keys, same
 2-of-2 self-custody, zero migration: updating in place keeps your wallet,
