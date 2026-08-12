@@ -1,0 +1,10 @@
+SSP Wallet 2.0 — the biggest release in SSP's history: a complete redesign on the new SSP design system. Same keys, same 2-of-2 self-custody, zero migration — updating in place keeps your wallet, pairing and settings exactly as they were.
+
+• Portfolio — your total balance across every chain, now the wallet's home tab
+• Multi-chain batch sync — activate any set of chains with a single approval on SSP Key
+• Pairing verification — both devices show the same 6 words, proving your pairing wasn't tampered with
+• Unified Send — one clear 3-step flow for every chain, full recipient address always shown at review
+• Activity tab, privacy mode, backup health reminders and a rebuilt onboarding
+• New navigation and the new SSP look, in light and dark
+
+Nothing changed in how transactions are signed or how your seed is stored — verified by independent audit. Works with SSP Key v1 and v2; update in any order.
