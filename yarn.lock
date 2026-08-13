@@ -1750,10 +1750,10 @@
     create-hash "^1.2.0"
     secp256k1 "^5.0.1"
 
-"@runonflux/solana-multisig@0.11.0":
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/@runonflux/solana-multisig/-/solana-multisig-0.11.0.tgz#5937a0b2b20efe4fbf2f1dcefe1e66d989e138b6"
-  integrity sha512-G72l0pwGoq3BDP0s5BaEiq8zoDIVM34czHXFZPv5SC2g5VbDErGWbAn4t8KajiAPgVK911VE+G0xQdmLM9NGHg==
+"@runonflux/solana-multisig@0.12.0":
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/@runonflux/solana-multisig/-/solana-multisig-0.12.0.tgz#4c407619943496d92275400fe779fa1eff5c8fc9"
+  integrity sha512-6b2Oc8CJsFVIyT618qrrYCzWOAOt/b6vP5gsjy22BYKkKG4T2UEv58NoK/MrqdncqRDGpfZ4/+HMK2p0UFKXHg==
   dependencies:
     "@coral-xyz/anchor" "0.31.1"
     "@solana/web3.js" "1.98.4"

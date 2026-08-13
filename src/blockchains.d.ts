@@ -54,6 +54,10 @@ declare module '@storage/blockchains' {
     chainId?: string;
     // sol
     programId?: string; // on-chain Solana program for chainType='sol'
+    // ComputeBudget compute-unit price for Solana sends. Mainnet needs a
+    // non-zero value — base-fee-only transactions are deprioritised under
+    // load and routinely dropped outright. Omitted/0 on devnet (uncontended).
+    priorityFeeMicroLamports?: number;
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

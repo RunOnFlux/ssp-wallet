@@ -101,7 +101,23 @@ let nonceReplenishRunning = false;
 // Extra chains preselected during first (identity) pairing — Bitcoin is the
 // identity chain itself and always syncs. Anything else stays one tap away
 // on the chips.
-const POPULAR_CHAINS = ['eth', 'bsc', 'flux', 'doge', 'zec', 'bch', 'ltc'];
+//
+// Each entry costs pairing time (the key derives every chain it hasn't seen
+// before, plus inter-post spacing), so keep this to chains users want on day
+// one. Key builds older than a listed chain skip it and sync the rest — see
+// the forward-compatibility branch in ssp-key's parseChainSyncRequest — so a
+// newly added chain degrades to a one-tap activation on an older key rather
+// than failing the whole batch.
+const POPULAR_CHAINS = [
+  'eth',
+  'bsc',
+  'flux',
+  'doge',
+  'zec',
+  'bch',
+  'ltc',
+  'solMainnet',
+];
 
 interface BatchChainState {
   xpubWallet: string;

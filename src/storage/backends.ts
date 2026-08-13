@@ -95,6 +95,16 @@ const assetBackends: backends = {
     api: 'api.devnet.solana.com',
     explorer: 'explorer.solana.com',
   },
+  solMainnet: {
+    // SSP-branded endpoint. The ssp-backends-proxy Worker holds the provider
+    // credential, so no token ships in this bundle; it also rate-limits per
+    // client IP, which is why nothing here needs a key. Deliberately NOT
+    // api.mainnet-beta.solana.com — that endpoint silently drops transactions
+    // under load. Users can still override via localForgeBackends.
+    node: 'node-solana.sspwallet.io',
+    api: 'node-solana.sspwallet.io',
+    explorer: 'explorer.solana.com',
+  },
 };
 
 export function backends() {

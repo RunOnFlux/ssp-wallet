@@ -1594,8 +1594,14 @@ export async function constructAndSignSOLTransaction(opts: {
   // Shows up on explorers and is parsed back into history's note field.
   memo?: string;
 }): Promise<string> {
-  const { Connection, PublicKey, SystemProgram, Transaction, Keypair } =
-    await import('@solana/web3.js');
+  const {
+    ComputeBudgetProgram,
+    Connection,
+    PublicKey,
+    SystemProgram,
+    Transaction,
+    Keypair,
+  } = await import('@solana/web3.js');
   const { SolanaMultisigClient, deriveMultisigAddress, deriveVaultAddress } =
     await import('@runonflux/solana-multisig');
   const backendConfig = backends()[opts.chain];
@@ -1911,8 +1917,31 @@ export async function constructAndSignSOLTransaction(opts: {
     authorizedPubkey: paymasterPubkey,
   });
 
+  // ComputeBudget priority fee. MUST come AFTER nonceAdvance: the runtime only
+  // treats a tx as durable-nonce when instruction[0] is SystemProgram
+  // AdvanceNonceAccount, so prepending anything here would break the nonce and
+  // fail with "Blockhash not found". ComputeBudget is position-independent for
+  // fee purposes, so slot 1 is safe. Only set on chains that configure a price
+  // (mainnet); devnet keeps its exact current tx shape and size.
+  const priorityPrice = blockchains[opts.chain]?.priorityFeeMicroLamports ?? 0;
+  // Pair the price with an explicit unit limit: Solana charges the priority fee
+  // on the REQUESTED limit, and the default is 200k CU *per instruction*
+  // (capped at 1.4M). This bundle is ~7 ixs, so price-only would be billed at
+  // 1.4M CU — ~7x the intended fee, and above the paymaster's reimbursement.
+  // The whole bundle consumes well under 200k CU in practice.
+  const priorityIxs =
+    priorityPrice > 0
+      ? [
+          ComputeBudgetProgram.setComputeUnitLimit({ units: 200_000 }),
+          ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: priorityPrice,
+          }),
+        ]
+      : [];
+
   const tx = new Transaction().add(
     nonceAdvanceIx, // ix[0] — MUST be first for Solana to recognize durable-nonce semantics
+    ...priorityIxs,
     ...extraOuterIxs,
     createIx,
     approveWalletIx,

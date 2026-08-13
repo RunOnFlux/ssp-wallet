@@ -18,7 +18,7 @@ The entire codebase is public, so anyone can review, audit, and contribute. Dete
 
 🌐 Multi-chain, one wallet
 
-Manage Bitcoin (BTC), Ethereum (ETH), and a broad range of other networks in one place — including major EVM chains (Polygon (POL), Base (ETH), BNB Smart Chain (BNB), Avalanche C-Chain (AVAX)) with full support for importing custom tokens, plus popular UTXO chains such as Litecoin (LTC), Bitcoin Cash (BCH), Dogecoin (DOGE), Zcash (ZEC), Ravencoin (RVN), and Flux (FLUX). On Ethereum and EVM chains, SSP is the first wallet to implement true Schnorr multi-signature Account Abstraction (ERC-4337), bringing smart-contract-level security without a standard externally owned account. Bitcoin support includes Native SegWit for lower fees and faster transactions.
+Manage Bitcoin (BTC), Ethereum (ETH), and a broad range of other networks in one place — including major EVM chains (Polygon (POL), Base (ETH), BNB Smart Chain (BNB), Avalanche C-Chain (AVAX)) with full support for importing custom tokens, plus Solana (SOL) with SPL token support, and popular UTXO chains such as Litecoin (LTC), Bitcoin Cash (BCH), Dogecoin (DOGE), Zcash (ZEC), Ravencoin (RVN), and Flux (FLUX). On Ethereum and EVM chains, SSP is the first wallet to implement true Schnorr multi-signature Account Abstraction (ERC-4337), bringing smart-contract-level security without a standard externally owned account. Bitcoin support includes Native SegWit for lower fees and faster transactions.
 
 💱 Buy, sell, and swap
 

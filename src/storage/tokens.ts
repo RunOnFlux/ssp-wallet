@@ -1,5 +1,6 @@
 import sepoliaLogo from '../assets/ethTestnet.svg';
 import solDevnetLogo from '../assets/solDevnet.svg';
+import solMainnetLogo from '../assets/solMainnet.svg';
 import fluxLogo from '../assets/flux.svg';
 import ethLogo from '../assets/eth.svg';
 import usdtLogo from '../assets/usdt.svg';
@@ -1053,6 +1054,35 @@ function solDevnet() {
   return tokens;
 }
 
+function solMainnet() {
+  const tokens = [
+    {
+      contract: '', // native SOL
+      name: 'Solana',
+      symbol: 'SOL',
+      decimals: 9,
+      logo: solMainnetLogo,
+    },
+    {
+      // Circle's official mainnet USDC mint.
+      contract: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 6,
+      logo: usdcLogo,
+    },
+    {
+      // Flux on Solana mainnet — bridged/wrapped FLUX SPL mint
+      contract: 'FLUX1wa2GmbtSB6ZGi2pTNbVCw3zEeKnaPCkPtFXxqXe',
+      name: 'Flux',
+      symbol: 'FLUX',
+      decimals: 8,
+      logo: fluxLogo,
+    },
+  ];
+  return tokens;
+}
+
 export const tokens = {
   eth,
   sepolia,
@@ -1062,4 +1092,5 @@ export const tokens = {
   avax,
   bsc,
   solDevnet,
+  solMainnet,
 };

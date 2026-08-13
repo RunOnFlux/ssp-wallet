@@ -11,8 +11,9 @@ import { blockchains } from '@storage/blockchains';
 
 function solanaCluster(chain: string): string | null {
   if (chain === 'solDevnet') return 'devnet';
-  // future-proofing: 'sol' would be mainnet (no cluster param needed),
-  // 'solTestnet' would be 'testnet', etc.
+  // solMainnet deliberately returns null — Solana Explorer defaults to
+  // mainnet-beta, and appending a cluster param there breaks the link.
+  // A future 'solTestnet' would return 'testnet'.
   return null;
 }
 

@@ -19,6 +19,7 @@ import baseLogo from '../assets/base.svg';
 import bscLogo from '../assets/bsc.svg';
 import avaxLogo from '../assets/avax.svg';
 import solDevnetLogo from '../assets/solDevnet.svg';
+import solMainnetLogo from '../assets/solMainnet.svg';
 
 const flux = {
   id: 'flux',
@@ -552,6 +553,38 @@ const solDevnet = {
   tokens: tokens.solDevnet(),
 };
 
+const solMainnet = {
+  id: 'solMainnet',
+  libid: 'solana-mainnet',
+  name: 'Solana',
+  symbol: 'SOL',
+  logo: solMainnetLogo,
+  slip: 501, // SLIP-44 Solana (mainnet — isTestnetChain keys off slip === 1)
+  decimals: 9,
+  node: backends().solMainnet.node,
+  api: backends().solMainnet.api,
+  bip32: {
+    // not specified, use default — leaf converted to Ed25519 seed at signing time
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh', // not used for Solana, defaulted
+  chainType: 'sol',
+  backend: 'solana-mainnet',
+  // SEPARATE program from devnet (own keypair + upgrade authority). The
+  // program ID is a PDA seed input, so it must never be swapped with devnet's.
+  programId: 'SSPWVu7dtTDkZYmDx73StqV46PioSmdiNE7igpjHK1r',
+  // ~10k CU per send × 50k µlamports/CU ≈ 500 lamports — negligible against
+  // the paymaster reimbursement, and the difference between a send landing
+  // and being silently dropped when mainnet is busy.
+  priorityFeeMicroLamports: 50000,
+  tokens: tokens.solMainnet(),
+  // Onramper network id (their "Onramper ID" column). Only used to pre-fill
+  // the widget's destination network, so a mismatch degrades to an
+  // unprefilled widget rather than a failed purchase.
+  onramperNetwork: 'solana',
+};
+
 export const blockchains = {
   btc,
   flux,
@@ -570,6 +603,7 @@ export const blockchains = {
   fluxTestnet,
   sepolia,
   amoy,
+  solMainnet,
   solDevnet,
 };
 
