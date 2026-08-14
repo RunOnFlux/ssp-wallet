@@ -41,6 +41,14 @@ function decodeMessage(asm: string) {
   return message;
 }
 
+// Explorer times arrive in seconds and are occasionally absent or non-numeric
+// (pending txs, etherscan-compatible variants omitting timeStamp) — normalize
+// to finite ms so rendering and timestamp sorts never see NaN.
+function explorerTimeToMs(seconds: unknown): number {
+  const ms = Number(seconds) * 1000;
+  return Number.isFinite(ms) && ms > 0 ? ms : 0;
+}
+
 function processTransaction(
   insightTx: transactionInsight,
   address: string,
@@ -105,7 +113,7 @@ function processTransaction(
     txid: insightTx.txid,
     fee: fee.toFixed(),
     blockheight: insightTx.blockheight,
-    timestamp: insightTx.time * 1000,
+    timestamp: explorerTimeToMs(insightTx.time),
     amount: amount.toFixed(),
     message,
     size: insightTx.size,
@@ -229,7 +237,7 @@ export function processTransactionTokenScan(
     txid: tx.hash,
     fee: totalGas.toFixed(),
     blockheight: Number(tx.blockNumber),
-    timestamp: Number(tx.timeStamp) * 1000,
+    timestamp: explorerTimeToMs(tx.timeStamp),
     amount,
     message: '',
     receiver,
@@ -263,7 +271,7 @@ export function processTransactionInternalScan(
     type: 'evm',
     txid: txGroup[0].hash,
     blockheight: Number(txGroup[0].blockNumber),
-    timestamp: Number(txGroup[0].timeStamp) * 1000,
+    timestamp: explorerTimeToMs(txGroup[0].timeStamp),
     message: '',
     isError: !!txGroup[0].isError,
     receiver: '',
@@ -351,7 +359,7 @@ export function processTransactionExternalScan(
     txid: tx.hash,
     fee: totalGas.toFixed(),
     blockheight: Number(tx.blockNumber),
-    timestamp: Number(tx.timeStamp) * 1000,
+    timestamp: explorerTimeToMs(tx.timeStamp),
     amount,
     message: '',
     receiver,

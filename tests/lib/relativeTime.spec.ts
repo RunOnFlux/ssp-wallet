@@ -46,6 +46,15 @@ describe('formatRelativeTime', () => {
       new Date(week).toLocaleDateString('en'),
     );
   });
+
+  // Explorer txs can arrive without a timeStamp (NaN after Number()) —
+  // must not throw RangeError inside Intl.RelativeTimeFormat.format().
+  it('renders unknown timestamps (NaN, 0, negative) as empty string', () => {
+    expect(formatRelativeTime(NaN, 'en', NOW)).toBe('');
+    expect(formatRelativeTime(0, 'en', NOW)).toBe('');
+    expect(formatRelativeTime(-1, 'en', NOW)).toBe('');
+    expect(formatRelativeTime(Infinity, 'en', NOW)).toBe('');
+  });
 });
 
 describe('formatFullTimestamp', () => {
@@ -53,5 +62,10 @@ describe('formatFullTimestamp', () => {
     expect(formatFullTimestamp(NOW, 'en')).toBe(
       new Date(NOW).toLocaleString('en'),
     );
+  });
+
+  it('renders unknown timestamps as empty string', () => {
+    expect(formatFullTimestamp(NaN, 'en')).toBe('');
+    expect(formatFullTimestamp(0, 'en')).toBe('');
   });
 });

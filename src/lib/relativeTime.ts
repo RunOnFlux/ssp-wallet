@@ -17,6 +17,12 @@ export function formatRelativeTime(
   locale?: string,
   now: number = Date.now(),
 ): string {
+  // Explorers occasionally return txs without a usable time (pending entries,
+  // etherscan-compatible variants omitting timeStamp) — NaN would throw inside
+  // Intl.RelativeTimeFormat.format(), 0 would render as 1/1/1970.
+  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+    return '';
+  }
   const diff = now - timestamp;
   // Future or sub-minute timestamps (clock skew, just-broadcast txs) → "now".
   if (diff < MINUTE_MS) {
@@ -46,5 +52,8 @@ export function formatFullTimestamp(
   timestamp: number,
   locale?: string,
 ): string {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+    return '';
+  }
   return new Date(timestamp).toLocaleString(locale);
 }
