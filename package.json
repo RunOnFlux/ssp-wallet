@@ -92,7 +92,7 @@
     "@lavamoat/allow-scripts": "3.4.3",
     "@playwright/test": "1.61.1",
     "@types/bchaddrjs": "0.4.3",
-    "@types/chrome": "0.1.43",
+    "@types/chrome": "0.2.6",
     "@types/firefox-webext-browser": "143.0.0",
     "@types/node": "25.9.5",
     "@types/react": "19.2.17",
