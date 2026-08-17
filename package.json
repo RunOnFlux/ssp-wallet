@@ -51,7 +51,7 @@
     "@scure/bip39": "2.2.0",
     "@solana/spl-token": "0.4.14",
     "@solana/web3.js": "1.98.4",
-    "@walletconnect/core": "2.23.9",
+    "@walletconnect/core": "2.23.10",
     "@walletconnect/jsonrpc-utils": "1.0.8",
     "@walletconnect/utils": "2.23.9",
     "antd": "6.5.1",
