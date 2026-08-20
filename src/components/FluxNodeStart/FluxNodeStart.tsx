@@ -186,16 +186,23 @@ function FluxNodeStart({
     }
   };
 
+  // The dialog stays mounted while other SSP Connect requests are handled, so
+  // its props may hold values belonging to an unrelated request (a payment
+  // proposal's recipients, for example). Render nothing until it is our turn.
+  if (!open) return null;
+
   const amountFlux = collateralAmount
     ? (parseInt(collateralAmount, 10) / 1e8).toFixed(2)
     : '?';
   const chainLabel = chainConfig
     ? `${chainConfig.name} (${chainConfig.symbol})`
     : chain;
-  const utxoFull = collateralTxid ? `${collateralTxid}:${collateralVout}` : '';
-  const utxoDisplay = collateralTxid
-    ? `${collateralTxid.slice(0, 10)}…${collateralTxid.slice(-8)}:${collateralVout}`
+  const txid = typeof collateralTxid === 'string' ? collateralTxid : '';
+  const utxoFull = txid ? `${txid}:${collateralVout}` : '';
+  const utxoDisplay = txid
+    ? `${txid.slice(0, 10)}…${txid.slice(-8)}:${collateralVout}`
     : '';
+  const delegateKeys = delegates.filter((d) => typeof d === 'string');
 
   return (
     <Modal
@@ -296,13 +303,13 @@ function FluxNodeStart({
                   </Text>
                 </div>
               )}
-              {delegates.length > 0 && (
+              {delegateKeys.length > 0 && (
                 <div>
                   <Text type="secondary">
                     {t('home:fluxNodeStart.delegates')}:{' '}
                   </Text>
                   <Space direction="vertical" size={0}>
-                    {delegates.map((d) => (
+                    {delegateKeys.map((d) => (
                       <Text
                         key={d}
                         strong
@@ -320,7 +327,7 @@ function FluxNodeStart({
         </Space>
 
         {/* Delegate permission notice */}
-        {delegates.length > 0 && (
+        {delegateKeys.length > 0 && (
           <Alert
             type="warning"
             message={t('home:fluxNodeStart.delegate_notice')}

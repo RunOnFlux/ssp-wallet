@@ -275,6 +275,10 @@ function EnterpriseFluxNodeStart({
     }
   };
 
+  // Props keep the values of whichever SSP Connect request last used the
+  // shared dialog state, so render nothing until this dialog is the active one.
+  if (!open) return null;
+
   const amountFlux = collateralAmount
     ? (parseInt(collateralAmount, 10) / 1e8).toFixed(2)
     : '?';

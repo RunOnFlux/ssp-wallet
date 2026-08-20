@@ -73,6 +73,22 @@ interface enterpriseVaultSignTxData {
   errorCode?: string;
 }
 
+/**
+ * Flux node delegate public keys arrive as a JSON string in the shared
+ * `recipients` slot, which other request types fill with objects. Accept only
+ * an array of strings so a stale payment proposal can never reach the node
+ * dialogs' string rendering.
+ */
+function parseDelegates(raw: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((d): d is string => typeof d === 'string');
+  } catch {
+    return [];
+  }
+}
+
 function SspConnect() {
   const {
     address: sspConnectAddress,
@@ -584,13 +600,7 @@ function SspConnect() {
         collateralAmount={orgName}
         identityPubKey={message}
         nodeName={vaultName}
-        delegates={(() => {
-          try {
-            return JSON.parse(recipients) as string[];
-          } catch {
-            return [];
-          }
-        })()}
+        delegates={parseDelegates(recipients)}
       />
       <EnterpriseFluxNodeStart
         open={openEnterpriseFluxNodeStart}
@@ -608,13 +618,7 @@ function SspConnect() {
         collateralVout={parseInt(amount, 10) || 0}
         redeemScript={contract}
         signingDevice={txMemo as 'wallet' | 'key'}
-        delegates={(() => {
-          try {
-            return JSON.parse(recipients) as string[];
-          } catch {
-            return [];
-          }
-        })()}
+        delegates={parseDelegates(recipients)}
       />
     </>
   );
