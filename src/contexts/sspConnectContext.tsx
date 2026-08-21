@@ -150,18 +150,59 @@ export const SspConnectProvider = ({
     undefined,
   );
   const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
+  // Bumped whenever the background port is re-established (see below).
+  const [portGeneration, setPortGeneration] = useState(0);
   const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
   const [simulation, setSimulation] = useState<string | undefined>(undefined);
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
 
-  // Port connection enables background.js to detect if UI (popup/sidepanel) is open
+  // Port connection enables background.js to detect if UI (popup/sidepanel) is
+  // open, so a website's request is forwarded to this window instead of
+  // opening a second one.
+  //
+  // The port has to be re-established after every disconnect: MV3 terminates
+  // the idle service worker, which drops the port while the wallet is still on
+  // screen. Left dropped, background.js reads the open UI as closed and opens
+  // a fresh window for the next request. `portGeneration` re-announces
+  // readiness once the message listener below is registered again, so anything
+  // the background buffered in the meantime is delivered here.
   useEffect(() => {
     if (!browser?.runtime?.connect) return;
-    const port = browser.runtime.connect({ name: 'ssp-ui' });
-    return () => {
+    let port: chrome.runtime.Port | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    let unmounted = false;
+    // Backoff so an orphaned page (extension reloaded or updated underneath
+    // it) does not retry against a dead runtime twice a second forever.
+    let retryDelay = 500;
+
+    const connect = () => {
+      if (unmounted) return;
       try {
-        port.disconnect();
+        port = browser.runtime.connect({ name: 'ssp-ui' });
+      } catch {
+        // Runtime gone — back off and try again.
+        reconnectTimer = setTimeout(connect, retryDelay);
+        retryDelay = Math.min(retryDelay * 2, 30000);
+        return;
+      }
+      retryDelay = 500;
+      port.onDisconnect.addListener(() => {
+        port = null;
+        if (unmounted) return;
+        reconnectTimer = setTimeout(() => {
+          connect();
+          setPortGeneration((generation) => generation + 1);
+        }, retryDelay);
+      });
+    };
+    connect();
+
+    return () => {
+      unmounted = true;
+      clearTimeout(reconnectTimer);
+      try {
+        port?.disconnect();
       } catch {
         /* Port already disconnected */
       }
@@ -1244,7 +1285,7 @@ export const SspConnectProvider = ({
         browser.runtime.onMessage.removeListener(handler);
       };
     }
-  }, [wExternalIdentity, wkIdentity]);
+  }, [wExternalIdentity, wkIdentity, portGeneration]);
 
   const clearRequest = () => {
     setType('');

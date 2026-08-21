@@ -253,15 +253,33 @@ ext.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
+// The wallet shell is a fixed 420x600 body (src/index.css); the window is
+// sized to that plus the popup title bar so nothing scrolls.
+const POPUP_WINDOW_WIDTH = 420;
+const POPUP_WINDOW_HEIGHT = 650;
+
 async function openPopupWindow() {
+  // An SSP window may already be up — a second request must focus it rather
+  // than stack another copy of the wallet on top.
+  if (popupId !== null) {
+    try {
+      await ext.windows.update(popupId, { focused: true, drawAttention: true });
+      return await ext.windows.get(popupId);
+    } catch (_err) {
+      // Window is gone (closed while the service worker slept)
+      popupId = null;
+    }
+  }
+
   let top = 80;
   let left = 10;
   try {
     const lastFocused = await ext.windows.getLastFocused();
     if (lastFocused) {
-      top = lastFocused.top + 80;
+      top = (lastFocused.top || 0) + 80;
       left = Math.max(
-        (lastFocused.left || 0) + ((lastFocused.width || 500) - 420 - 10),
+        (lastFocused.left || 0) +
+          ((lastFocused.width || 500) - POPUP_WINDOW_WIDTH - 10),
         10,
       );
     }
@@ -270,12 +288,15 @@ async function openPopupWindow() {
   }
 
   const popup = await ext.windows.create({
-    url: ext.runtime.getURL('index.html'),
+    // ?ctx=popup — main.tsx classifies the surface from this, and without it
+    // falls back to a width heuristic that misreads a framed 420px window as
+    // a side panel and lays the shell out wide inside it.
+    url: ext.runtime.getURL('index.html?ctx=popup'),
     type: 'popup',
     top,
     left,
-    width: 420,
-    height: 650, // Extra height to account for window title bar
+    width: POPUP_WINDOW_WIDTH,
+    height: POPUP_WINDOW_HEIGHT,
   });
   popupId = popup.id;
   return popup;
@@ -435,16 +456,24 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // Buffer message — it will be sent when the UI port connects
       pendingMessageData = verifiedRequest;
 
-      const defaultMode = await getDefaultOpenBehavior();
-      if (defaultMode === OPEN_MODE_SIDEPANEL && isSidePanelSupported) {
-        await openSidePanel(sender.tab?.windowId);
-      } else if (defaultMode === OPEN_MODE_WINDOW) {
-        await openPopupWindow();
-      } else {
-        // For popup mode, open as window since we can't programmatically trigger the popup
-        await openPopupWindow();
-      }
+      // A dapp request always gets the small floating window, whatever the
+      // user picked for the toolbar icon. The side panel docks full-height and
+      // reflows the page that asked for the signature; a 420x650 window sits
+      // above it with the site still readable behind — and the browser popup
+      // cannot be opened programmatically at all.
+      await openPopupWindow();
     } else {
+      // A wallet UI is already open — side panel, our window, or the browser
+      // action popup. The request goes there instead of opening anything new.
+      // A window can be sitting behind the browser, so bring it forward;
+      // a side panel is docked and already on screen wherever it lives.
+      if (popupId !== null) {
+        ext.windows
+          .update(popupId, { focused: true, drawAttention: true })
+          .catch(() => {
+            popupId = null;
+          });
+      }
       // UI already open and listener registered — short delay is safe
       setTimeout(() => {
         void ext.runtime.sendMessage({
