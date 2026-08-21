@@ -18,7 +18,7 @@ The entire codebase is public, so anyone can review, audit, and contribute. Dete
 
 🌐 Multi-chain, one wallet
 
-Manage Bitcoin, Ethereum, Solana and ten more networks from a single wallet, with custom token imports on EVM chains and SPL tokens on Solana. The full list of supported networks is at sspwallet.io. On Ethereum and EVM chains, SSP is the first wallet to implement true Schnorr multi-signature Account Abstraction (ERC-4337), bringing smart-contract-level security without a standard externally owned account. Bitcoin support includes Native SegWit for lower fees and faster transactions.
+Manage Bitcoin, Ethereum, Solana and ten more networks from a single wallet, with custom token imports on EVM chains and SPL tokens on Solana. The full list of supported networks is at sspwallet.io. On Ethereum and EVM chains, SSP is the first wallet to implement true Schnorr multi-signature Account Abstraction (ERC-4337), bringing smart-contract-level security without a standard externally owned account. On Solana, SSP runs its own multisig program with no creator, admin, or authority key of any kind: a vault's address is derived from its member set and threshold alone, so it can be funded before it exists on-chain, and only an M-of-N signature can ever move what it holds. Most Solana multisigs are created by — and therefore trust — a creator key. Bitcoin support includes Native SegWit for lower fees and faster transactions.
 
 💱 Buy, sell, and swap
 
