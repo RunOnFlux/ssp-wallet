@@ -56,7 +56,7 @@
     "@walletconnect/utils": "2.23.9",
     "antd": "6.5.1",
     "assert": "2.1.0",
-    "axios": "1.18.1",
+    "axios": "1.19.0",
     "bchaddrjs": "0.5.2",
     "bignumber.js": "11.1.5",
     "bs58": "6.0.0",
