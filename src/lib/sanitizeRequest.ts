@@ -61,6 +61,11 @@ export interface dataBgParams {
   signingMode?: string;
   // Server-computed advisory transaction simulation (JSON string)
   simulation?: string;
+  // Enterprise proposal references (Mongo ObjectId hex) — echoed through the
+  // relay action payloads for server-side signature registration
+  orgId?: string;
+  vaultId?: string;
+  proposalId?: string;
   // WalletConnect Phase 2 — vault message signing (personal_sign)
   digest?: string; // 0x 32-byte EIP-191 message digest to sign
   dappOrigin?: string; // requesting dApp name/url

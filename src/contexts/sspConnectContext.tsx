@@ -65,6 +65,10 @@ interface SspConnectContextType {
   // Server-computed advisory transaction simulation (JSON string).
   // DISPLAY-ONLY — never gates signing; the device decode stays authoritative.
   simulation?: string;
+  // Enterprise proposal references — echoed through the relay action payloads
+  // so the relay can register signatures server-side (durable path even when
+  // this tab's response never reaches the requesting page).
+  proposalRefs?: { orgId: string; vaultId: string; proposalId: string };
   // WalletConnect Phase 2 — vault message signing (personal_sign).
   signMessage?: string; // human-readable message text (display + Key)
   dappOrigin?: string; // requesting dApp name/url
@@ -154,6 +158,9 @@ export const SspConnectProvider = ({
   const [portGeneration, setPortGeneration] = useState(0);
   const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
   const [simulation, setSimulation] = useState<string | undefined>(undefined);
+  const [proposalRefs, setProposalRefs] = useState<
+    { orgId: string; vaultId: string; proposalId: string } | undefined
+  >(undefined);
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
 
@@ -802,6 +809,26 @@ export const SspConnectProvider = ({
               : undefined,
           );
 
+          // Proposal references (optional) — echoed into the relay action
+          // payload so the relay can register the signature server-side even
+          // when this tab's response never reaches the requesting page.
+          const signOrgId = request.data.params.orgId;
+          const signVaultId = request.data.params.vaultId;
+          const signProposalId = request.data.params.proposalId;
+          const isObjectIdHex = (v: unknown): v is string =>
+            typeof v === 'string' && /^[0-9a-fA-F]{24}$/.test(v);
+          setProposalRefs(
+            isObjectIdHex(signOrgId) &&
+              isObjectIdHex(signVaultId) &&
+              isObjectIdHex(signProposalId)
+              ? {
+                  orgId: signOrgId,
+                  vaultId: signVaultId,
+                  proposalId: signProposalId,
+                }
+              : undefined,
+          );
+
           setType('enterprise_vault_sign_tx');
 
           setRequesterInfo(buildRequesterInfo(request.data.params));
@@ -1319,6 +1346,7 @@ export const SspConnectProvider = ({
     setEvmUserOp(undefined);
     setSigningMode(undefined);
     setSimulation(undefined);
+    setProposalRefs(undefined);
   };
 
   return (
@@ -1353,6 +1381,7 @@ export const SspConnectProvider = ({
         evmUserOp,
         signingMode,
         simulation,
+        proposalRefs,
         signMessage,
         dappOrigin,
         clearRequest,

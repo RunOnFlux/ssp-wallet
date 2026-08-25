@@ -116,6 +116,10 @@ interface Props {
   // Server-computed advisory transaction simulation (JSON string).
   // DISPLAY-ONLY — never gates signing. The device decode stays authoritative.
   simulation?: string;
+  // Enterprise proposal references — included in the relay action payload so
+  // the relay registers the signature server-side (durable even when this
+  // tab's response never reaches the requesting page).
+  proposalRefs?: { orgId: string; vaultId: string; proposalId: string };
   // WalletConnect Phase 2 — vault MESSAGE signing (personal_sign). When set, the
   // component signs `rawUnsignedTx` (the EIP-191 message digest) exactly as it
   // signs a UserOp hash, but shows the message text instead of a tx decode and
@@ -171,6 +175,7 @@ function EnterpriseVaultSignTx({
   evmUserOp,
   signingMode,
   simulation: simulationJson,
+  proposalRefs,
   signMessage,
   dappOrigin,
 }: Props) {
@@ -682,6 +687,15 @@ function EnterpriseVaultSignTx({
       payload.walletSignedHex = walletSigs[0];
     }
 
+    // Proposal references: let the relay register the Key's signature onto the
+    // proposal server-side, so signing survives even when this tab's response
+    // never reaches the requesting enterprise app page.
+    if (proposalRefs) {
+      payload.orgId = proposalRefs.orgId;
+      payload.vaultId = proposalRefs.vaultId;
+      payload.proposalId = proposalRefs.proposalId;
+    }
+
     // Include signing mode so Key knows whether to sign or pass through
     if (signingMode) {
       payload.signingMode = signingMode;
@@ -693,9 +707,15 @@ function EnterpriseVaultSignTx({
     }
 
     // Include Schnorr partial signature data for EVM vault signing
-    // Key needs sigOne to sum with its own partial sig
+    // Key needs sigOne to sum with its own partial sig. The challenge lets the
+    // relay register the signature server-side in wallet_only mode, where the
+    // Key's passthrough response carries an empty challenge (the challenge
+    // exists only on this device).
     if (schnorrData) {
       payload.sigOne = schnorrData.sigOne;
+      if (schnorrData.challenge) {
+        payload.challenge = schnorrData.challenge;
+      }
     }
 
     // Include token metadata for Key's approval display

@@ -120,6 +120,7 @@ function SspConnect() {
     evmUserOp: sspConnectEvmUserOp,
     signingMode: sspConnectSigningMode,
     simulation: sspConnectSimulation,
+    proposalRefs: sspConnectProposalRefs,
     signMessage: sspConnectSignMessage,
     dappOrigin: sspConnectDappOrigin,
     clearRequest,
@@ -187,6 +188,9 @@ function SspConnect() {
   const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
   const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
   const [simulation, setSimulation] = useState<string | undefined>(undefined);
+  const [proposalRefs, setProposalRefs] = useState<
+    { orgId: string; vaultId: string; proposalId: string } | undefined
+  >(undefined);
 
   useEffect(() => {
     console.log(sspConnectMessage);
@@ -264,6 +268,7 @@ function SspConnect() {
         setEvmUserOp(sspConnectEvmUserOp);
         setSigningMode(sspConnectSigningMode);
         setSimulation(sspConnectSimulation);
+        setProposalRefs(sspConnectProposalRefs);
         setSignMessage(sspConnectSignMessage);
         setDappOrigin(sspConnectDappOrigin);
         setOpenEnterpriseVaultSignTx(true);
@@ -581,6 +586,7 @@ function SspConnect() {
         evmUserOp={evmUserOp}
         signingMode={signingMode}
         simulation={simulation}
+        proposalRefs={proposalRefs}
         signMessage={signMessage}
         dappOrigin={dappOrigin}
       />
