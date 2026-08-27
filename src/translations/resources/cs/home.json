@@ -446,7 +446,9 @@
     "key_sync_failed": "Syncrhonizace noncí SSP Kliče selhala. Zkuste to znovu.",
     "key_sync_timeout": "SSP Klíč neodpovídá. Otevřete SSP Klíč a zkuste to znovu.",
     "err_wallet_not_ready": "Peněženka není připravena",
-    "err_sync_failed": "Synchronizace noncí se nezdařila"
+    "err_sync_failed": "Synchronizace noncí se nezdařila",
+    "wallet_sync_failed": "Wallet nonce sync failed — nonces were not submitted to the relay. Please try again.",
+    "wallet_sync_busy": "Another nonce sync is still running. Please wait a moment and try again."
   },
   "enterpriseVaultSignTx": {
     "title": "Podpis Transakce Enterprise Vaultu",
