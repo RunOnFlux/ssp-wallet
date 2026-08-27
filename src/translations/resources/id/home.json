@@ -447,8 +447,8 @@
     "key_sync_timeout": "SSP Key tidak merespons. Buka SSP Key dan coba lagi.",
     "err_wallet_not_ready": "Dompet belum siap",
     "err_sync_failed": "Sinkronisasi nonce gagal",
-    "wallet_sync_failed": "Wallet nonce sync failed — nonces were not submitted to the relay. Please try again.",
-    "wallet_sync_busy": "Another nonce sync is still running. Please wait a moment and try again."
+    "wallet_sync_failed": "Sinkronisasi nonce dompet gagal — nonce tidak dikirimkan ke relai. Silakan coba lagi.",
+    "wallet_sync_busy": "Sinkronisasi nonce lainnya masih berlangsung. Harap tunggu sebentar, lalu coba lagi."
   },
   "enterpriseVaultSignTx": {
     "title": "Penandatanganan Transaksi Brankas Enterprise",
