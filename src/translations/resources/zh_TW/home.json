@@ -446,7 +446,9 @@
     "key_sync_failed": "SSP Key nonce sync failed. Please try again.",
     "key_sync_timeout": "SSP Key did not respond. Open SSP Key and try again.",
     "err_wallet_not_ready": "Wallet not ready",
-    "err_sync_failed": "Nonce sync failed"
+    "err_sync_failed": "Nonce sync failed",
+    "wallet_sync_failed": "Wallet nonce sync failed — nonces were not submitted to the relay. Please try again.",
+    "wallet_sync_busy": "Another nonce sync is still running. Please wait a moment and try again."
   },
   "enterpriseVaultSignTx": {
     "title": "Enterprise Vault Transaction Signing",
