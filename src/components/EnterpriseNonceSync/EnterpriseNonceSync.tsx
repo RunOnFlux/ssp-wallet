@@ -97,8 +97,21 @@ function EnterpriseNonceSync({ open, requesterInfo, openAction }: Props) {
         // and left its actionable sibling key unreferenced.
         throw new Error(t('home:enterpriseNonceSync.wallet_not_ready'));
       }
-      // Phase 1: Force-replace wallet nonces (purge old, generate fresh set)
-      await replenishWalletEnterpriseNonces(wkIdentity, passwordBlob, true);
+      // Phase 1: Reconcile + replenish wallet nonces. The result must be
+      // checked — a swallowed submit failure here used to leave the server
+      // pool empty while the dialog still reported success off the Key ack.
+      const walletResult = await replenishWalletEnterpriseNonces(
+        wkIdentity,
+        passwordBlob,
+        true,
+      );
+      if (!walletResult.ok) {
+        throw new Error(
+          walletResult.reason === 'busy'
+            ? t('home:enterpriseNonceSync.wallet_sync_busy')
+            : t('home:enterpriseNonceSync.wallet_sync_failed'),
+        );
+      }
 
       // Phase 2: Trigger key nonce sync via relay action
       setPhase('key');

@@ -499,16 +499,21 @@ describe('Enterprise Nonces — Security-critical nonce management', () => {
       expect(mockSecureStorage.setItem).not.toHaveBeenCalled();
     });
 
-    it('should handle relay 500 error gracefully (no throw)', async () => {
+    it('should handle relay 500 error gracefully (no throw, reported in result)', async () => {
       mockSecureStorage.getItem.mockReturnValue(null);
       mockAxiosPost.mockRejectedValue({
         response: { status: 500, data: 'Internal Server Error' },
       });
 
-      // Should not throw — graceful degradation
+      // Should not throw — graceful degradation, but the failure MUST be
+      // visible in the result so the manual sync dialog can report it
       await expect(
         replenishWalletEnterpriseNonces(FAKE_WK_IDENTITY, FAKE_PASSWORD_BLOB),
-      ).resolves.toBeUndefined();
+      ).resolves.toEqual({
+        ok: false,
+        generated: 0,
+        reason: 'submit_failed',
+      });
     });
 
     it('should not throw on storage read errors (graceful degradation)', async () => {
@@ -516,9 +521,64 @@ describe('Enterprise Nonces — Security-critical nonce management', () => {
         throw new Error('Storage quota exceeded');
       });
 
+      // Storage read error means "no local nonces" — replenish proceeds and
+      // succeeds via the relay
       await expect(
         replenishWalletEnterpriseNonces(FAKE_WK_IDENTITY, FAKE_PASSWORD_BLOB),
-      ).resolves.toBeUndefined();
+      ).resolves.toMatchObject({ ok: true, generated: 50 });
+    });
+
+    it('forceReplace reconciles with the REAL local list (never purge-all) and keeps local nonces', async () => {
+      const existingNonces = [makeFakeNonce(100), makeFakeNonce(200)];
+      mockSecureStorage.getItem.mockReturnValue('encrypted-nonces');
+      mockPassworderDecrypt.mockImplementation((key: string) => {
+        if (key === MOCK_FINGERPRINT) return FAKE_PASSWORD;
+        return JSON.stringify(existingNonces);
+      });
+      // Server pool is full but desynced (none of it matches local) — status
+      // says 50, reconcile purges 48 orphans
+      mockAxiosGet.mockResolvedValue({
+        data: { data: { wallet: { available: 50 } } },
+      });
+      mockAxiosPost.mockImplementation((url: string) => {
+        if (url.includes('/reconcile')) {
+          return Promise.resolve({
+            data: { status: 'success', data: { purged: 48 } },
+          });
+        }
+        return Promise.resolve({ data: { status: 'success' } });
+      });
+      let savedData: string | undefined;
+      mockPassworderEncrypt.mockImplementation((_k: string, data: string) => {
+        savedData = data;
+        return `encrypted(${data})`;
+      });
+
+      const result = await replenishWalletEnterpriseNonces(
+        FAKE_WK_IDENTITY,
+        FAKE_PASSWORD_BLOB,
+        true,
+      );
+      expect(result.ok).toBe(true);
+      expect(result.generated).toBe(48);
+
+      // Reconcile must carry the device's actual nonces, NOT an empty
+      // purge-all list — reserved nonces of pending proposals must survive
+      const reconcileCall = mockAxiosPost.mock.calls.find(([url]) =>
+        (url as string).includes('/reconcile'),
+      );
+      expect(reconcileCall).toBeDefined();
+      expect(reconcileCall![1].localNonces).toEqual([
+        { kPublic: 'kPublic_100', kTwoPublic: 'kTwoPublic_100' },
+        { kPublic: 'kPublic_200', kTwoPublic: 'kTwoPublic_200' },
+      ]);
+
+      // Local store keeps the existing nonces alongside the new ones
+      expect(savedData).toBeDefined();
+      const parsedSaved = JSON.parse(savedData!);
+      expect(parsedSaved).toHaveLength(50);
+      expect(parsedSaved[0]).toEqual(makeFakeNonce(100));
+      expect(parsedSaved[1]).toEqual(makeFakeNonce(200));
     });
   });
 

@@ -15,6 +15,19 @@ const STORAGE_KEY = 'enterpriseNoncesWallet';
 let replenishing = false;
 
 /**
+ * Outcome of a replenish attempt. The function never rejects — background
+ * callers fire-and-forget it — so callers that need to know whether nonces
+ * actually reached the relay (the manual "Sync Nonces" dialog) read this
+ * instead of relying on a thrown error. Mirrors the SSP Key side
+ * (ssp-key nonceActions.ts EnterpriseNonceSyncResult).
+ */
+export interface EnterpriseNonceSyncResult {
+  ok: boolean;
+  generated: number;
+  reason?: 'busy' | 'not_needed' | 'submit_failed';
+}
+
+/**
  * Decrypt enterprise nonces from encrypted storage.
  * Returns empty array if not found or decryption fails.
  */
@@ -53,26 +66,35 @@ export async function saveEncryptedNonces(
 
 /**
  * Check enterprise nonce pool status and replenish wallet nonces if below threshold.
- * Fetches server-side pool count, generates enough to reach TARGET_COUNT on the server,
- * stores them locally, and submits public parts to the relay.
+ * Reconciles the server pool against what this device actually holds (purging
+ * server-side 'available' orphans this device can never sign with), then
+ * generates enough to reach TARGET_COUNT on the server, stores them locally,
+ * and submits public parts to the relay.
  *
- * @param forceReplace - If true, delete all existing nonces and generate a fresh full set.
- *   Used by the manual "Sync Nonces" action from the enterprise app.
+ * @param forceReplace - Manual "Sync Nonces" action from the enterprise app:
+ *   waits out any in-flight background replenish instead of skipping.
+ *
+ * NOTE: force no longer purges the whole server pool before refilling. That
+ * emptied the pool first, so a failed refill left ZERO nonces while the sync
+ * dialog still reported success (only the Key phase was checked), and it wiped
+ * local private halves still reserved by pending proposals, making them
+ * permanently unsignable. Reconciling against the real local list fixes the
+ * same desyncs without either failure mode.
  */
 export async function replenishWalletEnterpriseNonces(
   wkIdentity: string,
   passwordBlob: string,
   forceReplace = false,
-): Promise<void> {
+): Promise<EnterpriseNonceSyncResult> {
   if (replenishing) {
-    if (!forceReplace) return;
+    if (!forceReplace) return { ok: false, generated: 0, reason: 'busy' };
     // forceReplace: wait for background replenish to finish
     const maxWait = 30000;
     const start = Date.now();
     while (replenishing && Date.now() - start < maxWait) {
       await new Promise((r) => setTimeout(r, 200));
     }
-    if (replenishing) return; // timed out
+    if (replenishing) return { ok: false, generated: 0, reason: 'busy' };
   }
   replenishing = true;
   try {
@@ -93,53 +115,39 @@ export async function replenishWalletEnterpriseNonces(
     }
 
     // Load existing enterprise nonces (encrypted)
-    let existingNonces = await loadEncryptedNonces(passwordBlob);
+    const existingNonces = await loadEncryptedNonces(passwordBlob);
 
-    if (forceReplace) {
-      // Force replace: purge ALL server nonces and clear local nonces
+    // Reconcile: tell server which nonces we actually have locally.
+    // This purges server-side 'available' nonces that we don't have
+    // (e.g. local save failed after relay submission, extension reinstalled)
+    // while leaving reserved/used ones untouched.
+    if (existingNonces.length > 0 || serverAvailable > 0) {
       try {
-        await axios.post(`https://${sspConfig().relay}/v1/nonces/reconcile`, {
-          wkIdentity,
-          source: 'wallet',
-          localNonces: [], // empty = purge all server nonces
-        });
-      } catch {
-        // Best-effort purge
-      }
-      existingNonces = [];
-      serverAvailable = 0;
-    } else {
-      // Reconcile: tell server which nonces we actually have locally.
-      // This purges server-side 'available' nonces that we don't have
-      // (e.g. local save failed after relay submission, extension reinstalled).
-      if (existingNonces.length > 0 || serverAvailable > 0) {
-        try {
-          const localPublicKeys = existingNonces.map((n) => ({
-            kPublic: n.kPublic,
-            kTwoPublic: n.kTwoPublic,
-          }));
-          const reconcileRes = await axios.post(
-            `https://${sspConfig().relay}/v1/nonces/reconcile`,
-            {
-              wkIdentity,
-              source: 'wallet',
-              localNonces: localPublicKeys,
-            },
+        const localPublicKeys = existingNonces.map((n) => ({
+          kPublic: n.kPublic,
+          kTwoPublic: n.kTwoPublic,
+        }));
+        const reconcileRes = await axios.post(
+          `https://${sspConfig().relay}/v1/nonces/reconcile`,
+          {
+            wkIdentity,
+            source: 'wallet',
+            localNonces: localPublicKeys,
+          },
+        );
+        const reconcileData = reconcileRes.data as
+          | { data?: { purged?: number } }
+          | undefined;
+        const purged = reconcileData?.data?.purged ?? 0;
+        if (purged > 0) {
+          console.log(
+            `[Enterprise Nonces] Wallet: Purged ${purged} orphaned server nonces`,
           );
-          const reconcileData = reconcileRes.data as
-            | { data?: { purged?: number } }
-            | undefined;
-          const purged = reconcileData?.data?.purged ?? 0;
-          if (purged > 0) {
-            console.log(
-              `[Enterprise Nonces] Wallet: Purged ${purged} orphaned server nonces`,
-            );
-            // Update serverAvailable after purge
-            serverAvailable = Math.max(serverAvailable - purged, 0);
-          }
-        } catch {
-          // Reconcile is best-effort — don't block replenishment
+          // Update serverAvailable after purge
+          serverAvailable = Math.max(serverAvailable - purged, 0);
         }
+      } catch {
+        // Reconcile is best-effort — don't block replenishment
       }
     }
 
@@ -150,7 +158,10 @@ export async function replenishWalletEnterpriseNonces(
       TARGET_COUNT - serverAvailable,
       0,
     );
-    if (toGenerate <= 0) return;
+    if (toGenerate <= 0) {
+      // Pool verified healthy and in sync — nothing to submit.
+      return { ok: true, generated: 0, reason: 'not_needed' };
+    }
 
     // Generate new nonces
     const newNonces: publicPrivateNonce[] = [];
@@ -170,15 +181,21 @@ export async function replenishWalletEnterpriseNonces(
       nonces: publicParts,
     });
 
-    // Only store locally after successful relay submission
+    // Only store locally after successful relay submission. Existing local
+    // nonces are kept — some may be reserved by pending proposals.
     const allNonces = [...existingNonces, ...newNonces];
     await saveEncryptedNonces(allNonces, passwordBlob);
 
     console.log(
       `[Enterprise Nonces] Wallet: Generated and submitted ${toGenerate} nonces (server had ${serverAvailable}, local had ${existingNonces.length})`,
     );
+    return { ok: true, generated: toGenerate };
   } catch (error) {
+    // The mandatory POST /v1/nonces lands here too, so report the failure
+    // instead of swallowing it: callers that told the user a sync started
+    // must not claim success.
     console.log('[Enterprise Nonces] Wallet replenish error:', error);
+    return { ok: false, generated: 0, reason: 'submit_failed' };
   } finally {
     replenishing = false;
   }
