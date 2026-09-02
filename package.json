@@ -63,7 +63,7 @@
     "buffer": "6.0.3",
     "crypto-browserify": "3.12.1",
     "currency-symbol-map": "5.1.0",
-    "ethers": "6.16.0",
+    "ethers": "6.17.0",
     "events": "3.3.0",
     "export-to-csv": "1.4.0",
     "i18next": "26.3.6",
