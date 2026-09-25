@@ -8,6 +8,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import BigNumber from 'bignumber.js';
+import { parseAmount } from '../../lib/sendStrategies/amount';
 import { NoticeType } from 'antd/es/message/interface';
 import { transaction } from '../../types';
 import './Transactions.css';
@@ -59,7 +60,7 @@ function TransactionsTable(props: {
   const proceedToRBF = (record: transaction) => {
     const navigationObject = {
       receiver: record.receiver,
-      amount: new BigNumber(record.amount)
+      amount: (parseAmount(record.amount) ?? new BigNumber(0))
         .dividedBy(10 ** blockchainConfig.decimals)
         .multipliedBy(-1)
         .toFixed(),
@@ -115,7 +116,10 @@ function TransactionsTable(props: {
   const renderTx = (record: transaction, index: number) => {
     const identity = rowIdentities[index];
     const decimals = record.decimals ?? blockchainConfig.decimals;
-    const amount = new BigNumber(record.amount).dividedBy(10 ** decimals);
+    // A malformed amount must never take the whole history down.
+    const amount = (parseAmount(record.amount) ?? new BigNumber(0)).dividedBy(
+      10 ** decimals,
+    );
     const received = amount.isGreaterThan(0);
     const confirmed = !!record.blockheight && record.blockheight > 0;
     const expanded = expandedKey === identity.key;

@@ -34,6 +34,8 @@ import { useThemeMode } from '../../contexts/ThemeContext.tsx';
 import './Swap.css';
 import { useAppSelector, useAppDispatch } from '../../hooks.ts';
 import { pairDetailsSellAmount, createSwap } from '../../lib/ABEController.ts';
+import { fetchAddressTokenBalances } from '../../lib/balances.ts';
+import { parseAmount } from '../../lib/sendStrategies/amount.ts';
 import AssetBox from './AssetBox.tsx';
 import { useNavigate } from 'react-router';
 import localForage from 'localforage';
@@ -280,28 +282,37 @@ function Swap() {
       const blockchainConfig = blockchains[chain];
 
       if (tokenContract) {
-        const balancesTokens: tokenBalanceEVM[] | null =
+        const token = blockchainConfig.tokens?.find(
+          (t) => t.contract.toLowerCase() === tokenContract.toLowerCase(),
+        );
+        const cachedTokens: tokenBalanceEVM[] | null =
           await localForage.getItem(
             `token-balances-${chain}-${sellAssetAddress}`,
           );
-        if (balancesTokens?.length) {
-          const tokenBalExists = balancesTokens.find(
-            (token) => token.contract === tokenContract,
-          );
-          if (tokenBalExists) {
-            const token = blockchainConfig.tokens?.find(
-              (t) => t.contract === tokenContract,
-            );
-            const balanceInUnits = new BigNumber(
-              tokenBalExists.balance,
-            ).dividedBy(10 ** (token?.decimals ?? 18));
-            setSellAssetBalance(balanceInUnits);
-            setMaxSendableAmount(balanceInUnits);
-            setEstimatedFee(new BigNumber(0));
-          } else {
-            setSellAssetBalance(new BigNumber(0));
-            setMaxSendableAmount(new BigNumber(0));
+        let tokenBalExists = cachedTokens?.find(
+          (t) => t.contract.toLowerCase() === tokenContract.toLowerCase(),
+        );
+        // The cache is only written by the home screen for ACTIVATED tokens —
+        // a token received but never shown there (or a home screen that failed
+        // to load) left it missing and the swap showed a 0 balance. Fetch it.
+        const address = userAddresses[chain]?.[sellAssetAddress];
+        if (!tokenBalExists && address) {
+          try {
+            const [live] = await fetchAddressTokenBalances(address, chain, [
+              token?.contract ?? tokenContract,
+            ]);
+            tokenBalExists = live;
+          } catch (error) {
+            console.log(error);
           }
+        }
+        if (tokenBalExists) {
+          const balanceInUnits = (
+            parseAmount(tokenBalExists.balance) ?? new BigNumber(0)
+          ).dividedBy(10 ** (token?.decimals ?? 18));
+          setSellAssetBalance(balanceInUnits);
+          setMaxSendableAmount(balanceInUnits);
+          setEstimatedFee(new BigNumber(0));
         } else {
           setSellAssetBalance(new BigNumber(0));
           setMaxSendableAmount(new BigNumber(0));

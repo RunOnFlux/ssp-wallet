@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import axios from 'axios';
 
 import {
   processTransactionInternalScan,
@@ -859,6 +860,48 @@ describe('Transactions Lib', () => {
       expect(res).toHaveProperty('error');
       expect(Array.isArray(res.recipients)).toBe(true);
       expect(res.recipients).toHaveLength(0);
+    });
+  });
+
+  describe('malformed explorer responses', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('treats a token transfer without value as zero, never "-undefined"', () => {
+      const res = processTransactionTokenScan(
+        {
+          hash: '0xabc',
+          blockNumber: '1',
+          timeStamp: '1700000000',
+          from: '0x1111111111111111111111111111111111111111',
+          to: '0x2222222222222222222222222222222222222222',
+          contractAddress: '0xaff9084f2374585879e8b434c399e29e80cce635',
+          tokenDecimal: '8',
+          tokenSymbol: 'FLUX',
+        },
+        '0x1111111111111111111111111111111111111111',
+      );
+      expect(res.amount).toBe('-0');
+      expect(res.amount).not.toContain('undefined');
+    });
+
+    it('ignores an error-string result instead of iterating its characters', async () => {
+      vi.spyOn(axios, 'get').mockResolvedValue({
+        data: {
+          status: '0',
+          message: 'NOTOK',
+          result:
+            'Max rate limit reached, please use API Key for higher rate limit',
+        },
+      });
+      const res = await fetchAddressTransactions(
+        '0x1111111111111111111111111111111111111111',
+        'bsc',
+        0,
+        10,
+      );
+      expect(res).toEqual([]);
     });
   });
 });

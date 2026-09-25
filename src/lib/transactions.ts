@@ -224,7 +224,7 @@ export function processTransactionTokenScan(
   // Contract creations (and some explorer variants) omit `to` — fall back to
   // the created contract address so the transfer correctly shows as outgoing.
   const receiver = tx.to || tx.contractAddress || '';
-  let amount = tx.value;
+  let amount = tx.value || '0';
   if (address.toLowerCase() !== receiver.toLowerCase()) {
     amount = '-' + amount;
   }
@@ -292,14 +292,14 @@ export function processTransactionInternalScan(
         blockchains[chain].entrypointAddress.toLowerCase()
       ) {
         tran.fee = new BigNumber(tran.fee)
-          .plus(new BigNumber(tx.value))
+          .plus(new BigNumber(tx.value || 0))
           .toFixed();
       } else {
-        amountSending = amountSending.plus(new BigNumber(tx.value));
+        amountSending = amountSending.plus(new BigNumber(tx.value || 0));
       }
     }
     if (tx.to.toLowerCase() === address.toLowerCase()) {
-      amountReceiving = amountReceiving.plus(new BigNumber(tx.value));
+      amountReceiving = amountReceiving.plus(new BigNumber(tx.value || 0));
     }
     if (
       tx.to.toLowerCase() !== blockchains[chain].entrypointAddress.toLowerCase()
@@ -346,7 +346,7 @@ export function processTransactionExternalScan(
   // Contract creations (and some explorer variants) omit `to` — an absent
   // receiver can never equal our address, so the value shows as outgoing.
   const receiver = tx.to || '';
-  let amount = tx.value;
+  let amount = tx.value || '0';
   if (address.toLowerCase() !== receiver.toLowerCase()) {
     amount = '-' + amount;
   }
@@ -624,6 +624,15 @@ async function fetchSolanaTransactionsPage(
   return txs.sort((a, b) => b.timestamp - a.timestamp);
 }
 
+/** Etherscan-style `result`: the tx array, or [] for error strings / junk rows. */
+function explorerResultList<T extends { hash?: string }>(result: unknown): T[] {
+  if (!Array.isArray(result)) return [];
+  return (result as unknown[]).filter(
+    (tx): tx is T =>
+      !!tx && typeof tx === 'object' && typeof (tx as T).hash === 'string',
+  );
+}
+
 export async function fetchAddressTransactions(
   address: string,
   chain: keyof cryptos,
@@ -651,7 +660,13 @@ export async function fetchAddressTransactions(
         url,
         { params },
       );
-      const externalTxs = responseExternal.data.result;
+      // Etherscan-style APIs return `result` as an error STRING on failure
+      // (rate limit, unsupported chain…). Iterating that string yields one
+      // bogus "transaction" per character with no value/hash, which rendered
+      // as amount "-undefined" and crashed the history table.
+      const externalTxs = explorerResultList<etherscan_external_tx>(
+        responseExternal.data.result,
+      );
       const externalTxsProcessed = processTransactionsExternalScan(
         externalTxs,
         address,
@@ -662,7 +677,9 @@ export async function fetchAddressTransactions(
         url,
         { params },
       );
-      const internalTxs = responseInternal.data.result;
+      const internalTxs = explorerResultList<etherscan_internal_tx>(
+        responseInternal.data.result,
+      );
       const internalTxsProcessed = processTransactionsInternalScan(
         internalTxs,
         address,
@@ -673,7 +690,9 @@ export async function fetchAddressTransactions(
       const responseTokens = await axios.get<etherscan_call_token_txs>(url, {
         params,
       });
-      const tokenTxs = responseTokens.data.result;
+      const tokenTxs = explorerResultList<etherscan_token_tx>(
+        responseTokens.data.result,
+      );
       const tokenTxsProcessed = processTransactionsTokensScan(
         tokenTxs,
         address,
