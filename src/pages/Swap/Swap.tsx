@@ -728,7 +728,8 @@ function Swap() {
         sellAsset.split('_')[0] === 'polygon' ||
         sellAsset.split('_')[0] === 'base' ||
         sellAsset.split('_')[0] === 'bsc' ||
-        sellAsset.split('_')[0] === 'avax'
+        sellAsset.split('_')[0] === 'avax' ||
+        sellAsset.split('_')[0] === 'xdc'
       ) {
         navigate('/sendEvm', { state: navigationObject });
       } else {
