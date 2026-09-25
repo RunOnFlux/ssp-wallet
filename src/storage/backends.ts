@@ -90,6 +90,11 @@ const assetBackends: backends = {
     api: 'api-bsc.sspwallet.io/api',
     explorer: 'bscscan.com',
   },
+  xdc: {
+    node: 'node-xdc.sspwallet.io',
+    api: 'api-xdc.sspwallet.io/api',
+    explorer: 'xdcscan.com',
+  },
   solDevnet: {
     node: 'api.devnet.solana.com',
     api: 'api.devnet.solana.com',

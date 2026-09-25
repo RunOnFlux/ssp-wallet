@@ -1,4 +1,5 @@
 import sepoliaLogo from '../assets/ethTestnet.svg';
+import xdcLogo from '../assets/xdc.svg';
 import solDevnetLogo from '../assets/solDevnet.svg';
 import solMainnetLogo from '../assets/solMainnet.svg';
 import fluxLogo from '../assets/flux.svg';
@@ -1054,6 +1055,19 @@ function solDevnet() {
   return tokens;
 }
 
+function xdc() {
+  const tokens = [
+    {
+      contract: '', // first is always the native 'no contract' token 0x0000000000000000000000000000000000000000
+      name: 'XDC Network',
+      symbol: 'XDC',
+      decimals: 18,
+      logo: xdcLogo,
+    },
+  ];
+  return tokens;
+}
+
 function solMainnet() {
   const tokens = [
     {
@@ -1091,6 +1105,7 @@ export const tokens = {
   base,
   avax,
   bsc,
+  xdc,
   solDevnet,
   solMainnet,
 };

@@ -18,6 +18,7 @@ import amoyLogo from '../assets/polTestnet.svg';
 import baseLogo from '../assets/base.svg';
 import bscLogo from '../assets/bsc.svg';
 import avaxLogo from '../assets/avax.svg';
+import xdcLogo from '../assets/xdc.svg';
 import solDevnetLogo from '../assets/solDevnet.svg';
 import solMainnetLogo from '../assets/solMainnet.svg';
 
@@ -531,6 +532,35 @@ const avax = {
   onramperNetwork: 'avaxc',
 };
 
+const xdc = {
+  id: 'xdc',
+  libid: 'xdc',
+  name: 'XDC Network',
+  symbol: 'XDC',
+  logo: xdcLogo,
+  slip: 550,
+  decimals: 18,
+  node: backends().xdc.node,
+  api: backends().xdc.api,
+  bip32: {
+    // not specified, use default
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh', // not specified, use default
+  chainType: 'evm',
+  chainId: '50',
+  backend: 'etherspot',
+  accountSalt: 'aasalt', // ssp uses this salt for smart accounts
+  factorySalt: 'aafactorysalt', // factory uses this salt
+  factoryAddress: '0x3974821943e9cA3549744D910999332eE387Fda4',
+  entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  baseFee: 25, // 25 gwei
+  priorityFee: 1, // 1 gwei
+  gasLimit: 750000, // 750k gas
+  tokens: tokens.xdc(),
+};
+
 const solDevnet = {
   id: 'solDevnet',
   libid: 'solana-devnet',
@@ -596,6 +626,7 @@ export const blockchains = {
   bch,
   polygon,
   base,
+  xdc,
   rvn,
   zec,
   btcTestnet,
