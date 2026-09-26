@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import {
   fetchAddressBalance,
@@ -76,5 +76,47 @@ describe('Balances Lib', () => {
       expect(res[0].balance).not.toBeNull();
       expect(res[0].balance).toBeDefined();
     });
+  });
+});
+
+describe('Balances Lib — Kaspa (mocked kaspa-rest-server)', () => {
+  const address =
+    'kaspa:prfu8rp4ek453lkhcewmn7w9acdqms9q2pegav5vhx6zscu73xh4ux2mdv2wp';
+  const calls: string[] = [];
+  beforeEach(() => {
+    calls.length = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        calls.push(url);
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify({ address, balance: 1234567890123 }),
+        };
+      }),
+    );
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('fetches the sompi balance from kaspa-rest', async () => {
+    const res = await fetchAddressBalance(address, 'kas');
+    expect(res).toEqual({
+      confirmed: '1234567890123',
+      unconfirmed: '0',
+      address,
+    });
+    expect(calls).toEqual([
+      `https://api-kaspa.sspwallet.io/addresses/${encodeURIComponent(address)}/balance`,
+    ]);
+  });
+
+  it('token balances are empty for kas (KRC-20 out of scope) and never throw', async () => {
+    await expect(
+      fetchAddressTokenBalances(address, 'kas', ['0xabc']),
+    ).resolves.toEqual([]);
+    expect(calls).toHaveLength(0);
   });
 });

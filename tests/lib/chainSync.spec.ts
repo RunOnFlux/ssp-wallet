@@ -340,3 +340,60 @@ describe('fetchChainSyncRejection', () => {
     await expect(fetchChainSyncRejection('wkid')).resolves.toBeNull();
   });
 });
+
+describe('verifyBatchSyncDoc — Kaspa (contract §2 vectors)', () => {
+  const W =
+    'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+  const Kk =
+    'legal winner thank year wave sausage worth useful legal winner thank yellow';
+  const xpubWallet = getMasterXpub(W, 48, 111111, 0, 'p2sh', 'kas');
+  const xpubKey = getMasterXpub(Kk, 48, 111111, 0, 'p2sh', 'kas');
+
+  it('accepts the key doc for the contract vault 0-0', () => {
+    expect(
+      verifyBatchSyncDoc(
+        {
+          chain: 'kas',
+          keyXpub: xpubKey,
+          walletXpub: xpubWallet,
+          generatedAddress:
+            'kaspa:prfu8rp4ek453lkhcewmn7w9acdqms9q2pegav5vhx6zscu73xh4ux2mdv2wp',
+          redeemScript:
+            '5220419c6700d68f2eca22b92ddde3b4dad5923129493f497b81732b25a951e1378d20c6fbbe518f3c0d33bbfae2726e42220c36e274eaba84065d01b72543c1f2b06252ae',
+        },
+        xpubWallet,
+      ),
+    ).toEqual({ valid: true });
+  });
+
+  it('rejects a doc whose Kaspa address was derived differently', () => {
+    const result = verifyBatchSyncDoc(
+      {
+        chain: 'kas',
+        keyXpub: xpubKey,
+        generatedAddress:
+          'kaspa:prqacpva8h4tyslt7xe9srkrwjtsdnvss0xqy5u6uy00qwpacdrjwa2uegg0n',
+      },
+      xpubWallet,
+    );
+    expect(result).toEqual({
+      valid: false,
+      reason: 'generatedAddress mismatch',
+    });
+  });
+
+  it('every chain (identity excluded) still fits one batch request', async () => {
+    const { blockchains } = await import('../../src/storage/blockchains');
+    const all = Object.keys(blockchains);
+    expect(all).toContain('kas');
+    // Key.tsx batches the active chain + selected extras, never the identity
+    // chain, so the largest possible batch is every chain but one.
+    const largest = all.filter((c) => c !== 'btc');
+    expect(largest.length).toBeLessThanOrEqual(CHAIN_SYNC_MAX_CHAINS);
+    expect(() =>
+      buildChainSyncRequestPayload(
+        largest.map((chain) => ({ chain, xpubWallet: `xpub-${chain}` })),
+      ),
+    ).not.toThrow();
+  });
+});

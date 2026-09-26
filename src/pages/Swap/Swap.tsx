@@ -35,6 +35,7 @@ import './Swap.css';
 import { useAppSelector, useAppDispatch } from '../../hooks.ts';
 import { pairDetailsSellAmount, createSwap } from '../../lib/ABEController.ts';
 import { fetchAddressTokenBalances } from '../../lib/balances.ts';
+import { estimateKasSwapFeeUnits } from '../../lib/kaspa.ts';
 import { parseAmount } from '../../lib/sendStrategies/amount.ts';
 import AssetBox from './AssetBox.tsx';
 import { useNavigate } from 'react-router';
@@ -328,7 +329,16 @@ function Swap() {
           setSellAssetBalance(balanceInUnits);
 
           let fee = new BigNumber(0);
-          if (blockchainConfig.chainType === 'evm') {
+          if (blockchainConfig.chainType === 'kas') {
+            // Kaspa: exact sweep fee from kaspa-core over REST UTXOs — never
+            // the utxolib/insight estimate below.
+            fee = new BigNumber(
+              await estimateKasSwapFeeUnits(
+                userAddresses[chain]?.[sellAssetAddress] ?? '',
+                chain,
+              ),
+            );
+          } else if (blockchainConfig.chainType === 'evm') {
             const chainFees = networkFees[chain];
             const baseFee = chainFees?.base ?? blockchainConfig.baseFee;
             const priorityFee =

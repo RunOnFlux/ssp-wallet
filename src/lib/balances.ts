@@ -12,6 +12,7 @@ import {
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
+import { fetchKasBalance } from './kaspa';
 
 export async function fetchAddressBalance(
   address: string,
@@ -19,6 +20,16 @@ export async function fetchAddressBalance(
 ): Promise<balance> {
   try {
     const backendConfig = backends()[chain];
+    if (blockchains[chain].chainType === 'kas') {
+      // kaspa-rest-server: UTXO-index balance in sompi. Kaspa has no
+      // separate unconfirmed balance over REST.
+      const bal: balance = {
+        confirmed: await fetchKasBalance(address, chain),
+        unconfirmed: '0',
+        address,
+      };
+      return bal;
+    }
     if (blockchains[chain].chainType === 'evm') {
       const url = `https://${backendConfig.node}`;
       const data = {
@@ -111,6 +122,10 @@ export async function fetchAddressTokenBalances(
   tokens: string[],
 ): Promise<tokenBalanceEVM[]> {
   try {
+    // Kaspa: KRC-20 tokens are out of scope — no token balances, never throw.
+    if (blockchains[chain].chainType === 'kas') {
+      return [];
+    }
     // Solana: fetch all parsed token accounts owned by the vault and
     // intersect with the requested mint list. One RPC call regardless of
     // token count, no Alchemy-style batching needed.

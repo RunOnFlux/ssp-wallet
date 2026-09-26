@@ -23,6 +23,7 @@ import {
 
 import { backends } from '@storage/backends';
 import { blockchains, Token } from '@storage/blockchains';
+import { describeKasBundle, fetchKasTransactions } from './kaspa';
 
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
@@ -642,6 +643,11 @@ export async function fetchAddressTransactions(
 ): Promise<transaction[]> {
   try {
     const backendConfig = backends()[chain];
+    if (blockchains[chain].chainType === 'kas') {
+      // kaspa-rest-server: offset-paged full transactions with resolved
+      // previous outpoints (never insight/blockbook URLs).
+      return await fetchKasTransactions(address, chain, from, to);
+    }
     if (blockchains[chain].chainType === 'evm') {
       const params = {
         module: 'account',
@@ -806,6 +812,19 @@ export function decodeVaultTransaction(
   inputScripts?: { witnessScript?: string; redeemScript?: string },
 ): VaultDecodedTx {
   try {
+    if (blockchains[chain].chainType === 'kas') {
+      // rawTx is kaspa-core SigningBundle JSON, never hex (contract §3). Its
+      // fee and change can only be judged against this wallet's OWN UTXO
+      // lookup of the single proposal vault (contract §4.1, §4.7), which is
+      // async: the sign screen uses decodeKasVaultProposal. Never decode here
+      // from the amounts the bundle itself claims.
+      return {
+        sender: '',
+        recipients: [],
+        fee: '0',
+        error: 'Kaspa proposals are verified by decodeKasVaultProposal',
+      };
+    }
     if (blockchains[chain].chainType === 'evm') {
       return decodeVaultEvmTransaction(rawTx, chain, importedTokens);
     }
@@ -1130,6 +1149,17 @@ export function decodeTransactionForApproval(
   importedTokens: Token[] = [],
 ) {
   try {
+    if (blockchains[chain].chainType === 'kas') {
+      // The tx payload is a kaspa-core SigningBundle (JSON), not hex.
+      const d = describeKasBundle(rawTx, chain);
+      return {
+        sender: d.sender,
+        receiver: d.receiver,
+        amount: new BigNumber(d.amount)
+          .dividedBy(new BigNumber(10 ** blockchains[chain].decimals))
+          .toFixed(),
+      };
+    }
     if (blockchains[chain].chainType === 'evm') {
       return decodeEVMTransactionForApproval(
         rawTx,
