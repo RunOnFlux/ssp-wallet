@@ -126,6 +126,13 @@ export default defineConfig(({ command, mode }) => ({
             return 'vendor-eth';
           if (/node_modules[\\/]@alchemy[\\/]/.test(id)) return 'vendor-eth';
 
+          // Kaspa: kaspa-core plus its own nested @noble/curves and
+          // @noble/hashes (2.4.0, installed under kaspa-core/node_modules, so
+          // this pattern matches them too). The top-level @noble/* copies
+          // that other libraries use are not affected.
+          if (/node_modules[\\/]@runonflux[\\/]kaspa-core[\\/]/.test(id))
+            return 'vendor-kaspa';
+
           if (/node_modules[\\/]@solana[\\/]/.test(id)) return 'vendor-solana';
           if (/node_modules[\\/]@coral-xyz[\\/]/.test(id))
             return 'vendor-solana';

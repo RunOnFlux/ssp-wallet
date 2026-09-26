@@ -49,6 +49,18 @@ export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
 }
 
+/**
+ * Kaspa (chainType 'kas') never goes through the utxolib / insight / blockbook
+ * paths in this file: planning, signing and broadcasting live in lib/kaspa.ts
+ * (planKasSend / signKasSend, kaspa-rest-server). Refuse loudly instead of
+ * querying insight URLs on the Kaspa REST host or crashing inside utxolib.
+ */
+function assertNotKaspa(chain: string, fn: string): void {
+  if (blockchains[chain]?.chainType === 'kas') {
+    throw new Error(`${fn} does not support Kaspa; use lib/kaspa instead`);
+  }
+}
+
 type utxoCache = Record<string, utxo[]>;
 
 let fetchUtxosRunning = false;
@@ -64,6 +76,7 @@ export async function fetchUtxos(
   confirmationMode = 0, // use confirmed utxos if replace by fee is wanted. unconfirmed if standard tx, both for ssp key for fetching all utxps
   onlyConfirmed = true, // must have > 0 confirmations
 ): Promise<utxo[]> {
+  assertNotKaspa(chain, 'fetchUtxos');
   try {
     while (fetchUtxosRunning) {
       // wait if previous request is running
@@ -633,6 +646,7 @@ export async function getTransactionSize(
   forbiddenUtxos?: txIdentifier[],
   mandatoryUtxos?: txIdentifier[],
 ): Promise<number> {
+  assertNotKaspa(chain, 'getTransactionSize');
   try {
     const libID = getLibId(chain);
     const blockchainConfig = blockchains[chain];
@@ -752,6 +766,7 @@ export async function estimateUtxoTxSize(
   useAllUtxos = false,
   excludeUtxos: txIdentifier[] = [],
 ): Promise<number> {
+  assertNotKaspa(chain, 'estimateUtxoTxSize');
   try {
     const blockchainConfig = blockchains[chain];
     const utxos = await fetchUtxos(sender, chain, 0);
@@ -869,6 +884,7 @@ export async function constructAndSignTransaction(
   forbiddenUtxos?: txIdentifier[],
   mandatoryUtxos?: txIdentifier[],
 ): Promise<constructedTxInfo> {
+  assertNotKaspa(chain, 'constructAndSignTransaction');
   try {
     const utxos = await fetchUtxos(
       sender,
@@ -956,6 +972,7 @@ export async function broadcastTx(
   txHex: string,
   chain: keyof cryptos,
 ): Promise<string> {
+  assertNotKaspa(chain, 'broadcastTx');
   try {
     const backendConfig = backends()[chain];
     if (blockchains[chain].backend === 'blockbook') {

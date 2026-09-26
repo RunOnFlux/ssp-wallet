@@ -29,14 +29,25 @@ function explorerHost(chain: string): string {
   return cfg.explorer ?? cfg.node ?? '';
 }
 
+// explorer.kaspa.org uses plural paths (/txs/{id}, /addresses/{addr}).
+function isKasExplorer(chain: string): boolean {
+  return blockchains[chain]?.chainType === 'kas';
+}
+
 /** Explorer URL for a transaction by signature/hash. */
 export function explorerTxUrl(chain: string, txid: string): string {
+  if (isKasExplorer(chain)) {
+    return `https://${explorerHost(chain)}/txs/${txid}`;
+  }
   const base = `https://${explorerHost(chain)}/tx/${txid}`;
   return withSolanaCluster(base, chain);
 }
 
 /** Explorer URL for an address. */
 export function explorerAddressUrl(chain: string, address: string): string {
+  if (isKasExplorer(chain)) {
+    return `https://${explorerHost(chain)}/addresses/${address}`;
+  }
   const base = `https://${explorerHost(chain)}/address/${address}`;
   return withSolanaCluster(base, chain);
 }

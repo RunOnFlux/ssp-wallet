@@ -49,6 +49,7 @@
     "date": "Date",
     "amount": "Amount",
     "confirmations": "Confirmations",
+    "kas_accepted": "Accepted (confirmed)",
     "fee": "Fee",
     "to_address": "To",
     "block_height": "Block height",
@@ -451,6 +452,20 @@
     "wallet_sync_busy": "Another nonce sync is still running. Please wait a moment and try again."
   },
   "enterpriseVaultSignTx": {
+    "kas_warnings": "Review before signing — this Kaspa transaction has warnings:",
+    "kas_warn_version_1": "Uses transaction version 1 (not a standard SSP vault spend).",
+    "kas_warn_payload": "Carries a data payload.",
+    "kas_warn_non_native_subnetwork": "Targets a non-native subnetwork.",
+    "kas_warn_lock_time": "Has a lock time set.",
+    "kas_warn_non_zero_sequence": "Has a non-zero input sequence.",
+    "kas_warn_nonstandard_output": "Pays to a non-standard output script.",
+    "kas_warn_burn_output": "Contains an output that burns funds (unspendable).",
+    "kas_warn_fee_above_threshold": "The fee is unusually high.",
+    "kas_warn_fee_rate_above_threshold": "The fee rate is unusually high.",
+    "kas_warn_foreign_input": "Spends an input that does not belong to this vault.",
+    "kas_warn_covenant_output": "Contains a covenant output.",
+    "kas_retry_decode": "Retry",
+    "kas_unknown": "Unknown address",
     "title": "Enterprise Vault Transaction Signing",
     "description": "A request to sign a vault transaction has been received. Please review the transaction details below.",
     "vault_name": "Vault",
@@ -560,7 +575,9 @@
     "invalid_chain": "Invalid chain.",
     "invalid_method": "Invalid method.",
     "invalid_request": "Invalid or malformed request.",
-    "unsupported_contract": "Unsupported contract. Import token contract first."
+    "unsupported_contract": "Unsupported contract. Import token contract first.",
+    "kas_message_unsupported": "Message signing is not supported for Kaspa.",
+    "kas_pay_message_unsupported": "Kaspa payments cannot carry a message. Request the payment without one."
   },
   "chainsInfo": {
     "chain_requests": "Chains Information Request",

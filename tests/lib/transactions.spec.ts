@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import axios from 'axios';
 
 import {
@@ -19,6 +19,14 @@ import {
 import utxolib from '@runonflux/utxo-lib';
 import { encodeFunctionData, erc20Abi } from 'viem';
 import * as abi from '@runonflux/aa-schnorr-multisig-sdk/dist/abi';
+import * as K from '@runonflux/kaspa-core';
+import { parseKasTransaction } from '../../src/lib/kaspa';
+import {
+  getMasterXpub,
+  getMasterXpriv,
+  generateMultisigAddress,
+  generateAddressKeypair,
+} from '../../src/lib/wallet';
 
 const rawTxSepolia = JSON.stringify({
   id: '0x8b18236447c918b3b217da857a787a7561313b730374430596eaa6f9c2d0ee16',
@@ -903,5 +911,263 @@ describe('Transactions Lib', () => {
       );
       expect(res).toEqual([]);
     });
+  });
+});
+
+describe('Transactions Lib — Kaspa (mocked kaspa-rest-server)', () => {
+  const W =
+    'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+  const Kk =
+    'legal winner thank year wave sausage worth useful legal winner thank yellow';
+  const xpubW = getMasterXpub(W, 48, 111111, 0, 'p2sh', 'kas');
+  const xpubK = getMasterXpub(Kk, 48, 111111, 0, 'p2sh', 'kas');
+  const vault = generateMultisigAddress(xpubW, xpubK, 0, 0, 'kas');
+  const other = generateMultisigAddress(xpubW, xpubK, 1, 0, 'kas');
+
+  const restTx = (id: string, accepted: boolean, ins, outs) => ({
+    transaction_id: id,
+    block_time: 1727300000000,
+    is_accepted: accepted,
+    accepting_block_blue_score: accepted ? 123456789 : null,
+    inputs: ins.map(([address, amount], index) => ({
+      transaction_id: id,
+      index,
+      previous_outpoint_hash: '11'.repeat(32),
+      previous_outpoint_index: String(index),
+      previous_outpoint_address: address,
+      previous_outpoint_amount: amount,
+    })),
+    outputs: outs.map(([address, amount], index) => ({
+      transaction_id: id,
+      index,
+      amount,
+      script_public_key_address: address,
+    })),
+  });
+
+  const received = restTx(
+    'aa'.repeat(32),
+    true,
+    [[other.address, 500000000]],
+    [
+      [vault.address, 300000000],
+      [other.address, 199990000],
+    ],
+  );
+  const sent = restTx(
+    'bb'.repeat(32),
+    false,
+    [[vault.address, 300000000]],
+    [
+      [other.address, 100000000],
+      [vault.address, 199980000],
+    ],
+  );
+
+  let calls: string[] = [];
+  beforeEach(() => {
+    calls = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        calls.push(url);
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify([sent, received]),
+        };
+      }),
+    );
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('parses received and sent rows (blockbook sign convention, blue score as height)', () => {
+    const r = parseKasTransaction(received, vault.address);
+    expect(r).toMatchObject({
+      txid: 'aa'.repeat(32),
+      amount: '300000000',
+      fee: '10000',
+      blockheight: 123456789,
+      timestamp: 1727300000000,
+      receiver: vault.address,
+      type: 'kas',
+    });
+    const s = parseKasTransaction(sent, vault.address);
+    expect(s).toMatchObject({
+      amount: '-100000000',
+      fee: '20000',
+      blockheight: 0, // not accepted yet
+      receiver: other.address,
+    });
+  });
+
+  it('fetchAddressTransactions pages every request by offset (never a cursor first page)', async () => {
+    const first = await fetchAddressTransactions(vault.address, 'kas', 0, 10);
+    expect(first.map((t) => t.txid)).toEqual([
+      'bb'.repeat(32),
+      'aa'.repeat(32),
+    ]);
+    expect(calls[0]).toContain(
+      `/addresses/${encodeURIComponent(vault.address)}/full-transactions?limit=10&offset=0`,
+    );
+    expect(calls[0]).toContain('resolve_previous_outpoints=light');
+    await fetchAddressTransactions(vault.address, 'kas', 50, 100);
+    expect(calls[1]).toContain('/full-transactions?limit=50&offset=50');
+    expect(calls.some((u) => u.includes('full-transactions-page'))).toBe(false);
+    expect(
+      calls.every((u) => u.startsWith('https://api-kaspa.sspwallet.io/')),
+    ).toBe(true);
+  });
+
+  it('full history pages are contiguous: no duplicated or skipped rows', async () => {
+    const ids = Array.from({ length: 120 }, (_, i) =>
+      i.toString(16).padStart(64, '0'),
+    );
+    const book = ids.map((id) =>
+      restTx(
+        id,
+        true,
+        [[other.address, 200000000]],
+        [[vault.address, 100000000]],
+      ),
+    );
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        calls.push(url);
+        const u = new URL(url);
+        const limit = Number(u.searchParams.get('limit'));
+        const offset = Number(u.searchParams.get('offset'));
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify(book.slice(offset, offset + limit)),
+        };
+      }),
+    );
+    const all = await fetchAllAddressTransactions(vault.address, 'kas');
+    expect(all.map((t) => t.txid)).toEqual(ids);
+    expect(calls).toHaveLength(3);
+  });
+
+  it('never classifies a row with unresolved previous outpoints as income', () => {
+    const unresolved = restTx(
+      'dd'.repeat(32),
+      true,
+      [[null, null]],
+      [
+        [vault.address, 300000000],
+        [other.address, 100000000],
+      ],
+    );
+    const row = parseKasTransaction(unresolved, vault.address);
+    expect(row.amount).toBe('0');
+    expect(row.fee).toBe('0');
+    expect(row.txid).toBe('dd'.repeat(32));
+  });
+
+  it('re-fetches an unresolved row on its own and classifies the resolved copy', async () => {
+    const id = 'ee'.repeat(32);
+    const unresolved = restTx(
+      id,
+      true,
+      [[null, null]],
+      [
+        [other.address, 100000000],
+        [vault.address, 199990000],
+      ],
+    );
+    const resolved = restTx(
+      id,
+      true,
+      [[vault.address, 300000000]],
+      [
+        [other.address, 100000000],
+        [vault.address, 199990000],
+      ],
+    );
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        calls.push(url);
+        const body = url.includes(`/transactions/${id}`)
+          ? resolved
+          : [unresolved];
+        return {
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify(body),
+        };
+      }),
+    );
+    const [row] = await fetchAddressTransactions(vault.address, 'kas', 0, 10);
+    expect(calls.some((u) => u.includes(`/transactions/${id}`))).toBe(true);
+    // a send of 1 KAS + 10000 sompi fee — not 1.9999 KAS of "income"
+    expect(row.amount).toBe('-100000000');
+    expect(row.fee).toBe('10000');
+  });
+
+  it('fetchAllAddressTransactions stops after a short page', async () => {
+    const all = await fetchAllAddressTransactions(vault.address, 'kas');
+    expect(all).toHaveLength(2);
+    expect(calls).toHaveLength(1);
+  });
+
+  it('decodes a kas bundle for approval and for vault display (never as hex)', async () => {
+    const leafKey = (mnemonic: string) =>
+      K.hexToBytes(
+        generateAddressKeypair(
+          getMasterXpriv(mnemonic, 48, 111111, 0, 'p2sh', 'kas'),
+          0,
+          0,
+          'kas',
+        ).pubKey,
+      );
+    const spend = K.multisigSpend([leafKey(W), leafKey(Kk)], 2);
+    expect(K.bytesToHex(spend.redeem)).toBe(vault.redeemScript);
+    const script = K.spendScriptPublicKey(spend);
+    const plan = K.planTransaction(
+      [
+        {
+          outpoint: { transactionId: K.hexToBytes('cc'.repeat(32)), index: 0 },
+          entry: {
+            amount: 500000000n,
+            scriptPublicKey: script,
+            blockDaaScore: 1n,
+            isCoinbase: false,
+          },
+          spend,
+        },
+      ],
+      [
+        {
+          scriptPublicKey: K.addressToScriptPublicKey(other.address, 'kaspa'),
+          amount: 125000000n,
+        },
+      ],
+      { feeRate: 1000n, changeSpend: spend, allowChain: false },
+    );
+    const bundle = JSON.stringify(
+      K.createSigningBundle(plan.final.tx, plan.final.inputs),
+    );
+    expect(decodeTransactionForApproval(bundle, 'kas')).toEqual({
+      sender: vault.address,
+      receiver: other.address,
+      amount: '1.25',
+    });
+    // The synchronous vault decode never trusts the bundle's own amounts:
+    // Kaspa proposals go through decodeKasVaultProposal (own UTXO lookup).
+    const vaultDecoded = decodeVaultTransaction(bundle, 'kas');
+    expect(vaultDecoded.error).toMatch(/decodeKasVaultProposal/);
+    expect(vaultDecoded.recipients).toEqual([]);
+    // a Bitcoin hex tx on kas (or a bundle on btc) degrades, never crashes
+    expect(decodeTransactionForApproval('0100', 'kas').sender).toBe(
+      'decodingError',
+    );
+    expect(decodeTransactionForApproval(bundle, 'btc').sender).toBe(
+      'decodingError',
+    );
   });
 });

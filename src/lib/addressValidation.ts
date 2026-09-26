@@ -2,13 +2,14 @@ import utxolib from '@runonflux/utxo-lib';
 import { isAddress as isEvmAddress } from 'viem';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../types';
+import { isValidKasAddress } from './kaspa';
 
 export type AddressValidationResult = {
   valid: boolean;
   // When the address itself is invalid for the active chain but appears to be
   // a well-formed address of a DIFFERENT chain type, we surface a soft warning
   // so the user can catch a wrong-network paste before signing.
-  warningChainType?: 'evm' | 'sol' | 'utxo';
+  warningChainType?: 'evm' | 'sol' | 'utxo' | 'kas';
 };
 
 /**
@@ -80,6 +81,23 @@ export function validateReceiverAddress(
 
   const looksEvm = /^0x[0-9a-fA-F]{40}$/.test(trimmed);
   const looksSol = isValidSolAddress(trimmed) && !looksEvm;
+  // Kaspa addresses always carry their network prefix (kaspa:q… / kaspa:p…),
+  // so a cheap prefix check is enough for the wrong-network hint. Validation
+  // proper goes through kaspa-core below.
+  const looksKas = /^kaspa(test|sim|dev)?:[a-z0-9]{40,}$/i.test(trimmed);
+
+  if (chainType === 'kas') {
+    if (isValidKasAddress(trimmed, chain)) {
+      return { valid: true };
+    }
+    if (looksEvm) {
+      return { valid: false, warningChainType: 'evm' };
+    }
+    if (looksSol) {
+      return { valid: false, warningChainType: 'sol' };
+    }
+    return { valid: false };
+  }
 
   if (chainType === 'evm') {
     if (isValidEvmAddress(trimmed)) {
@@ -88,6 +106,9 @@ export function validateReceiverAddress(
     // Not a valid EVM address — hint if it looks like another chain type.
     if (looksSol) {
       return { valid: false, warningChainType: 'sol' };
+    }
+    if (looksKas) {
+      return { valid: false, warningChainType: 'kas' };
     }
     return { valid: false };
   }
@@ -98,6 +119,9 @@ export function validateReceiverAddress(
     }
     if (looksEvm) {
       return { valid: false, warningChainType: 'evm' };
+    }
+    if (looksKas) {
+      return { valid: false, warningChainType: 'kas' };
     }
     return { valid: false };
   }
@@ -112,5 +136,29 @@ export function validateReceiverAddress(
   if (looksSol) {
     return { valid: false, warningChainType: 'sol' };
   }
+  if (looksKas) {
+    return { valid: false, warningChainType: 'kas' };
+  }
   return { valid: false };
+}
+
+/**
+ * The receiver address inside a scanned QR payload. Payloads may be a bare
+ * address or a chain URI ("bitcoin:<address>?amount=…",
+ * "ethereum:<address>@1?value=…"), whose scheme is dropped. For Kaspa the
+ * `kaspa:` prefix IS part of the address, so only a query string or fragment
+ * is dropped; an all-uppercase payload (QR alphanumeric mode) is lowercased.
+ */
+export function addressFromScannedQr(
+  value: string,
+  chainType: string | undefined,
+): string {
+  let scanned = value.trim();
+  if (chainType === 'kas') {
+    scanned = scanned.split(/[?#]/)[0];
+    if (scanned === scanned.toUpperCase()) scanned = scanned.toLowerCase();
+    return scanned;
+  }
+  const schemeMatch = scanned.match(/^[a-zA-Z]+:([^@?]+)/);
+  return schemeMatch ? schemeMatch[1] : scanned;
 }

@@ -103,6 +103,16 @@
   "eta_evm_normal": "Recommended rate",
   "eta_evm_fast": "~ 15 sec",
   "eta_sol_normal": "Recommended rate",
+  "eta_kas_slow": "~ a few seconds, low priority",
+  "eta_kas_normal": "Recommended rate",
+  "eta_kas_fast": "~ next block",
+  "err_kas_insufficient_funds": "Insufficient balance to cover the amount and the network fee.",
+  "err_kas_needs_consolidation": "This wallet holds too many small coins to send this amount in one transaction. Send a smaller amount, or send the full balance to yourself first to consolidate.",
+  "err_kas_fee_too_high": "The network fee exceeds the maximum allowed for one transaction. Try again later or send a smaller amount.",
+  "err_kas_change_dust": "The leftover change would be too small to keep. Adjust the amount slightly, or use Max.",
+  "err_kas_network": "Could not reach the Kaspa network. Please try again.",
+  "err_kas_vault_mismatch": "The derived Kaspa vault does not match this wallet's address. Re-sync this chain with SSP Key.",
+  "err_kas_review_changed": "Your balance or the network fee changed since you reviewed this transaction. The amount and fee have been updated: review them and confirm again.",
   "swap_awaiting_quote": "Waiting for an exchange rate — this updates automatically.",
   "view_pending_approval": "View pending approval"
 }
