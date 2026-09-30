@@ -43,3 +43,26 @@ describe('Blockheight — Kaspa (mocked kaspa-rest-server)', () => {
     );
   });
 });
+
+describe('Blockheight — TRON (mocked full node)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+  it('uses the latest SOLIDIFIED block as the tip', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      text: async () =>
+        JSON.stringify({
+          // TRON block ids start with the 8-byte block number
+          blockID: (70123456).toString(16).padStart(16, '0') + 'ab'.repeat(24),
+          block_header: { raw_data: { number: 70123456, timestamp: 1 } },
+        }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(getBlockheight('tron')).resolves.toBe(70123456);
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      'https://node-tron.sspwallet.io/walletsolidity/getnowblock',
+    );
+  });
+});

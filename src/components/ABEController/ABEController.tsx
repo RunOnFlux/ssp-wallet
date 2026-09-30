@@ -74,7 +74,11 @@ function ABEController() {
       // this map shall be expanded if new chain is added to ssp
       const sspMapping: { [key: string]: string } = {};
       const abeToSspMapping: { [key: string]: string } = {};
-      const chainKeys = Object.keys(blockchains);
+      // TRON swaps are out of scope (TRON_SSP_CONTRACT.md §7): TRX and
+      // TRC-20s are never mapped, so they never appear as swap assets.
+      const chainKeys = Object.keys(blockchains).filter(
+        (chain) => blockchains[chain].chainType !== 'tron',
+      );
       chainKeys.forEach((chain) => {
         if (blockchains[chain].tokens) {
           blockchains[chain].tokens.forEach((token) => {

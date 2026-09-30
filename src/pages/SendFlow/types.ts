@@ -24,7 +24,7 @@ export interface FeePresetView {
 }
 
 export interface SendStrategyView {
-  chainType: 'utxo' | 'evm' | 'sol' | 'kas';
+  chainType: 'utxo' | 'evm' | 'sol' | 'kas' | 'tron';
   /** Page header title override (swap mode uses the swap title). */
   headerTitle: string;
   /** Submit button label (swap mode shows "Send and Swap for ..."). */
@@ -70,6 +70,19 @@ export interface SendStrategyView {
   reviewExtra?: ReactNode;
   /** Gate compose → review. Returns a user-facing error message or null. */
   validateCompose: () => string | null;
+  /**
+   * Chain-specific fee UI rendered INSTEAD of the preset toggle + readout
+   * (TRON: fee token choice, self-pay toggle and hints — a sponsor quote, not
+   * a speed market). Absent = the standard preset toggle.
+   */
+  feeSection?: ReactNode;
+  /** Fee row label override (TRON: "Network fee (sponsored)"). */
+  feeLabel?: string;
+  /**
+   * Review-card rendering of the FULL recipient address (TRON: highlighted
+   * middle, contract §5.8). Absent = the plain full address.
+   */
+  receiverReview?: ReactNode;
 
   // ---- review step ----
   feePresets: FeePresetView[];

@@ -35,6 +35,9 @@ export interface EnterpriseVaultSignedPayload {
   // Solana sol_dual: Key returns its 64-byte ed25519 sig (base64) for the
   // bundled tx's `member` slot. Wallet forwards it to enterprise's signProposal.
   keySignatureBase64?: string;
+  // TRON: Key returns its 65-byte r‖s‖v signature (0x hex) over the proposal
+  // digest (contract §3). Never a signed transaction hex.
+  keySignature?: string;
 }
 
 interface SocketContextType {

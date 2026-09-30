@@ -44,8 +44,13 @@ function TxDetails({
   // second: a "tip − height" count would be a huge, meaningless number. An
   // accepted Kaspa transaction is simply shown as confirmed.
   const isKas = chainConfig.chainType === 'kas' || tx.type === 'kas';
+  // TRON history is served only_confirmed (solidified, contract §6), and
+  // TRC-20 / internal rows carry no block number: every stored TRON row is
+  // shown as confirmed rather than as a meaningless tip − height count.
+  const isTron = chainConfig.chainType === 'tron';
   const confirmations =
     !isKas &&
+    !isTron &&
     confirmed &&
     typeof tipHeight === 'number' &&
     tipHeight >= tx.blockheight
@@ -54,17 +59,20 @@ function TxDetails({
 
   // Kaspa rows carry no byte size (fees are mass-based, sompi/gram), so they
   // never get the sat/B suffix.
-  const isUtxo = tx.type !== 'evm' && tx.type !== 'sol' && tx.type !== 'kas';
-  const feeAmount = new BigNumber(tx.fee || '0').dividedBy(
-    10 ** chainConfig.decimals,
-  );
+  const isUtxo =
+    !isTron && tx.type !== 'evm' && tx.type !== 'sol' && tx.type !== 'kas';
+  // TRON can pay its fee in USDT: the row then carries the fee's own symbol
+  // and decimals (never the ?? native fallback for a token fee).
+  const feeDecimals = tx.feeDecimals ?? chainConfig.decimals;
+  const feeSymbol = tx.feeSymbol || chainConfig.symbol;
+  const feeAmount = new BigNumber(tx.fee || '0').dividedBy(10 ** feeDecimals);
   const weight = tx.vsize ?? tx.size;
   const feeRateSuffix =
     isUtxo && weight && +tx.fee > 0
       ? ` (${(+tx.fee / weight).toFixed(2)} ${tx.vsize ? 'sat/vB' : 'sat/B'})`
       : '';
   const feeFiatSuffix =
-    chainFiatRate && feeAmount.isGreaterThan(0)
+    chainFiatRate && !tx.feeSymbol && feeAmount.isGreaterThan(0)
       ? ` · ${formatFiatWithSymbol(feeAmount.multipliedBy(chainFiatRate))}`
       : '';
 
@@ -100,19 +108,23 @@ function TxDetails({
             {t('home:transactionsTable.fee')}
           </span>
           <span>
-            {formatCrypto(feeAmount)} {chainConfig.symbol}
+            {formatCrypto(feeAmount)} {feeSymbol}
             {feeRateSuffix}
             {feeFiatSuffix}
           </span>
         </div>
       )}
-      {isKas ? (
+      {isKas || isTron ? (
         confirmed && (
           <div className="feed-detail-line">
             <span className="feed-detail-label">
               {t('home:transactionsTable.confirmations')}
             </span>
-            <span>{t('home:transactionsTable.kas_accepted')}</span>
+            <span>
+              {isTron
+                ? t('home:transactionsTable.tron_confirmed')
+                : t('home:transactionsTable.kas_accepted')}
+            </span>
           </div>
         )
       ) : confirmations !== null ? (

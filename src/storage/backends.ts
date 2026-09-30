@@ -113,6 +113,19 @@ const assetBackends: backends = {
     api: 'api-kaspa.sspwallet.io',
     explorer: 'explorer.kaspa.org',
   },
+  tron: {
+    // ssp-backends-proxy Worker routes (TRON_SSP_CONTRACT.md §1): the full
+    // node (/wallet/*, /walletsolidity/*, POST) and TronGrid v1 (/v1/*, GET,
+    // history). The Worker holds the TronGrid API keys; nothing ships here.
+    node: 'node-tron.sspwallet.io',
+    api: 'api-tron.sspwallet.io',
+    explorer: 'tronscan.org',
+  },
+  tronNile: {
+    node: 'node-tronnile.sspwallet.io',
+    api: 'api-tronnile.sspwallet.io',
+    explorer: 'nile.tronscan.org',
+  },
 };
 
 export function backends() {

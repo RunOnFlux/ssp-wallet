@@ -10,6 +10,7 @@
  */
 import BigNumber from 'bignumber.js';
 import { parseAmount } from './amount';
+import { isValidSolAddress } from '../addressValidation';
 
 export interface SolFeeSchedule {
   subsequentSendLamports: number;
@@ -18,9 +19,13 @@ export interface SolFeeSchedule {
   minReimbursementLamports: number;
 }
 
-/** Base58 recipient check — lifted from legacy SendSOL validateRecipient. */
+/**
+ * Base58 recipient check — lifted from legacy SendSOL validateRecipient, now
+ * also requiring the 32-byte decoded length: a TRON address matches the
+ * base58 regex too and must never be accepted as a Solana recipient.
+ */
 export function validateSolRecipient(addr: string): boolean {
-  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr);
+  return isValidSolAddress(addr);
 }
 
 /**

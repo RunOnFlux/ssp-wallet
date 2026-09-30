@@ -1778,6 +1778,14 @@
     "@coral-xyz/anchor" "0.31.1"
     "@solana/web3.js" "1.98.4"
 
+"@runonflux/tron-multisig@file:../tron-multisig/dist-tarballs/runonflux-tron-multisig-0.1.0.tgz":
+  version "0.1.0"
+  resolved "file:../tron-multisig/dist-tarballs/runonflux-tron-multisig-0.1.0.tgz#3886f65fb65ef25783bd26167f898c4767d0af24"
+  dependencies:
+    "@noble/curves" "2.4.0"
+    "@noble/hashes" "2.4.0"
+    "@scure/base" "2.4.0"
+
 "@runonflux/utxo-lib@1.0.5":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@runonflux/utxo-lib/-/utxo-lib-1.0.5.tgz#9149dd74782fb84a8541498a78ce5f6cee2c01f9"
@@ -1813,6 +1821,11 @@
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@scure/base/-/base-2.2.0.tgz#1311378ed247df6d58f8eb8941921965e97e5747"
   integrity sha512-b8XEupJibegiXV+tDUseI8oLQc8ei3d/4Jkb2RpbHh3MfE054ov3uIz2dhFkB3FI8iwYkEh0gGCApkrYggkPNg==
+
+"@scure/base@2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@scure/base/-/base-2.4.0.tgz#61e4ed7d4447afc247f2bff9aeb8fca53267db86"
+  integrity sha512-thZ1TuJwFwBblOhgsjDKvvGirBxNp+wSvY/DR6tJBJOTDhdAAcHJ8Vbr2eFnqaxeca4+t0i9KBf+uHYGWwZORg==
 
 "@scure/base@~1.1.6":
   version "1.1.9"

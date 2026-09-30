@@ -60,6 +60,9 @@ declare module '@storage/blockchains' {
     priorityFeeMicroLamports?: number;
     // kas: chainType 'kas'; libid is the address prefix ('kaspa'); fee
     // fields are sompi per gram of mass; maxTxSize is the mass cap.
+    // tron: chainType 'tron'; decimals 6 (sun); factory / implementation /
+    // sponsor / feeCollector come ONLY from @runonflux/tron-multisig's
+    // NETWORKS table (lib/tron.ts), never from this config.
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

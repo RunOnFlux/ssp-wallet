@@ -31,6 +31,7 @@ import secureLocalStorage from 'react-secure-storage';
 import { getScriptType } from './wallet';
 import { getMasterXpriv, getMasterXpub } from './wallet';
 import { generateMultisigAddress, generateSolanaPubkeyArray } from './wallet';
+import { isChainAvailable } from './tron';
 import type {
   generatedWallets,
   transaction,
@@ -82,6 +83,12 @@ export async function switchToChain(
   targetChain: keyof cryptos,
   passwordBlob: string,
 ): Promise<void> {
+  // A TRON network whose vaults are not live yet (SDK factory/implementation/
+  // sponsor/fee collector unpinned) has no derivable vault address: it is
+  // shown as unavailable and never entered, whichever caller asks.
+  if (!isChainAvailable(targetChain)) {
+    throw new Error(`${targetChain} is not available yet`);
+  }
   return switchQueue(targetChain, () =>
     performChainSwitch(targetChain, passwordBlob),
   );

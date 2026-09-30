@@ -45,7 +45,9 @@ import { setXpubWallet, setXpubKey, store } from '../store';
 import type { cryptos, publicNonce } from '../types';
 
 export const CHAIN_SYNC_VERSION = 1;
-export const CHAIN_SYNC_MAX_CHAINS = 20;
+// Raised 20 → 24 for TRON (tron + tronNile). SSP Key raises the same cap and
+// ships first, so a batch this wallet builds never exceeds what the key parses.
+export const CHAIN_SYNC_MAX_CHAINS = 24;
 /**
  * How long the wallet waits for ANY key response (a per-chain sync doc or a
  * chainsyncrejected action) before surfacing the per-chain QR fallback UI:

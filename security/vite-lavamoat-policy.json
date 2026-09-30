@@ -148,6 +148,18 @@
       "packages": {},
       "builtins": {}
     },
+    "@runonflux/tron-multisig": {
+      "packageName": "@runonflux/tron-multisig",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
     "@runonflux/utxo-lib": {
       "packageName": "@runonflux/utxo-lib",
       "globals": {

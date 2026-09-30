@@ -23,6 +23,10 @@ import {
 } from '../types';
 import { blockchains } from '@storage/blockchains';
 import { generateAddressKeypairKAS, generateMultisigAddressKAS } from './kaspa';
+import {
+  generateAddressKeypairTRON,
+  generateMultisigAddressTRON,
+} from './tron';
 
 function getSolanaProgramId(chain: keyof cryptos): PublicKey {
   const id = blockchains[chain].programId;
@@ -44,6 +48,16 @@ export function getLibId(chain: keyof cryptos): string {
 function assertNotKaspa(chain: keyof cryptos, fn: string): void {
   if (blockchains[chain]?.chainType === 'kas') {
     throw new Error(`${fn} is not supported for Kaspa`);
+  }
+}
+
+/**
+ * Same for TRON: its libid ('tron' / 'tronNile') is not a utxolib network and
+ * a Bitcoin-style identity or WIF of a TRON leaf is meaningless (contract §1).
+ */
+function assertNotTron(chain: keyof cryptos, fn: string): void {
+  if (blockchains[chain]?.chainType === 'tron') {
+    throw new Error(`${fn} is not supported for TRON`);
   }
 }
 
@@ -156,6 +170,19 @@ export function generateMultisigAddress(
     // Kaspa: P2SH 2-of-2 over the sorted x-only keys at the same leaf
     // (@runonflux/kaspa-core). Never utxolib.
     return generateMultisigAddressKAS(
+      xpub1,
+      xpub2,
+      typeIndex,
+      addressIndex,
+      chain,
+    );
+  }
+  if (blockchains[chain].chainType === 'tron') {
+    // TRON: CREATE2 contract vault over the sorted TRON addresses of the two
+    // leaves at typeIndex/addressIndex (@runonflux/tron-multisig). Throws
+    // NOT_DEPLOYED while the SDK has no factory/implementation pinned — the
+    // chain is unavailable then (isTronLive). Never utxolib.
+    return generateMultisigAddressTRON(
       xpub1,
       xpub2,
       typeIndex,
@@ -543,6 +570,10 @@ export function generateAddressKeypair(
     // raw 32-byte private key (hex) + x-only public key (hex)
     return generateAddressKeypairKAS(xpriv, typeIndex, addressIndex, chain);
   }
+  if (chainType === 'tron') {
+    // raw 32-byte private key (hex) + compressed public key (hex)
+    return generateAddressKeypairTRON(xpriv, typeIndex, addressIndex, chain);
+  }
   const libID = getLibId(chain);
   const bipParams = blockchains[chain].bip32;
   const networkBipParams = utxolib.networks[libID].bip32;
@@ -583,6 +614,7 @@ export function generateInternalIdentityAddress(
   chain: keyof cryptos,
 ): string {
   assertNotKaspa(chain, 'generateInternalIdentityAddress');
+  assertNotTron(chain, 'generateInternalIdentityAddress');
   const typeIndex = 10; // identity index
   const addressIndex = 0; // identity index
 
@@ -652,6 +684,7 @@ export function generateNodeIdentityKeypair(
   chain: keyof cryptos,
 ): keyPair {
   assertNotKaspa(chain, 'generateNodeIdentityKeypair');
+  assertNotTron(chain, 'generateNodeIdentityKeypair');
   const libID = getLibId(chain);
   const bipParams = blockchains[chain].bip32;
   const networkBipParams = utxolib.networks[libID].bip32;
@@ -720,6 +753,7 @@ export function wifToPrivateKey(
   chain: keyof cryptos,
 ): string {
   assertNotKaspa(chain, 'wifToPrivateKey');
+  assertNotTron(chain, 'wifToPrivateKey');
   const libID = getLibId(chain);
   const network = utxolib.networks[libID];
   const keyPair = utxolib.ECPair.fromWIF(privateKey, network);

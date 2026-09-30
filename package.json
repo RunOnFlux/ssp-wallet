@@ -47,6 +47,7 @@
     "@runonflux/flux-sdk": "1.1.0",
     "@runonflux/kaspa-core": "1.0.0",
     "@runonflux/solana-multisig": "0.12.0",
+    "@runonflux/tron-multisig": "file:../tron-multisig/dist-tarballs/runonflux-tron-multisig-0.1.0.tgz",
     "@runonflux/utxo-lib": "1.0.5",
     "@scure/bip32": "2.2.0",
     "@scure/bip39": "2.2.0",

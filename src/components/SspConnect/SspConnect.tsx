@@ -118,6 +118,7 @@ function SspConnect() {
     tokenDecimals: sspConnectTokenDecimals,
     sourceAddress: sspConnectSourceAddress,
     evmUserOp: sspConnectEvmUserOp,
+    tronOp: sspConnectTronOp,
     signingMode: sspConnectSigningMode,
     simulation: sspConnectSimulation,
     proposalRefs: sspConnectProposalRefs,
@@ -186,6 +187,7 @@ function SspConnect() {
     undefined,
   );
   const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
+  const [tronOp, setTronOp] = useState<string | undefined>(undefined);
   const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
   const [simulation, setSimulation] = useState<string | undefined>(undefined);
   const [proposalRefs, setProposalRefs] = useState<
@@ -266,6 +268,7 @@ function SspConnect() {
         setTokenDecimals(sspConnectTokenDecimals);
         setSourceAddress(sspConnectSourceAddress);
         setEvmUserOp(sspConnectEvmUserOp);
+        setTronOp(sspConnectTronOp);
         setSigningMode(sspConnectSigningMode);
         setSimulation(sspConnectSimulation);
         setProposalRefs(sspConnectProposalRefs);
@@ -584,6 +587,7 @@ function SspConnect() {
         tokenDecimals={tokenDecimals}
         sourceAddress={sourceAddress}
         evmUserOp={evmUserOp}
+        tronOp={tronOp}
         signingMode={signingMode}
         simulation={simulation}
         proposalRefs={proposalRefs}

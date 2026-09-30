@@ -17,6 +17,7 @@ import { usePrivacyMode } from '../../contexts/PrivacyContext';
 import { sspConfig } from '@storage/ssp';
 import { isTestnetChain } from '@storage/blockchains';
 import { switchToChain } from '../../lib/chainSwitching';
+import { isChainAvailable } from '../../lib/tron';
 import {
   loadPortfolio,
   updatePortfolioSnapshots,
@@ -202,7 +203,10 @@ function Portfolio() {
       data
         ? data.chains.filter(
             (c) =>
-              c.needsActivation && (showTestnets || !isTestnetChain(c.chain)),
+              c.needsActivation &&
+              (showTestnets || !isTestnetChain(c.chain)) &&
+              // TRON is offered for activation only once its vaults are live.
+              isChainAvailable(c.chain),
           )
         : [],
     [data, showTestnets],

@@ -34,10 +34,19 @@ function isKasExplorer(chain: string): boolean {
   return blockchains[chain]?.chainType === 'kas';
 }
 
+// Tronscan is a hash-routed SPA: https://tronscan.org/#/transaction/{txid},
+// #/address/{address} (nile.tronscan.org for Nile).
+function isTronExplorer(chain: string): boolean {
+  return blockchains[chain]?.chainType === 'tron';
+}
+
 /** Explorer URL for a transaction by signature/hash. */
 export function explorerTxUrl(chain: string, txid: string): string {
   if (isKasExplorer(chain)) {
     return `https://${explorerHost(chain)}/txs/${txid}`;
+  }
+  if (isTronExplorer(chain)) {
+    return `https://${explorerHost(chain)}/#/transaction/${txid}`;
   }
   const base = `https://${explorerHost(chain)}/tx/${txid}`;
   return withSolanaCluster(base, chain);
@@ -47,6 +56,9 @@ export function explorerTxUrl(chain: string, txid: string): string {
 export function explorerAddressUrl(chain: string, address: string): string {
   if (isKasExplorer(chain)) {
     return `https://${explorerHost(chain)}/addresses/${address}`;
+  }
+  if (isTronExplorer(chain)) {
+    return `https://${explorerHost(chain)}/#/address/${address}`;
   }
   const base = `https://${explorerHost(chain)}/address/${address}`;
   return withSolanaCluster(base, chain);

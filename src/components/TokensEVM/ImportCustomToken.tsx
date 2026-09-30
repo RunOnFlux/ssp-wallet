@@ -8,6 +8,7 @@ import { cryptos } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { setActivatedTokens, setImportedTokens } from '../../store';
 import { getTokenMetadata } from '../../lib/tokens';
+import { isValidTronAddress } from '../../lib/tron';
 
 function ImportCustomToken(props: {
   open: boolean;
@@ -31,9 +32,11 @@ function ImportCustomToken(props: {
   // check if already imported, if not get metadata and add to custom tokens, store in custom tokens
   // add to current wallet activated tokens
   const handleCustomImport = async () => {
-    // Solana base58 is case-sensitive; EVM hex addresses are not. Use
-    // exact match for Solana, case-insensitive for everything else.
-    const isSolana = blockchains[props.chain].chainType === 'sol';
+    // Solana and TRON base58 is case-sensitive; EVM hex addresses are not.
+    // Use exact match for base58, case-insensitive for everything else.
+    const isSolana =
+      blockchains[props.chain].chainType === 'sol' ||
+      blockchains[props.chain].chainType === 'tron';
     const eq = (a: string, b: string) =>
       isSolana ? a === b : a.toLowerCase() === b.toLowerCase();
 
@@ -57,6 +60,16 @@ function ImportCustomToken(props: {
     );
     if (alreadyImported) {
       displayMessage('error', t('home:tokens.token_already_imported'));
+      return;
+    }
+
+    // TRON: only a strict base58check contract address (0x41, checksum) is
+    // looked up — never a lookalike or a Solana-shaped string.
+    if (
+      blockchains[props.chain].chainType === 'tron' &&
+      !isValidTronAddress(contractAddress)
+    ) {
+      displayMessage('error', t('home:tokens.invalid_token_contract'));
       return;
     }
 

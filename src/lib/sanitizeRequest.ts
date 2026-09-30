@@ -57,6 +57,9 @@ export interface dataBgParams {
   sourceAddress?: string;
   // Full EVM UserOp struct (JSON string) for trustless decode
   evmUserOp?: string;
+  // TRON proposal operation (JSON string {network, vault, signers, threshold,
+  // op}) — a string like evmUserOp, ≤ 50k characters
+  tronOp?: string;
   // Vault signing mode (dual, key_only, wallet_only)
   signingMode?: string;
   // Server-computed advisory transaction simulation (JSON string)

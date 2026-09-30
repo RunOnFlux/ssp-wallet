@@ -50,6 +50,7 @@
     "amount": "Amount",
     "confirmations": "Confirmations",
     "kas_accepted": "Accepted (confirmed)",
+    "tron_confirmed": "Confirmed (solidified)",
     "fee": "Fee",
     "to_address": "To",
     "block_height": "Block height",
@@ -252,7 +253,8 @@
     "warning_chain_only": "This address is for the {{chain_name}} ({{chain_symbol}}) blockchain only. Only deposit assets on the {{chain_name}} ({{chain_symbol}}) chain to this address. Depositing from another chain will result in a loss of funds!",
     "address_info_block": "Use this address only for the {{chain_name}} ({{chain_symbol}}) network. Each blockchain has its own unique address for security purposes. For cross-network transfers, please use bridge services.",
     "chain_specific_address": "This address works on {{chain_name}} network",
-    "bridge_for_cross_chain": "For cross-network transfers, use bridge services"
+    "bridge_for_cross_chain": "For cross-network transfers, use bridge services",
+    "tron_contract_vault": "This address is a smart-contract vault. It can receive TRX and TRC-20 tokens (such as USDT) right away, before its first outgoing transaction."
   },
   "navigation": {
     "send": "Send",
@@ -368,7 +370,8 @@
   "chainSelect": {
     "select_chain": "Select Chain",
     "unable_switch_chain": "Unable to switch chain.",
-    "sync_chain_first": "Please sync {{chainName}} chain first."
+    "sync_chain_first": "Please sync {{chainName}} chain first.",
+    "not_live": "Not live yet"
   },
   "payment_request": {
     "payment_request": "Payment Request",
@@ -466,6 +469,12 @@
     "kas_warn_covenant_output": "Contains a covenant output.",
     "kas_retry_decode": "Retry",
     "kas_unknown": "Unknown address",
+    "tron_op_missing": "This TRON proposal does not include its operation (tronOp), so it cannot be verified on this device. Signing is blocked.",
+    "tron_verify_failed": "This TRON proposal failed verification on this device. Signing is blocked.",
+    "tron_not_member": "This wallet is not one of the signers of this TRON vault. Signing is blocked.",
+    "tron_key_signature_invalid": "SSP Key returned a signature that does not belong to this vault. Signing was not completed.",
+    "tron_vault_action": "Vault action",
+    "tron_no_fee": "No fee (submitted without SSP sponsorship)",
     "title": "Enterprise Vault Transaction Signing",
     "description": "A request to sign a vault transaction has been received. Please review the transaction details below.",
     "vault_name": "Vault",
@@ -577,7 +586,9 @@
     "invalid_request": "Invalid or malformed request.",
     "unsupported_contract": "Unsupported contract. Import token contract first.",
     "kas_message_unsupported": "Message signing is not supported for Kaspa.",
-    "kas_pay_message_unsupported": "Kaspa payments cannot carry a message. Request the payment without one."
+    "kas_pay_message_unsupported": "Kaspa payments cannot carry a message. Request the payment without one.",
+    "tron_message_unsupported": "Message signing is not supported for TRON.",
+    "tron_pay_message_unsupported": "TRON payments cannot carry a message. Request the payment without one."
   },
   "chainsInfo": {
     "chain_requests": "Chains Information Request",

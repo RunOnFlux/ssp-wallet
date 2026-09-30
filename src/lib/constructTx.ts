@@ -59,6 +59,11 @@ function assertNotKaspa(chain: string, fn: string): void {
   if (blockchains[chain]?.chainType === 'kas') {
     throw new Error(`${fn} does not support Kaspa; use lib/kaspa instead`);
   }
+  // TRON (chainType 'tron') has no UTXOs either: vault Ops are built and
+  // signed in lib/tron.ts and broadcast by SSP Key through the relay sponsor.
+  if (blockchains[chain]?.chainType === 'tron') {
+    throw new Error(`${fn} does not support TRON; use lib/tron instead`);
+  }
 }
 
 type utxoCache = Record<string, utxo[]>;

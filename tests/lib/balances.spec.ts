@@ -60,7 +60,9 @@ describe('Balances Lib', () => {
           'flux',
           [],
         ),
-      ).rejects.toThrow('Only EVM and Solana chains support token balances');
+      ).rejects.toThrow(
+        'Only EVM, Solana and TRON chains support token balances',
+      );
     });
 
     it('should return fetchAddressTokenBalances data when value is evm type', async () => {
@@ -118,5 +120,84 @@ describe('Balances Lib — Kaspa (mocked kaspa-rest-server)', () => {
       fetchAddressTokenBalances(address, 'kas', ['0xabc']),
     ).resolves.toEqual([]);
     expect(calls).toHaveLength(0);
+  });
+});
+
+describe('Balances Lib — TRON (mocked full node)', () => {
+  const vault = 'TWq9eJbomJDmkME7ahC4renGL2BXacL2vd';
+  const USDT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+  const bodies: { url: string; body: Record<string, unknown> }[] = [];
+  let account: Record<string, unknown> = {};
+  beforeEach(() => {
+    bodies.length = 0;
+    account = { address: vault, balance: 12345678 };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init: { body: string }) => {
+        const body = JSON.parse(init.body);
+        bodies.push({ url, body });
+        if (url.endsWith('/wallet/getaccount')) {
+          return {
+            ok: true,
+            status: 200,
+            text: async () => JSON.stringify(account),
+          };
+        }
+        // triggerconstantcontract balanceOf → 25 USDT
+        return {
+          ok: true,
+          status: 200,
+          text: async () =>
+            JSON.stringify({
+              result: { result: true },
+              energy_used: 1000,
+              constant_result: [
+                '00000000000000000000000000000000000000000000000000000000017d7840',
+              ],
+              transaction: { ret: [{}] },
+            }),
+        };
+      }),
+    );
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('TRX balance in sun from /wallet/getaccount', async () => {
+    const res = await fetchAddressBalance(vault, 'tron');
+    expect(res).toEqual({
+      confirmed: '12345678',
+      unconfirmed: '0',
+      address: vault,
+    });
+    expect(bodies[0]).toEqual({
+      url: 'https://node-tron.sspwallet.io/wallet/getaccount',
+      body: { address: vault, visible: true },
+    });
+  });
+
+  it('a never-activated vault ({}) has 0 TRX', async () => {
+    account = {};
+    const res = await fetchAddressBalance(vault, 'tron');
+    expect(res.confirmed).toBe('0');
+  });
+
+  it('TRC-20 balanceOf via triggerconstantcontract, base58 kept exact', async () => {
+    const res = await fetchAddressTokenBalances(vault, 'tron', [
+      USDT,
+      '',
+      '0xabc',
+    ]);
+    expect(res).toEqual([{ contract: USDT, balance: '25000000' }]);
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0].url).toBe(
+      'https://node-tron.sspwallet.io/wallet/triggerconstantcontract',
+    );
+    expect(bodies[0].body).toMatchObject({
+      contract_address: USDT,
+      visible: true,
+    });
+    expect(String(bodies[0].body.data)).toMatch(/^70a08231/);
   });
 });

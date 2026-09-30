@@ -24,6 +24,12 @@ import {
 import { backends } from '@storage/backends';
 import { blockchains, Token } from '@storage/blockchains';
 import { describeKasBundle, fetchKasTransactions } from './kaspa';
+import {
+  describeTronPayloadForApproval,
+  fetchTronTransactions,
+  verifyTronEnterpriseProposal,
+  tronEnterpriseFeeCeilings,
+} from './tron';
 
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
@@ -648,6 +654,12 @@ export async function fetchAddressTransactions(
       // previous outpoints (never insight/blockbook URLs).
       return await fetchKasTransactions(address, chain, from, to);
     }
+    if (blockchains[chain].chainType === 'tron') {
+      // TronGrid v1: the vault's Executed events joined with TRC-20, internal
+      // and direct transfers, poisoning-filtered (contract §6, §5.8). Never
+      // the insight/blockbook fall-through below.
+      return await fetchTronTransactions(address, chain, from, to);
+    }
     if (blockchains[chain].chainType === 'evm') {
       const params = {
         module: 'account',
@@ -779,6 +791,12 @@ export async function fetchAllAddressTransactions(
 export interface VaultDecodedRecipient {
   address: string;
   amount: string; // base units (satoshis / wei)
+  // TRON: one Op can pay different assets; each recipient carries its own.
+  symbol?: string;
+  decimals?: number;
+  tokenContract?: string;
+  // TRON vault self-call (cancel nonce, staking): shown instead of an amount.
+  label?: string;
 }
 
 export interface VaultDecodedTx {
@@ -788,6 +806,9 @@ export interface VaultDecodedTx {
   tokenSymbol?: string;
   tokenContract?: string;
   tokenDecimals?: number;
+  // TRON: the fee may be paid in USDT (its own symbol/decimals).
+  feeSymbol?: string;
+  feeDecimals?: number;
   error?: string;
 }
 
@@ -824,6 +845,20 @@ export function decodeVaultTransaction(
         fee: '0',
         error: 'Kaspa proposals are verified by decodeKasVaultProposal',
       };
+    }
+    if (blockchains[chain].chainType === 'tron') {
+      // rawTx is the enterprise `tronOp` JSON ({network, vault, signers,
+      // threshold, op}), never hex: the proposal's rawUnsignedTx is only the
+      // digest. Vault derivation and the enterprise policy decode are
+      // checked here; the sign screen additionally binds the Op to
+      // rawUnsignedTx and requires its own leaf in `signers`
+      // (EnterpriseVaultSignTx).
+      return verifyTronEnterpriseProposal({
+        chain,
+        tronOp: rawTx,
+        feeCeilings: tronEnterpriseFeeCeilings(chain, 0),
+        importedTokens,
+      }).decoded;
     }
     if (blockchains[chain].chainType === 'evm') {
       return decodeVaultEvmTransaction(rawTx, chain, importedTokens);
@@ -1131,11 +1166,17 @@ export async function fetchDataForCSV(
         .isNegative()
         ? parseFloat(
             new BigNumber(t.fee)
-              .dividedBy(new BigNumber(10).pow(blockchainConfig.decimals))
-              .toFixed(blockchainConfig.decimals),
+              .dividedBy(
+                new BigNumber(10).pow(
+                  t.feeDecimals ?? blockchainConfig.decimals,
+                ),
+              )
+              .toFixed(t.feeDecimals ?? blockchainConfig.decimals),
           )
         : 0,
-      'Fee Currency': blockchainConfig.symbol,
+      // TRON can pay its fee in USDT (feeSymbol); every other chain pays in
+      // the native coin.
+      'Fee Currency': t.feeSymbol || blockchainConfig.symbol,
       TxHash: t.txid,
       Note: t.message.length > 0 ? t.message : '-',
     });
@@ -1159,6 +1200,11 @@ export function decodeTransactionForApproval(
           .dividedBy(new BigNumber(10 ** blockchains[chain].decimals))
           .toFixed(),
       };
+    }
+    if (blockchains[chain].chainType === 'tron') {
+      // The tx payload is the ssp-tron-op JSON (contract §3), not hex. Never
+      // falls through to utxolib below.
+      return describeTronPayloadForApproval(rawTx, chain, importedTokens ?? []);
     }
     if (blockchains[chain].chainType === 'evm') {
       return decodeEVMTransactionForApproval(

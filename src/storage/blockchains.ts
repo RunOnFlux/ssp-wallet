@@ -21,6 +21,7 @@ import avaxLogo from '../assets/avax.svg';
 import solDevnetLogo from '../assets/solDevnet.svg';
 import solMainnetLogo from '../assets/solMainnet.svg';
 import kasLogo from '../assets/kas.svg';
+import trxLogo from '../assets/trx.svg';
 
 const flux = {
   id: 'flux',
@@ -621,6 +622,55 @@ const kas = {
   onramperNetwork: 'kaspa',
 };
 
+// TRON: a CREATE2 contract vault (EIP-1167 clone of SSPVault) whose address
+// is a pure function of the sorted signer addresses, the threshold and the
+// pinned factory/implementation (@runonflux/tron-multisig). chainType 'tron'
+// routes every chain branch; nothing here ever reaches utxolib. Keys are the
+// normal BIP-48 derivation m/48'/195'/0'/0' (secp256k1 xpubs unchanged);
+// scriptType has no script behind it and only feeds the path. Every field
+// that affects the address or the xpub string (slip, scriptType, bip32) must
+// match SSP Key (TRON_SSP_CONTRACT.md §1). Decimals are 6 (sun).
+const tron = {
+  id: 'tron',
+  libid: 'tron',
+  name: 'TRON',
+  symbol: 'TRX',
+  logo: trxLogo,
+  slip: 195,
+  decimals: 6,
+  node: backends().tron.node,
+  api: backends().tron.api,
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh',
+  chainType: 'tron',
+  backend: 'trongrid',
+  tokens: tokens.tron(),
+  onramperNetwork: 'tron',
+};
+
+const tronNile = {
+  id: 'tronNile',
+  libid: 'tronNile',
+  name: 'TRON Nile',
+  symbol: 'TEST-TRX',
+  logo: trxLogo,
+  slip: 1, // SLIP-44 universal testnet coin type (isTestnetChain)
+  decimals: 6,
+  node: backends().tronNile.node,
+  api: backends().tronNile.api,
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh',
+  chainType: 'tron',
+  backend: 'trongrid',
+  tokens: tokens.tronNile(),
+};
+
 export const blockchains = {
   btc,
   flux,
@@ -642,10 +692,12 @@ export const blockchains = {
   solMainnet,
   solDevnet,
   kas,
+  tron,
+  tronNile,
 };
 
 // SLIP-44 coin type 1 is the universal testnet marker — every testnet config
 // in this file carries it (btcTestnet, btcSignet, fluxTestnet, sepolia, amoy,
-// solDevnet) and no mainnet ever does.
+// solDevnet, tronNile) and no mainnet ever does.
 export const isTestnetChain = (chain: keyof typeof blockchains): boolean =>
   blockchains[chain].slip === 1;

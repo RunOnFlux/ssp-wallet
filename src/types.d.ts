@@ -219,6 +219,10 @@ export interface transaction {
   decimals?: number;
   tokenSymbol?: string;
   contractAddress?: string;
+  // TRON: a fee paid in a TRC-20 (USDT) instead of the native coin. Absent =
+  // the fee is in the chain's native coin and decimals.
+  feeSymbol?: string;
+  feeDecimals?: number;
 }
 
 export interface csvTransaction {
@@ -504,6 +508,8 @@ export interface cryptos {
   solDevnet: number;
   solMainnet: number;
   kas: number;
+  tron: number;
+  tronNile: number;
 }
 
 export interface externalIdentity {

@@ -34,6 +34,7 @@ import {
 } from '@metamask/browser-passworder';
 import { getFingerprint } from '../../lib/fingerprint';
 import { generateMultisigAddress, getScriptType } from '../../lib/wallet.ts';
+import { isChainAvailable, isTronLive } from '../../lib/tron.ts';
 import {
   sessionVerificationWords,
   verificationQrValue,
@@ -108,6 +109,9 @@ let nonceReplenishRunning = false;
 // the forward-compatibility branch in ssp-key's parseChainSyncRequest — so a
 // newly added chain degrades to a one-tap activation on an older key rather
 // than failing the whole batch.
+//
+// TRON (mainnet USDT) joins the day-one set only once its vaults are live
+// (factory, implementation, sponsor and fee collector pinned in the SDK).
 const POPULAR_CHAINS = [
   'eth',
   'bsc',
@@ -117,6 +121,7 @@ const POPULAR_CHAINS = [
   'bch',
   'ltc',
   'solMainnet',
+  ...(isTronLive('tron') ? ['tron'] : []),
 ];
 
 interface BatchChainState {
@@ -1187,6 +1192,8 @@ function Key(props: {
     (chain) => {
       if (chain === identityChain || chain === activeChain) return false;
       if (!showTestnets && isTestnetChain(chain)) return false;
+      // TRON stays unavailable until its vaults are live (lib/tron.ts).
+      if (!isChainAvailable(chain)) return false;
       if (store.getState()[chain]?.xpubKey) return false;
       return !hasStoredKeyXpub(chain);
     },

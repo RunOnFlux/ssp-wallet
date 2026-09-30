@@ -33,6 +33,7 @@ import { blockchains, isTestnetChain, Token } from '@storage/blockchains';
 import { generateMultisigAddress } from '../../lib/wallet.ts';
 import { fetchAddressBalance } from '../../lib/balances';
 import { switchToChain } from '../../lib/chainSwitching';
+import { isChainAvailable } from '../../lib/tron';
 import { formatCrypto, formatFiatWithSymbol } from '../../lib/currency';
 import { sspConfig } from '@storage/ssp';
 import { getDisplayName, removeWalletName } from '../../storage/walletNames';
@@ -347,6 +348,7 @@ function WalletSwitcher({ open, openAction, stayOnRoute }: Props) {
   // chain they tapped FIRST (and navigate twice).
   const switchChain = (chain: keyof cryptos) => {
     if (switchInFlight.current) return;
+    if (!isChainAvailable(chain)) return;
     if (chain === activeChain) {
       openAction(false);
       navigate('/home');
@@ -573,7 +575,9 @@ function WalletSwitcher({ open, openAction, stayOnRoute }: Props) {
             type="button"
             className={`switcher-chain${chain === activeChain ? ' switcher-chain-active' : ''}${chain === switchingChain ? ' switcher-chain-switching' : ''}`}
             onClick={() => switchChain(chain)}
-            disabled={rowsDisabled}
+            // A TRON network whose vaults are not live yet is listed but
+            // cannot be entered (no vault address can be derived yet).
+            disabled={rowsDisabled || !isChainAvailable(chain)}
             aria-busy={chain === switchingChain || undefined}
             data-tutorial={chain === 'eth' ? 'chain-item-eth' : undefined}
           >
@@ -586,6 +590,12 @@ function WalletSwitcher({ open, openAction, stayOnRoute }: Props) {
             />
             <span className="switcher-chain-name">
               {blockchains[chain].name}
+              {!isChainAvailable(chain) && (
+                <span style={{ opacity: 0.65, fontSize: 12 }}>
+                  {' · '}
+                  {t('home:chainSelect.not_live')}
+                </span>
+              )}
             </span>
             {chain === switchingChain && <Spin size="small" />}
             {chain === activeChain && chain !== switchingChain && (

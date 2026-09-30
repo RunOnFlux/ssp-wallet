@@ -59,6 +59,7 @@ import { useUtxoSendStrategy } from './useUtxoSendStrategy';
 import { useEvmSendStrategy } from './useEvmSendStrategy';
 import { useSolSendStrategy } from './useSolSendStrategy';
 import { useKasSendStrategy } from './useKasSendStrategy';
+import { useTronSendStrategy } from './useTronSendStrategy';
 import './SendFlow.css';
 
 interface contactOption {
@@ -79,6 +80,7 @@ const STRATEGY_HOOKS: Record<StrategyChainType, () => SendStrategyView> = {
   evm: useEvmSendStrategy,
   sol: useSolSendStrategy,
   kas: useKasSendStrategy,
+  tron: useTronSendStrategy,
 };
 
 /**
@@ -287,6 +289,11 @@ function SendFlowInner({ chainType }: { chainType: StrategyChainType }) {
         slow: t('send:eta_kas_slow'),
         normal: t('send:eta_kas_normal'),
         fast: t('send:eta_kas_fast'),
+      },
+      tron: {
+        slow: t('send:eta_tron'),
+        normal: t('send:eta_tron'),
+        fast: t('send:eta_tron'),
       },
     } as const;
     return etaKeys[chainType][key];
@@ -683,9 +690,10 @@ function SendFlowInner({ chainType }: { chainType: StrategyChainType }) {
               }}
             >
               <span style={{ fontSize: 13, color: token.colorTextSecondary }}>
-                {chainType === 'sol'
-                  ? t('send:network_fee_max')
-                  : t('send:network_fee')}
+                {strategy.feeLabel ??
+                  (chainType === 'sol'
+                    ? t('send:network_fee_max')
+                    : t('send:network_fee'))}
               </span>
               {strategy.selectedPreset !== 'custom' && (
                 <span style={{ fontSize: 11, color: token.colorTextSecondary }}>
@@ -693,80 +701,93 @@ function SendFlowInner({ chainType }: { chainType: StrategyChainType }) {
                 </span>
               )}
             </div>
-            <ConfigProvider
-              theme={{
-                components: {
-                  Segmented: SEGMENTED_TOKENS[isDark ? 'dark' : 'light'],
-                },
-              }}
-            >
-              <Segmented
-                block
-                // The border is the boundary: `block` spreads the two options
-                // to the page edges (261px apart in the side panel), and
-                // without it they stop reading as one grouped control.
-                style={{ border: `1px solid ${SEGMENTED_BORDER_COLOR}` }}
-                value={strategy.selectedPreset}
-                onChange={(value) => strategy.selectPreset(value)}
-                options={strategy.feePresets.map((preset) => ({
-                  label: presetLabel(preset.key),
-                  value: preset.key,
-                }))}
-              />
-            </ConfigProvider>
-            {strategy.selectedPreset !== 'custom' && (
-              <div style={{ fontSize: 12, marginTop: 6, textAlign: 'left' }}>
-                {activePreset?.feeAmount != null ? (
-                  <>
-                    {/* Absolute fee (total for this tx) + its fiat + the rate. */}
-                    {parseAmount(activePreset.feeAmount)?.toFixed() ?? '---'}{' '}
-                    {strategy.feeSymbol}
-                    {presetFiat(activePreset.feeAmount) ? (
-                      <span style={{ color: token.colorTextSecondary }}>
-                        {' '}
-                        ≈ {presetFiat(activePreset.feeAmount)}
-                      </span>
-                    ) : null}
-                    {strategy.feeRateDisplay ? (
-                      <span style={{ color: token.colorTextSecondary }}>
-                        {' '}
-                        · {strategy.feeRateDisplay}
-                      </span>
-                    ) : null}
-                  </>
-                ) : (
-                  // No amount yet → the absolute fee can't be computed; show the
-                  // rate alone so the user still sees what they'll pay per byte.
-                  <span style={{ color: token.colorTextSecondary }}>
-                    {strategy.feeRateDisplay ?? t('send:enter_amount_for_fee')}
-                  </span>
-                )}
+            {strategy.feeSection ? (
+              // TRON: fee token choice / self-pay instead of speed presets.
+              <div style={{ fontSize: 12, textAlign: 'left' }}>
+                {strategy.feeSection}
               </div>
-            )}
+            ) : (
+              <>
+                <ConfigProvider
+                  theme={{
+                    components: {
+                      Segmented: SEGMENTED_TOKENS[isDark ? 'dark' : 'light'],
+                    },
+                  }}
+                >
+                  <Segmented
+                    block
+                    // The border is the boundary: `block` spreads the two options
+                    // to the page edges (261px apart in the side panel), and
+                    // without it they stop reading as one grouped control.
+                    style={{ border: `1px solid ${SEGMENTED_BORDER_COLOR}` }}
+                    value={strategy.selectedPreset}
+                    onChange={(value) => strategy.selectPreset(value)}
+                    options={strategy.feePresets.map((preset) => ({
+                      label: presetLabel(preset.key),
+                      value: preset.key,
+                    }))}
+                  />
+                </ConfigProvider>
+                {strategy.selectedPreset !== 'custom' && (
+                  <div
+                    style={{ fontSize: 12, marginTop: 6, textAlign: 'left' }}
+                  >
+                    {activePreset?.feeAmount != null ? (
+                      <>
+                        {/* Absolute fee (total for this tx) + its fiat + the rate. */}
+                        {parseAmount(activePreset.feeAmount)?.toFixed() ??
+                          '---'}{' '}
+                        {strategy.feeSymbol}
+                        {presetFiat(activePreset.feeAmount) ? (
+                          <span style={{ color: token.colorTextSecondary }}>
+                            {' '}
+                            ≈ {presetFiat(activePreset.feeAmount)}
+                          </span>
+                        ) : null}
+                        {strategy.feeRateDisplay ? (
+                          <span style={{ color: token.colorTextSecondary }}>
+                            {' '}
+                            · {strategy.feeRateDisplay}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : (
+                      // No amount yet → the absolute fee can't be computed; show the
+                      // rate alone so the user still sees what they'll pay per byte.
+                      <span style={{ color: token.colorTextSecondary }}>
+                        {strategy.feeRateDisplay ??
+                          t('send:enter_amount_for_fee')}
+                      </span>
+                    )}
+                  </div>
+                )}
 
-            {/* Custom fee — expanded when Custom is chosen. EVM has several gas
-                fields, so it keeps a bordered box that visually groups them as
-                one Network-Fee unit; UTXO/SOL have a single field and stay
-                unboxed (lighter). Kept mounted so form values survive preset
-                switches. */}
-            <div
-              style={{
-                display:
-                  strategy.selectedPreset === 'custom' ? 'block' : 'none',
-                textAlign: 'left',
-                marginTop: 8,
-                marginBottom: 4,
-                ...(chainType === 'evm'
-                  ? {
-                      border: `1px solid ${token.colorBorderSecondary}`,
-                      borderRadius: 8,
-                      padding: '12px 12px 0',
-                    }
-                  : {}),
-              }}
-            >
-              {strategy.customFeeContent}
-            </div>
+                {/* Custom fee — expanded when Custom is chosen. EVM has several gas
+                  fields, so it keeps a bordered box that visually groups them as
+                  one Network-Fee unit; UTXO/SOL have a single field and stay
+                  unboxed (lighter). Kept mounted so form values survive preset
+                  switches. */}
+                <div
+                  style={{
+                    display:
+                      strategy.selectedPreset === 'custom' ? 'block' : 'none',
+                    textAlign: 'left',
+                    marginTop: 8,
+                    marginBottom: 4,
+                    ...(chainType === 'evm'
+                      ? {
+                          border: `1px solid ${token.colorBorderSecondary}`,
+                          borderRadius: 8,
+                          padding: '12px 12px 0',
+                        }
+                      : {}),
+                  }}
+                >
+                  {strategy.customFeeContent}
+                </div>
+              </>
+            )}
           </div>
 
           <Form.Item style={{ marginTop: 40 }}>
@@ -864,7 +885,7 @@ function SendFlowInner({ chainType }: { chainType: StrategyChainType }) {
                     wordBreak: 'break-all',
                   }}
                 >
-                  {strategy.receiver.value}
+                  {strategy.receiverReview ?? strategy.receiver.value}
                 </div>
               </div>
             </div>
@@ -931,9 +952,10 @@ function SendFlowInner({ chainType }: { chainType: StrategyChainType }) {
             }}
           >
             <span style={{ color: token.colorTextSecondary }}>
-              {chainType === 'sol'
-                ? t('send:network_fee_max')
-                : t('send:network_fee')}
+              {strategy.feeLabel ??
+                (chainType === 'sol'
+                  ? t('send:network_fee_max')
+                  : t('send:network_fee'))}
             </span>
             <span>
               {strategy.feeDisplay} {strategy.feeSymbol}
