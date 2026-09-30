@@ -313,9 +313,37 @@ export function signTronDigest(
 // Node RPC (node-tron.sspwallet.io: /wallet/*, /walletsolidity/*)
 // ---------------------------------------------------------------------------
 
+/** Whole node exchange (headers and body): a stalled node must not leave a send spinning. */
+export const TRON_NODE_TIMEOUT_MS = 30_000;
+
+/**
+ * `fetchImpl` bounded by `timeoutMs`. The body is read inside the timeout too,
+ * so a node that sends headers and then stalls fails as well.
+ */
+export function timedTronFetch(
+  fetchImpl: typeof fetch,
+  timeoutMs: number = TRON_NODE_TIMEOUT_MS,
+): FetchLike {
+  return async (url, init) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetchImpl(url, { ...init, signal: controller.signal });
+      const text = await res.text();
+      return {
+        ok: res.ok,
+        status: res.status,
+        text: () => Promise.resolve(text),
+      };
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+}
+
 // A wrapper, not the bare global: browser fetch throws "Illegal invocation"
 // when called as a method of another object.
-const tronFetch: FetchLike = (url, init) => fetch(url, init);
+const tronFetch: FetchLike = timedTronFetch((url, init) => fetch(url, init));
 
 export function tronNodeClient(chain: string): TronHttpClient {
   return new TronHttpClient(`https://${backends()[chain].node}`, tronFetch);
@@ -1005,8 +1033,9 @@ function selfCallLabel(call: T.DisplayCall): string {
  *  - `vault == predictVaultAddress(configHash(signers, threshold))`;
  *  - `opDigest(chainId, vault, op)` equals `rawUnsignedTx` (never sign an
  *    opaque hash);
- *  - the Op passes the SDK enterprise display policy (transfers + self-calls;
- *    approve / unknown refused until the org policy reaches the device), the
+ *  - the Op passes the SDK enterprise display policy (transfers + nonce
+ *    invalidation; approve / unknown / Stake 2.0 self-calls refused until the
+ *    org policy reaches the device), the
  *    fee goes to the pinned collector under the device ceiling, the deadline is
  *    live and within the proposal window;
  *  - the proposal's recipients (display metadata) equal the Op's transfers.
@@ -1091,6 +1120,20 @@ export function verifyTronEnterpriseProposal(p: {
     allowUnknown: false,
     allowSelfCalls: true,
   });
+  // Of the self-calls only the nonce invalidation (it can only burn nonces:
+  // the on-chain cancel) is signable here. The Stake 2.0 ones (freeze /
+  // unfreeze TRX, delegate resources to another account, vote) need an org
+  // policy (contract §5.3), which never reaches this device.
+  const staking = display.calls.find(
+    (c) => c.kind === 'selfCall' && c.action !== 'invalidateNonces',
+  );
+  if (staking && staking.kind === 'selfCall') {
+    throw new T.PolicyError(
+      'CALL_KIND_NOT_ALLOWED',
+      `call ${staking.index} (${staking.action}): vault self-calls other than nonce invalidation need an org policy`,
+      staking.index,
+    );
+  }
 
   const native = blockchains[p.chain];
   const recipients: VaultDecodedRecipient[] = [];
@@ -1318,6 +1361,9 @@ interface FeePaid {
  *  - outgoing rows exist only for transactions carrying the vault's own
  *    `Executed` event; any "from = vault" TRC-20 or TRX move without one is
  *    spoofed and hidden (the zero-value transferFrom poisoning trick);
+ *  - outgoing TRC-20 rows only for whitelisted or imported tokens (the only
+ *    ones this wallet sends), with THEIR metadata — never TronGrid's
+ *    token_info, which any contract controls;
  *  - the transfer matching the vault's `FeePaid` event becomes the row fee;
  *  - zero-value rows are dropped; incoming TRX below 0.1 TRX and whitelisted
  *    stablecoins below 0.01 are dust and dropped;
@@ -1406,13 +1452,17 @@ export function buildTronHistory(p: {
       continue; // zero-value (poisoning) or malformed
     }
     const known = tokenByContract(chain, token, p.importedTokens);
-    const decimals = known?.decimals ?? toNum(r.token_info?.decimals);
-    const symbol = known?.symbol ?? r.token_info?.symbol ?? token;
     const timestamp = toNum(r.block_timestamp);
     if (from === vault) {
       const ex = executed.get(txid);
       if (!ex) continue; // spoofed: no Executed event of this vault
       if (takeFee(txid, token, to, value)) continue;
+      // Only whitelisted / imported tokens can be sent from this wallet. Any
+      // other contract can emit Transfer(from = vault) at will — also inside
+      // a transaction that carries a genuine Executed event (a recipient's
+      // code during our Op, or a wrapper that submits a leaked signed Op) —
+      // with any name ("USDT") and decimals: never a history row.
+      if (!known) continue;
       rows.push({
         txid,
         blockheight: ex.block || 1,
@@ -1422,8 +1472,8 @@ export function buildTronHistory(p: {
         message: '',
         receiver: to,
         type: 'token',
-        decimals,
-        tokenSymbol: symbol,
+        decimals: known.decimals,
+        tokenSymbol: known.symbol,
         contractAddress: token,
       });
     } else if (to === vault) {

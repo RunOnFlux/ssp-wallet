@@ -758,6 +758,11 @@ export const SspConnectProvider = ({
           setInputDetails(signInputDetails);
           setVaultName(typeof signVaultName === 'string' ? signVaultName : '');
           setOrgName(typeof signOrgName === 'string' ? signOrgName : '');
+          // A transaction request is never a message signature: never inherit
+          // a previous enterprise_vault_sign_message's text (the sign screen
+          // would show that message instead of the transaction).
+          setSignMessage(undefined);
+          setDappOrigin(undefined);
           // EVM enterprise nonce (optional)
           const signReservedNonce = request.data.params.reservedNonce;
           if (

@@ -470,6 +470,7 @@
     "kas_retry_decode": "Retry",
     "kas_unknown": "Unknown address",
     "tron_op_missing": "This TRON proposal does not include its operation (tronOp), so it cannot be verified on this device. Signing is blocked.",
+    "tron_message_unsupported": "This TRON request also asks to sign a message. TRON message signing is not supported, so signing is blocked.",
     "tron_verify_failed": "This TRON proposal failed verification on this device. Signing is blocked.",
     "tron_not_member": "This wallet is not one of the signers of this TRON vault. Signing is blocked.",
     "tron_key_signature_invalid": "SSP Key returned a signature that does not belong to this vault. Signing was not completed.",

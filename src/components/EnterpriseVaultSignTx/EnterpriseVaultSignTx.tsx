@@ -222,7 +222,11 @@ function EnterpriseVaultSignTx({
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
   // WalletConnect Phase 2: message-signing mode (vs the default transaction mode).
-  const isMessageSign = !!signMessage;
+  // Never for TRON (contract §7): a TRON request always shows its Op, and one
+  // that also carries a message is refused (tronVerification below) — the
+  // message view would otherwise hide the Op whose digest gets signed.
+  const isMessageSign =
+    !!signMessage && blockchains[chain]?.chainType !== 'tron';
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { sspWalletKeyInternalIdentity: wkIdentity } = useAppSelector(
     (state) => state.sspState,
@@ -440,6 +444,12 @@ function EnterpriseVaultSignTx({
     error: string | null;
   } | null => {
     if (!isTronChain) return null;
+    if (signMessage) {
+      return {
+        proposal: null,
+        error: t('home:enterpriseVaultSignTx.tron_message_unsupported'),
+      };
+    }
     if (!tronOp) {
       return {
         proposal: null,
@@ -466,6 +476,7 @@ function EnterpriseVaultSignTx({
     }
   }, [
     isTronChain,
+    signMessage,
     tronOp,
     chain,
     rawUnsignedTx,
@@ -669,12 +680,23 @@ function EnterpriseVaultSignTx({
           const signed = tronSignedRef.current;
           const keySigner =
             keySig && signed ? tronSignatureSigner(signed.digest, keySig) : '';
+          // keyPubKey is forwarded as the signer's identity: it must be the
+          // key that produced keySignature.
+          let keyPubSigner: string | null = null;
+          try {
+            keyPubSigner = tronAddressFromPublicKeyHex(
+              enterpriseVaultSigned.keyPubKey,
+            );
+          } catch {
+            keyPubSigner = null;
+          }
           if (
             keySig &&
             (!signed ||
               !keySigner ||
               !signed.signers.includes(keySigner) ||
-              keySigner === signed.ownSigner)
+              keySigner === signed.ownSigner ||
+              keyPubSigner !== keySigner)
           ) {
             clearEnterpriseVaultSigned?.();
             if (openAction) {
@@ -709,9 +731,12 @@ function EnterpriseVaultSignTx({
               : keySignatures;
 
         const response: EnterpriseVaultSignTxResponse = {
-          walletSignatures: enterpriseVaultSigned.signerContribution
-            ? [enterpriseVaultSigned.signerContribution]
-            : walletSignatures!,
+          // TRON: always this wallet's own digest signature — an EVM field in
+          // a (relay-delivered) reply never replaces it.
+          walletSignatures:
+            enterpriseVaultSigned.signerContribution && !isTronChain
+              ? [enterpriseVaultSigned.signerContribution]
+              : walletSignatures!,
           keySignatures: keySignaturesChallenges,
           walletPubKey: walletPubKey!,
           keyPubKey: enterpriseVaultSigned.keyPubKey,
@@ -1350,6 +1375,11 @@ function EnterpriseVaultSignTx({
         // require this wallet's leaf m/48'/195'/org'/0'/vaultIndex/addressIndex
         // to be a signer of the vault the Op derives to. Only then sign the
         // digest. walletSignedHex is never set for TRON.
+        if (signMessage) {
+          throw new Error(
+            t('home:enterpriseVaultSignTx.tron_message_unsupported'),
+          );
+        }
         if (!tronOp) {
           throw new Error(t('home:enterpriseVaultSignTx.tron_op_missing'));
         }

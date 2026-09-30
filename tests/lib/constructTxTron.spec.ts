@@ -55,6 +55,8 @@ import {
   buildSponsoredTronOp,
   buildTronHistory,
   describeTronPayloadForApproval,
+  tronEnterpriseFeeCeilings,
+  verifyTronEnterpriseProposal,
   isTronLive,
   isTronOpPayload,
   parseTronOpPayload,
@@ -700,6 +702,151 @@ describe('TRON history (contract §6 table, §5.8)', () => {
     }
     // pages past the cap end the CSV loop
     expect(await fetchAddressTransactions(V, chain, 200, 250)).toEqual([]);
+  });
+});
+
+describe('TRON history: adversarial review', () => {
+  const V = vault.address;
+  const LOOKALIKE = vectors.consumer.leaves['1-0'].address;
+  const FAKE = 'TWr4qR84ARRVT2s2ccExEzhy1AbvUg5JUo';
+
+  it('never shows a fake "sent" of an unknown token, even beside a real Executed', () => {
+    // The vault's real Op (a TRX send) runs; the recipient's code — or a
+    // wrapper that submits a leaked signed Op — makes a fake token emit
+    // Transfer(from = vault, to = lookalike) in the SAME transaction, named
+    // "USDT". Only tokens this wallet knows can ever be sent from it.
+    const rows = buildTronHistory({
+      vault: V,
+      chain,
+      events: [
+        {
+          transaction_id: 'real1',
+          block_number: 10,
+          block_timestamp: 9000,
+          event_name: 'Executed',
+          result: {},
+        },
+      ],
+      trc20: [
+        {
+          transaction_id: 'real1',
+          token_info: { address: FAKE, symbol: 'USDT', decimals: 6 },
+          block_timestamp: 9000,
+          from: V,
+          to: LOOKALIKE,
+          value: '5000000000',
+        },
+      ],
+      internal: [
+        {
+          tx_id: 'real1',
+          block_timestamp: 9000,
+          from_address: T.toHex41(V),
+          to_address: T.toHex41(RECIPIENT),
+          data: { call_value: { _: 1000000 } },
+        },
+      ],
+      transfers: [],
+    });
+    expect(rows.map((r) => [r.txid, r.receiver, r.amount])).toEqual([
+      ['real1', RECIPIENT, '-1000000'],
+    ]);
+    expect(rows.some((r) => r.receiver === LOOKALIKE)).toBe(false);
+    expect(rows.some((r) => r.contractAddress === FAKE)).toBe(false);
+  });
+
+  it('an imported token sent from the vault keeps its imported metadata', () => {
+    const rows = buildTronHistory({
+      vault: V,
+      chain,
+      events: [
+        {
+          transaction_id: 'imp1',
+          block_number: 11,
+          block_timestamp: 9100,
+          event_name: 'Executed',
+          result: {},
+        },
+      ],
+      trc20: [
+        {
+          transaction_id: 'imp1',
+          token_info: { address: FAKE, symbol: 'USDT', decimals: 2 },
+          block_timestamp: 9100,
+          from: V,
+          to: RECIPIENT,
+          value: '5000000',
+        },
+      ],
+      internal: [],
+      transfers: [],
+      importedTokens: [
+        { contract: FAKE, name: 'My Token', symbol: 'MYT', decimals: 6 },
+      ],
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      amount: '-5000000',
+      tokenSymbol: 'MYT',
+      decimals: 6,
+      contractAddress: FAKE,
+    });
+  });
+});
+
+describe('TRON enterprise proposal: adversarial review', () => {
+  const E = vectors.enterpriseSingle2of3;
+  const now = 1790000000n - 7n * 86400n;
+  const verify = (calls) => {
+    const op = T.buildOp({
+      calls,
+      nonce: 5n,
+      deadline: now + 86400n,
+      fee: T.trxFee(6_300_000n, FEE_COLLECTOR),
+    });
+    return verifyTronEnterpriseProposal({
+      chain,
+      tronOp: JSON.stringify({
+        network: 'mainnet',
+        vault: E.address,
+        signers: E.signers,
+        threshold: E.threshold,
+        op: T.opToJson(op),
+      }),
+      rawUnsignedTx: T.to0x(
+        T.opDigest(T.getNetwork('mainnet').chainId, E.address, op),
+      ),
+      recipients: [],
+      feeCeilings: tronEnterpriseFeeCeilings(chain, 0),
+      now,
+    });
+  };
+
+  it.each([
+    [{ action: 'freezeBalanceV2', amount: 1_000_000n, resource: 'ENERGY' }],
+    [
+      {
+        action: 'delegateResource',
+        receiver: RECIPIENT,
+        amount: 1_000_000n,
+        resource: 'ENERGY',
+      },
+    ],
+    [{ action: 'voteWitnesses', votes: [{ witness: RECIPIENT, count: 1n }] }],
+  ])('refuses a Stake 2.0 self-call without an org policy (%o)', (action) => {
+    expect(() => verify([T.selfCall(E.address, action)])).toThrow(/self-calls/);
+  });
+
+  it('still accepts the on-chain nonce invalidation', () => {
+    expect(() =>
+      verify([
+        T.selfCall(E.address, {
+          action: 'invalidateNonces',
+          word: 0n,
+          mask: 1n,
+        }),
+      ]),
+    ).not.toThrow();
   });
 });
 
