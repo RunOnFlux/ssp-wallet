@@ -43,6 +43,7 @@ const chains = {
   base: chainSliceBaseTokens('base'),
   bsc: chainSliceBaseTokens('bsc'),
   avax: chainSliceBaseTokens('avax'),
+  xdc: chainSliceBaseTokens('xdc'),
   solDevnet: chainSliceBaseTokens('solDevnet'),
   solMainnet: chainSliceBaseTokens('solMainnet'),
 };
@@ -532,6 +533,7 @@ export function setTokenBalances(
     chain === 'base' ||
     chain === 'bsc' ||
     chain === 'avax' ||
+    chain === 'xdc' ||
     chain === 'solDevnet' ||
     chain === 'solMainnet'
   ) {
@@ -552,6 +554,7 @@ export function setActivatedTokens(
     chain === 'base' ||
     chain === 'bsc' ||
     chain === 'avax' ||
+    chain === 'xdc' ||
     chain === 'solDevnet' ||
     chain === 'solMainnet'
   ) {
@@ -568,6 +571,7 @@ export function setImportedTokens(chain: keyof cryptos, data: Token[]) {
     chain === 'base' ||
     chain === 'bsc' ||
     chain === 'avax' ||
+    chain === 'xdc' ||
     chain === 'solDevnet' ||
     chain === 'solMainnet'
   ) {

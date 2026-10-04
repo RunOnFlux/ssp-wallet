@@ -43,7 +43,7 @@
     "@noble/hashes": "2.2.0",
     "@reduxjs/toolkit": "2.12.0",
     "@reown/walletkit": "1.5.5",
-    "@runonflux/aa-schnorr-multisig-sdk": "1.3.0",
+    "@runonflux/aa-schnorr-multisig-sdk": "1.4.0",
     "@runonflux/flux-sdk": "1.1.0",
     "@runonflux/solana-multisig": "0.12.0",
     "@runonflux/utxo-lib": "1.0.5",
