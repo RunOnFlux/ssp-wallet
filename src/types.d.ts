@@ -666,6 +666,14 @@ export interface abeAsset {
   idexolixfix?: string;
   idexolixfloatlimit?: string[] | null;
   idexolixfixlimit?: string[] | null;
+  idinstaswapfloat?: string;
+  idinstaswapfloatlimit?: string[] | null;
+  idinstaswapprivate?: string;
+  idinstaswapprivatelimit?: string[] | null;
+  idinstaswapzk?: string;
+  idinstaswapzklimit?: string[] | null;
+  // Any other exchange ABE adds: `id<exchange>` and `id<exchange>limit`.
+  [key: string]: string | number | string[] | null | undefined;
 }
 
 export interface abeAssetResponse {
@@ -784,6 +792,8 @@ export interface exchangeProvider {
   kyc: string;
   track: string;
   logo: string;
+  /** Badges, e.g. 'DEX', 'Private', 'ZK' — see ProviderTags. */
+  tags?: string[];
 }
 
 export interface exchangeProvidersResponse {
