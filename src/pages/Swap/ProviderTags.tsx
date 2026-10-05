@@ -10,7 +10,7 @@ function ProviderTags(props: { tags?: string[] }) {
     <span className="provider-tags">
       {badges.map((badge) => (
         <Tooltip key={badge} title={t(SWAP_BADGES[badge].info)}>
-          <Tag color={SWAP_BADGES[badge].color} bordered={false}>
+          <Tag color={SWAP_BADGES[badge].color} variant="filled">
             {t(SWAP_BADGES[badge].label)}
           </Tag>
         </Tooltip>

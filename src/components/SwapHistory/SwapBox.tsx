@@ -11,6 +11,16 @@ import {
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks';
 
+// Provider shown before ABE's exchange list has loaded is derived from the id
+// (`id<name>float|fix`). Ids that do not follow that pattern, or whose display
+// name is not the id's capitalisation, are named here; the name also keys the
+// bundled logo (exchangeLogos).
+const FALLBACK_PROVIDERS: Record<string, { name: string; type: string }> = {
+  idinstaswapfloat: { name: 'InstaSwap', type: 'float' },
+  idinstaswapprivate: { name: 'InstaSwap Private', type: 'float' },
+  idinstaswapzk: { name: 'InstaSwap ZK', type: 'float' },
+};
+
 /**
  * Compact swap-history row: header line (date left, status chip right), a
  * tight sell → buy line with the amounts under the asset symbols in 11px
@@ -31,6 +41,7 @@ function SwapBox(props: {
     (provider) => provider.exchangeId === swap.exchangeId,
   ) ?? {
     name:
+      FALLBACK_PROVIDERS[swap.exchangeId]?.name ??
       swap.exchangeId
         .slice(
           2,
@@ -40,16 +51,18 @@ function SwapBox(props: {
         )
         .charAt(0)
         .toUpperCase() +
-      swap.exchangeId
-        .slice(
-          2,
-          swap.exchangeId.slice(-5) === 'float'
-            ? swap.exchangeId.length - 5
-            : swap.exchangeId.length - 3,
-        )
-        .slice(1),
+        swap.exchangeId
+          .slice(
+            2,
+            swap.exchangeId.slice(-5) === 'float'
+              ? swap.exchangeId.length - 5
+              : swap.exchangeId.length - 3,
+          )
+          .slice(1),
     exchangeId: swap.exchangeId,
-    type: swap.exchangeId.slice(-5) === 'float' ? 'float' : 'fixed',
+    type:
+      FALLBACK_PROVIDERS[swap.exchangeId]?.type ??
+      (swap.exchangeId.slice(-5) === 'float' ? 'float' : 'fixed'),
     website: '',
     endpoint: '',
     terms: '',

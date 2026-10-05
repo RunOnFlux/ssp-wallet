@@ -16,7 +16,7 @@ function ProviderBadgeLegend(props: { tags: (string | undefined)[] }) {
     >
       {badges.map((badge) => (
         <div key={badge} className="provider-badge-legend-row">
-          <Tag color={SWAP_BADGES[badge].color} bordered={false}>
+          <Tag color={SWAP_BADGES[badge].color} variant="filled">
             {t(SWAP_BADGES[badge].label)}
           </Tag>
           <span>{t(SWAP_BADGES[badge].info)}</span>

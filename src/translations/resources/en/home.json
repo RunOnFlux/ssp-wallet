@@ -697,7 +697,7 @@
     "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees.",
     "advanced_options": "Advanced options",
     "tag_dex": "DEX",
-    "tag_dex_info": "Decentralized: routed through on-chain liquidity such as THORChain or Chainflip, not a custodial exchange account.",
+    "tag_dex_info": "Decentralized: routed through on-chain liquidity such as DEXs and cross-chain protocols, not a custodial exchange account.",
     "tag_private": "Private",
     "tag_private_info": "Private settlement: your deposit and your payout cannot be linked on-chain. Usually completes within minutes.",
     "tag_zk": "ZK",
