@@ -79,6 +79,7 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency.ts';
 import { sspConfig } from '@storage/ssp';
 import ProviderBox from './ProviderBox.tsx';
+import ProviderBadgeLegend from './ProviderBadgeLegend.tsx';
 import {
   estimateGas,
   estimateUtxoTxSize,
@@ -1428,6 +1429,9 @@ function Swap() {
           width: '100%',
         }}
       >
+        {/* What the chosen provider's badges mean (e.g. a ZK swap can take more
+            than an hour), right above Continue so it is read before committing. */}
+        <ProviderBadgeLegend tags={provider?.tags ?? []} />
         {/* Why Continue is unavailable, in the flow right above it — a disabled
             button cannot be focused, so a tooltip would never reach a keyboard
             or screen-reader user. */}
@@ -1722,6 +1726,15 @@ function Swap() {
                 </SwapOption>
               ))}
           </div>
+          <ProviderBadgeLegend
+            tags={exchangeProviders
+              .filter((p) =>
+                possibleExchangeProviders.some(
+                  (offer) => offer.exchangeId === p.exchangeId,
+                ),
+              )
+              .flatMap((p) => p.tags ?? [])}
+          />
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button
               type="link"

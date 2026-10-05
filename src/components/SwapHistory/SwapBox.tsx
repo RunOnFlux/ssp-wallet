@@ -99,6 +99,7 @@ function SwapBox(props: {
     if (status === 'new') return t('home:swap.new');
     if (status === 'waiting') return t('home:swap.waiting');
     if (status === 'confirming') return t('home:swap.confirming');
+    if (status === 'exchanging') return t('home:swap.exchanging');
     if (status === 'sending') return t('home:swap.sending');
     if (status === 'finished') return t('home:swap.finished');
     return status;
@@ -115,6 +116,7 @@ function SwapBox(props: {
     if (status === 'new') return 'blue';
     if (status === 'waiting') return 'blue';
     if (status === 'confirming') return 'blue';
+    if (status === 'exchanging') return 'blue';
     if (status === 'sending') return 'blue';
     if (status === 'finished') return 'green';
     return 'blue';

@@ -668,6 +668,7 @@
     "new": "New",
     "waiting": "Waiting",
     "confirming": "Confirming",
+    "exchanging": "Exchanging",
     "sending": "Sending",
     "finished": "Finished",
     "failed": "Failed",
@@ -694,7 +695,14 @@
     "max_tooltip_token": "Send your entire token balance. Network fees are paid separately in the native coin.",
     "max_tooltip_native": "Send your maximum available balance. Network fees are automatically reserved.",
     "insufficient_balance": "Insufficient balance. The amount exceeds your available funds including network fees.",
-    "advanced_options": "Advanced options"
+    "advanced_options": "Advanced options",
+    "tag_dex": "DEX",
+    "tag_dex_info": "Decentralized: routed through on-chain liquidity such as THORChain or Chainflip, not a custodial exchange account.",
+    "tag_private": "Private",
+    "tag_private_info": "Private settlement: your deposit and your payout cannot be linked on-chain. Usually completes within minutes.",
+    "tag_zk": "ZK",
+    "tag_zk_info": "Zero-knowledge settlement through a shielded pool: the strongest privacy. A ZK swap can take more than an hour to complete.",
+    "badges_title": "What the badges mean"
   },
   "walletconnect": {
     "title": "WalletConnect",
