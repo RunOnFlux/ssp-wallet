@@ -236,6 +236,7 @@
     "advanced_hint": "Titik akhir jaringan & perangkat ahli",
     "wallet_key_details": "Detail Dompet & Kunci",
     "about": "Tentang",
+    "ssp_for_teams": "SSP untuk Tim",
     "enterprise_email_alerts": "Notifikasi email SSP Enterprise",
     "change_pw_help": "Mengubah kata sandi Anda akan mengimpor ulang dompet dari frasa benih Anda — pastikan frasa benih tersebut sudah siap sebelum Anda mulai.",
     "change_pw_confirm": "Mengubah kata sandi berarti memasukkan kembali frasa benih Anda dan mengenkripsi ulang dompet Anda. Anda akan memerlukan frasa benih tersebut. Lanjutkan?",
