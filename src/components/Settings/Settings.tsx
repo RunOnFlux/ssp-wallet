@@ -33,6 +33,7 @@ import {
   ShieldCheck as ShieldCheckIcon,
   SlidersHorizontal as SlidersHorizontalIcon,
   SunMoon as SunMoonIcon,
+  Users as UsersIcon,
   Wallet as WalletIcon,
 } from 'lucide-react';
 import { NoticeType } from 'antd/es/message/interface';
@@ -172,11 +173,11 @@ function Row({
  * Security (chevron rows opening modals or /restore) → Tools (WalletConnect +
  * SSP Enterprise email alerts expander) → a COLLAPSED "Advanced" expander
  * (public nonces sync + relay / per-chain node / API / explorer endpoint
- * inputs) → About (tutorial, version + Powered by Flux — the popup's only
- * home of the 5-click-version security-test trigger now that Home shows no
- * footer). Every previous setting is preserved; the utilities that used to
- * hang off the deleted Navbar burger (address details, wallet & key details,
- * sign message, WalletConnect, tutorial) live here.
+ * inputs) → About (tutorial, SSP for Teams link, version + Powered by Flux —
+ * the popup's only home of the 5-click-version security-test trigger now that
+ * Home shows no footer). Every previous setting is preserved; the utilities
+ * that used to hang off the deleted Navbar burger (address details, wallet &
+ * key details, sign message, WalletConnect, tutorial) live here.
  */
 function Settings() {
   const dispatch = useAppDispatch();
@@ -1454,12 +1455,26 @@ function Settings() {
         </div>
       </section>
 
-      {/* About — tutorial + version + Powered by Flux. This block is now the
-          popup's ONLY home of the version caption and the 5-click-version
-          security-test trigger (Home shows no footer anymore). */}
+      {/* About — tutorial + SSP for Teams + version + Powered by Flux. This
+          block is now the popup's ONLY home of the version caption and the
+          5-click-version security-test trigger (Home shows no footer
+          anymore). */}
       <Section title={t('home:settings.about', 'About')}>
         {navRow(<CircleHelpIcon />, t('home:tutorial.tutorial_help'), () =>
           setTriggerTutorial(true),
+        )}
+        {/* Deliberately low-key pointer to SSP Enterprise for users who run a
+            business. noopener/noreferrer: the opened page must not get a
+            window.opener handle back to the extension document. */}
+        {navRow(
+          <UsersIcon />,
+          t('home:settings.ssp_for_teams', 'SSP for Teams'),
+          () =>
+            window.open(
+              'https://sspwallet.io/enterprise?utm_source=ssp-wallet&utm_medium=extension&utm_campaign=ssp-for-teams',
+              '_blank',
+              'noopener,noreferrer',
+            ),
         )}
         <div className="settings-about-footer">
           <PoweredByFlux about isClickeable />
