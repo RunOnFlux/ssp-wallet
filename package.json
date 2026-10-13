@@ -9,11 +9,13 @@
   ],
   "scripts": {
     "dev": "vite --host",
+    "setup": "allow-scripts",
+    "prebuild": "patch-package --error-on-fail && yarn workspace vite-plugin-lavamoat build",
     "build": "tsc && vite build",
     "postbuild": "node scripts/build-manifests.cjs",
-    "build:chrome": "npm run build && node scripts/build-manifests.cjs chrome",
-    "build:firefox": "npm run build && node scripts/build-manifests.cjs firefox",
-    "build:all": "npm run build && node scripts/build-manifests.cjs",
+    "build:chrome": "yarn build && node scripts/build-manifests.cjs chrome",
+    "build:firefox": "yarn build && node scripts/build-manifests.cjs firefox",
+    "build:all": "yarn build && node scripts/build-manifests.cjs",
     "build:deterministic": "bash scripts/deterministic-build.sh",
     "test": "vitest",
     "test:upgrade": "node scripts/upgrade-in-place.mjs",
@@ -23,8 +25,8 @@
     "lint:fix": "eslint ./src ./public --fix",
     "type-check": "tsc",
     "preview": "vite preview",
-    "postinstall": "patch-package && npm run --workspace=vite-plugin-lavamoat build",
-    "generate-policy": "node scripts/generate-lavamoat-policy.js"
+    "postinstall": "patch-package --error-on-fail && yarn workspace vite-plugin-lavamoat build",
+    "generate-policy": "yarn workspace vite-plugin-lavamoat build && node packages/vite-plugin-lavamoat/bin/generate-policy.mjs"
   },
   "resolutions": {
     "viem": "2.52.2",
@@ -126,12 +128,16 @@
   "lavamoat": {
     "allowScripts": {
       "$root$": true,
-      "@runonflux/aa-schnorr-multisig-sdk>secp256k1": true,
-      "@runonflux/flux-sdk>secp256k1": true,
-      "@runonflux/utxo-lib>secp256k1": true,
-      "@vitejs/plugin-react-swc>@swc/core": true,
-      "postinstall-postinstall": true,
-      "tsx>esbuild": true
+      "@runonflux/aa-schnorr-multisig-sdk>secp256k1": false,
+      "@runonflux/flux-sdk>secp256k1": false,
+      "@runonflux/utxo-lib>secp256k1": false,
+      "@solana/spl-token>@solana/buffer-layout-utils>bigint-buffer": false,
+      "@vitejs/plugin-react-swc>@swc/core": false,
+      "postinstall-postinstall": false,
+      "tsx>esbuild": false,
+      "viem>ws>bufferutil": false,
+      "viem>ws>utf-8-validate": false,
+      "vite>esbuild": false
     }
   }
 }

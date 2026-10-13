@@ -61,6 +61,7 @@ describe('sanitizeRequest — the stamped request shape', () => {
       'enterprise_vault_sign_message',
       'enterprise_flux_node_start',
       'enterprise_nonce_sync',
+      'enterprise_vault_address',
     ];
     for (const method of methods) {
       expect(sanitizeRequest(stamped(method)), method).not.toBeNull();
@@ -132,6 +133,7 @@ describe('sanitizeRequest — the stamped request shape', () => {
       'enterprise_vault_sign_tx',
       'enterprise_flux_node_start',
       'enterprise_nonce_sync',
+      'enterprise_vault_address',
     ];
     for (const method of methods) {
       const stampedByRealCode = realStamper(

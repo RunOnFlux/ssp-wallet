@@ -144,8 +144,9 @@ describe('primary actions report their state', () => {
     expect(body).toContain('setSubmitting(false)');
     // re-submitting the same string must not be a no-op state write
     expect(body).toContain("setPassword('')");
-    // four call sites: L1, L2, L3 and the wrong-password catch
-    expect(loginSource.match(/failUnlock\(/g)?.length).toBe(4);
+    // five call sites: L1, L2, L3, the wrong-password catch, and a pairing
+    // still in progress in another wallet view
+    expect(loginSource.match(/failUnlock\(/g)?.length).toBe(5);
   });
 
   it('both Backup Wallet Seed modals disable OK until backup is confirmed', () => {

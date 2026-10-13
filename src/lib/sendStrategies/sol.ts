@@ -10,12 +10,108 @@
  */
 import BigNumber from 'bignumber.js';
 import { parseAmount } from './amount';
+import { effectiveMaxFeeUsd } from './feeCap';
 
 export interface SolFeeSchedule {
   subsequentSendLamports: number;
   firstSendLamports: number;
   splFeeBumpLamports: number;
   minReimbursementLamports: number;
+}
+
+/**
+ * CHN-7: absolute ceiling on the consumer Solana paymaster reimbursement
+ * (vault -> paymaster) the wallet will build and sign, whatever fee schedule
+ * the relay serves. A legitimate first send with an SPL ATA bump is ~0.0057
+ * SOL; 0.05 SOL matches the enterprise vault ceiling.
+ */
+export const SOL_CONSUMER_MAX_FEE_LAMPORTS = 50_000_000;
+
+/**
+ * Effective cap = min(0.05 SOL, min(maxTxFeeUSD, USD 100) worth of SOL) — the
+ * same ceiling the SSP Key enforces, so the wallet never builds a send the Key
+ * refuses. A missing or non-finite price leaves the absolute ceiling in force.
+ */
+export function solPaymasterFeeCapLamports(
+  solUsdPrice: number | undefined,
+  maxTxFeeUSD: number | undefined,
+  decimals = 9,
+): bigint {
+  let cap = BigInt(SOL_CONSUMER_MAX_FEE_LAMPORTS);
+  const usdLimit = effectiveMaxFeeUsd(maxTxFeeUSD);
+  if (
+    typeof solUsdPrice === 'number' &&
+    Number.isFinite(solUsdPrice) &&
+    solUsdPrice > 0
+  ) {
+    const usdCap = new BigNumber(usdLimit)
+      .dividedBy(solUsdPrice)
+      .multipliedBy(new BigNumber(10).pow(decimals))
+      .integerValue(BigNumber.ROUND_FLOOR);
+    if (usdCap.isFinite() && usdCap.isLessThan(cap.toString())) {
+      cap = BigInt(usdCap.toFixed(0));
+    }
+  }
+  return cap;
+}
+
+/**
+ * Throws when the reimbursement is not a base-unit integer or exceeds the cap
+ * (never more than the absolute ceiling, whatever cap is passed in).
+ */
+export function assertSolPaymasterFeeWithinCap(
+  feeLamports: string,
+  capLamports: bigint = BigInt(SOL_CONSUMER_MAX_FEE_LAMPORTS),
+): void {
+  if (typeof feeLamports !== 'string' || !/^\d+$/.test(feeLamports)) {
+    throw new Error('Invalid Solana paymaster fee');
+  }
+  const absolute = BigInt(SOL_CONSUMER_MAX_FEE_LAMPORTS);
+  const cap = capLamports > absolute ? absolute : capLamports;
+  if (BigInt(feeLamports) > cap) {
+    throw new Error(
+      `Solana fee ${new BigNumber(feeLamports)
+        .dividedBy(1e9)
+        .toFixed()} SOL exceeds the maximum allowed fee of ${new BigNumber(
+        cap.toString(),
+      )
+        .dividedBy(1e9)
+        .toFixed()} SOL`,
+    );
+  }
+}
+
+/**
+ * The `tx` action payload the SSP Key co-signs for a consumer Solana send.
+ *
+ * Native SOL stays bare base64 (old Keys handle it unchanged). SPL sends are
+ * JSON-wrapped with the token metadata plus, per the SOL-SPL contract (H-3):
+ *  - splRecipientOwner: the base58 OWNER address the user typed, so the Key
+ *    derives the destination ATA itself, requires it to equal the
+ *    TransferChecked destination in the bytes, and displays the owner;
+ *  - splMint: the mint the Key derives that ATA for.
+ * The Key ignores the wallet-supplied symbol (it uses its own token list).
+ */
+export function buildSolKeyActionPayload(
+  signedTxBase64: string,
+  token?: {
+    mint: string;
+    symbol: string;
+    decimals: number;
+    recipientOwner: string;
+  },
+): string {
+  if (!token) {
+    return signedTxBase64;
+  }
+  return JSON.stringify({
+    unsignedTxBase64: signedTxBase64,
+    tokenMint: token.mint,
+    tokenSymbol: token.symbol,
+    tokenDecimals: token.decimals,
+    splRecipientOwner: token.recipientOwner,
+    splMint: token.mint,
+  });
 }
 
 /** Base58 recipient check — lifted from legacy SendSOL validateRecipient. */

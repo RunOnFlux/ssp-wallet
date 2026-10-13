@@ -1,0 +1,56 @@
+/* VD-5: vault address verified on SSP Wallet. */
+
+.vault-address-verdict {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 12px;
+  border-radius: 12px;
+  border: 2px solid currentColor;
+}
+
+.vault-address-verdict-label {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.vault-address-verdict-match {
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.1);
+}
+
+.vault-address-verdict-mismatch {
+  color: #b91c1c;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+:root[data-theme='dark'] .vault-address-verdict-match {
+  color: #4ade80;
+}
+
+:root[data-theme='dark'] .vault-address-verdict-mismatch {
+  color: #f87171;
+}
+
+.vault-address-box {
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.vault-address-value {
+  display: block;
+  font-family: var(--ssp-mono);
+  font-size: 13px;
+  word-break: break-all;
+}
+
+:root[data-theme='light'] .vault-address-box {
+  background-color: #f5f5f4;
+}
+
+:root[data-theme='dark'] .vault-address-box {
+  background-color: #272524;
+}

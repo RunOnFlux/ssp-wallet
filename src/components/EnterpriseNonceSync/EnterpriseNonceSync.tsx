@@ -4,6 +4,7 @@ import { useAppSelector } from '../../hooks';
 import { useSocket } from '../../hooks/useSocket';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { replenishWalletEnterpriseNonces } from '../../lib/enterpriseNonces';
+import { attachRequiredWkAuth } from '../../lib/relayRequestAuth';
 import { sspConfig } from '@storage/ssp';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +31,7 @@ function EnterpriseNonceSync({ open, requesterInfo, openAction }: Props) {
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { sspWalletKeyInternalIdentity: wkIdentity, identityChain } =
     useAppSelector((state) => state.sspState);
-  const { createWkIdentityAuth } = useRelayAuth();
+  const { createWkIdentityAuth, createReadAuthHeaders } = useRelayAuth();
   const {
     enterpriseKeyNonceSynced,
     enterpriseKeyNonceSyncRejected,
@@ -100,16 +101,24 @@ function EnterpriseNonceSync({ open, requesterInfo, openAction }: Props) {
       // Phase 1: Reconcile + replenish wallet nonces. The result must be
       // checked — a swallowed submit failure here used to leave the server
       // pool empty while the dialog still reported success off the Key ack.
+      // RA-2 / RA-4: the nonce endpoints require WK relay auth.
       const walletResult = await replenishWalletEnterpriseNonces(
         wkIdentity,
         passwordBlob,
         true,
+        {
+          createAuth: createWkIdentityAuth,
+          readHeaders: (url: string) =>
+            createReadAuthHeaders('wk', wkIdentity, url),
+        },
       );
       if (!walletResult.ok) {
         throw new Error(
           walletResult.reason === 'busy'
             ? t('home:enterpriseNonceSync.wallet_sync_busy')
-            : t('home:enterpriseNonceSync.wallet_sync_failed'),
+            : walletResult.reason === 'auth_unavailable'
+              ? t('home:enterpriseNonceSync.wallet_sync_auth_failed')
+              : t('home:enterpriseNonceSync.wallet_sync_failed'),
         );
       }
 
@@ -128,23 +137,17 @@ function EnterpriseNonceSync({ open, requesterInfo, openAction }: Props) {
         wkIdentity,
       };
 
-      // Add authentication
-      try {
-        const auth = await createWkIdentityAuth(
-          'action',
-          wkIdentity,
-          actionData,
-        );
-        if (auth) {
-          Object.assign(actionData, auth);
-        }
-      } catch {
-        console.warn(
-          '[EnterpriseNonceSync] Auth not available for key sync action',
-        );
-      }
+      // RA-2: /v1/action requires WK auth — never post unauthenticated.
+      const signedActionData = await attachRequiredWkAuth(
+        actionData,
+        wkIdentity,
+        createWkIdentityAuth,
+      );
 
-      await axios.post(`https://${sspConfig().relay}/v1/action`, actionData);
+      await axios.post(
+        `https://${sspConfig().relay}/v1/action`,
+        signedActionData,
+      );
 
       // Now waiting for enterprisekeynoncesynced/rejected via socket
       // Timeout after 60 seconds

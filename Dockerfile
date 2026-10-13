@@ -1,7 +1,14 @@
 # Deterministic Build Dockerfile for SSP Wallet
 # This Dockerfile ensures reproducible builds for Firefox review compliance
 
+# Base image pinned by digest (multi-arch index of node:24.11.1-alpine). The
+# tag itself is re-pushed upstream; the digest never changes.
 FROM node:24.11.1-alpine@sha256:2867d550cf9d8bb50059a0fff528741f11a84d985c732e60e19e8e75c7239c43
+
+# .git is excluded from the build context, so the commit is passed in:
+#   docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) ...
+# It only appears in the SHA256SUMS comment line, never in the zips.
+ARG GIT_COMMIT=unknown
 
 # Set deterministic environment variables
 ENV NODE_ENV=production
@@ -28,8 +35,14 @@ USER node
 # Copy all source code first
 COPY --chown=node:node . .
 
-# Install exact dependencies using frozen lockfile
-RUN yarn install --frozen-lockfile --production=false --cache-folder /tmp/yarn-cache
+# Install exact dependencies using frozen lockfile. No dependency install
+# script runs here (also enforced by .yarnrc ignore-scripts).
+RUN yarn install --frozen-lockfile --ignore-scripts --production=false --cache-folder /tmp/yarn-cache
+
+# Run only the install scripts allowlisted in package.json "lavamoat"
+# (@lavamoat/allow-scripts): the root postinstall, i.e. patch-package and the
+# local vite-plugin-lavamoat build. Fails on any unconfigured install script.
+RUN yarn setup
 
 # Verify that react-secure-storage patch was applied successfully
 RUN echo "Verifying patches were applied..." && \
@@ -43,7 +56,7 @@ RUN echo "Verifying patches were applied..." && \
 RUN find . -type f -not -path "./node_modules/*" -exec touch -d @${SOURCE_DATE_EPOCH} {} +
 
 # Build application and create browser packages using existing build system
-RUN npm run build:all
+RUN yarn build:all
 
 # Normalize timestamps again after build
 RUN find dist dist-zip -type f -exec touch -d @${SOURCE_DATE_EPOCH} {} + 2>/dev/null || true
@@ -64,7 +77,7 @@ RUN cd dist-firefox && \
 
 # Generate unified SHA256SUMS directly
 RUN echo "# SSP Wallet Deterministic Build Hashes" > SHA256SUMS && \
-    echo "# Git Commit: $(git rev-parse HEAD)" >> SHA256SUMS && \
+    echo "# Git Commit: ${GIT_COMMIT}" >> SHA256SUMS && \
     echo "#" >> SHA256SUMS && \
     sha256sum ssp-wallet-chrome-deterministic.zip >> SHA256SUMS && \
     sha256sum ssp-wallet-firefox-deterministic.zip >> SHA256SUMS

@@ -56,12 +56,30 @@ const aaMocks = vi.hoisted(() => {
     paymasterAndData: '0x',
     signature: '0x',
   };
-  const buildUserOperation = vi.fn(() => Promise.resolve(builtUoStruct));
+  // `encode` is installed after imports (viem is not available while hoisted):
+  // the mocked SDK then builds a REAL execute(target, value, data) callData
+  // like the real one, so the wallet's post-build call-safety / WYSIWYS check
+  // runs against realistic bytes. `override` lets a test simulate an SDK that
+  // builds something other than what was requested.
+  const state = {
+    lastUserOp: null,
+    encode: null,
+    override: null,
+  };
+  const buildUserOperation = vi.fn((args) =>
+    Promise.resolve({
+      ...builtUoStruct,
+      callData: state.override
+        ? state.override
+        : state.encode
+          ? state.encode(args.uo)
+          : builtUoStruct.callData,
+    }),
+  );
   const createSmartAccountClient = vi.fn(() => ({ buildUserOperation }));
   const getEntryPoint = vi.fn(() => ({ address: '0xENTRYPOINT' }));
   const deepHexlify = vi.fn((x) => x);
   const signMultiSigHash = vi.fn();
-  const state = { lastUserOp: null };
   function MultiSigUserOp(publicKeys, publicNonces, hash, uoStruct) {
     this.publicKeys = publicKeys;
     this.publicNonces = publicNonces;
@@ -138,7 +156,19 @@ import {
   parseUnsignedQuantity,
   decodeErc20Transfer,
   describeErc20Transfer,
+  assertBuiltUserOpMatches,
+  verifyPickedUtxoValues,
 } from '../../src/lib/constructTx';
+import { encodeFunctionData, parseAbi } from 'viem';
+import * as realAccountAbi from '@runonflux/aa-schnorr-multisig-sdk/dist/abi';
+
+const encodeExecuteCall = (uo) =>
+  encodeFunctionData({
+    abi: realAccountAbi.MultiSigSmartAccount_abi,
+    functionName: 'execute',
+    args: [uo.target, uo.value ?? 0n, uo.data ?? '0x'],
+  });
+aaMocks.state.encode = encodeExecuteCall;
 
 const rawTxFlux =
   '0400008085202f89016bf2b6449710be3300c3cc4a9ad2d4db7e88cea56168c46a16278b496e3415eb0000000092000047304402204d287d270c0d35e7c65f2b0f02b2ba8ca75e04934051691445115beb729beb54022060f01fcbf92957eb17d8a221a7d062a1fe5c86114deaf69bec99b65edafb82f201475221022a316c22acf16a9108b57f48802143cc0c0ac4b8fc360a87568e1794e51558752103749c957461154dfca921d0872ba3c9ac85d98c92e4a34fdac32bd03597fbd2f252aeffffffff02608501000000000017a914c9a895ceb2368f39686f8c77f6bc8c148ae6d54e870000000000000000136a1174657374207061796d656e74206e6f746500000000f7071a000000000000000000000000';
@@ -591,7 +621,15 @@ describe('ConstructTx Lib', () => {
       expect(typeof res).toBe('string');
       const parsed = JSON.parse(res);
       expect(parsed).toHaveProperty('userOpRequest');
-      expect(parsed.userOpRequest).toEqual(aaMocks.builtUoStruct);
+      const expectedUo = {
+        ...aaMocks.builtUoStruct,
+        callData: encodeExecuteCall({
+          target: receiver,
+          value: 100000000000000000n,
+          data: '0x',
+        }),
+      };
+      expect(parsed.userOpRequest).toEqual(expectedUo);
       expect(parsed.opHash).toBe('0xUSEROPHASH');
       expect(parsed.publicKeysCount).toBe(2);
 
@@ -631,7 +669,119 @@ describe('ConstructTx Lib', () => {
       );
       // MultiSigUserOp was built with the entrypoint-derived hash + hexlified op.
       expect(aaMocks.state.lastUserOp.hash).toBe('0xUSEROPHASH');
-      expect(aaMocks.state.lastUserOp.uoStruct).toEqual(aaMocks.builtUoStruct);
+      expect(aaMocks.state.lastUserOp.uoStruct).toEqual(expectedUo);
+    });
+  });
+
+  // C-4 / EVM-1: every consumer + WalletConnect EVM signature goes through
+  // constructAndSignEVMTransaction, so the call-safety rules live there.
+  describe('constructAndSignEVMTransaction call safety (C-4)', () => {
+    const privateKey =
+      '0x29c6fbfe8f749d4d122a3a8422e63977aaf943fb3674a927fb88f1a2833a53ad';
+    const memberAddr = '0x300429d8ef26b7264fab66d9368958d0e99e3f1f';
+    // builtUoStruct.sender — the smart account itself.
+    const account = '0xd447BA08b0d395fCAd6e480d270529c932289Ce1';
+    const evilImpl = '0x2222222222222222222222222222222222222222';
+    const upgradeCalldata = encodeFunctionData({
+      abi: parseAbi(['function upgradeToAndCall(address,bytes) payable']),
+      functionName: 'upgradeToAndCall',
+      args: [evilImpl, '0x'],
+    });
+    const sign = (receiver, amount, customData, token = '') =>
+      constructAndSignEVMTransaction(
+        'sepolia',
+        receiver,
+        amount,
+        privateKey,
+        rawTxSepolia.publicKeys[memberAddr],
+        rawTxSepolia.publicNonces[memberAddr],
+        '1',
+        '1',
+        '80000',
+        '100000',
+        '500000',
+        token,
+        [],
+        customData,
+      );
+
+    afterEach(() => {
+      aaMocks.state.override = null;
+    });
+
+    it('refuses the WalletConnect PoC {to: self, value: 1 wei, data: upgradeToAndCall}', async () => {
+      vi.clearAllMocks();
+      await expect(
+        sign(account, '0.000000000000000001', upgradeCalldata),
+      ).rejects.toThrow(/upgrade/i);
+      expect(aaMocks.signMultiSigHash).not.toHaveBeenCalled();
+    });
+
+    it('refuses upgradeToAndCall to any other target before building', async () => {
+      vi.clearAllMocks();
+      await expect(sign(evilImpl, '0', upgradeCalldata)).rejects.toThrow(
+        /upgrade/i,
+      );
+      expect(aaMocks.buildUserOperation).not.toHaveBeenCalled();
+      expect(aaMocks.signMultiSigHash).not.toHaveBeenCalled();
+    });
+
+    it('refuses any self-call, even a plain value send to the account', async () => {
+      vi.clearAllMocks();
+      await expect(sign(account, '0.1', '0x')).rejects.toThrow(/self-call/);
+      await expect(
+        sign(account.toLowerCase(), '0', '0xdeadbeef'),
+      ).rejects.toThrow(/self-call/);
+      expect(aaMocks.signMultiSigHash).not.toHaveBeenCalled();
+    });
+
+    it('refuses to sign when the built callData is not the requested call', async () => {
+      vi.clearAllMocks();
+      aaMocks.state.override = encodeExecuteCall({
+        target: evilImpl,
+        value: 1n,
+        data: '0x',
+      });
+      await expect(
+        sign('0x66324EE406cCccdDdAd7f510a61Af22DeC391606', '0.1', '0x'),
+      ).rejects.toThrow(/does not match/);
+      expect(aaMocks.signMultiSigHash).not.toHaveBeenCalled();
+    });
+
+    it('still signs an ordinary contract call that carries native value', async () => {
+      vi.clearAllMocks();
+      await sign(
+        '0x66324EE406cCccdDdAd7f510a61Af22DeC391606',
+        '0.1',
+        '0xdeadbeef',
+      );
+      expect(aaMocks.signMultiSigHash).toHaveBeenCalledTimes(1);
+    });
+
+    it('assertBuiltUserOpMatches rejects extra batched calls and wrong senders', () => {
+      // A second (hidden) call in a batch can never match the one requested.
+      const batch = encodeFunctionData({
+        abi: realAccountAbi.MultiSigSmartAccount_abi,
+        functionName: 'executeBatch',
+        args: [
+          [evilImpl, evilImpl],
+          ['0x', '0x'],
+        ],
+      });
+      expect(() =>
+        assertBuiltUserOpMatches(batch, account, {
+          target: evilImpl,
+          value: 0n,
+          data: '0x',
+        }),
+      ).toThrow();
+      expect(() =>
+        assertBuiltUserOpMatches(
+          encodeExecuteCall({ target: evilImpl, value: 1n, data: '0x' }),
+          'nope',
+          { target: evilImpl, value: 1n, data: '0x' },
+        ),
+      ).toThrow(/sender/);
     });
   });
 

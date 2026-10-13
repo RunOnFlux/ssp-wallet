@@ -47,10 +47,17 @@ build_deterministic() {
         error "Docker is required for deterministic builds"
     fi
     
-    log "Building with Docker for complete deterministic environment..."
+    # .git is excluded from the Docker build context, so the commit is passed
+    # in. It only lands in the SHA256SUMS comment line, never in the zips.
+    local git_commit
+    git_commit=$(git rev-parse HEAD 2>/dev/null || echo unknown)
+
+    log "Building with Docker for complete deterministic environment (commit $git_commit)..."
     
     # Build with no cache to ensure completely fresh environment
-    docker build --no-cache --memory=8g --target export-stage -o . .
+    docker build --no-cache --memory=8g \
+        --build-arg GIT_COMMIT="$git_commit" \
+        --target export-stage -o . .
 
     
     # Verify both packages were created
@@ -70,7 +77,7 @@ build_deterministic() {
     log "Creating unified SHA256SUMS file..."
     cat > SHA256SUMS << EOF
 # SSP Wallet ${version} - Deterministic Build Hashes
-# Git Commit: $(git rev-parse HEAD)
+# Git Commit: ${git_commit}
 #
 $(sha256sum ssp-wallet-chrome-${version}.zip)
 $(sha256sum ssp-wallet-firefox-${version}.zip)
