@@ -11,7 +11,7 @@
  * stateful hook calls them.
  */
 import BigNumber from 'bignumber.js';
-import { parseAmount } from './amount';
+import { parseAmount, parsePlainDecimal } from './amount';
 import type { FeePresetKey } from './utxo';
 import type { KasFeeTier } from '../kaspa';
 import type { Plan } from '@runonflux/kaspa-core';
@@ -33,11 +33,13 @@ export function sompiToUnits(sompi: bigint, decimals: number): string {
 }
 
 /**
- * User-typed coin units → sompi, or null when not a positive amount with at
- * most `decimals` fractional digits.
+ * User-typed coin units → sompi, or null when not a positive plain decimal
+ * with at most `decimals` fractional digits. Strict (review KAS-7): hex
+ * ('0x10'), exponent ('1e2'), sign, whitespace and separators are refused,
+ * so the signed amount is always the digits the user typed.
  */
 export function unitsToSompi(units: string, decimals: number): bigint | null {
-  const parsed = parseAmount(units || '');
+  const parsed = parsePlainDecimal(units || '');
   if (!parsed || parsed.lte(0)) return null;
   const base = parsed.multipliedBy(10 ** decimals);
   if (!base.isInteger()) return null;
@@ -69,7 +71,8 @@ export function kasMaxFeeSompi(
 /**
  * Amount + fee exceeds the spendable balance? Unparseable input is NOT
  * reported as exceeding (the amount field's own rule owns that case).
- * Mirrors utxoAmountExceedsBalance.
+ * Mirrors utxoAmountExceedsBalance. The user-typed amount is parsed strictly
+ * (plain decimal only, review KAS-7); fee and balance are machine-produced.
  */
 export function kasAmountExceedsBalance(
   sendingAmount: string,
@@ -77,7 +80,7 @@ export function kasAmountExceedsBalance(
   spendableSompi: string,
   decimals: number,
 ): boolean {
-  const amount = parseAmount(sendingAmount || '0');
+  const amount = parsePlainDecimal(sendingAmount || '0');
   const fee = parseAmount(feeUnits || '0');
   const spendable = parseAmount(spendableSompi || '0');
   if (!amount || !fee || !spendable) {

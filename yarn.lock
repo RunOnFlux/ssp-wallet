@@ -1766,9 +1766,9 @@
     "@coral-xyz/anchor" "0.31.1"
     "@solana/web3.js" "1.98.4"
 
-"@runonflux/tron-multisig@file:../tron-multisig/dist-tarballs/runonflux-tron-multisig-0.1.0-923b979e.tgz":
+"@runonflux/tron-multisig@file:../tron-multisig/dist-tarballs/runonflux-tron-multisig-0.1.0-f79be28a.tgz":
   version "0.1.0"
-  resolved "file:../tron-multisig/dist-tarballs/runonflux-tron-multisig-0.1.0-923b979e.tgz#dc4b18f982ae08e3ada602896b27cbf092b476da"
+  resolved "file:../tron-multisig/dist-tarballs/runonflux-tron-multisig-0.1.0-f79be28a.tgz#f9dcd6834ab83a69e24b89dd8bc402a789956ead"
   dependencies:
     "@noble/curves" "2.4.0"
     "@noble/hashes" "2.4.0"

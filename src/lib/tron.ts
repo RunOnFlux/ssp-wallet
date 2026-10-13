@@ -689,6 +689,13 @@ export function buildSponsoredTronOp(p: {
   quote: TronQuote;
   now?: bigint;
   network?: T.NetworkConfig;
+  /**
+   * The nonce of an earlier Op of this vault that may still execute
+   * (pendingTronOutstandingNonce, review CHN-9). Used INSTEAD of the
+   * relay-picked `quote.nonce`, so at most one of the two can ever execute.
+   * The relay re-estimates when no quote is on record for it.
+   */
+  nonce?: bigint;
 }): T.Op {
   const network = p.network ?? tronNetwork(p.chain);
   const now = p.now ?? nowSeconds();
@@ -732,7 +739,7 @@ export function buildSponsoredTronOp(p: {
   }
   const op = T.buildOp({
     calls: p.calls,
-    nonce: BigInt(p.quote.nonce),
+    nonce: p.nonce ?? BigInt(p.quote.nonce),
     deadline,
     fee,
   });
@@ -749,6 +756,271 @@ export function buildSponsoredTronOp(p: {
     ],
   });
   return op;
+}
+
+// ---------------------------------------------------------------------------
+// Outstanding Ops (review CHN-9)
+// ---------------------------------------------------------------------------
+//
+// Once this wallet posts a signed Op to SSP Key, the Key may co-sign it, and
+// the relay then holds a fully signed Op that stays executable until its
+// deadline — whatever happens next: a sponsor refusal, any other relay
+// error, a 5xx, a timeout, no answer at all, or a "success" txid that never
+// lands. If the next send used a NEW nonce, a malicious relay could execute
+// both and pay twice. So every Op is recorded here BEFORE it is posted, and
+// the next send of that vault REUSES its nonce — the vault's nonce bitmap then
+// lets only one of them execute — until this wallet's own TRON node shows the
+// nonce used on-chain or the deadline (+ clock skew) has passed. SSP Key
+// applies the same rule to the Ops it co-signs.
+//
+// Stored in localStorage (this extension's own origin). An unreadable record
+// fails closed: TRON sends from this wallet pause until no recorded Op could
+// still be valid (the consumer deadline window), instead of forgetting it.
+
+/** Storage key (historical name: records of earlier builds stay in force). */
+export const TRON_OUTSTANDING_OPS_KEY = 'ssp-tron-refused-ops';
+export const TRON_OUTSTANDING_OPS_MAX = 64;
+/**
+ * Device ↔ chain clock skew allowed when deciding a deadline has passed. The
+ * single TRON skew constant of this wallet; SSP Key uses the same 120 s.
+ */
+export const TRON_CLOCK_SKEW_SECONDS = 120n;
+
+export interface TronOutstandingOp {
+  chain: string;
+  vault: string;
+  /** decimal strings */
+  nonce: string;
+  deadline: string;
+}
+
+interface TronOutstandingState {
+  ops: TronOutstandingOp[];
+  /** Unix seconds: sends refused until then (an unreadable record was dropped). */
+  blockedUntil?: string;
+}
+
+const DEC_RE = /^(0|[1-9][0-9]{0,77})$/;
+
+function isOutstandingOp(v: unknown): v is TronOutstandingOp {
+  return (
+    isObj(v) &&
+    typeof v.chain === 'string' &&
+    typeof v.vault === 'string' &&
+    T.isValidAddress(v.vault) &&
+    typeof v.nonce === 'string' &&
+    DEC_RE.test(v.nonce) &&
+    typeof v.deadline === 'string' &&
+    DEC_RE.test(v.deadline)
+  );
+}
+
+function writeOutstandingState(state: TronOutstandingState): void {
+  try {
+    localStorage.setItem(TRON_OUTSTANDING_OPS_KEY, JSON.stringify(state));
+  } catch {
+    throw new TronError(
+      'OUTSTANDING_OPS_UNWRITABLE',
+      'Could not save the record of this TRON payment; nothing was sent',
+    );
+  }
+}
+
+/**
+ * The stored state. An unreadable blob is replaced by a block that lasts the
+ * whole consumer deadline window (any Op it may have named is dead by then);
+ * the raw blob is kept under `<key>.corrupt` for diagnosis.
+ */
+function readOutstandingState(now: bigint): TronOutstandingState {
+  let raw: string | null;
+  try {
+    raw = localStorage.getItem(TRON_OUTSTANDING_OPS_KEY);
+  } catch {
+    throw new TronError(
+      'OUTSTANDING_OPS_UNREADABLE',
+      'The record of earlier TRON payments cannot be read; try again',
+    );
+  }
+  if (raw === null) return { ops: [] };
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      isObj(parsed) &&
+      Array.isArray(parsed.ops) &&
+      parsed.ops.every(isOutstandingOp) &&
+      (parsed.blockedUntil === undefined ||
+        (typeof parsed.blockedUntil === 'string' &&
+          DEC_RE.test(parsed.blockedUntil)))
+    ) {
+      return {
+        ops: parsed.ops,
+        ...(parsed.blockedUntil !== undefined
+          ? { blockedUntil: parsed.blockedUntil }
+          : {}),
+      };
+    }
+  } catch {
+    // fall through: unreadable
+  }
+  try {
+    localStorage.setItem(`${TRON_OUTSTANDING_OPS_KEY}.corrupt`, raw);
+  } catch {
+    // diagnosis copy only
+  }
+  const blocked: TronOutstandingState = {
+    ops: [],
+    blockedUntil: (
+      now +
+      TRON_CONSUMER_MAX_DEADLINE_SECONDS +
+      TRON_CLOCK_SKEW_SECONDS
+    ).toString(),
+  };
+  writeOutstandingState(blocked);
+  return blocked;
+}
+
+function assertNotBlocked(state: TronOutstandingState, now: bigint): void {
+  if (state.blockedUntil !== undefined && BigInt(state.blockedUntil) > now) {
+    const until = new Date(Number(state.blockedUntil) * 1000);
+    throw new TronError(
+      'OUTSTANDING_OPS_UNREADABLE',
+      `The record of earlier TRON payments could not be read. To make sure none of them can be paid twice, TRON sends from this wallet are paused until ${until.toLocaleTimeString()}.`,
+    );
+  }
+}
+
+/** Is this record possibly still executable on chain at `now` (seconds)? */
+function isOutstandingOpLive(o: TronOutstandingOp, now: bigint): boolean {
+  return BigInt(o.deadline) + TRON_CLOCK_SKEW_SECONDS > now;
+}
+
+/**
+ * Remember an Op of this vault that may be (or become) fully signed: every
+ * Op this wallet posts, BEFORE it is posted, and any Op SSP Key reports as
+ * refused. Reusing a nonce never hurts. The deadline is clamped to the
+ * consumer window (now + 2 h + skew), so a relay-echoed Op can never pin a
+ * vault's nonce for longer than any Op SSP Key would co-sign. Throws (the
+ * send must not go out) when the record cannot be saved or the store is full
+ * of live records; dead records are pruned.
+ */
+export function recordTronOutstandingOp(
+  op: { chain: string; vault: string; nonce: bigint; deadline: bigint },
+  now: bigint = nowSeconds(),
+): void {
+  if (!T.isValidAddress(op.vault)) {
+    throw new TronError('PAYLOAD', 'Invalid TRON vault');
+  }
+  const state = readOutstandingState(now);
+  const maxDeadline =
+    now + TRON_CONSUMER_MAX_DEADLINE_SECONDS + TRON_CLOCK_SKEW_SECONDS;
+  const deadline = op.deadline > maxDeadline ? maxDeadline : op.deadline;
+  const entry: TronOutstandingOp = {
+    chain: op.chain,
+    vault: op.vault,
+    nonce: op.nonce.toString(),
+    deadline: deadline.toString(),
+  };
+  const others = state.ops.filter(
+    (o) =>
+      isOutstandingOpLive(o, now) &&
+      !(
+        o.chain === entry.chain &&
+        o.vault === entry.vault &&
+        o.nonce === entry.nonce
+      ),
+  );
+  const same = state.ops.find(
+    (o) =>
+      o.chain === entry.chain &&
+      o.vault === entry.vault &&
+      o.nonce === entry.nonce,
+  );
+  // One record per (vault, nonce): keep the LATEST deadline seen for it
+  // (also clamped: records of earlier builds were not).
+  if (same) {
+    const prev = BigInt(same.deadline);
+    const kept = prev > maxDeadline ? maxDeadline : prev;
+    if (kept > deadline) entry.deadline = kept.toString();
+  }
+  if (others.length >= TRON_OUTSTANDING_OPS_MAX) {
+    // Never silently forget a live record: refuse the send instead.
+    throw new TronError(
+      'OUTSTANDING_OPS_FULL',
+      'Too many earlier TRON payments are not confirmed yet; wait until they are confirmed or expire (at most 2 hours)',
+    );
+  }
+  const ops = [...others, entry].sort((a, b) =>
+    BigInt(b.deadline) > BigInt(a.deadline) ? 1 : -1,
+  );
+  writeOutstandingState({
+    ops,
+    ...(state.blockedUntil !== undefined && BigInt(state.blockedUntil) > now
+      ? { blockedUntil: state.blockedUntil }
+      : {}),
+  });
+}
+
+/** Record the Op of an `ssp-tron-op` payload (see recordTronOutstandingOp). */
+export function recordTronOutstandingPayload(
+  payload: string,
+  chain: string,
+  now: bigint = nowSeconds(),
+): void {
+  const parsed = parseTronOpPayload(payload, chain);
+  recordTronOutstandingOp(
+    {
+      chain,
+      vault: parsed.vault,
+      nonce: parsed.op.nonce,
+      deadline: parsed.op.deadline,
+    },
+    now,
+  );
+}
+
+/**
+ * The nonce the next send of `vault` MUST reuse: the lowest nonce of a
+ * recorded Op that is still within its deadline and not yet used on chain,
+ * or null. Records whose nonce is used (one of the Ops executed) or whose
+ * deadline passed are dropped. Throws (send refused) when the record is
+ * unreadable or the chain cannot be asked.
+ */
+export async function pendingTronOutstandingNonce(p: {
+  chain: string;
+  vault: string;
+  now?: bigint;
+  client?: Pick<TronHttpClient, 'hasCode' | 'isNonceUsed'>;
+}): Promise<{ nonce: bigint; deadline: bigint } | null> {
+  const now = p.now ?? nowSeconds();
+  const state = readOutstandingState(now);
+  assertNotBlocked(state, now);
+  const live = state.ops.filter((o) => isOutstandingOpLive(o, now));
+  const mine = live.filter((o) => o.chain === p.chain && o.vault === p.vault);
+  const drop = new Set<TronOutstandingOp>();
+  let pick: { nonce: bigint; deadline: bigint } | null = null;
+  if (mine.length > 0) {
+    const client = p.client ?? tronNodeClient(p.chain);
+    const deployed = await client.hasCode(p.vault);
+    for (const o of mine) {
+      const nonce = BigInt(o.nonce);
+      if (deployed && (await client.isNonceUsed(p.vault, nonce))) {
+        drop.add(o);
+        continue;
+      }
+      if (pick === null || nonce < pick.nonce) {
+        pick = { nonce, deadline: BigInt(o.deadline) };
+      }
+    }
+  }
+  if (drop.size > 0 || live.length !== state.ops.length) {
+    writeOutstandingState({
+      ops: live.filter((o) => !drop.has(o)),
+      ...(state.blockedUntil !== undefined && BigInt(state.blockedUntil) > now
+        ? { blockedUntil: state.blockedUntil }
+        : {}),
+    });
+  }
+  return pick;
 }
 
 /** A fee-free (self-submitted) consumer Op (contract §6, self-pay). */
@@ -1118,14 +1390,16 @@ export function verifyTronEnterpriseProposal(p: {
     tokens,
     allowApprove: false,
     allowUnknown: false,
-    allowSelfCalls: true,
+    // Of the self-calls only the nonce invalidation (it can only burn nonces:
+    // the on-chain cancel) is signable here. The Stake 2.0 ones (freeze /
+    // unfreeze TRX, delegate resources to another account, vote) need an org
+    // policy (contract §5.3), which never reaches this device.
+    allowNonceInvalidation: true,
+    allowStaking: false,
   });
-  // Of the self-calls only the nonce invalidation (it can only burn nonces:
-  // the on-chain cancel) is signable here. The Stake 2.0 ones (freeze /
-  // unfreeze TRX, delegate resources to another account, vote) need an org
-  // policy (contract §5.3), which never reaches this device.
+  // Defence in depth: refuse a Stake 2.0 self-call even if the SDK let one by.
   const staking = display.calls.find(
-    (c) => c.kind === 'selfCall' && c.action !== 'invalidateNonces',
+    (c) => c.kind === 'selfCall' && T.isStakingSelfCall(c.action),
   );
   if (staking && staking.kind === 'selfCall') {
     throw new T.PolicyError(

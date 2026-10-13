@@ -11,18 +11,20 @@
  * Quote, Op building and signing live in lib/tron.ts; the stateful hook
  * (useTronSendStrategy) calls them.
  */
-import { parseAmount } from './amount';
+import { parsePlainDecimal } from './amount';
 import { TRON_TRX_FEE_TOKEN } from '../tron';
 
 /**
- * User-typed units → base units, or null when not a positive amount with at
- * most `decimals` fractional digits. Exact (no floating point).
+ * User-typed units → base units, or null when not a positive plain decimal
+ * with at most `decimals` fractional digits. Exact (no floating point) and
+ * strict (review KAS-7): hex ('0x10'), exponent ('1e2'), sign, whitespace and
+ * separators are refused, so the Op pays exactly the digits the user typed.
  */
 export function tronUnitsToBase(
   units: string,
   decimals: number,
 ): bigint | null {
-  const parsed = parseAmount(units || '');
+  const parsed = parsePlainDecimal(units || '');
   if (!parsed || parsed.lte(0)) return null;
   const base = parsed.multipliedBy(10 ** decimals);
   if (!base.isInteger()) return null;

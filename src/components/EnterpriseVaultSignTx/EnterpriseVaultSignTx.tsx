@@ -4,6 +4,8 @@ import { useAppSelector } from '../../hooks';
 import './EnterpriseVaultSignTx.css';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { useSocket } from '../../hooks/useSocket';
+import { useKasLedgerRecovery } from '../../hooks/useKasLedgerRecovery';
+import { toast } from '../../lib/toast';
 import HandshakeAnimation from '../HandshakeAnimation/HandshakeAnimation';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
@@ -251,6 +253,18 @@ function EnterpriseVaultSignTx({
   const [requestId, setRequestId] = useState<string | null>(null);
   const [waitingForKey, setWaitingForKey] = useState(false);
   const signingRef = useRef(false);
+  // Kaspa signed-amount ledger refusals (review KAS-2 / KAS-6): the same
+  // explicit, warned resets as the send flow (conflicts are first resolved by
+  // proof via getFundingTransaction inside signKasVaultBundle; only coins that
+  // cannot be proven, or an unreadable record, are offered a reset). Nothing
+  // is signed; after a reset the user signs again, which re-runs every check.
+  const kasLedgerRecovery = useKasLedgerRecovery({
+    notify: (type, content) => {
+      if (type === 'error') setError(content);
+      else void toast.success(content);
+    },
+    onReset: () => setError(null),
+  });
   // Store wallet's Schnorr challenge for wallet-only mode (Key returns empty challenge)
   const walletChallengeRef = useRef<string>('');
 
@@ -1487,7 +1501,21 @@ function EnterpriseVaultSignTx({
       vaultXpriv = '';
       keypair = { pubKey: keypair?.pubKey ?? '', privKey: '' };
       console.error('[EnterpriseVaultSignTx] Error:', err);
-      const errMsg = err instanceof Error ? err.message : 'Unknown error';
+      let errMsg = err instanceof Error ? err.message : 'Unknown error';
+
+      if (isKasChain) {
+        const ledger = kasLedgerRecovery(err);
+        if (ledger?.kind === 'prompted') {
+          // A warned reset dialog is open: keep the request open so the user
+          // can sign again after the reset, or cancel (rejects as usual).
+          setLoading(false);
+          setError(ledger.message);
+          signingRef.current = false;
+          return;
+        }
+        // Refused with no reset on offer: reported like any signing error.
+        if (ledger?.kind === 'refused') errMsg = ledger.message;
+      }
 
       // Classify error for structured error code
       const isNonceError =

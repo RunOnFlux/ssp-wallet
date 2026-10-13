@@ -834,7 +834,11 @@ describe('TRON enterprise proposal: adversarial review', () => {
     ],
     [{ action: 'voteWitnesses', votes: [{ witness: RECIPIENT, count: 1n }] }],
   ])('refuses a Stake 2.0 self-call without an org policy (%o)', (action) => {
-    expect(() => verify([T.selfCall(E.address, action)])).toThrow(/self-calls/);
+    // TRX-3: the SDK refuses it (allowStaking: false); the wallet's own
+    // staking guard stays behind it as defence in depth.
+    expect(() => verify([T.selfCall(E.address, action)])).toThrow(
+      /not allowed by the enterprise policy|self-calls/,
+    );
   });
 
   it('still accepts the on-chain nonce invalidation', () => {

@@ -49,7 +49,10 @@ import {
   isTronLive,
   isTronUsdtBlacklisted,
   nowSeconds,
+  pendingTronOutstandingNonce,
   pickTronSelfPayNonce,
+  recordTronOutstandingPayload,
+  parseTronOpPayload,
   requestTronQuote,
   signConsumerTronOp,
   tronCallsToJson,
@@ -80,7 +83,10 @@ import {
   tronSendErrorKey,
   tronUnitsToBase,
 } from '../../lib/sendStrategies/tron';
-import { parseAmount } from '../../lib/sendStrategies/amount';
+import {
+  isPlainDecimalAmount,
+  parseAmount,
+} from '../../lib/sendStrategies/amount';
 import type { SendStrategyView, FeePresetView } from './types';
 
 const { Text } = Typography;
@@ -161,6 +167,14 @@ export function useTronSendStrategy(): SendStrategyView {
   const [vaultFrozen, setVaultFrozen] = useState(false);
   const [recipientConfirmOpen, setRecipientConfirmOpen] = useState(false);
   const [confirmedRecipient, setConfirmedRecipient] = useState('');
+  // An earlier Op of this vault that may still execute — refused, failed,
+  // unanswered or not yet on chain (review CHN-9): the next send reuses its
+  // nonce.
+  const [outstandingPending, setOutstandingPending] = useState<{
+    nonce: bigint;
+    deadline: bigint;
+  } | null>(null);
+  const [outstandingRefresh, setOutstandingRefresh] = useState(0);
 
   const [openConfirmTx, setOpenConfirmTx] = useState(false);
   const [openTxSent, setOpenTxSent] = useState(false);
@@ -203,7 +217,10 @@ export function useTronSendStrategy(): SendStrategyView {
   const selectedToken =
     allTokens.find((tk) => tk.contract === txToken) ?? nativeToken;
   const assetDecimals = selectedToken.decimals;
-  const amountBase = tronUnitsToBase(sendingAmount, assetDecimals);
+  // User-typed: a plain decimal only (no hex / exponent, review KAS-7).
+  const amountBase = isPlainDecimalAmount(sendingAmount)
+    ? tronUnitsToBase(sendingAmount, assetDecimals)
+    : null;
   const receiverTrimmed = txReceiver.trim();
   const receiverValidation: AddressValidationResult = receiverTrimmed
     ? validateReceiverAddress(receiverTrimmed, activeChain)
@@ -326,6 +343,25 @@ export function useTronSendStrategy(): SendStrategyView {
       cancelled = true;
     };
   }, [live, sender, activeChain, usdtContract]);
+
+  // Is an earlier Op of this vault still outstanding (not used on chain and
+  // within its deadline)? Shown as a banner; the send itself re-checks right
+  // before building the Op.
+  useEffect(() => {
+    if (!live || !sender) {
+      setOutstandingPending(null);
+      return;
+    }
+    let cancelled = false;
+    void pendingTronOutstandingNonce({ chain: activeChain, vault: sender })
+      .then((pending) => {
+        if (!cancelled) setOutstandingPending(pending);
+      })
+      .catch((error) => console.log('[SendTRON] outstanding-op check', error));
+    return () => {
+      cancelled = true;
+    };
+  }, [live, sender, activeChain, outstandingRefresh]);
 
   // Self-pay: show the key's own TRON account and its TRX balance.
   useEffect(() => {
@@ -508,6 +544,26 @@ export function useTronSendStrategy(): SendStrategyView {
 
   useEffect(() => {
     if (socketTxRejected && socketChain === activeChain) {
+      // The Op may already be co-signed and held by the relay until its
+      // deadline (a sponsor refusal). The Op WE sent was recorded before it
+      // was posted; record it again (idempotent) or, after a reload, the
+      // socket's copy — accepted only for this vault, its deadline clamped
+      // to the consumer window — so the next send reuses its nonce (review
+      // CHN-9).
+      try {
+        let payload = txHex;
+        if (!payload) {
+          const echoed = parseTronOpPayload(socketTxRejected, activeChain);
+          if (echoed.vault === sender) payload = socketTxRejected;
+        }
+        if (payload) {
+          recordTronOutstandingPayload(payload, activeChain);
+          setOutstandingRefresh((n) => n + 1);
+        }
+      } catch (error) {
+        console.log('[SendTRON] could not record the refused op', error);
+        displayMessage('error', errorText(error));
+      }
       setOpenConfirmTx(false);
       setPendingApproval(false);
       setSubmitting(false);
@@ -661,9 +717,19 @@ export function useTronSendStrategy(): SendStrategyView {
       }
 
       const calls = [tronTransferCall(txToken, receiver, amountBase)];
+      // An earlier Op of this vault may still execute (refused, failed,
+      // unanswered, or a txid that never landed): reuse its nonce so at most
+      // one of them ever can (review CHN-9). Throws (send refused) when that
+      // cannot be determined.
+      const reuse = await pendingTronOutstandingNonce({
+        chain: activeChain,
+        vault: sender,
+      });
+      setOutstandingPending(reuse);
       let op;
       if (selfPay) {
-        const nonce = await pickTronSelfPayNonce(sender, activeChain);
+        const nonce =
+          reuse?.nonce ?? (await pickTronSelfPayNonce(sender, activeChain));
         op = buildSelfPayTronOp({ calls, nonce });
       } else {
         const q = reviewedQuote!;
@@ -676,6 +742,7 @@ export function useTronSendStrategy(): SendStrategyView {
           vault: sender,
           calls,
           quote: q,
+          ...(reuse ? { nonce: reuse.nonce } : {}),
         });
       }
 
@@ -749,6 +816,12 @@ export function useTronSendStrategy(): SendStrategyView {
         privKeyHex: privKey,
       });
       privKey = '';
+      // CHN-9: recorded BEFORE it is posted — from here on SSP Key may
+      // co-sign it, and whatever the outcome (refusal, error, timeout, no
+      // answer, a txid that never lands) the next send of this vault reuses
+      // this nonce until the chain shows it used or its deadline passes.
+      // Throws (nothing posted) when the record cannot be saved.
+      recordTronOutstandingPayload(payload, activeChain);
       await postAction(
         'tx',
         payload,
@@ -931,6 +1004,19 @@ export function useTronSendStrategy(): SendStrategyView {
           type="error"
           showIcon
           message={t('send:tron_vault_frozen_banner')}
+          style={{ textAlign: 'left', marginBottom: 12 }}
+        />
+      )}
+      {live && outstandingPending && (
+        <Alert
+          type="warning"
+          showIcon
+          message={t('send:tron_refused_pending_title')}
+          description={t('send:tron_refused_pending_desc', {
+            time: new Date(
+              Number(outstandingPending.deadline) * 1000,
+            ).toLocaleTimeString(),
+          })}
           style={{ textAlign: 'left', marginBottom: 12 }}
         />
       )}

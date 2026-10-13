@@ -15,7 +15,12 @@
  *  - USDT: blacklisted recipient blocked, frozen vault blocked;
  *  - first-time recipients need an explicit confirmation;
  *  - send-max uses max:{token} and the relay's maxSendable;
- *  - not live (no sponsor pinned): nothing is quoted or sent.
+ *  - not live (no sponsor pinned): nothing is quoted or sent;
+ *  - CHN-9: every Op is recorded BEFORE it is posted; after any outcome other
+ *    than a nonce the chain shows used (refusal, relay error, timeout, a
+ *    txid that never lands) the next send of the vault reuses its nonce
+ *    (sponsored and self-pay), with a banner;
+ *  - KAS-7 sibling: only plain-decimal user amounts are quoted.
  */
 import {
   describe,
@@ -49,6 +54,10 @@ const m = vi.hoisted(() => ({
   usdt: '50000000',
   contacts: [],
   xpriv: '',
+  pending: vi.fn(),
+  record: vi.fn(),
+  actual: null,
+  socket: { txRejected: '', chain: '', txid: '' },
 }));
 
 vi.mock('@runonflux/tron-multisig', async (importOriginal) => {
@@ -73,12 +82,15 @@ vi.mock('@runonflux/tron-multisig', async (importOriginal) => {
 });
 vi.mock('../../src/lib/tron', async (importOriginal) => {
   const actual = await importOriginal();
+  m.actual = actual;
   return {
     ...actual,
     requestTronQuote: m.quote,
     isTronUsdtBlacklisted: m.blacklisted,
     pickTronSelfPayNonce: m.nonce,
     fetchTronKeyAccount: m.keyAccount,
+    pendingTronOutstandingNonce: m.pending,
+    recordTronOutstandingPayload: m.record,
   };
 });
 vi.mock('../../src/lib/balances', () => ({
@@ -122,10 +134,10 @@ vi.mock('../../src/hooks/useRelayAuth', () => ({
 }));
 vi.mock('../../src/hooks/useSocket', () => ({
   useSocket: () => ({
-    txid: '',
+    txid: m.socket.txid ?? '',
     clearTxid: () => {},
-    txRejected: '',
-    chain: '',
+    txRejected: m.socket.txRejected,
+    chain: m.socket.chain,
     clearTxRejected: () => {},
   }),
 }));
@@ -266,9 +278,14 @@ beforeEach(() => {
     m.keyAccount,
     m.post,
     m.toast,
+    m.pending,
+    m.record,
   ]) {
     f.mockReset();
   }
+  m.socket = { txRejected: '', chain: '', txid: '' };
+  localStorage.clear();
+  m.pending.mockResolvedValue(null);
   m.net = m.live;
   m.trx = '100000000';
   m.usdt = '50000000';
@@ -517,5 +534,147 @@ describe('useTronSendStrategy', () => {
     expect(m.toast).toHaveBeenCalledWith(
       expect.objectContaining({ content: 'send:err_tron_not_live' }),
     );
+  });
+
+  it('CHN-9: a refused Op is recorded; the next send reuses its nonce (sponsored and self-pay)', async () => {
+    await mount();
+    await compose(USDT, '25');
+    await submit();
+    const first = postedAction().payload;
+    expect(JSON.parse(first).op.nonce).toBe('7');
+
+    // SSP Key reports the relay's refusal: the Op we sent is recorded, and
+    // the record (still valid, unused on chain) is re-read for the banner.
+    const deadline = nowS() + 1500n;
+    m.pending.mockResolvedValue({ nonce: 3n, deadline });
+    m.socket = { txRejected: first, chain: 'tron' };
+    await act(async () => root.render(createElement(Harness)));
+    await flush();
+    expect(m.record).toHaveBeenCalledWith(first, 'tron');
+
+    // The next sponsored send must carry ITS nonce (3), not the relay's
+    // freshly quoted one (7).
+    m.socket = { txRejected: '', chain: '' };
+    await act(async () => root.render(createElement(Harness)));
+    await compose(USDT, '24');
+    const banner = findElement(
+      view.composeExtra,
+      (el) => el.props?.message === 'send:tron_refused_pending_title',
+    );
+    expect(banner).not.toBeNull();
+    await submit();
+    const second = JSON.parse(postedAction().payload);
+    expect(second.op.nonce).toBe('3');
+    expect(m.pending).toHaveBeenCalledWith({ chain: 'tron', vault: VAULT });
+    // the reviewed fee from the quote is kept
+    expect(second.op.fee.amount).toBe('6300000');
+
+    // Self-pay reuses it too, instead of a fresh self-pay nonce.
+    const toggle = findElement(
+      view.feeSection,
+      (el) => el.props?.children === 'send:tron_self_pay_toggle',
+    );
+    await act(async () => toggle.props.onChange({ target: { checked: true } }));
+    await flush();
+    await submit();
+    expect(JSON.parse(postedAction().payload).op.nonce).toBe('3');
+    expect(m.nonce).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['a relay error when posting', 'post-error'],
+    ['a timeout (no answer from SSP Key at all)', 'timeout'],
+    ['a fake success txid that is not on chain', 'fake-txid'],
+  ])(
+    'CHN-9: after %s, the next send reuses the nonce until the chain shows it used',
+    async (_label, kind) => {
+      // The REAL record + lookup, against a fake TRON node of this wallet.
+      const used = new Set();
+      const node = {
+        hasCode: vi.fn(async () => true),
+        isNonceUsed: vi.fn(async (_v, n) => used.has(n)),
+      };
+      m.record.mockImplementation((payload, chain) =>
+        m.actual.recordTronOutstandingPayload(payload, chain),
+      );
+      m.pending.mockImplementation((p) =>
+        m.actual.pendingTronOutstandingNonce({ ...p, client: node }),
+      );
+      await mount();
+      await compose(USDT, '25');
+      if (kind === 'post-error') {
+        m.post.mockRejectedValueOnce(
+          new Error('Request failed with status code 502'),
+        );
+      }
+      await submit();
+      expect(m.post).toHaveBeenCalledTimes(1);
+      // recorded BEFORE it was posted
+      expect(m.record.mock.invocationCallOrder[0]).toBeLessThan(
+        m.post.mock.invocationCallOrder[0],
+      );
+      const first = JSON.parse(m.post.mock.calls[0][1].payload);
+      expect(first.op.nonce).toBe('7');
+      if (kind === 'fake-txid') {
+        m.socket = { txRejected: '', chain: 'tron', txid: 'ab'.repeat(32) };
+        await act(async () => root.render(createElement(Harness)));
+        await flush();
+        m.socket = { txRejected: '', chain: '', txid: '' };
+        await act(async () => root.render(createElement(Harness)));
+      }
+
+      // The relay now quotes a FRESH nonce; the send must not use it.
+      m.quote.mockImplementation(async () => quote({ nonce: '8' }));
+      await compose(USDT, '24');
+      await submit();
+      expect(JSON.parse(postedAction().payload).op.nonce).toBe('7');
+      expect(node.isNonceUsed).toHaveBeenCalledWith(VAULT, 7n);
+
+      // Once this wallet's node shows nonce 7 used, the quoted one is used.
+      used.add(7n);
+      await compose(USDT, '23');
+      await submit();
+      expect(JSON.parse(postedAction().payload).op.nonce).toBe('8');
+    },
+  );
+
+  it('CHN-9: an Op whose record cannot be saved is never posted', async () => {
+    await mount();
+    await compose(USDT, '25');
+    m.record.mockImplementation(() => {
+      throw Object.assign(new Error('Could not save'), {
+        code: 'OUTSTANDING_OPS_UNWRITABLE',
+      });
+    });
+    await submit();
+    expect(m.record).toHaveBeenCalledTimes(1);
+    expect(m.post).not.toHaveBeenCalled();
+    expect(m.toast).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'error' }),
+    );
+  });
+
+  it('CHN-9: an unreadable outstanding-op record refuses the send (never forgets it)', async () => {
+    await mount();
+    await compose(USDT, '25');
+    m.pending.mockRejectedValue(
+      Object.assign(new Error('paused until 12:00'), {
+        code: 'OUTSTANDING_OPS_UNREADABLE',
+      }),
+    );
+    await submit();
+    expect(m.post).not.toHaveBeenCalled();
+    expect(m.toast).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'error' }),
+    );
+  });
+
+  it('KAS-7 sibling: hex / exponent amounts are not quoted or sent', async () => {
+    await mount();
+    for (const bad of ['0x10', '1e2', '+1', ' 1']) {
+      await compose('', bad);
+      expect(view.validateCompose()).toBe('send:err_invalid_amount');
+    }
+    expect(m.quote).not.toHaveBeenCalled();
   });
 });
