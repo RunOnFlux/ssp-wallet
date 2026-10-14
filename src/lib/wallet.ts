@@ -22,6 +22,7 @@ import {
   publicPrivateNonce,
 } from '../types';
 import { blockchains } from '@storage/blockchains';
+import { generateAddressKeypairKAS, generateMultisigAddressKAS } from './kaspa';
 
 function getSolanaProgramId(chain: keyof cryptos): PublicKey {
   const id = blockchains[chain].programId;
@@ -33,6 +34,17 @@ function getSolanaProgramId(chain: keyof cryptos): PublicKey {
 
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
+}
+
+/**
+ * The identity, node-identity and WIF helpers are utxolib-only (Bitcoin-family
+ * keys and addresses). Kaspa must never reach them: its libid ('kaspa') is not
+ * a utxolib network and the result would be meaningless.
+ */
+function assertNotKaspa(chain: keyof cryptos, fn: string): void {
+  if (blockchains[chain]?.chainType === 'kas') {
+    throw new Error(`${fn} is not supported for Kaspa`);
+  }
 }
 
 export function getScriptType(type: string): number {
@@ -133,6 +145,17 @@ export function generateMultisigAddress(
 ): multisig {
   if (blockchains[chain].chainType === 'evm') {
     return generateMultisigAddressEVM(
+      xpub1,
+      xpub2,
+      typeIndex,
+      addressIndex,
+      chain,
+    );
+  }
+  if (blockchains[chain].chainType === 'kas') {
+    // Kaspa: P2SH 2-of-2 over the sorted x-only keys at the same leaf
+    // (@runonflux/kaspa-core). Never utxolib.
+    return generateMultisigAddressKAS(
       xpub1,
       xpub2,
       typeIndex,
@@ -516,6 +539,10 @@ export function generateAddressKeypair(
   if (chainType === 'sol') {
     return generateAddressKeypairSOL(xpriv, typeIndex, addressIndex, chain);
   }
+  if (chainType === 'kas') {
+    // raw 32-byte private key (hex) + x-only public key (hex)
+    return generateAddressKeypairKAS(xpriv, typeIndex, addressIndex, chain);
+  }
   const libID = getLibId(chain);
   const bipParams = blockchains[chain].bip32;
   const networkBipParams = utxolib.networks[libID].bip32;
@@ -555,6 +582,7 @@ export function generateInternalIdentityAddress(
   xpub: string,
   chain: keyof cryptos,
 ): string {
+  assertNotKaspa(chain, 'generateInternalIdentityAddress');
   const typeIndex = 10; // identity index
   const addressIndex = 0; // identity index
 
@@ -623,6 +651,7 @@ export function generateNodeIdentityKeypair(
   addressIndex: number,
   chain: keyof cryptos,
 ): keyPair {
+  assertNotKaspa(chain, 'generateNodeIdentityKeypair');
   const libID = getLibId(chain);
   const bipParams = blockchains[chain].bip32;
   const networkBipParams = utxolib.networks[libID].bip32;
@@ -690,6 +719,7 @@ export function wifToPrivateKey(
   privateKey: string,
   chain: keyof cryptos,
 ): string {
+  assertNotKaspa(chain, 'wifToPrivateKey');
   const libID = getLibId(chain);
   const network = utxolib.networks[libID];
   const keyPair = utxolib.ECPair.fromWIF(privateKey, network);

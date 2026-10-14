@@ -20,6 +20,7 @@ import bscLogo from '../assets/bsc.svg';
 import avaxLogo from '../assets/avax.svg';
 import solDevnetLogo from '../assets/solDevnet.svg';
 import solMainnetLogo from '../assets/solMainnet.svg';
+import kasLogo from '../assets/kas.svg';
 
 const flux = {
   id: 'flux',
@@ -585,6 +586,41 @@ const solMainnet = {
   onramperNetwork: 'solana',
 };
 
+// Kaspa: P2SH 2-of-2 over sorted x-only Schnorr keys, built and signed with
+// @runonflux/kaspa-core (not utxolib — chainType 'kas' routes every chain
+// branch). Keys come from the normal BIP-48 derivation m/48'/111111'/0'/0'
+// (secp256k1 xpubs work unchanged). Every field that affects the address or
+// the xpub string (slip, scriptType, bip32, libid) must match SSP Key.
+const kas = {
+  id: 'kas',
+  // Kaspa address prefix (kaspa-core NetworkPrefix).
+  libid: 'kaspa',
+  name: 'Kaspa',
+  symbol: 'KAS',
+  logo: kasLogo,
+  slip: 111111,
+  decimals: 8,
+  node: backends().kas.node,
+  api: backends().kas.api,
+  bip32: {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  },
+  scriptType: 'p2sh',
+  chainType: 'kas',
+  backend: 'kaspa-rest',
+  // Fee rates are sompi per gram of mass (Kaspa fees are mass-based, not
+  // size-based); 100 is the network's minimum relay rate.
+  minFeePerByte: 100,
+  feePerByte: 100,
+  maxMessage: 0, // no payloads on vault spends
+  maxTxSize: 100000, // wallet-standard mass cap (grams)
+  maxFee: 500000000, // 5 KAS — matches the library's signing ceiling
+  rbf: false,
+  tokens: [],
+  onramperNetwork: 'kaspa',
+};
+
 export const blockchains = {
   btc,
   flux,
@@ -605,6 +641,7 @@ export const blockchains = {
   amoy,
   solMainnet,
   solDevnet,
+  kas,
 };
 
 // SLIP-44 coin type 1 is the universal testnet marker — every testnet config

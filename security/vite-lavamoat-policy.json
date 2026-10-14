@@ -124,6 +124,18 @@
       "packages": {},
       "builtins": {}
     },
+    "@runonflux/kaspa-core": {
+      "packageName": "@runonflux/kaspa-core",
+      "globals": {
+        "console": true,
+        "Object": true,
+        "Array": true,
+        "Error": true,
+        "TypeError": true
+      },
+      "packages": {},
+      "builtins": {}
+    },
     "@runonflux/solana-multisig": {
       "packageName": "@runonflux/solana-multisig",
       "globals": {
