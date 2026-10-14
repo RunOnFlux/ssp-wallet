@@ -1762,10 +1762,10 @@
     create-hash "^1.2.0"
     secp256k1 "^5.0.1"
 
-"@runonflux/kaspa-core@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@runonflux/kaspa-core/-/kaspa-core-1.0.0.tgz#75e6ee26d403ee999d16f838606b72910a4ca03e"
-  integrity sha512-cZOrRgakpf8Z82lAi9Ixiltzyz/+NiuZI2n0yzWeN7A8gsXiOJCW4jqb9Ow40OubqVaUMfxsqbyrF02a1xCSRA==
+"@runonflux/kaspa-core@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@runonflux/kaspa-core/-/kaspa-core-1.0.1.tgz#cc510f209670ced44ff970751fdffea957eeeaf9"
+  integrity sha512-b0S+DHsN+KaeoLyhZWdNdxKqCR5qRx9G2UQN21k7nVUF7M33Bv6hl04HM6lhs9yVfaJCtalTZ0e57GyOA9HEwg==
   dependencies:
     "@noble/curves" "2.4.0"
     "@noble/hashes" "2.4.0"
