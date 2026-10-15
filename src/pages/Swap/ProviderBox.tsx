@@ -23,7 +23,10 @@ function ProviderBox(props: {
           avatar={
             <div style={{ marginTop: '12px' }}>
               <Avatar
-                src={getExchangeLogo(providerFound?.name || '')}
+                src={getExchangeLogo(
+                  providerFound?.name || '',
+                  providerFound?.logo,
+                )}
                 size={30}
               />
             </div>
