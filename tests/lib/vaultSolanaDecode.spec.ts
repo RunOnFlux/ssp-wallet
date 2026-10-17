@@ -425,18 +425,15 @@ describe('@runonflux/solana-multisig decoder', () => {
     expect(r.address).toBe(destAta.toBase58()); // falls back to the raw ata
   });
 
-  it('decodes legacy SPL Transfer (tag 3) with no mint/decimals', async () => {
-    const { base64, destAta } = await buildSplBundle({ legacyTransfer: true });
+  it('counts legacy SPL Transfer (tag 3) as an unknown inner instruction, never a recipient (0.12.1, SOL-5)', async () => {
+    const { base64 } = await buildSplBundle({ legacyTransfer: true });
     const decoded = decodeVaultSolanaTransaction(base64, programId);
 
     expect(decoded.kind).toBe('create');
     if (decoded.kind !== 'create') return;
-    const r = decoded.recipients[0];
-    expect(r.asset).toBe('spl');
-    expect(r.mint).toBeUndefined();
-    expect(r.decimals).toBeUndefined();
-    expect(r.amount).toBe(TOKEN_AMOUNT);
-    expect(r.ata).toBe(destAta.toBase58());
+    // No mint in the bytes, so the token cannot be bound to the display.
+    expect(decoded.recipients).toHaveLength(0);
+    expect(decoded.unknownInnerInstructionCount).toBe(1);
   });
 
   it('classifies an approve-only tx (split-flow subsequent signer) as kind approve', async () => {
@@ -599,7 +596,10 @@ describe('decodeVaultSolTransaction (wallet wrapper)', () => {
       tokenMint: mint.toBase58(),
     });
     expect(result.mismatch).toBe(true);
-    expect(result.mismatchReasons.join(' ')).toContain('legacy SPL Transfer');
+    // solana-multisig 0.12.1 refuses tag 3 itself (counted as unrecognized).
+    expect(result.mismatchReasons.join(' ')).toContain(
+      'unrecognized inner instruction',
+    );
   });
 
   it('refuses an SPL destination whose owner is not the displayed recipient', async () => {
