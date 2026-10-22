@@ -7,6 +7,57 @@ import {
   type bgRequest,
   type dataBgParams,
 } from '../lib/sanitizeRequest';
+import { checkWkSignPolicy, isEnterpriseOrigin } from '../lib/wkMessage';
+import { VAULT_ERROR_CODES } from '../lib/vaultGate';
+
+/**
+ * A request as background.js forwards it. `requestId` is minted by the
+ * background per dApp request; every reply must echo it, and the background
+ * resolves only the in-flight request with that id (security review WEXT-3).
+ */
+type IncomingBgMessage = bgRequest & { requestId?: unknown };
+
+/** window.ssp methods that only the SSP Enterprise app may call (WEXT-7). */
+const ENTERPRISE_ONLY_METHODS = new Set([
+  'enterprise_vault_xpub',
+  'enterprise_vault_sign_tx',
+  'enterprise_vault_sign_message',
+  'enterprise_flux_node_start',
+  'enterprise_nonce_sync',
+  'enterprise_vault_address',
+]);
+
+/**
+ * VD-2: the vault descriptor + hash SSP Enterprise must send with every vault
+ * request. Missing -> the app predates descriptor pinning: refuse (fail
+ * closed). Kept verbatim (the dialogs verify it, SSP Key gets it unchanged).
+ */
+function readVaultDescriptorParams(
+  params: { vaultDescriptor?: unknown; vaultDescriptorHash?: unknown } | null,
+):
+  | { ok: true; descriptor: Record<string, unknown>; hash: string }
+  | { ok: false; reason: 'missing' | 'invalid' } {
+  const descriptor = params?.vaultDescriptor;
+  const hash = params?.vaultDescriptorHash;
+  if (
+    descriptor === undefined ||
+    descriptor === null ||
+    hash === undefined ||
+    hash === null ||
+    hash === ''
+  ) {
+    return { ok: false, reason: 'missing' };
+  }
+  if (
+    typeof descriptor !== 'object' ||
+    Array.isArray(descriptor) ||
+    typeof hash !== 'string' ||
+    !/^[0-9a-f]{64}$/.test(hash)
+  ) {
+    return { ok: false, reason: 'invalid' };
+  }
+  return { ok: true, descriptor: descriptor as Record<string, unknown>, hash };
+}
 
 export interface WkSignRequesterInfo {
   // Browser-verified origin of the requesting frame, stamped by background.js
@@ -29,6 +80,8 @@ export interface WkSignRequesterInfo {
 }
 
 interface SspConnectContextType {
+  /** Background request id of the request currently being shown. */
+  requestId: string;
   type: string;
   address: string;
   message: string;
@@ -72,10 +125,19 @@ interface SspConnectContextType {
   // WalletConnect Phase 2 — vault message signing (personal_sign).
   signMessage?: string; // human-readable message text (display + Key)
   dappOrigin?: string; // requesting dApp name/url
+  // VD: vault descriptor + hash (verified and pinned by the dialogs,
+  // forwarded verbatim to SSP Key).
+  vaultDescriptor?: unknown;
+  vaultDescriptorHash?: string;
+  // VD-5 enterprise_vault_address
+  vaultTypeIndex?: number;
+  vaultAddressIndex?: number;
+  expectedAddress?: string;
   clearRequest?: () => void;
 }
 
 const defaultValue: SspConnectContextType = {
+  requestId: '',
   type: '', // only sign_message and sspwid_sign_message and pay and wk_sign_message and enterprise_vault_xpub and enterprise_vault_sign_tx
   address: '', // address to sign with
   message: '', // message to sign
@@ -109,6 +171,7 @@ export const SspConnectProvider = ({
     sspWalletKeyInternalIdentity: wkIdentity,
     identityChain,
   } = useAppSelector((state) => state.sspState);
+  const [requestId, setRequestId] = useState('');
   const [type, setType] = useState('');
   const [address, setAddress] = useState('');
   const [message, setMessage] = useState('');
@@ -161,6 +224,19 @@ export const SspConnectProvider = ({
   const [proposalRefs, setProposalRefs] = useState<
     { orgId: string; vaultId: string; proposalId: string } | undefined
   >(undefined);
+  const [vaultDescriptor, setVaultDescriptor] = useState<unknown>(undefined);
+  const [vaultDescriptorHash, setVaultDescriptorHash] = useState<
+    string | undefined
+  >(undefined);
+  const [vaultTypeIndex, setVaultTypeIndex] = useState<number | undefined>(
+    undefined,
+  );
+  const [vaultAddressIndex, setVaultAddressIndex] = useState<
+    number | undefined
+  >(undefined);
+  const [expectedAddress, setExpectedAddress] = useState<string | undefined>(
+    undefined,
+  );
   const { t } = useTranslation(['home', 'common']);
   const browser = window.chrome || window.browser;
 
@@ -278,31 +354,101 @@ export const SspConnectProvider = ({
   useEffect(() => {
     if (browser?.runtime?.onMessage) {
       // this will move to separate lib file
-      const handler = (originalRequest: bgRequest) => {
+      const handler = (originalRequest: IncomingBgMessage) => {
         console.log(originalRequest);
         // sanitize request
         if (
-          originalRequest &&
-          typeof originalRequest === 'object' &&
+          !originalRequest ||
+          typeof originalRequest !== 'object' ||
           originalRequest.origin !== 'ssp-background'
         ) {
-          console.log('Ignore Invalid Origin' + originalRequest.origin);
+          console.log('Ignore Invalid Origin' + originalRequest?.origin);
           return;
         }
-        const request = sanitizeRequest(originalRequest);
-        if (!request) {
+        const incomingRequestId =
+          typeof originalRequest.requestId === 'string'
+            ? originalRequest.requestId
+            : '';
+        // Every reply to this request — errors included — carries its id, so
+        // the background can only ever resolve THIS request with it.
+        const reply = (data: {
+          status: string;
+          result?: string;
+          errorCode?: string;
+        }) => {
           void browser.runtime.sendMessage({
             origin: 'ssp',
-            data: {
+            requestId: incomingRequestId,
+            data,
+          });
+        };
+        const rejectWith = (detail: string) => {
+          reply({
+            status: 'ERROR',
+            result: t('common:request_rejected') + ': ' + detail,
+          });
+        };
+        const request = sanitizeRequest(originalRequest);
+        if (!request) {
+          rejectWith(t('home:sspConnect.invalid_request'));
+          return;
+        }
+        // The browser-verified origin of the requesting frame (stamped by
+        // background.js from the runtime `sender`).
+        const verifiedOrigin =
+          typeof request.data.params?.verifiedOrigin === 'string'
+            ? request.data.params.verifiedOrigin
+            : null;
+        // enterprise_* methods: SSP Enterprise only (WEXT-7).
+        if (
+          ENTERPRISE_ONLY_METHODS.has(request.data.method) &&
+          !isEnterpriseOrigin(verifiedOrigin)
+        ) {
+          console.log('Enterprise method from non-enterprise origin');
+          rejectWith(t('home:sspConnect.enterprise_origin_only'));
+          return;
+        }
+        // wk_sign_message: classify the message and bind SSP-internal
+        // challenges to the requesting origin BEFORE anything is shown
+        // (H-6 / WEXT-1). The dialog re-checks at sign time.
+        if (request.data.method === 'wk_sign_message') {
+          const policy = checkWkSignPolicy(
+            request.data.params?.message,
+            verifiedOrigin,
+          );
+          if (!policy.allowed) {
+            console.log('wk_sign_message refused:', policy.reason);
+            rejectWith(t('home:sspConnect.wk_message_refused'));
+            return;
+          }
+        }
+        setRequestId(incomingRequestId);
+        const params = request.data.params ?? ({} as dataBgParams);
+        // VD-2: every vault request carries the vault descriptor + hash. An
+        // app without them predates descriptor pinning — refuse (fail closed).
+        const acceptVaultDescriptor = (): boolean => {
+          const vd = readVaultDescriptorParams(params);
+          if (!vd.ok) {
+            console.log('Vault request without a valid vault descriptor');
+            reply({
               status: 'ERROR',
               result:
                 t('common:request_rejected') +
                 ': ' +
-                t('home:sspConnect.invalid_request'),
-            },
-          });
-          return;
-        }
+                (vd.reason === 'missing'
+                  ? t('home:vaultDescriptor.err_missing')
+                  : t('home:vaultDescriptor.err_invalid')),
+              errorCode:
+                vd.reason === 'missing'
+                  ? VAULT_ERROR_CODES.missing
+                  : VAULT_ERROR_CODES.invalid,
+            });
+            return false;
+          }
+          setVaultDescriptor(vd.descriptor);
+          setVaultDescriptorHash(vd.hash);
+          return true;
+        };
 
         if (
           request.data.method === 'sign_message' ||
@@ -318,19 +464,16 @@ export const SspConnectProvider = ({
             setType(request.data.method);
             setAddress(request.data.params.address || wExternalIdentity); // this can be undefined if its a request before we have identity
             setMessage(request.data.params.message || '');
-            // Set authMode and requester info for wk_sign_message
+            // Every signing dialog names the browser-verified requester (H-9).
+            setRequesterInfo(buildRequesterInfo(params));
             if (request.data.method === 'wk_sign_message') {
               setAuthMode(request.data.params.authMode ?? 2);
-              setRequesterInfo(buildRequesterInfo(request.data.params));
             }
           } else {
             console.log('Invalid chain' + request.data.params.chain);
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result: 'REQUEST REJECTED: Invalid chain',
-              },
+            reply({
+              status: 'ERROR',
+              result: 'REQUEST REJECTED: Invalid chain',
             });
           }
         } else if (request.data.method === 'pay') {
@@ -348,21 +491,19 @@ export const SspConnectProvider = ({
                   console.log(
                     'Invalid contract' + request.data.params.contract,
                   );
-                  void browser.runtime.sendMessage({
-                    origin: 'ssp',
-                    data: {
-                      status: 'ERROR',
-                      result:
-                        t('common:request_rejected') +
-                        ': ' +
-                        t('home:sspConnect.unsupported_contract'),
-                    },
+                  reply({
+                    status: 'ERROR',
+                    result:
+                      t('common:request_rejected') +
+                      ': ' +
+                      t('home:sspConnect.unsupported_contract'),
                   });
                   return;
                 }
               }
             }
             setChain(request.data.params.chain || identityChain);
+            setRequesterInfo(buildRequesterInfo(params));
             // default to btc
             setAmount(request.data.params.amount || '');
             setType(request.data.method);
@@ -374,15 +515,12 @@ export const SspConnectProvider = ({
             }
           } else {
             console.log('Invalid chain' + request.data.params.chain);
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_chain'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_chain'),
             });
           }
         } else if (
@@ -392,30 +530,30 @@ export const SspConnectProvider = ({
         ) {
           console.log(request.data.method);
           // show dialog asking for approval to get information about all integarted chains in ssp
+          setRequesterInfo(buildRequesterInfo(params));
           setType(request.data.method);
         } else if (request.data.method === 'chain_tokens') {
           console.log(request.data.method);
           // show dialog asking for approval to get information about all tokens for a given chain
+          setRequesterInfo(buildRequesterInfo(params));
           setType(request.data.method);
           setChain(request.data.params.chain || '');
         } else if (request.data.method === 'user_addresses') {
           console.log(request.data.method);
           // show dialog asking for approval to get the list of addresses for a given chain
+          setRequesterInfo(buildRequesterInfo(params));
           setType(request.data.method);
           setChain(request.data.params.chain || '');
         } else if (request.data.method === 'enterprise_vault_xpub') {
           // Wallet must be synced with Key before enterprise vault operations
           if (!wkIdentity) {
             console.log('Wallet not synced with Key for enterprise_vault_xpub');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:enterpriseVaultXpub.err_not_synced'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:enterpriseVaultXpub.err_not_synced'),
             });
             return;
           }
@@ -429,15 +567,12 @@ export const SspConnectProvider = ({
 
           if (!vaultChain || !blockchains[vaultChain]) {
             console.log('Invalid chain for enterprise_vault_xpub');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_chain'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_chain'),
             });
             return;
           }
@@ -448,15 +583,12 @@ export const SspConnectProvider = ({
             vaultOrgIndex > 99999
           ) {
             console.log('Invalid orgIndex for enterprise_vault_xpub');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
@@ -466,15 +598,12 @@ export const SspConnectProvider = ({
             vaultIndexParam < 0
           ) {
             console.log('Invalid vaultIndex for enterprise_vault_xpub');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
@@ -484,15 +613,12 @@ export const SspConnectProvider = ({
             vaultNameParam.length > 100
           ) {
             console.log('Invalid vaultName for enterprise_vault_xpub');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
@@ -502,15 +628,12 @@ export const SspConnectProvider = ({
             orgNameParam.length > 100
           ) {
             console.log('Invalid orgName for enterprise_vault_xpub');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
@@ -533,15 +656,12 @@ export const SspConnectProvider = ({
             console.log(
               'Wallet not synced with Key for enterprise_vault_sign_tx',
             );
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:enterpriseVaultXpub.err_not_synced'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:enterpriseVaultXpub.err_not_synced'),
             });
             return;
           }
@@ -560,15 +680,12 @@ export const SspConnectProvider = ({
 
           if (!signChain || !blockchains[signChain]) {
             console.log('Invalid chain for enterprise_vault_sign_tx');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_chain'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_chain'),
             });
             return;
           }
@@ -579,15 +696,12 @@ export const SspConnectProvider = ({
             signOrgIndex > 99999
           ) {
             console.log('Invalid orgIndex for enterprise_vault_sign_tx');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
@@ -598,74 +712,60 @@ export const SspConnectProvider = ({
             signVaultIndex > 99
           ) {
             console.log('Invalid vaultIndex for enterprise_vault_sign_tx');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
           if (typeof signRecipients !== 'string' || !signRecipients) {
             console.log('Invalid recipients for enterprise_vault_sign_tx');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
           if (typeof signFee !== 'string' || !signFee) {
             console.log('Invalid fee for enterprise_vault_sign_tx');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
           if (typeof signRawUnsignedTx !== 'string' || !signRawUnsignedTx) {
             console.log('Invalid rawUnsignedTx for enterprise_vault_sign_tx');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
           if (typeof signInputDetails !== 'string' || !signInputDetails) {
             console.log('Invalid inputDetails for enterprise_vault_sign_tx');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:sspConnect.invalid_request'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:sspConnect.invalid_request'),
             });
             return;
           }
+          if (!acceptVaultDescriptor()) return;
 
           setChain(signChain);
           setOrgIndex(signOrgIndex);
@@ -837,15 +937,12 @@ export const SspConnectProvider = ({
           // the enterprise-vault-sign-tx modal/flow: the digest is signed exactly
           // like a UserOp hash, but the UI shows the message and there is no tx.
           if (!wkIdentity) {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:enterpriseVaultXpub.err_not_synced'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:enterpriseVaultXpub.err_not_synced'),
             });
             return;
           }
@@ -858,12 +955,9 @@ export const SspConnectProvider = ({
           const mDappOrigin = p.dappOrigin;
           const tr = t as unknown as (key: string) => string;
           const invalid = (key: string) => {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result: t('common:request_rejected') + ': ' + tr(key),
-              },
+            reply({
+              status: 'ERROR',
+              result: t('common:request_rejected') + ': ' + tr(key),
             });
           };
           if (
@@ -902,6 +996,7 @@ export const SspConnectProvider = ({
             invalid('home:sspConnect.invalid_request');
             return;
           }
+          if (!acceptVaultDescriptor()) return;
           const mAddrIdx =
             typeof p.addressIndex === 'number' &&
             Number.isInteger(p.addressIndex) &&
@@ -1014,15 +1109,12 @@ export const SspConnectProvider = ({
             console.log(
               'Wallet not synced with Key for enterprise_flux_node_start',
             );
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:enterpriseVaultXpub.err_not_synced'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:enterpriseVaultXpub.err_not_synced'),
             });
             return;
           }
@@ -1044,12 +1136,9 @@ export const SspConnectProvider = ({
             (fnChain !== 'flux' && fnChain !== 'fluxTestnet')
           ) {
             console.log('Invalid chain for enterprise_flux_node_start');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result: 'Invalid chain — must be flux or fluxTestnet',
-              },
+            reply({
+              status: 'ERROR',
+              result: 'Invalid chain — must be flux or fluxTestnet',
             });
             return;
           }
@@ -1060,12 +1149,9 @@ export const SspConnectProvider = ({
             fnOrgIndex > 99999
           ) {
             console.log('Invalid orgIndex for enterprise_flux_node_start');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result: 'Invalid orgIndex',
-              },
+            reply({
+              status: 'ERROR',
+              result: 'Invalid orgIndex',
             });
             return;
           }
@@ -1076,21 +1162,15 @@ export const SspConnectProvider = ({
             fnVaultIndex > 9999
           ) {
             console.log('Invalid vaultIndex for enterprise_flux_node_start');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result: 'Invalid vaultIndex',
-              },
+            reply({
+              status: 'ERROR',
+              result: 'Invalid vaultIndex',
             });
             return;
           }
 
           if (typeof fnAddressIndex !== 'number' || fnAddressIndex < 0) {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Invalid addressIndex' },
-            });
+            reply({ status: 'ERROR', result: 'Invalid addressIndex' });
             return;
           }
 
@@ -1098,10 +1178,7 @@ export const SspConnectProvider = ({
             typeof fnCollateralTxid !== 'string' ||
             fnCollateralTxid.length !== 64
           ) {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Invalid collateral txid' },
-            });
+            reply({ status: 'ERROR', result: 'Invalid collateral txid' });
             return;
           }
 
@@ -1109,28 +1186,20 @@ export const SspConnectProvider = ({
             typeof fnIdentityPubKey !== 'string' ||
             fnIdentityPubKey.length !== 66
           ) {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Invalid identity public key' },
-            });
+            reply({ status: 'ERROR', result: 'Invalid identity public key' });
             return;
           }
 
           if (typeof fnRedeemScript !== 'string' || !fnRedeemScript) {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Missing redeemScript' },
-            });
+            reply({ status: 'ERROR', result: 'Missing redeemScript' });
             return;
           }
 
           if (fnSigningDevice !== 'wallet' && fnSigningDevice !== 'key') {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Invalid signingDevice' },
-            });
+            reply({ status: 'ERROR', result: 'Invalid signingDevice' });
             return;
           }
+          if (!acceptVaultDescriptor()) return;
 
           // Store all params in context
           setOrgIndex(fnOrgIndex);
@@ -1157,6 +1226,60 @@ export const SspConnectProvider = ({
           setType('enterprise_flux_node_start');
 
           setRequesterInfo(buildRequesterInfo(request.data.params));
+        } else if (request.data.method === 'enterprise_vault_address') {
+          // VD-5 (H-17): show a vault address derived on this device from the
+          // verified, pinned signer set. Origin already restricted to
+          // ENTERPRISE_ORIGINS above (ENTERPRISE_ONLY_METHODS).
+          if (!wkIdentity) {
+            rejectWith(t('home:enterpriseVaultXpub.err_not_synced'));
+            return;
+          }
+          const vaTypeIndex = params.typeIndex;
+          const vaAddressIndex = params.addressIndex;
+          const vaExpected = params.expectedAddress;
+          if (
+            vaTypeIndex !== undefined &&
+            (typeof vaTypeIndex !== 'number' ||
+              !Number.isInteger(vaTypeIndex) ||
+              vaTypeIndex < 0 ||
+              vaTypeIndex >= 2 ** 31)
+          ) {
+            rejectWith(t('home:sspConnect.invalid_request'));
+            return;
+          }
+          if (
+            typeof vaAddressIndex !== 'number' ||
+            !Number.isInteger(vaAddressIndex) ||
+            vaAddressIndex < 0 ||
+            vaAddressIndex >= 2 ** 31
+          ) {
+            rejectWith(t('home:sspConnect.invalid_request'));
+            return;
+          }
+          if (
+            typeof vaExpected !== 'string' ||
+            !vaExpected ||
+            vaExpected.length > 200
+          ) {
+            rejectWith(t('home:sspConnect.invalid_request'));
+            return;
+          }
+          if (!acceptVaultDescriptor()) return;
+          setVaultTypeIndex(vaTypeIndex);
+          setVaultAddressIndex(vaAddressIndex);
+          setExpectedAddress(vaExpected);
+          setVaultName(
+            typeof params.vaultName === 'string'
+              ? params.vaultName.substring(0, 100)
+              : '',
+          );
+          setOrgName(
+            typeof params.orgName === 'string'
+              ? params.orgName.substring(0, 100)
+              : '',
+          );
+          setType('enterprise_vault_address');
+          setRequesterInfo(buildRequesterInfo(params));
         } else if (request.data.method === 'flux_node_start') {
           // Consumer variant of enterprise_flux_node_start: signs the node
           // start with the collateral key of a regular wallet address
@@ -1176,12 +1299,9 @@ export const SspConnectProvider = ({
             !blockchains[cnChain] ||
             (cnChain !== 'flux' && cnChain !== 'fluxTestnet')
           ) {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result: 'Invalid chain — must be flux or fluxTestnet',
-              },
+            reply({
+              status: 'ERROR',
+              result: 'Invalid chain — must be flux or fluxTestnet',
             });
             return;
           }
@@ -1191,10 +1311,7 @@ export const SspConnectProvider = ({
             cnCollateralAddress.length < 20 ||
             cnCollateralAddress.length > 100
           ) {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Invalid collateral address' },
-            });
+            reply({ status: 'ERROR', result: 'Invalid collateral address' });
             return;
           }
 
@@ -1202,18 +1319,12 @@ export const SspConnectProvider = ({
             typeof cnCollateralTxid !== 'string' ||
             !/^[0-9a-fA-F]{64}$/.test(cnCollateralTxid)
           ) {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Invalid collateral txid' },
-            });
+            reply({ status: 'ERROR', result: 'Invalid collateral txid' });
             return;
           }
 
           if (typeof cnCollateralVout !== 'number') {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Invalid collateral vout' },
-            });
+            reply({ status: 'ERROR', result: 'Invalid collateral vout' });
             return;
           }
 
@@ -1221,10 +1332,7 @@ export const SspConnectProvider = ({
             typeof cnIdentityPubKey !== 'string' ||
             !/^0[23][0-9a-fA-F]{64}$/.test(cnIdentityPubKey)
           ) {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Invalid identity public key' },
-            });
+            reply({ status: 'ERROR', result: 'Invalid identity public key' });
             return;
           }
 
@@ -1237,19 +1345,13 @@ export const SspConnectProvider = ({
                   typeof d !== 'string' || !/^0[23][0-9a-fA-F]{64}$/.test(d),
               )
             ) {
-              void browser.runtime.sendMessage({
-                origin: 'ssp',
-                data: { status: 'ERROR', result: 'Invalid delegates' },
-              });
+              reply({ status: 'ERROR', result: 'Invalid delegates' });
               return;
             }
           }
 
           if (cnNodeName !== undefined && typeof cnNodeName !== 'string') {
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: { status: 'ERROR', result: 'Invalid node name' },
-            });
+            reply({ status: 'ERROR', result: 'Invalid node name' });
             return;
           }
 
@@ -1272,15 +1374,12 @@ export const SspConnectProvider = ({
           // Wallet must be synced with Key before enterprise operations
           if (!wkIdentity) {
             console.log('Wallet not synced with Key for enterprise_nonce_sync');
-            void browser.runtime.sendMessage({
-              origin: 'ssp',
-              data: {
-                status: 'ERROR',
-                result:
-                  t('common:request_rejected') +
-                  ': ' +
-                  t('home:enterpriseVaultXpub.err_not_synced'),
-              },
+            reply({
+              status: 'ERROR',
+              result:
+                t('common:request_rejected') +
+                ': ' +
+                t('home:enterpriseVaultXpub.err_not_synced'),
             });
             return;
           }
@@ -1290,15 +1389,12 @@ export const SspConnectProvider = ({
           setRequesterInfo(buildRequesterInfo(request.data.params));
         } else {
           console.log('Invalid method' + request.data.method);
-          void browser.runtime.sendMessage({
-            origin: 'ssp',
-            data: {
-              status: 'ERROR',
-              result:
-                t('common:request_rejected') +
-                ': ' +
-                t('home:sspConnect.invalid_method'),
-            },
+          reply({
+            status: 'ERROR',
+            result:
+              t('common:request_rejected') +
+              ': ' +
+              t('home:sspConnect.invalid_method'),
           });
         }
       };
@@ -1315,6 +1411,7 @@ export const SspConnectProvider = ({
   }, [wExternalIdentity, wkIdentity, portGeneration]);
 
   const clearRequest = () => {
+    setRequestId('');
     setType('');
     setAddress('');
     setMessage('');
@@ -1347,11 +1444,17 @@ export const SspConnectProvider = ({
     setSigningMode(undefined);
     setSimulation(undefined);
     setProposalRefs(undefined);
+    setVaultDescriptor(undefined);
+    setVaultDescriptorHash(undefined);
+    setVaultTypeIndex(undefined);
+    setVaultAddressIndex(undefined);
+    setExpectedAddress(undefined);
   };
 
   return (
     <SspConnectContext.Provider
       value={{
+        requestId,
         type,
         address,
         chain,
@@ -1384,6 +1487,11 @@ export const SspConnectProvider = ({
         proposalRefs,
         signMessage,
         dappOrigin,
+        vaultDescriptor,
+        vaultDescriptorHash,
+        vaultTypeIndex,
+        vaultAddressIndex,
+        expectedAddress,
         clearRequest,
       }}
     >

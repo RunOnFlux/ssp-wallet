@@ -4,6 +4,7 @@ import localForage from 'localforage';
 import axios from 'axios';
 import { sspConfig } from '@storage/ssp';
 import { useAppSelector } from '../../hooks';
+import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { setTransactions, setBlockheight } from '../../store';
 import { fetchAddressTransactions } from '../../lib/transactions.ts';
 import { getBlockheight } from '../../lib/blockheight.ts';
@@ -25,6 +26,7 @@ function Transactions() {
     (state) => state.fiatCryptoRates,
   );
 
+  const { createReadAuthHeaders } = useRelayAuth();
   const [pendingTxs, setPendingTxs] = useState<pendingTransaction[]>([]);
   const [fiatRate, setFiatRate] = useState(0);
   // Cached-first, like the all-chains Activity page: until the cache read (or
@@ -109,9 +111,13 @@ function Transactions() {
   const getPendingTx = () => {
     console.log('getPendingTx');
     const wInUse = walletInUse;
-    axios
-      .get<actionSSPRelay>(
-        `https://${sspConfig().relay}/v1/action/${sspWalletKeyInternalIdentity}`,
+    const url = `https://${sspConfig().relay}/v1/action/${sspWalletKeyInternalIdentity}`;
+    // RA-4: the pending action is read as wkIdentity, signed whenever the
+    // key material is available.
+    createReadAuthHeaders('wk', sspWalletKeyInternalIdentity, url)
+      .catch(() => null)
+      .then((headers) =>
+        axios.get<actionSSPRelay>(url, headers ? { headers } : undefined),
       )
       .then((res) => {
         if (res.data.action === 'tx') {

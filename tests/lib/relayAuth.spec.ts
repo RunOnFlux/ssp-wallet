@@ -2,13 +2,21 @@
 // @ts-nocheck test suite
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { createHash } from 'crypto';
 import {
   computeBodyHash,
   generateNonce,
   createSignaturePayload,
   signMessage,
   addAuthToRequest,
+  createReadAuthHeaders,
+  readAuthPath,
+  readAuthDataHash,
+  verifyMessageSignature,
+  READ_AUTH_HEADERS,
 } from '../../src/lib/relayAuth';
+import { blockchains } from '@storage/blockchains';
+import utxolib from '@runonflux/utxo-lib';
 
 // Test fixtures - same WIF used in ssp-relay tests for consistency
 const TEST_PRIVATE_KEY_WIF =
@@ -209,5 +217,146 @@ describe('RelayAuth Lib', () => {
 
       expect(result.witnessScript).toBeUndefined();
     });
+  });
+});
+
+// Compressed pubkey of TEST_PRIVATE_KEY_WIF.
+const testPubKeyHex = () =>
+  utxolib.ECPair.fromWIF(TEST_PRIVATE_KEY_WIF, utxolib.networks.bitcoin)
+    .getPublicKeyBuffer()
+    .toString('hex');
+
+describe('RA-4 read auth headers', () => {
+  const wk = 'bc1qexamplewkidentity';
+  const url = `https://relay.sspwallet.com/v1/action/${wk}?cache=1`;
+
+  it('binds the request path (no query) the way the contract defines it', () => {
+    expect(readAuthPath(url)).toBe(`/v1/action/${wk}`);
+    expect(readAuthPath('/v1/sync/1abc?x=y')).toBe('/v1/sync/1abc');
+    expect(readAuthDataHash(`/v1/action/${wk}`)).toBe(
+      createHash('sha256').update(`GET /v1/action/${wk}`, 'utf8').digest('hex'),
+    );
+  });
+
+  it('produces all four headers for a multisig identity', () => {
+    const headers = createReadAuthHeaders({
+      identity: wk,
+      url,
+      privateKeyWIF: TEST_PRIVATE_KEY_WIF,
+      publicKey: testPubKeyHex(),
+      witnessScript: '5221aa52ae',
+    });
+    expect(Object.keys(headers).sort()).toEqual(
+      [
+        READ_AUTH_HEADERS.message,
+        READ_AUTH_HEADERS.publicKey,
+        READ_AUTH_HEADERS.signature,
+        READ_AUTH_HEADERS.witnessScript,
+      ].sort(),
+    );
+    expect(headers['x-ssp-publickey']).toMatch(/^0[23][0-9a-f]{64}$/);
+    expect(headers['x-ssp-witnessscript']).toBe('5221aa52ae');
+
+    const payload = JSON.parse(headers['x-ssp-message']);
+    expect(payload.action).toBe('read');
+    expect(payload.identity).toBe(wk);
+    expect(payload.nonce).toMatch(/^[0-9a-f]{64}$/);
+    expect(typeof payload.timestamp).toBe('number');
+    expect(payload.data).toBe(readAuthDataHash(`/v1/action/${wk}`));
+  });
+
+  it('omits the witness script for a single-sig identity', () => {
+    const headers = createReadAuthHeaders({
+      identity: '1WalletIdentity',
+      url: 'https://relay.sspwallet.com/v1/sync/1WalletIdentity',
+      privateKeyWIF: TEST_PRIVATE_KEY_WIF,
+      publicKey: testPubKeyHex(),
+    });
+    expect(headers['x-ssp-witnessscript']).toBeUndefined();
+  });
+
+  it('signs the message with the Bitcoin prefix, verifiable against the pubkey', () => {
+    const headers = createReadAuthHeaders({
+      identity: wk,
+      url,
+      privateKeyWIF: TEST_PRIVATE_KEY_WIF,
+      publicKey: testPubKeyHex(),
+    });
+    expect(
+      verifyMessageSignature({
+        message: headers['x-ssp-message'],
+        signature: headers['x-ssp-signature'],
+        expectedPubKeyHex: testPubKeyHex(),
+        messagePrefixes: [blockchains.btc.messagePrefix],
+      }),
+    ).toBe(true);
+  });
+
+  it('uses a fresh nonce for every read', () => {
+    const make = () =>
+      JSON.parse(
+        createReadAuthHeaders({
+          identity: wk,
+          url,
+          privateKeyWIF: TEST_PRIVATE_KEY_WIF,
+          publicKey: testPubKeyHex(),
+        })['x-ssp-message'],
+      ).nonce;
+    expect(make()).not.toBe(make());
+  });
+});
+
+describe('verifyMessageSignature', () => {
+  const prefix = blockchains.btc.messagePrefix;
+
+  it('verifies only against the expected key, message and prefix', () => {
+    const signature = signMessage('hello', TEST_PRIVATE_KEY_WIF, 'btc');
+    const base = {
+      message: 'hello',
+      signature,
+      expectedPubKeyHex: testPubKeyHex(),
+      messagePrefixes: [prefix],
+    };
+    expect(verifyMessageSignature(base)).toBe(true);
+    expect(verifyMessageSignature({ ...base, message: 'hellO' })).toBe(false);
+    expect(
+      verifyMessageSignature({
+        ...base,
+        expectedPubKeyHex: `02${'11'.repeat(32)}`,
+      }),
+    ).toBe(false);
+    expect(
+      verifyMessageSignature({
+        ...base,
+        messagePrefixes: [blockchains.flux.messagePrefix],
+      }),
+    ).toBe(false);
+    expect(
+      verifyMessageSignature({
+        ...base,
+        messagePrefixes: [blockchains.flux.messagePrefix, prefix],
+      }),
+    ).toBe(true);
+  });
+
+  it('fails closed on malformed input', () => {
+    const signature = signMessage('hello', TEST_PRIVATE_KEY_WIF, 'btc');
+    for (const bad of [
+      { signature: '' },
+      { signature: 'AAAA' },
+      { signature: '%%%' },
+      { expectedPubKeyHex: 'zz' },
+      { expectedPubKeyHex: testPubKeyHex().slice(2) },
+    ]) {
+      expect(
+        verifyMessageSignature({
+          message: 'hello',
+          signature,
+          expectedPubKeyHex: testPubKeyHex(),
+          messagePrefixes: [prefix],
+          ...bad,
+        }),
+      ).toBe(false);
+    }
   });
 });

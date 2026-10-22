@@ -1,49 +1,41 @@
 /**
- * Vite Plugin LavaMoat - Main Entry Point
- *
- * This module exports the main plugin function and related types
- * for LavaMoat security integration with Vite.
+ * vite-plugin-lavamoat: SES lockdown for every page plus a build-time
+ * LavaMoat policy check. See README.md for what is and is not enforced.
  */
-
-import { viteLavaMoat, type ViteLavaMoatOptions } from './plugin';
 
 export {
   viteLavaMoat,
   viteLavaMoat as default,
+  resolvePolicyMode,
+  lockdownScriptTag,
+  type PolicyMode,
   type ViteLavaMoatOptions,
 } from './plugin';
 export {
-  initializeLockdown,
-  scuttleGlobalThis,
-  verifySecurityHardening,
-  runSecurityTests,
-  exposeSecurityGlobals,
-  type LockdownOptions,
-  type ScuttleOptions,
-} from './lockdown';
+  DEFAULT_LOCKDOWN_OPTIONS,
+  extendSevereEnablements,
+  generateLockdownRuntime,
+  readSesShim,
+  validateLockdownOptions,
+  type SesLockdownOptions,
+  type SesShim,
+} from './lockdownRuntime';
 export {
-  createSecureCompartment,
-  wrapModuleForCompartment,
-  compartmentRegistry,
-  CompartmentRegistry,
-  type CompartmentOptions,
-  type PolicyRule,
+  observePolicy,
+  type GraphModule,
+  type ObservedPolicy,
+} from './observe';
+export {
+  cleanModuleId,
+  findPolicyViolations,
+  findStaleResources,
+  formatViolations,
+  isGlobalCovered,
+  packageNameFromPath,
+  stringifyPolicy,
+  validatePolicy,
+  type GlobalPermission,
   type LavaMoatPolicy,
-} from './compartment';
-export {
-  generatePolicy,
-  loadPolicy,
-  savePolicy,
-  type PolicyGenerationOptions,
-} from './buildtime/policyGenerator';
-export {
-  generateRuntimeCode,
-  generateModuleWrapper,
-  type RuntimeOptions,
-} from './runtime/runtime';
-
-// Re-export for convenience
-export const lavamoat = viteLavaMoat;
-
-// Version information
-export const version = '1.0.0';
+  type PolicyViolation,
+  type ResourcePolicy,
+} from './policy';

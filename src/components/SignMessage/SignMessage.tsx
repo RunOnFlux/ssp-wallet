@@ -17,6 +17,8 @@ import { fluxnode } from '@runonflux/flux-sdk';
 import { randomBytes } from 'crypto';
 import { cryptos } from '../../types';
 import { useState } from 'react';
+import type { WkSignRequesterInfo } from '../../lib/wkSign';
+import RequesterOrigin from '../SspConnect/RequesterOrigin';
 
 interface signMessageData {
   status: string;
@@ -33,6 +35,12 @@ interface Props {
   chain: keyof cryptos;
   openAction?: (data: signMessageData | null) => void;
   exitAction?: () => void;
+  /**
+   * The browser-verified requester of a dApp `sign_message` /
+   * `sspwid_sign_message` request (security review H-9). Absent for the
+   * in-app manual signing tool.
+   */
+  requesterInfo?: WkSignRequesterInfo | null;
 }
 
 function SignMessage({
@@ -42,6 +50,7 @@ function SignMessage({
   chain,
   openAction,
   exitAction,
+  requesterInfo,
 }: Props) {
   const { sspWalletExternalIdentity: wExternalIdentity } = useAppSelector(
     (state) => state.sspState,
@@ -178,6 +187,10 @@ function SignMessage({
             marginTop: 16,
           }}
         >
+          {/* WHO is asking leads the dialog: a signature by the external
+              identity can log the user in to other services as them. The
+              signed text itself is unchanged (third-party compatibility). */}
+          <RequesterOrigin variant="inline" requesterInfo={requesterInfo} />
           <p className="dapp-ask">
             {wExternalIdentity === address || !address
               ? t('home:signMessage.sign_message_sspwid')
@@ -185,6 +198,11 @@ function SignMessage({
                   chainName: blockchainConfig.name,
                 })}
           </p>
+          {requesterInfo && !requesterInfo.internal && (
+            <Text type="warning" style={{ fontSize: 12, textAlign: 'left' }}>
+              {t('home:signMessage.origin_warning')}
+            </Text>
+          )}
           <div className="dapp-summary">
             <div className="dapp-summary-row">
               <span className="dapp-summary-label">{t('common:address')}</span>

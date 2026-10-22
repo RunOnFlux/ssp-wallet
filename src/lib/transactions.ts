@@ -23,6 +23,15 @@ import {
 
 import { backends } from '@storage/backends';
 import { blockchains, Token } from '@storage/blockchains';
+import {
+  calldataSelector,
+  checkEvmCallSafety,
+  decodeAccountCallData,
+  decodeErc20Transfer,
+  isEmptyCalldata,
+  riskySelectorName,
+  type EvmInnerCall,
+} from './evmCallSafety';
 
 export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
@@ -782,6 +791,20 @@ export interface VaultDecodedTx {
   tokenSymbol?: string;
   tokenContract?: string;
   tokenDecimals?: number;
+  /**
+   * Token metadata provenance. true = decimals/symbol come from this device's
+   * own token list keyed by contract/mint (or, for decimals, from the signed
+   * bytes); false = the token is unknown to this device: amounts must be shown
+   * in raw base units next to the contract/mint with an "unverified token"
+   * banner. undefined = native asset.
+   */
+  tokenVerified?: boolean;
+  /** Raw inner calldata of a contract call the decoder refused to interpret. */
+  callData?: string;
+  /**
+   * Any value here means the decode FAILED CLOSED: the transaction must not be
+   * signed (the sign control is disabled and handleSign refuses).
+   */
   error?: string;
 }
 
@@ -948,75 +971,136 @@ function decodeVaultEvmTransaction(
     .plus(new BigNumber(preVerificationGas));
   const fee = totalGasLimit.multipliedBy(new BigNumber(maxFeePerGas)).toFixed();
 
-  // Decode callData
-  const decodedData = decodeFunctionData({
-    abi: abi.MultiSigSmartAccount_abi,
-    data: callData,
-  }) as decodedAbiData;
+  return decodeVaultEvmCalls({ sender, callData }, fee, chain, importedTokens);
+}
 
-  if (
-    !decodedData ||
-    decodedData.functionName !== 'execute' ||
-    !decodedData.args ||
-    decodedData.args.length < 3
-  ) {
-    throw new Error('Unexpected callData format');
+/**
+ * Fail-closed classification of a vault user operation's callData (port of
+ * the SSP Key decoder, plus the C-4 call-safety rules).
+ *
+ * The ONLY shapes that decode without an error are:
+ *  - native transfers: inner call with empty calldata and value > 0;
+ *  - ERC-20 transfers: canonical `transfer(address,uint256)` with value 0.
+ * `execute` and `executeBatch` are both decoded call by call; every call must
+ * pass the call-safety rules (no self-call, no upgrade selector) and all calls
+ * must move the same asset. Everything else — approve / transferFrom /
+ * setApprovalForAll / unknown calldata / calldata with native value / an
+ * undecodable account call — returns `error` (Sign disabled) and NEVER an
+ * empty or fabricated recipient list.
+ *
+ * Token decimals and symbol come only from this device's own token list keyed
+ * by contract; an unknown token is returned with `tokenVerified: false`.
+ */
+export function decodeVaultEvmCalls(
+  op: { sender: unknown; callData: unknown },
+  fee: string,
+  chain: keyof cryptos,
+  importedTokens: Token[] = [],
+): VaultDecodedTx {
+  const sender = typeof op.sender === 'string' ? op.sender : '';
+  const result: VaultDecodedTx = { sender, recipients: [], fee };
+  if (!/^0x[0-9a-fA-F]{40}$/.test(sender)) {
+    result.error = 'User operation has no valid sender';
+    return result;
+  }
+  if (typeof op.callData !== 'string') {
+    result.error = 'User operation has no callData';
+    return result;
   }
 
-  const result: VaultDecodedTx = {
-    sender,
-    recipients: [],
-    fee,
-  };
+  let calls: EvmInnerCall[];
+  try {
+    calls = decodeAccountCallData(op.callData);
+  } catch (error) {
+    result.callData = op.callData;
+    result.error =
+      error instanceof Error ? error.message : 'Unexpected callData format';
+    return result;
+  }
 
-  const executeTarget = decodedData.args[0];
-  const executeValue = decodedData.args[1].toString();
+  // Safety rules first, on EVERY call, before anything is classified.
+  for (const call of calls) {
+    const safety = checkEvmCallSafety(call, sender);
+    if (!safety.ok) {
+      result.callData = call.data;
+      result.error = safety.message ?? 'Unsafe contract call refused';
+      return result;
+    }
+  }
 
-  if (executeValue !== '0') {
-    // Native transfer
-    result.recipients = [{ address: executeTarget, amount: executeValue }];
-    result.tokenSymbol = blockchains[chain].symbol;
-  } else {
-    // ERC-20 token transfer or contract execution
-    result.tokenContract = executeTarget;
+  // undefined = nothing classified yet, null = native, string = ERC-20.
+  let asset: string | null | undefined;
+  const recipients: VaultDecodedRecipient[] = [];
+  for (const call of calls) {
+    if (isEmptyCalldata(call.data)) {
+      if (call.value === 0n) {
+        result.error = 'Zero-value call without calldata';
+        return result;
+      }
+      if (typeof asset === 'string') {
+        result.error = 'Batch mixes native and token transfers';
+        return result;
+      }
+      asset = null;
+      recipients.push({ address: call.target, amount: call.value.toString() });
+      continue;
+    }
 
-    // Look up token metadata
+    // Non-empty calldata: a contract call whatever the value (C-4).
+    const selector = calldataSelector(call.data);
+    const label = riskySelectorName(selector) ?? selector ?? 'unknown';
+    if (call.value !== 0n) {
+      result.callData = call.data;
+      result.tokenContract = call.target;
+      result.error = `Contract call with native value attached (${label})`;
+      return result;
+    }
+    const transfer = decodeErc20Transfer(call.data);
+    if (!transfer) {
+      result.callData = call.data;
+      result.tokenContract = call.target;
+      result.error = riskySelectorName(selector)
+        ? `Contract call is not a token transfer (${label})`
+        : `Could not decode the contract call (${label})`;
+      return result;
+    }
+    if (
+      asset === null ||
+      (typeof asset === 'string' &&
+        asset.toLowerCase() !== call.target.toLowerCase())
+    ) {
+      result.error = 'Batch mixes different assets';
+      return result;
+    }
+    asset = call.target;
+    recipients.push({
+      address: transfer.recipient,
+      amount: transfer.rawAmount.toString(),
+    });
+  }
+
+  result.recipients = recipients;
+  if (typeof asset === 'string') {
+    const tokenContract = asset;
+    result.tokenContract = tokenContract;
     const token = blockchains[chain].tokens
       .concat(importedTokens)
-      .find((t) => t.contract.toLowerCase() === executeTarget.toLowerCase());
-
+      .find(
+        (t) =>
+          !!t.contract &&
+          t.contract.toLowerCase() === tokenContract.toLowerCase(),
+      );
     if (token) {
       result.tokenSymbol = token.symbol;
       result.tokenDecimals = token.decimals;
+      result.tokenVerified = true;
+    } else {
+      // Never fall back to relay-supplied decimals/symbol (H-14).
+      result.tokenVerified = false;
     }
-
-    // Decode inner transfer call
-    try {
-      const contractData: `0x${string}` = decodedData.args[2] as `0x${string}`;
-      const decodedContract = decodeFunctionData({
-        abi: erc20Abi,
-        data: contractData,
-      }) as unknown as decodedAbiData;
-
-      if (
-        decodedContract &&
-        decodedContract.functionName === 'transfer' &&
-        decodedContract.args &&
-        decodedContract.args.length >= 2
-      ) {
-        result.recipients = [
-          {
-            address: decodedContract.args[0],
-            amount: decodedContract.args[1].toString(),
-          },
-        ];
-      }
-    } catch {
-      // Not a standard ERC-20 transfer — contract interaction
-      result.recipients = [{ address: executeTarget, amount: '0' }];
-    }
+  } else {
+    result.tokenSymbol = blockchains[chain].symbol;
   }
-
   return result;
 }
 
@@ -1291,9 +1375,20 @@ export function decodeEVMTransactionForApproval(
       token: '',
       tokenSymbol: '',
       decimals: 18,
+      // Non-empty inner calldata is a contract call WHATEVER the value (C-4):
+      // never let a value-carrying call render as a plain native send.
+      contractCall: false,
     };
 
+    const innerData = decodedData.args[2];
+    if (amount !== '0' && !isEmptyCalldata(innerData)) {
+      txInfo.contractCall = true;
+      txInfo.tokenSymbol = blockchains[chain].symbol;
+      return txInfo;
+    }
+
     if (amount === '0') {
+      txInfo.contractCall = !isEmptyCalldata(innerData);
       txInfo.token = decodedData.args[0];
 
       // find the token in our token list

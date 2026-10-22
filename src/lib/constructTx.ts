@@ -7,7 +7,6 @@ import {
   http as viemHttp,
   parseUnits,
   formatUnits,
-  getAddress,
   encodeFunctionData,
   erc20Abi,
 } from 'viem';
@@ -35,6 +34,18 @@ import { blockchains, Token } from '@storage/blockchains';
 import { LRUCache } from 'lru-cache';
 
 import { getBlockheight } from './blockheight.ts';
+import {
+  ERC20_TRANSFER_SELECTOR,
+  assertEvmCallSafe,
+  assertUserOpCallDataSafe,
+  decodeErc20Transfer,
+  EvmCallSafetyError,
+} from './evmCallSafety';
+import {
+  sighashOmitsInputAmounts,
+  verifyUtxoInputValues,
+} from './prevoutVerify';
+import { assertSolPaymasterFeeWithinCap } from './sendStrategies/sol';
 
 const utxoCache = new LRUCache({
   max: 1000,
@@ -854,6 +865,33 @@ interface constructedTxInfo {
   utxos: utxo[];
 }
 
+/**
+ * For chains whose sighash omits input amounts (DOGE, RVN), replace each
+ * backend-claimed amount with the value read from the hash-verified previous
+ * transaction; any discrepancy throws (the backend lied — refuse to sign).
+ * Other chains are returned unchanged: their sighash commits to the amounts,
+ * so a wrong amount can only produce an invalid signature.
+ */
+export async function verifyPickedUtxoValues(
+  chain: keyof cryptos,
+  picked: utxo[],
+): Promise<utxo[]> {
+  if (!sighashOmitsInputAmounts(chain)) {
+    return picked;
+  }
+  const verified = await verifyUtxoInputValues(
+    chain,
+    picked.map((u) => ({ txid: u.txid, vout: u.vout, satoshis: u.satoshis })),
+  );
+  return picked.map((u) => {
+    const value = verified.get(`${u.txid.toLowerCase()}:${u.vout}`);
+    if (value === undefined) {
+      throw new Error(`Input ${u.txid}:${u.vout} could not be verified`);
+    }
+    return { ...u, satoshis: value };
+  });
+}
+
 export async function constructAndSignTransaction(
   chain: keyof cryptos,
   receiver: string,
@@ -907,6 +945,12 @@ export async function constructAndSignTransaction(
     if (mandatoryUtxos?.length) {
       console.log('RBF TX');
     }
+    // UTXO-5: on chains whose sighash does not commit to input amounts (DOGE,
+    // RVN) a backend that under-reports an input turns the difference into a
+    // silent miner fee. Verify every picked input against its previous
+    // transaction (hash256 == txid) BEFORE building, so the change output and
+    // the absurd-fee check in buildUnsignedRawTx use verified values only.
+    const inputsForTx = await verifyPickedUtxoValues(chain, pickedUtxos);
     const rbf = blockchains[chain].rbf ?? false;
     let expiryHeight;
     if (blockchains[chain].txExpiryHeight) {
@@ -916,7 +960,7 @@ export async function constructAndSignTransaction(
     }
     const rawTx = buildUnsignedRawTx(
       chain,
-      pickedUtxos,
+      inputsForTx,
       receiver,
       amount,
       fee,
@@ -943,7 +987,7 @@ export async function constructAndSignTransaction(
     // wallet is NOT finalising the transaction, the KEY is finalising the transaction
     const txInfo = {
       signedTx,
-      utxos: pickedUtxos,
+      utxos: inputsForTx,
     };
     return txInfo;
   } catch (error) {
@@ -1141,48 +1185,15 @@ export function parseUnsignedQuantity(value: string | undefined): bigint {
   return parsed;
 }
 
-// ERC-20 `transfer(address,uint256)` selector. dApps send token transfers
-// through eth_sendTransaction as an ordinary contract call: `to` is the token
-// contract and the real recipient + amount live in the calldata.
-export const ERC20_TRANSFER_SELECTOR = '0xa9059cbb';
+// The strict canonical ERC-20 transfer decoder lives with the call-safety
+// rules so every signing entry point shares one implementation; re-exported
+// here for existing importers (WalletConnect, tests).
+export { ERC20_TRANSFER_SELECTOR, decodeErc20Transfer };
 
 export interface erc20TransferIntent {
   token: Token;
   recipient: `0x${string}`;
   amount: string; // human units, exactly what the send screen displays
-}
-
-/**
- * Decode a canonical `transfer(address,uint256)` calldata.
- *
- * Deliberately strict: only the exact ABI encoding is accepted (4-byte
- * selector + a zero-padded address word + an amount word = 68 bytes). Dirty
- * padding above the address or trailing bytes mean the payload is not what it
- * looks like, and such a call must stay an opaque contract interaction that is
- * signed byte-for-byte instead of being re-interpreted as a token transfer.
- */
-export function decodeErc20Transfer(
-  data: string | undefined,
-): { recipient: `0x${string}`; rawAmount: bigint } | null {
-  if (!data) {
-    return null;
-  }
-  const hex = data.toLowerCase();
-  // 0x + 68 bytes
-  if (hex.length !== 2 + 68 * 2 || !hex.startsWith(ERC20_TRANSFER_SELECTOR)) {
-    return null;
-  }
-  if (!/^0x[0-9a-f]+$/.test(hex)) {
-    return null;
-  }
-  const recipientWord = hex.slice(10, 74);
-  if (!/^0{24}[0-9a-f]{40}$/.test(recipientWord)) {
-    return null;
-  }
-  return {
-    recipient: getAddress(`0x${recipientWord.slice(24)}`),
-    rawAmount: BigInt(`0x${hex.slice(74)}`),
-  };
 }
 
 /**
@@ -1232,6 +1243,38 @@ export function describeErc20Transfer(
     return null;
   }
   return { token, recipient: decoded.recipient, amount };
+}
+
+/**
+ * Refuse to sign a user operation unless its callData decodes to exactly the
+ * one requested inner call and that call passes the call-safety rules against
+ * the operation's real sender (no self-call, no upgrade selector).
+ */
+export function assertBuiltUserOpMatches(
+  callData: string,
+  sender: string,
+  requested: { target: string; value: bigint; data: string },
+): void {
+  if (typeof sender !== 'string' || !/^0x[0-9a-fA-F]{40}$/.test(sender)) {
+    throw new EvmCallSafetyError(
+      'undecodable_account_call',
+      'Built user operation has no valid sender',
+    );
+  }
+  const calls = assertUserOpCallDataSafe(callData, sender);
+  const normalizedData = (d: string) =>
+    !d || d === '0x' ? '0x' : d.toLowerCase();
+  if (
+    calls.length !== 1 ||
+    calls[0].target.toLowerCase() !== requested.target.toLowerCase() ||
+    calls[0].value !== requested.value ||
+    normalizedData(calls[0].data) !== normalizedData(requested.data)
+  ) {
+    throw new EvmCallSafetyError(
+      'undecodable_account_call',
+      'Built user operation does not match the requested transaction',
+    );
+  }
 }
 
 // return stringified multisig user operation
@@ -1363,6 +1406,9 @@ export async function constructAndSignEVMTransaction(
     });
 
     let uoStruct;
+    // The single inner call this user operation must contain — checked
+    // against the call-safety rules and against the built callData below.
+    let requestedCall: { target: string; value: bigint; data: `0x${string}` };
 
     // Supplied calldata is the authoritative description of what the
     // transaction does: re-encoding a `transfer()` on top of it would throw
@@ -1386,6 +1432,10 @@ export async function constructAndSignEVMTransaction(
         functionName: 'transfer',
         args: [receiver, erc20Amount],
       });
+      requestedCall = { target: token, value: BigInt(0), data: uoCallData };
+      // Upgrade selectors are refused before anything is built (the self-call
+      // rule needs the account address, checked after the build below).
+      assertEvmCallSafe(requestedCall, '');
 
       uoStruct = await smartAccountClient.buildUserOperation({
         account: multiSigSmartAccount,
@@ -1403,6 +1453,10 @@ export async function constructAndSignEVMTransaction(
       const txValue = token
         ? BigInt(0)
         : parseUnits(amount, blockchainConfig.decimals);
+      requestedCall = { target: receiver, value: txValue, data: txData };
+      // Non-empty calldata is a contract call whatever the value; the upgrade
+      // selectors are refused outright (C-4 / EVM-1).
+      assertEvmCallSafe(requestedCall, '');
 
       uoStruct = await smartAccountClient.buildUserOperation({
         account: multiSigSmartAccount,
@@ -1421,6 +1475,15 @@ export async function constructAndSignEVMTransaction(
     // uoStruct.verificationGasLimit = BigInt(gasVerificationLimit);
 
     const uoStructHexlified = deepHexlify(uoStruct) as UserOperationRequest_v6;
+    // WYSIWYS + call safety on the bytes that are actually signed: decode the
+    // built callData, apply the self-call / upgrade rules against the real
+    // sender, and require it to be exactly the one call that was requested
+    // (and displayed). Fail closed before anything is signed.
+    assertBuiltUserOpMatches(
+      uoStructHexlified.callData,
+      uoStructHexlified.sender,
+      requestedCall,
+    );
     const uoStructHash = multiSigSmartAccount
       .getEntryPoint()
       .getUserOperationHash(uoStructHexlified);
@@ -1593,7 +1656,18 @@ export async function constructAndSignSOLTransaction(opts: {
   // Optional memo embedded as an SPL Memo v2 instruction inside the proposal.
   // Shows up on explorers and is parsed back into history's note field.
   memo?: string;
+  // CHN-7: cap on paymasterFeeLamports (base units). Never above the
+  // absolute 0.05 SOL ceiling; defaults to it.
+  maxFeeLamports?: string;
 }): Promise<string> {
+  // CHN-7: the reimbursement schedule is relay-supplied — bound it before
+  // anything is built or signed.
+  assertSolPaymasterFeeWithinCap(
+    opts.paymasterFeeLamports,
+    opts.maxFeeLamports && /^\d+$/.test(opts.maxFeeLamports)
+      ? BigInt(opts.maxFeeLamports)
+      : undefined,
+  );
   const {
     ComputeBudgetProgram,
     Connection,

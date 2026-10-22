@@ -74,6 +74,14 @@ import secureLocalStorage from 'react-secure-storage';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { getFingerprint } from '../../lib/fingerprint';
 import { getScriptType } from '../../lib/wallet';
+import {
+  attachRequiredWkAuth,
+  RelayAuthUnavailableError,
+} from '../../lib/relayRequestAuth';
+import {
+  needsEmailReverification,
+  readEnterpriseWriteResponse,
+} from '../../lib/enterpriseSubscription';
 import WkSign from '../WkSign/WkSign';
 import type { WkSignResponse } from '../../lib/wkSign';
 import AddressDetails from '../AddressDetails/AddressDetails';
@@ -85,16 +93,8 @@ import PasswordConfirm from '../PasswordConfirm/PasswordConfirm';
 import WalletConnect from '../WalletConnect/WalletConnect';
 import TutorialTrigger from '../Tutorial/TutorialTrigger';
 import PoweredByFlux from '../PoweredByFlux/PoweredByFlux';
+import VaultPinSettings from '../VaultPinSettings/VaultPinSettings';
 import './Settings.css';
-
-interface EnterpriseNotificationApiResponse {
-  status: string;
-  data?: {
-    success: boolean;
-    message?: string;
-    isNewSubscription?: boolean;
-  };
-}
 
 // The six on/off categories. The USD thresholds on
 // enterpriseNotificationPreferences are numbers and get their own control, so
@@ -349,19 +349,18 @@ function Settings() {
         keyPubKey: result.keyPubKey,
         wkWitnessScript: result.witnessScript,
       };
-      const auth = await createWkIdentityAuth(
-        'action',
+      // RA-2: the relay requires WK auth here — never send it unsigned.
+      const signedBody = await attachRequiredWkAuth(
+        requestBody,
         sspWalletKeyInternalIdentity,
-        requestBody,
+        createWkIdentityAuth,
       );
-      if (auth) {
-        Object.assign(requestBody, auth);
-      }
-      const response = await axios.post<EnterpriseNotificationApiResponse>(
+      const response = await axios.post<unknown>(
         `https://${sspConfig().relay}/v1/enterprise/subscribe`,
-        requestBody,
+        signedBody,
       );
-      if (response.data?.status === 'success' && response.data?.data?.success) {
+      const outcome = readEnterpriseWriteResponse(response.data);
+      if (outcome.ok) {
         await subscribeToEnterpriseNotifications(
           verifiedEmail,
           enterprisePreferences,
@@ -375,16 +374,30 @@ function Settings() {
           'success',
           t('home:settings.sspEnterprise.subscribe_success'),
         );
+      } else if (needsEmailReverification(outcome)) {
+        // H-21: the email's ownership proof expired or was already spent.
+        // Start over at the email step so a new code can be requested.
+        setVerifiedEmail(null);
+        setVerificationCode('');
+        setRemainingAttempts(null);
+        setSubscriptionStep('email');
+        displayMessage(
+          'error',
+          t('home:settings.sspEnterprise.err_email_verification_expired'),
+        );
       } else {
         displayMessage(
           'error',
-          response.data?.data?.message ||
+          outcome.serverMessage ||
             t('home:settings.sspEnterprise.err_subscribe'),
         );
       }
     } catch (error) {
       console.error('[Settings completeSubscribe]', error);
-      displayMessage('error', t('home:settings.sspEnterprise.err_subscribe'));
+      displayMessage(
+        'error',
+        relayWriteError(error, t('home:settings.sspEnterprise.err_subscribe')),
+      );
     } finally {
       setEnterpriseLoading(false);
     }
@@ -401,19 +414,18 @@ function Settings() {
         keyPubKey: result.keyPubKey,
         wkWitnessScript: result.witnessScript,
       };
-      const auth = await createWkIdentityAuth(
-        'action',
+      // RA-2: the relay requires WK auth here — never send it unsigned.
+      const signedBody = await attachRequiredWkAuth(
+        requestBody,
         sspWalletKeyInternalIdentity,
-        requestBody,
+        createWkIdentityAuth,
       );
-      if (auth) {
-        Object.assign(requestBody, auth);
-      }
-      const response = await axios.post<EnterpriseNotificationApiResponse>(
+      const response = await axios.post<unknown>(
         `https://${sspConfig().relay}/v1/enterprise/unsubscribe`,
-        requestBody,
+        signedBody,
       );
-      if (response.data?.status === 'success' && response.data?.data?.success) {
+      const outcome = readEnterpriseWriteResponse(response.data);
+      if (outcome.ok) {
         await unsubscribeFromEnterpriseNotifications();
         setIsEnterpriseSubscribed(false);
         setEnterpriseEmail('');
@@ -428,13 +440,19 @@ function Settings() {
       } else {
         displayMessage(
           'error',
-          response.data?.data?.message ||
+          outcome.serverMessage ||
             t('home:settings.sspEnterprise.err_unsubscribe'),
         );
       }
     } catch (error) {
       console.error('[Settings completeUnsubscribe]', error);
-      displayMessage('error', t('home:settings.sspEnterprise.err_unsubscribe'));
+      displayMessage(
+        'error',
+        relayWriteError(
+          error,
+          t('home:settings.sspEnterprise.err_unsubscribe'),
+        ),
+      );
     } finally {
       setEnterpriseLoading(false);
     }
@@ -443,6 +461,12 @@ function Settings() {
   const displayMessage = (type: NoticeType, content: string) => {
     void toast.open({ type, content });
   };
+
+  /** Error text for a failed relay write; missing relay auth gets its own. */
+  const relayWriteError = (error: unknown, fallback: string): string =>
+    error instanceof RelayAuthUnavailableError
+      ? t('home:settings.err_relay_auth')
+      : fallback;
 
   /**
    * Nudge the rates object so everything reading `sspConfig().fiatCurrency`
@@ -589,29 +613,36 @@ function Settings() {
       path,
       wkIdentity,
     };
-    try {
-      const auth = await createWkIdentityAuth('action', wkIdentity, data);
-      if (auth) {
-        Object.assign(data, auth);
-      }
-    } catch (error) {
-      console.warn('[postAction] Auth not available', error);
-    }
-    axios
-      .post(`https://${sspConfig().relay}/v1/action`, data)
-      .then((res) => console.log(res))
-      .catch((error) => console.log(error));
+    // RA-2: /v1/action requires WK auth. A request that cannot be signed is
+    // never sent (attachRequiredWkAuth throws RelayAuthUnavailableError).
+    const signedData = await attachRequiredWkAuth(
+      data,
+      wkIdentity,
+      createWkIdentityAuth,
+    );
+    await axios.post(`https://${sspConfig().relay}/v1/action`, signedData);
   };
 
-  const handlePublicNoncesSync = () => {
+  const handlePublicNoncesSync = async () => {
+    // Open first so the dialog records its baseline before SSP Key answers.
     setPublicNoncesModalOpen(true);
-    postAction(
-      'publicnoncesrequest',
-      '[]',
-      activeChain,
-      '',
-      sspWalletKeyInternalIdentity,
-    );
+    try {
+      await postAction(
+        'publicnoncesrequest',
+        '[]',
+        activeChain,
+        '',
+        sspWalletKeyInternalIdentity,
+      );
+    } catch (error) {
+      console.log('[Settings publicNoncesSync]', error);
+      // Nothing reached SSP Key: close the waiting dialog and say why.
+      setPublicNoncesModalOpen(false);
+      displayMessage(
+        'error',
+        relayWriteError(error, t('home:settings.err_public_nonces_request')),
+      );
+    }
   };
 
   const validateEmail = (email: string): boolean =>
@@ -932,19 +963,18 @@ function Settings() {
         wkIdentity: sspWalletKeyInternalIdentity,
         preferences: diff,
       };
-      const auth = await createWkIdentityAuth(
-        'action',
+      // RA-2: the relay requires WK auth here — never send it unsigned.
+      const signedBody = await attachRequiredWkAuth(
+        requestBody,
         sspWalletKeyInternalIdentity,
-        requestBody,
+        createWkIdentityAuth,
       );
-      if (auth) {
-        Object.assign(requestBody, auth);
-      }
-      const response = await axios.post<EnterpriseNotificationApiResponse>(
+      const response = await axios.post<unknown>(
         `https://${sspConfig().relay}/v1/enterprise/preferences`,
-        requestBody,
+        signedBody,
       );
-      if (response.data?.status === 'success' && response.data?.data?.success) {
+      const outcome = readEnterpriseWriteResponse(response.data);
+      if (outcome.ok) {
         await subscribeToEnterpriseNotifications(
           enterpriseEmail,
           enterprisePreferences,
@@ -957,7 +987,7 @@ function Settings() {
       } else {
         displayMessage(
           'error',
-          response.data?.data?.message ||
+          outcome.serverMessage ||
             t('home:settings.sspEnterprise.err_save_preferences'),
         );
       }
@@ -965,7 +995,10 @@ function Settings() {
       console.error('[Settings saveEnterprisePreferences]', error);
       displayMessage(
         'error',
-        t('home:settings.sspEnterprise.err_save_preferences'),
+        relayWriteError(
+          error,
+          t('home:settings.sspEnterprise.err_save_preferences'),
+        ),
       );
     } finally {
       setSavingPreferences(false);
@@ -1376,10 +1409,15 @@ function Settings() {
                   'One-time signing numbers your SSP Key pre-shares so transactions on EVM chains can be co-signed. Sync them again if EVM signing ever gets stuck.',
                 )}
               >
-                <Button size="middle" onClick={handlePublicNoncesSync}>
+                <Button
+                  size="middle"
+                  onClick={() => void handlePublicNoncesSync()}
+                >
                   {t('home:settings.sync_public_nonces')}
                 </Button>
               </Row>
+              {/* VD-3: pinned SSP Enterprise vaults + "Reset vault pin". */}
+              <VaultPinSettings />
               <Row icon={<ServerIcon />} label={t('home:settings.ssp_relay')}>
                 <Space.Compact style={{ width: '100%' }}>
                   <Input

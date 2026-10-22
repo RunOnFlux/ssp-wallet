@@ -740,7 +740,9 @@ describe('Transactions Lib', () => {
       expect(res.tokenDecimals).toBe(8);
     });
 
-    it('should handle non-standard contract call (not ERC-20 transfer)', () => {
+    it('FAILS CLOSED on a non-standard contract call (H-16 / EVM-4)', () => {
+      // Used to fabricate a "0 → contract" recipient with no error, so an
+      // arbitrary contract call was signable as a harmless transfer.
       const contractAddr = '0xabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd';
       const sender = '0x1234123412341234123412341234123412341234';
       const callData = encodeExecute(contractAddr, '0', '0xdeadbeef');
@@ -748,12 +750,45 @@ describe('Transactions Lib', () => {
 
       const res = decodeVaultTransaction(rawTx, 'eth');
 
-      expect(res.error).toBeUndefined();
+      expect(res.error).toMatch(/Could not decode the contract call/);
       expect(res.sender).toBe(sender);
-      expect(res.recipients).toHaveLength(1);
-      expect(res.recipients[0].address.toLowerCase()).toBe(contractAddr);
-      expect(res.recipients[0].amount).toBe('0');
+      expect(res.recipients).toEqual([]);
+      expect(res.callData).toBe('0xdeadbeef');
       expect(res.tokenContract?.toLowerCase()).toBe(contractAddr);
+    });
+
+    it('marks an unknown token as unverified (no relay decimals/symbol, H-14)', () => {
+      const unknownToken = '0x9999999999999999999999999999999999999999';
+      const recipient = '0x8888888888888888888888888888888888888888';
+      const sender = '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF';
+      const callData = encodeExecute(
+        unknownToken,
+        '0',
+        encodeErc20Transfer(recipient, '999999'),
+      );
+      const res = decodeVaultTransaction(
+        buildUserOp({ sender, callData }),
+        'eth',
+      );
+      expect(res.error).toBeUndefined();
+      expect(res.tokenVerified).toBe(false);
+      expect(res.tokenDecimals).toBeUndefined();
+      expect(res.tokenSymbol).toBeUndefined();
+    });
+
+    it('marks a registry token as verified', () => {
+      const recipient = '0x1111111111111111111111111111111111111111';
+      const sender = '0xDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD';
+      const callData = encodeExecute(
+        USDC_CONTRACT,
+        '0',
+        encodeErc20Transfer(recipient, '1000000'),
+      );
+      const res = decodeVaultTransaction(
+        buildUserOp({ sender, callData }),
+        'eth',
+      );
+      expect(res.tokenVerified).toBe(true);
     });
   });
 

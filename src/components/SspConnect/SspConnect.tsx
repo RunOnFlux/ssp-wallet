@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSspConnect } from '../../hooks/useSspConnect';
 import SignMessage from '../../components/SignMessage/SignMessage';
 import PaymentRequest from '../../components/PaymentRequest/PaymentRequest';
@@ -12,9 +12,14 @@ import EnterpriseVaultSignTx from '../../components/EnterpriseVaultSignTx/Enterp
 import EnterpriseNonceSync from '../../components/EnterpriseNonceSync/EnterpriseNonceSync';
 import EnterpriseFluxNodeStart from '../../components/EnterpriseFluxNodeStart/EnterpriseFluxNodeStart';
 import FluxNodeStart from '../../components/FluxNodeStart/FluxNodeStart';
+import VaultAddressDisplay, {
+  type VaultAddressResponse,
+} from '../../components/VaultAddressDisplay/VaultAddressDisplay';
 import { useTranslation } from 'react-i18next';
 import { cryptos } from '../../types';
 import { WkSignResponse, WkSignRequesterInfo } from '../../lib/wkSign';
+import RequesterOrigin from './RequesterOrigin';
+import { setPendingPayRequestId } from './pendingPayRequest';
 
 interface signMessageData {
   status: string;
@@ -91,6 +96,7 @@ function parseDelegates(raw: string): string[] {
 
 function SspConnect() {
   const {
+    requestId: sspConnectRequestId,
     address: sspConnectAddress,
     message: sspConnectMessage,
     chain: sspConnectChain,
@@ -123,6 +129,11 @@ function SspConnect() {
     proposalRefs: sspConnectProposalRefs,
     signMessage: sspConnectSignMessage,
     dappOrigin: sspConnectDappOrigin,
+    vaultDescriptor: sspConnectVaultDescriptor,
+    vaultDescriptorHash: sspConnectVaultDescriptorHash,
+    vaultTypeIndex: sspConnectVaultTypeIndex,
+    vaultAddressIndex: sspConnectVaultAddressIndex,
+    expectedAddress: sspConnectExpectedAddress,
     clearRequest,
   } = useSspConnect();
   const { t } = useTranslation(['common', 'home']);
@@ -188,13 +199,45 @@ function SspConnect() {
   const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
   const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
   const [simulation, setSimulation] = useState<string | undefined>(undefined);
+  // VD: vault descriptor + hash for the enterprise vault dialogs, and the
+  // enterprise_vault_address (VD-5) request.
+  const [vaultDescriptor, setVaultDescriptor] = useState<unknown>(undefined);
+  const [vaultDescriptorHash, setVaultDescriptorHash] = useState<
+    string | undefined
+  >(undefined);
+  const [openVaultAddress, setOpenVaultAddress] = useState(false);
+  const [vaultTypeIndex, setVaultTypeIndex] = useState<number | undefined>(
+    undefined,
+  );
+  const [vaultAddressIndex, setVaultAddressIndex] = useState(0);
+  const [expectedAddress, setExpectedAddress] = useState('');
   const [proposalRefs, setProposalRefs] = useState<
     { orgId: string; vaultId: string; proposalId: string } | undefined
   >(undefined);
+  // Background request id of the request the open dialog answers. The
+  // background allows ONE dApp request in flight and resolves it only with a
+  // reply echoing this id (security review WEXT-3).
+  const requestIdRef = useRef('');
+
+  /** Send the answer to the in-flight dApp request back to background.js. */
+  const sendReply = (data: unknown) => {
+    if (!browser?.runtime?.sendMessage) {
+      console.log('no browser or chrome runtime.sendMessage');
+      return;
+    }
+    void browser.runtime.sendMessage({
+      origin: 'ssp',
+      requestId: requestIdRef.current,
+      data,
+    });
+  };
 
   useEffect(() => {
     console.log(sspConnectMessage);
     if (sspConnectType) {
+      requestIdRef.current = sspConnectRequestId;
+      // Every dialog names the browser-verified requester.
+      setRequesterInfo(sspConnectRequesterInfo);
       setAddress(sspConnectAddress);
       setMessage(sspConnectMessage);
       setChain(sspConnectChain);
@@ -271,6 +314,8 @@ function SspConnect() {
         setProposalRefs(sspConnectProposalRefs);
         setSignMessage(sspConnectSignMessage);
         setDappOrigin(sspConnectDappOrigin);
+        setVaultDescriptor(sspConnectVaultDescriptor);
+        setVaultDescriptorHash(sspConnectVaultDescriptorHash);
         setOpenEnterpriseVaultSignTx(true);
       } else if (sspConnectType === 'enterprise_flux_node_start') {
         // Enterprise Flux node start request
@@ -288,6 +333,8 @@ function SspConnect() {
         setTxMemo(sspConnectMemo); // signing device
         setTxFee(sspConnectFee); // addressIndex
         setSourceAddress(sspConnectSourceAddress); // collateral (vault) address
+        setVaultDescriptor(sspConnectVaultDescriptor);
+        setVaultDescriptorHash(sspConnectVaultDescriptorHash);
         setOpenEnterpriseFluxNodeStart(true);
       } else if (sspConnectType === 'flux_node_start') {
         // Consumer Flux node start request
@@ -301,6 +348,17 @@ function SspConnect() {
         setOrgName(sspConnectOrgName); // collateral amount
         setRecipients(sspConnectRecipients); // delegates JSON
         setOpenFluxNodeStart(true);
+      } else if (sspConnectType === 'enterprise_vault_address') {
+        // VD-5: show a vault address derived on this device.
+        setRequesterInfo(sspConnectRequesterInfo);
+        setVaultName(sspConnectVaultName);
+        setOrgName(sspConnectOrgName);
+        setVaultDescriptor(sspConnectVaultDescriptor);
+        setVaultDescriptorHash(sspConnectVaultDescriptorHash);
+        setVaultTypeIndex(sspConnectVaultTypeIndex);
+        setVaultAddressIndex(sspConnectVaultAddressIndex ?? 0);
+        setExpectedAddress(sspConnectExpectedAddress ?? '');
+        setOpenVaultAddress(true);
       } else if (sspConnectType === 'enterprise_nonce_sync') {
         // Enterprise nonce sync request — interactive dialog
         setRequesterInfo(sspConnectRequesterInfo);
@@ -321,24 +379,9 @@ function SspConnect() {
   }, [sspConnectType]);
 
   const generalAction = (data: signMessageData | null) => {
-    if (browser?.runtime?.sendMessage) {
-      if (!data) {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: 'ERROR',
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    } else {
-      console.log('no browser or chrome runtime.sendMessage');
-    }
+    sendReply(
+      data ?? { status: 'ERROR', result: t('common:request_rejected') },
+    );
     setOpenSignMessage(false);
     setOpenChainsInfo(false);
     setOpenTokensInfo(false);
@@ -353,158 +396,69 @@ function SspConnect() {
   const wkSignAction = (data: wkSignData | null) => {
     console.log('[WkSign] Action result:', data);
     setOpenWkSign(false);
-    if (browser?.runtime?.sendMessage) {
-      if (!data) {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: 'ERROR',
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    } else {
-      console.log('no browser or chrome runtime.sendMessage');
-    }
+    sendReply(
+      data ?? { status: 'ERROR', result: t('common:request_rejected') },
+    );
   };
   const enterpriseVaultXpubAction = (data: enterpriseVaultXpubData | null) => {
     console.log('[EnterpriseVaultXpub] Action result:', data);
     setOpenEnterpriseVaultXpub(false);
-    if (browser?.runtime?.sendMessage) {
-      if (!data) {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: 'ERROR',
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    } else {
-      console.log('no browser or chrome runtime.sendMessage');
-    }
+    sendReply(
+      data ?? { status: 'ERROR', result: t('common:request_rejected') },
+    );
   };
   const enterpriseVaultSignTxAction = (
     data: enterpriseVaultSignTxData | null,
   ) => {
     console.log('[EnterpriseVaultSignTx] Action result:', data?.status);
     setOpenEnterpriseVaultSignTx(false);
-    if (browser?.runtime?.sendMessage) {
-      if (!data) {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: 'ERROR',
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    } else {
-      console.log('no browser or chrome runtime.sendMessage');
-    }
+    sendReply(
+      data ?? { status: 'ERROR', result: t('common:request_rejected') },
+    );
   };
   const enterpriseFluxNodeStartAction = (
     data: { status: string; result?: { signedTxHex: string } } | null,
   ) => {
     setOpenEnterpriseFluxNodeStart(false);
-    if (browser?.runtime?.sendMessage) {
-      if (!data) {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: 'ERROR',
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    }
+    sendReply(
+      data ?? { status: 'ERROR', result: t('common:request_rejected') },
+    );
+  };
+
+  const vaultAddressAction = (data: VaultAddressResponse | null) => {
+    setOpenVaultAddress(false);
+    sendReply(
+      data ?? { status: 'ERROR', result: t('common:request_rejected') },
+    );
   };
 
   const fluxNodeStartAction = (
     data: { status: string; result?: { signedTxHex: string } } | null,
   ) => {
     setOpenFluxNodeStart(false);
-    if (browser?.runtime?.sendMessage) {
-      if (!data) {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: 'ERROR',
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    }
+    sendReply(
+      data ?? { status: 'ERROR', result: t('common:request_rejected') },
+    );
   };
 
   const enterpriseNonceSyncAction = (data: NonceSyncResponse | null) => {
     setOpenEnterpriseNonceSync(false);
-    if (browser?.runtime?.sendMessage) {
-      if (!data) {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: 'ERROR',
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    }
+    sendReply(
+      data ?? { status: 'ERROR', result: t('common:request_rejected') },
+    );
   };
   const payRequestAction = (data: paymentData | null | 'continue') => {
     console.log(data);
     setOpenPayRequest(false);
     if (data === 'continue') {
+      // The send flow answers this request once the payment is broadcast or
+      // cancelled; it echoes this id with its reply.
+      setPendingPayRequestId(requestIdRef.current);
       return;
     }
-    if (browser?.runtime?.sendMessage) {
-      if (!data) {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data: {
-            status: 'ERROR',
-            result: t('common:request_rejected'),
-          },
-        });
-      } else {
-        void browser.runtime.sendMessage({
-          origin: 'ssp',
-          data,
-        });
-      }
-    } else {
-      console.log('no browser or chrome runtime.sendMessage');
-    }
+    sendReply(
+      data ?? { status: 'ERROR', result: t('common:request_rejected') },
+    );
   };
   return (
     <>
@@ -514,6 +468,20 @@ function SspConnect() {
         address={address}
         message={message}
         chain={chain as keyof cryptos}
+        requesterInfo={requesterInfo}
+      />
+      {/* The verified requester, pinned above the dialogs that don't render
+          it themselves (WEXT-6). */}
+      <RequesterOrigin
+        variant="banner"
+        requesterInfo={requesterInfo}
+        open={
+          openPayRequest ||
+          openChainsInfo ||
+          openTokensInfo ||
+          openAddressesInfo ||
+          openAllAddressesInfo
+        }
       />
       <PaymentRequest
         open={openPayRequest}
@@ -589,6 +557,8 @@ function SspConnect() {
         proposalRefs={proposalRefs}
         signMessage={signMessage}
         dappOrigin={dappOrigin}
+        vaultDescriptor={vaultDescriptor}
+        vaultDescriptorHash={vaultDescriptorHash}
       />
       <EnterpriseNonceSync
         open={openEnterpriseNonceSync}
@@ -625,6 +595,20 @@ function SspConnect() {
         redeemScript={contract}
         signingDevice={txMemo as 'wallet' | 'key'}
         delegates={parseDelegates(recipients)}
+        vaultDescriptor={vaultDescriptor}
+        vaultDescriptorHash={vaultDescriptorHash}
+      />
+      <VaultAddressDisplay
+        open={openVaultAddress}
+        openAction={vaultAddressAction}
+        requesterInfo={requesterInfo}
+        vaultDescriptor={vaultDescriptor}
+        vaultDescriptorHash={vaultDescriptorHash}
+        typeIndex={vaultTypeIndex}
+        addressIndex={vaultAddressIndex}
+        expectedAddress={expectedAddress}
+        vaultName={vaultName}
+        orgName={orgName}
       />
     </>
   );
