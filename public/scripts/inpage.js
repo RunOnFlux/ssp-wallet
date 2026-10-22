@@ -63,8 +63,19 @@ async function request(method, params) {
   });
 }
 
+// Features this wallet supports, for pages to check before relying on them.
+// Wallets up to 2.1.3 have no `capabilities`; a page must treat that as none.
+//   vault_descriptor_v1       enterprise vault requests carry a vaultDescriptor
+//                             and are checked against it (and refused without)
+//   enterprise_vault_address  the enterprise_vault_address method
+const capabilities = Object.freeze([
+  'vault_descriptor_v1',
+  'enterprise_vault_address',
+]);
+
 const sspObject = {
   request,
+  capabilities,
 };
 
 window.ssp = sspObject;
