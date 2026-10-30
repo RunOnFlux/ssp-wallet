@@ -363,6 +363,8 @@
     "verify_words_session_label_other": "Verification code ({{count}} chains)",
     "verify_words_match": "They match — continue",
     "verify_words_mismatch": "They don't match",
+    "verify_words_attested": "Your SSP Key also signed these keys. Compare the words before continuing.",
+    "sync_update_key_hint": "Chain synced. Update SSP Key to the latest version so it can sign each synced chain for SSP Wallet to verify.",
     "verify_mismatch_warning": "Verification codes did not match. This vault was not activated — start the sync again to retry.",
     "verify_words_no_code_hint": "Current SSP Key versions show this code after syncing. If your SSP Key shows no code, update it and sync again instead of continuing.",
     "batch_request_selected_one": "Request {{count}} selected chain",

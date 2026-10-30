@@ -20,11 +20,12 @@ Enterprise have to be deployed before it reaches users.
 - **Enterprise methods only work from SSP Enterprise.** `enterprise_*`
   requests are accepted only from `https://enterprise.sspwallet.com`. Testing
   against a local enterprise app needs a development build of the wallet.
-- **Pairing with an older SSP Key always asks for the verification code.**
-  The updated SSP Key signs every chain it syncs, which lets a chain activate
-  without the code. An older SSP Key cannot, so the verification code is
-  mandatory, and for a single-chain QR sync it shows no code at all. Update
-  SSP Key before you pair or activate chains.
+- **Pairing checks SSP Key's signature on every synced chain.** The updated
+  SSP Key signs each chain it syncs and SSP Wallet verifies it. The
+  verification code is shown whenever SSP Key shows it (first pairing and
+  multi-chain sync), with a note when SSP Key signed every chain. An older
+  SSP Key keeps working as before; after a single-chain sync from it, SSP
+  Wallet suggests updating SSP Key.
 - **Unlocking waits for a pairing in another window.** If SSP Wallet is in
   the middle of pairing with SSP Key in another window or tab, unlocking is
   refused until that pairing is finished or cancelled there.

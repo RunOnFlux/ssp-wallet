@@ -56,6 +56,8 @@ import {
   requiresVerificationGate,
   verifyChainSyncAttestation,
   sessionRequiresVerificationCode,
+  sessionFullyAttested,
+  singleChainUnattested,
   markUnverifiedPairing,
   clearUnverifiedPairing,
   discardUnverifiedPairings,
@@ -145,6 +147,8 @@ interface LandedChain {
   // SSP Key's keyXpubSignature verified against the Key identity pubkey the
   // wallet stored at identity pairing (fix contract CS-2).
   attested: boolean;
+  // Delivered as a batch sync doc: SSP Key shows the code after a batch.
+  fromBatch: boolean;
 }
 
 // Out-of-band verification gate shown before the vault is treated as ready.
@@ -155,6 +159,9 @@ interface VerifyGate {
   chains: string[];
   words: string[];
   qrValue: string;
+  // Every chain carried a verified SSP Key attestation (badge only — the
+  // user still compares the code).
+  attested: boolean;
 }
 
 interface BatchState {
@@ -645,6 +652,7 @@ function Key(props: {
           walletXpub: entry.xpubWallet,
           keyXpub: doc.keyXpub,
           attested,
+          fromBatch: true,
         });
         const stored = await storeKeyXpubForChain(
           doc.chain as keyof cryptos,
@@ -761,9 +769,9 @@ function Key(props: {
       clearInterval(pollingSyncInterval);
       pollingSyncInterval = undefined;
     }
-    // Reached only after the verification gate was confirmed, or when every
-    // chain stored this session carried a verified SSP Key attestation
-    // (completeSync) — the stored key xpubs are now a finished pairing.
+    // Reached only from completeSync: after the verification gate was
+    // confirmed, or for a single-chain activation (no code on SSP Key) — the
+    // stored key xpubs are now a finished pairing.
     const session = syncSessionRef.current;
     if (session) clearUnverifiedPairing(session.id);
     endSyncSession();
@@ -814,25 +822,37 @@ function Key(props: {
       chains: entries.map((entry) => entry.chain),
       words,
       qrValue: verificationQrValue(words),
+      attested: sessionFullyAttested(sessionGateInput()),
     };
   };
 
+  const sessionGateInput = () => ({
+    identityPairedThisSession: !!identityKeyXpubRef.current,
+    landed: Array.from(sessionLandedRef.current.entries())
+      .filter(([chain]) => chain !== identityChain)
+      .map(([chain, landed]) => ({
+        chain,
+        attested: landed.attested,
+        fromBatch: landed.fromBatch,
+      })),
+  });
+
   // Does what was stored this session still owe the user the code? (CS-2)
   const sessionNeedsVerificationCode = (): boolean =>
-    sessionRequiresVerificationCode({
-      identityPairedThisSession: !!identityKeyXpubRef.current,
-      landed: Array.from(sessionLandedRef.current.entries())
-        .filter(([chain]) => chain !== identityChain)
-        .map(([chain, landed]) => ({ chain, attested: landed.attested })),
-    });
+    sessionRequiresVerificationCode(sessionGateInput());
 
   // The ONLY way out of a session that stored key material (security review
-  // H-4): either every stored chain carried a verified SSP Key attestation and
-  // no identity pairing happened, or the user confirms the out-of-band
-  // verification code. Nothing else calls finishSync.
+  // H-4): the user confirms the out-of-band verification code whenever SSP Key
+  // shows one (identity pairing, approved batch). A single-chain activation
+  // shows no code on SSP Key and finishes directly; one without an SSP Key
+  // attestation (SSP Key older than 2.2.0) is accepted with an update notice.
+  // Nothing else calls finishSync.
   const completeSync = () => {
     if (verifyOpenRef.current) return;
     if (!sessionNeedsVerificationCode()) {
+      if (singleChainUnattested(sessionGateInput()).length > 0) {
+        displayMessage('info', t('home:key.sync_update_key_hint'));
+      }
       finishSync();
       return;
     }
@@ -1231,9 +1251,8 @@ function Key(props: {
               return;
             }
             // Retain the key xpub for this session's verification decision
-            // BEFORE it is stored: identity pairing → always gated; any other
-            // chain → gated unless attested. Every path (batch, QR, manual,
-            // fallback) records here, so no stored key escapes the gate.
+            // BEFORE it is stored (see completeSync). Every path (batch, QR,
+            // manual, fallback) records here, so no stored key escapes it.
             if (isIdentityChain) {
               identityKeyXpubRef.current = xpub2;
             } else {
@@ -1241,6 +1260,7 @@ function Key(props: {
                 walletXpub: xpubWallet,
                 keyXpub: xpub2,
                 attested,
+                fromBatch: false,
               });
               if (batchRef.current.chains[activeChain]) {
                 batchRef.current.chains[activeChain].keyXpub = xpub2;
@@ -1729,6 +1749,14 @@ function Key(props: {
         </Text>
         {renderWordChips(verifyGate.words)}
       </div>
+      {verifyGate.attested && (
+        <Alert
+          type="success"
+          showIcon
+          message={t('home:key.verify_words_attested')}
+          data-testid="key-verify-attested"
+        />
+      )}
       {!identityKeyXpubRef.current && (
         <Text type="secondary" style={{ fontSize: 12 }}>
           {t('home:key.verify_words_no_code_hint')}
@@ -1811,10 +1839,8 @@ function Key(props: {
                        stays primary), and a clear 12px gap from the tab body.
                        Skipping ahead stops waiting for further chains but
                        NEVER skips verification (security review H-4): it
-                       goes through completeSync, which finishes only when
-                       every stored chain is attested by SSP Key and no
-                       identity pairing happened, and otherwise shows the
-                       code for what landed. While chains are still arriving
+                       goes through completeSync, which shows the code
+                       whenever SSP Key shows one. While chains are still arriving
                        and a code is owed, it is hidden — a code built then
                        would aggregate fewer chains than SSP Key's; the stall
                        timeout ends that wait on its own. */

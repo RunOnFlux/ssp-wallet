@@ -50,6 +50,8 @@ import {
   deriveKeyIdentityPubKey,
   verifyChainSyncAttestation,
   sessionRequiresVerificationCode,
+  sessionFullyAttested,
+  singleChainUnattested,
   markUnverifiedPairing,
   clearUnverifiedPairing,
   discardUnverifiedPairings,
@@ -539,6 +541,12 @@ describe('chain-sync attestation (real keys)', () => {
   });
 });
 
+const L = (chain: string, attested: boolean, fromBatch: boolean) => ({
+  chain,
+  attested,
+  fromBatch,
+});
+
 describe('sessionRequiresVerificationCode (CS-2)', () => {
   it('always requires the code for an identity pairing', () => {
     expect(
@@ -550,31 +558,112 @@ describe('sessionRequiresVerificationCode (CS-2)', () => {
     expect(
       sessionRequiresVerificationCode({
         identityPairedThisSession: true,
-        landed: [{ chain: 'eth', attested: true }],
+        landed: [L('eth', true, false)],
       }),
     ).toBe(true);
   });
 
-  it('requires it when ANY stored chain is not attested', () => {
+  it('requires it after a batch SSP Key delivered, attested or not', () => {
+    // SSP Key (2.1.1 and 2.2.0) shows the code after an approved batch.
     expect(
       sessionRequiresVerificationCode({
         identityPairedThisSession: false,
-        landed: [
-          { chain: 'eth', attested: true },
-          { chain: 'flux', attested: false },
-        ],
+        landed: [L('eth', true, true), L('flux', true, true)],
+      }),
+    ).toBe(true);
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: false,
+        landed: [L('eth', false, true)],
       }),
     ).toBe(true);
   });
 
-  it('lets attested chains activate without a code', () => {
+  it('does not require it for a single-chain activation (no code on SSP Key)', () => {
     expect(
       sessionRequiresVerificationCode({
         identityPairedThisSession: false,
-        landed: [
-          { chain: 'eth', attested: true },
-          { chain: 'flux', attested: true },
-        ],
+        landed: [L('eth', true, false)],
+      }),
+    ).toBe(false);
+    // SSP Key 2.1.1: no attestation, no code — still syncs.
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: false,
+        landed: [L('eth', false, false)],
+      }),
+    ).toBe(false);
+  });
+
+  it('does not require it when nothing was stored', () => {
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: false,
+        landed: [],
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('singleChainUnattested', () => {
+  it('lists single-chain activations without an attestation', () => {
+    expect(
+      singleChainUnattested({
+        identityPairedThisSession: false,
+        landed: [L('eth', false, false)],
+      }),
+    ).toEqual(['eth']);
+    expect(
+      singleChainUnattested({
+        identityPairedThisSession: false,
+        landed: [L('eth', true, false)],
+      }),
+    ).toEqual([]);
+  });
+
+  it('is empty whenever the code is shown', () => {
+    expect(
+      singleChainUnattested({
+        identityPairedThisSession: true,
+        landed: [L('eth', false, false)],
+      }),
+    ).toEqual([]);
+    expect(
+      singleChainUnattested({
+        identityPairedThisSession: false,
+        landed: [L('eth', false, true)],
+      }),
+    ).toEqual([]);
+  });
+});
+
+describe('sessionFullyAttested', () => {
+  it('is true only when every stored chain is attested', () => {
+    expect(
+      sessionFullyAttested({
+        identityPairedThisSession: false,
+        landed: [L('eth', true, true), L('flux', true, true)],
+      }),
+    ).toBe(true);
+    expect(
+      sessionFullyAttested({
+        identityPairedThisSession: false,
+        landed: [L('eth', true, true), L('flux', false, true)],
+      }),
+    ).toBe(false);
+  });
+
+  it('is never true for an identity pairing or an empty session', () => {
+    expect(
+      sessionFullyAttested({
+        identityPairedThisSession: true,
+        landed: [L('eth', true, true)],
+      }),
+    ).toBe(false);
+    expect(
+      sessionFullyAttested({
+        identityPairedThisSession: false,
+        landed: [],
       }),
     ).toBe(false);
   });
