@@ -19,6 +19,7 @@ export const exchangeLogos: Record<string, string> = {
   XOSwap: xoswap,
   Fusion: fusion,
   Exolix: exolix,
+  // One provider, three settlement rails (ABE idinstaswapfloat/private/zk).
   InstaSwap: instaswap,
   'InstaSwap Private': instaswap,
   'InstaSwap ZK': instaswap,
