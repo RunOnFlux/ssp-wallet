@@ -236,6 +236,7 @@
     "advanced_hint": "Titik akhir jaringan & perangkat ahli",
     "wallet_key_details": "Detail Dompet & Kunci",
     "about": "Tentang",
+    "ssp_for_teams": "SSP untuk Tim",
     "enterprise_email_alerts": "Notifikasi email SSP Enterprise",
     "change_pw_help": "Mengubah kata sandi Anda akan mengimpor ulang dompet dari frasa benih Anda — pastikan frasa benih tersebut sudah siap sebelum Anda mulai.",
     "change_pw_confirm": "Mengubah kata sandi berarti memasukkan kembali frasa benih Anda dan mengenkripsi ulang dompet Anda. Anda akan memerlukan frasa benih tersebut. Lanjutkan?",
@@ -668,6 +669,7 @@
     "new": "Baru",
     "waiting": "Menunggu",
     "confirming": "Mengkonfirmasi",
+    "exchanging": "Exchanging",
     "sending": "Mengirim",
     "finished": "Diselesaikan",
     "failed": "Gagal",
@@ -694,7 +696,14 @@
     "max_tooltip_token": "Kirim seluruh saldo token Anda. Biaya jaringan dibayarkan secara terpisah dalam mata uang asli.",
     "max_tooltip_native": "Kirim saldo maksimum yang tersedia. Biaya jaringan akan dipotong secara otomatis.",
     "insufficient_balance": "Saldo tidak mencukupi. Jumlahnya melebihi dana yang tersedia termasuk biaya jaringan.",
-    "advanced_options": "Opsi lanjutan"
+    "advanced_options": "Opsi lanjutan",
+    "tag_dex": "DEX",
+    "tag_dex_info": "Decentralized: routed through on-chain liquidity such as DEXs and cross-chain protocols, not a custodial exchange account.",
+    "tag_private": "Private",
+    "tag_private_info": "Private settlement: your deposit and your payout cannot be linked on-chain. Usually completes within minutes.",
+    "tag_zk": "ZK",
+    "tag_zk_info": "Zero-knowledge settlement through a shielded pool: the strongest privacy. A ZK swap can take more than an hour to complete.",
+    "badges_title": "What the badges mean"
   },
   "walletconnect": {
     "title": "WalletConnect",
