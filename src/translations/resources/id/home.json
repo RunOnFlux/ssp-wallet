@@ -669,7 +669,7 @@
     "new": "Baru",
     "waiting": "Menunggu",
     "confirming": "Mengkonfirmasi",
-    "exchanging": "Exchanging",
+    "exchanging": "Bertukar",
     "sending": "Mengirim",
     "finished": "Diselesaikan",
     "failed": "Gagal",
@@ -698,12 +698,12 @@
     "insufficient_balance": "Saldo tidak mencukupi. Jumlahnya melebihi dana yang tersedia termasuk biaya jaringan.",
     "advanced_options": "Opsi lanjutan",
     "tag_dex": "DEX",
-    "tag_dex_info": "Decentralized: routed through on-chain liquidity such as DEXs and cross-chain protocols, not a custodial exchange account.",
-    "tag_private": "Private",
-    "tag_private_info": "Private settlement: your deposit and your payout cannot be linked on-chain. Usually completes within minutes.",
+    "tag_dex_info": "Terdesentralisasi: dialirkan melalui likuiditas on-chain seperti DEX dan protokol lintas rantai, bukan melalui akun bursa yang menyediakan layanan kustodian.",
+    "tag_private": "Privasi",
+    "tag_private_info": "Penyelesaian privasi: setoran dan pembayaran Anda tidak dapat dihubungkan dalam rantai blok. Biasanya selesai dalam hitungan menit.",
     "tag_zk": "ZK",
-    "tag_zk_info": "Zero-knowledge settlement through a shielded pool: the strongest privacy. A ZK swap can take more than an hour to complete.",
-    "badges_title": "What the badges mean"
+    "tag_zk_info": "Penyelesaian zero-knowledge melalui pool terlindung: privasi terbaik. Proses pertukaran ZK bisa memakan waktu lebih dari satu jam untuk diselesaikan.",
+    "badges_title": "Arti dari lencana-lencana tersebut"
   },
   "walletconnect": {
     "title": "WalletConnect",
