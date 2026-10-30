@@ -79,6 +79,8 @@ import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import { formatFiatWithSymbol, formatCrypto } from '../../lib/currency.ts';
 import { sspConfig } from '@storage/ssp';
 import ProviderBox from './ProviderBox.tsx';
+import ProviderBadgeLegend from './ProviderBadgeLegend.tsx';
+import { knownBadges } from '../../lib/swapBadges';
 import {
   estimateGas,
   estimateUtxoTxSize,
@@ -998,6 +1000,18 @@ function Swap() {
     }, 10);
   };
 
+  // Badges of the chosen provider, and of every provider offering this swap.
+  // The legends render only when there is a badge to explain: inside an antd
+  // Space even a component that renders nothing still gets an item and a gap.
+  const chosenBadgeTags = provider?.tags ?? [];
+  const offerBadgeTags = exchangeProviders
+    .filter((p) =>
+      possibleExchangeProviders.some(
+        (offer) => offer.exchangeId === p.exchangeId,
+      ),
+    )
+    .flatMap((p) => p.tags ?? []);
+
   return (
     <div className="flow-page">
       {loadingSwap && <Spin size="large" fullscreen />}
@@ -1428,6 +1442,11 @@ function Swap() {
           width: '100%',
         }}
       >
+        {/* What the chosen provider's badges mean (e.g. a ZK swap can take more
+            than an hour), right above Continue so it is read before committing. */}
+        {knownBadges(chosenBadgeTags).length > 0 && (
+          <ProviderBadgeLegend tags={chosenBadgeTags} />
+        )}
         {/* Why Continue is unavailable, in the flow right above it — a disabled
             button cannot be focused, so a tooltip would never reach a keyboard
             or screen-reader user. */}
@@ -1722,6 +1741,9 @@ function Swap() {
                 </SwapOption>
               ))}
           </div>
+          {knownBadges(offerBadgeTags).length > 0 && (
+            <ProviderBadgeLegend tags={offerBadgeTags} />
+          )}
           <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
             <Button
               type="link"

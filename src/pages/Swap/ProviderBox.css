@@ -3,3 +3,35 @@
   min-width: min(350px, calc(100vw - 50px));
   margin-top: 5px;
 }
+
+.provider-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.provider-tags .ant-tag {
+  margin-inline-end: 0;
+}
+
+.provider-badge-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  font-size: 12px;
+  text-align: left;
+  opacity: 0.85;
+}
+
+.provider-badge-legend-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.provider-badge-legend-row .ant-tag {
+  flex: 0 0 auto;
+  margin-inline-end: 0;
+}
