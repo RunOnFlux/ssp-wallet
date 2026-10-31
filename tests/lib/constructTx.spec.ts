@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck test suite
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 
 // Mock localforage to avoid browser storage issues in test environment
 vi.mock('localforage', () => ({
@@ -907,92 +907,111 @@ describe('ConstructTx Lib', () => {
   });
 
   describe('estimateUtxoTxSize function', () => {
-    it('should return estimated tx size for flux address with UTXOs', async () => {
-      const result = await estimateUtxoTxSize(
-        'flux',
-        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
-        '1',
-      );
+    // Offline: fixed UTXO sets, so the expected sizes are exact. These used to
+    // read the live UTXOs of public addresses and broke whenever someone sent
+    // them more coins. The addresses are unique to this block so the module's
+    // UTXO cache never serves another test's (live) data.
+    const BTC_ADDRESS = 'bc1qestimatesizetestaddress0000000000000000';
+    const FLUX_ADDRESS = 't3EstimateSizeTestAddress00000000000';
+    const EMPTY_ADDRESS = 't3EmptyAddressWithNoUtxos123456789';
+    const txid = (n: number) => n.toString(16).padStart(64, '0');
 
-      expect(result).not.toBeNull();
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('number');
-      expect(result).toBeGreaterThan(0);
+    // blockbook /api/v2/utxo shape (value in satoshis, string)
+    const btcUtxos = [
+      { txid: txid(1), vout: 0, value: '50000', confirmations: 10 },
+      { txid: txid(2), vout: 1, value: '200000', confirmations: 10 },
+    ];
+    // insight /api/addrs/:addr/utxo shape
+    const fluxUtxos = [
+      // immature coinbase: excluded from selection
+      {
+        txid: txid(3),
+        vout: 0,
+        scriptPubKey: '',
+        satoshis: 1000,
+        confirmations: 5,
+        coinbase: true,
+      },
+      {
+        txid: txid(4),
+        vout: 0,
+        scriptPubKey: '',
+        satoshis: 10000000,
+        confirmations: 200,
+      },
+      {
+        txid: txid(5),
+        vout: 0,
+        scriptPubKey: '',
+        satoshis: 50000000,
+        confirmations: 200,
+      },
+      {
+        txid: txid(6),
+        vout: 0,
+        scriptPubKey: '',
+        satoshis: 100000000,
+        confirmations: 200,
+      },
+    ];
+
+    beforeEach(() => {
+      vi.spyOn(axios, 'get').mockImplementation((url: string) => {
+        if (url.includes(`/utxo/${BTC_ADDRESS}`)) {
+          return Promise.resolve({ data: btcUtxos });
+        }
+        if (url.includes(`/addrs/${FLUX_ADDRESS}/utxo`)) {
+          return Promise.resolve({ data: fluxUtxos });
+        }
+        if (url.includes(`/addrs/${EMPTY_ADDRESS}/utxo`)) {
+          return Promise.resolve({ data: [] });
+        }
+        return Promise.reject(new Error(`Unexpected GET: ${url}`));
+      });
     });
 
-    it('should return estimated tx size for btc address', async () => {
-      const result = await estimateUtxoTxSize(
-        'btc',
-        'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
-        '0.001',
-      );
-
-      expect(result).not.toBeNull();
-      expect(result).toBeDefined();
-      expect(typeof result).toBe('number');
-      expect(result).toBeGreaterThan(0);
+    afterEach(() => {
+      if (vi.isMockFunction(axios.get)) {
+        (axios.get as unknown as { mockRestore: () => void }).mockRestore();
+      }
     });
 
-    it('should return fallback size (250) when address has no UTXOs', async () => {
-      const result = await estimateUtxoTxSize(
-        'flux',
-        't3EmptyAddressWithNoUtxos123456789',
-        '1',
-      );
-
-      expect(result).toBe(250);
+    // p2wsh (btc): vsize = ceil(((11 + 68n + 43o) * 4 + 150n) / 4) + 18n
+    it('estimates a p2wsh (btc) spend of one input', async () => {
+      // 0.0001 BTC = 10000 sat: the smallest UTXO (50000) covers it
+      expect(await estimateUtxoTxSize('btc', BTC_ADDRESS, '0.0001')).toBe(221);
     });
 
-    it('should return reasonable size for p2wsh transactions (btc)', async () => {
-      const result = await estimateUtxoTxSize(
-        'btc',
-        'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq',
-        '0.0001',
-      );
-
-      expect(result).toBeGreaterThan(100);
-      expect(result).toBeLessThan(2000);
+    it('adds inputs until the amount is covered (btc)', async () => {
+      // 0.001 BTC = 100000 sat: needs both UTXOs
+      expect(await estimateUtxoTxSize('btc', BTC_ADDRESS, '0.001')).toBe(344);
     });
 
-    it('should return larger size when more UTXOs are needed for bigger amount', async () => {
-      const smallAmountSize = await estimateUtxoTxSize(
-        'flux',
-        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
-        '0.1',
-      );
-
-      const largeAmountSize = await estimateUtxoTxSize(
-        'flux',
-        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
-        '1000000',
-      );
-
-      expect(largeAmountSize).toBeGreaterThanOrEqual(smallAmountSize);
+    // p2sh (flux): 10 + 180n + 34o + 72n
+    it('estimates a p2sh (flux) spend, skipping immature coinbase', async () => {
+      expect(await estimateUtxoTxSize('flux', FLUX_ADDRESS, '0.1')).toBe(330);
+      // 1 FLUX: 0.1 + 0.5 + 1 → three inputs
+      expect(await estimateUtxoTxSize('flux', FLUX_ADDRESS, '1')).toBe(834);
     });
 
-    it('should handle invalid address gracefully and return fallback size', async () => {
-      const result = await estimateUtxoTxSize('btc', 'invalid_address', '1');
-
-      expect(result).toBeGreaterThan(0);
-      expect(result).toBeLessThanOrEqual(500);
+    it('uses every spendable UTXO when the amount exceeds the balance', async () => {
+      expect(await estimateUtxoTxSize('flux', FLUX_ADDRESS, '1000000')).toBe(
+        834,
+      );
     });
 
-    it('should use all UTXOs and single output when useAllUtxos is true', async () => {
-      const normalSize = await estimateUtxoTxSize(
-        'flux',
-        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
-        '0.1',
-        false,
+    it('uses all UTXOs and a single output when useAllUtxos is true', async () => {
+      expect(await estimateUtxoTxSize('flux', FLUX_ADDRESS, '0.1', true)).toBe(
+        800,
       );
+    });
 
-      const maxSize = await estimateUtxoTxSize(
-        'flux',
-        't3ThbWogDoAjGuS6DEnmN1GWJBRbVjSUK4T',
-        '0.1',
-        true,
-      );
+    it('returns the fallback size (250) when the address has no UTXOs', async () => {
+      expect(await estimateUtxoTxSize('flux', EMPTY_ADDRESS, '1')).toBe(250);
+    });
 
-      expect(maxSize).toBeGreaterThanOrEqual(normalSize);
+    it('returns the fallback size (250) when the UTXO lookup fails', async () => {
+      expect(await estimateUtxoTxSize('btc', 'invalid_address', '1')).toBe(250);
     });
   });
 
