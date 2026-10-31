@@ -1,11 +1,11 @@
 // @ts-nocheck test suite
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // chainSync.ts pulls in storage/store side-effect modules — mock the ones
 // that don't run under node; lib/wallet stays REAL so verifyBatchSyncDoc is
 // exercised against genuine derivations.
 vi.mock('react-secure-storage', () => ({
-  default: { getItem: vi.fn(), setItem: vi.fn() },
+  default: { getItem: vi.fn(), setItem: vi.fn(), removeItem: vi.fn() },
 }));
 vi.mock('@metamask/browser-passworder', () => ({
   encrypt: vi.fn(async (_pw, value) => `enc(${value})`),
@@ -31,6 +31,7 @@ vi.mock('localforage', () => ({
 
 import axios from 'axios';
 import localForage from 'localforage';
+import secureLocalStorage from 'react-secure-storage';
 import {
   CHAIN_SYNC_VERSION,
   CHAIN_SYNC_MAX_CHAINS,
@@ -45,8 +46,28 @@ import {
   storeKeyPublicNonces,
   isBatchPollablePhase,
   requiresVerificationGate,
+  chainSyncAttestationMessage,
+  deriveKeyIdentityPubKey,
+  verifyChainSyncAttestation,
+  sessionRequiresVerificationCode,
+  sessionFullyAttested,
+  singleChainUnattested,
+  markUnverifiedPairing,
+  clearUnverifiedPairing,
+  discardUnverifiedPairings,
+  storeKeyXpubForChain,
+  discardOrphanedUnverifiedPairings,
+  startPairingSession,
+  PAIRING_SESSION_LOCK_PREFIX,
+  UNVERIFIED_PAIRING_STORAGE_KEY,
 } from '../../src/lib/chainSync';
-import { getMasterXpub, generateMultisigAddress } from '../../src/lib/wallet';
+import {
+  getMasterXpub,
+  getMasterXpriv,
+  generateMultisigAddress,
+  generateAddressKeypair,
+} from '../../src/lib/wallet';
+import { signMessage } from '../../src/lib/relayAuth';
 
 const walletMnemonic =
   'silver trouble mountain crouch angry park film strong escape theory illegal bunker cargo taxi tuna real drift alert state match great escape option explain';
@@ -338,5 +359,492 @@ describe('fetchChainSyncRejection', () => {
   it('returns null when nothing is pending (404)', async () => {
     axios.get.mockRejectedValueOnce(new Error('404'));
     await expect(fetchChainSyncRejection('wkid')).resolves.toBeNull();
+  });
+});
+
+describe('fetchChainSyncRejection — RA-4 signed read', () => {
+  it('sends the read-auth headers for the exact URL it fetches', async () => {
+    axios.get.mockResolvedValueOnce({ data: {} });
+    const getHeaders = vi.fn(async () => ({ 'x-ssp-signature': 'sig' }));
+    await fetchChainSyncRejection('bc1qwk', getHeaders);
+    expect(getHeaders).toHaveBeenCalledWith(
+      'https://relay.example.com/v1/action/bc1qwk',
+    );
+    expect(axios.get).toHaveBeenLastCalledWith(
+      'https://relay.example.com/v1/action/bc1qwk',
+      { headers: { 'x-ssp-signature': 'sig' } },
+    );
+  });
+
+  it('still polls (unauthenticated) when no headers can be made yet', async () => {
+    axios.get.mockResolvedValueOnce({ data: {} });
+    await fetchChainSyncRejection('bc1qwk', async () => null);
+    expect(axios.get).toHaveBeenLastCalledWith(
+      'https://relay.example.com/v1/action/bc1qwk',
+      undefined,
+    );
+  });
+});
+
+/**
+ * Security review H-4 / WEXT-2, fix contract CS-1/CS-2: a relay that swaps
+ * SSP Key's xpub recomputes every self-consistency field (wkIdentity, address,
+ * scripts), so those checks prove nothing. SSP Key now signs
+ * `SSP_CHAIN_SYNC:<chain>:<walletXpub>:<keyXpub>` with its identity key, and
+ * the wallet verifies that against the identity key it stored at pairing.
+ */
+describe('chain-sync attestation (real keys)', () => {
+  const identityChain = 'btc';
+  // SSP Key's identity account (what the wallet stores at identity pairing).
+  const keyIdentityXpub = getMasterXpub(
+    keyMnemonic,
+    48,
+    0,
+    0,
+    'p2wsh',
+    identityChain,
+  );
+  const keyIdentityXpriv = getMasterXpriv(
+    keyMnemonic,
+    48,
+    0,
+    0,
+    'p2wsh',
+    identityChain,
+  );
+  const keyIdentity = generateAddressKeypair(
+    keyIdentityXpriv,
+    10,
+    0,
+    identityChain,
+  );
+  // The chain being activated.
+  const chain = 'flux';
+  const walletXpub = getMasterXpub(walletMnemonic, 48, 19167, 0, 'p2sh', chain);
+  const keyXpub = getMasterXpub(keyMnemonic, 48, 19167, 0, 'p2sh', chain);
+  // A relay's substitute key.
+  const relayMnemonic =
+    'legal winner thank year wave sausage worth useful legal winner thank yellow';
+  const relayXpub = getMasterXpub(relayMnemonic, 48, 19167, 0, 'p2sh', chain);
+
+  const attest = (c, w, k, privKey = keyIdentity.privKey) =>
+    signMessage(chainSyncAttestationMessage(c, w, k), privKey, identityChain);
+
+  it('derives SSP Key identity pubkey (/10/0) from the stored identity xpub', () => {
+    expect(deriveKeyIdentityPubKey(keyIdentityXpub, identityChain)).toBe(
+      keyIdentity.pubKey,
+    );
+    expect(deriveKeyIdentityPubKey('garbage', identityChain)).toBeNull();
+  });
+
+  it('uses the exact message format of the contract', () => {
+    expect(chainSyncAttestationMessage('eth', 'xpubW', 'xpubK')).toBe(
+      'SSP_CHAIN_SYNC:eth:xpubW:xpubK',
+    );
+  });
+
+  it("accepts SSP Key's genuine attestation", () => {
+    expect(
+      verifyChainSyncAttestation({
+        chain,
+        walletXpub,
+        keyXpub,
+        signature: attest(chain, walletXpub, keyXpub),
+        keyIdentityXpub,
+        identityChain,
+      }),
+    ).toBe(true);
+  });
+
+  it('rejects a relay-substituted key xpub (signature over the real one)', () => {
+    expect(
+      verifyChainSyncAttestation({
+        chain,
+        walletXpub,
+        keyXpub: relayXpub,
+        signature: attest(chain, walletXpub, keyXpub),
+        keyIdentityXpub,
+        identityChain,
+      }),
+    ).toBe(false);
+  });
+
+  it('rejects an attestation the relay signed with its own key', () => {
+    const relayIdentity = generateAddressKeypair(
+      getMasterXpriv(relayMnemonic, 48, 0, 0, 'p2wsh', identityChain),
+      10,
+      0,
+      identityChain,
+    );
+    expect(
+      verifyChainSyncAttestation({
+        chain,
+        walletXpub,
+        keyXpub: relayXpub,
+        signature: attest(chain, walletXpub, relayXpub, relayIdentity.privKey),
+        keyIdentityXpub,
+        identityChain,
+      }),
+    ).toBe(false);
+  });
+
+  it('binds the chain and OUR wallet xpub', () => {
+    const signature = attest(chain, walletXpub, keyXpub);
+    expect(
+      verifyChainSyncAttestation({
+        chain: 'zec',
+        walletXpub,
+        keyXpub,
+        signature,
+        keyIdentityXpub,
+        identityChain,
+      }),
+    ).toBe(false);
+    expect(
+      verifyChainSyncAttestation({
+        chain,
+        walletXpub: relayXpub,
+        keyXpub,
+        signature,
+        keyIdentityXpub,
+        identityChain,
+      }),
+    ).toBe(false);
+  });
+
+  it('fails closed on a missing or malformed signature (old SSP Key)', () => {
+    for (const signature of [undefined, null, '', 'not-base64!', 'AAAA', 42]) {
+      expect(
+        verifyChainSyncAttestation({
+          chain,
+          walletXpub,
+          keyXpub,
+          signature,
+          keyIdentityXpub,
+          identityChain,
+        }),
+      ).toBe(false);
+    }
+  });
+
+  it('fails closed without a stored identity xpub', () => {
+    expect(
+      verifyChainSyncAttestation({
+        chain,
+        walletXpub,
+        keyXpub,
+        signature: attest(chain, walletXpub, keyXpub),
+        keyIdentityXpub: '',
+        identityChain,
+      }),
+    ).toBe(false);
+  });
+});
+
+const L = (chain: string, attested: boolean, fromBatch: boolean) => ({
+  chain,
+  attested,
+  fromBatch,
+});
+
+describe('sessionRequiresVerificationCode (CS-2)', () => {
+  it('always requires the code for an identity pairing', () => {
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: true,
+        landed: [],
+      }),
+    ).toBe(true);
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: true,
+        landed: [L('eth', true, false)],
+      }),
+    ).toBe(true);
+  });
+
+  it('requires it after a batch SSP Key delivered, attested or not', () => {
+    // SSP Key (2.1.1 and 2.2.0) shows the code after an approved batch.
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: false,
+        landed: [L('eth', true, true), L('flux', true, true)],
+      }),
+    ).toBe(true);
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: false,
+        landed: [L('eth', false, true)],
+      }),
+    ).toBe(true);
+  });
+
+  it('does not require it for a single-chain activation (no code on SSP Key)', () => {
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: false,
+        landed: [L('eth', true, false)],
+      }),
+    ).toBe(false);
+    // SSP Key 2.1.1: no attestation, no code — still syncs.
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: false,
+        landed: [L('eth', false, false)],
+      }),
+    ).toBe(false);
+  });
+
+  it('does not require it when nothing was stored', () => {
+    expect(
+      sessionRequiresVerificationCode({
+        identityPairedThisSession: false,
+        landed: [],
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('singleChainUnattested', () => {
+  it('lists single-chain activations without an attestation', () => {
+    expect(
+      singleChainUnattested({
+        identityPairedThisSession: false,
+        landed: [L('eth', false, false)],
+      }),
+    ).toEqual(['eth']);
+    expect(
+      singleChainUnattested({
+        identityPairedThisSession: false,
+        landed: [L('eth', true, false)],
+      }),
+    ).toEqual([]);
+  });
+
+  it('is empty whenever the code is shown', () => {
+    expect(
+      singleChainUnattested({
+        identityPairedThisSession: true,
+        landed: [L('eth', false, false)],
+      }),
+    ).toEqual([]);
+    expect(
+      singleChainUnattested({
+        identityPairedThisSession: false,
+        landed: [L('eth', false, true)],
+      }),
+    ).toEqual([]);
+  });
+});
+
+describe('sessionFullyAttested', () => {
+  it('is true only when every stored chain is attested', () => {
+    expect(
+      sessionFullyAttested({
+        identityPairedThisSession: false,
+        landed: [L('eth', true, true), L('flux', true, true)],
+      }),
+    ).toBe(true);
+    expect(
+      sessionFullyAttested({
+        identityPairedThisSession: false,
+        landed: [L('eth', true, true), L('flux', false, true)],
+      }),
+    ).toBe(false);
+  });
+
+  it('is never true for an identity pairing or an empty session', () => {
+    expect(
+      sessionFullyAttested({
+        identityPairedThisSession: true,
+        landed: [L('eth', true, true)],
+      }),
+    ).toBe(false);
+    expect(
+      sessionFullyAttested({
+        identityPairedThisSession: false,
+        landed: [],
+      }),
+    ).toBe(false);
+  });
+});
+
+describe('unverified pairing marker (per session)', () => {
+  const memory = new Map<string, string>();
+  beforeEach(() => {
+    memory.clear();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => memory.get(key) ?? null,
+      setItem: (key: string, value: string) => memory.set(key, value),
+      removeItem: (key: string) => memory.delete(key),
+    });
+    secureLocalStorage.removeItem.mockClear();
+    secureLocalStorage.setItem.mockClear();
+  });
+
+  const marked = () =>
+    JSON.parse(memory.get(UNVERIFIED_PAIRING_STORAGE_KEY) ?? 'null');
+
+  it('discards every key xpub the session stored without passing the gate', () => {
+    markUnverifiedPairing('s1', 'btc');
+    markUnverifiedPairing('s1', 'eth');
+    markUnverifiedPairing('s1', 'eth');
+    expect(marked()).toEqual({ v: 2, sessions: { s1: ['btc', 'eth'] } });
+    const discarded = discardUnverifiedPairings('s1');
+    expect(discarded).toEqual(['btc', 'eth']);
+    expect(secureLocalStorage.removeItem).toHaveBeenCalledWith(
+      '2-xpub-48-0-0-2-btc',
+    );
+    expect(secureLocalStorage.removeItem).toHaveBeenCalledTimes(2);
+    expect(memory.has(UNVERIFIED_PAIRING_STORAGE_KEY)).toBe(false);
+  });
+
+  it('keeps a verified pairing (marker cleared on finish)', () => {
+    markUnverifiedPairing('s1', 'eth');
+    clearUnverifiedPairing('s1');
+    expect(discardUnverifiedPairings('s1')).toEqual([]);
+    expect(secureLocalStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  it("concurrent views never clear or discard each other's pairing", () => {
+    markUnverifiedPairing('viewA', 'eth');
+    markUnverifiedPairing('viewA', 'flux');
+    markUnverifiedPairing('viewB', 'flux');
+    markUnverifiedPairing('viewB', 'ltc');
+    // View B finishing clears only its own entry.
+    clearUnverifiedPairing('viewB');
+    expect(marked().sessions).toEqual({ viewA: ['eth', 'flux'] });
+    markUnverifiedPairing('viewB', 'ltc');
+    markUnverifiedPairing('viewB', 'flux');
+    // View A cancelling discards only its chains — not flux, which view B is
+    // pairing right now — and leaves view B's entry alone.
+    expect(discardUnverifiedPairings('viewA')).toEqual(['eth']);
+    expect(secureLocalStorage.removeItem).toHaveBeenCalledTimes(1);
+    expect(marked().sessions).toEqual({ viewB: ['ltc', 'flux'] });
+  });
+
+  it('marks a batch chain BEFORE its key xpub is written', async () => {
+    let markedAtWrite = null;
+    secureLocalStorage.setItem.mockImplementationOnce(() => {
+      markedAtWrite = memory.get(UNVERIFIED_PAIRING_STORAGE_KEY);
+    });
+    const stored = await storeKeyXpubForChain('flux', 'xpubKEY', 'pwBlob', {
+      id: 's1',
+      isCurrent: () => true,
+    });
+    expect(stored).toBe(true);
+    expect(JSON.parse(markedAtWrite)).toEqual({
+      v: 2,
+      sessions: { s1: ['flux'] },
+    });
+  });
+
+  it('drops a key write whose session ended while PBKDF2 ran', async () => {
+    let checks = 0;
+    // Current when the write starts, gone (finished / discarded) by the time
+    // the encryption resolved.
+    const stored = await storeKeyXpubForChain('flux', 'xpubKEY', 'pwBlob', {
+      id: 's1',
+      isCurrent: () => {
+        checks += 1;
+        return checks === 1;
+      },
+    });
+    expect(stored).toBe(false);
+    expect(secureLocalStorage.setItem).not.toHaveBeenCalled();
+    expect(memory.has(UNVERIFIED_PAIRING_STORAGE_KEY)).toBe(false);
+  });
+
+  it('ignores a corrupt marker', () => {
+    memory.set(UNVERIFIED_PAIRING_STORAGE_KEY, '{not json');
+    expect(discardUnverifiedPairings('s1')).toEqual([]);
+  });
+
+  describe('at unlock', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    const stubLocks = (heldSessions: string[] | null) => {
+      vi.stubGlobal('localStorage', {
+        getItem: (key: string) => memory.get(key) ?? null,
+        setItem: (key: string, value: string) => memory.set(key, value),
+        removeItem: (key: string) => memory.delete(key),
+      });
+      vi.stubGlobal(
+        'navigator',
+        heldSessions === null
+          ? {}
+          : {
+              locks: {
+                request: vi.fn(() => Promise.resolve()),
+                query: vi.fn(async () => ({
+                  held: heldSessions.map((id) => ({
+                    name: `${PAIRING_SESSION_LOCK_PREFIX}${id}`,
+                  })),
+                })),
+              },
+            },
+      );
+    };
+
+    it('discards abandoned sessions and keeps the ones alive in another view', async () => {
+      stubLocks(['live']);
+      markUnverifiedPairing('dead', 'eth');
+      markUnverifiedPairing('live', 'flux');
+      const result = await discardOrphanedUnverifiedPairings();
+      expect(result).toEqual({
+        discarded: ['eth'],
+        pendingElsewhere: ['flux'],
+      });
+      expect(secureLocalStorage.removeItem).toHaveBeenCalledTimes(1);
+      expect(marked().sessions).toEqual({ live: ['flux'] });
+    });
+
+    it('treats a pre-session marker as abandoned', async () => {
+      stubLocks([]);
+      memory.set(UNVERIFIED_PAIRING_STORAGE_KEY, JSON.stringify(['btc']));
+      const result = await discardOrphanedUnverifiedPairings();
+      expect(result).toEqual({ discarded: ['btc'], pendingElsewhere: [] });
+      expect(memory.has(UNVERIFIED_PAIRING_STORAGE_KEY)).toBe(false);
+    });
+
+    it('without Web Locks every session counts as abandoned (fail closed)', async () => {
+      stubLocks(null);
+      markUnverifiedPairing('maybe-live', 'flux');
+      const result = await discardOrphanedUnverifiedPairings();
+      expect(result).toEqual({ discarded: ['flux'], pendingElsewhere: [] });
+    });
+  });
+});
+
+describe('pairing sessions', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('holds a liveness lock until the session ends', async () => {
+    let released = false;
+    const request = vi.fn((_name: string, callback: () => Promise<void>) =>
+      callback().then(() => {
+        released = true;
+      }),
+    );
+    vi.stubGlobal('navigator', { locks: { request } });
+    const session = startPairingSession();
+    expect(session.id).toMatch(/^[0-9a-f]{32}$/);
+    expect(request).toHaveBeenCalledWith(
+      `${PAIRING_SESSION_LOCK_PREFIX}${session.id}`,
+      expect.any(Function),
+    );
+    expect(session.isActive()).toBe(true);
+    await Promise.resolve();
+    expect(released).toBe(false);
+    session.end();
+    session.end();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(released).toBe(true);
+    expect(session.isActive()).toBe(false);
+    expect(startPairingSession().id).not.toBe(session.id);
   });
 });

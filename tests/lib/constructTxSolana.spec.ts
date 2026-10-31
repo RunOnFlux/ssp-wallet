@@ -119,6 +119,34 @@ describe('Solana constructTx', () => {
   });
 
   describe('constructAndSignSOLTransaction', () => {
+    it('CHN-7: refuses a paymaster reimbursement above the consumer cap', async () => {
+      stubConnectionAndClient({ initialized: true });
+      const base = {
+        chain: 'solDevnet',
+        recipient,
+        amount: '1000000',
+        walletPubkeyBase58: walletKp.pubKey,
+        keyPubkeyBase58: keyKp.pubKey,
+        walletPrivKeyHex: walletKp.privKey,
+        paymasterPubkeyBase58: paymasterPub,
+      };
+      // Relay-inflated schedule (2 SOL).
+      await expect(
+        constructAndSignSOLTransaction({
+          ...base,
+          paymasterFeeLamports: '2000000000',
+        }),
+      ).rejects.toThrow(/exceeds the maximum/);
+      // A tighter caller cap (USD-derived) is honoured too.
+      await expect(
+        constructAndSignSOLTransaction({
+          ...base,
+          paymasterFeeLamports: '200000',
+          maxFeeLamports: '100000',
+        }),
+      ).rejects.toThrow(/exceeds the maximum/);
+    });
+
     it('throws if wallet privkey does not match wallet pubkey', async () => {
       stubConnectionAndClient({ initialized: true });
       await expect(

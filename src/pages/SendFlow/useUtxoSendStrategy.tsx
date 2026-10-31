@@ -26,6 +26,9 @@ import {
 } from '../../lib/constructTx';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
+import { takePendingPayRequestId } from '../../components/SspConnect/pendingPayRequest';
+import { attachRequiredWkAuth } from '../../lib/relayRequestAuth';
+import { effectiveMaxFeeUsd } from '../../lib/sendStrategies/feeCap';
 import { getFingerprint } from '../../lib/fingerprint';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
@@ -437,7 +440,8 @@ export function useUtxoSendStrategy(): SendStrategyView {
     const cr = cryptoRates[activeChain] ?? 0;
     const fiUSD = fiatRates.USD ?? 0;
     const fiatPriceUSD = cr * fiUSD;
-    const maxFeeUSD = sspConfig().maxTxFeeUSD; // max USD fee per tranasction
+    // Never above the SSP Key's consumer ceiling (min(chain maxFee, USD 100)).
+    const maxFeeUSD = effectiveMaxFeeUsd(sspConfig().maxTxFeeUSD);
     const maxFeeUNIT = new BigNumber(maxFeeUSD)
       .dividedBy(fiatPriceUSD)
       .toFixed();
@@ -541,21 +545,16 @@ export function useUtxoSendStrategy(): SendStrategyView {
       utxos,
     };
 
-    // Add authentication if available (includes hash of request body)
-    try {
-      const auth = await createWkIdentityAuth('action', wkIdentity, data);
-      if (auth) {
-        Object.assign(data, auth);
-      }
-    } catch (error) {
-      console.warn(
-        '[postAction] Auth not available, sending without signature',
-        error,
-      );
-    }
+    // RA-2: /v1/action requires WK auth (hash of the request body included).
+    // Throws instead of ever posting an unauthenticated signing request.
+    const signedData = await attachRequiredWkAuth(
+      data,
+      wkIdentity,
+      createWkIdentityAuth,
+    );
 
     axios
-      .post(`https://${sspConfig().relay}/v1/action`, data)
+      .post(`https://${sspConfig().relay}/v1/action`, signedData)
       .then((res) => {
         console.log(res);
       })
@@ -651,7 +650,8 @@ export function useUtxoSendStrategy(): SendStrategyView {
         const cr = cryptoRates[activeChain] ?? 0;
         const fiUSD = fiatRates.USD ?? 0;
         const fiatPriceUSD = cr * fiUSD;
-        const maxFeeUSD = sspConfig().maxTxFeeUSD; // max USD fee per tranasction
+        // Never above the SSP Key's consumer ceiling (min(chain maxFee, USD 100)).
+        const maxFeeUSD = effectiveMaxFeeUsd(sspConfig().maxTxFeeUSD);
         const maxFeeUNIT = new BigNumber(maxFeeUSD)
           .dividedBy(fiatPriceUSD)
           .toFixed();
@@ -676,10 +676,11 @@ export function useUtxoSendStrategy(): SendStrategyView {
           lockedUtxos,
           state.utxos,
         )
-          .then((txInfo) => {
+          .then(async (txInfo) => {
             console.log(txInfo);
-            // post to ssp relay
-            postAction(
+            // post to ssp relay (rejects — handled below — when relay auth
+            // is unavailable, so the UI never waits on a request never sent)
+            await postAction(
               'tx',
               txInfo.signedTx,
               activeChain,
@@ -788,6 +789,9 @@ export function useUtxoSendStrategy(): SendStrategyView {
       if (!data) {
         void browser.runtime.sendMessage({
           origin: 'ssp',
+          // WEXT-3: background resolves a dApp request only with a reply
+          // that echoes its request id.
+          requestId: takePendingPayRequestId(),
           data: {
             status: 'ERROR',
             result: t('common:request_rejected'),
@@ -796,6 +800,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
       } else {
         void browser.runtime.sendMessage({
           origin: 'ssp',
+          requestId: takePendingPayRequestId(),
           data,
         });
       }

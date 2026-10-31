@@ -36,7 +36,7 @@ Help us build new features, fix bugs, or improve existing code by submitting a p
 
 ### Prerequisites
 - **Node.js**: Version 24 or higher
-- **Yarn**: Latest version
+- **Yarn**: Yarn 1 (classic). The install-script policy lives in `.yarnrc`, which only Yarn 1 reads. Always use `yarn`, never `npm`.
 
 ### Setting Up
 1. Fork the repository.
@@ -44,10 +44,14 @@ Help us build new features, fix bugs, or improve existing code by submitting a p
    ```bash
    git clone https://github.com/runonflux/ssp-wallet
    ```
-3. Install dependencies:
+3. Install dependencies, then run the allowlisted install scripts:
    ```bash
-   yarn install
+   yarn install --frozen-lockfile
+   yarn setup
    ```
+   - `.yarnrc` sets `ignore-scripts`, so `yarn install` never runs a dependency's install scripts.
+   - `yarn setup` (`@lavamoat/allow-scripts`) runs only the install scripts allowlisted in `lavamoat.allowScripts` in `package.json`, then the root postinstall (`patch-package` and the local `vite-plugin-lavamoat` build). Run it after every install; `yarn dev` and `yarn build` need it.
+   - `--frozen-lockfile` fails instead of changing `yarn.lock`. Add or update a dependency only on purpose, with an exact version (no `^` or `~`). If the new package has an install script, `yarn setup` fails until it is reviewed and added to `lavamoat.allowScripts`.
 4. Start the development server:
    ```bash
    yarn dev
@@ -58,6 +62,8 @@ Help us build new features, fix bugs, or improve existing code by submitting a p
    ```
   - dist-zip folder now contains a packed zip build for chrome and firefox
   - dist folder is unpacked ready to be from chrome
+  - The build checks the bundle against the committed LavaMoat policy (`security/vite-lavamoat-policy.json`) and fails if a dependency needs a global or package the policy does not grant. After a reviewed dependency change, run `yarn generate-policy` and commit the reviewed policy diff.
+6. Reproducible (Docker) build of the release packages: `yarn build:deterministic`. See [REPRODUCIBLE_BUILDS.md](REPRODUCIBLE_BUILDS.md).
 
 Refer to the [Documentation](https://docs.sspwallet.io/) for more details.
 

@@ -1,9 +1,96 @@
 const ext = typeof browser !== 'undefined' ? browser : chrome;
 
-let pendingRequest = null;
+// ---------------------------------------------------------------------------
+// dApp request bookkeeping
+//
+// ONE dApp request is in flight at a time. It is identified by a request id
+// minted here; the wallet UI must echo that id in its answer, and only the
+// in-flight request with that id is resolved by it. A second request that
+// arrives meanwhile is refused with a "busy" error instead of taking over the
+// response slot (security review WEXT-3: with a single slot, a second tab's
+// request received the first request's answer — e.g. enterprise vault xpubs,
+// signatures or a payment txid).
+// ---------------------------------------------------------------------------
+
+/**
+ * @type {null | {
+ *   requestId: string,
+ *   sendResponse: (response: unknown) => void,
+ *   method: string,
+ *   origin: string | null,
+ *   tabId: number | null,
+ *   frameId: number | null,
+ *   routedToPopup: boolean,
+ *   createdAt: number,
+ * }}
+ */
+let inFlightRequest = null;
+/** Request buffered until the wallet UI announces it is ready. */
 let pendingMessageData = null;
 let popupId = null;
 let activeUIPort = null;
+
+/** Methods the wallet UI implements. Anything else is refused right here. */
+const DAPP_METHODS = new Set([
+  'sign_message',
+  'sspwid_sign_message',
+  'wk_sign_message',
+  'pay',
+  'chains_info',
+  'user_chains_info',
+  'user_chains_addresses_all',
+  'chain_tokens',
+  'user_addresses',
+  'enterprise_vault_xpub',
+  'enterprise_vault_sign_tx',
+  'enterprise_vault_sign_message',
+  'enterprise_flux_node_start',
+  'flux_node_start',
+  'enterprise_nonce_sync',
+  // VD-5: show a vault address derived on this device. The wallet UI accepts
+  // it from SSP Enterprise origins only (ENTERPRISE_ONLY_METHODS).
+  'enterprise_vault_address',
+]);
+
+// A request nobody answered for this long (wallet locked or the dialog lost
+// while the window stayed open) no longer blocks new requests. Long enough for
+// the slowest legitimate flow: an enterprise signature waiting on SSP Key.
+const IN_FLIGHT_MAX_AGE_MS = 15 * 60 * 1000;
+
+const BUSY_RESPONSE = {
+  status: 'ERROR',
+  error:
+    'SSP Wallet is busy with another request. Finish or reject it, then try again.',
+  code: 4001,
+  errorCode: 'BUSY',
+};
+
+function newRequestId() {
+  try {
+    if (typeof crypto?.randomUUID === 'function') return crypto.randomUUID();
+  } catch (_err) {
+    // fall through
+  }
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Answer the in-flight request (if any) and free the slot. */
+function settleInFlight(response) {
+  const entry = inFlightRequest;
+  if (!entry) return null;
+  inFlightRequest = null;
+  if (pendingMessageData && pendingMessageData.requestId === entry.requestId) {
+    pendingMessageData = null;
+  }
+  try {
+    entry.sendResponse(response);
+  } catch (_err) {
+    /* Response channel closed */
+  }
+  return entry;
+}
 
 const STORAGE_KEY_DEFAULT_OPEN = 'ssp_default_open_behavior';
 const OPEN_MODE_POPUP = 'popup';
@@ -333,18 +420,20 @@ ext.runtime.onConnect.addListener((port) => {
     port.onDisconnect.addListener(() => {
       if (activeUIPort === port) {
         activeUIPort = null;
-        pendingMessageData = null;
-        if (pendingRequest) {
-          try {
-            pendingRequest({
-              status: 'ERROR',
-              error: 'User closed the wallet',
-              code: 4001,
-            });
-          } catch (_err) {
-            /* Response channel closed */
-          }
-          pendingRequest = null;
+        // A request waiting for a popup that is still opening has not been
+        // delivered to this UI yet — leave it for the popup.
+        if (
+          inFlightRequest &&
+          !(
+            pendingMessageData &&
+            pendingMessageData.requestId === inFlightRequest.requestId
+          )
+        ) {
+          settleInFlight({
+            status: 'ERROR',
+            error: 'User closed the wallet',
+            code: 4001,
+          });
         }
       }
     });
@@ -353,22 +442,27 @@ ext.runtime.onConnect.addListener((port) => {
 
 ext.windows.onRemoved.addListener((windowId) => {
   if (windowId === popupId) {
-    pendingMessageData = null;
-    if (pendingRequest) {
-      try {
-        pendingRequest({
-          status: 'ERROR',
-          error: 'User closed the wallet popup',
-          code: 4001,
-        });
-      } catch (_err) {
-        // Response channel closed
-      }
-      pendingRequest = null;
-    }
     popupId = null;
+    // Only the request that was shown in this popup is answered here.
+    if (inFlightRequest && inFlightRequest.routedToPopup) {
+      settleInFlight({
+        status: 'ERROR',
+        error: 'User closed the wallet popup',
+        code: 4001,
+      });
+    }
   }
 });
+
+// The requesting tab is gone: nobody is left to answer, so free the slot
+// rather than refusing every later request as busy.
+if (ext.tabs?.onRemoved) {
+  ext.tabs.onRemoved.addListener((tabId) => {
+    if (inFlightRequest && inFlightRequest.tabId === tabId) {
+      settleInFlight({ status: 'ERROR', error: 'Tab closed', code: 4001 });
+    }
+  });
+}
 
 const registerInPageContentScript = async () => {
   try {
@@ -392,15 +486,16 @@ registerInPageContentScript();
 // UI listener is ready — forward any buffered message.
 // Only our own extension pages may claim this origin.
 ext.runtime.onMessage.addListener((message, sender, _sendResponse) => {
-  if (message.origin !== 'ssp-ui-ready') return false;
+  if (message?.origin !== 'ssp-ui-ready') return false;
   if (!isFromExtensionUI(sender)) return false;
 
   if (pendingMessageData) {
-    const data = pendingMessageData;
+    const buffered = pendingMessageData;
     pendingMessageData = null;
     void ext.runtime.sendMessage({
       origin: 'ssp-background',
-      data,
+      requestId: buffered.requestId,
+      data: buffered.data,
     });
   }
 
@@ -409,17 +504,27 @@ ext.runtime.onMessage.addListener((message, sender, _sendResponse) => {
 
 // The wallet UI's answer to a pending dapp request. This resolves the dapp's
 // sendResponse, so it MUST come from our own UI — otherwise any web page could
-// resolve another site's in-flight request with data of its choosing.
+// resolve another site's in-flight request with data of its choosing — and it
+// MUST echo the in-flight request's id, so an answer meant for one request can
+// never resolve another.
 ext.runtime.onMessage.addListener((message, sender, _sendResponse) => {
-  if (message.origin !== 'ssp') return false;
+  if (message?.origin !== 'ssp') return false;
   if (!isFromExtensionUI(sender)) return false;
+  if (!inFlightRequest) return false;
 
-  if (pendingRequest) {
-    pendingRequest(message.data);
-    pendingRequest = null;
+  // Every answer — including the send flow's reply to a `pay` request (see
+  // src/components/SspConnect/pendingPayRequest.ts) — must echo the id.
+  const echoed =
+    typeof message.requestId === 'string' && message.requestId
+      ? message.requestId
+      : null;
+  if (echoed === null || echoed !== inFlightRequest.requestId) {
+    return false;
   }
 
-  if (popupId) {
+  const settled = settleInFlight(message.data);
+  // Close the popup only when it was raised for THIS request.
+  if (settled && settled.routedToPopup && popupId !== null) {
     ext.windows.remove(popupId).catch(() => {});
     popupId = null;
   }
@@ -442,32 +547,81 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return false;
   }
 
+  // Unknown methods are refused here, without opening or touching any wallet
+  // window (a page could otherwise close another request's popup by sending
+  // garbage).
+  const method = typeof request?.method === 'string' ? request.method : '';
+  if (!DAPP_METHODS.has(method)) {
+    sendResponse({
+      status: 'ERROR',
+      error: 'Unsupported method',
+      code: 4200,
+    });
+    return false;
+  }
+
+  // One request at a time: a second one never takes over the in-flight
+  // request's response slot, dialog or window.
+  if (
+    inFlightRequest &&
+    Date.now() - inFlightRequest.createdAt > IN_FLIGHT_MAX_AGE_MS
+  ) {
+    settleInFlight({ status: 'ERROR', error: 'Request timed out', code: 4001 });
+  }
+  if (inFlightRequest) {
+    sendResponse(BUSY_RESPONSE);
+    return false;
+  }
+
   // Overwrite the page's self-declared identity with the browser-verified
   // origin BEFORE the request is buffered or forwarded, so every consumer —
   // the approval UI, and the SSP Key via the relay — sees the real requester.
   const verifiedRequest = stampVerifiedOrigin(request, sender);
+  const requestId = newRequestId();
 
-  pendingRequest = sendResponse;
+  inFlightRequest = {
+    requestId,
+    sendResponse,
+    method,
+    origin: verifiedRequest.params.verifiedOrigin,
+    tabId: typeof sender?.tab?.id === 'number' ? sender.tab.id : null,
+    frameId: typeof sender?.frameId === 'number' ? sender.frameId : null,
+    routedToPopup: false,
+    createdAt: Date.now(),
+  };
+  const entry = inFlightRequest;
 
   void (async () => {
     const hasActiveUI = activeUIPort !== null;
 
     if (!hasActiveUI) {
       // Buffer message — it will be sent when the UI port connects
-      pendingMessageData = verifiedRequest;
+      pendingMessageData = { requestId, data: verifiedRequest };
+      entry.routedToPopup = true;
 
       // A dapp request always gets the small floating window, whatever the
       // user picked for the toolbar icon. The side panel docks full-height and
       // reflows the page that asked for the signature; a 420x650 window sits
       // above it with the site still readable behind — and the browser popup
       // cannot be opened programmatically at all.
-      await openPopupWindow();
+      try {
+        await openPopupWindow();
+      } catch (_err) {
+        if (inFlightRequest === entry) {
+          settleInFlight({
+            status: 'ERROR',
+            error: 'Could not open SSP Wallet',
+            code: 4900,
+          });
+        }
+      }
     } else {
       // A wallet UI is already open — side panel, our window, or the browser
       // action popup. The request goes there instead of opening anything new.
       // A window can be sitting behind the browser, so bring it forward;
       // a side panel is docked and already on screen wherever it lives.
       if (popupId !== null) {
+        entry.routedToPopup = true;
         ext.windows
           .update(popupId, { focused: true, drawAttention: true })
           .catch(() => {
@@ -476,8 +630,10 @@ ext.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
       // UI already open and listener registered — short delay is safe
       setTimeout(() => {
+        if (inFlightRequest !== entry) return; // settled meanwhile
         void ext.runtime.sendMessage({
           origin: 'ssp-background',
+          requestId,
           data: verifiedRequest,
         });
       }, 100);

@@ -8,41 +8,55 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Least privilege: this workflow only reads the repository.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
+      # No dependency cache on purpose: yarn classic does not re-verify cached
+      # tarballs, so every build installs from the registry against yarn.lock.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          cache: "yarn"
 
-      # - uses: actions/cache@v3
-      #   with:
-      #     path: node_modules
-      #     key: ${{ runner.OS }}-build-${{ hashFiles('**/yarn.lock') }}
-
+      # Install scripts never run during install (.yarnrc ignore-scripts).
+      # `yarn setup` (@lavamoat/allow-scripts) then runs only the scripts
+      # allowlisted in package.json "lavamoat.allowScripts" and fails if a
+      # dependency with an install script is not configured.
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile --ignore-scripts
+
+      - name: Run allowlisted install scripts
+        run: yarn setup
 
       - name: Run tests with coverage
         run: yarn test:coverage
 
+      # The build fails if the bundle needs a global or package that the
+      # committed LavaMoat policy does not grant.
       - name: Build extensions
         run: yarn build:all
 
+      - name: Committed LavaMoat policy is unchanged
+        run: git diff --exit-code -- security/vite-lavamoat-policy.json
+
       - name: Upload Chrome extension
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: chrome-extension
           path: dist-zip/ssp-wallet-chrome-*.zip
 
       - name: Upload Firefox extension
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: firefox-extension
           path: dist-zip/ssp-wallet-firefox-*.zip

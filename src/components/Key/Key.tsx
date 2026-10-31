@@ -54,8 +54,16 @@ import {
   isBatchStalled,
   isBatchPollablePhase,
   requiresVerificationGate,
+  verifyChainSyncAttestation,
+  sessionRequiresVerificationCode,
+  sessionFullyAttested,
+  singleChainUnattested,
+  markUnverifiedPairing,
+  clearUnverifiedPairing,
+  discardUnverifiedPairings,
+  startPairingSession,
 } from '../../lib/chainSync';
-import type { BatchPhase } from '../../lib/chainSync';
+import type { BatchPhase, PairingSession } from '../../lib/chainSync';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import type { syncSSPRelay, cryptos } from '../../types';
@@ -67,6 +75,9 @@ import { sspConfig } from '@storage/ssp';
 const { TextArea } = Input;
 
 const xpubRegex = /^([a-zA-Z]{2}ub[1-9A-HJ-NP-Za-km-z]{79,140})$/; // xpub start is the most usual, but can also be Ltub
+
+// A sync doc from an SSP Key that attests each chain (fix contract CS-1).
+type AttestedSyncDoc = syncSSPRelay & { keyXpubSignature?: unknown };
 
 // Solana repurposes the "xpub" field as a JSON-stringified array of 20
 // base58-encoded Ed25519 leaf pubkeys. Accept that format too in manual
@@ -127,6 +138,19 @@ interface BatchChainState {
   status: 'pending' | 'synced' | 'failed';
 }
 
+// A non-identity chain whose SSP Key xpub was STORED during this session.
+// Tracked independently of the batch (which a re-send resets) so no stored
+// key ever escapes the session's verification decision (security review H-4).
+interface LandedChain {
+  walletXpub: string;
+  keyXpub: string;
+  // SSP Key's keyXpubSignature verified against the Key identity pubkey the
+  // wallet stored at identity pairing (fix contract CS-2).
+  attested: boolean;
+  // Delivered as a batch sync doc: SSP Key shows the code after a batch.
+  fromBatch: boolean;
+}
+
 // Out-of-band verification gate shown before the vault is treated as ready.
 // ONE code per session: covers every chain synced this session (identity chain
 // + any batch/activated chains), aggregated so a relay swap on ANY of them
@@ -135,6 +159,9 @@ interface VerifyGate {
   chains: string[];
   words: string[];
   qrValue: string;
+  // Every chain carried a verified SSP Key attestation (badge only — the
+  // user still compares the code).
+  attested: boolean;
 }
 
 interface BatchState {
@@ -194,7 +221,19 @@ function Key(props: {
   // at identity verification (drives the single-chain verification code), and
   // the gate state the user must confirm before the vault becomes usable.
   const identityKeyXpubRef = useRef('');
+  // Every non-identity chain stored this session, with its attestation status.
+  const sessionLandedRef = useRef<Map<string, LandedChain>>(new Map());
+  // The active chain's key xpub as last delivered by the relay, and whether its
+  // attestation verified — consumed when that xpub is accepted.
+  const relayActiveDocRef = useRef<{ keyXpub: string; attested: boolean }>({
+    keyXpub: '',
+    attested: false,
+  });
   const verifyOpenRef = useRef(false);
+  // The sync session this pairing view is in. Every key-xpub write captures it
+  // BEFORE its PBKDF2 work and re-checks it right before writing, so a write
+  // that outlives its session (finished, discarded, view closed) is dropped.
+  const syncSessionRef = useRef<PairingSession | null>(null);
   const [verifyGate, setVerifyGate] = useState<VerifyGate | null>(null);
   const batchPollRef = useRef<NodeJS.Timeout | null>(null);
   const {
@@ -212,7 +251,7 @@ function Key(props: {
     (state) => state[identityChain],
   );
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
-  const { createWkIdentityAuth } = useRelayAuth();
+  const { createWkIdentityAuth, createReadAuthHeaders } = useRelayAuth();
   const blockchainConfig = blockchains[activeChain];
   const derivationPath = `xpub-48-${blockchainConfig.slip}-0-${getScriptType(
     blockchainConfig.scriptType,
@@ -226,6 +265,27 @@ function Key(props: {
   };
 
   const refreshBatch = () => setBatchRender((value) => value + 1);
+
+  const beginSyncSession = (): PairingSession => {
+    const current = syncSessionRef.current;
+    if (current?.isActive()) return current;
+    const session = startPairingSession();
+    syncSessionRef.current = session;
+    return session;
+  };
+
+  // Ends the session: in-flight writes captured under it are dropped from now
+  // on. Its unverified markers stay unless the caller cleared or discarded
+  // them — an abandoned session's keys are then discarded at the next unlock.
+  const endSyncSession = () => {
+    syncSessionRef.current?.end();
+    syncSessionRef.current = null;
+  };
+
+  const isCurrentSession = (
+    session: PairingSession | null | undefined,
+  ): session is PairingSession =>
+    !!session && session.isActive() && syncSessionRef.current === session;
 
   useEffect(() => {
     selectedChainsRef.current = selectedChains;
@@ -249,6 +309,7 @@ function Key(props: {
         return;
       }
       // no xpubKey, show sync view of Key
+      beginSyncSession();
       setIsModalKeyOpen(true);
       activeChainDoneRef.current = false;
       setPhoneDetected(false);
@@ -308,6 +369,9 @@ function Key(props: {
         pollingSyncInterval = undefined;
       }
       syncRunning = false;
+      // Drop every write still in flight; whatever this session marked is
+      // discarded at the next unlock.
+      endSyncSession();
     };
   }, []);
 
@@ -356,17 +420,9 @@ function Key(props: {
         path: '',
         wkIdentity,
       };
-      // Add authentication if available (matches other wallet action posts;
-      // the relay accepts unauthenticated posts for backward compatibility)
-      try {
-        const auth = await createWkIdentityAuth('action', wkIdentity, data);
-        if (auth) {
-          Object.assign(data, auth);
-        }
-      } catch {
-        console.warn('[ChainSync] Auth not available, sending without it');
-      }
-      await axios.post(`https://${sspConfig().relay}/v1/action`, data);
+      // Record the requested chains BEFORE posting: if the post "fails" but
+      // reached SSP Key anyway (a relay can drop the response), the docs that
+      // still arrive are verified, recorded and gated like any other.
       batch.chains = {};
       entries.forEach((entry) => {
         batch.chains[entry.chain] = {
@@ -374,6 +430,18 @@ function Key(props: {
           status: 'pending',
         };
       });
+      // Relay auth is mandatory (RA-2): never post an unsigned action.
+      const auth = await createWkIdentityAuth('action', wkIdentity, data);
+      if (!auth) {
+        throw new Error('Relay authentication unavailable');
+      }
+      Object.assign(data, auth);
+      await axios.post(`https://${sspConfig().relay}/v1/action`, data);
+      if (verifyOpenRef.current || batchRef.current !== batch) {
+        // The session moved on (verification shown, finished or cancelled)
+        // while the request was in flight — don't start observing it.
+        return;
+      }
       batch.phase = 'awaiting';
       batch.startedAt = Date.now();
       batch.lastProgressAt = Date.now();
@@ -383,8 +451,15 @@ function Key(props: {
       ensureBatchPolling();
     } catch (error) {
       console.log('[ChainSync] Failed to send batch request:', error);
+      // Fallback = the per-chain QR path. Keep observing: late docs or a late
+      // decline are still verified and still reach the verification gate.
       batch.phase = 'fallback';
+      batch.startedAt = Date.now();
+      batch.lastProgressAt = Date.now();
       refreshBatch();
+      if (Object.keys(batch.chains).length) {
+        ensureBatchPolling();
+      }
     }
   };
 
@@ -425,7 +500,10 @@ function Key(props: {
     if (batch.pollTick % 3 === 0 && !batch.rejectionCheckRunning) {
       batch.rejectionCheckRunning = true;
       try {
-        const rejection = await fetchChainSyncRejection(batch.wkIdentity);
+        const rejection = await fetchChainSyncRejection(
+          batch.wkIdentity,
+          (url) => createReadAuthHeaders('wk', batch.wkIdentity, url),
+        );
         if (
           rejection &&
           (batchRef.current.phase === 'awaiting' ||
@@ -462,11 +540,20 @@ function Key(props: {
     // here once that interval is gone (active chain finished first)
     if (!pollingSyncInterval && !batch.docCheckRunning) {
       batch.docCheckRunning = true;
+      const requestSession = syncSessionRef.current;
       try {
-        const res = await axios.get<syncSSPRelay>(
-          `https://${sspConfig().relay}/v1/sync/${sspWalletInternalIdentity}`,
+        const url = `https://${sspConfig().relay}/v1/sync/${sspWalletInternalIdentity}`;
+        // RA-4: sign the poll as walletIdentity whenever the key is available.
+        const headers = await createReadAuthHeaders(
+          'wallet',
+          sspWalletInternalIdentity,
+          url,
         );
-        await handleBatchSyncDoc(res.data);
+        const res = await axios.get<syncSSPRelay>(
+          url,
+          headers ? { headers } : undefined,
+        );
+        await handleBatchSyncDoc(res.data, requestSession);
       } catch {
         // nothing pending — keep polling
       } finally {
@@ -498,7 +585,20 @@ function Key(props: {
   // (same address/script comparisons as the classic flow, see
   // lib/chainSync.ts verifyBatchSyncDoc) and store the key xpub for that
   // chain using the exact same storage writes as the manual/QR flow.
-  const handleBatchSyncDoc = async (doc: syncSSPRelay) => {
+  const handleBatchSyncDoc = async (
+    doc: syncSSPRelay,
+    requestSession: PairingSession | null,
+  ) => {
+    // Once the verification code is on screen its chain set is fixed: a doc
+    // arriving now must not store a key the user is not comparing.
+    if (verifyOpenRef.current) {
+      return;
+    }
+    // A doc fetched for a session that has since ended belongs to nobody.
+    const session = requestSession;
+    if (!isCurrentSession(session)) {
+      return;
+    }
     const batch = batchRef.current;
     const entry = batch.chains[doc.chain];
     if (!entry || entry.status !== 'pending') {
@@ -536,11 +636,36 @@ function Key(props: {
           doc,
           identityKeyXpubRef.current || storedIdentityKeyXpub,
         );
-        await storeKeyXpubForChain(
+        // CS-2: SSP Key's attestation over (chain, OUR wallet xpub, keyXpub),
+        // checked against the identity key from pairing — never the relay.
+        const attested = verifyChainSyncAttestation({
+          chain: doc.chain,
+          walletXpub: entry.xpubWallet,
+          keyXpub: doc.keyXpub,
+          signature: (doc as AttestedSyncDoc).keyXpubSignature,
+          keyIdentityXpub: identityKeyXpubRef.current || storedIdentityKeyXpub,
+          identityChain,
+        });
+        // Recorded BEFORE the write so the key can never be stored without
+        // being part of this session's verification decision.
+        sessionLandedRef.current.set(doc.chain, {
+          walletXpub: entry.xpubWallet,
+          keyXpub: doc.keyXpub,
+          attested,
+          fromBatch: true,
+        });
+        const stored = await storeKeyXpubForChain(
           doc.chain as keyof cryptos,
           doc.keyXpub,
           passwordBlob,
+          { id: session.id, isCurrent: () => isCurrentSession(session) },
         );
+        if (!stored) {
+          // The session finished or was discarded during the PBKDF2 work:
+          // nothing was written, and the batch belongs to a past session.
+          console.log(`[ChainSync] ${doc.chain}: dropped (session ended)`);
+          return;
+        }
         // The key regenerates its per-INSTALL public-nonce pool for every EVM
         // chain it syncs and keeps only the last one — ingest it here exactly
         // as checkSynced does for the active chain, or the wallet would keep a
@@ -644,6 +769,14 @@ function Key(props: {
       clearInterval(pollingSyncInterval);
       pollingSyncInterval = undefined;
     }
+    // Reached only from completeSync: after the verification gate was
+    // confirmed, or for a single-chain activation (no code on SSP Key) — the
+    // stored key xpubs are now a finished pairing.
+    const session = syncSessionRef.current;
+    if (session) clearUnverifiedPairing(session.id);
+    endSyncSession();
+    sessionLandedRef.current = new Map();
+    relayActiveDocRef.current = { keyXpub: '', attested: false };
     batchRef.current = initialBatchState();
     identityKeyXpubRef.current = '';
     verifyOpenRef.current = false;
@@ -671,43 +804,65 @@ function Key(props: {
         keyXpub: identityKeyXpubRef.current,
       });
     }
-    const currentBatch = batchRef.current;
-    // Only fold in batch chains once the whole batch has settled, so the set
-    // matches exactly what SSP Key aggregates (it shows the code after its
-    // batch completes). Before that, aggregate over just the identity entry.
-    if (currentBatch.phase === 'done') {
-      (Object.keys(currentBatch.chains) as (keyof cryptos)[])
-        .filter(
-          (chain) =>
-            currentBatch.chains[chain].status === 'synced' &&
-            !!currentBatch.chains[chain].keyXpub,
-        )
-        .forEach((chain) => {
-          entries.push({
-            chain,
-            walletXpub: currentBatch.chains[chain].xpubWallet,
-            keyXpub: currentBatch.chains[chain].keyXpub as string,
-          });
-        });
-    }
+    // Every non-identity chain whose key was stored this session — batch docs,
+    // the chain being activated (QR, manual or batch) — is one entry. A key
+    // that was stored is ALWAYS covered: the set is the session registry, not
+    // the batch bookkeeping a re-send resets.
+    sessionLandedRef.current.forEach((landed, chain) => {
+      if (chain === identityChain) return;
+      entries.push({
+        chain,
+        walletXpub: landed.walletXpub,
+        keyXpub: landed.keyXpub,
+      });
+    });
     if (!entries.length) return null;
     const words = sessionVerificationWords(entries);
     return {
       chains: entries.map((entry) => entry.chain),
       words,
       qrValue: verificationQrValue(words),
+      attested: sessionFullyAttested(sessionGateInput()),
     };
   };
 
-  // Gate before treating the vault as ready. Replaces the old direct-finalize:
-  // present the verification code and require the explicit "they match" action.
+  const sessionGateInput = () => ({
+    identityPairedThisSession: !!identityKeyXpubRef.current,
+    landed: Array.from(sessionLandedRef.current.entries())
+      .filter(([chain]) => chain !== identityChain)
+      .map(([chain, landed]) => ({
+        chain,
+        attested: landed.attested,
+        fromBatch: landed.fromBatch,
+      })),
+  });
+
+  // Does what was stored this session still owe the user the code? (CS-2)
+  const sessionNeedsVerificationCode = (): boolean =>
+    sessionRequiresVerificationCode(sessionGateInput());
+
+  // The ONLY way out of a session that stored key material (security review
+  // H-4): the user confirms the out-of-band verification code whenever SSP Key
+  // shows one (identity pairing, approved batch). A single-chain activation
+  // shows no code on SSP Key and finishes directly; one without an SSP Key
+  // attestation (SSP Key older than 2.2.0) is accepted with an update notice.
+  // Nothing else calls finishSync.
   const completeSync = () => {
     if (verifyOpenRef.current) return;
+    if (!sessionNeedsVerificationCode()) {
+      if (singleChainUnattested(sessionGateInput()).length > 0) {
+        displayMessage('info', t('home:key.sync_update_key_hint'));
+      }
+      finishSync();
+      return;
+    }
     const gate = buildVerifyGate();
     if (!gate) {
-      // Nothing to cross-check (e.g. a skip mid-batch with no captured keys) —
-      // the sync already passed its cryptographic checks, so finalize.
-      finishSync();
+      // Cannot happen (a required gate always has an entry) — fail closed.
+      console.error('[ChainSync] verification gate required but empty');
+      discardSessionSyncedChains();
+      displayMessage('error', t('home:key.err_sync_fail'));
+      logoutOrSwitchChain();
       return;
     }
     stopBatchPolling();
@@ -731,22 +886,28 @@ function Key(props: {
   // synced this session, and leftovers would be treated as already-synced
   // (hasStoredKeyXpub) and never re-gated.
   const discardSessionSyncedChains = () => {
-    (Object.keys(batchRef.current.chains) as (keyof cryptos)[]).forEach(
-      (chain) => {
-        const config = blockchains[chain];
-        if (!config) return;
-        try {
-          secureLocalStorage.removeItem(
-            `2-xpub-48-${config.slip}-0-${getScriptType(
-              config.scriptType,
-            )}-${config.id}`,
-          );
-        } catch (error) {
-          console.log(error);
-        }
-        setXpubKey(chain, '');
-      },
-    );
+    // End the session FIRST: a key write still waiting on PBKDF2 must not land
+    // after this sweep.
+    const session = syncSessionRef.current;
+    endSyncSession();
+    const sessionChains = new Set<string>([
+      ...Object.keys(batchRef.current.chains),
+      ...sessionLandedRef.current.keys(),
+    ]);
+    (Array.from(sessionChains) as (keyof cryptos)[]).forEach((chain) => {
+      const config = blockchains[chain];
+      if (!config) return;
+      try {
+        secureLocalStorage.removeItem(
+          `2-xpub-48-${config.slip}-0-${getScriptType(
+            config.scriptType,
+          )}-${config.id}`,
+        );
+      } catch (error) {
+        console.log(error);
+      }
+      setXpubKey(chain, '');
+    });
     identityKeyXpubRef.current = '';
     setXpubKey(activeChain, '');
     try {
@@ -754,6 +915,11 @@ function Key(props: {
     } catch (error) {
       console.log(error);
     }
+    // Everything else this session marked goes too (other views' sessions
+    // are left alone).
+    if (session) discardUnverifiedPairings(session.id);
+    sessionLandedRef.current = new Map();
+    relayActiveDocRef.current = { keyXpub: '', attested: false };
   };
 
   // The user reported the codes DON'T match — a possible relay substitution.
@@ -768,15 +934,27 @@ function Key(props: {
   };
 
   const checkSynced = () => {
+    // Polls belong to the session that issued them; a response arriving after
+    // that session ended is ignored.
+    const requestSession = syncSessionRef.current;
+    if (!isCurrentSession(requestSession)) {
+      return;
+    }
     if (!syncRunning && sspWalletInternalIdentity) {
-      axios
-        .get<syncSSPRelay>(
-          `https://${sspConfig().relay}/v1/sync/${sspWalletInternalIdentity}`,
+      const url = `https://${sspConfig().relay}/v1/sync/${sspWalletInternalIdentity}`;
+      // RA-4: sign the poll as walletIdentity whenever the key is available.
+      createReadAuthHeaders('wallet', sspWalletInternalIdentity, url)
+        .catch(() => null)
+        .then((headers) =>
+          axios.get<syncSSPRelay>(url, headers ? { headers } : undefined),
         )
         .then(async (res) => {
+          if (!isCurrentSession(requestSession)) {
+            return;
+          }
           if (res.data.chain !== activeChain) {
             // batch chain sync: a doc for another requested chain
-            await handleBatchSyncDoc(res.data);
+            await handleBatchSyncDoc(res.data, requestSession);
             return;
           }
           setPhoneDetected(true);
@@ -922,15 +1100,29 @@ function Key(props: {
               .setItem('sspKeyPublicNonces', sspKeyPublicNonces)
               .catch((error) => console.log(error)); // we do not need to throw an error
           }
-          // Enterprise nonce auto-replenish for wallet (debounced — skip if already running)
+          // Enterprise nonce auto-replenish for wallet (debounced — skip if already running).
+          // Uses the wallet's OWN wkIdentity, never the one in the relay's
+          // doc, and relay auth for the nonce POSTs/GET (RA-2 / RA-4).
+          const ownWkIdentity =
+            store.getState().sspState.sspWalletKeyInternalIdentity;
           if (
             res.data.enterpriseNoncesNeeded?.wallet &&
-            wkIdentity &&
+            ownWkIdentity &&
+            wkIdentity === ownWkIdentity &&
             passwordBlob &&
             !nonceReplenishRunning
           ) {
             nonceReplenishRunning = true;
-            replenishWalletEnterpriseNonces(wkIdentity, passwordBlob)
+            replenishWalletEnterpriseNonces(
+              ownWkIdentity,
+              passwordBlob,
+              false,
+              {
+                createAuth: createWkIdentityAuth,
+                readHeaders: (url) =>
+                  createReadAuthHeaders('wk', ownWkIdentity, url),
+              },
+            )
               .catch((e) =>
                 console.log('[Enterprise Nonces] wallet replenish error:', e),
               )
@@ -947,6 +1139,23 @@ function Key(props: {
               ? xpubKey
               : identityKeyXpubRef.current || storedIdentityKeyXpub,
           );
+          // CS-2: is this relay-delivered key xpub attested by SSP Key's
+          // identity key? (Never for the identity chain itself — nothing can
+          // vouch for the root, so its pairing always takes the code.)
+          relayActiveDocRef.current = {
+            keyXpub: xpubKey,
+            attested:
+              activeChain !== identityChain &&
+              verifyChainSyncAttestation({
+                chain: activeChain,
+                walletXpub: xpubWallet,
+                keyXpub: xpubKey,
+                signature: (res.data as AttestedSyncDoc).keyXpubSignature,
+                keyIdentityXpub:
+                  identityKeyXpubRef.current || storedIdentityKeyXpub,
+                identityChain,
+              }),
+          };
 
           // synced ok
           setVerified(true);
@@ -973,6 +1182,13 @@ function Key(props: {
   }, [keyAutomaticInput]);
 
   const handleOkModalKey = () => {
+    // The session this key xpub is accepted under — captured BEFORE the
+    // PBKDF2 work below and re-checked right before anything is written.
+    const session = syncSessionRef.current;
+    if (!isCurrentSession(session)) {
+      console.log('[pairing] no active sync session — key xpub ignored');
+      return;
+    }
     // display dialog awaiting synchronisation. This is automatic stuff
     if (!keyInput && !keyAutomaticInput) {
       displayMessage(
@@ -1013,27 +1229,48 @@ function Key(props: {
       }
       if (!keyValid) return;
       const xpub2 = xpubKeyInput;
-      setXpubKey(activeChain, xpub2);
       const fingerprint: string = getFingerprint();
+
+      // Attested only when this is exactly the xpub the relay delivered with
+      // a verified SSP Key attestation; a typed or pasted xpub is not.
+      const attested =
+        !isIdentityChain &&
+        relayActiveDocRef.current.attested &&
+        relayActiveDocRef.current.keyXpub === xpub2;
 
       passworderDecrypt(fingerprint, passwordBlob)
         .then(async (password) => {
           // encrypt xpub of key it and store it to secure storage
           if (typeof password === 'string') {
             const encryptedXpub2 = await passworderEncrypt(password, xpub2);
-            secureLocalStorage.setItem(`2-${derivationPath}`, encryptedXpub2);
-            // now we have both xpubWallet and xpubKey
-            setVerified(true);
-            // retain the key xpub (display-only) for the verification code:
-            // identity pairing → the single-pair code; a non-identity chain
-            // activated via batch → its entry in the aggregate code.
-            // Recorded BEFORE markBatchChainSynced so a finalize it triggers
-            // builds the gate from the complete entry.
+            // The session may have finished (code confirmed), been discarded
+            // (cancel / mismatch) or replaced while PBKDF2 ran: then this key
+            // belongs to nobody and nothing is recorded or written.
+            if (!isCurrentSession(session)) {
+              console.log('[pairing] dropped a key xpub of an ended session');
+              return;
+            }
+            // Retain the key xpub for this session's verification decision
+            // BEFORE it is stored (see completeSync). Every path (batch, QR,
+            // manual, fallback) records here, so no stored key escapes it.
             if (isIdentityChain) {
               identityKeyXpubRef.current = xpub2;
-            } else if (batchRef.current.chains[activeChain]) {
-              batchRef.current.chains[activeChain].keyXpub = xpub2;
+            } else {
+              sessionLandedRef.current.set(activeChain, {
+                walletXpub: xpubWallet,
+                keyXpub: xpub2,
+                attested,
+                fromBatch: false,
+              });
+              if (batchRef.current.chains[activeChain]) {
+                batchRef.current.chains[activeChain].keyXpub = xpub2;
+              }
             }
+            markUnverifiedPairing(session.id, activeChain);
+            secureLocalStorage.setItem(`2-${derivationPath}`, encryptedXpub2);
+            setXpubKey(activeChain, xpub2);
+            // now we have both xpubWallet and xpubKey
+            setVerified(true);
             activeChainDoneRef.current = true;
             markBatchChainSynced(activeChain);
             if (pollingSyncInterval) {
@@ -1087,6 +1324,7 @@ function Key(props: {
 
   const logoutOrSwitchChain = () => {
     try {
+      endSyncSession();
       stopBatchPolling();
       batchRef.current = initialBatchState();
       setActiveTab('scan');
@@ -1511,6 +1749,19 @@ function Key(props: {
         </Text>
         {renderWordChips(verifyGate.words)}
       </div>
+      {verifyGate.attested && (
+        <Alert
+          type="success"
+          showIcon
+          message={t('home:key.verify_words_attested')}
+          data-testid="key-verify-attested"
+        />
+      )}
+      {!identityKeyXpubRef.current && (
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          {t('home:key.verify_words_no_code_hint')}
+        </Text>
+      )}
       <Button
         type="primary"
         block
@@ -1578,19 +1829,30 @@ function Key(props: {
                     },
                   ]}
                 />
-                {verified && batchActive && batch.phase !== 'done' && (
-                  /* Secondary by design: one primary per screen (Sync Key
-                     stays primary), and a clear 12px gap from the tab body.
-                     Skipping ahead mid-batch deliberately bypasses the
-                     verification gate: a partial gate would aggregate fewer
-                     chains than SSP Key's code and could NEVER match —
-                     sending the user into a false "they don't match" abort.
-                     Chains already landed passed their cryptographic checks;
-                     the phone's eventual code is informational. */
-                  <Button block onClick={finishSync} style={{ marginTop: 12 }}>
-                    {t('home:key.continue_to_wallet')}
-                  </Button>
-                )}
+                {verified &&
+                  batchActive &&
+                  batch.phase !== 'done' &&
+                  batch.phase !== 'preparing' &&
+                  (batch.phase !== 'syncing' ||
+                    !sessionNeedsVerificationCode()) && (
+                    /* Secondary by design: one primary per screen (Sync Key
+                       stays primary), and a clear 12px gap from the tab body.
+                       Skipping ahead stops waiting for further chains but
+                       NEVER skips verification (security review H-4): it
+                       goes through completeSync, which shows the code
+                       whenever SSP Key shows one. While chains are still arriving
+                       and a code is owed, it is hidden — a code built then
+                       would aggregate fewer chains than SSP Key's; the stall
+                       timeout ends that wait on its own. */
+                    <Button
+                      block
+                      onClick={completeSync}
+                      style={{ marginTop: 12 }}
+                      data-testid="key-continue-to-wallet"
+                    >
+                      {t('home:key.continue_to_wallet')}
+                    </Button>
+                  )}
               </>
             )}
             {isIdentityChain && !verifyGate && (

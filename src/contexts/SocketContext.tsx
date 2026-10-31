@@ -1,4 +1,10 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import io, { Socket } from 'socket.io-client';
 import { useAppSelector } from '../hooks';
 import { useRelayAuth } from '../hooks/useRelayAuth';
@@ -59,6 +65,8 @@ interface SocketContextType {
     requestId: string;
     signedTxHex?: string;
     error?: string;
+    // VD refusal code from SSP Key (VAULT_DESCRIPTOR_* / VAULT_PIN_REFUSED).
+    errorCode?: string;
   } | null;
   clearTxid?: () => void;
   clearTxRejected?: () => void;
@@ -161,40 +169,54 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     requestId: string;
     signedTxHex?: string;
     error?: string;
+    errorCode?: string;
   } | null>(null);
+
+  // Whether the current socket connection has joined its room.
+  const joinedRef = useRef(false);
 
   /**
    * Emit an authenticated join event.
+   *
+   * The relay refuses a join without identity auth (security fix RA-1:
+   * otherwise anyone could join any wkIdentity's room and read the Key's
+   * signatures). So the wallet NEVER emits an unauthenticated join: without
+   * auth it stays out of the room and relies on polling, and joins as soon as
+   * auth becomes available (see the effect below).
+   *
+   * @returns whether a join was emitted.
    */
   const emitAuthenticatedJoin = useCallback(
-    async (socketToUse: Socket, identity: string) => {
+    async (socketToUse: Socket, identity: string): Promise<boolean> => {
+      if (!isAuthAvailable) {
+        console.log('[Socket] Auth not available yet — not joining');
+        return false;
+      }
       try {
-        if (isAuthAvailable) {
-          // Create join data to hash
-          const joinData = { wkIdentity: identity };
-          const auth = await createWkIdentityAuth('join', identity, joinData);
-          if (auth) {
-            console.log('[Socket] Emitting authenticated join');
-            socketToUse.emit('join', {
-              ...joinData,
-              ...auth,
-            });
-            return;
-          }
+        // Create join data to hash
+        const joinData = { wkIdentity: identity };
+        const auth = await createWkIdentityAuth('join', identity, joinData);
+        if (!auth) {
+          console.log('[Socket] Could not sign join — not joining');
+          return false;
         }
-        // Fallback to unauthenticated join (backward compatibility)
-        console.log(
-          '[Socket] Emitting unauthenticated join (auth not available)',
-        );
-        socketToUse.emit('join', { wkIdentity: identity });
+        console.log('[Socket] Emitting authenticated join');
+        socketToUse.emit('join', {
+          ...joinData,
+          ...auth,
+        });
+        return true;
       } catch (error) {
         console.error('[Socket] Error creating auth for join:', error);
-        // Fallback to unauthenticated join
-        socketToUse.emit('join', { wkIdentity: identity });
+        return false;
       }
     },
     [createWkIdentityAuth, isAuthAvailable],
   );
+  // The socket's 'connect' handler is registered once per identity, so it
+  // reads the LATEST join function (with the current auth state) from here.
+  const emitJoinRef = useRef(emitAuthenticatedJoin);
+  emitJoinRef.current = emitAuthenticatedJoin;
 
   useEffect(() => {
     console.log('socket init, wkIdentity:', wkIdentity);
@@ -214,11 +236,15 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     // so we only need this one handler (not 'reconnect')
     newSocket.on('connect', () => {
       console.log('socket connected, joining room:', wkIdentity);
-      emitAuthenticatedJoin(newSocket, wkIdentity);
+      joinedRef.current = false;
+      void emitJoinRef.current(newSocket, wkIdentity).then((joined) => {
+        if (joined) joinedRef.current = true;
+      });
     });
 
     newSocket.on('disconnect', (reason) => {
       console.log('socket disconnected:', reason);
+      joinedRef.current = false;
     });
 
     newSocket.on('connect_error', (error) => {
@@ -317,7 +343,13 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     newSocket.on('enterprisevaultsignrejected', (rejected: serverResponse) => {
       console.log('[Socket] Enterprise vault sign rejected', rejected);
-      setEnterpriseVaultSignRejected('enterprisevaultsignrejected');
+      // The payload carries the request id and, for a vault descriptor
+      // refusal, the errorCode EnterpriseVaultSignTx forwards to the app.
+      setEnterpriseVaultSignRejected(
+        typeof rejected?.payload === 'string' && rejected.payload
+          ? rejected.payload
+          : 'enterprisevaultsignrejected',
+      );
     });
 
     newSocket.on('enterprisekeynoncesynced', () => {
@@ -343,6 +375,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
           requestId: string;
           signedTxHex?: string;
           error?: string;
+          errorCode?: string;
         };
         setEnterpriseFluxNodeStarted(parsed);
       } catch {
@@ -371,8 +404,19 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       // Remove all listeners before closing to prevent memory leaks on reconnection cycles
       newSocket.removeAllListeners();
       newSocket.close();
+      joinedRef.current = false;
     };
   }, [wkIdentity]);
+
+  // Join once auth becomes available on an already-connected socket (e.g. the
+  // socket connected before the password blob was restored).
+  useEffect(() => {
+    if (!socket || !wkIdentity || !isAuthAvailable) return;
+    if (!socket.connected || joinedRef.current) return;
+    void emitAuthenticatedJoin(socket, wkIdentity).then((joined) => {
+      if (joined) joinedRef.current = true;
+    });
+  }, [socket, wkIdentity, isAuthAvailable, emitAuthenticatedJoin]);
 
   const clearTxid = () => {
     setTxid('');
