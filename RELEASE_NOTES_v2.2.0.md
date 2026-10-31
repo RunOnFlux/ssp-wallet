@@ -13,10 +13,24 @@ Enterprise have to be deployed before it reaches users.
   instead of replacing the one on screen. If a request is never answered,
   the slot frees itself when the requesting tab closes, or after at most
   15 minutes. Sites have to wait for the open request to finish, then retry.
-- **`eth_sign` and `eth_signTypedData` are refused.** These methods sign data
-  the wallet cannot show you in a readable form. They are also no longer
-  offered over WalletConnect, so a dApp that _requires_ them can no longer
-  connect. `personal_sign` and transactions work as before.
+- **Typed data (EIP-712) signatures now work.** `eth_signTypedData_v3` and
+  `eth_signTypedData_v4` are signed over the real EIP-712 digest, so dApps
+  can verify them (earlier versions returned signatures no dApp could
+  verify). SSP Wallet and SSP Key both show the requesting domain, the
+  contract, the type and every field, warn that typed data can authorise
+  spending (token approvals / permits, trades, orders), and require you to
+  confirm that before you can approve. Typed data for a different network is
+  refused. Signing typed data needs the updated SSP Key; with an older SSP
+  Key the request fails with a message to update it.
+- **`eth_sign` and the legacy `eth_signTypedData` (v1) are refused.** They
+  sign data neither device can show in readable form, and they are no
+  longer offered over WalletConnect. `personal_sign` and transactions work
+  as before.
+- **Restoring a non-standard seed phrase.** A phrase that does not pass the
+  BIP-39 check (words from another word list, or a wrong checksum) is no
+  longer simply rejected: SSP Wallet explains what is non-standard and
+  restores it only after you confirm. Phrases SSP creates are always
+  standard, so this only concerns phrases brought from other wallets.
 - **Enterprise methods only work from SSP Enterprise.** `enterprise_*`
   requests are accepted only from `https://enterprise.sspwallet.com`. Testing
   against a local enterprise app needs a development build of the wallet.

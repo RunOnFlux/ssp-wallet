@@ -75,6 +75,10 @@ export function generateMnemonic(strength: 128 | 256 = 256): string {
   return bip39.generateMnemonic(wordlist, strength);
 }
 
+// Word counts a BIP-39 seed can be derived from. A phrase of one of these
+// lengths derives keys even when its words or checksum are not standard.
+export const DERIVABLE_WORD_COUNTS = [12, 15, 18, 21, 24];
+
 export function validateMnemonic(mnemonic: string): boolean {
   return bip39.validateMnemonic(mnemonic, wordlist);
 }

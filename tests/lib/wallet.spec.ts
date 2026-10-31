@@ -19,6 +19,7 @@ import {
   generateNodeIdentityKeypair,
   generateExternalIdentityKeypair,
   wifToPrivateKey,
+  DERIVABLE_WORD_COUNTS,
 } from '../../src/lib/wallet';
 
 const mnemonic =
@@ -205,5 +206,26 @@ describe('Wallet Lib', () => {
         '29c6fbfe8f749d4d122a3a8422e63977aaf943fb3674a927fb88f1a2833a53ad',
       );
     });
+  });
+});
+
+describe('Non-standard seed phrases', () => {
+  // 12 English words whose checksum is wrong (last word changed).
+  const badChecksum =
+    'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon';
+
+  it('a BIP-39-length phrase that fails validation still derives keys', () => {
+    expect(validateMnemonic(badChecksum)).toBe(false);
+    expect(DERIVABLE_WORD_COUNTS).toContain(12);
+    const xpub = getMasterXpub(badChecksum, 48, 1, 0, 'p2sh', 'flux');
+    expect(xpub).toMatch(/^xpub/);
+    // deterministic: the same phrase gives the same key
+    expect(getMasterXpub(badChecksum, 48, 1, 0, 'p2sh', 'flux')).toBe(xpub);
+  });
+
+  it('a phrase of another length cannot derive', () => {
+    expect(() =>
+      getMasterXpub(`${badChecksum} abandon`, 48, 1, 0, 'p2sh', 'flux'),
+    ).toThrow();
   });
 });

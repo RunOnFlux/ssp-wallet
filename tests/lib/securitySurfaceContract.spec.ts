@@ -311,30 +311,23 @@ describe('WEXT-5 / WEXT-6: WalletConnect Verify and session scoping', () => {
     expect(wc).not.toContain('result = await getUserAccounts()');
   });
 
-  it('refuses eth_sign and eth_signTypedData* up front and stops advertising them (EVM-12)', () => {
+  it('refuses eth_sign and legacy eth_signTypedData up front and stops advertising them (EVM-12)', () => {
     const wc = code('contexts/WalletConnectContext.tsx');
     const unsupported = wc.slice(
       wc.indexOf('const UNSUPPORTED_SIGNING_METHODS'),
       wc.indexOf('const UNSUPPORTED_METHOD_CODE'),
     );
-    for (const method of [
-      'eth_sign',
-      'eth_signTypedData',
-      'eth_signTypedData_v3',
-      'eth_signTypedData_v4',
-    ]) {
-      expect(unsupported).toContain(`'${method}'`);
-    }
+    expect(unsupported).toContain("'eth_sign'");
+    expect(unsupported).toContain("'eth_signTypedData'");
+    expect(unsupported).not.toContain('eth_signTypedData_v');
     // Refused before the scam/session checks and before any modal.
     const handler = wc.slice(wc.indexOf('const handleSessionRequest'));
     expect(
       handler.indexOf('UNSUPPORTED_SIGNING_METHODS.includes(method)'),
     ).toBeLessThan(handler.indexOf('setPendingRequestModal(event)'));
     expect(wc).toContain('code: UNSUPPORTED_METHOD_CODE');
-    // No approval path and no namespace advertises them.
     expect(wc).not.toContain("case 'eth_sign':");
-    expect(wc).not.toContain("case 'eth_signTypedData");
-    expect(wc).not.toContain('handleSignTypedData');
+    expect(wc).not.toContain("case 'eth_signTypedData':");
     expect(wc).not.toContain('handleEthSign');
     const namespaces = wc.slice(
       wc.indexOf('const supportedNamespaces'),
@@ -342,7 +335,29 @@ describe('WEXT-5 / WEXT-6: WalletConnect Verify and session scoping', () => {
     );
     expect(namespaces).toContain("'personal_sign'");
     expect(namespaces).not.toContain("'eth_sign'");
-    expect(namespaces).not.toContain('eth_signTypedData');
+    expect(namespaces).not.toContain("'eth_signTypedData'");
+  });
+
+  it('signs typed data v3 / v4 over the EIP-712 digest and checks the result', () => {
+    const wc = code('contexts/WalletConnectContext.tsx');
+    const namespaces = wc.slice(
+      wc.indexOf('const supportedNamespaces'),
+      wc.indexOf('const approvedNamespaces'),
+    );
+    expect(namespaces).toContain("'eth_signTypedData_v3'");
+    expect(namespaces).toContain("'eth_signTypedData_v4'");
+    // Only the canonical JSON reaches SSP Key, and the wallet signs its digest.
+    expect(wc).toContain('serializeTypedData(parseTypedData(typedData))');
+    expect(wc).toContain("messageType === 'eip712' ? digest : undefined");
+    // The Key's signature is verified before the dApp gets it.
+    expect(wc).toContain(
+      '!verifyMultisigSignature(signature, digest, walletPubKey, keyPubKey)',
+    );
+    // The approval modal gates on an explicit acknowledgement.
+    const modal = code(
+      'components/WalletConnect/modals/TypedDataSignModal.tsx',
+    );
+    expect(modal).toContain('!payload || !riskAcknowledged');
   });
 
   it.each([

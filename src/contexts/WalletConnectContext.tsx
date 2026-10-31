@@ -17,6 +17,7 @@ import {
 import { useAppSelector } from '../hooks';
 import { useRelayAuth } from '../hooks/useRelayAuth';
 import { blockchains } from '@storage/blockchains';
+import { ethers } from 'ethers';
 import { cryptos } from '../types';
 import localForage from 'localforage';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +34,14 @@ import { sspConfig } from '@storage/ssp';
 import {
   buildPersonalSignPreimage,
   signMessageWithSchnorrMultisig,
+  verifyMultisigSignature,
 } from '../lib/evmSigning';
+import {
+  parseTypedData,
+  serializeTypedData,
+  typedDataChainId,
+  typedDataDigest,
+} from '../lib/typedData';
 import {
   ERC20_TRANSFER_SELECTOR,
   describeErc20Transfer,
@@ -104,7 +112,9 @@ interface publicNonces {
  * - Input validation and error boundary handling
  *
  * 📋 SUPPORTED METHODS:
- * - personal_sign (eth_sign / eth_signTypedData* are refused as unsupported)
+ * - personal_sign
+ * - eth_signTypedData_v3, eth_signTypedData_v4 (EIP-712 digest)
+ *   (eth_sign and the legacy eth_signTypedData are refused as unsupported)
  * - eth_sendTransaction
  * - wallet_switchEthereumChain, wallet_addEthereumChain
  * - eth_accounts, eth_requestAccounts, eth_chainId, net_version
@@ -120,21 +130,17 @@ const WALLETCONNECT_PROJECT_ID = '0fddbe43cb0cca6b6e0fcf9b5f4f0ff6';
 // an account the user shared with the session (security review WEXT-6).
 const SIGNING_METHODS = [
   'personal_sign',
+  'eth_signTypedData_v3',
+  'eth_signTypedData_v4',
   'eth_sendTransaction',
   'eth_signTransaction',
 ];
 
-// Refused up front with "unsupported method" (EVM-12): SSP Key only co-signs
-// EIP-191 personal_sign, rebuilding the preimage from the text it displays.
-// eth_sign signed raw text and the typed-data variants signed
-// keccak(JSON.stringify(typedData)) rather than the EIP-712 digest — neither
-// produced a signature a dApp could verify, and the Key now refuses both.
-const UNSUPPORTED_SIGNING_METHODS = [
-  'eth_sign',
-  'eth_signTypedData',
-  'eth_signTypedData_v3',
-  'eth_signTypedData_v4',
-];
+// Refused up front with "unsupported method" (EVM-12). eth_sign signs raw
+// bytes nobody can display, and the legacy eth_signTypedData (v1) uses a
+// different encoding. Typed data v3 / v4 is signed over the EIP-712 digest,
+// which SSP Key recomputes from the typed data it displays.
+const UNSUPPORTED_SIGNING_METHODS = ['eth_sign', 'eth_signTypedData'];
 
 // EIP-1193 "Unsupported Method".
 const UNSUPPORTED_METHOD_CODE = 4200;
@@ -167,6 +173,9 @@ interface SessionStruct {
 // Use WalletKitTypes for proper typing
 type SessionProposal = WalletKitTypes.SessionProposal;
 type SessionRequest = WalletKitTypes.SessionRequest;
+
+// What a consumer signing request asks SSP Key to sign.
+type SigningMessageType = 'personal' | 'eip712';
 
 // Transaction type for EVM operations
 interface EthereumTransaction {
@@ -293,6 +302,12 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         message: string;
         address: string;
         hideLoading: () => void;
+        messageType?: SigningMessageType;
+        // Set once the request went to SSP Key: the returned signature is
+        // checked against these before the dApp gets it.
+        digest?: string;
+        walletPubKey?: string;
+        keyPubKey?: string;
       }
     >
   >({});
@@ -492,6 +507,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
                   request.reject,
                   true, // isRetry flag to prevent showing loading message again
                   request.hideLoading, // Pass original hideLoading function
+                  request.messageType,
                 ).catch((error) => {
                   console.error(
                     '🔗 WalletConnect: Failed to retry signing after nonces received:',
@@ -1335,6 +1351,14 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           result = await handlePersonalSign(requestParams as [string, string]);
           break;
 
+        case 'eth_signTypedData_v3':
+        case 'eth_signTypedData_v4':
+          console.log('🔗 WalletConnect: Processing typed data approval');
+          result = await handleSignTypedData(
+            requestParams as [string, unknown],
+          );
+          break;
+
         case 'eth_sendTransaction':
           console.log(
             '🔗 WalletConnect: Processing transaction sending approval',
@@ -1555,7 +1579,25 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           );
 
           pendingRequest.hideLoading();
-          pendingRequest.resolve(signature);
+          // Only a signature the account contract accepts reaches the dApp.
+          // An SSP Key without typed-data support signs the JSON text
+          // instead of the EIP-712 digest, which fails here.
+          const { digest, walletPubKey, keyPubKey } = pendingRequest;
+          if (
+            digest &&
+            walletPubKey &&
+            keyPubKey &&
+            !verifyMultisigSignature(signature, digest, walletPubKey, keyPubKey)
+          ) {
+            const message =
+              pendingRequest.messageType === 'eip712'
+                ? t('home:walletconnect.typed_data_key_update')
+                : t('home:walletconnect.signing_failed');
+            pendingRequest.reject(new Error(message));
+            displayMessage('error', message);
+          } else {
+            pendingRequest.resolve(signature);
+          }
 
           // Clean up the pending request
           setPendingSigningRequests((prev) => {
@@ -1627,6 +1669,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     resolve: (signature: string) => void,
     reject: (error: Error) => void,
     hideLoading: () => void,
+    messageType: SigningMessageType = 'personal',
   ): Promise<publicNonces> => {
     // Check if we have stored nonces first
     const sspKeyPublicNonces: publicNonces[] =
@@ -1660,6 +1703,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         message,
         address,
         hideLoading,
+        messageType,
       },
     }));
 
@@ -1677,7 +1721,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     throw new Error('WAITING_FOR_NONCES');
   };
 
-  // Unified signing function for both personal_sign and eth_sign
+  // Unified signing for personal_sign (message = EIP-191 preimage) and typed
+  // data (message = canonical EIP-712 JSON, signed over its digest).
   const handleUnifiedSigning = async (
     message: string,
     address: string,
@@ -1685,6 +1730,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     reject: (error: Error) => void,
     isRetry = false,
     retryHideLoading?: () => void,
+    messageType: SigningMessageType = 'personal',
   ): Promise<void> => {
     // Use provided hideLoading for retries, or create new one for initial requests
     const hideLoading =
@@ -1771,6 +1817,23 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         currentActiveChain,
       ); // ssp key
 
+      // The digest both devices sign. Typed data is re-checked against the
+      // chain that is active now (it may have switched since approval).
+      let digest: string;
+      if (messageType === 'eip712') {
+        const payload = parseTypedData(message);
+        const chainId = typedDataChainId(payload);
+        if (
+          chainId !== null &&
+          chainId !== blockchains[currentActiveChain].chainId
+        ) {
+          throw new Error(t('home:walletconnect.typed_data_wrong_chain'));
+        }
+        digest = typedDataDigest(payload);
+      } else {
+        digest = ethers.solidityPackedKeccak256(['string'], [message]);
+      }
+
       console.log('🔗 WalletConnect: Getting public nonces from SSP key');
 
       try {
@@ -1783,6 +1846,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           resolve,
           reject,
           hideLoading || (() => {}),
+          messageType,
         );
 
         console.log(
@@ -1795,6 +1859,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           keyPair,
           publicKey2HEX,
           publicNoncesSSP,
+          messageType === 'eip712' ? digest : undefined,
         );
 
         console.log('🔗 WalletConnect: Local signature created:', {
@@ -1817,6 +1882,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           chain: currentActiveChain,
           walletInUse: walletInUse,
           requestId: requestId,
+          // Absent for personal messages, so those requests are unchanged.
+          ...(messageType === 'eip712' ? { messageType } : {}),
         };
 
         console.log('🔗 WalletConnect: Signing request:', signingRequest);
@@ -1837,6 +1904,10 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
                 hideLoading();
               }
             },
+            messageType,
+            digest,
+            walletPubKey: keyPair.pubKey,
+            keyPubKey: publicKey2HEX,
           },
         }));
 
@@ -1926,6 +1997,33 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       });
 
       handleUnifiedSigning(eip191Message, address, resolve, reject);
+    });
+  };
+
+  // eth_signTypedData_v3 / _v4: [address, typedData]. Signed over the EIP-712
+  // digest; SSP Key recomputes it from the canonical JSON it displays.
+  const handleSignTypedData = async (
+    params: [string, unknown],
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const [address, typedData] = params;
+      let canonical: string;
+      try {
+        canonical = serializeTypedData(parseTypedData(typedData));
+      } catch (error) {
+        console.error('🔐 Typed data rejected:', error);
+        reject(new Error(t('home:walletconnect.typed_data_invalid')));
+        return;
+      }
+      handleUnifiedSigning(
+        canonical,
+        address,
+        resolve,
+        reject,
+        false,
+        undefined,
+        'eip712',
+      );
     });
   };
 
@@ -2857,6 +2955,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
             'eth_signTransaction',
             'eth_sendTransaction',
             'personal_sign',
+            'eth_signTypedData_v3',
+            'eth_signTypedData_v4',
             'wallet_switchEthereumChain',
             'wallet_addEthereumChain',
             'wallet_getPermissions',
