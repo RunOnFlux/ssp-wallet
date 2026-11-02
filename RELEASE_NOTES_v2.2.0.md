@@ -1,10 +1,9 @@
 # SSP Wallet v2.2.0
 
-_Release date: to be set (security release, October 2026)_
+_Release date: 2 November 2026_
 
-A security release that follows the October 2026 security review. Release it
-together with the matching SSP Key security release. The SSP relay and SSP
-Enterprise have to be deployed before it reaches users.
+A security release that follows the October 2026 security review, released
+together with SSP Key v2.2.0. Typed data signing needs both updated.
 
 ## Behaviour changes you will notice
 
