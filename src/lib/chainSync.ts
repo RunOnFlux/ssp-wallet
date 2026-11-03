@@ -265,14 +265,11 @@ export interface SessionLandedChain {
  * Must the user pass the out-of-band verification-code gate before this
  * session's pairing is treated as done? (CS-2)
  *
- * The wallet shows the code exactly when SSP Key shows its side, so the two
- * can always be compared — and released SSP Key 2.1.1 keeps working:
- * - an identity pairing: SSP Key shows the code (every version);
- * - a batch that SSP Key approved and delivered: SSP Key shows the code
- *   after it (every version).
- * A single-chain activation (QR, manual or fallback) shows no code on SSP
- * Key, so none is shown here; the key xpub is then protected by SSP Key's
- * attestation when it carries one (see singleChainUnattested).
+ * Always, whenever key material was stored: an identity pairing, a batch and
+ * a single-chain activation (QR, manual or fallback) alike. SSP Key 2.2.1+
+ * shows its side of the code after every sync, so the two can always be
+ * compared. Older SSP Key versions show no code for a single chain; the gate
+ * then tells the user to update SSP Key (verify_words_no_code_hint).
  *
  * There is NO other way to finish a session that stored key material.
  */
@@ -280,8 +277,7 @@ export function sessionRequiresVerificationCode(input: {
   identityPairedThisSession: boolean;
   landed: SessionLandedChain[];
 }): boolean {
-  if (input.identityPairedThisSession) return true;
-  return input.landed.some((entry) => entry.fromBatch);
+  return input.identityPairedThisSession || input.landed.length > 0;
 }
 
 /**
@@ -298,22 +294,6 @@ export function sessionFullyAttested(input: {
   return (
     input.landed.length > 0 && input.landed.every((entry) => entry.attested)
   );
-}
-
-/**
- * Chains this session activated without a code AND without an SSP Key
- * attestation — what an SSP Key older than 2.2.0 sends for a single-chain
- * sync. Accepted for compatibility (as before 2.2.0); the caller tells the
- * user to update SSP Key.
- */
-export function singleChainUnattested(input: {
-  identityPairedThisSession: boolean;
-  landed: SessionLandedChain[];
-}): string[] {
-  if (sessionRequiresVerificationCode(input)) return [];
-  return input.landed
-    .filter((entry) => !entry.attested)
-    .map((entry) => entry.chain);
 }
 
 // ---------------------------------------------------------------------------
