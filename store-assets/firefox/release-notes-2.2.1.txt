@@ -1,0 +1,5 @@
+Security update. Please update SSP Key to 2.2 as well.
+• Typed data (EIP-712) signing that dApps can verify
+• Confirm enterprise vault signers on first use
+• Restore non-standard seed phrases
+• Stronger transaction checks and safety prompts
