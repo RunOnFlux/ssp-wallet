@@ -51,7 +51,6 @@ import {
   verifyChainSyncAttestation,
   sessionRequiresVerificationCode,
   sessionFullyAttested,
-  singleChainUnattested,
   markUnverifiedPairing,
   clearUnverifiedPairing,
   discardUnverifiedPairings,
@@ -564,7 +563,6 @@ describe('sessionRequiresVerificationCode (CS-2)', () => {
   });
 
   it('requires it after a batch SSP Key delivered, attested or not', () => {
-    // SSP Key (2.1.1 and 2.2.0) shows the code after an approved batch.
     expect(
       sessionRequiresVerificationCode({
         identityPairedThisSession: false,
@@ -579,20 +577,23 @@ describe('sessionRequiresVerificationCode (CS-2)', () => {
     ).toBe(true);
   });
 
-  it('does not require it for a single-chain activation (no code on SSP Key)', () => {
+  it('requires it for a single-chain activation, attested or not', () => {
+    // SSP Key shows the code after a single-chain sync too (2.2.1+), also
+    // when it replaces an existing pairing.
     expect(
       sessionRequiresVerificationCode({
         identityPairedThisSession: false,
         landed: [L('eth', true, false)],
       }),
-    ).toBe(false);
-    // SSP Key 2.1.1: no attestation, no code — still syncs.
+    ).toBe(true);
+    // Older SSP Key: no attestation, no code on the phone — the gate is
+    // still shown, with the hint to update SSP Key.
     expect(
       sessionRequiresVerificationCode({
         identityPairedThisSession: false,
         landed: [L('eth', false, false)],
       }),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it('does not require it when nothing was stored', () => {
@@ -602,38 +603,6 @@ describe('sessionRequiresVerificationCode (CS-2)', () => {
         landed: [],
       }),
     ).toBe(false);
-  });
-});
-
-describe('singleChainUnattested', () => {
-  it('lists single-chain activations without an attestation', () => {
-    expect(
-      singleChainUnattested({
-        identityPairedThisSession: false,
-        landed: [L('eth', false, false)],
-      }),
-    ).toEqual(['eth']);
-    expect(
-      singleChainUnattested({
-        identityPairedThisSession: false,
-        landed: [L('eth', true, false)],
-      }),
-    ).toEqual([]);
-  });
-
-  it('is empty whenever the code is shown', () => {
-    expect(
-      singleChainUnattested({
-        identityPairedThisSession: true,
-        landed: [L('eth', false, false)],
-      }),
-    ).toEqual([]);
-    expect(
-      singleChainUnattested({
-        identityPairedThisSession: false,
-        landed: [L('eth', false, true)],
-      }),
-    ).toEqual([]);
   });
 });
 

@@ -57,7 +57,6 @@ import {
   verifyChainSyncAttestation,
   sessionRequiresVerificationCode,
   sessionFullyAttested,
-  singleChainUnattested,
   markUnverifiedPairing,
   clearUnverifiedPairing,
   discardUnverifiedPairings,
@@ -770,8 +769,8 @@ function Key(props: {
       pollingSyncInterval = undefined;
     }
     // Reached only from completeSync: after the verification gate was
-    // confirmed, or for a single-chain activation (no code on SSP Key) — the
-    // stored key xpubs are now a finished pairing.
+    // confirmed, or when the session stored nothing — the stored key xpubs
+    // are now a finished pairing.
     const session = syncSessionRef.current;
     if (session) clearUnverifiedPairing(session.id);
     endSyncSession();
@@ -842,17 +841,12 @@ function Key(props: {
     sessionRequiresVerificationCode(sessionGateInput());
 
   // The ONLY way out of a session that stored key material (security review
-  // H-4): the user confirms the out-of-band verification code whenever SSP Key
-  // shows one (identity pairing, approved batch). A single-chain activation
-  // shows no code on SSP Key and finishes directly; one without an SSP Key
-  // attestation (SSP Key older than 2.2.0) is accepted with an update notice.
+  // H-4): the user confirms the out-of-band verification code, which SSP Key
+  // shows after every sync (identity pairing, batch and single chain alike).
   // Nothing else calls finishSync.
   const completeSync = () => {
     if (verifyOpenRef.current) return;
     if (!sessionNeedsVerificationCode()) {
-      if (singleChainUnattested(sessionGateInput()).length > 0) {
-        displayMessage('info', t('home:key.sync_update_key_hint'));
-      }
       finishSync();
       return;
     }
