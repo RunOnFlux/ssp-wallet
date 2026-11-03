@@ -365,7 +365,6 @@
     "verify_words_match": "Keduanya cocok — lanjutkan",
     "verify_words_mismatch": "Keduanya tidak cocok",
     "verify_words_attested": "SSP Key Anda juga menandatangani kunci-kunci ini. Bandingkan kata-katanya sebelum melanjutkan.",
-    "sync_update_key_hint": "Rantai disinkronkan. Perbarui SSP Key ke versi terbaru sehingga SSP Key dapat menandatangani setiap rantai yang disinkronkan agar dapat diverifikasi oleh Dompet SSP.",
     "verify_mismatch_warning": "Kode verifikasi tidak cocok. Brankas ini tidak diaktifkan — mulai ulang sinkronisasi untuk mencoba lagi.",
     "verify_words_no_code_hint": "Versi SSP Key saat ini menampilkan kode ini setelah sinkronisasi. Jika SSP Key Anda tidak menampilkan kode apa pun, perbarui SSP Key dan sinkronkan ulang alih-alih melanjutkan.",
     "batch_request_selected_one": "Minta {{count}} rantai yang dipilih",
