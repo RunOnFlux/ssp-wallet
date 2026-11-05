@@ -59,7 +59,15 @@ function Navigation() {
   // "mainnet without an onramp" instead made it dead code — every chain
   // lacking onramperNetwork is a test network — leaving Solana (devnet-only)
   // and every other test chain with a dead tile that explained nothing.
-  const buySellUnavailable = !blockchainConfig.onramperNetwork;
+  // The relay checks Onramper daily per country: a coin Onramper still lists
+  // but no provider will quote (e.g. FLUX) would otherwise open the widget
+  // with an empty currency list. Only an explicit `false` disables the tile.
+  const notSoldInRegion =
+    !!blockchainConfig.onramperNetwork &&
+    servicesAvailability.onrampNetworks?.[blockchainConfig.onramperNetwork] ===
+      false;
+  const buySellUnavailable =
+    !blockchainConfig.onramperNetwork || notSoldInRegion;
   const isTestNetwork = blockchainConfig.symbol.includes('TEST');
 
   const buySellButton = (
@@ -136,7 +144,9 @@ function Navigation() {
                       'home:buy_sell_crypto.not_on_test_networks',
                       'Not available on test networks',
                     )
-                  : t('home:buy_sell_crypto.coming_soon')
+                  : notSoldInRegion
+                    ? t('home:buy_sell_crypto.not_available_region')
+                    : t('home:buy_sell_crypto.coming_soon')
               }
               /* focus as well as hover: the tile is aria-disabled rather than
                  natively disabled precisely so a keyboard user can reach this
