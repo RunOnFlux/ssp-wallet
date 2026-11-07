@@ -22,7 +22,7 @@ export interface RelayNonce {
 
 export interface VaultSignRelayPayloadInput {
   chain: string;
-  /** chainType of the vault chain ('evm', 'sol', or undefined for UTXO). */
+  /** chainType of the vault chain ('evm', 'sol', 'tron', or undefined for UTXO). */
   chainType?: string;
   orgIndex: number;
   vaultIndex: number;
@@ -48,6 +48,8 @@ export interface VaultSignRelayPayloadInput {
   tokenDecimals?: number;
   sourceAddress?: string;
   evmUserOp?: string;
+  /** TRON: the Op JSON the Key re-derives the vault and digest from. */
+  tronOp?: string;
   vaultDescriptor: unknown;
   vaultDescriptorHash: string | undefined;
   signMessage?: string;
@@ -80,8 +82,14 @@ export function buildVaultSignRelayPayload(
     scriptType: input.scriptType,
   };
 
-  // UTXO progressive signing: send wallet-signed TX hex so Key can add its sigs on top
-  if (input.chainType !== 'evm' && input.walletSignatures.length === 1) {
+  // UTXO progressive signing: send wallet-signed TX hex so Key can add its sigs on top.
+  // Never for TRON: its wallet signature is a 65-byte digest signature, and
+  // walletSignedHex is never set for TRON (contract §3).
+  if (
+    input.chainType !== 'evm' &&
+    input.chainType !== 'tron' &&
+    input.walletSignatures.length === 1
+  ) {
     payload.walletSignedHex = input.walletSignatures[0];
   }
 
@@ -131,6 +139,12 @@ export function buildVaultSignRelayPayload(
   // Include EVM UserOp for Key's trustless decode
   if (input.evmUserOp) {
     payload.evmUserOp = input.evmUserOp;
+  }
+
+  // TRON: the Key re-derives the vault and recomputes the digest from the
+  // same Op (contract §5.1–5.2), exactly like evmUserOp.
+  if (input.tronOp) {
+    payload.tronOp = input.tronOp;
   }
 
   // VD-2: the vault descriptor and its hash, verbatim as SSP Enterprise sent

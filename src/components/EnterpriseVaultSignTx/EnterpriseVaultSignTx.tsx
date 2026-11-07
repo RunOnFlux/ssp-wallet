@@ -21,9 +21,11 @@ import {
 } from '../../lib/userOpVerify';
 import {
   decodeVaultTransaction,
+  type VaultDecodedRecipient,
   type VaultDecodedTx,
 } from '../../lib/transactions';
 import VaultRiskStrip from './VaultRiskStrip';
+import HighlightedAddress from '../HighlightedAddress/HighlightedAddress';
 import {
   parseProposalSimulation,
   type ProposalSimulation,
@@ -34,6 +36,15 @@ import {
   buildDecodeMismatchWarning,
 } from '../../lib/simulationMismatch';
 import type { VaultSolDecodeResult } from '../../lib/vaultSolanaDecode';
+import {
+  signTronDigest,
+  tronAddressFromPublicKeyHex,
+  tronEnterpriseFeeCeilings,
+  tronSignatureSigner,
+  tronUnits,
+  verifyTronEnterpriseProposal,
+  type TronEnterpriseProposal,
+} from '../../lib/tron';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import axios from 'axios';
@@ -139,6 +150,9 @@ interface Props {
   sourceAddress?: string;
   // Full EVM UserOp struct (JSON string) for trustless decode
   evmUserOp?: string;
+  // TRON: the proposal operation (JSON string {network, vault, signers,
+  // threshold, op}); rawUnsignedTx is only its digest (contract §3).
+  tronOp?: string;
   // Vault signing mode (dual, key_only, wallet_only)
   signingMode?: string;
   // Server-computed advisory transaction simulation (JSON string).
@@ -205,6 +219,7 @@ function EnterpriseVaultSignTx({
   tokenDecimals,
   sourceAddress,
   evmUserOp,
+  tronOp,
   signingMode,
   simulation: simulationJson,
   proposalRefs,
@@ -215,10 +230,17 @@ function EnterpriseVaultSignTx({
 }: Props) {
   const { t } = useTranslation(['home', 'common']);
   // WalletConnect Phase 2: message-signing mode (vs the default transaction mode).
-  const isMessageSign = !!signMessage;
+  // Never for TRON (contract §7): a TRON request always shows its Op, and one
+  // that also carries a message is refused (tronVerification below) — the
+  // message view would otherwise hide the Op whose digest gets signed.
+  const isMessageSign =
+    !!signMessage && blockchains[chain]?.chainType !== 'tron';
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { sspWalletKeyInternalIdentity: wkIdentity } = useAppSelector(
     (state) => state.sspState,
+  );
+  const { cryptoRates, fiatRates } = useAppSelector(
+    (state) => state.fiatCryptoRates,
   );
   const { createWkIdentityAuth, isAuthAvailable } = useRelayAuth();
   const {
@@ -271,6 +293,7 @@ function EnterpriseVaultSignTx({
   const chainSymbol = chainConfig?.symbol ?? chain.toUpperCase();
   const isSolChain = chainConfig?.chainType === 'sol';
   const isEvmChain = chainConfig?.chainType === 'evm';
+  const isTronChain = chainConfig?.chainType === 'tron';
 
   // H-1 (defence in depth): enterprise derivation indices are re-checked on
   // this screen (receipt) and again in handleSign. orgIndex outside 100-99999
@@ -417,6 +440,68 @@ function EnterpriseVaultSignTx({
     };
   }, [needsPrevoutCheck, rawUnsignedTx, chain, parsedInputDetails]);
 
+  // TRON trustless verification (contract §5 rules 1–5), synchronous: the Op
+  // in `tronOp` must derive to its vault, hash to rawUnsignedTx, pass the
+  // enterprise display policy and match the proposal's recipients. The
+  // device's own leaf is checked against `signers` at sign time (it needs the
+  // seed). Any failure blocks signing; there is no "proceed with caution".
+  const trxUsdPrice =
+    (cryptoRates?.[chain as keyof typeof cryptoRates] ?? 0) *
+    (fiatRates?.USD ?? 0);
+  const tronVerification = useMemo((): {
+    proposal: TronEnterpriseProposal | null;
+    error: string | null;
+  } | null => {
+    if (!isTronChain) return null;
+    if (signMessage) {
+      return {
+        proposal: null,
+        error: t('home:enterpriseVaultSignTx.tron_message_unsupported'),
+      };
+    }
+    if (!tronOp) {
+      return {
+        proposal: null,
+        error: t('home:enterpriseVaultSignTx.tron_op_missing'),
+      };
+    }
+    try {
+      return {
+        proposal: verifyTronEnterpriseProposal({
+          chain,
+          tronOp,
+          rawUnsignedTx,
+          ...(sourceAddress ? { sourceAddress } : {}),
+          recipients: parsedRecipients,
+          feeCeilings: tronEnterpriseFeeCeilings(chain, trxUsdPrice),
+        }),
+        error: null,
+      };
+    } catch (e) {
+      return {
+        proposal: null,
+        error: e instanceof Error ? e.message : 'TRON verification failed',
+      };
+    }
+  }, [
+    isTronChain,
+    signMessage,
+    tronOp,
+    chain,
+    rawUnsignedTx,
+    sourceAddress,
+    parsedRecipients,
+    trxUsdPrice,
+    t,
+  ]);
+  const tronSignBlocked = isTronChain && !tronVerification?.proposal;
+  // What the TRON wallet signature was made over, to check the Key's reply.
+  const tronSignedRef = useRef<{
+    digest: Uint8Array;
+    signers: readonly string[];
+    ownSigner: string;
+  } | null>(null);
+
   // Independently decode raw transaction — trustless verification
   // For EVM: rawUnsignedTx is a hash (not decodable), use evmUserOp JSON instead
   // For UTXO: rawUnsignedTx is the actual TX hex
@@ -448,6 +533,18 @@ function EnterpriseVaultSignTx({
       if (!solDecodeState) return null;
       return solDecodeState.decoded;
     }
+    if (chainConfig?.chainType === 'tron') {
+      // TRON: the Op from `tronOp`, verified above (rawUnsignedTx is only the
+      // digest). Never hex-decoded; never falls through to utxolib.
+      if (!tronVerification) return null;
+      if (tronVerification.proposal) return tronVerification.proposal.decoded;
+      return {
+        sender: sourceAddress ?? '',
+        recipients: [],
+        fee: '0',
+        error: tronVerification.error ?? 'TRON verification failed',
+      };
+    }
     // UTXO: decode from raw TX hex
     if (!rawUnsignedTx) return null;
     const inputAmounts = parsedInputDetails.map((input) => {
@@ -476,6 +573,7 @@ function EnterpriseVaultSignTx({
     parsedInputDetails,
     normalizedUserOp,
     solDecodeState,
+    tronVerification,
   ]);
 
   // VD-4: re-derive what this request spends from (UTXO input scripts and
@@ -536,7 +634,7 @@ function EnterpriseVaultSignTx({
   // UTXO: recipients and change as classified against the derived vault
   // addresses (falls back to the decoder's list until the vault verified,
   // while Sign is still disabled).
-  const displayRecipients = vaultUtxo
+  const displayRecipients: VaultDecodedRecipient[] = vaultUtxo
     ? vaultUtxo.outputs
         .filter((output) => output.vaultAddressIndex === null)
         .map(({ address, amount }) => ({ address, amount }))
@@ -585,8 +683,17 @@ function EnterpriseVaultSignTx({
     if (isEvmChain && !decodedTx) {
       return t('home:enterpriseVaultSignTx.err_sign_unverifiable');
     }
+    // TRON: never sign a proposal that failed on-device verification.
+    if (tronSignBlocked) {
+      return (
+        tronVerification?.error ??
+        t('home:enterpriseVaultSignTx.tron_verify_failed')
+      );
+    }
     if (decodedTx?.error) return decodedTx.error;
-    if (decodedTx && decodedTx.recipients.length === 0) {
+    // An Op with only TRON vault self-calls (on-chain nonce invalidation) has
+    // no recipients; its recipients were already matched against the Op.
+    if (decodedTx && decodedTx.recipients.length === 0 && !isTronChain) {
       return t('home:enterpriseVaultSignTx.err_no_decoded_recipients');
     }
     if (prevoutCheck.status === 'error') return prevoutCheck.error;
@@ -649,11 +756,56 @@ function EnterpriseVaultSignTx({
         // For UTXO: Key returns signedHex (TX with both wallet+key SIGHASH sigs)
         // For Solana: Key returns keySignatureBase64 — single ed25519 sig.
         const isSolanaSig = !!enterpriseVaultSigned.keySignatureBase64;
-        const keySignatures: string[] = isSolanaSig
+        let keySignatures: string[] = isSolanaSig
           ? [enterpriseVaultSigned.keySignatureBase64!]
           : enterpriseVaultSigned.signerContribution
             ? [enterpriseVaultSigned.signerContribution]
             : (enterpriseVaultSigned.keySignatures ?? []);
+        if (isTronChain) {
+          // TRON: the Key returns one 65-byte signature over the same digest
+          // (`keySignature`), or none in wallet_only mode. It must recover to
+          // a vault signer other than this wallet's own leaf.
+          const keySig = enterpriseVaultSigned.keySignature;
+          keySignatures = keySig ? [keySig] : [];
+          const signed = tronSignedRef.current;
+          const keySigner =
+            keySig && signed ? tronSignatureSigner(signed.digest, keySig) : '';
+          // keyPubKey is forwarded as the signer's identity: it must be the
+          // key that produced keySignature.
+          let keyPubSigner: string | null = null;
+          try {
+            keyPubSigner = tronAddressFromPublicKeyHex(
+              enterpriseVaultSigned.keyPubKey,
+            );
+          } catch {
+            keyPubSigner = null;
+          }
+          if (
+            keySig &&
+            (!signed ||
+              !keySigner ||
+              !signed.signers.includes(keySigner) ||
+              keySigner === signed.ownSigner ||
+              keyPubSigner !== keySigner)
+          ) {
+            clearEnterpriseVaultSigned?.();
+            if (openAction) {
+              openAction({
+                status: 'ERROR',
+                data: t(
+                  'home:enterpriseVaultSignTx.tron_key_signature_invalid',
+                ),
+                errorCode: 'SIGNING_ERROR',
+              });
+            } else {
+              setError(
+                t('home:enterpriseVaultSignTx.tron_key_signature_invalid'),
+              );
+            }
+            resetState();
+            return;
+          }
+        }
         // Challenge source priority:
         // 1. Key's challenge (dual mode + key-only mode: Key signed)
         // 2. Wallet's stored challenge (wallet-only mode: Key didn't sign, returned empty)
@@ -661,16 +813,20 @@ function EnterpriseVaultSignTx({
         // Solana doesn't use challenges — pass keySignatures through unchanged.
         const challengeValue =
           enterpriseVaultSigned.challenge || walletChallengeRef.current;
-        const keySignaturesChallenges: string[] = isSolanaSig
-          ? keySignatures
-          : challengeValue
-            ? [challengeValue]
-            : keySignatures;
+        const keySignaturesChallenges: string[] =
+          isSolanaSig || isTronChain
+            ? keySignatures
+            : challengeValue
+              ? [challengeValue]
+              : keySignatures;
 
         const response: EnterpriseVaultSignTxResponse = {
-          walletSignatures: enterpriseVaultSigned.signerContribution
-            ? [enterpriseVaultSigned.signerContribution]
-            : walletSignatures!,
+          // TRON: always this wallet's own digest signature — an EVM field in
+          // a (relay-delivered) reply never replaces it.
+          walletSignatures:
+            enterpriseVaultSigned.signerContribution && !isTronChain
+              ? [enterpriseVaultSigned.signerContribution]
+              : walletSignatures!,
           keySignatures: keySignaturesChallenges,
           walletPubKey: walletPubKey!,
           keyPubKey: enterpriseVaultSigned.keyPubKey,
@@ -678,8 +834,9 @@ function EnterpriseVaultSignTx({
           chain,
           orgIndex,
           vaultIndex,
-          // UTXO progressive signing: forward signedHex to enterprise app
-          ...(enterpriseVaultSigned.signedHex
+          // UTXO progressive signing: forward signedHex to enterprise app.
+          // Never for TRON: its signatures are digest signatures only.
+          ...(enterpriseVaultSigned.signedHex && !isTronChain
             ? { signedHex: enterpriseVaultSigned.signedHex }
             : {}),
         };
@@ -738,6 +895,7 @@ function EnterpriseVaultSignTx({
     setWaitingForKey(false);
     signingRef.current = false;
     walletChallengeRef.current = '';
+    tronSignedRef.current = null;
   };
 
   /**
@@ -928,6 +1086,7 @@ function EnterpriseVaultSignTx({
       tokenDecimals,
       sourceAddress,
       evmUserOp,
+      tronOp,
       vaultDescriptor,
       vaultDescriptorHash,
       signMessage,
@@ -987,10 +1146,14 @@ function EnterpriseVaultSignTx({
         throw new Error(t('home:enterpriseVaultSignTx.err_auth_unavailable'));
       }
       // Message signing carries no recipients (it signs a message digest, not a
-      // transfer) — only transactions require (decoded) recipients.
+      // transfer) — only transactions require (decoded) recipients. TRON:
+      // recipients were already matched against the Op, and an Op with only
+      // vault self-calls (on-chain nonce invalidation) has none.
       if (
         !isMessageSign &&
-        (!decodedTx || decodedTx.error || decodedTx.recipients.length === 0)
+        (!decodedTx ||
+          decodedTx.error ||
+          (decodedTx.recipients.length === 0 && !isTronChain))
       ) {
         throw new Error(
           decodedTx?.error ??
@@ -1302,6 +1465,46 @@ function EnterpriseVaultSignTx({
         }
         signatures = [walletSigBase64];
         // sol_single skips Key entirely; sol_dual forwards to Key for ed25519 co-sign.
+      } else if (isTronChain) {
+        // TRON (contract §3, §5): re-verify with a fresh clock, recompute
+        // opDigest(chainId, vault, op) from the structured Op and require it
+        // to equal rawUnsignedTx (inside verifyTronEnterpriseProposal), then
+        // require this wallet's leaf m/48'/195'/org'/0'/vaultIndex/addressIndex
+        // to be a signer of the vault the Op derives to. Only then sign the
+        // digest. walletSignedHex is never set for TRON.
+        if (signMessage) {
+          throw new Error(
+            t('home:enterpriseVaultSignTx.tron_message_unsupported'),
+          );
+        }
+        if (!tronOp) {
+          throw new Error(t('home:enterpriseVaultSignTx.tron_op_missing'));
+        }
+        const verified = verifyTronEnterpriseProposal({
+          chain,
+          tronOp,
+          rawUnsignedTx,
+          ...(sourceAddress ? { sourceAddress } : {}),
+          recipients: parsedRecipients,
+          feeCeilings: tronEnterpriseFeeCeilings(chain, trxUsdPrice),
+        });
+        const ownSigner = tronAddressFromPublicKeyHex(keypair.pubKey);
+        if (vaultMode === 'key_only') {
+          // Key-only vault: this wallet holds no signer; the Key verifies and
+          // signs on its own.
+          signatures = [];
+        } else {
+          if (!verified.config.signers.includes(ownSigner)) {
+            throw new Error(t('home:enterpriseVaultSignTx.tron_not_member'));
+          }
+          const signature = signTronDigest(keypair.privKey, verified.digest);
+          signatures = [`0x${Buffer.from(signature).toString('hex')}`];
+        }
+        tronSignedRef.current = {
+          digest: verified.digest,
+          signers: verified.config.signers,
+          ownSigner,
+        };
       } else if (vaultMode === 'key_only') {
         // UTXO key-only: wallet doesn't sign, forward raw TX for Key to sign independently
         console.log(
@@ -1615,7 +1818,11 @@ function EnterpriseVaultSignTx({
               {decodedTx?.error && !isSolChain && (
                 <Alert
                   type="error"
-                  message={t('home:enterpriseVaultSignTx.decode_error')}
+                  message={
+                    isTronChain
+                      ? t('home:enterpriseVaultSignTx.tron_verify_failed')
+                      : t('home:enterpriseVaultSignTx.decode_error')
+                  }
                   description={
                     <>
                       <div>{decodedTx.error}</div>
@@ -1784,18 +1991,40 @@ function EnterpriseVaultSignTx({
                         display: 'block',
                       }}
                     >
-                      {recipient.address}
+                      {isTronChain ? (
+                        <HighlightedAddress address={recipient.address} />
+                      ) : (
+                        recipient.address
+                      )}
                     </Text>
-                    <Text
-                      strong
-                      style={{
-                        fontSize: '17px',
-                        marginTop: 6,
-                        display: 'block',
-                      }}
-                    >
-                      {renderAmount(recipient.amount)}
-                    </Text>
+                    {recipient.label ? (
+                      // TRON vault self-call (nonce invalidation, staking).
+                      <Text
+                        strong
+                        style={{
+                          fontSize: '13px',
+                          marginTop: 6,
+                          display: 'block',
+                          wordBreak: 'break-word',
+                        }}
+                      >
+                        {t('home:enterpriseVaultSignTx.tron_vault_action')}:{' '}
+                        {recipient.label}
+                      </Text>
+                    ) : (
+                      <Text
+                        strong
+                        style={{
+                          fontSize: '17px',
+                          marginTop: 6,
+                          display: 'block',
+                        }}
+                      >
+                        {isTronChain && recipient.decimals != null
+                          ? `${formatAmount(recipient.amount, recipient.decimals)} ${recipient.symbol || displaySymbol}`
+                          : renderAmount(recipient.amount)}
+                      </Text>
+                    )}
                   </div>
                 ))}
               </Space>
@@ -1843,8 +2072,11 @@ function EnterpriseVaultSignTx({
                   {t('home:enterpriseVaultSignTx.fee')}:{' '}
                 </Text>
                 <Text strong>
-                  {formatAmount(decodedTx?.fee ?? fee, chainDecimals)}{' '}
-                  {chainSymbol}
+                  {isTronChain && decodedTx && decodedTx.fee === '0'
+                    ? t('home:enterpriseVaultSignTx.tron_no_fee')
+                    : isTronChain && decodedTx
+                      ? `${tronUnits(decodedTx.fee, decodedTx.feeDecimals ?? chainDecimals)} ${decodedTx.feeSymbol ?? chainSymbol}`
+                      : `${formatAmount(decodedTx?.fee ?? fee, chainDecimals)} ${chainSymbol}`}
                 </Text>
               </Space>
 

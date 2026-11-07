@@ -128,6 +128,13 @@ export default defineConfig(({ command, mode }) => ({
             return 'vendor-eth';
           if (/node_modules[\\/]@alchemy[\\/]/.test(id)) return 'vendor-eth';
 
+          // TRON: tron-multisig plus its own nested @noble/curves,
+          // @noble/hashes and @scure/base (2.4.0, installed under
+          // tron-multisig/node_modules, so this pattern matches them too).
+          // The top-level @noble/* and @scure/* copies are not affected.
+          if (/node_modules[\\/]@runonflux[\\/]tron-multisig[\\/]/.test(id))
+            return 'vendor-tron';
+
           if (/node_modules[\\/]@solana[\\/]/.test(id)) return 'vendor-solana';
           if (/node_modules[\\/]@coral-xyz[\\/]/.test(id))
             return 'vendor-solana';

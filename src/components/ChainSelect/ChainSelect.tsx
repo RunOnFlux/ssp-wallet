@@ -7,12 +7,14 @@ import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../../types';
 import { switchToChain } from '../../lib/chainSwitching';
+import { isChainAvailable } from '../../lib/tron';
 
 function ChainSelect(props: {
   open: boolean;
   openAction: (status: boolean) => void;
 }) {
-  const blockchainKeys = Object.keys(blockchains);
+  // TRON is listed only once its vaults are live (lib/tron.ts isTronLive).
+  const blockchainKeys = Object.keys(blockchains).filter(isChainAvailable);
   const { t } = useTranslation(['home', 'common']);
   const { open, openAction } = props;
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);

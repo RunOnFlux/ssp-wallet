@@ -53,10 +53,12 @@ import { parseAmount } from '../../lib/sendStrategies/amount';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
 import { toast } from '../../lib/toast';
 import { truncateAddress } from '../../lib/addressDisplay';
+import { addressFromScannedQr } from '../../lib/addressValidation';
 import type { SendStrategyView } from './types';
 import { useUtxoSendStrategy } from './useUtxoSendStrategy';
 import { useEvmSendStrategy } from './useEvmSendStrategy';
 import { useSolSendStrategy } from './useSolSendStrategy';
+import { useTronSendStrategy } from './useTronSendStrategy';
 import './SendFlow.css';
 
 interface contactOption {
@@ -70,10 +72,13 @@ interface contactsInterface {
   options: contactOption[];
 }
 
-const STRATEGY_HOOKS: Record<'utxo' | 'evm' | 'sol', () => SendStrategyView> = {
+type StrategyChainType = SendStrategyView['chainType'];
+
+const STRATEGY_HOOKS: Record<StrategyChainType, () => SendStrategyView> = {
   utxo: useUtxoSendStrategy,
   evm: useEvmSendStrategy,
   sol: useSolSendStrategy,
+  tron: useTronSendStrategy,
 };
 
 /**
@@ -116,10 +121,10 @@ const AMOUNT_ERROR_ID = 'send-amount-error';
 function SendFlow() {
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { walletInUse } = useAppSelector((state) => state[activeChain]);
-  const chainType = (blockchains[activeChain].chainType ?? 'utxo') as
-    | 'utxo'
-    | 'evm'
-    | 'sol';
+  // UTXO chains carry no chainType; TRON ('tron') gets its own strategy and
+  // must never fall through to the utxolib one.
+  const chainType = (blockchains[activeChain].chainType ??
+    'utxo') as StrategyChainType;
   // Keying by chainType keeps the strategy hook identity stable per mount;
   // keying by walletInUse remounts the whole flow when the user switches the
   // sending wallet in place (the "From" row), so every strategy re-reads
@@ -129,7 +134,7 @@ function SendFlow() {
   );
 }
 
-function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
+function SendFlowInner({ chainType }: { chainType: StrategyChainType }) {
   const { token } = theme.useToken();
   const { isDark } = useThemeMode();
   const { t } = useTranslation(['send', 'common', 'home']);
@@ -277,6 +282,11 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
         slow: t('send:eta_sol_normal'),
         normal: t('send:eta_sol_normal'),
         fast: t('send:eta_sol_normal'),
+      },
+      tron: {
+        slow: t('send:eta_tron'),
+        normal: t('send:eta_tron'),
+        fast: t('send:eta_tron'),
       },
     } as const;
     return etaKeys[chainType][key];
@@ -673,9 +683,10 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
               }}
             >
               <span style={{ fontSize: 13, color: token.colorTextSecondary }}>
-                {chainType === 'sol'
-                  ? t('send:network_fee_max')
-                  : t('send:network_fee')}
+                {strategy.feeLabel ??
+                  (chainType === 'sol'
+                    ? t('send:network_fee_max')
+                    : t('send:network_fee'))}
               </span>
               {strategy.selectedPreset !== 'custom' && (
                 <span style={{ fontSize: 11, color: token.colorTextSecondary }}>
@@ -683,80 +694,93 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 </span>
               )}
             </div>
-            <ConfigProvider
-              theme={{
-                components: {
-                  Segmented: SEGMENTED_TOKENS[isDark ? 'dark' : 'light'],
-                },
-              }}
-            >
-              <Segmented
-                block
-                // The border is the boundary: `block` spreads the two options
-                // to the page edges (261px apart in the side panel), and
-                // without it they stop reading as one grouped control.
-                style={{ border: `1px solid ${SEGMENTED_BORDER_COLOR}` }}
-                value={strategy.selectedPreset}
-                onChange={(value) => strategy.selectPreset(value)}
-                options={strategy.feePresets.map((preset) => ({
-                  label: presetLabel(preset.key),
-                  value: preset.key,
-                }))}
-              />
-            </ConfigProvider>
-            {strategy.selectedPreset !== 'custom' && (
-              <div style={{ fontSize: 12, marginTop: 6, textAlign: 'left' }}>
-                {activePreset?.feeAmount != null ? (
-                  <>
-                    {/* Absolute fee (total for this tx) + its fiat + the rate. */}
-                    {parseAmount(activePreset.feeAmount)?.toFixed() ?? '---'}{' '}
-                    {strategy.feeSymbol}
-                    {presetFiat(activePreset.feeAmount) ? (
-                      <span style={{ color: token.colorTextSecondary }}>
-                        {' '}
-                        ≈ {presetFiat(activePreset.feeAmount)}
-                      </span>
-                    ) : null}
-                    {strategy.feeRateDisplay ? (
-                      <span style={{ color: token.colorTextSecondary }}>
-                        {' '}
-                        · {strategy.feeRateDisplay}
-                      </span>
-                    ) : null}
-                  </>
-                ) : (
-                  // No amount yet → the absolute fee can't be computed; show the
-                  // rate alone so the user still sees what they'll pay per byte.
-                  <span style={{ color: token.colorTextSecondary }}>
-                    {strategy.feeRateDisplay ?? t('send:enter_amount_for_fee')}
-                  </span>
-                )}
+            {strategy.feeSection ? (
+              // TRON: fee token choice / self-pay instead of speed presets.
+              <div style={{ fontSize: 12, textAlign: 'left' }}>
+                {strategy.feeSection}
               </div>
-            )}
+            ) : (
+              <>
+                <ConfigProvider
+                  theme={{
+                    components: {
+                      Segmented: SEGMENTED_TOKENS[isDark ? 'dark' : 'light'],
+                    },
+                  }}
+                >
+                  <Segmented
+                    block
+                    // The border is the boundary: `block` spreads the two options
+                    // to the page edges (261px apart in the side panel), and
+                    // without it they stop reading as one grouped control.
+                    style={{ border: `1px solid ${SEGMENTED_BORDER_COLOR}` }}
+                    value={strategy.selectedPreset}
+                    onChange={(value) => strategy.selectPreset(value)}
+                    options={strategy.feePresets.map((preset) => ({
+                      label: presetLabel(preset.key),
+                      value: preset.key,
+                    }))}
+                  />
+                </ConfigProvider>
+                {strategy.selectedPreset !== 'custom' && (
+                  <div
+                    style={{ fontSize: 12, marginTop: 6, textAlign: 'left' }}
+                  >
+                    {activePreset?.feeAmount != null ? (
+                      <>
+                        {/* Absolute fee (total for this tx) + its fiat + the rate. */}
+                        {parseAmount(activePreset.feeAmount)?.toFixed() ??
+                          '---'}{' '}
+                        {strategy.feeSymbol}
+                        {presetFiat(activePreset.feeAmount) ? (
+                          <span style={{ color: token.colorTextSecondary }}>
+                            {' '}
+                            ≈ {presetFiat(activePreset.feeAmount)}
+                          </span>
+                        ) : null}
+                        {strategy.feeRateDisplay ? (
+                          <span style={{ color: token.colorTextSecondary }}>
+                            {' '}
+                            · {strategy.feeRateDisplay}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : (
+                      // No amount yet → the absolute fee can't be computed; show the
+                      // rate alone so the user still sees what they'll pay per byte.
+                      <span style={{ color: token.colorTextSecondary }}>
+                        {strategy.feeRateDisplay ??
+                          t('send:enter_amount_for_fee')}
+                      </span>
+                    )}
+                  </div>
+                )}
 
-            {/* Custom fee — expanded when Custom is chosen. EVM has several gas
-                fields, so it keeps a bordered box that visually groups them as
-                one Network-Fee unit; UTXO/SOL have a single field and stay
-                unboxed (lighter). Kept mounted so form values survive preset
-                switches. */}
-            <div
-              style={{
-                display:
-                  strategy.selectedPreset === 'custom' ? 'block' : 'none',
-                textAlign: 'left',
-                marginTop: 8,
-                marginBottom: 4,
-                ...(chainType === 'evm'
-                  ? {
-                      border: `1px solid ${token.colorBorderSecondary}`,
-                      borderRadius: 8,
-                      padding: '12px 12px 0',
-                    }
-                  : {}),
-              }}
-            >
-              {strategy.customFeeContent}
-            </div>
+                {/* Custom fee — expanded when Custom is chosen. EVM has several gas
+                  fields, so it keeps a bordered box that visually groups them as
+                  one Network-Fee unit; UTXO/SOL have a single field and stay
+                  unboxed (lighter). Kept mounted so form values survive preset
+                  switches. */}
+                <div
+                  style={{
+                    display:
+                      strategy.selectedPreset === 'custom' ? 'block' : 'none',
+                    textAlign: 'left',
+                    marginTop: 8,
+                    marginBottom: 4,
+                    ...(chainType === 'evm'
+                      ? {
+                          border: `1px solid ${token.colorBorderSecondary}`,
+                          borderRadius: 8,
+                          padding: '12px 12px 0',
+                        }
+                      : {}),
+                  }}
+                >
+                  {strategy.customFeeContent}
+                </div>
+              </>
+            )}
           </div>
 
           <Form.Item style={{ marginTop: 40 }}>
@@ -854,7 +878,7 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                     wordBreak: 'break-all',
                   }}
                 >
-                  {strategy.receiver.value}
+                  {strategy.receiverReview ?? strategy.receiver.value}
                 </div>
               </div>
             </div>
@@ -921,9 +945,10 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
             }}
           >
             <span style={{ color: token.colorTextSecondary }}>
-              {chainType === 'sol'
-                ? t('send:network_fee_max')
-                : t('send:network_fee')}
+              {strategy.feeLabel ??
+                (chainType === 'sol'
+                  ? t('send:network_fee_max')
+                  : t('send:network_fee'))}
             </span>
             <span>
               {strategy.feeDisplay} {strategy.feeSymbol}
@@ -1050,14 +1075,9 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
         open={openQrScanner}
         onClose={() => setOpenQrScanner(false)}
         onResult={(value) => {
-          // QR payloads may be a bare address or a chain URI such as
-          // "bitcoin:<address>?amount=..." / "ethereum:<address>@1?value=..."
-          // — take the address portion only.
-          let scanned = value.trim();
-          const schemeMatch = scanned.match(/^[a-zA-Z]+:([^@?]+)/);
-          if (schemeMatch) {
-            scanned = schemeMatch[1];
-          }
+          // Bare address or chain URI; see addressFromScannedQr (TRON keeps
+          // the exact base58 case).
+          const scanned = addressFromScannedQr(value, chainType);
           strategy.receiver.set(scanned);
           setOpenQrScanner(false);
         }}

@@ -330,7 +330,14 @@ function Swap() {
           setSellAssetBalance(balanceInUnits);
 
           let fee = new BigNumber(0);
-          if (blockchainConfig.chainType === 'evm') {
+          if (blockchainConfig.chainType === 'tron') {
+            // No TRON swaps (contract §7): ABEController never maps TRON
+            // assets. Never reach the utxolib estimate below with a TRON
+            // vault address: nothing is sellable.
+            setSellAssetBalance(new BigNumber(0));
+            setMaxSendableAmount(new BigNumber(0));
+            return;
+          } else if (blockchainConfig.chainType === 'evm') {
             const chainFees = networkFees[chain];
             const baseFee = chainFees?.base ?? blockchainConfig.baseFee;
             const priorityFee =
