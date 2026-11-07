@@ -140,6 +140,8 @@
   "tron_new_recipient_desc": "You have not sent to this address before. Scammers create addresses that share the first and last characters with addresses you know. Check every character, especially the highlighted middle.",
   "tron_new_recipient_confirm": "I checked the address",
   "tron_lookalike_warning": "Warning: this address starts and ends like {{known}} but is a different address. Scammers use lookalike addresses to steal funds.",
+  "tron_refused_pending_title": "An earlier payment from this vault is still valid",
+  "tron_refused_pending_desc": "A payment you signed earlier is not confirmed on chain yet (it may have been refused, failed or still be on its way) and stays valid until {{time}}. This send reuses its nonce, so only one of the two can ever execute.",
   "eta_tron": "Confirms in about a minute",
   "swap_awaiting_quote": "Waiting for an exchange rate — this updates automatically.",
   "view_pending_approval": "View pending approval"

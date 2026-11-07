@@ -817,20 +817,61 @@
     "@runonflux/aa-schnorr-multisig-sdk": {
       "packages": {
         "@alchemy/aa-core": true,
+        "@runonflux/aa-schnorr-multisig-sdk>ethers": true,
         "@runonflux/aa-schnorr-multisig-sdk>secp256k1": true,
         "ajv": true,
         "bigi": true,
         "bn.js": true,
         "ecurve": true,
         "elliptic": true,
-        "ethers": true,
         "viem": true,
         "vite-plugin-node-polyfills": true
+      }
+    },
+    "@runonflux/aa-schnorr-multisig-sdk>@noble/curves": {
+      "globals": {
+        "TextEncoder": true
+      },
+      "packages": {
+        "@runonflux/aa-schnorr-multisig-sdk>@noble/hashes": true
+      }
+    },
+    "@runonflux/aa-schnorr-multisig-sdk>@noble/hashes": {
+      "globals": {
+        "TextEncoder": true,
+        "crypto": true
+      }
+    },
+    "@runonflux/aa-schnorr-multisig-sdk>ethers": {
+      "globals": {
+        "AbortController": true,
+        "Event": true,
+        "Headers": true,
+        "atob": true,
+        "btoa": true,
+        "clearTimeout": true,
+        "console.log": true,
+        "fetch": true,
+        "setTimeout": true
+      },
+      "packages": {
+        "@runonflux/aa-schnorr-multisig-sdk>@adraffy/ens-normalize": true,
+        "@runonflux/aa-schnorr-multisig-sdk>@noble/curves": true,
+        "@runonflux/aa-schnorr-multisig-sdk>@noble/hashes": true,
+        "@runonflux/aa-schnorr-multisig-sdk>tslib": true,
+        "aes-js": true
       }
     },
     "@runonflux/aa-schnorr-multisig-sdk>secp256k1": {
       "packages": {
         "elliptic": true
+      }
+    },
+    "@runonflux/aa-schnorr-multisig-sdk>tslib": {
+      "globals": {
+        "AsyncIterator": true,
+        "Iterator": true,
+        "SuppressedError": true
       }
     },
     "@runonflux/bitcoinjs-message": {
@@ -884,20 +925,9 @@
     },
     "@runonflux/tron-multisig": {
       "packages": {
-        "@runonflux/tron-multisig>@noble/curves": true,
-        "@runonflux/tron-multisig>@noble/hashes": true,
+        "@noble/curves": true,
+        "@noble/hashes": true,
         "@runonflux/tron-multisig>@scure/base": true
-      }
-    },
-    "@runonflux/tron-multisig>@noble/curves": {
-      "packages": {
-        "@runonflux/tron-multisig>@noble/hashes": true
-      }
-    },
-    "@runonflux/tron-multisig>@noble/hashes": {
-      "globals": {
-        "TextEncoder": true,
-        "crypto": true
       }
     },
     "@runonflux/tron-multisig>@scure/base": {
@@ -965,14 +995,7 @@
     },
     "@scure/bip39": {
       "packages": {
-        "@noble/hashes": true,
-        "@scure/bip39>@scure/base": true
-      }
-    },
-    "@scure/bip39>@scure/base": {
-      "globals": {
-        "TextDecoder": true,
-        "TextEncoder": true
+        "@noble/hashes": true
       }
     },
     "@solana/buffer-layout": {
@@ -2132,11 +2155,10 @@
         "setTimeout": true
       },
       "packages": {
+        "@adraffy/ens-normalize": true,
         "aes-js": true,
-        "ethers>@adraffy/ens-normalize": true,
         "ethers>@noble/curves": true,
         "ethers>@noble/hashes": true,
-        "ethers>tslib": true,
         "vite-plugin-node-polyfills": true
       }
     },
@@ -2152,13 +2174,6 @@
       "globals": {
         "TextEncoder": true,
         "crypto": true
-      }
-    },
-    "ethers>tslib": {
-      "globals": {
-        "AsyncIterator": true,
-        "Iterator": true,
-        "SuppressedError": true
       }
     },
     "events": {

@@ -301,6 +301,55 @@ describe('EnterpriseVaultSignTx — TRON', () => {
     expect(arg.result.signedHex).toBeUndefined();
   });
 
+  it('a forged Key reply cannot replace the wallet signature or mislabel the key', async () => {
+    await render();
+    await act(async () => signButton().click());
+    await flush();
+    const own = postedPayload().walletSignatures[0];
+    const keySig = T.to0x(
+      T.localSigner(T.hexToBytes(leafKey(Kk).privKey)).signDigest(
+        T.hexToBytes(lastProps.rawUnsignedTx),
+      ),
+    );
+    // relay-delivered reply: extra EVM/UTXO fields must be ignored for TRON
+    m.socket.enterpriseVaultSigned = {
+      keySignature: keySig,
+      keyPubKey: leafKey(Kk).pubKey,
+      signerContribution: '0x' + '66'.repeat(65),
+      signedHex: 'deadbeef',
+      requestId: 'req-1',
+    };
+    await rerender();
+    const [arg] = openAction.mock.calls[0];
+    expect(arg.status).toBe('SUCCESS');
+    expect(arg.result.walletSignatures).toEqual([own]);
+    expect(arg.result.keySignatures).toEqual([keySig]);
+    expect(arg.result.signedHex).toBeUndefined();
+  });
+
+  it('refuses a Key reply whose keyPubKey is not the key that signed', async () => {
+    await render();
+    await act(async () => signButton().click());
+    await flush();
+    const keySig = T.to0x(
+      T.localSigner(T.hexToBytes(leafKey(Kk).privKey)).signDigest(
+        T.hexToBytes(lastProps.rawUnsignedTx),
+      ),
+    );
+    m.socket.enterpriseVaultSigned = {
+      keySignature: keySig,
+      keyPubKey: leafKey(S3).pubKey,
+      requestId: 'req-1',
+    };
+    await rerender();
+    expect(openAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'ERROR',
+        data: enHome.enterpriseVaultSignTx.tron_key_signature_invalid,
+      }),
+    );
+  });
+
   it('refuses a Key reply signed by a non-member', async () => {
     await render();
     await act(async () => signButton().click());
@@ -363,6 +412,25 @@ describe('EnterpriseVaultSignTx — TRON', () => {
     await render(make());
     expect(document.body.textContent).toContain(
       enHome.enterpriseVaultSignTx.tron_verify_failed,
+    );
+    const sign = signButton();
+    expect(sign.disabled).toBe(true);
+    await act(async () => sign.click());
+    await flush();
+    expect(m.post).not.toHaveBeenCalled();
+  });
+
+  it('never signs a TRON Op presented as a message signature', async () => {
+    // A request carrying both a TRON Op and a sign-in "message" would render
+    // only the message while the Op digest is what gets signed.
+    await render({ signMessage: 'Sign in to Example dApp — no funds move' });
+    const text = document.body.textContent;
+    // the message view never replaces the TRON verification …
+    expect(text).not.toContain('Sign in to Example dApp');
+    expect(text).toContain(enHome.enterpriseVaultSignTx.tron_verify_failed);
+    // … which refuses the combination
+    expect(text).toContain(
+      enHome.enterpriseVaultSignTx.tron_message_unsupported,
     );
     const sign = signButton();
     expect(sign.disabled).toBe(true);

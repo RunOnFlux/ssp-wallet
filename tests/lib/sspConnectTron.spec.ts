@@ -93,6 +93,14 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
+// enterprise_* methods: SSP Enterprise only (WEXT-7), with a vault descriptor
+// (VD-2; only its shape is checked at transport level).
+const ENTERPRISE = {
+  verifiedOrigin: 'https://enterprise.sspwallet.com',
+  vaultDescriptor: { v: 1 },
+  vaultDescriptorHash: 'ab'.repeat(32),
+};
+
 describe('SSP Connect — TRON', () => {
   it.each([
     ['sign_message', 'tron'],
@@ -188,5 +196,34 @@ describe('SSP Connect — TRON', () => {
     // a request without tronOp never inherits the previous one
     await request('enterprise_vault_sign_tx', base);
     expect(ctx.tronOp).toBeUndefined();
+  });
+
+  it('a TRON sign_tx never inherits a previous message-signing request', async () => {
+    // Two requests landing back to back (before the sign screen captured and
+    // cleared the first) must not merge into "TRON Op + sign-in message".
+    await request('enterprise_vault_sign_message', {
+      chain: 'eth',
+      orgIndex: 100,
+      vaultIndex: 0,
+      digest: '0x' + 'cd'.repeat(32),
+      message: 'Sign in to Example dApp',
+      dappOrigin: 'https://example.com',
+      ...ENTERPRISE,
+    });
+    expect(ctx.signMessage).toBe('Sign in to Example dApp');
+    await request('enterprise_vault_sign_tx', {
+      chain: 'tron',
+      orgIndex: 100,
+      vaultIndex: 0,
+      recipients: '[]',
+      fee: '6300000',
+      rawUnsignedTx: '0x' + 'ab'.repeat(32),
+      inputDetails: '[{"addressIndex":0}]',
+      tronOp: '{}',
+      ...ENTERPRISE,
+    });
+    expect(ctx.chain).toBe('tron');
+    expect(ctx.signMessage).toBeUndefined();
+    expect(ctx.dappOrigin).toBeUndefined();
   });
 });
