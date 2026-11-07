@@ -21,18 +21,20 @@ export default defineConfig(({ command, mode }) => ({
       },
       protocolImports: true,
     }),
-    // Only enable LavaMoat in production builds
+    // Production builds only. Two things, and only these two (see
+    // packages/vite-plugin-lavamoat/README.md):
+    //  - every page runs SES lockdown() before any bundle code;
+    //  - the bundle is checked against the committed, reviewed LavaMoat
+    //    policy. The build fails if a dependency needs a global or package
+    //    the policy does not grant. Regenerate with `yarn generate-policy`
+    //    and review the diff. The policy is never rewritten by `yarn build`.
+    // There are no per-package compartments at runtime.
     ...(command === 'build'
       ? [
           viteLavaMoat({
             policyPath: './security/vite-lavamoat-policy.json',
+            policyMode: 'check',
             lockdown: true,
-            generatePolicy: true, // Static policy - use npm run generate-policy to update
-            diagnostics: true,
-            scuttleGlobalThis: {
-              enabled: true,
-              exceptions: ['chrome', 'browser', 'global', 'self'],
-            },
           }),
         ]
       : []),

@@ -25,6 +25,14 @@ import {
 } from '../../lib/constructTx';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
+import { takePendingPayRequestId } from '../../components/SspConnect/pendingPayRequest';
+import { attachRequiredWkAuth } from '../../lib/relayRequestAuth';
+import {
+  checkEvmCallSafety,
+  ERC20_TRANSFER_SELECTOR,
+  isEmptyCalldata,
+  type EvmCallSafetyResult,
+} from '../../lib/evmCallSafety';
 import { getFingerprint } from '../../lib/fingerprint';
 import {
   setBalance,
@@ -819,21 +827,16 @@ export function useEvmSendStrategy(): SendStrategyView {
       wkIdentity,
     };
 
-    // Add authentication if available (includes hash of request body)
-    try {
-      const auth = await createWkIdentityAuth('action', wkIdentity, data);
-      if (auth) {
-        Object.assign(data, auth);
-      }
-    } catch (error) {
-      console.warn(
-        '[postAction] Auth not available, sending without signature',
-        error,
-      );
-    }
+    // RA-2: /v1/action requires WK auth (hash of the request body included).
+    // Throws instead of ever posting an unauthenticated signing request.
+    const signedData = await attachRequiredWkAuth(
+      data,
+      wkIdentity,
+      createWkIdentityAuth,
+    );
 
     axios
-      .post(`https://${sspConfig().relay}/v1/action`, data)
+      .post(`https://${sspConfig().relay}/v1/action`, signedData)
       .then((res) => {
         console.log(res);
       })
@@ -841,6 +844,40 @@ export function useEvmSendStrategy(): SendStrategyView {
         console.log(error);
       });
   };
+
+  /**
+   * C-4 call-safety for what this screen is about to build: with calldata the
+   * call goes to the receiver; a plain token send calls the token contract;
+   * a native send calls the receiver with empty data. Any self-call (target ==
+   * this smart account) or account-upgrade selector is refused.
+   */
+  const evmCallSafetyFor = (
+    receiver: string,
+    data: string,
+    tokenContract: string,
+  ): EvmCallSafetyResult => {
+    const hasCalldata = !isEmptyCalldata(data);
+    const isTokenSend =
+      !hasCalldata &&
+      !!tokenContract &&
+      tokenContract !== blockchainConfig.tokens[0].contract;
+    if (!receiver) {
+      return { ok: true, isContractCall: hasCalldata };
+    }
+    return checkEvmCallSafety(
+      isTokenSend
+        ? { target: tokenContract, data: ERC20_TRANSFER_SELECTOR }
+        : { target: receiver, data: hasCalldata ? data : '0x' },
+      sender,
+    );
+  };
+  const currentCallSafety = evmCallSafetyFor(txReceiver, txData, txToken);
+  const unsafeCallReason = (result: EvmCallSafetyResult): string =>
+    result.reason === 'self_call'
+      ? t('send:unsafe_call_self')
+      : result.reason === 'upgrade_selector'
+        ? t('send:unsafe_call_upgrade')
+        : t('send:unsafe_call_malformed');
 
   const onFinish = (values: sendForm) => {
     const receiverValidation = validateReceiverAddress(
@@ -873,6 +910,23 @@ export function useEvmSendStrategy(): SendStrategyView {
 
     if (!values.fee || +values.fee < 0 || isNaN(+values.fee)) {
       displayMessage('error', t('send:err_invalid_fee'));
+      return;
+    }
+    // C-4: self-calls and account-upgrade calls are refused before anything
+    // is decrypted or built (constructAndSignEVMTransaction re-checks the
+    // built user operation).
+    const submitCallCheck = evmCallSafetyFor(
+      values.receiver,
+      values.data ?? '',
+      txToken,
+    );
+    if (!submitCallCheck.ok) {
+      displayMessage(
+        'error',
+        t('send:err_unsafe_contract_call', {
+          reason: unsafeCallReason(submitCallCheck),
+        }),
+      );
       return;
     }
     if (submitting) {
@@ -929,7 +983,9 @@ export function useEvmSendStrategy(): SendStrategyView {
             activeChain,
             '',
             sspWalletKeyInternalIdentity,
-          );
+          ).catch((error: unknown) => {
+            console.log(error);
+          });
           throw new Error(t('send:err_public_nonces'));
         }
         // choose random nonce (index must be within valid array bounds: 0 to length-1)
@@ -961,10 +1017,11 @@ export function useEvmSendStrategy(): SendStrategyView {
           importedTokens,
           values.data, // Use form data instead of state.data
         )
-          .then((signedTx) => {
+          .then(async (signedTx) => {
             console.log(signedTx);
-            // post to ssp relay
-            postAction(
+            // post to ssp relay (rejects — handled below — when relay auth
+            // is unavailable, so the UI never waits on a request never sent)
+            await postAction(
               'tx',
               signedTx,
               activeChain,
@@ -1071,6 +1128,9 @@ export function useEvmSendStrategy(): SendStrategyView {
       if (!data) {
         void browser.runtime.sendMessage({
           origin: 'ssp',
+          // WEXT-3: background resolves a dApp request only with a reply
+          // that echoes its request id.
+          requestId: takePendingPayRequestId(),
           data: {
             status: 'ERROR',
             result: t('common:request_rejected'),
@@ -1079,6 +1139,7 @@ export function useEvmSendStrategy(): SendStrategyView {
       } else {
         void browser.runtime.sendMessage({
           origin: 'ssp',
+          requestId: takePendingPayRequestId(),
           data,
         });
       }
@@ -1165,6 +1226,12 @@ export function useEvmSendStrategy(): SendStrategyView {
     }
     if (!state.walletConnectMode && +sendingAmount <= 0) {
       return t('send:err_invalid_amount');
+    }
+    // C-4: never let a self-call / account upgrade reach the review step.
+    if (!currentCallSafety.ok) {
+      return t('send:err_unsafe_contract_call', {
+        reason: unsafeCallReason(currentCallSafety),
+      });
     }
     // Balance is checked here too — Review must never present a spend the
     // wallet cannot fund (the send would only fail at the Key handshake).
@@ -1445,42 +1512,50 @@ export function useEvmSendStrategy(): SendStrategyView {
   // Advanced Options are hidden there, but attached calldata changes what
   // the transaction DOES — the confirmation screen must say so (a dApp
   // payload could otherwise review as a plain "0 ETH to 0xContract").
-  const reviewExtra =
-    txData && txData !== '0x' ? (
-      <div style={{ marginTop: 8 }}>
-        <div
-          style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}
-        >
-          <span style={{ fontSize: 12, color: token.colorTextSecondary }}>
-            {t('send:contract_interaction')}
-          </span>
-          <span style={{ fontSize: 12, textAlign: 'right' }}>
-            {decodeTransactionData(txData)}
-          </span>
-        </div>
-        <div
-          style={{
-            fontFamily: 'var(--ssp-mono)',
-            fontSize: 11,
-            color: token.colorTextSecondary,
-            wordBreak: 'break-all',
-            maxHeight: 72,
-            overflowY: 'auto',
-            marginTop: 4,
-          }}
-        >
-          {txData}
-        </div>
-        {txData.startsWith('0xa9059cbb') && (
-          <Alert
-            message={t('send:warn_token_transfer_override')}
-            type="warning"
-            showIcon
-            style={{ marginTop: 8, fontSize: 12 }}
-          />
-        )}
+  const reviewExtra = !currentCallSafety.ok ? (
+    <Alert
+      message={t('send:err_unsafe_contract_call', {
+        reason: unsafeCallReason(currentCallSafety),
+      })}
+      type="error"
+      showIcon
+      style={{ marginTop: 8, fontSize: 12 }}
+    />
+  ) : txData && txData !== '0x' ? (
+    <div style={{ marginTop: 8 }}>
+      <div
+        style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}
+      >
+        <span style={{ fontSize: 12, color: token.colorTextSecondary }}>
+          {t('send:contract_interaction')}
+        </span>
+        <span style={{ fontSize: 12, textAlign: 'right' }}>
+          {decodeTransactionData(txData)}
+        </span>
       </div>
-    ) : null;
+      <div
+        style={{
+          fontFamily: 'var(--ssp-mono)',
+          fontSize: 11,
+          color: token.colorTextSecondary,
+          wordBreak: 'break-all',
+          maxHeight: 72,
+          overflowY: 'auto',
+          marginTop: 4,
+        }}
+      >
+        {txData}
+      </div>
+      {txData.startsWith('0xa9059cbb') && (
+        <Alert
+          message={t('send:warn_token_transfer_override')}
+          type="warning"
+          showIcon
+          style={{ marginTop: 8, fontSize: 12 }}
+        />
+      )}
+    </div>
+  ) : null;
 
   const composeExtra = (
     <Collapse

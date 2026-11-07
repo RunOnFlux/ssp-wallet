@@ -14,8 +14,13 @@ import {
   CircleAlert as CircleAlertIcon,
   CircleCheck as CircleCheckIcon,
 } from 'lucide-react';
-import DappOrigin from '../../DappRequest/DappOrigin';
 import '../../DappRequest/DappRequest.css';
+import VerifiedDappOrigin from '../VerifiedDappOrigin';
+import {
+  assessVerifyContext,
+  isVerifyBlocked,
+  verifyNeedsAcknowledgement,
+} from '../verifyContext';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { SessionProposal } from '../types/modalTypes';
@@ -139,6 +144,12 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
   >({});
   const [loading, setLoading] = useState(false);
   const [isDefaultingToEthereum, setIsDefaultingToEthereum] = useState(false);
+  // Explicit acknowledgement of a Verify API domain mismatch (WEXT-5).
+  const [verifyAcknowledged, setVerifyAcknowledged] = useState(false);
+
+  useEffect(() => {
+    setVerifyAcknowledged(false);
+  }, [proposal?.id]);
 
   // Get all EVM chains and their configurations
   const getEvmChains = () => {
@@ -327,6 +338,15 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
   if (!proposal) return null;
 
   const { proposer } = proposal.params;
+  // The origin the connection really came from, per the Verify API — the
+  // proposer metadata is self-declared.
+  const verifyAssessment = assessVerifyContext(
+    proposal.verifyContext,
+    proposer.metadata.url,
+  );
+  const verifyBlocksApproval =
+    isVerifyBlocked(verifyAssessment) ||
+    (verifyNeedsAcknowledgement(verifyAssessment) && !verifyAcknowledged);
 
   const handleChainToggle = (chainId: number, checked: boolean) => {
     if (checked) {
@@ -371,7 +391,7 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
   };
 
   const handleApprove = async () => {
-    if (selectedChains.length === 0) {
+    if (selectedChains.length === 0 || verifyBlocksApproval) {
       return;
     }
 
@@ -456,7 +476,11 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
       cancelButtonProps={{ type: 'text' }}
       confirmLoading={loading}
       okButtonProps={{
-        disabled: selectedChains.length === 0 || !hasRequiredChains,
+        disabled:
+          selectedChains.length === 0 ||
+          !hasRequiredChains ||
+          verifyBlocksApproval,
+        danger: verifyAssessment.status === 'invalid',
       }}
     >
       <Space
@@ -464,10 +488,12 @@ const ConnectionRequestModal: React.FC<ConnectionRequestModalProps> = ({
         size="middle"
         style={{ width: '100%', textAlign: 'left', marginTop: 16 }}
       >
-        <DappOrigin
+        <VerifiedDappOrigin
+          assessment={verifyAssessment}
           name={proposer.metadata.name}
-          url={proposer.metadata.url}
           icon={proposer.metadata.icons?.[0]}
+          acknowledged={verifyAcknowledged}
+          onAcknowledge={setVerifyAcknowledged}
         />
 
         <p className="dapp-ask" style={{ margin: 0 }}>

@@ -48,11 +48,18 @@ export function buildPersonalSignPreimage(message: string): string {
   return `${ethers.MessagePrefix}${byteLength}${text}`;
 }
 
+/**
+ * Wallet half of a consumer 2-of-2 Schnorr message signature. A personal
+ * message is signed as keccak256(utf8(messageToSign)); with `digest` (an
+ * EIP-712 typed-data hash) that 32-byte digest is signed as is, which is what
+ * the account's ERC-1271 isValidSignature verifies.
+ */
 export function signMessageWithSchnorrMultisig(
   messageToSign: string,
   walletKeypair: keyPair,
   publicKey2HEX: string,
   publicNonces2: publicNonces,
+  digest?: string,
 ): {
   sigOne: string;
   challenge: string;
@@ -110,11 +117,9 @@ export function signMessageWithSchnorrMultisig(
 
     const publicNonces = [pubNoncesOne, pubNoncesTwo];
 
-    const { signature: sigOne, challenge } = signerOne.signMultiSigMsg(
-      messageToSign,
-      publicKeys,
-      publicNonces,
-    );
+    const { signature: sigOne, challenge } = digest
+      ? signerOne.signMultiSigHash(digest, publicKeys, publicNonces)
+      : signerOne.signMultiSigMsg(messageToSign, publicKeys, publicNonces);
 
     const publicNoncesOneHex = {
       kPublic: pubNoncesOne.kPublic.buffer.toString('hex'),
@@ -252,4 +257,64 @@ export function signVaultMessageWithSchnorr(
     sigOne: sigOne.buffer.toString('hex'),
     challenge: challenge.buffer.toString('hex'),
   };
+}
+
+const SECP256K1_N = BigInt(
+  '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141',
+);
+
+/**
+ * Whether `signature` (abi.encode(px, e, s, parity), as SSP Key returns it)
+ * is a valid Schnorr signature over `digest` by the 2-of-2 account owner with
+ * these two public keys. Mirrors the account contract's _verifySchnorr
+ * (ecrecover trick) and its owner check, so a signature that passes here is
+ * one isValidSignature accepts.
+ */
+export function verifyMultisigSignature(
+  signature: string,
+  digest: string,
+  publicKeyOneHex: string,
+  publicKeyTwoHex: string,
+): boolean {
+  try {
+    const [px, e, s, parity] = ethers.AbiCoder.defaultAbiCoder().decode(
+      ['bytes32', 'bytes32', 'bytes32', 'uint8'],
+      signature,
+    ) as unknown as [string, string, string, bigint];
+
+    const combined = accountAbstraction.signers.Schnorrkel.getCombinedPublicKey(
+      [
+        new accountAbstraction.types.Key(Buffer.from(publicKeyOneHex, 'hex')),
+        new accountAbstraction.types.Key(Buffer.from(publicKeyTwoHex, 'hex')),
+      ],
+    ).buffer;
+    if (
+      px !== ethers.hexlify(combined.subarray(1, 33)) ||
+      Number(parity) !== combined[0] - 2 + 27
+    ) {
+      return false;
+    }
+
+    const pxN = BigInt(px);
+    const sp = SECP256K1_N - ((BigInt(s) * pxN) % SECP256K1_N);
+    const ep = SECP256K1_N - ((BigInt(e) * pxN) % SECP256K1_N);
+    if (sp === SECP256K1_N) return false;
+    // ecrecover(sp, parity, px, ep) as the contract calls it. ethers only
+    // takes a low s, so a high ep is replaced by N - ep with the other parity:
+    // that recovers the same point.
+    const highS = ep > SECP256K1_N / BigInt(2);
+    const R = ethers.recoverAddress(ethers.toBeHex(sp, 32), {
+      r: px,
+      s: ethers.toBeHex(highS ? SECP256K1_N - ep : ep, 32),
+      v: highS ? 55 - Number(parity) : Number(parity),
+    });
+    return (
+      ethers.solidityPackedKeccak256(
+        ['address', 'uint8', 'bytes32', 'bytes32'],
+        [R, Number(parity), px, digest],
+      ) === e
+    );
+  } catch {
+    return false;
+  }
 }

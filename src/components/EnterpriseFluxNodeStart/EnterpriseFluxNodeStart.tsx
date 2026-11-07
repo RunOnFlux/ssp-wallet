@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Typography, Button, Space, Modal, Spin, Alert } from 'antd';
 import { fluxnode } from '@runonflux/flux-sdk';
@@ -9,11 +9,31 @@ import { sspConfig } from '@storage/ssp';
 import { getMasterXpriv, generateAddressKeypair } from '../../lib/wallet';
 import { generateRequestId } from '../../lib/wkSign';
 import type { WkSignRequesterInfo } from '../../lib/wkSign';
+import { assertEnterpriseIndices } from '../../lib/enterpriseIndexGuard';
+import { attachRequiredWkAuth } from '../../lib/relayRequestAuth';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
 import { getFingerprint } from '../../lib/fingerprint';
 import { useSocket } from '../../hooks/useSocket';
+import { useVaultDescriptorGate } from '../../hooks/useVaultDescriptorGate';
+import {
+  VaultDescriptorError,
+  type VaultDescriptorV1,
+} from '../../lib/vaultDescriptor';
+import { checkFluxCollateralAgainstDescriptor } from '../../lib/vaultDescriptorDerive';
+import {
+  VAULT_ERROR_CODES,
+  vaultErrorCodeFromKey,
+  vaultGateErrorCode,
+} from '../../lib/vaultGate';
+import {
+  computeOwnVaultAccountXpub,
+  ownVaultAccountXpubFromXpriv,
+} from '../../lib/vaultOwnXpub';
+import { buildFluxNodeStartRelayPayload } from '../../lib/vaultRelayPayload';
+import VaultPinConfirm from '../VaultPinConfirm/VaultPinConfirm';
+import VaultDescriptorStatus from '../VaultPinConfirm/VaultDescriptorStatus';
 import axios from 'axios';
 import './EnterpriseFluxNodeStart.css';
 
@@ -43,6 +63,10 @@ interface EnterpriseFluxNodeStartProps {
   redeemScript: string;
   signingDevice: 'wallet' | 'key';
   delegates: string[];
+  // VD: the vault's signer set (verified + pinned here, forwarded verbatim
+  // to SSP Key) and its hash.
+  vaultDescriptor?: unknown;
+  vaultDescriptorHash?: string;
 }
 
 function EnterpriseFluxNodeStart({
@@ -62,6 +86,8 @@ function EnterpriseFluxNodeStart({
   redeemScript,
   signingDevice,
   delegates,
+  vaultDescriptor,
+  vaultDescriptorHash,
 }: EnterpriseFluxNodeStartProps) {
   const { t } = useTranslation(['home', 'common']);
   const [processing, setProcessing] = useState(false);
@@ -79,6 +105,63 @@ function EnterpriseFluxNodeStart({
   const requestIdRef = useRef('');
 
   const chainConfig = chain ? blockchains[chain as keyof cryptos] : null;
+
+  // VD-3: the vault must verify and match its pin; VD-4: the collateral's
+  // redeem script / address must be the vault's at (vaultIndex, addressIndex).
+  const vaultGate = useVaultDescriptorGate({
+    open,
+    descriptor: vaultDescriptor,
+    descriptorHash: vaultDescriptorHash,
+    request: { chain, orgIndex, vaultIndex },
+    vaultName: nodeName,
+  });
+  const verifiedVault =
+    vaultGate.state.status === 'verified' ? vaultGate.state.verified : null;
+  const collateralCheck = useMemo(():
+    | { ok: true; address: string }
+    | { ok: false; error: string }
+    | null => {
+    if (!verifiedVault) return null;
+    try {
+      return {
+        ok: true,
+        address: checkFluxCollateralAgainstDescriptor(
+          verifiedVault.descriptor,
+          addressIndex,
+          redeemScript,
+          collateralAddress,
+        ).address,
+      };
+    } catch (checkError) {
+      return {
+        ok: false,
+        error:
+          checkError instanceof Error
+            ? checkError.message
+            : 'Vault derivation failed',
+      };
+    }
+  }, [verifiedVault, addressIndex, redeemScript, collateralAddress]);
+  const vaultGateError =
+    vaultGate.state.status === 'error' ? vaultGate.state : null;
+  const vaultReady = !!collateralCheck?.ok;
+
+  /**
+   * VD-3 + VD-4 again right before signing or forwarding. A first-sight vault
+   * confirmed on the pin screen is pinned only here, once every check passed
+   * and immediately before the key is used.
+   */
+  const recheckVault = (ownAccountXpub: string): VaultDescriptorV1 => {
+    const verified = vaultGate.reverify(ownAccountXpub);
+    checkFluxCollateralAgainstDescriptor(
+      verified.descriptor,
+      addressIndex,
+      redeemScript,
+      collateralAddress,
+    );
+    vaultGate.commitPin(verified);
+    return verified.descriptor;
+  };
 
   // Listen for Key's response
   useEffect(() => {
@@ -102,7 +185,9 @@ function EnterpriseFluxNodeStart({
         openAction({
           status: 'ERROR',
           data: rejectionMessage,
-          errorCode: 'KEY_REJECTED',
+          // VD: SSP Key's own descriptor refusal codes pass through.
+          errorCode:
+            vaultErrorCodeFromKey(enterpriseFluxNodeStarted) ?? 'KEY_REJECTED',
         });
       }
       clearEnterpriseFluxNodeStarted?.();
@@ -138,6 +223,13 @@ function EnterpriseFluxNodeStart({
       throw new Error(t('home:enterpriseFluxNodeStart.err_not_logged_in'));
     if (!chainConfig)
       throw new Error(t('home:enterpriseFluxNodeStart.err_invalid_chain'));
+    // H-1: never derive consumer (0') / recovery (99') keys for an
+    // "enterprise" node start.
+    assertEnterpriseIndices({
+      orgIndex,
+      vaultIndex,
+      addressIndexes: [addressIndex],
+    });
 
     const walSeedBlob = secureLocalStorage.getItem('walletSeed');
     if (!walSeedBlob || typeof walSeedBlob !== 'string') {
@@ -173,18 +265,43 @@ function EnterpriseFluxNodeStart({
       addressIndex,
       chain as keyof cryptos,
     );
+    // VD: this device's own account xpub, from the key it signs with.
+    const ownXpub = ownVaultAccountXpubFromXpriv(vaultXpriv, chain, vaultIndex);
     vaultXpriv = '';
 
-    return keypair;
+    return { keypair, ownXpub };
   };
 
   const handleCancel = () => {
     if (processing && !waitingForKey) return;
-    openAction(null);
+    vaultGate.discardStagedPin();
+    // A refused vault answers with its reason so SSP Enterprise can show it.
+    openAction(
+      vaultGateError
+        ? {
+            status: 'ERROR',
+            data: vaultGateError.message,
+            errorCode: vaultGateErrorCode(vaultGateError.code),
+          }
+        : null,
+    );
+    resetState();
+  };
+
+  /** The user did not confirm the vault on first sight: refuse. */
+  const handlePinDeclined = () => {
+    vaultGate.discardStagedPin();
+    openAction({
+      status: 'ERROR',
+      data: t('home:vaultDescriptor.pin_declined'),
+      errorCode: VAULT_ERROR_CODES.pinRefused,
+    });
     resetState();
   };
 
   const handleApprove = async () => {
+    // Fail closed: nothing is signed or forwarded for an unverified vault.
+    if (!vaultReady) return;
     setProcessing(true);
     setError(null);
 
@@ -199,8 +316,10 @@ function EnterpriseFluxNodeStart({
       }
 
       if (signingDevice === 'wallet') {
-        const keypair = await deriveCollateralKeypair();
+        const { keypair, ownXpub } = await deriveCollateralKeypair();
         collateralPrivKey = keypair.privKey;
+        // VD-3 / VD-4 at sign time, with the xpub of the signing key.
+        recheckVault(ownXpub);
 
         const signedTxHex = fluxnode.startFluxNodev6WithPubKey(
           collateralTxid,
@@ -220,25 +339,48 @@ function EnterpriseFluxNodeStart({
           result: { signedTxHex },
         });
       } else {
+        // H-1: the Key derives from these indices — refuse before forwarding.
+        assertEnterpriseIndices({
+          orgIndex,
+          vaultIndex,
+          addressIndexes: [addressIndex],
+        });
+        // VD-3 / VD-4 again before forwarding to SSP Key.
+        recheckVault(
+          await computeOwnVaultAccountXpub({
+            passwordBlob,
+            wkIdentity,
+            chain,
+            orgIndex,
+            vaultIndex,
+          }),
+        );
         const reqId = generateRequestId();
         requestIdRef.current = reqId;
 
-        const payload = JSON.stringify({
-          chain,
-          orgIndex,
-          vaultIndex,
-          addressIndex,
-          nodeName,
-          collateralAmount,
-          collateralAddress,
-          identityPubKey,
-          collateralTxid,
-          collateralVout,
-          redeemScript,
-          delegates,
-          requestId: reqId,
-          wkIdentity,
-        });
+        // Field names and types are pinned by the cross-repo contract test
+        // (tests/lib/vaultRelayPayload.spec.ts <-> SSP Key's parser); the
+        // descriptor and hash travel verbatim (VD-2).
+        const payload = JSON.stringify(
+          buildFluxNodeStartRelayPayload({
+            chain,
+            orgIndex,
+            vaultIndex,
+            addressIndex,
+            nodeName,
+            collateralAmount,
+            collateralAddress,
+            identityPubKey,
+            collateralTxid,
+            collateralVout,
+            redeemScript,
+            delegates,
+            requestId: reqId,
+            wkIdentity,
+            vaultDescriptor,
+            vaultDescriptorHash,
+          }),
+        );
 
         const data: Record<string, unknown> = {
           action: 'enterprisefluxnodestart',
@@ -248,16 +390,14 @@ function EnterpriseFluxNodeStart({
           wkIdentity,
         };
 
-        try {
-          const auth = await createWkIdentityAuth('action', wkIdentity, data);
-          if (auth) Object.assign(data, auth);
-        } catch {
-          console.warn(
-            '[EnterpriseFluxNodeStart] Auth not available, sending without signature',
-          );
-        }
+        // RA-2: /v1/action requires WK auth — never post unauthenticated.
+        const signedData = await attachRequiredWkAuth(
+          data,
+          wkIdentity,
+          createWkIdentityAuth,
+        );
 
-        await axios.post(`https://${sspConfig().relay}/v1/action`, data, {
+        await axios.post(`https://${sspConfig().relay}/v1/action`, signedData, {
           timeout: 30000,
         });
 
@@ -266,6 +406,15 @@ function EnterpriseFluxNodeStart({
     } catch (err) {
       collateralPrivKey = '';
       console.error('[EnterpriseFluxNodeStart] Error:', err);
+      if (err instanceof VaultDescriptorError) {
+        openAction({
+          status: 'ERROR',
+          data: err.message,
+          errorCode: vaultGateErrorCode(err.code),
+        });
+        resetState();
+        return;
+      }
       setError(
         err instanceof Error
           ? err.message
@@ -295,191 +444,220 @@ function EnterpriseFluxNodeStart({
     : '';
 
   return (
-    <Modal
-      title={t('home:enterpriseFluxNodeStart.title')}
-      open={open}
-      style={{ textAlign: 'center', top: 60 }}
-      onCancel={handleCancel}
-      footer={[]}
-      maskClosable={false}
-    >
-      <Space
-        direction="vertical"
-        size="middle"
-        style={{ marginBottom: 16, marginTop: 16, width: '100%' }}
+    <>
+      <VaultPinConfirm
+        open={vaultGate.state.status === 'needs_pin'}
+        verified={
+          vaultGate.state.status === 'needs_pin'
+            ? vaultGate.state.verified
+            : null
+        }
+        vaultName={nodeName}
+        onApprove={vaultGate.confirmPin}
+        onCancel={handlePinDeclined}
+      />
+      <Modal
+        title={t('home:enterpriseFluxNodeStart.title')}
+        open={open}
+        style={{ textAlign: 'center', top: 60 }}
+        onCancel={handleCancel}
+        footer={[]}
+        maskClosable={false}
       >
-        <Text>{t('home:enterpriseFluxNodeStart.description')}</Text>
+        <Space
+          direction="vertical"
+          size="middle"
+          style={{ marginBottom: 16, marginTop: 16, width: '100%' }}
+        >
+          <Text>{t('home:enterpriseFluxNodeStart.description')}</Text>
 
-        {/* Requester Info */}
-        {requesterInfo && (
-          <div style={{ textAlign: 'center', marginBottom: 8 }}>
-            {requesterInfo.iconUrl && (
-              <img
-                src={requesterInfo.iconUrl}
-                alt=""
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 8,
-                  objectFit: 'contain',
-                  marginBottom: 8,
-                }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            )}
-            {requesterInfo.siteName && (
-              <Text strong style={{ fontSize: '15px', display: 'block' }}>
-                {requesterInfo.siteName}
+          {/* Requester Info */}
+          {requesterInfo && (
+            <div style={{ textAlign: 'center', marginBottom: 8 }}>
+              {requesterInfo.iconUrl && (
+                <img
+                  src={requesterInfo.iconUrl}
+                  alt=""
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 8,
+                    objectFit: 'contain',
+                    marginBottom: 8,
+                  }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              )}
+              {requesterInfo.siteName && (
+                <Text strong style={{ fontSize: '15px', display: 'block' }}>
+                  {requesterInfo.siteName}
+                </Text>
+              )}
+              <Text
+                type="secondary"
+                style={{ fontSize: '12px', fontFamily: 'var(--ssp-mono)' }}
+              >
+                {requesterInfo.origin}
               </Text>
-            )}
-            <Text
-              type="secondary"
-              style={{ fontSize: '12px', fontFamily: 'var(--ssp-mono)' }}
-            >
-              {requesterInfo.origin}
+            </div>
+          )}
+
+          {/* Node Info */}
+          <Space direction="vertical" size="small" style={{ width: '100%' }}>
+            <div className="flux-node-start-info-box">
+              <Space
+                direction="vertical"
+                size="small"
+                style={{ width: '100%' }}
+              >
+                <div>
+                  <Text type="secondary">
+                    {t('home:enterpriseFluxNodeStart.node')}:{' '}
+                  </Text>
+                  <Text strong>{nodeName || '-'}</Text>
+                </div>
+                <div>
+                  <Text type="secondary">
+                    {t('home:enterpriseFluxNodeStart.chain')}:{' '}
+                  </Text>
+                  <Text strong>{chainLabel}</Text>
+                </div>
+                <div>
+                  <Text type="secondary">
+                    {t('home:enterpriseFluxNodeStart.collateral')}:{' '}
+                  </Text>
+                  <Text strong>{amountFlux} FLUX</Text>
+                </div>
+                {collateralAddress && (
+                  <div>
+                    <Text type="secondary">
+                      {t('home:enterpriseFluxNodeStart.collateral_address')}
+                      :{' '}
+                    </Text>
+                    <Text
+                      strong
+                      copyable={{ text: collateralAddress }}
+                      style={{
+                        fontFamily: 'var(--ssp-mono)',
+                        fontSize: 12,
+                        wordBreak: 'break-all',
+                      }}
+                    >
+                      {collateralAddress}
+                    </Text>
+                  </div>
+                )}
+                {utxoDisplay && (
+                  <div>
+                    <Text type="secondary">
+                      {t('home:enterpriseFluxNodeStart.collateral_utxo')}:{' '}
+                    </Text>
+                    <Text
+                      strong
+                      copyable={{ text: utxoFull }}
+                      style={{ fontFamily: 'var(--ssp-mono)', fontSize: 12 }}
+                    >
+                      {utxoDisplay}
+                    </Text>
+                  </div>
+                )}
+                <div>
+                  <Text type="secondary">
+                    {t('home:enterpriseFluxNodeStart.signing_with')}:{' '}
+                  </Text>
+                  <Text strong>{deviceLabel}</Text>
+                </div>
+                {delegates.length > 0 && (
+                  <div>
+                    <Text type="secondary">
+                      {t('home:enterpriseFluxNodeStart.delegates')}:{' '}
+                    </Text>
+                    <Text strong>{delegates.length}</Text>
+                  </div>
+                )}
+              </Space>
+            </div>
+          </Space>
+
+          {/* SSP Identity */}
+          <Space direction="vertical" size="small">
+            <Text type="secondary">
+              {t('home:enterpriseFluxNodeStart.ssp_identity')}:
             </Text>
-          </div>
-        )}
+            <Text
+              strong
+              style={{
+                fontFamily: 'var(--ssp-mono)',
+                fontSize: '12px',
+                wordBreak: 'break-all',
+              }}
+            >
+              {wkIdentity}
+            </Text>
+          </Space>
 
-        {/* Node Info */}
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
-          <div className="flux-node-start-info-box">
-            <Space direction="vertical" size="small" style={{ width: '100%' }}>
-              <div>
-                <Text type="secondary">
-                  {t('home:enterpriseFluxNodeStart.node')}:{' '}
-                </Text>
-                <Text strong>{nodeName || '-'}</Text>
-              </div>
-              <div>
-                <Text type="secondary">
-                  {t('home:enterpriseFluxNodeStart.chain')}:{' '}
-                </Text>
-                <Text strong>{chainLabel}</Text>
-              </div>
-              <div>
-                <Text type="secondary">
-                  {t('home:enterpriseFluxNodeStart.collateral')}:{' '}
-                </Text>
-                <Text strong>{amountFlux} FLUX</Text>
-              </div>
-              {collateralAddress && (
-                <div>
-                  <Text type="secondary">
-                    {t('home:enterpriseFluxNodeStart.collateral_address')}:{' '}
-                  </Text>
-                  <Text
-                    strong
-                    copyable={{ text: collateralAddress }}
-                    style={{
-                      fontFamily: 'var(--ssp-mono)',
-                      fontSize: 12,
-                      wordBreak: 'break-all',
-                    }}
-                  >
-                    {collateralAddress}
-                  </Text>
-                </div>
-              )}
-              {utxoDisplay && (
-                <div>
-                  <Text type="secondary">
-                    {t('home:enterpriseFluxNodeStart.collateral_utxo')}:{' '}
-                  </Text>
-                  <Text
-                    strong
-                    copyable={{ text: utxoFull }}
-                    style={{ fontFamily: 'var(--ssp-mono)', fontSize: 12 }}
-                  >
-                    {utxoDisplay}
-                  </Text>
-                </div>
-              )}
-              <div>
-                <Text type="secondary">
-                  {t('home:enterpriseFluxNodeStart.signing_with')}:{' '}
-                </Text>
-                <Text strong>{deviceLabel}</Text>
-              </div>
-              {delegates.length > 0 && (
-                <div>
-                  <Text type="secondary">
-                    {t('home:enterpriseFluxNodeStart.delegates')}:{' '}
-                  </Text>
-                  <Text strong>{delegates.length}</Text>
-                </div>
-              )}
-            </Space>
-          </div>
-        </Space>
-
-        {/* SSP Identity */}
-        <Space direction="vertical" size="small">
-          <Text type="secondary">
-            {t('home:enterpriseFluxNodeStart.ssp_identity')}:
-          </Text>
-          <Text
-            strong
-            style={{
-              fontFamily: 'var(--ssp-mono)',
-              fontSize: '12px',
-              wordBreak: 'break-all',
-            }}
-          >
-            {wkIdentity}
-          </Text>
-        </Space>
-
-        {/* Error display */}
-        {error && (
-          <Alert
-            type="error"
-            message={error}
-            showIcon
-            style={{ textAlign: 'left' }}
+          {/* VD: the vault verified on this device, the collateral derived. */}
+          <VaultDescriptorStatus
+            state={vaultGate.state}
+            sourceAddress={collateralCheck?.ok ? collateralCheck.address : null}
+            checkError={
+              collateralCheck && !collateralCheck.ok
+                ? collateralCheck.error
+                : null
+            }
           />
-        )}
 
-        {/* Waiting for Key indicator */}
-        {waitingForKey && (
-          <Alert
-            type="info"
-            message={t('home:enterpriseFluxNodeStart.waiting_for_key')}
-            icon={<Spin size="small" />}
-            showIcon
-            style={{ textAlign: 'left' }}
-          />
-        )}
+          {/* Error display */}
+          {error && (
+            <Alert
+              type="error"
+              message={error}
+              showIcon
+              style={{ textAlign: 'left' }}
+            />
+          )}
 
-        {/* Action buttons */}
-        <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
-          <Button
-            type="primary"
-            size="large"
-            onClick={() => {
-              void handleApprove();
-            }}
-            loading={processing && !waitingForKey}
-            disabled={processing || waitingForKey}
-          >
-            {waitingForKey
-              ? t('home:enterpriseFluxNodeStart.awaiting_key')
-              : t('home:enterpriseFluxNodeStart.approve')}
-          </Button>
-          <Button
-            type="link"
-            block
-            size="small"
-            onClick={handleCancel}
-            disabled={processing && !waitingForKey}
-          >
-            {t('common:cancel')}
-          </Button>
+          {/* Waiting for Key indicator */}
+          {waitingForKey && (
+            <Alert
+              type="info"
+              message={t('home:enterpriseFluxNodeStart.waiting_for_key')}
+              icon={<Spin size="small" />}
+              showIcon
+              style={{ textAlign: 'left' }}
+            />
+          )}
+
+          {/* Action buttons */}
+          <Space direction="vertical" size="large" style={{ marginTop: 16 }}>
+            <Button
+              type="primary"
+              size="large"
+              onClick={() => {
+                void handleApprove();
+              }}
+              loading={processing && !waitingForKey}
+              disabled={processing || waitingForKey || !vaultReady}
+            >
+              {waitingForKey
+                ? t('home:enterpriseFluxNodeStart.awaiting_key')
+                : t('home:enterpriseFluxNodeStart.approve')}
+            </Button>
+            <Button
+              type="link"
+              block
+              size="small"
+              onClick={handleCancel}
+              disabled={processing && !waitingForKey}
+            >
+              {t('common:cancel')}
+            </Button>
+          </Space>
         </Space>
-      </Space>
-    </Modal>
+      </Modal>
+    </>
   );
 }
 

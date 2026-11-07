@@ -1,0 +1,471 @@
+{
+  "version": 1,
+  "about": "Cross-repo VD-2 contract: relay action payloads built by the REAL SSP Wallet builders (src/lib/vaultRelayPayload.ts) from the shared vd-vectors.json, and the rejection payloads SSP Key posts back. SSP Wallet asserts its builders reproduce `payload` byte for byte; SSP Key asserts it parses, routes and verifies every `payload` (and produces every rejection `payload`). Identical copies: ~/repos/sec-2026-10/vd-relay-payloads.json, ssp-wallet tests/lib/fixtures/, ssp-key tests/lib/fixtures/.",
+  "regenerate": "Only when the wire format changes on purpose: rebuild with the wallet builders, then copy the file to all three locations.",
+  "transport": {
+    "vaultDescriptor": "JSON object nested inside the JSON-string payload (never a JSON string of its own), exactly as SSP Enterprise sent it.",
+    "vaultDescriptorHash": "64 lowercase hex characters, verbatim.",
+    "rejectionCode": "SSP Key puts the machine-readable refusal in `errorCode` (VAULT_DESCRIPTOR_CHANGED | VAULT_DESCRIPTOR_MISSING | VAULT_DESCRIPTOR_INVALID | VAULT_PIN_REFUSED). SSP Wallet reads `errorCode` (and, defensively, `code`) and returns it to SSP Enterprise; any other refusal is KEY_REJECTED.",
+    "changeRule": "Honest builder change goes back to the input (source) address, or vault address 0. SSP Key treats only those as change and SHOWS every other output, including other addresses of the same vault, as a recipient. SSP Wallet labels any output paying vault address 0..19 as change and shows it in its change list with the address index. Both accept honest change; neither hides an output."
+  },
+  "cases": [
+    {
+      "name": "btc-utxo-sign-dual",
+      "description": "UTXO vault sign (dual): input at vault address 0, change back to vault address 0.",
+      "vector": "btc-p2wsh-dual-2of3",
+      "action": "enterprisevaultsign",
+      "keyDevice": "alice",
+      "input": {
+        "chain": "btc",
+        "orgIndex": 1337,
+        "vaultIndex": 3,
+        "vaultName": "Treasury",
+        "orgName": "Acme",
+        "recipients": [
+          {
+            "address": "bc1qzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3h8ffkz",
+            "amount": "60000"
+          }
+        ],
+        "fee": "1000",
+        "memo": "",
+        "rawUnsignedTx": "010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020b8b4a9be6a3809cc04004c11fe65fd670bd7501595bab478a3bf8ac9fed1711400000000",
+        "inputDetails": [
+          {
+            "index": 0,
+            "addressIndex": 0,
+            "witnessScript": "5421022301585244cbd3e61018ab718efe11631347804c038dbe1b7fbbe46b70e8a5102102524173dbf62af93e0a634d3989ab157348cf3d21b794ff925b64d61ed57a4f702102556230b75edf18914ee5e0752c834a415de33f31364599b1f0b75da844eded722103183b0a4a12c6739d10f3efa7e8aea6c3a43f4b0f3262050960081ca8a13f3f2d2103b7e38bd75bf5baf9a9e20614e624de3337415dea5ae3e0bfdbbb79b9d35c239a2103cd889b7551bfd784aaa8a061b6e0ad96748810945e004942b9e15428f91c0da756ae",
+            "amount": "100000"
+          }
+        ],
+        "walletSignatures": [
+          "010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020b8b4a9be6a3809cc04004c11fe65fd670bd7501595bab478a3bf8ac9fed1711400000000"
+        ],
+        "walletPubKey": "022222222222222222222222222222222222222222222222222222222222222222",
+        "requestId": "req-btc-utxo-sign-dual",
+        "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+        "scriptType": 2,
+        "proposalRefs": {
+          "orgId": "66f1a0000000000000000001",
+          "vaultId": "66f1a0000000000000000101",
+          "proposalId": "66f1a0000000000000000a01"
+        },
+        "signingMode": "dual",
+        "vaultDescriptor": {
+          "v": 1,
+          "orgId": "66f1a0000000000000000001",
+          "vaultId": "66f1a0000000000000000101",
+          "orgIndex": 1337,
+          "vaultIndex": 3,
+          "chain": "btc",
+          "signingMode": "dual",
+          "requiredSigners": 2,
+          "members": [
+            {
+              "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+              "walletPubKey": "03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7",
+              "keyPubKey": "031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2",
+              "xpubWallet": "Zpub75p16zhwCDUbC4SMdwVLAckZTWvbrPABUwVTUxHrdgk7WnCtmjApfiS5srcifNfQA2ChfWgnXbiyxXEwvwcpkLumMmPW1xEGtsXUbusDLUT",
+              "xpubKey": "Zpub74yWPt1VPetGrNds4iXKVqvNvkNPXpk7hCftpXiDhZzCbXd6pKJqHDumBD2uyqvDUPEvPEARdX1eM9JyG7mXnSG5BaSSqUFMsqmijYWqDAy",
+              "walletXpubSignature": "H7rwTCsdSsY6Yi4I/67UAAHkV4PV31Bu8Bm9pH0a2A3mF8PvNoApyCoLZsaqVZKNq2vYhwd8GAii83CfupKJdwE=",
+              "keyXpubSignature": "H3sWZ32Bjcp2AK4uN+ZaVk1Olg9IIsdd7NHJxEA6hQg2Ee6Y+Rz3LpJJFkDjszG8Jgnfv8IUyff0we1LLMC6CoE="
+            },
+            {
+              "wkIdentity": "bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92",
+              "walletPubKey": "0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b",
+              "keyPubKey": "027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2",
+              "xpubWallet": "Zpub75iqQxPE94jgrtmmwxBE9tr91daHWf4mS38hSsUCgtUgpyQUtmMSA3AGwdyKXDbf6DQZDTNKaXnY3rHncF5PAVBBjhzrGYkQXWEy1e6CQ3o",
+              "xpubKey": "Zpub759sisv2Uk95BaWBnhAf47GbnyTCRhZpz3jGWiPn3kZc2bj6J6fJJDS3ddfE6qotz85EbNSaNNeyaDu3NTXSrMaj3t6ne9EJYpTj8PS5BJ3",
+              "walletXpubSignature": "H+20RIuei57HFNFcIaG24ozhb9TGtJS8B7t9L9KglTRJUOvh8PT62dDhSdKDU2vTJuNw6Ummzx/BTpua01pB4vo=",
+              "keyXpubSignature": "H8uSSb1NlmBJC+Kg2aT5g7sl7VdICNK6P77Kovo5qIwYMZvsMltCz9iXWoTVDeuYVHFi3SpFnOaCbtmIWIrhFjA="
+            },
+            {
+              "wkIdentity": "bc1qtupwzx3km505ydrhujmanv9a2exxk8053l8sayjj268v8mzux03sxlu73p",
+              "walletPubKey": "0330ad784b850182d092c9461f4165ed41f62c9bd1dbf021fa1977f2a3cc87929d",
+              "keyPubKey": "0379ec8a45918ac6c130e3cea7c856fef59a73786c0dc64d7de799bbf3ace8a99b",
+              "xpubWallet": "Zpub75bzN4Dbw3mvCjoEUcxcByU8gx9tukn5x4HymTaRrV31LW38DFnvUVgHc5uk6SifJMHNnT16N11ztdXeGp2otRvsfsY9kYmT3wfB1gG22Z9",
+              "xpubKey": "Zpub751WgohwZnP3fTVk5mBFRLTr6zNfZGrcWsvzwijxwoimdcuytx75dbzhC1QHqyhSaDRaYMtjRUBfGYwKKteGVENuyCBH9fF5D3J7N9s9kUJ",
+              "walletXpubSignature": "IIr3ZRiilL4XNWPnMm+dBGJA+KKAIzn8IsqMDi/RRKOUXnTEIeNoPx0lWI9z+X+Os3mSiwJh4HjfessFNn95C1o=",
+              "keyXpubSignature": "ICnoNC+FpZk6lc87ngqHH3Xp+RDHxqI6TjtGMDUgunRVDlWdXW9VEcPygFzlnlAfjnpkA5oV0g3qR9PYj1PfM4U="
+            }
+          ]
+        },
+        "vaultDescriptorHash": "0fdc2aff1f51820a316854249842f12d09f038c9440361e336e44b3578ca31d2"
+      },
+      "payload": "{\"chain\":\"btc\",\"orgIndex\":1337,\"vaultIndex\":3,\"vaultName\":\"Treasury\",\"orgName\":\"Acme\",\"recipients\":[{\"address\":\"bc1qzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3h8ffkz\",\"amount\":\"60000\"}],\"fee\":\"1000\",\"memo\":\"\",\"rawUnsignedTx\":\"010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020b8b4a9be6a3809cc04004c11fe65fd670bd7501595bab478a3bf8ac9fed1711400000000\",\"inputDetails\":[{\"index\":0,\"addressIndex\":0,\"witnessScript\":\"5421022301585244cbd3e61018ab718efe11631347804c038dbe1b7fbbe46b70e8a5102102524173dbf62af93e0a634d3989ab157348cf3d21b794ff925b64d61ed57a4f702102556230b75edf18914ee5e0752c834a415de33f31364599b1f0b75da844eded722103183b0a4a12c6739d10f3efa7e8aea6c3a43f4b0f3262050960081ca8a13f3f2d2103b7e38bd75bf5baf9a9e20614e624de3337415dea5ae3e0bfdbbb79b9d35c239a2103cd889b7551bfd784aaa8a061b6e0ad96748810945e004942b9e15428f91c0da756ae\",\"amount\":\"100000\"}],\"walletSignatures\":[\"010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020b8b4a9be6a3809cc04004c11fe65fd670bd7501595bab478a3bf8ac9fed1711400000000\"],\"walletPubKey\":\"022222222222222222222222222222222222222222222222222222222222222222\",\"requestId\":\"req-btc-utxo-sign-dual\",\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"scriptType\":2,\"walletSignedHex\":\"010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020b8b4a9be6a3809cc04004c11fe65fd670bd7501595bab478a3bf8ac9fed1711400000000\",\"orgId\":\"66f1a0000000000000000001\",\"vaultId\":\"66f1a0000000000000000101\",\"proposalId\":\"66f1a0000000000000000a01\",\"signingMode\":\"dual\",\"vaultDescriptor\":{\"v\":1,\"orgId\":\"66f1a0000000000000000001\",\"vaultId\":\"66f1a0000000000000000101\",\"orgIndex\":1337,\"vaultIndex\":3,\"chain\":\"btc\",\"signingMode\":\"dual\",\"requiredSigners\":2,\"members\":[{\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"walletPubKey\":\"03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7\",\"keyPubKey\":\"031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2\",\"xpubWallet\":\"Zpub75p16zhwCDUbC4SMdwVLAckZTWvbrPABUwVTUxHrdgk7WnCtmjApfiS5srcifNfQA2ChfWgnXbiyxXEwvwcpkLumMmPW1xEGtsXUbusDLUT\",\"xpubKey\":\"Zpub74yWPt1VPetGrNds4iXKVqvNvkNPXpk7hCftpXiDhZzCbXd6pKJqHDumBD2uyqvDUPEvPEARdX1eM9JyG7mXnSG5BaSSqUFMsqmijYWqDAy\",\"walletXpubSignature\":\"H7rwTCsdSsY6Yi4I/67UAAHkV4PV31Bu8Bm9pH0a2A3mF8PvNoApyCoLZsaqVZKNq2vYhwd8GAii83CfupKJdwE=\",\"keyXpubSignature\":\"H3sWZ32Bjcp2AK4uN+ZaVk1Olg9IIsdd7NHJxEA6hQg2Ee6Y+Rz3LpJJFkDjszG8Jgnfv8IUyff0we1LLMC6CoE=\"},{\"wkIdentity\":\"bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92\",\"walletPubKey\":\"0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b\",\"keyPubKey\":\"027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2\",\"xpubWallet\":\"Zpub75iqQxPE94jgrtmmwxBE9tr91daHWf4mS38hSsUCgtUgpyQUtmMSA3AGwdyKXDbf6DQZDTNKaXnY3rHncF5PAVBBjhzrGYkQXWEy1e6CQ3o\",\"xpubKey\":\"Zpub759sisv2Uk95BaWBnhAf47GbnyTCRhZpz3jGWiPn3kZc2bj6J6fJJDS3ddfE6qotz85EbNSaNNeyaDu3NTXSrMaj3t6ne9EJYpTj8PS5BJ3\",\"walletXpubSignature\":\"H+20RIuei57HFNFcIaG24ozhb9TGtJS8B7t9L9KglTRJUOvh8PT62dDhSdKDU2vTJuNw6Ummzx/BTpua01pB4vo=\",\"keyXpubSignature\":\"H8uSSb1NlmBJC+Kg2aT5g7sl7VdICNK6P77Kovo5qIwYMZvsMltCz9iXWoTVDeuYVHFi3SpFnOaCbtmIWIrhFjA=\"},{\"wkIdentity\":\"bc1qtupwzx3km505ydrhujmanv9a2exxk8053l8sayjj268v8mzux03sxlu73p\",\"walletPubKey\":\"0330ad784b850182d092c9461f4165ed41f62c9bd1dbf021fa1977f2a3cc87929d\",\"keyPubKey\":\"0379ec8a45918ac6c130e3cea7c856fef59a73786c0dc64d7de799bbf3ace8a99b\",\"xpubWallet\":\"Zpub75bzN4Dbw3mvCjoEUcxcByU8gx9tukn5x4HymTaRrV31LW38DFnvUVgHc5uk6SifJMHNnT16N11ztdXeGp2otRvsfsY9kYmT3wfB1gG22Z9\",\"xpubKey\":\"Zpub751WgohwZnP3fTVk5mBFRLTr6zNfZGrcWsvzwijxwoimdcuytx75dbzhC1QHqyhSaDRaYMtjRUBfGYwKKteGVENuyCBH9fF5D3J7N9s9kUJ\",\"walletXpubSignature\":\"IIr3ZRiilL4XNWPnMm+dBGJA+KKAIzn8IsqMDi/RRKOUXnTEIeNoPx0lWI9z+X+Os3mSiwJh4HjfessFNn95C1o=\",\"keyXpubSignature\":\"ICnoNC+FpZk6lc87ngqHH3Xp+RDHxqI6TjtGMDUgunRVDlWdXW9VEcPygFzlnlAfjnpkA5oV0g3qR9PYj1PfM4U=\"}]},\"vaultDescriptorHash\":\"0fdc2aff1f51820a316854249842f12d09f038c9440361e336e44b3578ca31d2\"}"
+    },
+    {
+      "name": "btc-utxo-sign-change-at-source",
+      "description": "UTXO vault sign: input at vault address 2, change back to the same source address 2 (what vaultTxBuilderService does).",
+      "vector": "btc-p2wsh-dual-2of3",
+      "action": "enterprisevaultsign",
+      "keyDevice": "alice",
+      "input": {
+        "chain": "btc",
+        "orgIndex": 1337,
+        "vaultIndex": 3,
+        "vaultName": "Treasury",
+        "orgName": "Acme",
+        "recipients": [
+          {
+            "address": "bc1qzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3h8ffkz",
+            "amount": "60000"
+          }
+        ],
+        "fee": "1000",
+        "memo": "",
+        "rawUnsignedTx": "010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020c1aa010e8798584f0e015d6deb74bfbee154ef3a295cc872fc7dfb6f3a4a3f6300000000",
+        "inputDetails": [
+          {
+            "index": 0,
+            "addressIndex": 2,
+            "witnessScript": "54210228fd05bfb53af7d96ee23e7cad4d0f5ab2e502bc64619ff6132a567c447719c42102cf277f3aa4682c48443900ec354b16749368018c443fe63e24250286df3f30902102fa0e89fffb18cd4a3270f9e6cb73b4bdc9f5c5a47a0f2cb4bdd0230e0b725a822103047252ce5a1b15ef2732bcda9cbb7165a33abad1239395c941852dbce4cf74b8210347a787f32ad1a78032610fbd51475cca89b8e0c3de45a83308d8ac4d7f35753521036e9dcf6f7197ee9e642ee675ce182b5b584d88ed04c3edba3c4e200a97b7b04056ae",
+            "amount": "100000"
+          }
+        ],
+        "walletSignatures": [
+          "010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020c1aa010e8798584f0e015d6deb74bfbee154ef3a295cc872fc7dfb6f3a4a3f6300000000"
+        ],
+        "walletPubKey": "022222222222222222222222222222222222222222222222222222222222222222",
+        "requestId": "req-btc-utxo-sign-change-at-source",
+        "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+        "scriptType": 2,
+        "proposalRefs": {
+          "orgId": "66f1a0000000000000000001",
+          "vaultId": "66f1a0000000000000000101",
+          "proposalId": "66f1a0000000000000000a01"
+        },
+        "signingMode": "dual",
+        "vaultDescriptor": {
+          "v": 1,
+          "orgId": "66f1a0000000000000000001",
+          "vaultId": "66f1a0000000000000000101",
+          "orgIndex": 1337,
+          "vaultIndex": 3,
+          "chain": "btc",
+          "signingMode": "dual",
+          "requiredSigners": 2,
+          "members": [
+            {
+              "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+              "walletPubKey": "03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7",
+              "keyPubKey": "031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2",
+              "xpubWallet": "Zpub75p16zhwCDUbC4SMdwVLAckZTWvbrPABUwVTUxHrdgk7WnCtmjApfiS5srcifNfQA2ChfWgnXbiyxXEwvwcpkLumMmPW1xEGtsXUbusDLUT",
+              "xpubKey": "Zpub74yWPt1VPetGrNds4iXKVqvNvkNPXpk7hCftpXiDhZzCbXd6pKJqHDumBD2uyqvDUPEvPEARdX1eM9JyG7mXnSG5BaSSqUFMsqmijYWqDAy",
+              "walletXpubSignature": "H7rwTCsdSsY6Yi4I/67UAAHkV4PV31Bu8Bm9pH0a2A3mF8PvNoApyCoLZsaqVZKNq2vYhwd8GAii83CfupKJdwE=",
+              "keyXpubSignature": "H3sWZ32Bjcp2AK4uN+ZaVk1Olg9IIsdd7NHJxEA6hQg2Ee6Y+Rz3LpJJFkDjszG8Jgnfv8IUyff0we1LLMC6CoE="
+            },
+            {
+              "wkIdentity": "bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92",
+              "walletPubKey": "0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b",
+              "keyPubKey": "027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2",
+              "xpubWallet": "Zpub75iqQxPE94jgrtmmwxBE9tr91daHWf4mS38hSsUCgtUgpyQUtmMSA3AGwdyKXDbf6DQZDTNKaXnY3rHncF5PAVBBjhzrGYkQXWEy1e6CQ3o",
+              "xpubKey": "Zpub759sisv2Uk95BaWBnhAf47GbnyTCRhZpz3jGWiPn3kZc2bj6J6fJJDS3ddfE6qotz85EbNSaNNeyaDu3NTXSrMaj3t6ne9EJYpTj8PS5BJ3",
+              "walletXpubSignature": "H+20RIuei57HFNFcIaG24ozhb9TGtJS8B7t9L9KglTRJUOvh8PT62dDhSdKDU2vTJuNw6Ummzx/BTpua01pB4vo=",
+              "keyXpubSignature": "H8uSSb1NlmBJC+Kg2aT5g7sl7VdICNK6P77Kovo5qIwYMZvsMltCz9iXWoTVDeuYVHFi3SpFnOaCbtmIWIrhFjA="
+            },
+            {
+              "wkIdentity": "bc1qtupwzx3km505ydrhujmanv9a2exxk8053l8sayjj268v8mzux03sxlu73p",
+              "walletPubKey": "0330ad784b850182d092c9461f4165ed41f62c9bd1dbf021fa1977f2a3cc87929d",
+              "keyPubKey": "0379ec8a45918ac6c130e3cea7c856fef59a73786c0dc64d7de799bbf3ace8a99b",
+              "xpubWallet": "Zpub75bzN4Dbw3mvCjoEUcxcByU8gx9tukn5x4HymTaRrV31LW38DFnvUVgHc5uk6SifJMHNnT16N11ztdXeGp2otRvsfsY9kYmT3wfB1gG22Z9",
+              "xpubKey": "Zpub751WgohwZnP3fTVk5mBFRLTr6zNfZGrcWsvzwijxwoimdcuytx75dbzhC1QHqyhSaDRaYMtjRUBfGYwKKteGVENuyCBH9fF5D3J7N9s9kUJ",
+              "walletXpubSignature": "IIr3ZRiilL4XNWPnMm+dBGJA+KKAIzn8IsqMDi/RRKOUXnTEIeNoPx0lWI9z+X+Os3mSiwJh4HjfessFNn95C1o=",
+              "keyXpubSignature": "ICnoNC+FpZk6lc87ngqHH3Xp+RDHxqI6TjtGMDUgunRVDlWdXW9VEcPygFzlnlAfjnpkA5oV0g3qR9PYj1PfM4U="
+            }
+          ]
+        },
+        "vaultDescriptorHash": "0fdc2aff1f51820a316854249842f12d09f038c9440361e336e44b3578ca31d2"
+      },
+      "payload": "{\"chain\":\"btc\",\"orgIndex\":1337,\"vaultIndex\":3,\"vaultName\":\"Treasury\",\"orgName\":\"Acme\",\"recipients\":[{\"address\":\"bc1qzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3h8ffkz\",\"amount\":\"60000\"}],\"fee\":\"1000\",\"memo\":\"\",\"rawUnsignedTx\":\"010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020c1aa010e8798584f0e015d6deb74bfbee154ef3a295cc872fc7dfb6f3a4a3f6300000000\",\"inputDetails\":[{\"index\":0,\"addressIndex\":2,\"witnessScript\":\"54210228fd05bfb53af7d96ee23e7cad4d0f5ab2e502bc64619ff6132a567c447719c42102cf277f3aa4682c48443900ec354b16749368018c443fe63e24250286df3f30902102fa0e89fffb18cd4a3270f9e6cb73b4bdc9f5c5a47a0f2cb4bdd0230e0b725a822103047252ce5a1b15ef2732bcda9cbb7165a33abad1239395c941852dbce4cf74b8210347a787f32ad1a78032610fbd51475cca89b8e0c3de45a83308d8ac4d7f35753521036e9dcf6f7197ee9e642ee675ce182b5b584d88ed04c3edba3c4e200a97b7b04056ae\",\"amount\":\"100000\"}],\"walletSignatures\":[\"010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020c1aa010e8798584f0e015d6deb74bfbee154ef3a295cc872fc7dfb6f3a4a3f6300000000\"],\"walletPubKey\":\"022222222222222222222222222222222222222222222222222222222222222222\",\"requestId\":\"req-btc-utxo-sign-change-at-source\",\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"scriptType\":2,\"walletSignedHex\":\"010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea00000000000016001411111111111111111111111111111111111111115898000000000000220020c1aa010e8798584f0e015d6deb74bfbee154ef3a295cc872fc7dfb6f3a4a3f6300000000\",\"orgId\":\"66f1a0000000000000000001\",\"vaultId\":\"66f1a0000000000000000101\",\"proposalId\":\"66f1a0000000000000000a01\",\"signingMode\":\"dual\",\"vaultDescriptor\":{\"v\":1,\"orgId\":\"66f1a0000000000000000001\",\"vaultId\":\"66f1a0000000000000000101\",\"orgIndex\":1337,\"vaultIndex\":3,\"chain\":\"btc\",\"signingMode\":\"dual\",\"requiredSigners\":2,\"members\":[{\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"walletPubKey\":\"03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7\",\"keyPubKey\":\"031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2\",\"xpubWallet\":\"Zpub75p16zhwCDUbC4SMdwVLAckZTWvbrPABUwVTUxHrdgk7WnCtmjApfiS5srcifNfQA2ChfWgnXbiyxXEwvwcpkLumMmPW1xEGtsXUbusDLUT\",\"xpubKey\":\"Zpub74yWPt1VPetGrNds4iXKVqvNvkNPXpk7hCftpXiDhZzCbXd6pKJqHDumBD2uyqvDUPEvPEARdX1eM9JyG7mXnSG5BaSSqUFMsqmijYWqDAy\",\"walletXpubSignature\":\"H7rwTCsdSsY6Yi4I/67UAAHkV4PV31Bu8Bm9pH0a2A3mF8PvNoApyCoLZsaqVZKNq2vYhwd8GAii83CfupKJdwE=\",\"keyXpubSignature\":\"H3sWZ32Bjcp2AK4uN+ZaVk1Olg9IIsdd7NHJxEA6hQg2Ee6Y+Rz3LpJJFkDjszG8Jgnfv8IUyff0we1LLMC6CoE=\"},{\"wkIdentity\":\"bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92\",\"walletPubKey\":\"0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b\",\"keyPubKey\":\"027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2\",\"xpubWallet\":\"Zpub75iqQxPE94jgrtmmwxBE9tr91daHWf4mS38hSsUCgtUgpyQUtmMSA3AGwdyKXDbf6DQZDTNKaXnY3rHncF5PAVBBjhzrGYkQXWEy1e6CQ3o\",\"xpubKey\":\"Zpub759sisv2Uk95BaWBnhAf47GbnyTCRhZpz3jGWiPn3kZc2bj6J6fJJDS3ddfE6qotz85EbNSaNNeyaDu3NTXSrMaj3t6ne9EJYpTj8PS5BJ3\",\"walletXpubSignature\":\"H+20RIuei57HFNFcIaG24ozhb9TGtJS8B7t9L9KglTRJUOvh8PT62dDhSdKDU2vTJuNw6Ummzx/BTpua01pB4vo=\",\"keyXpubSignature\":\"H8uSSb1NlmBJC+Kg2aT5g7sl7VdICNK6P77Kovo5qIwYMZvsMltCz9iXWoTVDeuYVHFi3SpFnOaCbtmIWIrhFjA=\"},{\"wkIdentity\":\"bc1qtupwzx3km505ydrhujmanv9a2exxk8053l8sayjj268v8mzux03sxlu73p\",\"walletPubKey\":\"0330ad784b850182d092c9461f4165ed41f62c9bd1dbf021fa1977f2a3cc87929d\",\"keyPubKey\":\"0379ec8a45918ac6c130e3cea7c856fef59a73786c0dc64d7de799bbf3ace8a99b\",\"xpubWallet\":\"Zpub75bzN4Dbw3mvCjoEUcxcByU8gx9tukn5x4HymTaRrV31LW38DFnvUVgHc5uk6SifJMHNnT16N11ztdXeGp2otRvsfsY9kYmT3wfB1gG22Z9\",\"xpubKey\":\"Zpub751WgohwZnP3fTVk5mBFRLTr6zNfZGrcWsvzwijxwoimdcuytx75dbzhC1QHqyhSaDRaYMtjRUBfGYwKKteGVENuyCBH9fF5D3J7N9s9kUJ\",\"walletXpubSignature\":\"IIr3ZRiilL4XNWPnMm+dBGJA+KKAIzn8IsqMDi/RRKOUXnTEIeNoPx0lWI9z+X+Os3mSiwJh4HjfessFNn95C1o=\",\"keyXpubSignature\":\"ICnoNC+FpZk6lc87ngqHH3Xp+RDHxqI6TjtGMDUgunRVDlWdXW9VEcPygFzlnlAfjnpkA5oV0g3qR9PYj1PfM4U=\"}]},\"vaultDescriptorHash\":\"0fdc2aff1f51820a316854249842f12d09f038c9440361e336e44b3578ca31d2\"}"
+    },
+    {
+      "name": "btc-utxo-sign-other-vault-address",
+      "description": "NOT builder output: input at vault address 0, second output pays vault address 5. Both devices display it (Key: as a recipient; wallet: as vault address #5 in its change list).",
+      "vector": "btc-p2wsh-dual-2of3",
+      "action": "enterprisevaultsign",
+      "keyDevice": "alice",
+      "input": {
+        "chain": "btc",
+        "orgIndex": 1337,
+        "vaultIndex": 3,
+        "vaultName": "Treasury",
+        "orgName": "Acme",
+        "recipients": [
+          {
+            "address": "bc1qzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3h8ffkz",
+            "amount": "60000"
+          }
+        ],
+        "fee": "1000",
+        "memo": "",
+        "rawUnsignedTx": "010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea000000000000160014111111111111111111111111111111111111111158980000000000002200207a09ec68219dcfd6d081ad4c84ef65baedcd1696938b9c8c994724557f66f6a700000000",
+        "inputDetails": [
+          {
+            "index": 0,
+            "addressIndex": 0,
+            "witnessScript": "5421022301585244cbd3e61018ab718efe11631347804c038dbe1b7fbbe46b70e8a5102102524173dbf62af93e0a634d3989ab157348cf3d21b794ff925b64d61ed57a4f702102556230b75edf18914ee5e0752c834a415de33f31364599b1f0b75da844eded722103183b0a4a12c6739d10f3efa7e8aea6c3a43f4b0f3262050960081ca8a13f3f2d2103b7e38bd75bf5baf9a9e20614e624de3337415dea5ae3e0bfdbbb79b9d35c239a2103cd889b7551bfd784aaa8a061b6e0ad96748810945e004942b9e15428f91c0da756ae",
+            "amount": "100000"
+          }
+        ],
+        "walletSignatures": [
+          "010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea000000000000160014111111111111111111111111111111111111111158980000000000002200207a09ec68219dcfd6d081ad4c84ef65baedcd1696938b9c8c994724557f66f6a700000000"
+        ],
+        "walletPubKey": "022222222222222222222222222222222222222222222222222222222222222222",
+        "requestId": "req-btc-utxo-sign-other-vault-address",
+        "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+        "scriptType": 2,
+        "proposalRefs": {
+          "orgId": "66f1a0000000000000000001",
+          "vaultId": "66f1a0000000000000000101",
+          "proposalId": "66f1a0000000000000000a01"
+        },
+        "signingMode": "dual",
+        "vaultDescriptor": {
+          "v": 1,
+          "orgId": "66f1a0000000000000000001",
+          "vaultId": "66f1a0000000000000000101",
+          "orgIndex": 1337,
+          "vaultIndex": 3,
+          "chain": "btc",
+          "signingMode": "dual",
+          "requiredSigners": 2,
+          "members": [
+            {
+              "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+              "walletPubKey": "03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7",
+              "keyPubKey": "031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2",
+              "xpubWallet": "Zpub75p16zhwCDUbC4SMdwVLAckZTWvbrPABUwVTUxHrdgk7WnCtmjApfiS5srcifNfQA2ChfWgnXbiyxXEwvwcpkLumMmPW1xEGtsXUbusDLUT",
+              "xpubKey": "Zpub74yWPt1VPetGrNds4iXKVqvNvkNPXpk7hCftpXiDhZzCbXd6pKJqHDumBD2uyqvDUPEvPEARdX1eM9JyG7mXnSG5BaSSqUFMsqmijYWqDAy",
+              "walletXpubSignature": "H7rwTCsdSsY6Yi4I/67UAAHkV4PV31Bu8Bm9pH0a2A3mF8PvNoApyCoLZsaqVZKNq2vYhwd8GAii83CfupKJdwE=",
+              "keyXpubSignature": "H3sWZ32Bjcp2AK4uN+ZaVk1Olg9IIsdd7NHJxEA6hQg2Ee6Y+Rz3LpJJFkDjszG8Jgnfv8IUyff0we1LLMC6CoE="
+            },
+            {
+              "wkIdentity": "bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92",
+              "walletPubKey": "0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b",
+              "keyPubKey": "027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2",
+              "xpubWallet": "Zpub75iqQxPE94jgrtmmwxBE9tr91daHWf4mS38hSsUCgtUgpyQUtmMSA3AGwdyKXDbf6DQZDTNKaXnY3rHncF5PAVBBjhzrGYkQXWEy1e6CQ3o",
+              "xpubKey": "Zpub759sisv2Uk95BaWBnhAf47GbnyTCRhZpz3jGWiPn3kZc2bj6J6fJJDS3ddfE6qotz85EbNSaNNeyaDu3NTXSrMaj3t6ne9EJYpTj8PS5BJ3",
+              "walletXpubSignature": "H+20RIuei57HFNFcIaG24ozhb9TGtJS8B7t9L9KglTRJUOvh8PT62dDhSdKDU2vTJuNw6Ummzx/BTpua01pB4vo=",
+              "keyXpubSignature": "H8uSSb1NlmBJC+Kg2aT5g7sl7VdICNK6P77Kovo5qIwYMZvsMltCz9iXWoTVDeuYVHFi3SpFnOaCbtmIWIrhFjA="
+            },
+            {
+              "wkIdentity": "bc1qtupwzx3km505ydrhujmanv9a2exxk8053l8sayjj268v8mzux03sxlu73p",
+              "walletPubKey": "0330ad784b850182d092c9461f4165ed41f62c9bd1dbf021fa1977f2a3cc87929d",
+              "keyPubKey": "0379ec8a45918ac6c130e3cea7c856fef59a73786c0dc64d7de799bbf3ace8a99b",
+              "xpubWallet": "Zpub75bzN4Dbw3mvCjoEUcxcByU8gx9tukn5x4HymTaRrV31LW38DFnvUVgHc5uk6SifJMHNnT16N11ztdXeGp2otRvsfsY9kYmT3wfB1gG22Z9",
+              "xpubKey": "Zpub751WgohwZnP3fTVk5mBFRLTr6zNfZGrcWsvzwijxwoimdcuytx75dbzhC1QHqyhSaDRaYMtjRUBfGYwKKteGVENuyCBH9fF5D3J7N9s9kUJ",
+              "walletXpubSignature": "IIr3ZRiilL4XNWPnMm+dBGJA+KKAIzn8IsqMDi/RRKOUXnTEIeNoPx0lWI9z+X+Os3mSiwJh4HjfessFNn95C1o=",
+              "keyXpubSignature": "ICnoNC+FpZk6lc87ngqHH3Xp+RDHxqI6TjtGMDUgunRVDlWdXW9VEcPygFzlnlAfjnpkA5oV0g3qR9PYj1PfM4U="
+            }
+          ]
+        },
+        "vaultDescriptorHash": "0fdc2aff1f51820a316854249842f12d09f038c9440361e336e44b3578ca31d2"
+      },
+      "payload": "{\"chain\":\"btc\",\"orgIndex\":1337,\"vaultIndex\":3,\"vaultName\":\"Treasury\",\"orgName\":\"Acme\",\"recipients\":[{\"address\":\"bc1qzyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3h8ffkz\",\"amount\":\"60000\"}],\"fee\":\"1000\",\"memo\":\"\",\"rawUnsignedTx\":\"010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea000000000000160014111111111111111111111111111111111111111158980000000000002200207a09ec68219dcfd6d081ad4c84ef65baedcd1696938b9c8c994724557f66f6a700000000\",\"inputDetails\":[{\"index\":0,\"addressIndex\":0,\"witnessScript\":\"5421022301585244cbd3e61018ab718efe11631347804c038dbe1b7fbbe46b70e8a5102102524173dbf62af93e0a634d3989ab157348cf3d21b794ff925b64d61ed57a4f702102556230b75edf18914ee5e0752c834a415de33f31364599b1f0b75da844eded722103183b0a4a12c6739d10f3efa7e8aea6c3a43f4b0f3262050960081ca8a13f3f2d2103b7e38bd75bf5baf9a9e20614e624de3337415dea5ae3e0bfdbbb79b9d35c239a2103cd889b7551bfd784aaa8a061b6e0ad96748810945e004942b9e15428f91c0da756ae\",\"amount\":\"100000\"}],\"walletSignatures\":[\"010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea000000000000160014111111111111111111111111111111111111111158980000000000002200207a09ec68219dcfd6d081ad4c84ef65baedcd1696938b9c8c994724557f66f6a700000000\"],\"walletPubKey\":\"022222222222222222222222222222222222222222222222222222222222222222\",\"requestId\":\"req-btc-utxo-sign-other-vault-address\",\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"scriptType\":2,\"walletSignedHex\":\"010000000101010101010101010101010101010101010101010101010101010101010101010000000000ffffffff0260ea000000000000160014111111111111111111111111111111111111111158980000000000002200207a09ec68219dcfd6d081ad4c84ef65baedcd1696938b9c8c994724557f66f6a700000000\",\"orgId\":\"66f1a0000000000000000001\",\"vaultId\":\"66f1a0000000000000000101\",\"proposalId\":\"66f1a0000000000000000a01\",\"signingMode\":\"dual\",\"vaultDescriptor\":{\"v\":1,\"orgId\":\"66f1a0000000000000000001\",\"vaultId\":\"66f1a0000000000000000101\",\"orgIndex\":1337,\"vaultIndex\":3,\"chain\":\"btc\",\"signingMode\":\"dual\",\"requiredSigners\":2,\"members\":[{\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"walletPubKey\":\"03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7\",\"keyPubKey\":\"031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2\",\"xpubWallet\":\"Zpub75p16zhwCDUbC4SMdwVLAckZTWvbrPABUwVTUxHrdgk7WnCtmjApfiS5srcifNfQA2ChfWgnXbiyxXEwvwcpkLumMmPW1xEGtsXUbusDLUT\",\"xpubKey\":\"Zpub74yWPt1VPetGrNds4iXKVqvNvkNPXpk7hCftpXiDhZzCbXd6pKJqHDumBD2uyqvDUPEvPEARdX1eM9JyG7mXnSG5BaSSqUFMsqmijYWqDAy\",\"walletXpubSignature\":\"H7rwTCsdSsY6Yi4I/67UAAHkV4PV31Bu8Bm9pH0a2A3mF8PvNoApyCoLZsaqVZKNq2vYhwd8GAii83CfupKJdwE=\",\"keyXpubSignature\":\"H3sWZ32Bjcp2AK4uN+ZaVk1Olg9IIsdd7NHJxEA6hQg2Ee6Y+Rz3LpJJFkDjszG8Jgnfv8IUyff0we1LLMC6CoE=\"},{\"wkIdentity\":\"bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92\",\"walletPubKey\":\"0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b\",\"keyPubKey\":\"027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2\",\"xpubWallet\":\"Zpub75iqQxPE94jgrtmmwxBE9tr91daHWf4mS38hSsUCgtUgpyQUtmMSA3AGwdyKXDbf6DQZDTNKaXnY3rHncF5PAVBBjhzrGYkQXWEy1e6CQ3o\",\"xpubKey\":\"Zpub759sisv2Uk95BaWBnhAf47GbnyTCRhZpz3jGWiPn3kZc2bj6J6fJJDS3ddfE6qotz85EbNSaNNeyaDu3NTXSrMaj3t6ne9EJYpTj8PS5BJ3\",\"walletXpubSignature\":\"H+20RIuei57HFNFcIaG24ozhb9TGtJS8B7t9L9KglTRJUOvh8PT62dDhSdKDU2vTJuNw6Ummzx/BTpua01pB4vo=\",\"keyXpubSignature\":\"H8uSSb1NlmBJC+Kg2aT5g7sl7VdICNK6P77Kovo5qIwYMZvsMltCz9iXWoTVDeuYVHFi3SpFnOaCbtmIWIrhFjA=\"},{\"wkIdentity\":\"bc1qtupwzx3km505ydrhujmanv9a2exxk8053l8sayjj268v8mzux03sxlu73p\",\"walletPubKey\":\"0330ad784b850182d092c9461f4165ed41f62c9bd1dbf021fa1977f2a3cc87929d\",\"keyPubKey\":\"0379ec8a45918ac6c130e3cea7c856fef59a73786c0dc64d7de799bbf3ace8a99b\",\"xpubWallet\":\"Zpub75bzN4Dbw3mvCjoEUcxcByU8gx9tukn5x4HymTaRrV31LW38DFnvUVgHc5uk6SifJMHNnT16N11ztdXeGp2otRvsfsY9kYmT3wfB1gG22Z9\",\"xpubKey\":\"Zpub751WgohwZnP3fTVk5mBFRLTr6zNfZGrcWsvzwijxwoimdcuytx75dbzhC1QHqyhSaDRaYMtjRUBfGYwKKteGVENuyCBH9fF5D3J7N9s9kUJ\",\"walletXpubSignature\":\"IIr3ZRiilL4XNWPnMm+dBGJA+KKAIzn8IsqMDi/RRKOUXnTEIeNoPx0lWI9z+X+Os3mSiwJh4HjfessFNn95C1o=\",\"keyXpubSignature\":\"ICnoNC+FpZk6lc87ngqHH3Xp+RDHxqI6TjtGMDUgunRVDlWdXW9VEcPygFzlnlAfjnpkA5oV0g3qR9PYj1PfM4U=\"}]},\"vaultDescriptorHash\":\"0fdc2aff1f51820a316854249842f12d09f038c9440361e336e44b3578ca31d2\"}"
+    },
+    {
+      "name": "eth-evm-message-sign",
+      "description": "EVM vault message signing (enterprise_vault_sign_message): digest = EIP-191 hash of the message, Schnorr signer keys of vault address 0.",
+      "vector": "eth-evm-dual-1of2",
+      "action": "enterprisevaultsign",
+      "keyDevice": "alice",
+      "input": {
+        "chain": "eth",
+        "chainType": "evm",
+        "orgIndex": 1337,
+        "vaultIndex": 2,
+        "vaultName": "Ops",
+        "orgName": "Acme",
+        "recipients": [],
+        "fee": "0",
+        "memo": "",
+        "rawUnsignedTx": "0x24854ad4b53e0c6ae1272d4a1b365cad3b29101fbc5d24e434ccfeeaf17f066a",
+        "inputDetails": [
+          {
+            "index": 0,
+            "addressIndex": 0,
+            "amount": "0"
+          }
+        ],
+        "walletSignatures": [
+          "abababababababababababababababababababababababababababababababab"
+        ],
+        "walletPubKey": "033333333333333333333333333333333333333333333333333333333333333333",
+        "requestId": "req-eth-message",
+        "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+        "scriptType": 0,
+        "reservedKeyNonce": {
+          "kPublic": "024444444444444444444444444444444444444444444444444444444444444444",
+          "kTwoPublic": "035555555555555555555555555555555555555555555555555555555555555555"
+        },
+        "schnorrData": {
+          "sigOne": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+          "challenge": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef"
+        },
+        "vaultDescriptor": {
+          "v": 1,
+          "orgId": "66f1a0000000000000000001",
+          "vaultId": "66f1a0000000000000000103",
+          "orgIndex": 1337,
+          "vaultIndex": 2,
+          "chain": "eth",
+          "signingMode": "dual",
+          "requiredSigners": 1,
+          "members": [
+            {
+              "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+              "walletPubKey": "03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7",
+              "keyPubKey": "031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2",
+              "xpubWallet": "xpub6EcfARsCrbiQqFAtfYv6EByUy4Q49po8J11t9V7jXDnB5xnc7DvMcCebY2Py2hFwELQSLVdiurxziqjZHzkUTsBQWUMY9H5NDJMstKZx9Bu",
+              "xpubKey": "xpub6EXtpBPW64H9Jw1WCBiWVJb26Tx4QiYpkR8HrdqWKNbsiV9EN6cd3vG29ihrVamAe8quuMfSVDzAYsBHDubV9ZMN9nNwo8ogdGMzddbPWU9",
+              "walletXpubSignature": "INh7cYN9IjWxQyJLOwml+BWvQMsJDPw/s/Vor5qv458qMVRlNOReCpve6FfB5hPA3f40aHbd+gCNQf5WOD4TL6s=",
+              "keyXpubSignature": "HzdCoFCsTkOGyuSohY54nYsgNMkKMvxZBZRHv98EM1EJajNzrfxnUrbD0EJC+Z4PPHyGtminyl4Wt0G4dJ5SMfc="
+            },
+            {
+              "wkIdentity": "bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92",
+              "walletPubKey": "0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b",
+              "keyPubKey": "027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2",
+              "xpubWallet": "xpub6Dy3QKgcmyguHeXdqaVjPcr63cvUsufjCd1d99p95ncbSfNSGhgpR2ZY2SsUnQ4vKhnJ8rHEcTm4fDpeqUbHEeoHhGR74TnDkUqT5EwE1CE",
+              "xpubKey": "xpub6E9wUYp1x3PCYgtBWFkBM5t9t8qVTaopuHBPDP3j4AxJekexG53KZ5rCvJJFnUQqGGAznd2WRy5kwFjAYGaMG2vfZU78BZXMss9kZpcLQec",
+              "walletXpubSignature": "H8IW3uF1zr0Zm8Sj1WCb1Lxb7caAL3tY0Wc2qyUaeSIbRVAJTRBwFApWK8Tvy84Sx/dFlNkvGBwBgab1iysqi7U=",
+              "keyXpubSignature": "IIH2VAiPtO1tbK3QVZYS5rmDOCWATEThc53lXRMYlWd0fSovj3KERO1wap4Iw9bJm48iYMv+G8Es+xc5bk+JDm8="
+            }
+          ]
+        },
+        "vaultDescriptorHash": "8b744068b003a9472495009b15edd7654253e49f2bee92bc8e0dc4fff107bec6",
+        "signMessage": "Sign in to example.org\nNonce: 42",
+        "dappOrigin": "https://example.org",
+        "allSignerKeys": [
+          "02bb7ba96569896946a2ba2f9d29620cfd8fdde58292120fe27e9403fa921f28d4",
+          "0297d3c8863cc05be358226fb5c6d8d552110889d4e445ef31710be83d1cd6ed80",
+          "0238d61e5cae9ccf4fec70e9e02ab5513e7566177cd173551eee3c360db5be01bd",
+          "023ea143addef58bce32bbb748e793cfbc8dc96e6818d6320964aaf3c88068df5c"
+        ],
+        "allSignerNonces": [
+          {
+            "kPublic": "020101010101010101010101010101010101010101010101010101010101010101",
+            "kTwoPublic": "030101010101010101010101010101010101010101010101010101010101010101"
+          },
+          {
+            "kPublic": "020202020202020202020202020202020202020202020202020202020202020202",
+            "kTwoPublic": "030202020202020202020202020202020202020202020202020202020202020202"
+          },
+          {
+            "kPublic": "020303030303030303030303030303030303030303030303030303030303030303",
+            "kTwoPublic": "030303030303030303030303030303030303030303030303030303030303030303"
+          },
+          {
+            "kPublic": "020404040404040404040404040404040404040404040404040404040404040404",
+            "kTwoPublic": "030404040404040404040404040404040404040404040404040404040404040404"
+          }
+        ]
+      },
+      "payload": "{\"chain\":\"eth\",\"orgIndex\":1337,\"vaultIndex\":2,\"vaultName\":\"Ops\",\"orgName\":\"Acme\",\"recipients\":[],\"fee\":\"0\",\"memo\":\"\",\"rawUnsignedTx\":\"0x24854ad4b53e0c6ae1272d4a1b365cad3b29101fbc5d24e434ccfeeaf17f066a\",\"inputDetails\":[{\"index\":0,\"addressIndex\":0,\"amount\":\"0\"}],\"walletSignatures\":[\"abababababababababababababababababababababababababababababababab\"],\"walletPubKey\":\"033333333333333333333333333333333333333333333333333333333333333333\",\"requestId\":\"req-eth-message\",\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"scriptType\":0,\"reservedNonce\":{\"kPublic\":\"024444444444444444444444444444444444444444444444444444444444444444\",\"kTwoPublic\":\"035555555555555555555555555555555555555555555555555555555555555555\"},\"sigOne\":\"cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"challenge\":\"efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef\",\"vaultDescriptor\":{\"v\":1,\"orgId\":\"66f1a0000000000000000001\",\"vaultId\":\"66f1a0000000000000000103\",\"orgIndex\":1337,\"vaultIndex\":2,\"chain\":\"eth\",\"signingMode\":\"dual\",\"requiredSigners\":1,\"members\":[{\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"walletPubKey\":\"03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7\",\"keyPubKey\":\"031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2\",\"xpubWallet\":\"xpub6EcfARsCrbiQqFAtfYv6EByUy4Q49po8J11t9V7jXDnB5xnc7DvMcCebY2Py2hFwELQSLVdiurxziqjZHzkUTsBQWUMY9H5NDJMstKZx9Bu\",\"xpubKey\":\"xpub6EXtpBPW64H9Jw1WCBiWVJb26Tx4QiYpkR8HrdqWKNbsiV9EN6cd3vG29ihrVamAe8quuMfSVDzAYsBHDubV9ZMN9nNwo8ogdGMzddbPWU9\",\"walletXpubSignature\":\"INh7cYN9IjWxQyJLOwml+BWvQMsJDPw/s/Vor5qv458qMVRlNOReCpve6FfB5hPA3f40aHbd+gCNQf5WOD4TL6s=\",\"keyXpubSignature\":\"HzdCoFCsTkOGyuSohY54nYsgNMkKMvxZBZRHv98EM1EJajNzrfxnUrbD0EJC+Z4PPHyGtminyl4Wt0G4dJ5SMfc=\"},{\"wkIdentity\":\"bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92\",\"walletPubKey\":\"0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b\",\"keyPubKey\":\"027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2\",\"xpubWallet\":\"xpub6Dy3QKgcmyguHeXdqaVjPcr63cvUsufjCd1d99p95ncbSfNSGhgpR2ZY2SsUnQ4vKhnJ8rHEcTm4fDpeqUbHEeoHhGR74TnDkUqT5EwE1CE\",\"xpubKey\":\"xpub6E9wUYp1x3PCYgtBWFkBM5t9t8qVTaopuHBPDP3j4AxJekexG53KZ5rCvJJFnUQqGGAznd2WRy5kwFjAYGaMG2vfZU78BZXMss9kZpcLQec\",\"walletXpubSignature\":\"H8IW3uF1zr0Zm8Sj1WCb1Lxb7caAL3tY0Wc2qyUaeSIbRVAJTRBwFApWK8Tvy84Sx/dFlNkvGBwBgab1iysqi7U=\",\"keyXpubSignature\":\"IIH2VAiPtO1tbK3QVZYS5rmDOCWATEThc53lXRMYlWd0fSovj3KERO1wap4Iw9bJm48iYMv+G8Es+xc5bk+JDm8=\"}]},\"vaultDescriptorHash\":\"8b744068b003a9472495009b15edd7654253e49f2bee92bc8e0dc4fff107bec6\",\"signMessage\":\"Sign in to example.org\\nNonce: 42\",\"dappOrigin\":\"https://example.org\",\"allSignerKeys\":[\"02bb7ba96569896946a2ba2f9d29620cfd8fdde58292120fe27e9403fa921f28d4\",\"0297d3c8863cc05be358226fb5c6d8d552110889d4e445ef31710be83d1cd6ed80\",\"0238d61e5cae9ccf4fec70e9e02ab5513e7566177cd173551eee3c360db5be01bd\",\"023ea143addef58bce32bbb748e793cfbc8dc96e6818d6320964aaf3c88068df5c\"],\"allSignerNonces\":[{\"kPublic\":\"020101010101010101010101010101010101010101010101010101010101010101\",\"kTwoPublic\":\"030101010101010101010101010101010101010101010101010101010101010101\"},{\"kPublic\":\"020202020202020202020202020202020202020202020202020202020202020202\",\"kTwoPublic\":\"030202020202020202020202020202020202020202020202020202020202020202\"},{\"kPublic\":\"020303030303030303030303030303030303030303030303030303030303030303\",\"kTwoPublic\":\"030303030303030303030303030303030303030303030303030303030303030303\"},{\"kPublic\":\"020404040404040404040404040404040404040404040404040404040404040404\",\"kTwoPublic\":\"030404040404040404040404040404040404040404040404040404040404040404\"}]}"
+    },
+    {
+      "name": "flux-node-start-key-only",
+      "description": "Flux node start for a key_only P2SH vault: collateral at vault address 0.",
+      "vector": "flux-p2sh-key_only-2of3",
+      "action": "enterprisefluxnodestart",
+      "keyDevice": "alice",
+      "input": {
+        "chain": "flux",
+        "orgIndex": 1337,
+        "vaultIndex": 5,
+        "addressIndex": 0,
+        "nodeName": "node-1",
+        "collateralAmount": "100000000000",
+        "collateralAddress": "t3WhztxBDuzSbiaoXPWxuk6ojJ4akY8v3Ed",
+        "identityPubKey": "026666666666666666666666666666666666666666666666666666666666666666",
+        "collateralTxid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "collateralVout": 0,
+        "redeemScript": "5221023463446136e486146bc70bf817478cebadca20225c1988caf8dec64ebca4ed6121032b90b937734b02b65768c6542ab0155704b730ee9d719ffbbda249894435446c21038998198a46fc91a0d34a817da3c5d3c07fd5076db9b3831805dcba2f9d8dfda353ae",
+        "delegates": [],
+        "requestId": "req-flux-start",
+        "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+        "vaultDescriptor": {
+          "v": 1,
+          "orgId": "66f1a0000000000000000001",
+          "vaultId": "66f1a0000000000000000102",
+          "orgIndex": 1337,
+          "vaultIndex": 5,
+          "chain": "flux",
+          "signingMode": "key_only",
+          "requiredSigners": 2,
+          "members": [
+            {
+              "wkIdentity": "bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj",
+              "walletPubKey": "03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7",
+              "keyPubKey": "031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2",
+              "xpubWallet": "xpub6EBq6zJsamfvdgxqJCkgm3bEGRqpYTGWzj6V7hVUNXFcdovrDjbMwR2HoKykfyFpiGVLtQWGDJBKqr1L8hdU1J3PdysmLUPFo5sXFZNd4h6",
+              "xpubKey": "xpub6EkWC1VU58HiFsEuwBY2EhdgjMbs8MPgFvf4o7vyWtyRWDHLaAKRS9gCjk5fdWfRCKwuhe58disNdtLznxfMqxajGiFrexXpX6kAxPbG8g2",
+              "walletXpubSignature": "H4xRW0K14gaEwXN+qGuKGTPGiwlWFYR3paS3FgKZiV/SREr6N3E4YFuBqNV250kPRBMRacRy58uBJ9bMoAkGlyU=",
+              "keyXpubSignature": "H1fMUzVE4tV56GNO/DeTmhC+y/xoKi3P93wyBZ7ZTZTOG/LdKgEVIRjVjHuAfghZImzM/MohiXmpTX/vmsgJ1DY="
+            },
+            {
+              "wkIdentity": "bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92",
+              "walletPubKey": "0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b",
+              "keyPubKey": "027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2",
+              "xpubWallet": "xpub6DZJVJs83de4xA5QgT8Nqighhuk59s6rkkR32piRFKGjB6z1WffrMvmcmL3a4tv9PATnp9Ejeuztctsj8c14BdiqZFiEh2GrUrZ17UJ6E8G",
+              "xpubKey": "xpub6DdDGKWzTgeuZ15dAh693BD6dWZnbTtpzJceA8KNpN4y7dDFWjNGft67mV7NJ5UkaQhZSnWJhf7VHoj7bvwpkmhaYWDPK6bmHrQ674yyxXa",
+              "walletXpubSignature": "IIAfcbVB0+IYRYBqCnwQyKUHD3jJGrGveW6rp0Kd+IbHYFTUhTdpTTu2p6JSu+3N1IZXhfyyVLY78QSJ+Ndn1R0=",
+              "keyXpubSignature": "IOYbE/PDe/NiwM7JAF8+cHwSP5XM28TWMWY4wOj1Ddg8G2G4XHrM6iMUYY8/MWdSUYGE85lygIq80iN+CxTPy+k="
+            },
+            {
+              "wkIdentity": "bc1qtupwzx3km505ydrhujmanv9a2exxk8053l8sayjj268v8mzux03sxlu73p",
+              "walletPubKey": "0330ad784b850182d092c9461f4165ed41f62c9bd1dbf021fa1977f2a3cc87929d",
+              "keyPubKey": "0379ec8a45918ac6c130e3cea7c856fef59a73786c0dc64d7de799bbf3ace8a99b",
+              "xpubWallet": "xpub6F2JrqfK6K2NPjyEP5cx5wBVN1tJPJ6MpSaA4CK8E216BvCCKVnfeWB9tsd6pdw3fve74saWacxAEpHGpPSgEjkQtPp4PGdYpVfaepxcLRh",
+              "xpubKey": "xpub6DnuV49LrGMbeMmhwj5Bh7gp8fFkbV1t3PTtKbagc1aYGd6YBQnsnf4prLmZBSVhuqwXPScy3eXpqwAFX4nRbpEPiZ4qVAvwMDmCLKja5PK",
+              "walletXpubSignature": "ID6ss/npDbJqLkdXCbgzMhpGsC9XB5zb4/DvfmQ9KIR/QZXMHLIC+loeLl797Te5lyXiuPpCyaGg0hWM/s2nlf0=",
+              "keyXpubSignature": "H5CCJtUASWVQMQwo/SqW6FvnCzd+/i8gAf9gorETho2oTdF8yackqSy29ACmYCQ2c6L5tX4PYjw27winHyvBPn8="
+            }
+          ]
+        },
+        "vaultDescriptorHash": "2ce7c3e257cf2f159b9407467f7ce1c7369958a9a2b519d99c3a0c7e4dacea90"
+      },
+      "payload": "{\"chain\":\"flux\",\"orgIndex\":1337,\"vaultIndex\":5,\"addressIndex\":0,\"nodeName\":\"node-1\",\"collateralAmount\":\"100000000000\",\"collateralAddress\":\"t3WhztxBDuzSbiaoXPWxuk6ojJ4akY8v3Ed\",\"identityPubKey\":\"026666666666666666666666666666666666666666666666666666666666666666\",\"collateralTxid\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"collateralVout\":0,\"redeemScript\":\"5221023463446136e486146bc70bf817478cebadca20225c1988caf8dec64ebca4ed6121032b90b937734b02b65768c6542ab0155704b730ee9d719ffbbda249894435446c21038998198a46fc91a0d34a817da3c5d3c07fd5076db9b3831805dcba2f9d8dfda353ae\",\"delegates\":[],\"requestId\":\"req-flux-start\",\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"vaultDescriptor\":{\"v\":1,\"orgId\":\"66f1a0000000000000000001\",\"vaultId\":\"66f1a0000000000000000102\",\"orgIndex\":1337,\"vaultIndex\":5,\"chain\":\"flux\",\"signingMode\":\"key_only\",\"requiredSigners\":2,\"members\":[{\"wkIdentity\":\"bc1qh0lfymzve2s3why26nzf8lnjwpaaf5sw6gp2avq2csnch92zxessuxdfmj\",\"walletPubKey\":\"03e76a20521e890053733094c92d9e85cbcf13004c72fef7f262364495686d59c7\",\"keyPubKey\":\"031b28f9836afd85f60b0208bb32942bc0b3e60a80c7bc615b10ef67bbe0affbe2\",\"xpubWallet\":\"xpub6EBq6zJsamfvdgxqJCkgm3bEGRqpYTGWzj6V7hVUNXFcdovrDjbMwR2HoKykfyFpiGVLtQWGDJBKqr1L8hdU1J3PdysmLUPFo5sXFZNd4h6\",\"xpubKey\":\"xpub6EkWC1VU58HiFsEuwBY2EhdgjMbs8MPgFvf4o7vyWtyRWDHLaAKRS9gCjk5fdWfRCKwuhe58disNdtLznxfMqxajGiFrexXpX6kAxPbG8g2\",\"walletXpubSignature\":\"H4xRW0K14gaEwXN+qGuKGTPGiwlWFYR3paS3FgKZiV/SREr6N3E4YFuBqNV250kPRBMRacRy58uBJ9bMoAkGlyU=\",\"keyXpubSignature\":\"H1fMUzVE4tV56GNO/DeTmhC+y/xoKi3P93wyBZ7ZTZTOG/LdKgEVIRjVjHuAfghZImzM/MohiXmpTX/vmsgJ1DY=\"},{\"wkIdentity\":\"bc1qtmkrs96w2q3tadnj3jntmex2p2qntlt0yz7pcaat2uzqwl62msuqvcpk92\",\"walletPubKey\":\"0376047e9bc4e0612dce14cd554a32fe6fd363a06c7a4a95a5eebf016404141e0b\",\"keyPubKey\":\"027c53e066df211d437f2846926931499f6d9410eb289b247c6401de1a90a41db2\",\"xpubWallet\":\"xpub6DZJVJs83de4xA5QgT8Nqighhuk59s6rkkR32piRFKGjB6z1WffrMvmcmL3a4tv9PATnp9Ejeuztctsj8c14BdiqZFiEh2GrUrZ17UJ6E8G\",\"xpubKey\":\"xpub6DdDGKWzTgeuZ15dAh693BD6dWZnbTtpzJceA8KNpN4y7dDFWjNGft67mV7NJ5UkaQhZSnWJhf7VHoj7bvwpkmhaYWDPK6bmHrQ674yyxXa\",\"walletXpubSignature\":\"IIAfcbVB0+IYRYBqCnwQyKUHD3jJGrGveW6rp0Kd+IbHYFTUhTdpTTu2p6JSu+3N1IZXhfyyVLY78QSJ+Ndn1R0=\",\"keyXpubSignature\":\"IOYbE/PDe/NiwM7JAF8+cHwSP5XM28TWMWY4wOj1Ddg8G2G4XHrM6iMUYY8/MWdSUYGE85lygIq80iN+CxTPy+k=\"},{\"wkIdentity\":\"bc1qtupwzx3km505ydrhujmanv9a2exxk8053l8sayjj268v8mzux03sxlu73p\",\"walletPubKey\":\"0330ad784b850182d092c9461f4165ed41f62c9bd1dbf021fa1977f2a3cc87929d\",\"keyPubKey\":\"0379ec8a45918ac6c130e3cea7c856fef59a73786c0dc64d7de799bbf3ace8a99b\",\"xpubWallet\":\"xpub6F2JrqfK6K2NPjyEP5cx5wBVN1tJPJ6MpSaA4CK8E216BvCCKVnfeWB9tsd6pdw3fve74saWacxAEpHGpPSgEjkQtPp4PGdYpVfaepxcLRh\",\"xpubKey\":\"xpub6DnuV49LrGMbeMmhwj5Bh7gp8fFkbV1t3PTtKbagc1aYGd6YBQnsnf4prLmZBSVhuqwXPScy3eXpqwAFX4nRbpEPiZ4qVAvwMDmCLKja5PK\",\"walletXpubSignature\":\"ID6ss/npDbJqLkdXCbgzMhpGsC9XB5zb4/DvfmQ9KIR/QZXMHLIC+loeLl797Te5lyXiuPpCyaGg0hWM/s2nlf0=\",\"keyXpubSignature\":\"H5CCJtUASWVQMQwo/SqW6FvnCzd+/i8gAf9gorETho2oTdF8yackqSy29ACmYCQ2c6L5tX4PYjw27winHyvBPn8=\"}]},\"vaultDescriptorHash\":\"2ce7c3e257cf2f159b9407467f7ce1c7369958a9a2b519d99c3a0c7e4dacea90\"}"
+    }
+  ],
+  "rejections": [
+    {
+      "name": "vault-sign-pin-declined",
+      "action": "enterprisevaultsignrejected",
+      "requestId": "req-btc-utxo-sign-dual",
+      "errorCode": "VAULT_PIN_REFUSED",
+      "payload": "{\"requestId\":\"req-btc-utxo-sign-dual\",\"errorCode\":\"VAULT_PIN_REFUSED\"}"
+    },
+    {
+      "name": "vault-sign-plain-reject",
+      "action": "enterprisevaultsignrejected",
+      "requestId": "req-btc-utxo-sign-dual",
+      "errorCode": null,
+      "payload": "{\"requestId\":\"req-btc-utxo-sign-dual\"}"
+    },
+    {
+      "name": "vault-sign-descriptor-changed",
+      "action": "enterprisevaultsignrejected",
+      "requestId": "req-btc-utxo-sign-dual",
+      "errorCode": "VAULT_DESCRIPTOR_CHANGED",
+      "error": "Vault configuration changed",
+      "payload": "{\"requestId\":\"req-btc-utxo-sign-dual\",\"errorCode\":\"VAULT_DESCRIPTOR_CHANGED\",\"error\":\"Vault configuration changed\"}"
+    },
+    {
+      "name": "flux-start-descriptor-missing",
+      "action": "enterprisefluxnodestarted",
+      "requestId": "req-flux-start",
+      "errorCode": "VAULT_DESCRIPTOR_MISSING",
+      "error": "Request refused: Update required: vault descriptor missing",
+      "payload": "{\"requestId\":\"req-flux-start\",\"error\":\"Request refused: Update required: vault descriptor missing\",\"errorCode\":\"VAULT_DESCRIPTOR_MISSING\"}"
+    },
+    {
+      "name": "flux-start-user-rejected",
+      "action": "enterprisefluxnodestarted",
+      "requestId": "req-flux-start",
+      "errorCode": null,
+      "error": "User rejected",
+      "payload": "{\"requestId\":\"req-flux-start\",\"error\":\"User rejected\"}"
+    }
+  ]
+}

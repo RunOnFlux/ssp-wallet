@@ -16,6 +16,7 @@ import secureLocalStorage from 'react-secure-storage';
 import { getFingerprint } from '../lib/fingerprint';
 import { getScriptType } from '../lib/wallet';
 import { replenishWalletEnterpriseNonces } from '../lib/enterpriseNonces';
+import { attachRequiredWkAuth } from '../lib/relayRequestAuth';
 import { blockchains } from '@storage/blockchains';
 import {
   sspConfig,
@@ -52,7 +53,8 @@ export function useEnterpriseNotificationSync(): void {
   const { passwordBlob } = useAppSelector((state) => state.passwordBlob);
   const { sspWalletKeyInternalIdentity, sspWalletInternalIdentity } =
     useAppSelector((state) => state.sspState);
-  const { createWkIdentityAuth, isAuthAvailable } = useRelayAuth();
+  const { createWkIdentityAuth, createReadAuthHeaders, isAuthAvailable } =
+    useRelayAuth();
 
   const syncEnterpriseNotificationStatus = useCallback(async () => {
     if (!sspWalletKeyInternalIdentity || !isAuthAvailable || !passwordBlob) {
@@ -65,19 +67,16 @@ export function useEnterpriseNotificationSync(): void {
         wkIdentity: sspWalletKeyInternalIdentity,
       };
 
-      // Add authentication to request body
-      const auth = await createWkIdentityAuth(
-        'action',
-        sspWalletKeyInternalIdentity,
+      // Authentication is mandatory (RA-2): without it nothing is sent.
+      const signedStatusData = await attachRequiredWkAuth(
         statusData,
+        sspWalletKeyInternalIdentity,
+        createWkIdentityAuth,
       );
-      if (auth) {
-        Object.assign(statusData, auth);
-      }
 
       const response = await axios.post<EnterpriseNotificationStatusResponse>(
         `https://${sspConfig().relay}/v1/enterprise/subscription`,
-        statusData,
+        signedStatusData,
       );
 
       if (response.data?.status !== 'success' || !response.data?.data) {
@@ -171,18 +170,17 @@ export function useEnterpriseNotificationSync(): void {
             chains: chainsToSync,
           };
 
-          const subscribeAuth = await createWkIdentityAuth(
-            'action',
-            sspWalletKeyInternalIdentity,
+          // RA-2: never post the subscription unsigned — a missing auth
+          // throws here and the sync is retried on the next login.
+          const signedSubscribeData = await attachRequiredWkAuth(
             subscribeData,
+            sspWalletKeyInternalIdentity,
+            createWkIdentityAuth,
           );
-          if (subscribeAuth) {
-            Object.assign(subscribeData, subscribeAuth);
-          }
 
           await axios.post(
             `https://${sspConfig().relay}/v1/enterprise/subscribe`,
-            subscribeData,
+            signedSubscribeData,
           );
 
           console.log(
@@ -201,16 +199,27 @@ export function useEnterpriseNotificationSync(): void {
     // Non-blocking: check enterprise nonce pool and replenish if needed.
     // Runs independently of notification subscription status.
     try {
-      const nonceStatusRes = await axios.get(
-        `https://${sspConfig().relay}/v1/nonces/status/${sspWalletKeyInternalIdentity}`,
-      );
+      const readHeaders = (url: string) =>
+        createReadAuthHeaders('wk', sspWalletKeyInternalIdentity, url);
+      const nonceStatusUrl = `https://${sspConfig().relay}/v1/nonces/status/${sspWalletKeyInternalIdentity}`;
+      // RA-4: signed GET read of the nonce pool status.
+      const nonceStatusHeaders = await readHeaders(nonceStatusUrl);
+      const nonceStatusRes = await axios.get(nonceStatusUrl, {
+        ...(nonceStatusHeaders ? { headers: nonceStatusHeaders } : {}),
+      });
       const nonceData = nonceStatusRes.data as
         | { data?: { replenishNeeded?: { wallet?: boolean } } }
         | undefined;
       if (nonceData?.data?.replenishNeeded?.wallet) {
+        // The relay can only TRIGGER a replenish; the replenish itself runs
+        // under a cross-view Web Lock, merges into a fresh read of the pool
+        // and never resurrects burned nonces (H-19 / K2). RA-2/RA-4: the nonce
+        // POSTs and the status read are signed with the WK identity.
         replenishWalletEnterpriseNonces(
           sspWalletKeyInternalIdentity,
           passwordBlob,
+          false,
+          { createAuth: createWkIdentityAuth, readHeaders },
         ).catch((e) =>
           console.log(
             '[EnterpriseNotificationSync] Wallet nonce replenish error:',
@@ -230,6 +239,7 @@ export function useEnterpriseNotificationSync(): void {
     isAuthAvailable,
     passwordBlob,
     createWkIdentityAuth,
+    createReadAuthHeaders,
   ]);
 
   useEffect(() => {

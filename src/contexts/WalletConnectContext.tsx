@@ -17,6 +17,7 @@ import {
 import { useAppSelector } from '../hooks';
 import { useRelayAuth } from '../hooks/useRelayAuth';
 import { blockchains } from '@storage/blockchains';
+import { ethers } from 'ethers';
 import { cryptos } from '../types';
 import localForage from 'localforage';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +34,14 @@ import { sspConfig } from '@storage/ssp';
 import {
   buildPersonalSignPreimage,
   signMessageWithSchnorrMultisig,
+  verifyMultisigSignature,
 } from '../lib/evmSigning';
+import {
+  parseTypedData,
+  serializeTypedData,
+  typedDataChainId,
+  typedDataDigest,
+} from '../lib/typedData';
 import {
   ERC20_TRANSFER_SELECTOR,
   describeErc20Transfer,
@@ -42,6 +50,11 @@ import {
 import { useSocket } from '../hooks/useSocket';
 import { NoticeType } from 'antd/es/message/interface';
 import { switchToChain } from '../lib/chainSwitching';
+import {
+  assessVerifyContext,
+  isSessionAccount,
+  sessionAccountAddresses,
+} from '../components/WalletConnect/verifyContext';
 import { store, setWalletInUse } from '../store';
 import BigNumber from 'bignumber.js';
 
@@ -99,7 +112,9 @@ interface publicNonces {
  * - Input validation and error boundary handling
  *
  * 📋 SUPPORTED METHODS:
- * - personal_sign, eth_sign, eth_signTypedData (v3, v4)
+ * - personal_sign
+ * - eth_signTypedData_v3, eth_signTypedData_v4 (EIP-712 digest)
+ *   (eth_sign and the legacy eth_signTypedData are refused as unsupported)
  * - eth_sendTransaction
  * - wallet_switchEthereumChain, wallet_addEthereumChain
  * - eth_accounts, eth_requestAccounts, eth_chainId, net_version
@@ -110,6 +125,25 @@ interface publicNonces {
 
 // Static WalletConnect project ID - replace with your actual project ID from https://cloud.reown.com/
 const WALLETCONNECT_PROJECT_ID = '0fddbe43cb0cca6b6e0fcf9b5f4f0ff6';
+
+// Methods that sign or send for a specific account. Each is honoured only for
+// an account the user shared with the session (security review WEXT-6).
+const SIGNING_METHODS = [
+  'personal_sign',
+  'eth_signTypedData_v3',
+  'eth_signTypedData_v4',
+  'eth_sendTransaction',
+  'eth_signTransaction',
+];
+
+// Refused up front with "unsupported method" (EVM-12). eth_sign signs raw
+// bytes nobody can display, and the legacy eth_signTypedData (v1) uses a
+// different encoding. Typed data v3 / v4 is signed over the EIP-712 digest,
+// which SSP Key recomputes from the typed data it displays.
+const UNSUPPORTED_SIGNING_METHODS = ['eth_sign', 'eth_signTypedData'];
+
+// EIP-1193 "Unsupported Method".
+const UNSUPPORTED_METHOD_CODE = 4200;
 
 // Type definitions using WalletConnect types
 interface SessionMetadata {
@@ -139,6 +173,9 @@ interface SessionStruct {
 // Use WalletKitTypes for proper typing
 type SessionProposal = WalletKitTypes.SessionProposal;
 type SessionRequest = WalletKitTypes.SessionRequest;
+
+// What a consumer signing request asks SSP Key to sign.
+type SigningMessageType = 'personal' | 'eip712';
 
 // Transaction type for EVM operations
 interface EthereumTransaction {
@@ -265,6 +302,12 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         message: string;
         address: string;
         hideLoading: () => void;
+        messageType?: SigningMessageType;
+        // Set once the request went to SSP Key: the returned signature is
+        // checked against these before the dApp gets it.
+        digest?: string;
+        walletPubKey?: string;
+        keyPubKey?: string;
       }
     >
   >({});
@@ -338,6 +381,48 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     typeof WalletKit
   > | null>(null);
   const walletKitRef = useRef<InstanceType<typeof WalletKit> | null>(null);
+
+  // The session as WalletKit holds it NOW (React state can be stale inside
+  // the handlers WalletKit registered at init).
+  const getLiveSession = (topic: string): SessionStruct | undefined => {
+    try {
+      return walletKitRef.current?.getActiveSessions()?.[topic];
+    } catch {
+      return undefined;
+    }
+  };
+
+  /**
+   * Refuse a session request the user must never see (WEXT-5 / WEXT-6):
+   * - a requester the Verify API flags as a scam;
+   * - a signing request for an account that was not shared with the session.
+   * Returns the refusal reason, or null when the request may proceed.
+   */
+  const sessionRequestRefusal = (event: SessionRequest): string | null => {
+    const { topic, params } = event;
+    const session = getLiveSession(topic);
+    const assessment = assessVerifyContext(
+      event.verifyContext,
+      session?.peer?.metadata?.url,
+    );
+    if (assessment.status === 'scam') {
+      return t('home:walletconnect.request_blocked_scam');
+    }
+    const method = params.request.method;
+    if (SIGNING_METHODS.includes(method)) {
+      const address = extractAddressFromRequest(
+        method,
+        (params.request.params as unknown[]) ?? [],
+      );
+      if (
+        !session ||
+        !isSessionAccount(session.namespaces?.eip155?.accounts, address)
+      ) {
+        return t('home:walletconnect.account_not_in_session');
+      }
+    }
+    return null;
+  };
   const [activeSessions, setActiveSessions] = useState<
     Record<string, SessionStruct>
   >({});
@@ -422,6 +507,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
                   request.reject,
                   true, // isRetry flag to prevent showing loading message again
                   request.hideLoading, // Pass original hideLoading function
+                  request.messageType,
                 ).catch((error) => {
                   console.error(
                     '🔗 WalletConnect: Failed to retry signing after nonces received:',
@@ -930,18 +1016,39 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       timestamp: new Date().toISOString(),
     });
 
+    // eth_sign / eth_signTypedData*: not supported (see
+    // UNSUPPORTED_SIGNING_METHODS) — refused before anything is shown.
+    if (UNSUPPORTED_SIGNING_METHODS.includes(method)) {
+      console.warn('🔗 WalletConnect: Unsupported signing method:', method);
+      await walletKitRef.current?.respondSessionRequest({
+        topic,
+        response: formatJsonRpcError(id, {
+          code: UNSUPPORTED_METHOD_CODE,
+          message: t('home:walletconnect.unsupported_method', { method }),
+        }),
+      });
+      displayMessage(
+        'error',
+        t('home:walletconnect.unsupported_method', { method }),
+      );
+      return;
+    }
+
+    // Scam-flagged requesters and accounts outside the session are refused
+    // before anything is shown.
+    const refusal = sessionRequestRefusal(event);
+    if (refusal) {
+      console.warn('🔗 WalletConnect: Request refused:', { method, refusal });
+      await walletKitRef.current?.respondSessionRequest({
+        topic,
+        response: formatJsonRpcError(id, refusal),
+      });
+      displayMessage('error', refusal);
+      return;
+    }
+
     // For sensitive operations, check if chain switch is required and show user confirmation modal
-    if (
-      [
-        'personal_sign',
-        'eth_sign',
-        'eth_sendTransaction',
-        'eth_signTransaction',
-        'eth_signTypedData',
-        'eth_signTypedData_v3',
-        'eth_signTypedData_v4',
-      ].includes(method)
-    ) {
+    if (SIGNING_METHODS.includes(method)) {
       console.log(
         '🔗 WalletConnect: Showing user confirmation modal for sensitive operation:',
         method,
@@ -970,10 +1077,13 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           );
           console.log('💡 Each blockchain network has unique addresses');
 
-          // Get accounts for the currently active chain
+          // Only the accounts the user shared with THIS session (WEXT-6) —
+          // never every address the wallet holds.
+          const sessionAccounts =
+            getLiveSession(topic)?.namespaces?.eip155?.accounts;
           const chainFromSession = extractChainIdFromTopic(topic);
           if (chainFromSession) {
-            result = await getAccountsForChain(chainFromSession);
+            result = sessionAccountAddresses(sessionAccounts, chainFromSession);
             const chainConfig = Object.values(blockchains).find(
               (config) =>
                 config.chainType === 'evm' &&
@@ -987,9 +1097,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
               `💡 Note: These addresses are for ${chainConfig?.name || 'this chain'} network`,
             );
           } else {
-            result = await getUserAccounts();
+            result = sessionAccountAddresses(sessionAccounts);
             console.log(
-              '🔗 WalletConnect: Returning all user accounts across chains:',
+              '🔗 WalletConnect: Returning the session accounts:',
               result,
             );
             console.log(
@@ -1068,7 +1178,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
   // Extract chain ID from session topic (helper function)
   const extractChainIdFromTopic = (topic: string): number | null => {
     try {
-      const session = activeSessions[topic];
+      const session = getLiveSession(topic) ?? activeSessions[topic];
       if (session?.namespaces?.eip155?.chains?.[0]) {
         const chainString = session.namespaces.eip155.chains[0];
         const chainId = parseInt(chainString.split(':')[1]);
@@ -1098,6 +1208,13 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     });
 
     try {
+      // Re-check at approval time: never sign for a scam-flagged requester or
+      // for an account outside the session.
+      const approvalRefusal = sessionRequestRefusal(request);
+      if (approvalRefusal) {
+        throw new Error(approvalRefusal);
+      }
+
       // Check if chain switch is required at approval time (fresh check)
       let targetChainInfo: {
         chainKey: keyof cryptos;
@@ -1234,27 +1351,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           result = await handlePersonalSign(requestParams as [string, string]);
           break;
 
-        case 'eth_sign':
-          console.log('🔗 WalletConnect: Processing eth_sign approval');
-          result = await handleEthSign(requestParams as [string, string]);
-          break;
-
-        case 'eth_signTypedData':
-          console.log(
-            '🔗 WalletConnect: Processing typed data signing approval (base)',
-          );
-          // Original eth_signTypedData has parameter order: [typedData, address]
-          result = await handleSignTypedData(
-            requestParams as [unknown, string],
-          );
-          break;
-
         case 'eth_signTypedData_v3':
         case 'eth_signTypedData_v4':
-          console.log(
-            '🔗 WalletConnect: Processing typed data signing approval (v3/v4)',
-          );
-          // v3 and v4 have parameter order: [address, typedData]
+          console.log('🔗 WalletConnect: Processing typed data approval');
           result = await handleSignTypedData(
             requestParams as [string, unknown],
           );
@@ -1429,18 +1528,13 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       wkIdentity,
     };
 
-    // Add authentication if available (includes hash of request body)
-    try {
-      const auth = await createWkIdentityAuth('action', wkIdentity, data);
-      if (auth) {
-        Object.assign(data, auth);
-      }
-    } catch (error) {
-      console.warn(
-        '[postAction] Auth not available, sending without signature',
-        error,
-      );
+    // Relay auth is mandatory (RA-2): the relay refuses an unsigned action,
+    // so never send one.
+    const auth = await createWkIdentityAuth('action', wkIdentity, data);
+    if (!auth) {
+      throw new Error(t('home:wkSign.err_relay_auth'));
     }
+    Object.assign(data, auth);
 
     axios
       .post(`https://${sspConfig().relay}/v1/action`, data)
@@ -1485,7 +1579,25 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           );
 
           pendingRequest.hideLoading();
-          pendingRequest.resolve(signature);
+          // Only a signature the account contract accepts reaches the dApp.
+          // An SSP Key without typed-data support signs the JSON text
+          // instead of the EIP-712 digest, which fails here.
+          const { digest, walletPubKey, keyPubKey } = pendingRequest;
+          if (
+            digest &&
+            walletPubKey &&
+            keyPubKey &&
+            !verifyMultisigSignature(signature, digest, walletPubKey, keyPubKey)
+          ) {
+            const message =
+              pendingRequest.messageType === 'eip712'
+                ? t('home:walletconnect.typed_data_key_update')
+                : t('home:walletconnect.signing_failed');
+            pendingRequest.reject(new Error(message));
+            displayMessage('error', message);
+          } else {
+            pendingRequest.resolve(signature);
+          }
 
           // Clean up the pending request
           setPendingSigningRequests((prev) => {
@@ -1557,6 +1669,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     resolve: (signature: string) => void,
     reject: (error: Error) => void,
     hideLoading: () => void,
+    messageType: SigningMessageType = 'personal',
   ): Promise<publicNonces> => {
     // Check if we have stored nonces first
     const sspKeyPublicNonces: publicNonces[] =
@@ -1590,11 +1703,13 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         message,
         address,
         hideLoading,
+        messageType,
       },
     }));
 
-    // Request nonces from SSP relay - response will come via socket
-    postAction(
+    // Request nonces from SSP relay - response will come via socket. A
+    // request that cannot be authenticated fails here instead of waiting.
+    await postAction(
       'publicnoncesrequest',
       '[]',
       chainKey,
@@ -1606,7 +1721,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     throw new Error('WAITING_FOR_NONCES');
   };
 
-  // Unified signing function for both personal_sign and eth_sign
+  // Unified signing for personal_sign (message = EIP-191 preimage) and typed
+  // data (message = canonical EIP-712 JSON, signed over its digest).
   const handleUnifiedSigning = async (
     message: string,
     address: string,
@@ -1614,6 +1730,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     reject: (error: Error) => void,
     isRetry = false,
     retryHideLoading?: () => void,
+    messageType: SigningMessageType = 'personal',
   ): Promise<void> => {
     // Use provided hideLoading for retries, or create new one for initial requests
     const hideLoading =
@@ -1700,6 +1817,23 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
         currentActiveChain,
       ); // ssp key
 
+      // The digest both devices sign. Typed data is re-checked against the
+      // chain that is active now (it may have switched since approval).
+      let digest: string;
+      if (messageType === 'eip712') {
+        const payload = parseTypedData(message);
+        const chainId = typedDataChainId(payload);
+        if (
+          chainId !== null &&
+          chainId !== blockchains[currentActiveChain].chainId
+        ) {
+          throw new Error(t('home:walletconnect.typed_data_wrong_chain'));
+        }
+        digest = typedDataDigest(payload);
+      } else {
+        digest = ethers.solidityPackedKeccak256(['string'], [message]);
+      }
+
       console.log('🔗 WalletConnect: Getting public nonces from SSP key');
 
       try {
@@ -1712,6 +1846,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           resolve,
           reject,
           hideLoading || (() => {}),
+          messageType,
         );
 
         console.log(
@@ -1724,6 +1859,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           keyPair,
           publicKey2HEX,
           publicNoncesSSP,
+          messageType === 'eip712' ? digest : undefined,
         );
 
         console.log('🔗 WalletConnect: Local signature created:', {
@@ -1746,6 +1882,8 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
           chain: currentActiveChain,
           walletInUse: walletInUse,
           requestId: requestId,
+          // Absent for personal messages, so those requests are unchanged.
+          ...(messageType === 'eip712' ? { messageType } : {}),
         };
 
         console.log('🔗 WalletConnect: Signing request:', signingRequest);
@@ -1766,13 +1904,17 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
                 hideLoading();
               }
             },
+            messageType,
+            digest,
+            walletPubKey: keyPair.pubKey,
+            keyPubKey: publicKey2HEX,
           },
         }));
 
         console.log('🔗 WalletConnect: Sending signature request to SSP relay');
 
         // Send the signing request to SSP relay
-        postAction(
+        await postAction(
           'evmsigningrequest',
           JSON.stringify(signingRequest),
           currentActiveChain,
@@ -1858,47 +2000,30 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
     });
   };
 
-  // Eth sign with raw message (no prefix)
-  const handleEthSign = async (params: [string, string]): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const [address, message] = params; // Note: different parameter order
-
-      console.log('📋 Raw message signing (eth_sign):', {
-        message: message,
-        warning: 'NO EIP-191 prefix!',
-      });
-
-      handleUnifiedSigning(message, address, resolve, reject);
-    });
-  };
-
+  // eth_signTypedData_v3 / _v4: [address, typedData]. Signed over the EIP-712
+  // digest; SSP Key recomputes it from the canonical JSON it displays.
   const handleSignTypedData = async (
-    params: [string, unknown] | [unknown, string],
+    params: [string, unknown],
   ): Promise<string> => {
     return new Promise((resolve, reject) => {
-      let address: string;
-      let typedData: unknown;
-
-      // Handle different parameter orders for different eth_signTypedData versions
-      if (typeof params[0] === 'string') {
-        // v3/v4 format: [address, typedData]
-        [address, typedData] = params as [string, unknown];
-      } else {
-        // Original format: [typedData, address]
-        [typedData, address] = params as [unknown, string];
+      const [address, typedData] = params;
+      let canonical: string;
+      try {
+        canonical = serializeTypedData(parseTypedData(typedData));
+      } catch (error) {
+        console.error('🔐 Typed data rejected:', error);
+        reject(new Error(t('home:walletconnect.typed_data_invalid')));
+        return;
       }
-
-      // Convert typed data to string for signing (similar to personal_sign approach)
-      const typedDataString = JSON.stringify(typedData);
-
-      console.log('📋 Typed data signing:', {
+      handleUnifiedSigning(
+        canonical,
         address,
-        typedDataString: typedDataString.substring(0, 100) + '...',
-        fullLength: typedDataString.length,
-      });
-
-      // Use unified signing approach (similar to personal_sign)
-      handleUnifiedSigning(typedDataString, address, resolve, reject);
+        resolve,
+        reject,
+        false,
+        undefined,
+        'eip712',
+      );
     });
   };
 
@@ -2741,6 +2866,25 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
       throw new Error(t('home:walletconnect.walletconnect_not_initialized'));
     }
 
+    // Never connect a requester the Verify API flags as a scam (WEXT-5).
+    const proposalAssessment = assessVerifyContext(
+      proposal.verifyContext,
+      proposal.params.proposer.metadata.url,
+    );
+    if (proposalAssessment.status === 'scam') {
+      try {
+        await walletKitRef.current.rejectSession({
+          id: proposal.id,
+          reason: getSdkError('USER_REJECTED'),
+        });
+      } catch {
+        // proposal already gone
+      }
+      setPendingProposal(null);
+      displayMessage('error', t('home:walletconnect.request_blocked_scam'));
+      throw new Error(t('home:walletconnect.request_blocked_scam'));
+    }
+
     try {
       const evmChains = getEvmChains();
 
@@ -2808,13 +2952,11 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({
             'eth_accounts',
             'eth_requestAccounts',
             'eth_sendRawTransaction',
-            'eth_sign',
             'eth_signTransaction',
-            'eth_signTypedData',
-            'eth_signTypedData_v3',
-            'eth_signTypedData_v4',
             'eth_sendTransaction',
             'personal_sign',
+            'eth_signTypedData_v3',
+            'eth_signTypedData_v4',
             'wallet_switchEthereumChain',
             'wallet_addEthereumChain',
             'wallet_getPermissions',

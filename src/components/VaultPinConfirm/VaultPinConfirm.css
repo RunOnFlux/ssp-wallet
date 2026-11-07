@@ -1,0 +1,89 @@
+/* Vault descriptor pinning (VD): pin confirmation + status rows. */
+
+.vault-pin-box {
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.vault-pin-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 0;
+}
+
+.vault-pin-row-value {
+  text-align: right;
+  word-break: break-word;
+}
+
+.vault-pin-members {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.vault-pin-member {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-family: var(--ssp-mono);
+  font-size: 12px;
+  text-align: left;
+  word-break: break-all;
+  cursor: pointer;
+}
+
+.vault-pin-member:focus-visible {
+  outline: 2px solid #d97706;
+  outline-offset: 1px;
+}
+
+.vault-pin-member-you {
+  margin-left: 6px;
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.vault-descriptor-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.vault-descriptor-status-address {
+  font-family: var(--ssp-mono);
+  font-size: 11px;
+  word-break: break-all;
+}
+
+:root[data-theme='light'] .vault-pin-box,
+:root[data-theme='light'] .vault-pin-member {
+  background-color: #f5f5f4;
+}
+
+:root[data-theme='dark'] .vault-pin-box,
+:root[data-theme='dark'] .vault-pin-member {
+  background-color: #272524;
+}
+
+:root[data-theme='light'] .vault-descriptor-status {
+  background-color: #f0fdf4;
+  border: 1px solid #16a34a;
+}
+
+:root[data-theme='dark'] .vault-descriptor-status {
+  background-color: #0b1f12;
+  border: 1px solid #22c55e;
+}

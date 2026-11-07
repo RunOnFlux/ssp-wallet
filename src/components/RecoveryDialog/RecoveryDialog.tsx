@@ -11,6 +11,8 @@ const { Text } = Typography;
 
 export type RecoveryDialogStatus =
   | 'waiting'
+  /** Approved; the wallet is being re-encrypted (not closable). */
+  | 'securing'
   | 'approved'
   | 'denied'
   | 'timeout'
@@ -48,6 +50,7 @@ function RecoveryDialog({
   const { t } = useTranslation(['login', 'common']);
 
   const isBusy = status === 'waiting';
+  const isSecuring = status === 'securing';
   const isApproved = status === 'approved';
   const isFailure =
     status === 'denied' || status === 'timeout' || status === 'error';
@@ -57,8 +60,9 @@ function RecoveryDialog({
       title={t('login:recovery_dialog_title')}
       open={open}
       style={{ textAlign: 'center', top: 60 }}
-      onCancel={onClose}
-      closable={!isBusy && !isApproved}
+      onCancel={isSecuring ? undefined : onClose}
+      closable={!isBusy && !isApproved && !isSecuring}
+      keyboard={!isSecuring}
       maskClosable={false}
       footer={[]}
     >
@@ -88,6 +92,13 @@ function RecoveryDialog({
             )}
             <Spin />
             <Text type="secondary">{t('login:recovery_waiting')}</Text>
+          </>
+        )}
+        {isSecuring && (
+          <>
+            <Spin />
+            <Text>{t('login:recovery_securing')}</Text>
+            <Text type="secondary">{t('login:recovery_securing_hint')}</Text>
           </>
         )}
         {status === 'approved' && (
@@ -122,12 +133,12 @@ function RecoveryDialog({
               {t('common:retry')}
             </Button>
           )}
-          {!isApproved && (
+          {!isApproved && !isSecuring && (
             <Button size="middle" onClick={onClose}>
               {t('common:cancel')}
             </Button>
           )}
-          {!isApproved && onRestore && (
+          {!isApproved && !isSecuring && onRestore && (
             <Button type="link" size="small" onClick={onRestore}>
               {t('login:recovery_restore_instead')}
             </Button>

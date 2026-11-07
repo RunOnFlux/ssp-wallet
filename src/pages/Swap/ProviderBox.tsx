@@ -6,6 +6,7 @@ import { selectedExchangeType } from '../../types';
 import { formatCrypto } from '../../lib/currency';
 import { useAppSelector } from '../../hooks';
 import { getExchangeLogo } from '../../lib/exchangeLogos';
+import ProviderTags from './ProviderTags';
 function ProviderBox(props: {
   provider: selectedExchangeType;
   buySymbol: string;
@@ -23,7 +24,10 @@ function ProviderBox(props: {
           avatar={
             <div style={{ marginTop: '12px' }}>
               <Avatar
-                src={getExchangeLogo(providerFound?.name || '')}
+                src={getExchangeLogo(
+                  providerFound?.name || '',
+                  providerFound?.logo,
+                )}
                 size={30}
               />
             </div>
@@ -59,6 +63,7 @@ function ProviderBox(props: {
                       : ''}
                   </div>
                 </div>
+                <ProviderTags tags={providerFound?.tags} />
               </Flex>
             </>
           }

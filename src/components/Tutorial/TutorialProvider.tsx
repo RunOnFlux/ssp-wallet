@@ -29,6 +29,14 @@ import {
 import { blockchains } from '../../storage/blockchains';
 import { getFingerprint } from '../../lib/fingerprint';
 import { getScriptType } from '../../lib/wallet';
+import {
+  attachRequiredWkAuth,
+  RelayAuthUnavailableError,
+} from '../../lib/relayRequestAuth';
+import {
+  needsEmailReverification,
+  readEnterpriseWriteResponse,
+} from '../../lib/enterpriseSubscription';
 import WkSign from '../WkSign/WkSign';
 import type { WkSignResponse } from '../../lib/wkSign';
 import { cryptos } from '../../types';
@@ -49,14 +57,6 @@ const TutorialContext = createContext<TutorialContextType | undefined>(
 
 interface TutorialProviderProps {
   children: ReactNode;
-}
-
-interface EnterpriseNotificationApiResponse {
-  status: string;
-  data?: {
-    success: boolean;
-    message?: string;
-  };
 }
 
 export const TutorialProvider: React.FC<TutorialProviderProps> = ({
@@ -278,35 +278,48 @@ export const TutorialProvider: React.FC<TutorialProviderProps> = ({
         wkWitnessScript: result.witnessScript,
       };
 
-      // Add request authentication (required by middleware)
-      const auth = await createWkIdentityAuth(
-        'action',
-        sspWalletKeyInternalIdentity,
+      // Request authentication is required by the relay (RA-2): never send
+      // the subscription unsigned.
+      const signedBody = await attachRequiredWkAuth(
         requestBody,
+        sspWalletKeyInternalIdentity,
+        createWkIdentityAuth,
       );
-      if (auth) {
-        Object.assign(requestBody, auth);
-      }
 
       // Submit subscription with signatures
-      const response = await axios.post<EnterpriseNotificationApiResponse>(
+      const response = await axios.post<unknown>(
         `https://${sspConfig().relay}/v1/enterprise/subscribe`,
-        requestBody,
+        signedBody,
       );
 
-      if (response.data?.status === 'success' && response.data?.data?.success) {
+      const outcome = readEnterpriseWriteResponse(response.data);
+      if (outcome.ok) {
         await subscribeToEnterpriseNotifications(verifiedEmail);
         setEnterpriseSubscribed(true);
         toast.success(t('home:settings.sspEnterprise.subscribe_success'));
+      } else if (needsEmailReverification(outcome)) {
+        // H-21: the email's ownership proof expired or was already spent.
+        // Back to the email step so a new code can be requested.
+        setVerifiedEmail(null);
+        setEnterpriseVerificationCode('');
+        setRemainingAttempts(null);
+        setEnterpriseSubscriptionStep('email');
+        setEnterpriseError(
+          t('home:settings.sspEnterprise.err_email_verification_expired'),
+        );
       } else {
         setEnterpriseError(
-          response.data?.data?.message ||
+          outcome.serverMessage ||
             t('home:settings.sspEnterprise.err_subscribe'),
         );
       }
     } catch (error) {
       console.error('[Enterprise Subscribe]', error);
-      setEnterpriseError(t('home:settings.sspEnterprise.err_subscribe'));
+      setEnterpriseError(
+        error instanceof RelayAuthUnavailableError
+          ? t('home:settings.err_relay_auth')
+          : t('home:settings.sspEnterprise.err_subscribe'),
+      );
     } finally {
       setEnterpriseLoading(false);
     }

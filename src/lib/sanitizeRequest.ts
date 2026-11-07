@@ -80,7 +80,16 @@ export interface dataBgParams {
   signingDevice?: string;
   nodeName?: string;
   delegates?: string[];
+  // VD: vault descriptor (JSON object, verified on the device) + its hash
+  vaultDescriptor?: unknown;
+  vaultDescriptorHash?: string;
+  // VD-5 enterprise_vault_address
+  typeIndex?: number;
+  expectedAddress?: string;
 }
+
+/** Upper bound on a serialized vault descriptor (15 Solana members fit). */
+const MAX_VAULT_DESCRIPTOR_JSON_LENGTH = 200000;
 
 export interface dataBgRequest {
   method: string;
@@ -187,8 +196,30 @@ export function sanitizeRequest(request: bgRequest): bgRequest | null {
           console.log('Invalid tokenDecimals value:', paramValue);
           return null;
         }
-      } else if (key === 'addressIndex' || key === 'collateralVout') {
-        // Enterprise flux node start — non-negative integer
+      } else if (key === 'vaultDescriptor') {
+        // VD: the vault descriptor object (verified field by field on the
+        // device before anything uses it) — plain JSON object, bounded size.
+        if (typeof paramValue !== 'object' || Array.isArray(paramValue)) {
+          console.log('Invalid vaultDescriptor value');
+          return null;
+        }
+        let serialized: string;
+        try {
+          serialized = JSON.stringify(paramValue);
+        } catch {
+          console.log('Invalid vaultDescriptor value');
+          return null;
+        }
+        if (serialized.length > MAX_VAULT_DESCRIPTOR_JSON_LENGTH) {
+          console.log('Invalid vaultDescriptor length');
+          return null;
+        }
+      } else if (
+        key === 'addressIndex' ||
+        key === 'collateralVout' ||
+        key === 'typeIndex'
+      ) {
+        // Enterprise flux node start / vault address — non-negative integer
         if (
           typeof paramValue !== 'number' ||
           !Number.isInteger(paramValue) ||

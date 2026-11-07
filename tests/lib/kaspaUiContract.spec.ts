@@ -64,12 +64,19 @@ describe('EnterpriseVaultSignTx: Kaspa sign gate', () => {
     const source = read(
       'components/EnterpriseVaultSignTx/EnterpriseVaultSignTx.tsx',
     );
+    // handleSign re-checks the shared fail-closed gate (signDisabled) ...
     const handleSign = source.slice(source.indexOf('const handleSign'));
     const guard = handleSign.slice(0, handleSign.indexOf('signingRef.current'));
-    expect(guard).toContain('kasDecodePending');
-    expect(guard).toContain('kasSignBlocked');
-    expect(source).toContain(
-      'const kasSignBlocked = isKasChain && !!kasDecodeState?.error;',
+    expect(guard).toContain('if (signDisabled) return;');
+    // ... which is pending while the Kaspa decode runs ...
+    const pending = source.slice(source.indexOf('const signPending ='));
+    expect(pending.slice(0, pending.indexOf(';'))).toContain(
+      'kasDecodePending',
     );
+    // ... and blocked when it refused the proposal (decodedTx.error).
+    expect(source).toContain(
+      '...(kasDecodeState.error ? { error: kasDecodeState.error } : {}),',
+    );
+    expect(source).toContain('if (decodedTx?.error) return decodedTx.error;');
   });
 });

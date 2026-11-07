@@ -12,6 +12,7 @@ import {
   Popconfirm,
   Space,
   App,
+  Alert,
 } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { useTranslation } from 'react-i18next';
@@ -42,6 +43,7 @@ import {
   getMasterXpub,
   getScriptType,
   validateMnemonic,
+  DERIVABLE_WORD_COUNTS,
 } from '../../lib/wallet';
 import { encrypt as passworderEncrypt } from '@metamask/browser-passworder';
 import { NoticeType } from 'antd/es/message/interface';
@@ -102,6 +104,13 @@ function Restore() {
   const [localPasswordStrength, setLocalPasswordStrength] = useState('');
   const [mnemonic, setMnemonic] = useState<Uint8Array>(new Uint8Array());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // A phrase that fails the BIP-39 check waits here until the user confirms
+  // they want to restore it as it is.
+  const [nonStandardSeed, setNonStandardSeed] = useState<{
+    values: passwordForm;
+    invalidWords: string[];
+  } | null>(null);
+  const [nonStandardAck, setNonStandardAck] = useState(false);
   const [mnemonicShow, setMnemonicShow] = useState(false);
   const [WSPbackedUp, setWSPbackedUp] = useState(false);
   const [wspWasShown, setWSPwasShown] = useState(false);
@@ -275,7 +284,7 @@ function Restore() {
     });
   };
 
-  const onFinish = (values: passwordForm) => {
+  const onFinish = (values: passwordForm, acceptNonStandard = false) => {
     let seedPhrase = values.mnemonic.trim();
     if (!seedPhrase) {
       displayMessage('error', t('cr:err_enter_seed'));
@@ -292,20 +301,23 @@ function Restore() {
     }
     const isValid = validateMnemonic(seedPhrase);
     if (!isValid) {
-      // here show what word is not alright
-      // we check ONLY for english wordlist
-      const invalidWords = splittedSeed.filter(
-        (word) => !wordlist.includes(word),
-      );
-      if (invalidWords.length) {
-        displayMessage(
-          'error',
-          t('cr:err_seed_invalid_words', { words: invalidWords.join(', ') }),
-        );
-      } else {
+      // SSP only creates standard English BIP-39 phrases, but a phrase from
+      // another wallet (another wordlist, no valid checksum) still derives
+      // keys when its word count is a BIP-39 length. The user restores it
+      // only after an explicit confirmation; other lengths cannot derive.
+      if (!DERIVABLE_WORD_COUNTS.includes(splittedSeed.length)) {
         displayMessage('error', t('cr:err_seed_invalid'));
+        return;
       }
-      return;
+      if (!acceptNonStandard) {
+        // we check ONLY for english wordlist
+        const invalidWords = splittedSeed.filter(
+          (word) => !wordlist.includes(word),
+        );
+        setNonStandardAck(false);
+        setNonStandardSeed({ values, invalidWords });
+        return;
+      }
     }
 
     if (values.password.length < 8) {
@@ -655,6 +667,45 @@ function Restore() {
           {t('common:cancel')}
         </Button>
       </div>
+      <Modal
+        title={t('cr:nonstandard_seed_title')}
+        open={nonStandardSeed !== null}
+        onOk={() => {
+          const pending = nonStandardSeed;
+          setNonStandardSeed(null);
+          setNonStandardAck(false);
+          if (pending && nonStandardAck) onFinish(pending.values, true);
+        }}
+        onCancel={() => {
+          setNonStandardSeed(null);
+          setNonStandardAck(false);
+        }}
+        okText={t('cr:nonstandard_seed_continue')}
+        cancelText={t('common:cancel')}
+        okButtonProps={{ disabled: !nonStandardAck, danger: true }}
+        style={{ top: 60 }}
+      >
+        <Alert
+          type="warning"
+          showIcon
+          message={
+            nonStandardSeed?.invalidWords.length
+              ? t('cr:nonstandard_seed_words', {
+                  words: nonStandardSeed.invalidWords.join(', '),
+                })
+              : t('cr:nonstandard_seed_checksum')
+          }
+          description={t('cr:nonstandard_seed_desc')}
+          style={{ textAlign: 'left', marginBottom: 16 }}
+        />
+        <Checkbox
+          checked={nonStandardAck}
+          onChange={(e) => setNonStandardAck(e.target.checked)}
+          style={{ textAlign: 'left' }}
+        >
+          {t('cr:nonstandard_seed_ack')}
+        </Checkbox>
+      </Modal>
       <Modal
         title={t('cr:backup_wallet_seed')}
         open={isModalOpen}

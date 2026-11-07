@@ -10,6 +10,7 @@ import {
 } from '../../lib/ABEController.ts';
 
 import { useAppDispatch } from '../../hooks';
+import { exchangeLimits } from '../../lib/abeLimits';
 import {
   setSellAssets,
   setBuyAssets,
@@ -126,60 +127,17 @@ function ABEController() {
       });
       const sellAssetsWithLimits: { [key: string]: string[] } = {};
       sellAssets.forEach((asset) => {
-        let assetsPossibleToBeBought = [];
-        if (
-          // this actually may result in pairs that are not allowed in some rare cases, todo to be revisited later
-          asset.idchangeherofixlimit === null ||
-          asset.idchangeherofloatlimit === null ||
-          asset.idchangenowfloatlimit === null ||
-          asset.idchangenowfixlimit === null ||
-          asset.idchangellyfixlimit === null ||
-          asset.idchangellyfloatlimit === null ||
-          asset.idsimpleswapfixlimit === null ||
-          asset.idsimpleswapfloatlimit === null ||
-          asset.idxoswapfloatlimit === null ||
-          asset.idfusionfixlimit === null ||
-          asset.idexolixfloatlimit === null ||
-          asset.idexolixfixlimit === null
-        ) {
+        let assetsPossibleToBeBought: string[] = [];
+        const limits = exchangeLimits(asset);
+        // this actually may result in pairs that are not allowed in some rare cases, todo to be revisited later
+        if (limits.some((limit) => limit === null)) {
           assetsPossibleToBeBought = allBuyAssets;
         } else {
-          if (asset.idchangeherofixlimit) {
-            assetsPossibleToBeBought.push(...asset.idchangeherofixlimit);
-          }
-          if (asset.idchangeherofloatlimit) {
-            assetsPossibleToBeBought.push(...asset.idchangeherofloatlimit);
-          }
-          if (asset.idchangenowfixlimit) {
-            assetsPossibleToBeBought.push(...asset.idchangenowfixlimit);
-          }
-          if (asset.idchangenowfloatlimit) {
-            assetsPossibleToBeBought.push(...asset.idchangenowfloatlimit);
-          }
-          if (asset.idchangellyfixlimit) {
-            assetsPossibleToBeBought.push(...asset.idchangellyfixlimit);
-          }
-          if (asset.idchangellyfloatlimit) {
-            assetsPossibleToBeBought.push(...asset.idchangellyfloatlimit);
-          }
-          if (asset.idsimpleswapfixlimit) {
-            assetsPossibleToBeBought.push(...asset.idsimpleswapfixlimit);
-          }
-          if (asset.idsimpleswapfloatlimit) {
-            assetsPossibleToBeBought.push(...asset.idsimpleswapfloatlimit);
-          }
-          if (asset.idxoswapfloatlimit) {
-            assetsPossibleToBeBought.push(...asset.idxoswapfloatlimit);
-          }
-          if (asset.idfusionfixlimit) {
-            assetsPossibleToBeBought.push(...asset.idfusionfixlimit);
-          }
-          if (asset.idexolixfloatlimit) {
-            assetsPossibleToBeBought.push(...asset.idexolixfloatlimit);
-          }
-          if (asset.idexolixfixlimit) {
-            assetsPossibleToBeBought.push(...asset.idexolixfixlimit);
-          }
+          limits.forEach((limit) => {
+            if (limit) {
+              assetsPossibleToBeBought.push(...limit);
+            }
+          });
         }
         assetsPossibleToBeBought = [...new Set(assetsPossibleToBeBought)];
         const convertedAssetsPossibleToBeBought = assetsPossibleToBeBought.map(
@@ -195,59 +153,16 @@ function ABEController() {
       const buyAssetsWithLimits: { [key: string]: string[] } = {};
       buyAssets.forEach((asset) => {
         let assetsPossibleToBeSold: string[] = [];
-        if (
-          // this actually may result in pairs that are not allowed in some rare cases, todo to be revisited later
-          asset.idchangeherofixlimit === null ||
-          asset.idchangeherofloatlimit === null ||
-          asset.idchangenowfloatlimit === null ||
-          asset.idchangenowfixlimit === null ||
-          asset.idchangellyfixlimit === null ||
-          asset.idchangellyfloatlimit === null ||
-          asset.idsimpleswapfixlimit === null ||
-          asset.idsimpleswapfloatlimit === null ||
-          asset.idxoswapfloatlimit === null ||
-          asset.idfusionfixlimit === null ||
-          asset.idexolixfloatlimit === null ||
-          asset.idexolixfixlimit === null
-        ) {
+        const limits = exchangeLimits(asset);
+        // this actually may result in pairs that are not allowed in some rare cases, todo to be revisited later
+        if (limits.some((limit) => limit === null)) {
           assetsPossibleToBeSold = allSellAssets;
         } else {
-          if (asset.idchangeherofixlimit) {
-            assetsPossibleToBeSold.push(...asset.idchangeherofixlimit);
-          }
-          if (asset.idchangeherofloatlimit) {
-            assetsPossibleToBeSold.push(...asset.idchangeherofloatlimit);
-          }
-          if (asset.idchangenowfixlimit) {
-            assetsPossibleToBeSold.push(...asset.idchangenowfixlimit);
-          }
-          if (asset.idchangenowfloatlimit) {
-            assetsPossibleToBeSold.push(...asset.idchangenowfloatlimit);
-          }
-          if (asset.idchangellyfixlimit) {
-            assetsPossibleToBeSold.push(...asset.idchangellyfixlimit);
-          }
-          if (asset.idchangellyfloatlimit) {
-            assetsPossibleToBeSold.push(...asset.idchangellyfloatlimit);
-          }
-          if (asset.idsimpleswapfixlimit) {
-            assetsPossibleToBeSold.push(...asset.idsimpleswapfixlimit);
-          }
-          if (asset.idsimpleswapfloatlimit) {
-            assetsPossibleToBeSold.push(...asset.idsimpleswapfloatlimit);
-          }
-          if (asset.idxoswapfloatlimit) {
-            assetsPossibleToBeSold.push(...asset.idxoswapfloatlimit);
-          }
-          if (asset.idfusionfixlimit) {
-            assetsPossibleToBeSold.push(...asset.idfusionfixlimit);
-          }
-          if (asset.idexolixfloatlimit) {
-            assetsPossibleToBeSold.push(...asset.idexolixfloatlimit);
-          }
-          if (asset.idexolixfixlimit) {
-            assetsPossibleToBeSold.push(...asset.idexolixfixlimit);
-          }
+          limits.forEach((limit) => {
+            if (limit) {
+              assetsPossibleToBeSold.push(...limit);
+            }
+          });
         }
         assetsPossibleToBeSold = [...new Set(assetsPossibleToBeSold)];
         const convertedAssetsPossibleToBeSold = assetsPossibleToBeSold.map(

@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useSspLogo } from '../../../hooks/useSspLogo';
-import { Modal, QRCode, Space, Typography, Alert } from 'antd';
+import { Modal, QRCode, Space, Typography, Alert, Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
 import { SessionRequest } from '../types/modalTypes';
 import { useWalletConnect } from '../../../contexts/WalletConnectContext';
 import { blockchains } from '@storage/blockchains';
-import DappOrigin from '../../DappRequest/DappOrigin';
 import '../../DappRequest/DappRequest.css';
+import VerifiedDappOrigin from '../VerifiedDappOrigin';
+import {
+  assessVerifyContext,
+  isVerifyBlocked,
+  verifyNeedsAcknowledgement,
+} from '../verifyContext';
+import {
+  parseTypedData,
+  typedDataRisk,
+  type Eip712Payload,
+} from '../../../lib/typedData';
 
 const { Text, Paragraph } = Typography;
 
@@ -30,12 +40,18 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
   const { activeChain } = useAppSelector((state) => state.sspState);
   const [step, setStep] = useState<'approval' | 'qr'>('approval');
   const [isApproving, setIsApproving] = useState(false);
+  // Explicit acknowledgement of a Verify API domain mismatch (WEXT-5).
+  const [verifyAcknowledged, setVerifyAcknowledged] = useState(false);
+  // Typed data can authorise spending: the user confirms they understand.
+  const [riskAcknowledged, setRiskAcknowledged] = useState(false);
 
   // Reset to step 1 whenever a new request comes in
   useEffect(() => {
     if (request) {
       setStep('approval');
       setIsApproving(false);
+      setVerifyAcknowledged(false);
+      setRiskAcknowledged(false);
     }
   }, [request?.id]); // Reset when request ID changes
 
@@ -43,26 +59,32 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
 
   const method = request.params.request.method;
   const isTypedDataMethod = [
-    'eth_signTypedData',
     'eth_signTypedData_v3',
     'eth_signTypedData_v4',
   ].includes(method);
 
   if (!isTypedDataMethod) return null;
 
-  const requestParams = request.params.request.params as unknown[];
-
-  let address: string;
-  let typedData: unknown;
-
-  // Handle different parameter orders for different eth_signTypedData versions
-  if (method === 'eth_signTypedData') {
-    // Original format: [typedData, address]
-    [typedData, address] = requestParams as [unknown, string];
-  } else {
-    // v3/v4 format: [address, typedData]
-    [address, typedData] = requestParams as [string, unknown];
+  // v3/v4 parameter order: [address, typedData]
+  const [address, typedData] = request.params.request.params as [
+    string,
+    unknown,
+  ];
+  let payload: Eip712Payload | null = null;
+  try {
+    payload = parseTypedData(typedData);
+  } catch {
+    payload = null;
   }
+  const risk = payload ? typedDataRisk(payload) : null;
+  const domainName =
+    payload && typeof payload.domain.name === 'string'
+      ? payload.domain.name
+      : null;
+  const verifyingContract =
+    payload && typeof payload.domain.verifyingContract === 'string'
+      ? payload.domain.verifyingContract
+      : null;
 
   // Step 2 QR string - should contain the actual signingRequest object
   const qrString = externalSigningRequest
@@ -70,6 +92,7 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
     : '';
 
   const handleApprove = () => {
+    if (verifyBlocksApproval || !payload || !riskAcknowledged) return;
     if (step === 'approval') {
       setIsApproving(true);
       try {
@@ -92,8 +115,16 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
     }
   };
 
-  // Session peer metadata for the origin header (who is asking)
+  // Session peer metadata for the origin header (who is asking) — the name and
+  // icon are self-declared; the origin shown is the Verify API's.
   const peerMetadata = activeSessions[request.topic]?.peer?.metadata;
+  const verifyAssessment = assessVerifyContext(
+    request.verifyContext,
+    peerMetadata?.url,
+  );
+  const verifyBlocksApproval =
+    isVerifyBlocked(verifyAssessment) ||
+    (verifyNeedsAcknowledgement(verifyAssessment) && !verifyAcknowledged);
 
   // First step: Approval dialog
   if (step === 'approval') {
@@ -107,6 +138,10 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
         cancelText={t('home:walletconnect.reject')}
         cancelButtonProps={{ type: 'text' }}
         confirmLoading={isApproving}
+        okButtonProps={{
+          disabled: verifyBlocksApproval || !payload || !riskAcknowledged,
+          danger: verifyAssessment.status === 'invalid' || risk !== null,
+        }}
       >
         <div
           style={{
@@ -117,15 +152,46 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
             marginTop: 16,
           }}
         >
-          <DappOrigin
+          <VerifiedDappOrigin
+            assessment={verifyAssessment}
             name={peerMetadata?.name}
-            url={peerMetadata?.url}
             icon={peerMetadata?.icons?.[0]}
+            acknowledged={verifyAcknowledged}
+            onAcknowledge={setVerifyAcknowledged}
           />
 
           <p className="dapp-ask">
             {t('home:walletconnect.dapp_requests_typed_data_signature')}
           </p>
+
+          {payload ? (
+            <Alert
+              type={risk ? 'error' : 'warning'}
+              showIcon
+              message={t('home:walletconnect.typed_data_warning_title')}
+              description={
+                <>
+                  {risk === 'approval' && (
+                    <Paragraph strong style={{ marginBottom: 8 }}>
+                      {t('home:walletconnect.typed_data_approval_warning')}
+                    </Paragraph>
+                  )}
+                  {risk === 'order' && (
+                    <Paragraph strong style={{ marginBottom: 8 }}>
+                      {t('home:walletconnect.typed_data_order_warning')}
+                    </Paragraph>
+                  )}
+                  <Text>{t('home:walletconnect.typed_data_warning_desc')}</Text>
+                </>
+              }
+            />
+          ) : (
+            <Alert
+              type="error"
+              showIcon
+              message={t('home:walletconnect.typed_data_invalid')}
+            />
+          )}
 
           <div className="dapp-summary">
             <div className="dapp-summary-row">
@@ -136,6 +202,34 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
                 {address}
               </Text>
             </div>
+            {domainName && (
+              <div className="dapp-summary-row">
+                <span className="dapp-summary-label">
+                  {t('home:walletconnect.typed_data_domain')}
+                </span>
+                <span className="dapp-summary-value">{domainName}</span>
+              </div>
+            )}
+            {verifyingContract && (
+              <div className="dapp-summary-row">
+                <span className="dapp-summary-label">
+                  {t('home:walletconnect.typed_data_contract')}
+                </span>
+                <Text className="dapp-summary-value dapp-mono" copyable>
+                  {verifyingContract}
+                </Text>
+              </div>
+            )}
+            {payload && (
+              <div className="dapp-summary-row">
+                <span className="dapp-summary-label">
+                  {t('home:walletconnect.typed_data_type')}
+                </span>
+                <span className="dapp-summary-value dapp-mono">
+                  {payload.primaryType}
+                </span>
+              </div>
+            )}
             <div className="dapp-summary-row">
               <span className="dapp-summary-label">{t('common:network')}</span>
               <span className="dapp-summary-value">
@@ -180,11 +274,22 @@ const TypedDataSignModal: React.FC<TypedDataSignModalProps> = ({
             <Text
               className="dapp-payload"
               style={{ display: 'block' }}
-              copyable={{ text: JSON.stringify(typedData, null, 2) }}
+              copyable={{
+                text: JSON.stringify(payload?.message ?? typedData, null, 2),
+              }}
             >
-              {JSON.stringify(typedData, null, 2)}
+              {JSON.stringify(payload?.message ?? typedData, null, 2)}
             </Text>
           </div>
+
+          {payload && (
+            <Checkbox
+              checked={riskAcknowledged}
+              onChange={(e) => setRiskAcknowledged(e.target.checked)}
+            >
+              {t('home:walletconnect.typed_data_acknowledge')}
+            </Checkbox>
+          )}
 
           {/* Method footnote */}
           <Text type="secondary" style={{ fontSize: 11, lineHeight: 1.5 }}>

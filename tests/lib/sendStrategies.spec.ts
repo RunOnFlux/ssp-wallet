@@ -23,8 +23,78 @@ import {
   validateSolRecipient,
   computeSolAutoFee,
   computeSolMax,
+  solPaymasterFeeCapLamports,
+  assertSolPaymasterFeeWithinCap,
+  buildSolKeyActionPayload,
+  SOL_CONSUMER_MAX_FEE_LAMPORTS,
   type SolFeeSchedule,
 } from '../../src/lib/sendStrategies/sol';
+import {
+  effectiveMaxFeeUsd,
+  CONSUMER_FEE_USD_CEILING,
+} from '../../src/lib/sendStrategies/feeCap';
+
+describe('sendStrategies: consumer fee ceilings shared with the SSP Key', () => {
+  it('clamps the configured USD fee limit to the Key ceiling (USD 100)', () => {
+    expect(CONSUMER_FEE_USD_CEILING).toBe(100);
+    expect(effectiveMaxFeeUsd(50)).toBe(50);
+    expect(effectiveMaxFeeUsd(500)).toBe(100);
+    expect(effectiveMaxFeeUsd(undefined)).toBe(100);
+    expect(effectiveMaxFeeUsd(NaN)).toBe(100);
+    expect(effectiveMaxFeeUsd(-1)).toBe(100);
+  });
+
+  it('CHN-7: caps the Solana paymaster fee at min(0.05 SOL, USD limit)', () => {
+    // No price: absolute 0.05 SOL ceiling.
+    expect(solPaymasterFeeCapLamports(undefined, 100)).toBe(
+      BigInt(SOL_CONSUMER_MAX_FEE_LAMPORTS),
+    );
+    // SOL at $150: $100 = 0.66 SOL > 0.05 → 0.05 SOL.
+    expect(solPaymasterFeeCapLamports(150, 100)).toBe(50_000_000n);
+    // SOL at $10,000: $100 = 0.01 SOL < 0.05 → 0.01 SOL.
+    expect(solPaymasterFeeCapLamports(10_000, 100)).toBe(10_000_000n);
+    // A configured limit above $100 never exceeds the Key ceiling.
+    expect(solPaymasterFeeCapLamports(10_000, 1_000)).toBe(10_000_000n);
+  });
+
+  it('refuses a relay-inflated reimbursement (2 SOL) but accepts a real one', () => {
+    expect(() => assertSolPaymasterFeeWithinCap('2000000000')).toThrow(
+      /exceeds the maximum/,
+    );
+    // first send + SPL bump = 5.7M lamports
+    expect(() => assertSolPaymasterFeeWithinCap('5700000')).not.toThrow();
+    // A caller-supplied cap can only tighten, never loosen, the ceiling.
+    expect(() =>
+      assertSolPaymasterFeeWithinCap('60000000', 10n ** 18n),
+    ).toThrow();
+    expect(() => assertSolPaymasterFeeWithinCap('1.5')).toThrow(/Invalid/);
+  });
+});
+
+describe('sendStrategies: SOL Key payload (H-3 SOL-SPL)', () => {
+  it('keeps native SOL sends bare base64', () => {
+    expect(buildSolKeyActionPayload('AAAA')).toBe('AAAA');
+  });
+
+  it('adds splRecipientOwner + splMint for SPL sends', () => {
+    const payload = JSON.parse(
+      buildSolKeyActionPayload('AAAA', {
+        mint: 'MintBase58',
+        symbol: 'USDC',
+        decimals: 6,
+        recipientOwner: 'OwnerBase58',
+      }),
+    );
+    expect(payload).toEqual({
+      unsignedTxBase64: 'AAAA',
+      tokenMint: 'MintBase58',
+      tokenSymbol: 'USDC',
+      tokenDecimals: 6,
+      splRecipientOwner: 'OwnerBase58',
+      splMint: 'MintBase58',
+    });
+  });
+});
 
 describe('sendStrategies: step machine', () => {
   it('exposes the three steps in order', () => {

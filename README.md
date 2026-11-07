@@ -64,11 +64,11 @@ This design ensures that **both devices are required** to authorize any transact
 ### Encryption and Storage Security
 #### Sensitive Data:
 1. **Encryption Layers:**
-   - PBKDF2-based password derivation generates keys for AES-GCM encryption.
-   - Secondary encryption uses device and browser fingerprints to restrict data access to the originating environment.
+   - PBKDF2-based password derivation generates keys for AES-GCM encryption. This password layer is the at-rest protection.
+   - An outer layer (`react-secure-storage`) is keyed from browser/device fingerprint values. Treat it as obfuscation, not encryption: the fingerprint inputs are cached in plain `localStorage`, so anyone who can read the browser profile can recompute that key. See [SECURITY.md](SECURITY.md).
 2. **Local Data Management:**
    - Serialized sensitive data (e.g., keys, seeds) is stored as JSON blobs with base64-encoded fields (`data`, `iv`, and `salt`).
-   - This approach prevents brute-force attacks and unauthorized migration between devices.
+   - Brute-forcing a copied profile is limited by the password KDF, not by the fingerprint layer.
 
 #### Session Management:
 - Encrypted passwords are stored temporarily in session storage, ensuring convenience without compromising security.
@@ -175,7 +175,8 @@ By using SSP Wallet, you agree to the terms outlined in our [Terms of Service](h
 
 - **Built With:** React 19, TypeScript, Vite
 - **Node Version:** 24+
-- **Install Dependencies:** `yarn`
+- **Install Dependencies:** `yarn install --frozen-lockfile && yarn setup`
+  - `.yarnrc` disables dependency install scripts; `yarn setup` runs only the allowlisted ones (patch-package and the local LavaMoat plugin build). A new dependency with an install script makes `yarn setup` fail until it is added to `lavamoat.allowScripts` in `package.json`.
 - **Run Development Mode:** `yarn dev`
 - **Build and Pack for production:** `yarn build:all`
   - dist-zip folder now contains a packed zip build for chrome and firefox
@@ -218,19 +219,32 @@ Our security is a top priority. All critical components of the SSP ecosystem hav
 - **[Halborn Audit Report – SDK](https://github.com/RunOnFlux/ssp-wallet/blob/master/Account_Abstraction_Schnorr_MultiSig_SDK_SecAudit_HALBORN_2025.pdf)** (GitHub)  
 - **[Halborn Public Report – SDK](https://www.halborn.com/audits/influx-technologies/account-abstraction-schnorr-signatures-sdk)** (Halborn)  
 
-## 🛡️ Runtime Security Protection
+## 🛡️ Supply-Chain Hardening
 
-SSP Wallet implements **Vite Plugin LavaMoat** - a custom-built security framework that provides runtime compartmentalization and protection against supply chain attacks.
+What the production build enforces, precisely (details in
+[packages/vite-plugin-lavamoat/README.md](packages/vite-plugin-lavamoat/README.md)
+and [SECURITY.md](SECURITY.md)):
 
-### Key Features
-- **SES Lockdown Runtime**: Blocks dangerous APIs (`eval()`, `Function` constructor) and prevents prototype pollution
-- **Module Compartmentalization**: Each dependency runs in isolated sandboxes with policy-based access control  
-- **Supply Chain Protection**: 70+ packages protected with granular permission controls
-- **Production-Only**: Clean development experience with full security in production builds
+- **SES `lockdown()` on every extension page.** The real SES shim runs before any
+  bundle code on the popup, side panel, full-tab window and camera page. All
+  JavaScript intrinsics are frozen (no prototype pollution, no replacing
+  built-ins), and `eval`/`Function` are disabled.
+- **Committed LavaMoat policy, checked at build time.** The policy in
+  `security/vite-lavamoat-policy.json` is generated from the real bundle with
+  LavaMoat's analyser and lists, per package, the globals it uses and the
+  packages it imports. `yarn build` fails if a dependency starts using a global
+  or package the committed policy does not grant. After a reviewed dependency
+  change, run `yarn generate-policy` and commit the policy diff.
+- **Install scripts are off.** `.yarnrc` sets `ignore-scripts`; `yarn setup`
+  runs only the install scripts allowlisted in `package.json` (`lavamoat.allowScripts`).
+- **CSP.** Extension pages may only connect over `https:`/`wss:`.
+
+What it does **not** do: there are no per-package compartments at runtime. Every
+npm package in the UI bundle runs in the same realm as the wallet code, so a
+malicious dependency version could still reach keys in memory. The policy check
+is static analysis: it catches direct new uses of `fetch`, `chrome`, storage and
+so on, not deliberately obfuscated access.
 
 ### Security Verification
-Access the hidden security test page by clicking the version number in the footer **5 times within 1 second** to run comprehensive security tests including eval blocking, prototype pollution prevention, and WebAssembly protection.
-
-### LavaMoat Policy Management
-SSP Wallet uses **static LavaMoat policies** for maximum security following the principle of least privilege. Each of the 70+ packages receives only essential permissions via a curated security policy at `security/vite-lavamoat-policy.json`. When adding dependencies, run `npm run generate-policy` to update security permissions.
+Access the hidden security test page by clicking the version number in the footer **5 times within 1 second**. It shows the lockdown self-test results.
 

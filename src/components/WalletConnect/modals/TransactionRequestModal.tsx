@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Typography, Alert, Collapse, Tag, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../../../hooks';
@@ -6,7 +6,19 @@ import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../../../types';
 import { SessionRequest, EthereumTransaction } from '../types/modalTypes';
 import { useWalletConnect } from '../../../contexts/WalletConnectContext';
-import DappOrigin from '../../DappRequest/DappOrigin';
+import VerifiedDappOrigin from '../VerifiedDappOrigin';
+import {
+  assessVerifyContext,
+  isVerifyBlocked,
+  verifyNeedsAcknowledgement,
+} from '../verifyContext';
+import {
+  BLOCKED_SELECTORS,
+  calldataSelector,
+  checkEvmCallSafety,
+  isEmptyCalldata,
+  type EvmCallSafetyResult,
+} from '../../../lib/evmCallSafety';
 import '../../DappRequest/DappRequest.css';
 
 const { Text } = Typography;
@@ -25,8 +37,24 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
   const { t } = useTranslation(['home', 'common']);
   const { chainSwitchInfo, activeSessions } = useWalletConnect();
   const { activeChain } = useAppSelector((state) => state.sspState);
+  const targetChainKey: keyof cryptos =
+    chainSwitchInfo?.required && chainSwitchInfo.targetChain
+      ? chainSwitchInfo.targetChain.chainKey
+      : activeChain;
+  // This wallet's own smart-account addresses on the chain that would sign.
+  const targetChainWallets = useAppSelector(
+    (state) => state[targetChainKey]?.wallets,
+  );
   const [step] = useState<'approval'>('approval');
   const [isApproving, setIsApproving] = useState(false);
+  // Explicit acknowledgement of a Verify API domain mismatch (WEXT-5).
+  const [verifyAcknowledged, setVerifyAcknowledged] = useState(false);
+
+  // A new request never inherits the previous request's acknowledgement.
+  useEffect(() => {
+    setVerifyAcknowledged(false);
+    setIsApproving(false);
+  }, [request?.id]);
 
   if (!request || request.params.request.method !== 'eth_sendTransaction') {
     return null;
@@ -34,6 +62,42 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
 
   const requestParams = request.params.request.params as [EthereumTransaction];
   const [transaction] = requestParams;
+
+  // C-4 call safety (display + approve gate). The authoritative check runs
+  // again on the built user operation in constructAndSignEVMTransaction.
+  // A call whose target is one of this wallet's own accounts (self-call) or
+  // that carries an upgradeTo/upgradeToAndCall selector is refused.
+  const ownAddresses = [
+    transaction.from ?? '',
+    ...Object.values(targetChainWallets ?? {}).map(
+      (wallet) => (wallet as { address?: string }).address ?? '',
+    ),
+  ].filter((address) => !!address);
+  const selfAddress = ownAddresses.find(
+    (address) =>
+      !!transaction.to &&
+      address.toLowerCase() === transaction.to.toLowerCase(),
+  );
+  const callSafety: EvmCallSafetyResult = checkEvmCallSafety(
+    { target: transaction.to ?? '', data: transaction.data ?? '' },
+    selfAddress ?? transaction.from ?? '',
+  );
+  // A missing `to` (contract deployment) is not blocked here; self-call,
+  // upgrade selector and malformed data are.
+  const isBlocked = !!transaction.to && !callSafety.ok;
+  const blockedText =
+    callSafety.reason === 'self_call'
+      ? t('home:walletconnect_tx_modal.blocked_self_call')
+      : callSafety.reason === 'upgrade_selector'
+        ? t('home:walletconnect_tx_modal.blocked_upgrade')
+        : t('home:walletconnect_tx_modal.blocked_malformed');
+  const hasCalldata = !isEmptyCalldata(transaction.data);
+  let hasNativeValue = false;
+  try {
+    hasNativeValue = !!transaction.value && BigInt(transaction.value) > 0n;
+  } catch {
+    hasNativeValue = false;
+  }
 
   // Helper function to get currency symbol for chain
   const getChainCurrencySymbol = (chainKey: keyof cryptos): string => {
@@ -137,7 +201,15 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
       '0x3f4ba83a': { name: t('home:walletconnect_tx_modal.unpause') },
     };
 
-    const signature = data.substring(0, 10);
+    const signature = calldataSelector(data) ?? data.substring(0, 10);
+    if (BLOCKED_SELECTORS[signature]) {
+      return {
+        functionName: t('home:walletconnect_tx_modal.account_upgrade'),
+        signature,
+        isRecognized: false,
+        warning: t('home:walletconnect_tx_modal.blocked_upgrade'),
+      };
+    }
     const functionInfo = functionSignatures[signature];
 
     if (functionInfo) {
@@ -157,22 +229,24 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
     };
   };
 
-  // dApp identity for the origin header: prefer the session peer metadata,
-  // fall back to the verified origin from the request's verify context.
-  const getDAppInfo = () => {
-    const peerMetadata = request
-      ? activeSessions[request.topic]?.peer?.metadata
-      : undefined;
-    const verifiedOrigin = request?.verifyContext?.verified?.origin || '';
-    return {
-      name: peerMetadata?.name,
-      url: peerMetadata?.url || verifiedOrigin,
-      icon: peerMetadata?.icons?.[0],
-      isScam: !!request?.verifyContext?.verified?.isScam,
-    };
-  };
+  // WEXT-5: the requester shown is the origin the WalletConnect Verify API
+  // saw, not the peer's self-declared URL (name/icon are presentation only).
+  // A scam-listed origin is refused; a domain mismatch needs an explicit
+  // acknowledgement before Approve is enabled.
+  const peerMetadata = activeSessions[request.topic]?.peer?.metadata;
+  const verifyAssessment = assessVerifyContext(
+    request.verifyContext,
+    peerMetadata?.url,
+  );
+  const verifyBlocksApproval =
+    isVerifyBlocked(verifyAssessment) ||
+    (verifyNeedsAcknowledgement(verifyAssessment) && !verifyAcknowledged);
+  const approveDisabled = isBlocked || verifyBlocksApproval;
 
   const handleApprove = async () => {
+    // Fail closed: a blocked call (C-4) or an unverified / scam origin
+    // (WEXT-5) can only be rejected.
+    if (approveDisabled) return;
     if (step === 'approval') {
       // For eth_sendTransaction, directly call onApprove which navigates to SendEVM
       setIsApproving(true);
@@ -213,7 +287,6 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
 
   // Show approval dialog for eth_sendTransaction
   const decodedData = decodeTransactionData(transaction.data || '');
-  const dappInfo = getDAppInfo();
 
   return (
     <Modal
@@ -224,6 +297,10 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
       okText={t('home:walletconnect.approve')}
       cancelText={t('home:walletconnect.reject')}
       cancelButtonProps={{ type: 'text' }}
+      okButtonProps={{
+        disabled: approveDisabled,
+        danger: verifyAssessment.status === 'invalid',
+      }}
       confirmLoading={isApproving}
     >
       <div
@@ -235,24 +312,42 @@ const TransactionRequestModal: React.FC<TransactionRequestModalProps> = ({
           marginTop: 16,
         }}
       >
-        <DappOrigin
-          name={dappInfo.name}
-          url={dappInfo.url}
-          icon={dappInfo.icon}
+        <VerifiedDappOrigin
+          assessment={verifyAssessment}
+          name={peerMetadata?.name}
+          icon={peerMetadata?.icons?.[0]}
+          acknowledged={verifyAcknowledged}
+          onAcknowledge={setVerifyAcknowledged}
         />
 
-        {dappInfo.isScam && (
+        <p className="dapp-ask">
+          {t('home:walletconnect.dapp_requests_transaction')}
+        </p>
+
+        {/* C-4: self-call / account-upgrade / malformed calldata — refused. */}
+        {isBlocked && (
           <Alert
-            message={t('home:walletconnect.security_warning')}
-            description={t('home:walletconnect.connection_warning')}
+            message={t('home:walletconnect_tx_modal.blocked_title')}
+            description={blockedText}
             type="error"
             showIcon
           />
         )}
 
-        <p className="dapp-ask">
-          {t('home:walletconnect.dapp_requests_transaction')}
-        </p>
+        {/* Calldata is a contract call WHATEVER the value: never present a
+            value-carrying call as a plain transfer. */}
+        {!isBlocked && hasCalldata && hasNativeValue && (
+          <Alert
+            message={t('home:walletconnect_tx_modal.contract_call_with_value', {
+              value: formatCurrencyValue(
+                transaction.value || '0',
+                targetChainKey,
+              ),
+            })}
+            type="warning"
+            showIcon
+          />
+        )}
 
         {/* What the contract call does — shown before the raw facts */}
         {transaction.data && transaction.data !== '0x' && (

@@ -53,9 +53,12 @@ import {
 import {
   readRecoveryEnvelope,
   decryptRecoveryEnvelope,
-  advanceRecoveryIndex,
 } from '../../lib/recoveryEnvelope';
 import { requestRecovery, RecoveryError } from '../../lib/recoveryProtocol';
+import { discardOrphanedUnverifiedPairings } from '../../lib/chainSync';
+import { passwordVaultKeys, upgradeLegacyVaults } from '../../lib/vaultUpgrade';
+import { secureVaultStorage } from '../../lib/vaultStorage';
+import { secureWalletAfterRecovery } from '../../lib/recoveryRotation';
 import { sspConfig } from '@storage/ssp';
 
 import { blockchains, Token } from '@storage/blockchains';
@@ -266,35 +269,46 @@ function Login() {
         recoveryIndex: envelope.recoveryIndex,
         onVerificationWords: setRecoveryVerifyWords,
       });
-      if (recoveryCancelledRef.current || !mountedRef.current) return;
-
+      // No early return on cancel from here: SSP Key has released sk_r, so
+      // the index is spent and must be retired (below) either way.
       const plaintextRandomParams = await decryptRecoveryEnvelope({
         envelope,
         userPassword,
         skR,
       });
-      if (recoveryCancelledRef.current || !mountedRef.current) return;
 
-      // Re-encrypt randomParams under the fresh (drifted) fingerprint so
-      // the normal fingerprint-gated decrypt works on the next login.
-      // Safe to do even if user later cancels — writes only the opaque blob.
-      const freshFingerprint = getFingerprint('forRandomParams');
-      const newBlob = await passworderEncrypt(
-        freshFingerprint,
-        plaintextRandomParams,
-      );
+      // The exchange released sk_r for this index: from here on, run to a
+      // recoverable state even if the user cancelled meanwhile.
+      //  1. the recovered randomParams are saved under the fresh (drifted)
+      //     fingerprint FIRST, so the wallet unlocks locally whatever happens
+      //     next (an interrupted rotation included);
+      //  2. the spent recovery index is advanced;
+      //  3. randomParams are rotated (KEY-5 residual: the released key plus
+      //     the public recovery xpub may expose every envelope's outer layer)
+      //     with every blob re-encrypted in one verified all-or-nothing
+      //     commit — skipped when the user cancelled, because they may unlock
+      //     again with the step-1 state while a rotation is still running.
+      // The dialog shows progress and cannot be closed during step 3.
+      const rotate = !recoveryCancelledRef.current && mountedRef.current;
+      const { randomParams: effectiveRandomParams } =
+        await secureWalletAfterRecovery({
+          userPassword,
+          recoveredRandomParams: plaintextRandomParams,
+          freshFingerprint: getFingerprint('forRandomParams'),
+          rotate,
+          onStep: (step) => {
+            if (step === 'rotating' && mountedRef.current) {
+              setRecoveryStatus('securing');
+            }
+          },
+        });
       if (recoveryCancelledRef.current || !mountedRef.current) return;
-      secureLocalStorage.setItem('randomParams', newBlob);
-
-      // This index has been used, so step past it — the next envelope gets a
-      // fresh one.
-      advanceRecoveryIndex();
 
       setRecoveryStatus('approved');
       recoveryPasswordRef.current = '';
       // Hand off to the rest of the login flow by setting the combined
       // password — the existing useEffect on `password` picks it up.
-      setPassword(userPassword + plaintextRandomParams);
+      setPassword(userPassword + effectiveRandomParams);
       // Close the dialog shortly after showing the success state.
       setTimeout(() => {
         if (mountedRef.current) setRecoveryStatus(null);
@@ -324,6 +338,9 @@ function Login() {
   };
 
   const closeRecoveryDialog = () => {
+    // The wallet is being re-encrypted: the dialog stays until that commit
+    // finished (it is not closable then either).
+    if (recoveryStatus === 'securing') return;
     // Mark the in-flight recovery (if any) as cancelled so its resolution
     // callbacks won't re-open the dialog or drive the login forward.
     recoveryCancelledRef.current = true;
@@ -407,7 +424,7 @@ function Login() {
           dispatch(setActiveChain(identityChain));
           await localForage.setItem('activeChain', identityChain);
         }
-        decryptWallet();
+        await decryptWallet();
       }
     })();
   }, [password]);
@@ -423,7 +440,24 @@ function Login() {
     displayMessage('error', content);
   };
 
-  const decryptWallet = () => {
+  const decryptWallet = async () => {
+    // A pairing that never passed its verification gate (wallet closed while
+    // the code was on screen) must not come back as a finished pairing
+    // (security review H-4). Runs before any SSP Key xpub is read below.
+    // Pairings still in progress in another wallet view are left to it — and
+    // never read back here as finished.
+    const { discarded, pendingElsewhere } =
+      await discardOrphanedUnverifiedPairings();
+    if (discarded.length) {
+      console.log('[pairing] discarded unverified key xpubs:', discarded);
+    }
+    if (
+      pendingElsewhere.includes(identityChain) ||
+      pendingElsewhere.includes(activeChain)
+    ) {
+      failUnlock(t('login:err_pairing_in_progress'));
+      return;
+    }
     // get SSP identity keys
     const xpubEncryptedIdentity = secureLocalStorage.getItem(
       `xpub-48-${blockchainConfigIdentity.slip}-0-${getScriptType(
@@ -474,6 +508,26 @@ function Login() {
               });
             }
             dispatch(setPasswordBlob(pwBlob));
+            // The password is now proven. Re-encrypt any blob still at the
+            // legacy 10k PBKDF2 iterations at the current cost (WEXT-8).
+            // Background, verified and all-or-nothing; a failure leaves every
+            // blob exactly as it was.
+            const unlockedPassword = password;
+            void upgradeLegacyVaults(
+              secureVaultStorage(),
+              unlockedPassword,
+              passwordVaultKeys(),
+            )
+              .then(({ upgraded }) => {
+                if (upgraded.length) {
+                  console.log(
+                    `[vault] upgraded ${upgraded.length} legacy blob(s)`,
+                  );
+                }
+              })
+              .catch((error) => {
+                console.log('[vault] legacy upgrade skipped:', error);
+              });
             // generate ssp wallet internal identity
             const generatedSspWalletInternalIdentity =
               generateInternalIdentityAddress(xpubIdentity, identityChain);

@@ -90,7 +90,7 @@ afterEach(async () => {
 });
 
 describe('SSP Connect — Kaspa', () => {
-  it.each(['sign_message', 'sspwid_sign_message', 'wk_sign_message'])(
+  it.each(['sign_message', 'sspwid_sign_message'])(
     'rejects %s for kas',
     async (method) => {
       await request(method, { chain: 'kas', message: 'hello' });
@@ -101,6 +101,16 @@ describe('SSP Connect — Kaspa', () => {
       expect(ctx.message).toBe('');
     },
   );
+
+  it('rejects wk_sign_message for kas (the WK message policy refuses first)', async () => {
+    await request('wk_sign_message', { chain: 'kas', message: 'hello' });
+    expect(errors()).toHaveLength(1);
+    expect(errors()[0]).toMatch(
+      /^common:request_rejected: home:sspConnect\.(wk_message_refused|kas_message_unsupported)$/,
+    );
+    expect(ctx.type).toBe('');
+    expect(ctx.message).toBe('');
+  });
 
   it('rejects a kas payment that carries a message instead of dropping it', async () => {
     await request('pay', {

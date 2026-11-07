@@ -289,11 +289,7 @@ if (customData.startsWith('0x3593564c')) {
 - Hybrid communication (WebSocket + API)
 - EIP-191, EIP-712 compliance
 - Schnorr MultiSig integration
-
-// src/lib/walletConnectRelay.ts
-- API client for SSP Relay communication
-- Request/response handling with polling
-- Connection testing utilities
+- Signed relay requests (`/v1/action` posts and polls use WK relay auth)
 ```
 
 #### **Gas Estimation Enhancement**

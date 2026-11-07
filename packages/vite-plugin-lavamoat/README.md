@@ -1,419 +1,101 @@
-# vite-plugin-lavamoat
-
-> **Secure your Vite applications with LavaMoat runtime protection**
-
-A production-ready Vite plugin that integrates LavaMoat security features to protect your applications from prototype pollution, eval injection, and other JavaScript security vulnerabilities.
-
-## ✨ Features
-
-- 🔒 **Runtime Security** - Blocks `eval()`, `Function()` constructor, and dangerous globals
-- 🛡️ **Prototype Protection** - Prevents prototype pollution attacks
-- 🌐 **Global Scuttling** - Safely removes dangerous global methods
-- 💎 **Crypto-Safe** - Compatible with popular crypto libraries (ethers, viem, web3)
-- ⚙️ **Zero Config** - Works out of the box with secure defaults
-- 🎯 **TypeScript** - Full TypeScript support with type definitions
-- 📦 **Lightweight** - Minimal bundle impact (~8KB compressed)
-
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-npm install vite-plugin-lavamoat
-# or
-yarn add vite-plugin-lavamoat
-# or
-pnpm add vite-plugin-lavamoat
-```
-
-### Basic Usage
-
-```javascript
-// vite.config.js
-import { defineConfig } from 'vite';
-import { viteLavaMoat } from 'vite-plugin-lavamoat';
-
-export default defineConfig({
-  plugins: [
-    viteLavaMoat() // Zero configuration - secure by default!
-  ]
-});
-```
-
-That's it! Your application is now protected by LavaMoat security features.
-
-## 🔧 Configuration
-
-### Full Configuration Options
-
-```javascript
-// vite.config.js
-import { defineConfig } from 'vite';
-import { viteLavaMoat } from 'vite-plugin-lavamoat';
-
-export default defineConfig({
-  plugins: [
-    viteLavaMoat({
-      // Path to LavaMoat policy file
-      policyPath: './lavamoat-policy.json',
-      
-      // Enable diagnostic logging (useful for development)
-      diagnostics: process.env.NODE_ENV === 'development',
-      
-      // Enable SES lockdown
-      lockdown: true,
-      
-      // Enable policy auto-generation
-      generatePolicy: true,
-      
-      // Global scuttling configuration
-      scuttleGlobalThis: {
-        enabled: true,
-        exceptions: ['chrome', 'browser', 'global', 'self']
-      },
-      
-      // Modules to exclude from processing
-      exclude: ['@vite']
-    })
-  ]
-});
-```
-
-## 💼 Real-World Examples
-
-### Web3/DeFi Application
-
-```javascript
-// vite.config.js for a DeFi application
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { viteLavaMoat } from 'vite-plugin-lavamoat';
-
-export default defineConfig({
-  plugins: [
-    viteLavaMoat({
-      diagnostics: process.env.NODE_ENV === 'development',
-      
-      // Enable policy generation for dependencies
-      generatePolicy: true,
-      
-      // Preserve Web3 globals that DApps need
-      scuttleGlobalThis: {
-        enabled: true,
-        exceptions: ['ethereum', 'web3', 'WalletConnect']
-      }
-    }),
-    react()
-  ],
-  
-  define: {
-    global: 'globalThis' // Required for many crypto libraries
-  }
-});
-```
-
-### Enterprise Application
-
-```javascript
-// vite.config.js for enterprise app with legacy dependencies
-import { defineConfig } from 'vite';
-import { viteLavaMoat } from 'vite-plugin-lavamoat';
-
-export default defineConfig({
-  plugins: [
-    viteLavaMoat({
-      policyPath: './security/enterprise-policy.json',
-      
-      // Enable policy generation
-      generatePolicy: true,
-      
-      // Modules to exclude from processing
-      exclude: [
-        'legacy-jquery-plugin',
-        '@company/old-internal-lib'
-      ],
-      
-      scuttleGlobalThis: {
-        enabled: true,
-        exceptions: [
-          'jQuery', '$', // Legacy jQuery
-          'companyGlobalConfig'
-        ]
-      }
-    })
-  ]
-});
-```
-
-### Browser Extension
-
-```javascript
-// vite.config.js for browser extension
-import { defineConfig } from 'vite';
-import { viteLavaMoat } from 'vite-plugin-lavamoat';
-
-export default defineConfig({
-  plugins: [
-    viteLavaMoat({
-      // Extensions have their own isolation
-      scuttleGlobalThis: {
-        enabled: true,
-        exceptions: ['chrome', 'browser']
-      },
-      
-      // Enable policy generation
-      generatePolicy: true,
-      
-      exclude: [
-        'background-script',
-        'content-script'
-      ]
-    })
-  ],
-  
-  build: {
-    rollupOptions: {
-      input: {
-        popup: 'src/popup.html',
-        background: 'src/background.ts',
-        content: 'src/content.ts'
-      }
-    }
-  }
-});
-```
-
-## 🧪 Testing Security
-
-The plugin automatically exposes security testing functions:
-
-### Browser Console Testing
-
-```javascript
-// Check if LavaMoat is active
-console.log('LavaMoat Status:', window.__lavamoat_security_active);
-
-// Run comprehensive security tests
-const results = window.__lavamoat_run_security_tests();
-console.table(results);
-
-// Test individual protections
-try {
-  eval('console.log("Should be blocked")');
-} catch (e) {
-  console.log('✅ eval() blocked:', e.message);
-}
-
-try {
-  new Function('return 42')();
-} catch (e) {
-  console.log('✅ Function constructor blocked:', e.message);
-}
-
-try {
-  Object.prototype.polluted = 'hack';
-} catch (e) {
-  console.log('✅ Prototype pollution blocked:', e.message);
-}
-```
-
-### Automated Testing
-
-```javascript
-// In your test files (Jest, Vitest, etc.)
-describe('LavaMoat Security Tests', () => {
-  test('should be active', () => {
-    expect(window.__lavamoat_security_active).toBe(true);
-  });
-
-  test('should pass all security tests', () => {
-    const results = window.__lavamoat_run_security_tests();
-    const failures = results.filter(r => r.type === 'fail');
-    expect(failures).toHaveLength(0);
-  });
-
-  test('should block eval', () => {
-    expect(() => eval('1+1')).toThrow(/blocked by LavaMoat/);
-  });
-
-  test('should block Function constructor', () => {
-    expect(() => new Function('return 1')).toThrow(/blocked by LavaMoat/);
-  });
-
-  test('should prevent prototype pollution', () => {
-    expect(() => {
-      Object.prototype.polluted = 'test';
-    }).toThrow();
-  });
-});
-```
-
-## 📋 Policy Configuration
-
-### Basic Policy File (lavamoat-policy.json)
-
-```json
-{
-  "resources": {
-    "app": {
-      "packageName": "app",
-      "globals": {
-        "console": true,
-        "crypto": true,
-        "fetch": true,
-        "localStorage": true,
-        "sessionStorage": true,
-        "document": true,
-        "window": true
-      },
-      "packages": {},
-      "builtins": {}
-    },
-    "crypto-libs": {
-      "packageName": "crypto-libs",
-      "globals": {
-        "crypto": true,
-        "Math": true,
-        "ArrayBuffer": true,
-        "Uint8Array": true,
-        "DataView": true,
-        "Buffer": true
-      },
-      "packages": {},
-      "builtins": {}
-    }
-  }
-}
-```
-
-### Advanced Policy with Dependencies
-
-```json
-{
-  "resources": {
-    "viem": {
-      "packageName": "viem",
-      "globals": {
-        "crypto": true,
-        "fetch": true,
-        "console": true
-      },
-      "packages": {
-        "@noble/hashes": true,
-        "@noble/curves": true
-      },
-      "builtins": {}
-    },
-    "react-app": {
-      "packageName": "react-app",
-      "globals": {
-        "console": true,
-        "document": true,
-        "window": true,
-        "localStorage": true,
-        "fetch": true
-      },
-      "packages": {
-        "react": true,
-        "react-dom": true
-      },
-      "builtins": {}
-    }
-  }
-}
-```
-
-## ⚡ Performance
-
-- **Bundle Size**: ~8KB compressed runtime
-- **Initialization**: <5ms overhead
-- **Memory Usage**: <1MB additional footprint
-- **Zero Build Impact**: No build-time performance penalty
-
-### Optimization Tips
-
-```javascript
-// Minimal configuration for best performance
-viteLavaMoat({
-  diagnostics: false, // Disable in production
-  scuttleGlobalThis: {
-    enabled: true,
-    exceptions: [] // Keep minimal
-  }
-})
-```
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Q: "Module not found" errors after adding LavaMoat**
-```javascript
-// Solution: Add problematic modules to skipModules
-viteLavaMoat({
-  skipModules: ['problematic-module']
-})
-```
-
-**Q: Crypto library errors**
-```javascript
-// Solution: Add to exclude array if causing issues
-viteLavaMoat({
-  exclude: ['your-crypto-lib']
-})
-```
-
-**Q: Global variable undefined**
-```javascript
-// Solution: Add to scuttleGlobalThis exceptions
-viteLavaMoat({
-  scuttleGlobalThis: {
-    enabled: true,
-    exceptions: ['yourGlobalVar']
-  }
-})
-```
-
-**Q: Bundle too large**
-```javascript
-// Solution: Use minimal configuration
-viteLavaMoat({
-  diagnostics: false,
-  scuttleGlobalThis: { enabled: true, exceptions: [] }
-})
-```
-
-## 📚 API Reference
-
-### `viteLavaMoat(options?)`
-
-Main plugin function.
-
-#### Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `policyPath` | `string` | `'./lavamoat-policy.json'` | Path to policy file |
-| `lockdown` | `boolean` | `true` | Enable SES lockdown |
-| `generatePolicy` | `boolean` | `false` | Auto-generate policies |
-| `diagnostics` | `boolean` | `false` | Enable debug logging |
-| `scuttleGlobalThis` | `object` | `{enabled: true, exceptions: []}` | Global scuttling config |
-| `exclude` | `string[]` | `[]` | Modules to exclude from processing |
-
-## 🤝 Contributing
-
-Contributions are welcome! Please read our contributing guidelines and submit pull requests.
-
-## 📄 License
-
-MIT License - see LICENSE file for details.
-
-## 🔗 Related
-
-- [LavaMoat](https://github.com/LavaMoat/LavaMoat) - The underlying security framework
-- [SES](https://github.com/endojs/endo/tree/master/packages/ses) - Secure ECMAScript
-- [Vite](https://vitejs.dev/) - Next generation frontend tooling
-
----
-
-**⚠️ Security Note**: This plugin provides runtime protection against common JavaScript vulnerabilities. Always follow security best practices and conduct security audits for production applications.
+# vite-plugin-lavamoat (SSP Wallet, in-repo)
+
+A small, private Vite plugin used by the SSP Wallet browser extension build. It is
+**not** the LavaMoat project's bundler plugin and it does **not** sandbox npm
+packages. It does exactly two things, and this file says precisely what they
+protect against and what they do not.
+
+## 1. Runtime: SES `lockdown()` on every extension page
+
+`generateBundle` emits `lavamoat-lockdown.js`, and `transformIndexHtml` injects it
+as the first `<script>` of every HTML entry (`index.html` for popup, side panel and
+full-tab window; `camera-permission.html`). It runs before any bundle code.
+
+The file is the `ses` package's own `dist/lockdown.umd.min.js` (version and
+sha256 recorded in its header), followed by one `lockdown()` call and a
+fail-closed self-check: if the intrinsics are not frozen afterwards it calls
+`window.stop()` and throws.
+
+After it runs:
+
+- every JavaScript intrinsic (`Object.prototype`, `Array.prototype`,
+  `Function.prototype`, `Promise`, `JSON`, `Math`, `Reflect`, ...) is frozen, so a
+  dependency cannot poison the primordials the signing code uses (prototype
+  pollution, replacing `Array.prototype.map`, `JSON.parse`, `Promise.prototype.then`,
+  and so on);
+- `harden()` is available;
+- `eval` and `Function` are disabled by SES (`evalTaming: 'no-eval'`), on top of
+  the MV3 CSP that already forbids them.
+
+Options (`DEFAULT_LOCKDOWN_OPTIONS` in `src/lockdownRuntime.ts`):
+`overrideTaming: 'severe'`, `localeTaming: 'unsafe'` (the UI formats with
+`toLocaleString`/`Intl`), `errorTaming`/`consoleTaming: 'unsafe'`,
+`errorTrapping`/`unhandledRejectionTrapping: 'none'`, `reporting: 'none'`.
+
+**One change to the SES source.** SES's `severe` override taming makes inherited
+data properties on frozen prototypes overridable by assignment (the JS "override
+mistake"). It covers all of `Object.prototype` but not `Function.prototype.call`/
+`apply` or `Promise.prototype.then`/`catch`/`finally`. Bundled npm code assigns
+those on ordinary objects (viem's `tempo` actions do `getUserToken.call = call`;
+without the fix the popup crashed on load). `extendSevereEnablements()` adds those
+five entries to SES's own enablement table. The prototypes stay frozen, and
+assigning to the prototype itself still throws. The match is exact; an `ses`
+upgrade that changes the table fails the build until this is reviewed.
+
+`globalThis.__lavamoat_run_security_tests()` reports the real state (used by the
+hidden Security Test page). It is defined non-writable and non-configurable.
+
+## 2. Build time: the committed LavaMoat policy is enforced
+
+In `buildEnd`, the plugin feeds every module of the Rollup graph (post-transform
+code, real import edges) to LavaMoat's own analyser (`lavamoat-core`
+`createModuleInspector`, i.e. lavamoat-tofu/Babel). The result is a LavaMoat
+policy: per package, the globals it reads or writes and the packages it imports.
+Packages are named by their `node_modules` location (`a>b` for nested copies).
+First-party `src/` code is trusted and not part of the policy.
+
+- `policyMode: 'check'` (default, used by `yarn build`): the build **fails** if the
+  bundle needs anything `security/vite-lavamoat-policy.json` does not grant: a new
+  package, a new global (`fetch`, `chrome.storage`, `localStorage`, `crypto.subtle`,
+  ...), or a new package-to-package import. The policy file is never written.
+- `policyMode: 'write'` (`yarn generate-policy`): regenerate the file from a
+  production build without writing `dist/`. Review the diff, then commit it.
+  Every added line is a new capability for that dependency.
+- `LAVAMOAT_POLICY_MODE=check|write|off` overrides the option.
+
+CI fails if the build fails or if the committed policy changed during the build.
+
+## What is NOT enforced
+
+- **No per-package compartments at runtime.** All npm packages run in the same
+  realm as the wallet code that decrypts the seed, with the same globals
+  (`chrome`, `fetch`, `localStorage`, ...). This is not fixable inside this plugin:
+  Rollup scope-hoists ES modules into shared chunk scopes, so there is no
+  per-module function boundary to evaluate inside a `Compartment`, and MV3
+  forbids `eval`, which `Compartment.evaluate` needs. Real per-package isolation
+  needs a bundler that wraps each module at build time (for example
+  `@lavamoat/webpack`, as MetaMask uses), which means replacing Vite/Rollup.
+- **The policy check is static analysis.** It sees direct references
+  (`fetch(...)`, `window.chrome.storage`, `globalThis.localStorage`). It does not
+  see computed access (`globalThis[atob('ZmV0Y2g=')]`) or code that reaches
+  globals through objects it was handed. It turns "a dependency bump silently
+  gains network or storage access" into a reviewable diff; it does not stop a
+  deliberately obfuscated malicious package.
+- **Not covered by lockdown:** `public/scripts/background.js` (service worker),
+  `contentscript.js` and `inpage.js`. They are hand-written and import no npm
+  packages. `inpage.js` runs in web pages, where lockdown must not run.
+- **Exfiltration:** the extension CSP allows `connect-src 'self' https: wss:`
+  because users can point the relay and every chain backend at their own hosts
+  (Settings), so a fixed host list would break that feature. Plaintext `http:`/
+  `ws:` connections are blocked; HTTPS to any host is not.
+
+## Files
+
+- `src/lockdownRuntime.ts`: reads the SES shim, builds `lavamoat-lockdown.js`.
+- `src/observe.ts`: Rollup module graph → LavaMoat policy.
+- `src/policy.ts`: policy model, coverage check, violations, deterministic JSON.
+- `src/plugin.ts`: the Vite plugin.
+- `bin/generate-policy.mjs`: `yarn generate-policy`.
+
+Tests: `tests/lib/supplyChain.spec.ts` in the wallet (runs the generated lockdown
+file in a fresh `vm` realm, checks policy enforcement, CSP and the committed policy).

@@ -12,6 +12,7 @@ import FiatCurrencyController from './components/FiatCurrencyController/FiatCurr
 import NetworkFeeController from './components/NetworkFeeController/NetworkFeeController.tsx';
 import ServicesAvailabilityController from './components/ServicesAvailabilityController/ServicesAvailabilityController.tsx';
 import ABEController from './components/ABEController/ABEController.tsx';
+import { renderLockdownFailure, shouldBlockStartup } from './lib/lockdownGate';
 import './translations';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
@@ -72,20 +73,30 @@ if (!navigator.userAgent.includes('Mac')) {
     .catch((e) => console.log(e));
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <SocketProvider>
-        <SspConnectProvider>
-          <WalletConnectProvider>
-            <App />
-            <FiatCurrencyController />
-            <NetworkFeeController />
-            <ServicesAvailabilityController />
-            <ABEController />
-          </WalletConnectProvider>
-        </SspConnectProvider>
-      </SocketProvider>
-    </Provider>
-  </React.StrictMode>,
-);
+const rootElement = document.getElementById('root')!;
+
+// Fail closed: a production build must run with SES lockdown (the
+// lavamoat-lockdown.js script the build injects ahead of this bundle). If
+// the intrinsics are not frozen that script never ran, so the wallet does not
+// mount and shows a blocking error instead. Dev builds never run lockdown.
+if (shouldBlockStartup(import.meta.env.PROD)) {
+  renderLockdownFailure(rootElement);
+} else {
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <Provider store={store}>
+        <SocketProvider>
+          <SspConnectProvider>
+            <WalletConnectProvider>
+              <App />
+              <FiatCurrencyController />
+              <NetworkFeeController />
+              <ServicesAvailabilityController />
+              <ABEController />
+            </WalletConnectProvider>
+          </SspConnectProvider>
+        </SocketProvider>
+      </Provider>
+    </React.StrictMode>,
+  );
+}

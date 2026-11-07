@@ -21,6 +21,8 @@ import axios from 'axios';
 
 import { useTranslation } from 'react-i18next';
 import { generateRequestId } from '../../lib/wkSign';
+import { assertEnterpriseIndices } from '../../lib/enterpriseIndexGuard';
+import { attachRequiredWkAuth } from '../../lib/relayRequestAuth';
 import type { WkSignRequesterInfo } from '../../lib/wkSign';
 import type { cryptos } from '../../types';
 
@@ -159,6 +161,9 @@ function EnterpriseVaultXpub({
       throw new Error(t('home:enterpriseVaultXpub.err_not_logged_in'));
     }
 
+    // H-1: orgIndex 0 / 99 would hand out consumer / recovery account keys.
+    assertEnterpriseIndices({ orgIndex, vaultIndex });
+
     const chainConfig = blockchains[chain];
     if (!chainConfig) {
       throw new Error(t('home:enterpriseVaultXpub.err_invalid_chain'));
@@ -284,20 +289,15 @@ function EnterpriseVaultXpub({
       wkIdentity,
     };
 
-    // Add authentication
-    try {
-      const auth = await createWkIdentityAuth('action', wkIdentity, data);
-      if (auth) {
-        Object.assign(data, auth);
-      }
-    } catch {
-      console.warn(
-        '[EnterpriseVaultXpub] Auth not available, sending without signature',
-      );
-    }
+    // RA-2: /v1/action requires WK auth — never post unauthenticated.
+    const signedData = await attachRequiredWkAuth(
+      data,
+      wkIdentity,
+      createWkIdentityAuth,
+    );
 
     console.log('[EnterpriseVaultXpub] Posting vault xpub request to relay');
-    await axios.post(`https://${sspConfig().relay}/v1/action`, data);
+    await axios.post(`https://${sspConfig().relay}/v1/action`, signedData);
   };
 
   /**

@@ -54,9 +54,18 @@ import {
   validateSolRecipient,
   computeSolAutoFee,
   solAmountExceedsBalance,
+  solPaymasterFeeCapLamports,
+  assertSolPaymasterFeeWithinCap,
+  buildSolKeyActionPayload,
   type SolFeeSchedule,
 } from '../../lib/sendStrategies/sol';
+import { attachRequiredWkAuth } from '../../lib/relayRequestAuth';
 import { parseAmount, totalNative } from '../../lib/sendStrategies/amount';
+import {
+  createPayRequestResponder,
+  type PayRequestOutcome,
+} from '../../lib/sendStrategies/payRequest';
+import { takePendingPayRequestId } from '../../components/SspConnect/pendingPayRequest';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
 import type { SendStrategyView, FeePresetView } from './types';
 
@@ -77,6 +86,9 @@ interface LocationState {
   receiver?: string;
   amount?: string;
   contract?: string;
+  message?: string;
+  // Set by PaymentRequest when a dApp `pay` request continues here.
+  paymentAction?: boolean;
 }
 
 let txSentInterval: ReturnType<typeof setInterval> | undefined;
@@ -148,6 +160,33 @@ export function useSolSendStrategy(): SendStrategyView {
   // "custom" preset === the legacy manual-fee mode.
   const manualFee = feePreset === 'custom';
 
+  // A dApp `pay` request that continued to this screen is answered exactly
+  // once — broadcast, Key rejection or cancel — echoing its request id
+  // (WEXT-3), as the UTXO and EVM strategies do. Without an answer the dApp
+  // waits for the background's 15-minute timeout.
+  const [payResponder] = useState(() =>
+    createPayRequestResponder({
+      takeRequestId: takePendingPayRequestId,
+      send: (reply) => {
+        if (!browser?.runtime?.sendMessage) {
+          console.log('no browser or chrome runtime.sendMessage');
+          return undefined;
+        }
+        return browser.runtime.sendMessage(reply);
+      },
+    }),
+  );
+  const answerPayRequest = (outcome: PayRequestOutcome) => {
+    if (state.paymentAction) {
+      payResponder.answer(outcome);
+    }
+  };
+  const payRequestRejected = () =>
+    answerPayRequest({
+      status: 'ERROR',
+      message: t('common:request_rejected'),
+    });
+
   const displayMessage = (type: NoticeType, content: string) => {
     void toast.open({ type, content });
   };
@@ -158,6 +197,11 @@ export function useSolSendStrategy(): SendStrategyView {
   // the broadcast call returns the txid synchronously inline.
   useEffect(() => {
     if (socketTxid && socketChain === activeChain) {
+      answerPayRequest({
+        status: 'SUCCESS', // do not translate
+        txid: socketTxid,
+        message: t('home:payment_request.transaction_sent'),
+      });
       setTxHex(socketTxid);
       setOpenConfirmTx(false);
       setPendingApproval(false);
@@ -169,6 +213,7 @@ export function useSolSendStrategy(): SendStrategyView {
 
   useEffect(() => {
     if (socketTxRejected && socketChain === activeChain) {
+      payRequestRejected();
       setOpenConfirmTx(false);
       setPendingApproval(false);
       setOpenTxRejected(true);
@@ -187,7 +232,11 @@ export function useSolSendStrategy(): SendStrategyView {
       setTxReceiver(state.receiver);
       form.setFieldValue('receiver', state.receiver);
     }
-  }, [state.receiver, state.amount]);
+    if (state.message) {
+      setTxMessage(state.message);
+      form.setFieldValue('message', state.message);
+    }
+  }, [state.receiver, state.amount, state.message]);
 
   // Token list = blockchain presets + imported, filtered by activated.
   useEffect(() => {
@@ -435,13 +484,13 @@ export function useSolSendStrategy(): SendStrategyView {
       path,
       wkIdentity,
     };
-    try {
-      const auth = await createWkIdentityAuth('action', wkIdentity, data);
-      if (auth) Object.assign(data, auth);
-    } catch (e) {
-      console.warn('[SendSOL postAction] auth unavailable', e);
-    }
-    return axios.post(`https://${sspConfig().relay}/v1/action`, data);
+    // RA-2: /v1/action requires WK auth — throws instead of posting unsigned.
+    const signedData = await attachRequiredWkAuth(
+      data,
+      wkIdentity,
+      createWkIdentityAuth,
+    );
+    return axios.post(`https://${sspConfig().relay}/v1/action`, signedData);
   };
 
   const onFinish = (values: sendForm) => {
@@ -555,6 +604,18 @@ export function useSolSendStrategy(): SendStrategyView {
         // account exists. Relay validates the vault has enough SOL to
         // reimburse the paymaster's setup costs before provisioning.
         if (needsSetup) {
+          // RA-2: /v1/sol/setup requires WK auth (the paymaster pays rent
+          // for the provisioning, so anonymous setups are refused).
+          const setupBody = await attachRequiredWkAuth(
+            {
+              chain: activeChain,
+              walletPubkey: walletPubkeys[addressIndex],
+              keyPubkey: keyPubkeys[addressIndex],
+              wkIdentity: sspWalletKeyInternalIdentity,
+            },
+            sspWalletKeyInternalIdentity,
+            createWkIdentityAuth,
+          );
           const setupRes = await axios.post<{
             status: string;
             data: {
@@ -564,11 +625,7 @@ export function useSolSendStrategy(): SendStrategyView {
               nonceValue: string;
               alreadyProvisioned: boolean;
             };
-          }>(`https://${sspConfig().relay}/v1/sol/setup`, {
-            chain: activeChain,
-            walletPubkey: walletPubkeys[addressIndex],
-            keyPubkey: keyPubkeys[addressIndex],
-          });
+          }>(`https://${sspConfig().relay}/v1/sol/setup`, setupBody);
           if (setupRes.data?.status !== 'success') {
             throw new Error(
               `Solana vault setup failed: ${
@@ -629,6 +686,17 @@ export function useSolSendStrategy(): SendStrategyView {
         } else {
           paymasterFeeLamports = autoLamports.toString();
         }
+        // CHN-7: the relay serves the fee schedule — whatever it asks for, cap
+        // the reimbursement at min(0.05 SOL, min(maxTxFeeUSD, USD 100) of
+        // SOL), the same ceiling the SSP Key enforces.
+        const solUsdPrice =
+          (cryptoRates[activeChain] ?? 0) * (fiatRates.USD ?? 0);
+        const maxFeeLamports = solPaymasterFeeCapLamports(
+          solUsdPrice,
+          sspConfig().maxTxFeeUSD,
+          blockchainConfig.decimals,
+        );
+        assertSolPaymasterFeeWithinCap(paymasterFeeLamports, maxFeeLamports);
 
         const signedTxBase64 = await constructAndSignSOLTransaction({
           chain: activeChain,
@@ -644,19 +712,26 @@ export function useSolSendStrategy(): SendStrategyView {
             ? selectedTokenInfo.decimals
             : undefined,
           memo: values.message,
+          maxFeeLamports: maxFeeLamports.toString(),
         });
         // Wrap the payload in JSON with token metadata so the Key can
         // display the SPL token's symbol + decimals on the approval screen
         // (the bare proposal bytes don't carry the mint, only ATAs). Native
         // SOL sends stay bare-base64 — old Keys handle them unchanged.
-        const actionPayload = tokenMintBase58
-          ? JSON.stringify({
-              unsignedTxBase64: signedTxBase64,
-              tokenMint: tokenMintBase58,
-              tokenSymbol: selectedTokenInfo.symbol,
-              tokenDecimals: selectedTokenInfo.decimals,
-            })
-          : signedTxBase64;
+        // H-3 (SOL-SPL): splRecipientOwner + splMint let the Key derive the
+        // destination ATA itself, require it to equal the TransferChecked
+        // destination in the bytes, and show the OWNER the user typed.
+        const actionPayload = buildSolKeyActionPayload(
+          signedTxBase64,
+          tokenMintBase58
+            ? {
+                mint: tokenMintBase58,
+                symbol: selectedTokenInfo.symbol,
+                decimals: selectedTokenInfo.decimals,
+                recipientOwner: values.receiver,
+              }
+            : undefined,
+        );
         await postAction(
           'tx',
           actionPayload,
@@ -700,6 +775,7 @@ export function useSolSendStrategy(): SendStrategyView {
         setOpenConfirmTx(false);
         // Surface key-rejection vs other errors distinctly.
         if (error?.message?.includes('Key device rejected')) {
+          payRequestRejected();
           setPendingApproval(false);
           setOpenTxRejected(true);
         } else {
@@ -726,6 +802,7 @@ export function useSolSendStrategy(): SendStrategyView {
   };
 
   const cancelSend = () => {
+    payRequestRejected();
     navigate('/home');
   };
 

@@ -7,8 +7,13 @@ import { SessionRequest } from '../types/modalTypes';
 import { useWalletConnect } from '../../../contexts/WalletConnectContext';
 import { useAppSelector } from '../../../hooks';
 import { blockchains } from '@storage/blockchains';
-import DappOrigin from '../../DappRequest/DappOrigin';
 import '../../DappRequest/DappRequest.css';
+import VerifiedDappOrigin from '../VerifiedDappOrigin';
+import {
+  assessVerifyContext,
+  isVerifyBlocked,
+  verifyNeedsAcknowledgement,
+} from '../verifyContext';
 
 const { Text, Paragraph } = Typography;
 
@@ -31,12 +36,15 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
   const { activeChain } = useAppSelector((state) => state.sspState);
   const [step, setStep] = useState<'approval' | 'qr'>('approval');
   const [isApproving, setIsApproving] = useState(false);
+  // Explicit acknowledgement of a Verify API domain mismatch (WEXT-5).
+  const [verifyAcknowledged, setVerifyAcknowledged] = useState(false);
 
   // Reset to step 1 whenever a new request comes in
   useEffect(() => {
     if (request) {
       setStep('approval');
       setIsApproving(false);
+      setVerifyAcknowledged(false);
     }
   }, [request?.id]); // Reset when request ID changes
 
@@ -80,6 +88,7 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
     : '';
 
   const handleApprove = () => {
+    if (verifyBlocksApproval) return;
     if (step === 'approval') {
       setIsApproving(true);
       try {
@@ -102,8 +111,16 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
     }
   };
 
-  // Session peer metadata for the origin header (who is asking)
+  // Session peer metadata for the origin header (who is asking) — the name and
+  // icon are self-declared; the origin shown is the Verify API's.
   const peerMetadata = activeSessions[request.topic]?.peer?.metadata;
+  const verifyAssessment = assessVerifyContext(
+    request.verifyContext,
+    peerMetadata?.url,
+  );
+  const verifyBlocksApproval =
+    isVerifyBlocked(verifyAssessment) ||
+    (verifyNeedsAcknowledgement(verifyAssessment) && !verifyAcknowledged);
 
   // First step: Approval dialog
   if (step === 'approval') {
@@ -117,6 +134,10 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
         cancelText={t('home:walletconnect.reject')}
         cancelButtonProps={{ type: 'text' }}
         confirmLoading={isApproving}
+        okButtonProps={{
+          disabled: verifyBlocksApproval,
+          danger: verifyAssessment.status === 'invalid',
+        }}
       >
         <div
           style={{
@@ -127,10 +148,12 @@ const PersonalSignModal: React.FC<PersonalSignModalProps> = ({
             marginTop: 16,
           }}
         >
-          <DappOrigin
+          <VerifiedDappOrigin
+            assessment={verifyAssessment}
             name={peerMetadata?.name}
-            url={peerMetadata?.url}
             icon={peerMetadata?.icons?.[0]}
+            acknowledged={verifyAcknowledged}
+            onAcknowledge={setVerifyAcknowledged}
           />
 
           <p className="dapp-ask">

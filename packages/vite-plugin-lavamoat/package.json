@@ -2,7 +2,7 @@
   "name": "vite-plugin-lavamoat",
   "version": "1.1.0",
   "private": true,
-  "description": "Secure your Vite applications with LavaMoat runtime protection - blocks eval injection, prototype pollution, and supply chain attacks",
+  "description": "SSP Wallet build plugin: runs SES lockdown() before any bundle code on every page and checks the bundle against a committed LavaMoat policy at build time. It does not provide per-package compartments.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -15,26 +15,22 @@
   },
   "files": [
     "dist/**/*",
+    "bin/**/*",
     "src/**/*",
     "README.md"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run build"
+    "build": "tsup src/index.ts --format cjs,esm --dts --shims",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --shims --watch"
   },
   "keywords": [
     "vite",
-    "plugin", 
+    "plugin",
     "lavamoat",
+    "ses",
+    "lockdown",
     "security",
-    "eval",
-    "prototype-pollution",
-    "supply-chain",
-    "runtime-protection",
-    "crypto-safe",
-    "zero-config"
+    "supply-chain"
   ],
   "author": "SSP Team",
   "license": "MIT",

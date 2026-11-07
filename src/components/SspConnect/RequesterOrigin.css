@@ -1,0 +1,57 @@
+/* Verified requester origin for dApp approval dialogs (see RequesterOrigin). */
+
+.ssp-requester-origin {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.1);
+  text-align: left;
+}
+
+:root[data-theme='dark'] .ssp-requester-origin {
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.ssp-requester-origin svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #b45309;
+}
+
+:root[data-theme='dark'] .ssp-requester-origin svg {
+  color: #fbbf24;
+}
+
+.ssp-requester-origin-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ssp-requester-origin-value {
+  font-family: var(--ssp-mono);
+  font-size: 13px;
+  word-break: break-all;
+}
+
+/* Pinned above antd's modal layer (z-index 1000) so it stays visible over
+   the dialog's mask while a dApp request is open. */
+.ssp-requester-origin-banner {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 420px;
+  box-sizing: border-box;
+  z-index: 1100;
+  background: #fffbeb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+:root[data-theme='dark'] .ssp-requester-origin-banner {
+  background: #1c1917;
+}

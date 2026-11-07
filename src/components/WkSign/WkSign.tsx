@@ -30,6 +30,13 @@ import {
   WkSignResponse,
   WkSignRequesterInfo,
 } from '../../lib/wkSign';
+import {
+  checkWkSignPolicy,
+  describeCriticalScope,
+  type CriticalScope,
+  type WkPolicyRefusal,
+  type WkPolicyResult,
+} from '../../lib/wkMessage';
 
 const { Paragraph, Text } = Typography;
 
@@ -75,6 +82,51 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
   }, []);
 
   const qrSize = windowWidth < 420 ? 290 : 340;
+
+  const refusalText = (reason: WkPolicyRefusal): string => {
+    switch (reason) {
+      case 'origin_mismatch':
+        return t('home:wkSign.refused_origin_mismatch');
+      case 'not_enterprise_origin':
+        return t('home:wkSign.refused_not_enterprise_origin');
+      case 'internal_not_allowed':
+        return t('home:wkSign.refused_internal_not_allowed');
+      default:
+        return t('home:wkSign.refused_invalid_message');
+    }
+  };
+
+  // Classify BEFORE display and signing (security review H-6): SSP Enterprise
+  // login and SSP_CRITICAL challenges are signed only for the browser-verified
+  // origin they name; anything that is not a recognised WK message is refused.
+  const policy: WkPolicyResult = useMemo(
+    () =>
+      checkWkSignPolicy(message, requesterInfo?.origin, {
+        internal: requesterInfo?.internal === true,
+      }),
+    [message, requesterInfo?.origin, requesterInfo?.internal],
+  );
+  const policyRefusal = !policy.allowed ? refusalText(policy.reason) : null;
+  const classification = policy.classification;
+  const isCriticalAction =
+    classification.kind === 'critical' ||
+    classification.kind === 'critical_legacy';
+  // What F1/F2 of the critical challenge mean (organization, vault or the
+  // user's own account), as issued by the enterprise server.
+  const criticalScope: CriticalScope | null = isCriticalAction
+    ? describeCriticalScope(classification.fields)
+    : null;
+  const criticalRow = (label: string, value: string | null | undefined) => (
+    <Text>
+      {label}:{' '}
+      <Text
+        strong
+        style={{ fontFamily: 'var(--ssp-mono)', wordBreak: 'break-all' }}
+      >
+        {value || '—'}
+      </Text>
+    </Text>
+  );
 
   // Build manual input payload when we have wallet signature
   const manualInputPayload = useMemo(() => {
@@ -226,15 +278,13 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
       wkIdentity,
     };
 
-    // Add authentication
-    try {
-      const auth = await createWkIdentityAuth('action', wkIdentity, data);
-      if (auth) {
-        Object.assign(data, auth);
-      }
-    } catch {
-      console.warn('[WkSign] Auth not available, sending without signature');
+    // Relay auth is mandatory (RA-2): an unsigned action is refused by the
+    // relay, so fail here with a clear error instead.
+    const auth = await createWkIdentityAuth('action', wkIdentity, data);
+    if (!auth) {
+      throw new Error(t('home:wkSign.err_relay_auth'));
     }
+    Object.assign(data, auth);
 
     console.log('[WkSign] Posting wksigningrequest to relay');
     await axios.post(`https://${sspConfig().relay}/v1/action`, data);
@@ -248,6 +298,14 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
     setError(null);
 
     try {
+      // Re-check the grammar/origin policy at sign time — never sign a message
+      // the dialog would refuse to display.
+      const signPolicy = checkWkSignPolicy(message, requesterInfo?.origin, {
+        internal: requesterInfo?.internal === true,
+      });
+      if (!signPolicy.allowed) {
+        throw new Error(refusalText(signPolicy.reason));
+      }
       // Validate message format
       const validation = validateWkSignMessage(message);
       if (!validation.valid) {
@@ -310,7 +368,13 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
 
   return (
     <Modal
-      title={t('home:wkSign.title')}
+      title={
+        classification.kind === 'enterprise_login'
+          ? t('home:wkSign.enterprise_login_title')
+          : isCriticalAction
+            ? t('home:wkSign.critical_title')
+            : t('home:wkSign.title')
+      }
       open={open}
       style={{ textAlign: 'center', top: 60 }}
       onCancel={handleCancel}
@@ -322,13 +386,92 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
         size="middle"
         style={{ marginBottom: 16, marginTop: 16, width: '100%' }}
       >
+        {policyRefusal && (
+          <Alert
+            type="error"
+            showIcon
+            message={t('home:wkSign.refused_title')}
+            description={policyRefusal}
+            style={{ textAlign: 'left' }}
+            data-testid="wk-sign-refused"
+          />
+        )}
+
+        {/* Dedicated critical-action warning, built only from the parsed
+            message — never from requester-supplied labels. */}
+        {!policyRefusal && isCriticalAction && (
+          <Alert
+            type="error"
+            showIcon
+            message={t('home:wkSign.critical_title')}
+            data-testid="wk-sign-critical"
+            style={{ textAlign: 'left' }}
+            description={
+              <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                <Text>{t('home:wkSign.critical_desc')}</Text>
+                <Text>
+                  {t('home:wkSign.critical_action')}:{' '}
+                  <Text strong style={{ fontFamily: 'var(--ssp-mono)' }}>
+                    {classification.fields.action}
+                  </Text>
+                </Text>
+                {criticalScope?.kind === 'account' ? (
+                  <>
+                    {criticalRow(
+                      t('home:wkSign.critical_account'),
+                      t('home:wkSign.critical_account_self'),
+                    )}
+                    {criticalRow(
+                      t('home:wkSign.critical_new_email'),
+                      criticalScope.newEmail,
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {criticalRow(
+                      t('home:wkSign.critical_org'),
+                      criticalScope?.orgId,
+                    )}
+                    {criticalScope?.kind === 'vault' &&
+                      criticalRow(
+                        t('home:wkSign.critical_vault'),
+                        criticalScope.vaultId,
+                      )}
+                    {criticalRow(
+                      t('home:wkSign.critical_target'),
+                      criticalScope?.target,
+                    )}
+                  </>
+                )}
+                <Text>
+                  {t('home:wkSign.critical_origin')}:{' '}
+                  <Text strong style={{ fontFamily: 'var(--ssp-mono)' }}>
+                    {classification.kind === 'critical'
+                      ? classification.fields.origin
+                      : requesterInfo?.origin}
+                  </Text>
+                </Text>
+                {classification.kind === 'critical_legacy' && (
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {t('home:wkSign.critical_legacy_note')}
+                  </Text>
+                )}
+              </Space>
+            }
+          />
+        )}
+
         <Text>
           {/* Keyed off the internal flag, NOT the origin string: the flag is
               set from the browser-verified sender, whereas an origin string in
               the message body is page-supplied. */}
-          {requesterInfo?.internal
-            ? t('home:wkSign.description_internal')
-            : t('home:wkSign.description')}
+          {classification.kind === 'enterprise_login'
+            ? t('home:wkSign.enterprise_login_desc', {
+                origin: classification.fields.origin,
+              })
+            : requesterInfo?.internal
+              ? t('home:wkSign.description_internal')
+              : t('home:wkSign.description')}
         </Text>
 
         {/* Requester Info - Simple centered layout */}
@@ -530,9 +673,10 @@ function WkSign({ open, message, authMode, requesterInfo, openAction }: Props) {
           <Button
             type="primary"
             size="large"
+            danger={isCriticalAction}
             onClick={handleSign}
             loading={loading}
-            disabled={loading || waitingForKey}
+            disabled={loading || waitingForKey || !!policyRefusal}
           >
             {waitingForKey
               ? t('home:wkSign.awaiting_key')
