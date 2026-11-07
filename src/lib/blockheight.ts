@@ -3,10 +3,16 @@ import { getInfoInsight, cryptos, getInfoBlockbook, evm_call } from '../types';
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
+import { fetchTronTip } from './tron';
 
 export async function getBlockheight(chain: keyof cryptos): Promise<number> {
   try {
     const backendConfig = backends()[chain];
+    if (blockchains[chain].chainType === 'tron') {
+      // The latest SOLIDIFIED block: a TRON transaction counts only once it
+      // is in walletsolidity (contract §6).
+      return await fetchTronTip(chain);
+    }
     if (blockchains[chain].chainType === 'evm') {
       const url = `https://${backendConfig.node}`;
       const data = {

@@ -81,7 +81,7 @@ function Home() {
           ]}
         />
       )}
-      {(chainType === 'evm' || chainType === 'sol') && (
+      {(chainType === 'evm' || chainType === 'sol' || chainType === 'tron') && (
         <SubTabs
           defaultActiveKey="tokens"
           data-tutorial="tokens-section"
@@ -107,7 +107,8 @@ function Home() {
       {wallets?.[walletInUse] &&
         !wallets[walletInUse].nodes &&
         chainType !== 'evm' &&
-        chainType !== 'sol' && (
+        chainType !== 'sol' &&
+        chainType !== 'tron' && (
           <SubTabs
             defaultActiveKey="activity"
             items={[

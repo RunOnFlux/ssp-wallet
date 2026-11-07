@@ -113,6 +113,9 @@ interface SspConnectContextType {
   sourceAddress?: string;
   // Full EVM UserOp struct (JSON string) for trustless decode
   evmUserOp?: string;
+  // TRON proposal operation (JSON string {network, vault, signers, threshold,
+  // op}) — the device recomputes the digest from it (contract §3, §5).
+  tronOp?: string;
   // Vault signing mode (dual, key_only, wallet_only)
   signingMode?: string;
   // Server-computed advisory transaction simulation (JSON string).
@@ -217,6 +220,7 @@ export const SspConnectProvider = ({
     undefined,
   );
   const [evmUserOp, setEvmUserOp] = useState<string | undefined>(undefined);
+  const [tronOp, setTronOp] = useState<string | undefined>(undefined);
   // Bumped whenever the background port is re-established (see below).
   const [portGeneration, setPortGeneration] = useState(0);
   const [signingMode, setSigningMode] = useState<string | undefined>(undefined);
@@ -455,6 +459,15 @@ export const SspConnectProvider = ({
           request.data.method === 'sspwid_sign_message' ||
           request.data.method === 'wk_sign_message'
         ) {
+          // TRON message signing is out of scope (contract §7): the vault is
+          // a contract (TRC-1271 comes later) and SignMessage is utxolib/WIF.
+          if (
+            request.data.params.chain &&
+            blockchains[request.data.params.chain]?.chainType === 'tron'
+          ) {
+            rejectWith(t('home:sspConnect.tron_message_unsupported'));
+            return;
+          }
           if (
             blockchains[request.data.params.chain] ||
             !request.data.params.chain
@@ -477,6 +490,18 @@ export const SspConnectProvider = ({
             });
           }
         } else if (request.data.method === 'pay') {
+          // A TRON vault Op carries no memo, so a payment message could not
+          // be attached. Reject instead of silently dropping it — a merchant
+          // may rely on the message to match the payment.
+          if (
+            request.data.params.chain &&
+            blockchains[request.data.params.chain]?.chainType === 'tron' &&
+            typeof request.data.params.message === 'string' &&
+            request.data.params.message.trim() !== ''
+          ) {
+            rejectWith(t('home:sspConnect.tron_pay_message_unsupported'));
+            return;
+          }
           if (blockchains[request.data.params.chain]) {
             // if the chain has tokens, set the contract
             if (blockchains[request.data.params.chain].tokens) {
@@ -890,6 +915,14 @@ export const SspConnectProvider = ({
               ? signEvmUserOp
               : undefined,
           );
+          // TRON operation (optional JSON string — the sign screen re-derives
+          // the vault and recomputes the digest from it; never trusted as-is)
+          const signTronOp = request.data.params.tronOp;
+          setTronOp(
+            typeof signTronOp === 'string' && signTronOp
+              ? signTronOp
+              : undefined,
+          );
 
           // Vault signing mode (optional — dual, key_only, wallet_only)
           const signSigningMode = request.data.params.signingMode;
@@ -1088,6 +1121,7 @@ export const SspConnectProvider = ({
           setTokenDecimals(undefined);
           setSourceAddress(undefined);
           setEvmUserOp(undefined);
+          setTronOp(undefined);
           setSimulation(undefined);
           setSigningMode(
             typeof p.signingMode === 'string' && p.signingMode
@@ -1441,6 +1475,7 @@ export const SspConnectProvider = ({
     setTokenDecimals(undefined);
     setSourceAddress(undefined);
     setEvmUserOp(undefined);
+    setTronOp(undefined);
     setSigningMode(undefined);
     setSimulation(undefined);
     setProposalRefs(undefined);
@@ -1482,6 +1517,7 @@ export const SspConnectProvider = ({
         tokenDecimals,
         sourceAddress,
         evmUserOp,
+        tronOp,
         signingMode,
         simulation,
         proposalRefs,

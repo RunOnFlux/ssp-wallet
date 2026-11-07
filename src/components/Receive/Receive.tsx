@@ -7,6 +7,7 @@ import { useAppSelector } from '../../hooks';
 import { useTranslation } from 'react-i18next';
 import { blockchains } from '@storage/blockchains';
 import { getDisplayName } from '../../storage/walletNames';
+import HighlightedAddress from '../HighlightedAddress/HighlightedAddress';
 
 const QR_MAX_SIZE = 232;
 const QR_MIN_SIZE = 160;
@@ -25,6 +26,9 @@ function Receive(props: {
   );
   const blockchainConfig = blockchains[activeChain];
   const address = wallets[walletInUse].address;
+  // TRON: the address is a counterfactual contract vault; show that, and
+  // highlight the middle of the address (poisoning lookalikes share the ends).
+  const isTron = blockchainConfig.chainType === 'tron';
   const qrFrameRef = useRef<HTMLDivElement>(null);
   const [qrSize, setQrSize] = useState(QR_MAX_SIZE);
 
@@ -100,9 +104,18 @@ function Receive(props: {
             className="copyableAddress receive-address"
           >
             <Text strong className="receive-address-text">
-              {address}
+              {isTron ? <HighlightedAddress address={address} /> : address}
             </Text>
           </Paragraph>
+
+          {isTron && (
+            <Alert
+              message={t('home:receive.tron_contract_vault')}
+              type="info"
+              showIcon
+              style={{ textAlign: 'left' }}
+            />
+          )}
 
           <Divider style={{ margin: '4px 0' }} />
 

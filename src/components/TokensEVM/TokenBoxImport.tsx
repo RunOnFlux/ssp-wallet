@@ -37,9 +37,11 @@ function TokenBoxImport(props: {
   const handleDelete = async (contract: string) => {
     try {
       console.log('delete', contract);
-      // Solana SPL mints are case-significant base58; EVM contracts are
-      // case-insensitive hex.
-      const isSolana = blockchains[props.chain].chainType === 'sol';
+      // Solana SPL mints and TRON TRC-20 contracts are case-significant
+      // base58; EVM contracts are case-insensitive hex.
+      const isSolana =
+        blockchains[props.chain].chainType === 'sol' ||
+        blockchains[props.chain].chainType === 'tron';
       const neq = (a: string, b: string) =>
         isSolana ? a !== b : a.toLowerCase() !== b.toLowerCase();
       // make sure it is unselected

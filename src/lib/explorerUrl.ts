@@ -29,14 +29,26 @@ function explorerHost(chain: string): string {
   return cfg.explorer ?? cfg.node ?? '';
 }
 
+// Tronscan is a hash-routed SPA: https://tronscan.org/#/transaction/{txid},
+// #/address/{address} (nile.tronscan.org for Nile).
+function isTronExplorer(chain: string): boolean {
+  return blockchains[chain]?.chainType === 'tron';
+}
+
 /** Explorer URL for a transaction by signature/hash. */
 export function explorerTxUrl(chain: string, txid: string): string {
+  if (isTronExplorer(chain)) {
+    return `https://${explorerHost(chain)}/#/transaction/${txid}`;
+  }
   const base = `https://${explorerHost(chain)}/tx/${txid}`;
   return withSolanaCluster(base, chain);
 }
 
 /** Explorer URL for an address. */
 export function explorerAddressUrl(chain: string, address: string): string {
+  if (isTronExplorer(chain)) {
+    return `https://${explorerHost(chain)}/#/address/${address}`;
+  }
   const base = `https://${explorerHost(chain)}/address/${address}`;
   return withSolanaCluster(base, chain);
 }

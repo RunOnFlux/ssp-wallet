@@ -58,6 +58,9 @@ declare module '@storage/blockchains' {
     // non-zero value — base-fee-only transactions are deprioritised under
     // load and routinely dropped outright. Omitted/0 on devnet (uncontended).
     priorityFeeMicroLamports?: number;
+    // tron: chainType 'tron'; decimals 6 (sun); factory / implementation /
+    // sponsor / feeCollector come ONLY from @runonflux/tron-multisig's
+    // NETWORKS table (lib/tron.ts), never from this config.
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

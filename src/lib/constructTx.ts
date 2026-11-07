@@ -60,6 +60,17 @@ export function getLibId(chain: keyof cryptos): string {
   return blockchains[chain].libid;
 }
 
+/**
+ * TRON (chainType 'tron') has no UTXOs: vault Ops are built and signed in
+ * lib/tron.ts and broadcast by SSP Key through the relay sponsor. Refuse
+ * loudly instead of querying insight URLs on a TRON host or crashing inside
+ * utxolib.
+ */
+function assertNotTron(chain: string, fn: string): void {
+  if (blockchains[chain]?.chainType === 'tron') {
+    throw new Error(`${fn} does not support TRON; use lib/tron instead`);
+  }
+}
 type utxoCache = Record<string, utxo[]>;
 
 let fetchUtxosRunning = false;
@@ -75,6 +86,7 @@ export async function fetchUtxos(
   confirmationMode = 0, // use confirmed utxos if replace by fee is wanted. unconfirmed if standard tx, both for ssp key for fetching all utxps
   onlyConfirmed = true, // must have > 0 confirmations
 ): Promise<utxo[]> {
+  assertNotTron(chain, 'fetchUtxos');
   try {
     while (fetchUtxosRunning) {
       // wait if previous request is running
@@ -644,6 +656,7 @@ export async function getTransactionSize(
   forbiddenUtxos?: txIdentifier[],
   mandatoryUtxos?: txIdentifier[],
 ): Promise<number> {
+  assertNotTron(chain, 'getTransactionSize');
   try {
     const libID = getLibId(chain);
     const blockchainConfig = blockchains[chain];
@@ -763,6 +776,7 @@ export async function estimateUtxoTxSize(
   useAllUtxos = false,
   excludeUtxos: txIdentifier[] = [],
 ): Promise<number> {
+  assertNotTron(chain, 'estimateUtxoTxSize');
   try {
     const blockchainConfig = blockchains[chain];
     const utxos = await fetchUtxos(sender, chain, 0);
@@ -907,6 +921,7 @@ export async function constructAndSignTransaction(
   forbiddenUtxos?: txIdentifier[],
   mandatoryUtxos?: txIdentifier[],
 ): Promise<constructedTxInfo> {
+  assertNotTron(chain, 'constructAndSignTransaction');
   try {
     const utxos = await fetchUtxos(
       sender,
@@ -1000,6 +1015,7 @@ export async function broadcastTx(
   txHex: string,
   chain: keyof cryptos,
 ): Promise<string> {
+  assertNotTron(chain, 'broadcastTx');
   try {
     const backendConfig = backends()[chain];
     if (blockchains[chain].backend === 'blockbook') {

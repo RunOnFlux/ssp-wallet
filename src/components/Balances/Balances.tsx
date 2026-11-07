@@ -120,10 +120,12 @@ function Balances() {
       .catch((error) => {
         console.log(error);
       });
-    // Fetch token balances for chains that support tokens (EVM + Solana SPL).
+    // Fetch token balances for chains that support tokens (EVM, Solana SPL
+    // and TRON TRC-20).
     if (
       blockchains[chainFetched].chainType === 'evm' ||
-      blockchains[chainFetched].chainType === 'sol'
+      blockchains[chainFetched].chainType === 'sol' ||
+      blockchains[chainFetched].chainType === 'tron'
     ) {
       // create contracts array from tokens contracts in specs
       fetchAddressTokenBalances(

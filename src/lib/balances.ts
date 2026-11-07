@@ -12,6 +12,7 @@ import {
 
 import { backends } from '@storage/backends';
 import { blockchains } from '@storage/blockchains';
+import { fetchTronBalance, fetchTrc20Balances } from './tron';
 
 export async function fetchAddressBalance(
   address: string,
@@ -19,6 +20,16 @@ export async function fetchAddressBalance(
 ): Promise<balance> {
   try {
     const backendConfig = backends()[chain];
+    if (blockchains[chain].chainType === 'tron') {
+      // /wallet/getaccount balance in sun ({} = never activated = 0). A
+      // TRON vault has no separate unconfirmed balance.
+      const bal: balance = {
+        confirmed: await fetchTronBalance(address, chain),
+        unconfirmed: '0',
+        address,
+      };
+      return bal;
+    }
     if (blockchains[chain].chainType === 'evm') {
       const url = `https://${backendConfig.node}`;
       const data = {
@@ -111,6 +122,11 @@ export async function fetchAddressTokenBalances(
   tokens: string[],
 ): Promise<tokenBalanceEVM[]> {
   try {
+    // TRON: TRC-20 balanceOf via triggerconstantcontract, only for the
+    // requested (whitelisted / imported and activated) contracts.
+    if (blockchains[chain].chainType === 'tron') {
+      return await fetchTrc20Balances(address, chain, tokens);
+    }
     // Solana: fetch all parsed token accounts owned by the vault and
     // intersect with the requested mint list. One RPC call regardless of
     // token count, no Alchemy-style batching needed.
@@ -158,7 +174,9 @@ export async function fetchAddressTokenBalances(
       return out;
     }
     if (blockchains[chain].chainType !== 'evm') {
-      throw new Error('Only EVM and Solana chains support token balances');
+      throw new Error(
+        'Only EVM, Solana and TRON chains support token balances',
+      );
     }
     const tokenChunks = [];
     // split tokens into chunks of 100

@@ -45,6 +45,8 @@ const chains = {
   avax: chainSliceBaseTokens('avax'),
   solDevnet: chainSliceBaseTokens('solDevnet'),
   solMainnet: chainSliceBaseTokens('solMainnet'),
+  tron: chainSliceBaseTokens('tron'),
+  tronNile: chainSliceBaseTokens('tronNile'),
 };
 // ********** Import chains **********
 
@@ -533,7 +535,9 @@ export function setTokenBalances(
     chain === 'bsc' ||
     chain === 'avax' ||
     chain === 'solDevnet' ||
-    chain === 'solMainnet'
+    chain === 'solMainnet' ||
+    chain === 'tron' ||
+    chain === 'tronNile'
   ) {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setTokenBalances({ wallet, data }));
@@ -553,7 +557,9 @@ export function setActivatedTokens(
     chain === 'bsc' ||
     chain === 'avax' ||
     chain === 'solDevnet' ||
-    chain === 'solMainnet'
+    chain === 'solMainnet' ||
+    chain === 'tron' ||
+    chain === 'tronNile'
   ) {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setActivatedTokens({ wallet, data }));
@@ -569,7 +575,9 @@ export function setImportedTokens(chain: keyof cryptos, data: Token[]) {
     chain === 'bsc' ||
     chain === 'avax' ||
     chain === 'solDevnet' ||
-    chain === 'solMainnet'
+    chain === 'solMainnet' ||
+    chain === 'tron' ||
+    chain === 'tronNile'
   ) {
     // todo needs to be adjusted on chain add
     store.dispatch(chains[chain].actions.setImportedTokens(data));

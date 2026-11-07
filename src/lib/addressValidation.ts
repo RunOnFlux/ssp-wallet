@@ -2,13 +2,15 @@ import utxolib from '@runonflux/utxo-lib';
 import { isAddress as isEvmAddress } from 'viem';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../types';
+import bs58 from 'bs58';
+import { isValidTronAddress } from './tron';
 
 export type AddressValidationResult = {
   valid: boolean;
   // When the address itself is invalid for the active chain but appears to be
   // a well-formed address of a DIFFERENT chain type, we surface a soft warning
   // so the user can catch a wrong-network paste before signing.
-  warningChainType?: 'evm' | 'sol' | 'utxo';
+  warningChainType?: 'evm' | 'sol' | 'utxo' | 'tron';
 };
 
 /**
@@ -35,7 +37,15 @@ export function isValidSolAddress(address: string): boolean {
   // public keys which encode to 32-44 base58 characters. This keeps the util
   // lightweight (no @solana/web3.js import) for use in the send forms.
   const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
-  return base58Regex.test(address);
+  if (!base58Regex.test(address)) return false;
+  // A TRON address (T…, 34 chars) also matches the alphabet and length: it is
+  // told apart by its DECODED length (25 bytes: 0x41 ‖ 20 ‖ checksum), never
+  // by regex (TRON_SSP_CONTRACT.md §1). A Solana key decodes to 32 bytes.
+  try {
+    return bs58.decode(address).length === 32;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -80,12 +90,31 @@ export function validateReceiverAddress(
 
   const looksEvm = /^0x[0-9a-fA-F]{40}$/.test(trimmed);
   const looksSol = isValidSolAddress(trimmed) && !looksEvm;
+  // TRON: SDK strict base58check (0x41 prefix, checksum). Checked before the
+  // Solana and UTXO defaults — a TRON address passes the Solana regex.
+  const looksTron = isValidTronAddress(trimmed);
+
+  if (chainType === 'tron') {
+    if (looksTron) {
+      return { valid: true };
+    }
+    if (looksEvm) {
+      return { valid: false, warningChainType: 'evm' };
+    }
+    if (looksSol) {
+      return { valid: false, warningChainType: 'sol' };
+    }
+    return { valid: false };
+  }
 
   if (chainType === 'evm') {
     if (isValidEvmAddress(trimmed)) {
       return { valid: true };
     }
     // Not a valid EVM address — hint if it looks like another chain type.
+    if (looksTron) {
+      return { valid: false, warningChainType: 'tron' };
+    }
     if (looksSol) {
       return { valid: false, warningChainType: 'sol' };
     }
@@ -93,6 +122,9 @@ export function validateReceiverAddress(
   }
 
   if (chainType === 'sol') {
+    if (looksTron) {
+      return { valid: false, warningChainType: 'tron' };
+    }
     if (isValidSolAddress(trimmed)) {
       return { valid: true };
     }
@@ -109,8 +141,32 @@ export function validateReceiverAddress(
   if (looksEvm) {
     return { valid: false, warningChainType: 'evm' };
   }
+  if (looksTron) {
+    return { valid: false, warningChainType: 'tron' };
+  }
   if (looksSol) {
     return { valid: false, warningChainType: 'sol' };
   }
   return { valid: false };
+}
+
+/**
+ * The receiver address inside a scanned QR payload. Payloads may be a bare
+ * address or a chain URI ("bitcoin:<address>?amount=…",
+ * "ethereum:<address>@1?value=…"), whose scheme is dropped. TRON keeps the
+ * exact case (base58) and drops an optional `tron:` scheme.
+ */
+export function addressFromScannedQr(
+  value: string,
+  chainType: string | undefined,
+): string {
+  let scanned = value.trim();
+  if (chainType === 'tron') {
+    // "tron:T…?amount=…" or a bare T… address. Base58 is case-sensitive:
+    // never change the case of a TRON address.
+    scanned = scanned.replace(/^tron:(\/\/)?/i, '').split(/[?#@/]/)[0];
+    return scanned;
+  }
+  const schemeMatch = scanned.match(/^[a-zA-Z]+:([^@?]+)/);
+  return schemeMatch ? schemeMatch[1] : scanned;
 }

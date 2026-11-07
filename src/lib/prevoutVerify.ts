@@ -39,7 +39,14 @@ export type FetchRawTxHex = (
 export function sighashOmitsInputAmounts(chain: keyof cryptos): boolean {
   const config = blockchains[chain];
   if (!config) return false;
-  if (config.chainType === 'evm' || config.chainType === 'sol') return false;
+  // TRON is account-based (no UTXO inputs at all).
+  if (
+    config.chainType === 'evm' ||
+    config.chainType === 'sol' ||
+    config.chainType === 'tron'
+  ) {
+    return false;
+  }
   if (config.scriptType === 'p2wsh') return false; // BIP143 commits amounts
   if (config.hashType) return false; // BCH SIGHASH_FORKID (BIP143-style)
   if (config.txVersion && config.txVersion >= 4) return false; // ZIP-243

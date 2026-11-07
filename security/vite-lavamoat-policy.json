@@ -882,6 +882,30 @@
         "vite-plugin-node-polyfills": true
       }
     },
+    "@runonflux/tron-multisig": {
+      "packages": {
+        "@runonflux/tron-multisig>@noble/curves": true,
+        "@runonflux/tron-multisig>@noble/hashes": true,
+        "@runonflux/tron-multisig>@scure/base": true
+      }
+    },
+    "@runonflux/tron-multisig>@noble/curves": {
+      "packages": {
+        "@runonflux/tron-multisig>@noble/hashes": true
+      }
+    },
+    "@runonflux/tron-multisig>@noble/hashes": {
+      "globals": {
+        "TextEncoder": true,
+        "crypto": true
+      }
+    },
+    "@runonflux/tron-multisig>@scure/base": {
+      "globals": {
+        "TextDecoder": true,
+        "TextEncoder": true
+      }
+    },
     "@runonflux/utxo-lib": {
       "packages": {
         "@runonflux/utxo-lib>debug": true,

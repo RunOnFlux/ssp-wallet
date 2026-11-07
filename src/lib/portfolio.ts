@@ -128,7 +128,7 @@ async function discoverChains(): Promise<
 /** Does the chain support tokens the same way Home's Balances component does? */
 function chainSupportsTokens(chain: keyof cryptos): boolean {
   const type = blockchains[chain]?.chainType;
-  return type === 'evm' || type === 'sol';
+  return type === 'evm' || type === 'sol' || type === 'tron';
 }
 
 /**
