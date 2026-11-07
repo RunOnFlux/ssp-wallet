@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { useSocket } from '../../hooks/useSocket';
+import { useKasLedgerRecovery } from '../../hooks/useKasLedgerRecovery';
 import { getFingerprint } from '../../lib/fingerprint';
 import { generateAddressKeypair, getScriptType } from '../../lib/wallet';
 import {
@@ -37,6 +38,7 @@ import {
   isKasTransactionKnown,
   kasRestClient,
   kasSignedAmountLedger,
+  kasUnitsToSompi,
   planKasSend,
   signKasSend,
   sumKasUtxos,
@@ -61,7 +63,6 @@ import {
   kasPlanErrorKey,
   kasPlanMatchesReview,
   sompiToUnits,
-  unitsToSompi,
   type KasPresetKey,
 } from '../../lib/sendStrategies/kas';
 import { parseAmount, totalNative } from '../../lib/sendStrategies/amount';
@@ -205,7 +206,8 @@ export function useKasSendStrategy(): SendStrategyView {
     const rv = validateReceiverAddress(txReceiver, activeChain);
     // Estimate as a send to ourselves until a valid receiver is entered.
     const receiver = rv.valid ? txReceiver.trim() : sender;
-    const amountSompi = unitsToSompi(sendingAmount, decimals);
+    // User-typed: exact plain decimal only (no hex / exponent, review KAS-7).
+    const amountSompi = kasUnitsToSompi(sendingAmount);
     const maxFee = maxFeeSompi();
     let cancelled = false;
     void (async () => {
@@ -418,11 +420,15 @@ export function useKasSendStrategy(): SendStrategyView {
         ? t('send:err_wrong_chain_address', { chain: blockchainConfig.name })
         : t('send:err_invalid_receiver');
     }
-    if (!unitsToSompi(sendingAmount, decimals)) {
+    if (!kasUnitsToSompi(sendingAmount)) {
       return t('send:err_invalid_amount');
     }
     return null;
   };
+
+  // Signed-amount ledger refusals (review KAS-2 / KAS-6): signing stays
+  // refused; the only ways out are the explicit, warned resets.
+  const kasLedgerRecovery = useKasLedgerRecovery({ notify: displayMessage });
 
   const onFinish = async (values: sendForm) => {
     const composeError = validateCompose();
@@ -440,7 +446,7 @@ export function useKasSendStrategy(): SendStrategyView {
     // What the user reviewed: amount, fee and the rate that fee was planned
     // at. The signed transaction must match all three exactly.
     const shownAmount = sendingAmount;
-    const shownFeeSompi = unitsToSompi(txFee, decimals);
+    const shownFeeSompi = kasUnitsToSompi(txFee);
     const shownRate = feeRates?.[KAS_PRESET_TIERS[feePreset]];
     if (!shownFeeSompi || !shownRate || planError) {
       displayMessage('error', planError ?? t('send:err_kas_review_changed'));
@@ -457,7 +463,7 @@ export function useKasSendStrategy(): SendStrategyView {
       // Plan with the DISPLAYED rate; only the UTXOs are re-fetched (never
       // sign against a stale coin set). No key material is touched yet.
       const freshUtxos = await fetchKasUtxos(sender, activeChain);
-      const amountSompi = unitsToSompi(shownAmount, decimals) ?? 0n;
+      const amountSompi = kasUnitsToSompi(shownAmount) ?? 0n;
       const planned = await planKasSend({
         chain: activeChain,
         xpubWallet,
@@ -551,7 +557,12 @@ export function useKasSendStrategy(): SendStrategyView {
     } catch (error) {
       setSubmitting(false);
       console.log(error);
-      displayMessage('error', planErrorText(error));
+      const ledger = kasLedgerRecovery(error);
+      if (ledger === null) {
+        displayMessage('error', planErrorText(error));
+      } else if (ledger.kind === 'refused') {
+        displayMessage('error', ledger.message);
+      }
     } finally {
       // Every path — success, refusal or error — drops the key material.
       privKey = '';

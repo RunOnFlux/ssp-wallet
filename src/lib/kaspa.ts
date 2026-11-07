@@ -403,48 +403,480 @@ export async function isKasTransactionKnown(
 }
 
 // ---------------------------------------------------------------------------
-// Persistent signed-amount ledger (contract §4.3)
+// Persistent signed-amount ledger (contract §4.3; review KAS-2 / KAS-6)
 // ---------------------------------------------------------------------------
+//
+// Outpoint → amount this wallet has signed with, persisted in localForage.
+// kaspa-core refuses to re-sign an outpoint under a different amount, which
+// closes the cross-session fee-inflation attack (kaspa-core AUDIT R2-1). Same
+// design as SSP Key's lib/kaspaLedger.ts:
+//  - values are `amount@signedAtMs` (a legacy bare `amount` still reads, as
+//    signed at time 0); keys are lowercase `txid:index`;
+//  - an unreadable blob fails CLOSED (KasLedgerCorruptError): signing stops
+//    until the user explicitly resets it (resetCorruptKasLedger keeps the bad
+//    blob under another key and starts empty) — never silently `{}`;
+//  - eviction only past KAS_LEDGER_MAX_ENTRIES and only of entries older than
+//    KAS_LEDGER_MIN_AGE_MS; a ledger full of younger guards refuses to sign
+//    (KasLedgerFullError) — flooding it with dust to evict a guard is the
+//    attack;
+//  - one lock (withKasLedgerLock) around every whole signing session: the
+//    ledger is read once, checked, signed against and written back with no
+//    other session interleaving its read-modify-write. It is a Web Lock
+//    (navigator.locks, one per extension origin), so it also covers every
+//    other extension page (popup, tab, side panel) that shares this storage;
+//    without Web Locks signing fails CLOSED (KasLedgerLockError);
+//  - a ledger conflict is resolved by PROOF, never by trusting a backend
+//    (reconcileKasLedger): the funding transaction is fetched and checked
+//    against its ID (rest.getFundingTransaction). A proven amount that differs
+//    from the entry means the earlier signature committed to a false amount
+//    and can never be valid on chain, so the entry is overwritten with the
+//    proven amount; a proven amount equal to the entry keeps the refusal; an
+//    amount that cannot be proven is a KasLedgerConflictError whose
+//    `unprovable` outpoints the user may reset explicitly
+//    (resetKasLedgerOutpoints) after a warning.
 
-const LEDGER_STORAGE_KEY = 'kas-signed-amounts';
-const LEDGER_MAX_ENTRIES = 20000;
-let ledgerQueue: Promise<unknown> = Promise.resolve();
+export const KAS_LEDGER_STORAGE_KEY = 'kas-signed-amounts';
+/** Prefix of the key a quarantined (unreadable) ledger blob is moved to. */
+export const KAS_LEDGER_QUARANTINE_PREFIX = 'kas-signed-amounts.corrupt.';
+/** Prefix of the key the entries removed by a per-outpoint reset are kept under. */
+export const KAS_LEDGER_RESET_PREFIX = 'kas-signed-amounts.reset.';
+/** Maximum number of outpoints kept. */
+export const KAS_LEDGER_MAX_ENTRIES = 20000;
+/** Entries younger than this are never evicted (30 days). */
+export const KAS_LEDGER_MIN_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+const KAS_OUTPOINT_RE = /^[0-9a-f]{64}:\d{1,10}$/;
+const KAS_LEDGER_VALUE_RE = /^(\d{1,20})(?:@(\d{1,16}))?$/;
+
+export class KasLedgerCorruptError extends Error {
+  constructor() {
+    super('Kaspa signed-amount ledger is unreadable; refusing to sign');
+    this.name = 'KasLedgerCorruptError';
+  }
+}
+
+export class KasLedgerFullError extends Error {
+  constructor() {
+    super(
+      'Kaspa signed-amount ledger is full of recent entries; refusing to sign until older entries age out',
+    );
+    this.name = 'KasLedgerFullError';
+  }
+}
 
 /**
- * Outpoint → amount this wallet has signed with, persisted in localForage.
- * kaspa-core refuses to re-sign an outpoint under a different amount, which
- * closes the cross-session fee-inflation attack (kaspa-core AUDIT R2-1).
- * Writes are serialised; the oldest entries are dropped past the cap.
+ * The UTXO source claims an amount for an outpoint this wallet already signed
+ * with a different amount, and the conflict could not be resolved by proof.
+ * `refused`: the proof CONFIRMS the earlier amount (the claim is false).
+ * `unprovable`: the funding transaction could not be proven (offer the
+ * explicit per-outpoint reset for these only, and only when `refused` is
+ * empty: a source caught lying about one coin is not trusted for the rest).
  */
-export function kasSignedAmountLedger(): K.SignedAmountLedger {
-  const load = async (): Promise<Record<string, string>> => {
-    const stored =
-      await localForage.getItem<Record<string, string>>(LEDGER_STORAGE_KEY);
-    return stored && typeof stored === 'object' ? stored : {};
-  };
+export class KasLedgerConflictError extends Error {
+  readonly refused: readonly string[];
+  readonly unprovable: readonly string[];
+  constructor(refused: readonly string[], unprovable: readonly string[]) {
+    super(
+      `This wallet already signed ${String(refused.length + unprovable.length)} Kaspa input(s) with a different amount${
+        unprovable.length > 0
+          ? `; ${String(unprovable.length)} could not be proven from the chain`
+          : ''
+      }`,
+    );
+    this.name = 'KasLedgerConflictError';
+    this.refused = [...refused];
+    this.unprovable = [...unprovable];
+  }
+}
+
+const isNamedError = (e: unknown, name: string): boolean =>
+  e instanceof Error && e.name === name;
+export const isKasLedgerCorruptError = (
+  e: unknown,
+): e is KasLedgerCorruptError => isNamedError(e, 'KasLedgerCorruptError');
+export const isKasLedgerFullError = (e: unknown): e is KasLedgerFullError =>
+  isNamedError(e, 'KasLedgerFullError');
+export const isKasLedgerConflictError = (
+  e: unknown,
+): e is KasLedgerConflictError =>
+  e instanceof KasLedgerConflictError ||
+  (isNamedError(e, 'KasLedgerConflictError') &&
+    Array.isArray((e as { refused?: unknown }).refused) &&
+    Array.isArray((e as { unprovable?: unknown }).unprovable));
+
+/**
+ * The cross-page ledger lock could not be taken: this browser has no Web
+ * Locks (`unavailable`), or another extension page held it for longer than
+ * KAS_LEDGER_LOCK_TIMEOUT_MS (`timeout`). Nothing was read or signed.
+ */
+export class KasLedgerLockError extends Error {
+  readonly reason: 'unavailable' | 'timeout';
+  constructor(reason: 'unavailable' | 'timeout') {
+    super(
+      reason === 'unavailable'
+        ? 'Kaspa signing needs the Web Locks API, which this browser does not provide; refusing to sign'
+        : 'Another SSP window is using the Kaspa signed-amount ledger; refusing to sign',
+    );
+    this.name = 'KasLedgerLockError';
+    this.reason = reason;
+  }
+}
+export const isKasLedgerLockError = (e: unknown): e is KasLedgerLockError =>
+  isNamedError(e, 'KasLedgerLockError');
+
+interface KasLedgerEntry {
+  amount: bigint;
+  at: number;
+}
+
+/** Strict parse of the stored blob; throws KasLedgerCorruptError. */
+function parseKasLedger(raw: unknown): Map<string, KasLedgerEntry> {
+  const map = new Map<string, KasLedgerEntry>();
+  if (raw === null || raw === undefined) return map;
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new KasLedgerCorruptError();
+  }
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    const m = typeof v === 'string' ? KAS_LEDGER_VALUE_RE.exec(v) : null;
+    if (!KAS_OUTPOINT_RE.test(k) || !m) throw new KasLedgerCorruptError();
+    map.set(k, { amount: BigInt(m[1]), at: m[2] ? Number(m[2]) : 0 });
+  }
+  return map;
+}
+
+function serializeKasLedger(
+  map: ReadonlyMap<string, KasLedgerEntry>,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, e] of map) out[k] = `${e.amount.toString()}@${String(e.at)}`;
+  return out;
+}
+
+/**
+ * Web Lock name of the ledger. Web Locks are scoped to the origin, so every
+ * page of the extension (popup, full tab, side panel) contends for the same
+ * lock, exactly as they share the same localForage ledger.
+ */
+export const KAS_LEDGER_WEB_LOCK = 'ssp-wallet:kas-signed-amounts';
+/** Longest wait for another page's signing session before refusing. */
+export const KAS_LEDGER_LOCK_TIMEOUT_MS = 120_000;
+
+let kasLedgerLock: Promise<unknown> = Promise.resolve();
+
+function kasLedgerLockManager(): LockManager {
+  const locks: LockManager | undefined =
+    typeof navigator === 'object' && navigator !== null
+      ? (navigator as { locks?: LockManager }).locks
+      : undefined;
+  if (!locks || typeof locks.request !== 'function') {
+    throw new KasLedgerLockError('unavailable');
+  }
+  return locks;
+}
+
+/**
+ * Run `fn` with exclusive use of the signed-amount ledger. Every signing
+ * session (load, check, sign, write back) runs inside it, so two signatures
+ * in flight can never interleave their read-modify-write — in this page (the
+ * in-page queue) or in any other extension page (the exclusive Web Lock
+ * KAS_LEDGER_WEB_LOCK). Without Web Locks, or when another page holds the
+ * lock past KAS_LEDGER_LOCK_TIMEOUT_MS, it throws KasLedgerLockError and
+ * `fn` never runs (fail closed). Never call the persistent ledger's own
+ * get/set from inside `fn` (they take the lock too: that would deadlock).
+ */
+export function withKasLedgerLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = kasLedgerLock.then(async () => {
+    const locks = kasLedgerLockManager();
+    let granted = false;
+    try {
+      return await locks.request(
+        KAS_LEDGER_WEB_LOCK,
+        {
+          mode: 'exclusive',
+          signal: AbortSignal.timeout(KAS_LEDGER_LOCK_TIMEOUT_MS),
+        },
+        () => {
+          granted = true;
+          return fn();
+        },
+      );
+    } catch (error) {
+      // The signal only aborts the WAIT; once granted, fn's own errors pass
+      // through unchanged.
+      if (
+        !granted &&
+        error instanceof Error &&
+        (error.name === 'TimeoutError' || error.name === 'AbortError')
+      ) {
+        throw new KasLedgerLockError('timeout');
+      }
+      throw error;
+    }
+  });
+  kasLedgerLock = run.catch(() => undefined);
+  return run;
+}
+
+/** One signing session's view of the ledger: read once, buffered, written once. */
+export interface KasLedgerSession extends K.SignedAmountLedger {
+  get(outpoint: string): bigint | undefined;
+  set(outpoint: string, amount: bigint): void;
+  /** Persist the buffered sets (MUST happen before any signature leaves). */
+  flush(): Promise<void>;
+}
+
+/** Load the ledger for one session. Call only inside withKasLedgerLock. */
+async function openKasLedgerSession(
+  now: () => number,
+): Promise<KasLedgerSession> {
+  const map = parseKasLedger(await localForage.getItem(KAS_LEDGER_STORAGE_KEY));
+  let dirty = false;
   return {
-    get: async (outpoint) => {
-      await ledgerQueue;
-      const v = (await load())[outpoint];
-      return typeof v === 'string' && /^\d+$/.test(v) ? BigInt(v) : undefined;
+    get(outpoint) {
+      return map.get(outpoint.toLowerCase())?.amount;
     },
-    set: (outpoint, amount) => {
-      const next = ledgerQueue.then(async () => {
-        const all = await load();
-        delete all[outpoint];
-        all[outpoint] = amount.toString();
-        const keys = Object.keys(all);
-        for (const k of keys.slice(
-          0,
-          Math.max(0, keys.length - LEDGER_MAX_ENTRIES),
-        ))
-          delete all[k];
-        await localForage.setItem(LEDGER_STORAGE_KEY, all);
-      });
-      ledgerQueue = next.catch(() => undefined);
-      return next;
+    set(outpoint, amount) {
+      const key = outpoint.toLowerCase();
+      if (!KAS_OUTPOINT_RE.test(key)) {
+        throw new Error('Invalid Kaspa outpoint for the signed-amount ledger');
+      }
+      const t = now();
+      map.delete(key);
+      if (map.size >= KAS_LEDGER_MAX_ENTRIES) {
+        // Evict the least recently signed entries — only old enough ones.
+        const excess = map.size - KAS_LEDGER_MAX_ENTRIES + 1;
+        const victims = [...map.entries()]
+          .filter(([, e]) => t - e.at >= KAS_LEDGER_MIN_AGE_MS)
+          .sort((a, b) => a[1].at - b[1].at)
+          .slice(0, excess);
+        if (victims.length < excess) throw new KasLedgerFullError();
+        for (const [k] of victims) map.delete(k);
+      }
+      map.set(key, { amount, at: t });
+      dirty = true;
+    },
+    async flush() {
+      if (!dirty) return;
+      await localForage.setItem(
+        KAS_LEDGER_STORAGE_KEY,
+        serializeKasLedger(map),
+      );
+      dirty = false;
     },
   };
+}
+
+/** The handle `kasSignedAmountLedger()` returns (recognised by the sign paths). */
+export interface KasPersistentLedger extends K.SignedAmountLedger {
+  readonly kasPersistentLedger: true;
+  readonly now: () => number;
+}
+
+function isKasPersistentLedger(l: unknown): l is KasPersistentLedger {
+  return (
+    !!l &&
+    typeof l === 'object' &&
+    (l as { kasPersistentLedger?: unknown }).kasPersistentLedger === true
+  );
+}
+
+/**
+ * The persistent ledger. Pass it to signKasSend / signKasVaultBundle, which
+ * run one locked session over it (reconcile → sign → write). Its own get/set
+ * are each a locked one-entry session, for any other caller.
+ */
+export function kasSignedAmountLedger(
+  now: () => number = Date.now,
+): KasPersistentLedger {
+  return {
+    kasPersistentLedger: true,
+    now,
+    get: (outpoint) =>
+      withKasLedgerLock(async () =>
+        (await openKasLedgerSession(now)).get(outpoint),
+      ),
+    set: (outpoint, amount) =>
+      withKasLedgerLock(async () => {
+        const session = await openKasLedgerSession(now);
+        session.set(outpoint, amount);
+        await session.flush();
+      }),
+  };
+}
+
+/** True if a ledger blob exists and cannot be read. */
+export async function isKasLedgerCorrupt(): Promise<boolean> {
+  try {
+    parseKasLedger(await localForage.getItem(KAS_LEDGER_STORAGE_KEY));
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Recovery for an unreadable ledger — ONLY after an explicit user
+ * confirmation. Moves the blob to `kas-signed-amounts.corrupt.<ms>` (kept,
+ * never read again) and starts an empty ledger. Refuses (false) when the
+ * ledger is readable, so it can never wipe a healthy ledger.
+ */
+export function resetCorruptKasLedger(
+  now: () => number = Date.now,
+): Promise<boolean> {
+  return withKasLedgerLock(async () => {
+    const raw: unknown = await localForage.getItem(KAS_LEDGER_STORAGE_KEY);
+    try {
+      parseKasLedger(raw);
+      return false;
+    } catch {
+      await localForage.setItem(
+        `${KAS_LEDGER_QUARANTINE_PREFIX}${String(now())}`,
+        raw,
+      );
+      await localForage.setItem(KAS_LEDGER_STORAGE_KEY, {});
+      return true;
+    }
+  });
+}
+
+/**
+ * Per-outpoint reset — ONLY after an explicit user confirmation, and only for
+ * outpoints whose amount could not be proven (KasLedgerConflictError
+ * `unprovable`). Removes those entries (a copy is kept under
+ * `kas-signed-amounts.reset.<ms>`); returns how many were removed.
+ */
+export function resetKasLedgerOutpoints(
+  outpoints: readonly string[],
+  now: () => number = Date.now,
+): Promise<number> {
+  return withKasLedgerLock(async () => {
+    const map = parseKasLedger(
+      await localForage.getItem(KAS_LEDGER_STORAGE_KEY),
+    );
+    const removed = new Map<string, KasLedgerEntry>();
+    for (const o of outpoints) {
+      const key = typeof o === 'string' ? o.toLowerCase() : '';
+      const e = map.get(key);
+      if (e) {
+        removed.set(key, e);
+        map.delete(key);
+      }
+    }
+    if (removed.size === 0) return 0;
+    await localForage.setItem(
+      `${KAS_LEDGER_RESET_PREFIX}${String(now())}`,
+      serializeKasLedger(removed),
+    );
+    await localForage.setItem(KAS_LEDGER_STORAGE_KEY, serializeKasLedger(map));
+    return removed.size;
+  });
+}
+
+/** What the chain proves about one outpoint: its amount and script. */
+export interface KasProvenOutput {
+  amount: bigint;
+  scriptPublicKey: K.ScriptPublicKey;
+}
+
+export type KasOutpointProver = (
+  txid: string,
+  index: number,
+) => Promise<KasProvenOutput>;
+
+/**
+ * Prove an outpoint's amount from the transaction that created it:
+ * getFundingTransaction returns it only if it hashes to `txid`, so its
+ * outputs are what the chain committed to whatever the server claims.
+ */
+export function kasOutpointProver(rest: KaspaRestClient): KasOutpointProver {
+  return async (txid, index) => {
+    const tx = await rest.getFundingTransaction(txid);
+    const out = tx.outputs[index];
+    if (!out)
+      throw new Error(`funding transaction ${txid} has no output ${index}`);
+    return { amount: out.value, scriptPublicKey: out.scriptPublicKey };
+  };
+}
+
+function kasOutpointKey(plan: K.InputPlan): string {
+  return `${K.bytesToHex(plan.outpoint.transactionId)}:${String(plan.outpoint.index)}`;
+}
+
+/**
+ * Resolve every ledger conflict of `inputs` by proof (see the section
+ * comment). Overwrites provably wrong entries in `ledger`; throws
+ * KasLedgerConflictError when any conflict remains, so signTransaction never
+ * runs into a bare amount mismatch.
+ */
+export async function reconcileKasLedger(
+  ledger: K.SignedAmountLedger,
+  inputs: readonly K.InputPlan[],
+  prove: KasOutpointProver,
+): Promise<void> {
+  const refused: string[] = [];
+  const unprovable: string[] = [];
+  for (const input of inputs) {
+    const key = kasOutpointKey(input);
+    const stored = await ledger.get(key);
+    if (stored === undefined || stored === input.entry.amount) continue;
+    let proven: KasProvenOutput;
+    try {
+      proven = await prove(
+        K.bytesToHex(input.outpoint.transactionId),
+        input.outpoint.index,
+      );
+    } catch {
+      unprovable.push(key);
+      continue;
+    }
+    if (!sameScript(proven.scriptPublicKey, input.entry.scriptPublicKey)) {
+      // The UTXO source misreports the script too: never sign this.
+      refused.push(key);
+      continue;
+    }
+    if (proven.amount !== stored) {
+      // The earlier signature committed to an amount the chain never had:
+      // it can never be valid, so the guard moves to the proven amount.
+      await ledger.set(key, proven.amount);
+    }
+    if (proven.amount !== input.entry.amount) refused.push(key);
+  }
+  if (refused.length > 0 || unprovable.length > 0) {
+    throw new KasLedgerConflictError(refused, unprovable);
+  }
+}
+
+/**
+ * One locked signing session over `ledger`: reconcile the inputs' entries by
+ * proof, sign, then persist BEFORE the signatures are returned. A foreign
+ * (non-persistent) ledger is used as-is, still under the lock.
+ */
+async function withKasSigningLedger<T>(
+  ledger: K.SignedAmountLedger | undefined,
+  inputs: readonly K.InputPlan[],
+  prove: () => KasOutpointProver,
+  sign: (ledger: K.SignedAmountLedger | undefined) => Promise<T>,
+): Promise<T> {
+  if (!ledger) return sign(undefined);
+  return withKasLedgerLock(async () => {
+    const session = isKasPersistentLedger(ledger)
+      ? await openKasLedgerSession(ledger.now)
+      : null;
+    const active: K.SignedAmountLedger = session ?? ledger;
+    let result: T;
+    try {
+      await reconcileKasLedger(active, inputs, prove());
+      result = await sign(active);
+    } catch (error) {
+      // Entries moved to a PROVEN amount are always safe to keep.
+      if (session) await session.flush().catch(() => undefined);
+      throw error;
+    }
+    // Persisted before any signature leaves this function; a failed write
+    // aborts the release.
+    if (session) await session.flush();
+    return result;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -472,6 +904,8 @@ export interface KasPlanned {
   plan: K.Plan;
   spend: KasSpend;
   sender: string;
+  /** The chain planned on (selects the REST backend that proves amounts). */
+  chain?: string;
 }
 
 /**
@@ -517,7 +951,7 @@ export async function planKasSend(p: KasPlanParams): Promise<KasPlanned> {
       ...(virtualDaaScore !== undefined ? { virtualDaaScore } : {}),
     },
   );
-  return { plan, spend, sender };
+  return { plan, spend, sender, chain: p.chain };
 }
 
 /**
@@ -529,22 +963,43 @@ export async function signKasSend(
   planned: KasPlanned,
   walletPrivKeyHex: string,
   signedAmounts?: K.SignedAmountLedger,
+  rest?: KaspaRestClient,
 ): Promise<{ payload: string; txid: string }> {
   const key = K.hexToBytes(walletPrivKeyHex);
   const signer = K.localSigner(key);
   key.fill(0);
   try {
     const f = planned.plan.final;
-    const partials = await K.signTransaction(f.tx, f.inputs, [signer], {
-      onlyScripts: [K.spendScriptPublicKey(planned.spend)],
-      ...(signedAmounts ? { signedAmounts } : {}),
-    });
+    const partials = await withKasSigningLedger(
+      signedAmounts,
+      f.inputs,
+      () => kasOutpointProver(rest ?? kasRestClient(planned.chain ?? 'kas')),
+      (ledger) =>
+        K.signTransaction(f.tx, f.inputs, [signer], {
+          onlyScripts: [K.spendScriptPublicKey(planned.spend)],
+          ...(ledger ? { signedAmounts: ledger } : {}),
+        }),
+    );
     if (partials.length !== f.inputs.length)
       throw new Error('Wallet key does not belong to this Kaspa vault');
     const bundle = K.createSigningBundle(f.tx, f.inputs, partials);
     return { payload: JSON.stringify(bundle), txid: K.bytesToHex(f.id) };
   } finally {
     signer.destroy();
+  }
+}
+
+/**
+ * A user-typed KAS amount → sompi, exactly (kaspa-core kaspaToSompi: plain
+ * decimal, at most 8 fractional digits — no sign, exponent, hex, spaces or
+ * separators). null for anything else or a non-positive amount.
+ */
+export function kasUnitsToSompi(units: string): bigint | null {
+  try {
+    const sompi = K.kaspaToSompi(units);
+    return sompi > 0n ? sompi : null;
+  } catch {
+    return null;
   }
 }
 
@@ -988,11 +1443,12 @@ export interface KasVaultSignParams extends KasVaultCheckOptions {
 export async function signKasVaultBundle(
   p: KasVaultSignParams,
 ): Promise<string> {
+  const rest = p.rest ?? kasRestClient(p.chain);
   const { opened, vault } = await openVaultBundle(
     p.bundleJson,
     p.chain,
     p.inputDetails,
-    p.rest ?? kasRestClient(p.chain),
+    rest,
     p,
   );
   const { privKey } = generateAddressKeypairKAS(
@@ -1009,15 +1465,16 @@ export async function signKasVaultBundle(
     if (!K.spendSigningKeys(vault.spend).some((k) => K.equalBytes(k, own))) {
       throw new Error('This wallet is not a signer of the proposal vault');
     }
-    const partials = await K.signTransaction(
-      opened.tx,
+    const partials = await withKasSigningLedger(
+      p.signedAmounts,
       opened.inputs,
-      [signer],
-      {
-        onlyScripts: [vault.script],
-        ...(p.maxFee !== undefined ? { maxFee: p.maxFee } : {}),
-        ...(p.signedAmounts ? { signedAmounts: p.signedAmounts } : {}),
-      },
+      () => kasOutpointProver(rest),
+      (ledger) =>
+        K.signTransaction(opened.tx, opened.inputs, [signer], {
+          onlyScripts: [vault.script],
+          ...(p.maxFee !== undefined ? { maxFee: p.maxFee } : {}),
+          ...(ledger ? { signedAmounts: ledger } : {}),
+        }),
     );
     if (partials.length !== opened.inputs.length) {
       throw new Error('Wallet key did not sign every input of the proposal');

@@ -9,7 +9,10 @@
  *  - a plan whose amount or fee differs from what was shown is never signed:
  *    the hook refreshes UTXOs + rates + DAA score and the user re-confirms,
  *    after which the send goes through (Max no longer gets stuck);
- *  - the wallet key is decrypted and derived only after planning succeeded.
+ *  - the wallet key is decrypted and derived only after planning succeeded;
+ *  - user-typed amounts are plain decimals only (no hex / exponent, KAS-7);
+ *  - signed-amount ledger refusals surface the explicit, warned resets
+ *    (unreadable record; unprovable coins only — KAS-2 / KAS-6).
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createElement, act } from 'react';
@@ -28,18 +31,27 @@ const m = vi.hoisted(() => ({
   generateAddressKeypair: vi.fn(),
   toast: vi.fn(),
   post: vi.fn(),
+  confirm: vi.fn(),
+  resetCorrupt: vi.fn(),
+  resetOutpoints: vi.fn(),
 }));
 
-vi.mock('../../src/lib/kaspa', () => ({
-  fetchKasUtxos: m.fetchKasUtxos,
-  fetchKasFeeRates: m.fetchKasFeeRates,
-  planKasSend: m.planKasSend,
-  signKasSend: m.signKasSend,
-  isKasTransactionKnown: vi.fn(async () => false),
-  kasRestClient: () => ({ getVirtualDaaScore: async () => 5000n }),
-  kasSignedAmountLedger: () => ({ get: () => undefined, set: () => {} }),
-  sumKasUtxos: (u) => u.reduce((a, x) => a + x.entry.amount, 0n),
-}));
+vi.mock('../../src/lib/kaspa', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    fetchKasUtxos: m.fetchKasUtxos,
+    fetchKasFeeRates: m.fetchKasFeeRates,
+    planKasSend: m.planKasSend,
+    signKasSend: m.signKasSend,
+    isKasTransactionKnown: vi.fn(async () => false),
+    kasRestClient: () => ({ getVirtualDaaScore: async () => 5000n }),
+    kasSignedAmountLedger: () => ({ get: () => undefined, set: () => {} }),
+    sumKasUtxos: (u) => u.reduce((a, x) => a + x.entry.amount, 0n),
+    resetCorruptKasLedger: m.resetCorrupt,
+    resetKasLedgerOutpoints: m.resetOutpoints,
+  };
+});
 vi.mock('../../src/hooks', () => {
   const state = {
     sspState: { activeChain: 'kas', sspWalletKeyInternalIdentity: 'wk1' },
@@ -78,6 +90,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k) => k }),
 }));
 vi.mock('antd', () => ({
+  App: { useApp: () => ({ modal: { confirm: m.confirm } }) },
   Form: { useForm: () => [{ setFieldValue: () => {} }] },
 }));
 vi.mock('../../src/lib/toast', () => ({ toast: { open: m.toast } }));
@@ -113,6 +126,10 @@ vi.mock('@storage/ssp', () => ({
 }));
 
 import { useKasSendStrategy } from '../../src/pages/SendFlow/useKasSendStrategy';
+import {
+  KasLedgerConflictError,
+  KasLedgerCorruptError,
+} from '../../src/lib/kaspa';
 
 /** UTXO set with the given amounts (sompi). */
 const utxos = (...amounts: bigint[]) =>
@@ -313,5 +330,97 @@ describe('useKasSendStrategy', () => {
     await submit();
     expect(m.decrypt).not.toHaveBeenCalled();
     expect(m.generateAddressKeypair).not.toHaveBeenCalled();
+  });
+
+  it('KAS-7: hex / exponent / signed / spaced amounts are never planned or signed', async () => {
+    await mount();
+    await act(async () => view.receiver.set(RECEIVER));
+    for (const bad of ['0x10', '1e2', ' 1', '+1', '1_000', '12.345678912']) {
+      await act(async () => view.amount.set(bad));
+      await flush();
+      expect(view.validateCompose()).toBe('send:err_invalid_amount');
+      await submit();
+    }
+    expect(m.signKasSend).not.toHaveBeenCalled();
+    // and a plain decimal with 8 places is fine
+    await act(async () => view.amount.set('1.00000001'));
+    await flush();
+    expect(view.validateCompose()).toBeNull();
+  });
+
+  it('KAS-2: an unprovable ledger conflict offers a reset of exactly those coins', async () => {
+    await mount();
+    await act(async () => view.receiver.set(RECEIVER));
+    await act(async () => view.amount.set('1'));
+    await flush();
+    const coin = `${'09'.repeat(32)}:0`;
+    m.signKasSend.mockRejectedValueOnce(new KasLedgerConflictError([], [coin]));
+    m.resetOutpoints.mockResolvedValue(1);
+    await submit();
+    expect(m.post).not.toHaveBeenCalled();
+    expect(m.confirm).toHaveBeenCalledTimes(1);
+    const dialog = m.confirm.mock.calls[0][0];
+    expect(dialog.title).toBe('send:kas_ledger_conflict_title');
+    expect(dialog.okButtonProps).toEqual({ danger: true });
+    expect(m.resetOutpoints).not.toHaveBeenCalled(); // only on explicit OK
+    await act(async () => dialog.onOk());
+    expect(m.resetOutpoints).toHaveBeenCalledWith([coin]);
+  });
+
+  it('KAS-2: a proven conflict next to an unprovable coin is refused without any reset offer', async () => {
+    await mount();
+    await act(async () => view.receiver.set(RECEIVER));
+    await act(async () => view.amount.set('1'));
+    await flush();
+    m.signKasSend.mockRejectedValueOnce(
+      new KasLedgerConflictError(
+        [`${'08'.repeat(32)}:1`],
+        [`${'09'.repeat(32)}:0`],
+      ),
+    );
+    await submit();
+    expect(m.post).not.toHaveBeenCalled();
+    expect(m.confirm).not.toHaveBeenCalled();
+    expect(m.resetOutpoints).not.toHaveBeenCalled();
+    expect(m.toast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'error',
+        content: 'send:err_kas_ledger_conflict_proven',
+      }),
+    );
+  });
+
+  it('KAS-2: a conflict the chain PROVES (no unprovable coin) is refused without a reset offer', async () => {
+    await mount();
+    await act(async () => view.receiver.set(RECEIVER));
+    await act(async () => view.amount.set('1'));
+    await flush();
+    m.signKasSend.mockRejectedValueOnce(
+      new KasLedgerConflictError([`${'08'.repeat(32)}:1`], []),
+    );
+    await submit();
+    expect(m.confirm).not.toHaveBeenCalled();
+    expect(m.toast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'error',
+        content: 'send:err_kas_ledger_conflict_proven',
+      }),
+    );
+  });
+
+  it('KAS-6: an unreadable ledger blocks signing and offers the warned full reset', async () => {
+    await mount();
+    await act(async () => view.receiver.set(RECEIVER));
+    await act(async () => view.amount.set('1'));
+    await flush();
+    m.signKasSend.mockRejectedValueOnce(new KasLedgerCorruptError());
+    m.resetCorrupt.mockResolvedValue(true);
+    await submit();
+    expect(m.post).not.toHaveBeenCalled();
+    const dialog = m.confirm.mock.calls[0][0];
+    expect(dialog.title).toBe('send:kas_ledger_corrupt_title');
+    expect(m.resetCorrupt).not.toHaveBeenCalled();
+    await act(async () => dialog.onOk());
+    expect(m.resetCorrupt).toHaveBeenCalledTimes(1);
   });
 });
