@@ -741,7 +741,8 @@
     "consent_info": "Cumpărarea și vânzarea criptomonedelor sunt facilitate printr-un serviciu terț oferit de Onramper. Deși SSP se angajează să asigure cel mai înalt nivel de securitate pentru utilizatorii săi, nu putem garanta securitatea și confidențialitatea serviciilor terțe.",
     "consent_info_2": "Recunosc riscurile asociate și doresc să continui.",
     "not_available_later": "Tranzacțiile cu criptomonede sunt momentan indisponibile. Te rugăm să încerci din nou mai târziu.",
-    "coming_soon": "În curând!"
+    "coming_soon": "În curând!",
+    "not_available_region": "Not available to buy or sell in your region yet. Buy another coin and swap it instead."
   },
   "swap": {
     "swap_crypto": "Schimbă Crypto",
