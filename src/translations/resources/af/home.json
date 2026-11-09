@@ -741,7 +741,8 @@
     "consent_info": "Die aankoop en verkoop van kripto-geldeenhede word gefasiliteer deur 'n derdeparty diens wat deur Onramper voorsien word. Terwyl SSP verbind is om die hoogste vlak van sekuriteit vir sy gebruikers te verseker, kan ons nie die sekuriteit en privaatheid van derdeparty dienste waarborg nie.",
     "consent_info_2": "Ek erken die gepaardgaande risiko's en wil voortgaan.",
     "not_available_later": "Kripto-geldeenheid transaksies is tans nie beskikbaar nie. Probeer asseblief later weer.",
-    "coming_soon": "Binnekort Beskikbaar!"
+    "coming_soon": "Binnekort Beskikbaar!",
+    "not_available_region": "Not available to buy or sell in your region yet. Buy another coin and swap it instead."
   },
   "swap": {
     "swap_crypto": "Wissel Kripto",
