@@ -741,7 +741,8 @@
     "consent_info": "Köp och försäljning av kryptovalutor underlättas genom en tjänst från tredje part som tillhandahålls av Onramper. Även om SSP är engagerade i att säkerställa högsta säkerhetsnivå för sina användare, kan vi inte garantera säkerheten och integriteten för tjänster från tredje part.",
     "consent_info_2": "Jag erkänner de associerade riskerna och önskar fortsätta.",
     "not_available_later": "Kryptovalutatransaktioner är för närvarande inte tillgängliga. Försök igen senare.",
-    "coming_soon": "Kommer snart!"
+    "coming_soon": "Kommer snart!",
+    "not_available_region": "Not available to buy or sell in your region yet. Buy another coin and swap it instead."
   },
   "swap": {
     "swap_crypto": "Byt kryptovaluta",
