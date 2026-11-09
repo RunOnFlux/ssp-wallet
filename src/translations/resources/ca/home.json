@@ -741,7 +741,8 @@
     "consent_info": "La compra i venda de criptomonedes es faciliten mitjançant un servei de tercer proporcionat per Onramper. Tot i que SSP es compromet a garantir el màxim nivell de seguretat per als seus usuaris, no podem garantir la seguretat i la privadesa dels serveis de tercers.",
     "consent_info_2": "Reconec els riscos associats i desitjo continuar.",
     "not_available_later": "Les transaccions de criptomonedes actualment no estan disponibles. Torna a intentar-ho més tard.",
-    "coming_soon": "Aviat disponible!"
+    "coming_soon": "Aviat disponible!",
+    "not_available_region": "Not available to buy or sell in your region yet. Buy another coin and swap it instead."
   },
   "swap": {
     "swap_crypto": "Intercanviar criptomoneda",
