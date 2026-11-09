@@ -1084,6 +1084,12 @@ export function useEvmSendStrategy(): SendStrategyView {
         displayMessage('error', error.message ?? t('send:err_s1'));
       });
 
+    // Fallback detection for when the Key's `txid` socket event is missed.
+    // Only a transaction mined after this send started can be it: matching
+    // on amount alone picked up an older same-amount transfer missing from
+    // the cached history and reported it as sent before the Key approved.
+    // Small allowance for block-timestamp vs local-clock skew.
+    const pollSince = Date.now() - 2 * 60 * 1000;
     const fetchTransactions = () => {
       fetchAddressTransactions(sender, activeChain, 0, 3, 1)
         .then((txs) => {
@@ -1094,9 +1100,15 @@ export function useEvmSendStrategy(): SendStrategyView {
               ),
             )
             .toFixed();
-          // amount must be the same and not present in our transactions table
+          const receiver = String(values.receiver).toLowerCase();
+          // amount must be the same, recent, to the same receiver (when the
+          // explorer reports one) and not present in our transactions table
           txs.forEach((tx) => {
-            if (tx.amount === amount) {
+            if (
+              tx.amount === amount &&
+              tx.timestamp >= pollSince &&
+              (!tx.receiver || tx.receiver.toLowerCase() === receiver)
+            ) {
               const txExists = transactions.find(
                 (ttx: transaction) => ttx.txid === tx.txid,
               );
@@ -1712,7 +1724,7 @@ export function useEvmSendStrategy(): SendStrategyView {
         open={openTxSent}
         openAction={txSentAction}
         txid={txid}
-        chain={txChain}
+        chain={txChain || activeChain}
       />
       <TxRejected open={openTxRejected} openAction={txRejectedAction} />
       <ConfirmPublicNoncesKey
