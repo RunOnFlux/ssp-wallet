@@ -18,11 +18,16 @@ const browserOverrides = {
     background: {
       scripts: ['scripts/background.js'],
     },
-    // See: https://mzl.la/firefox-builtin-data-consent
+    // Firefox built-in data consent: https://mzl.la/firefox-builtin-data-consent
+    // The wallet sends addresses, balances and transactions to its own
+    // backends and the SSP relay, which Mozilla classifies as
+    // financialAndPaymentInfo. The built-in consent needs Firefox 140+
+    // (desktop) / 142+ (Android), hence the strict_min_version values in
+    // public/manifest.json; older versions would need a custom consent screen.
     browser_specific_settings: {
       gecko: {
         data_collection_permissions: {
-          required: ['none'],
+          required: ['financialAndPaymentInfo'],
         },
       },
     },
