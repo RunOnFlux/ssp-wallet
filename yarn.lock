@@ -1758,10 +1758,10 @@
     "@coral-xyz/anchor" "0.31.1"
     "@solana/web3.js" "1.98.4"
 
-"@runonflux/utxo-lib@1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@runonflux/utxo-lib/-/utxo-lib-1.0.6.tgz#d45d17a1788e1e17de1745dc19c407ea03c90471"
-  integrity sha512-xd1IsybsgSXerd2NodYV74HiUS5iGcX5TXroC9Szol+FgLfDvZwWFtKgQVzO2iVkJVx5YKzkQPaYAsL+qzWSQg==
+"@runonflux/utxo-lib@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@runonflux/utxo-lib/-/utxo-lib-1.1.0.tgz#9c90cad543ae3370e62d8537f91a4fb7c8863d2e"
+  integrity sha512-eW2g0sT/MA0cfOH/ogpel+r1LMhab67yiecaCn6C8QnchVyA81GgtfaxXIUpY2ERq6d1ZIEO7ByiTu72WjOYSQ==
   dependencies:
     bech32 "0.0.3"
     bigi "^1.4.0"

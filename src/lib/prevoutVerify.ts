@@ -34,7 +34,7 @@ export type FetchRawTxHex = (
 /**
  * True for UTXO chains whose signature hash omits the input amounts:
  * legacy (non-BIP143) P2SH chains without the BCH forkid and without the
- * Zcash/Flux ZIP-243 (tx version >= 4) sighash. Today: doge and rvn.
+ * Zcash/Flux ZIP-243/ZIP-244 (tx version >= 4) sighash. Today: doge and rvn.
  */
 export function sighashOmitsInputAmounts(chain: keyof cryptos): boolean {
   const config = blockchains[chain];
@@ -42,7 +42,7 @@ export function sighashOmitsInputAmounts(chain: keyof cryptos): boolean {
   if (config.chainType === 'evm' || config.chainType === 'sol') return false;
   if (config.scriptType === 'p2wsh') return false; // BIP143 commits amounts
   if (config.hashType) return false; // BCH SIGHASH_FORKID (BIP143-style)
-  if (config.txVersion && config.txVersion >= 4) return false; // ZIP-243
+  if (config.txVersion && config.txVersion >= 4) return false; // ZIP-243/244
   return true;
 }
 

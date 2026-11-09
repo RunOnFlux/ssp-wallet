@@ -278,8 +278,10 @@ const zec = {
     public: 0x0488b21e,
     private: 0x0488ade4,
   },
-  txVersion: 4,
-  txGroupID: 0x892f2085,
+  // NU7 (mainnet block 3,543,405, 2026-11-05) made v4 invalid (ZIP 2003):
+  // v5 transactions (ZIP 225 / ZIP 244) with the NU5+ version group id.
+  txVersion: 5,
+  txGroupID: 0x26a7270a,
   backend: 'blockbook',
   dustLimit: 546, // min utxo amount
   minFeePerByte: 1, // min fee per byte
@@ -288,7 +290,7 @@ const zec = {
   maxTxSize: 100000, // 100,000 vbytes
   maxFee: 10000000, // 0.1 ZEC
   rbf: false,
-  txExpiryHeight: 60, // 1 hour
+  txExpiryHeight: 144, // 144 blocks x 25 s (NU7 block time) = 1 hour
   onramperNetwork: 'zcash',
 };
 

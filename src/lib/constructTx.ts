@@ -46,6 +46,7 @@ import {
   verifyUtxoInputValues,
 } from './prevoutVerify';
 import { assertSolPaymasterFeeWithinCap } from './sendStrategies/sol';
+import { applyZcashV5Prevouts, assertChainTxVersion } from './zcashV5';
 
 const utxoCache = new LRUCache({
   max: 1000,
@@ -274,6 +275,16 @@ export function signTransaction(
       utxolib.Transaction.fromHex(txhex, network),
       network,
     );
+    assertChainTxVersion(chain, txb.tx);
+    let redeemScriptForSign: Buffer | undefined;
+    let witnessScriptForSign: Buffer | undefined;
+    if (redeemScript) {
+      redeemScriptForSign = Buffer.from(redeemScript, 'hex');
+    }
+    if (witnessScript) {
+      witnessScriptForSign = Buffer.from(witnessScript, 'hex');
+    }
+    const inputValues: number[] = [];
     for (let i = 0; i < txb.inputs.length; i += 1) {
       const hashHex = txb.tx.ins[i].hash.toString('hex');
       const hash = getValueHexBuffer(hashHex);
@@ -282,20 +293,27 @@ export function signTransaction(
       if (!utxoFound) {
         throw new Error(`Could not find value for input ${hash}:${index}`);
       }
-      let redeemScriptForSign;
-      let witnessScriptForSign;
-      if (redeemScript) {
-        redeemScriptForSign = Buffer.from(redeemScript, 'hex');
-      }
-      if (witnessScript) {
-        witnessScriptForSign = Buffer.from(witnessScript, 'hex');
-      }
+      inputValues.push(new BigNumber(utxoFound.satoshis).toNumber());
+    }
+    // Zcash v5 (NU7, ZIP 244): every signature commits to the value and
+    // scriptPubKey of ALL inputs. All inputs spend this wallet's own
+    // multisig address, so each scriptPubKey is derived from the same
+    // redeemScript/witnessScript. No-op for non-v5 transactions.
+    applyZcashV5Prevouts(
+      txb,
+      inputValues.map((value) => ({
+        value,
+        redeemScript: redeemScriptForSign,
+        witnessScript: witnessScriptForSign,
+      })),
+    );
+    for (let i = 0; i < txb.inputs.length; i += 1) {
       txb.sign(
         i,
         keyPair,
         redeemScriptForSign,
         hashType,
-        new BigNumber(utxoFound.satoshis).toNumber(),
+        inputValues[i],
         witnessScriptForSign,
       );
     }
