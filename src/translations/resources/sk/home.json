@@ -741,7 +741,8 @@
     "consent_info": "Nákup a predaj kryptomien je umožnený prostredníctvom služby tretích strán poskytovanej spoločnosťou Onramper. Hoci SSP sa zaväzuje zabezpečiť najvyššiu úroveň bezpečnosti pre svojich používateľov, nemôžeme zaručiť bezpečnosť a ochranu súkromia služieb tretích strán.",
     "consent_info_2": "Uznávam súvisiace riziká a prajem si pokračovať.",
     "not_available_later": "Transakcie s kryptomenami momentálne nie sú k dispozícii. Skúste to neskôr.",
-    "coming_soon": "Čoskoro k dispozícii!"
+    "coming_soon": "Čoskoro k dispozícii!",
+    "not_available_region": "Not available to buy or sell in your region yet. Buy another coin and swap it instead."
   },
   "swap": {
     "swap_crypto": "Vymeniť kryptomenu",
