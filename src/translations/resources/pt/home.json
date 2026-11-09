@@ -741,7 +741,8 @@
     "consent_info": "A compra e venda de criptomoedas são facilitadas por um serviço de terceiros fornecido pela Onramper. Embora a SSP esteja comprometida em garantir o mais alto nível de segurança para seus utilizadores, não podemos garantir a segurança e a privacidade de serviços de terceiros.",
     "consent_info_2": "Reconheço os riscos associados e desejo prosseguir.",
     "not_available_later": "Transações de criptomoeda estão indisponíveis no momento. Tente novamente mais tarde.",
-    "coming_soon": "Brevemente!"
+    "coming_soon": "Brevemente!",
+    "not_available_region": "Not available to buy or sell in your region yet. Buy another coin and swap it instead."
   },
   "swap": {
     "swap_crypto": "Trocar crypto",
