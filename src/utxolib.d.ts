@@ -34,11 +34,19 @@ declare module '@runonflux/utxo-lib' {
       witnessScript: Buffer | undefined,
     ) => void;
     buildIncomplete(): builtTx;
+    // Zcash v5 (ZIP 244): value + scriptPubKey of every input, in order
+    setPrevouts: (prevouts: zip244Prevout[]) => void;
     inputs: input[];
     tx: {
       ins: inInput[];
       outs: output[];
+      version: number;
+      isZcashV5?: () => boolean;
     };
+  }
+  interface zip244Prevout {
+    value: number;
+    script: Buffer;
   }
   interface network {
     messagePrefix: string;
@@ -92,6 +100,19 @@ declare module '@runonflux/utxo-lib' {
   interface TX {
     virtualSize(): number;
     ins: inInput[];
+    version: number;
+    versionGroupId?: number;
+    consensusBranchId?: number;
+    isZcashV5?: () => boolean;
+    setZip244Prevouts?: (prevouts: zip244Prevout[]) => void;
+    hashForZcashSignature?: (
+      inIndex: number,
+      prevOutScript: Buffer,
+      value: number,
+      hashType: number,
+    ) => Buffer;
+    getId?: () => string;
+    toHex?: () => string;
   }
   let Transaction: {
     fromHex: (txhex: string, network: network) => TX;

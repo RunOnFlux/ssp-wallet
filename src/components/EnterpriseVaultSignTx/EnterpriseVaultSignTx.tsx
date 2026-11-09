@@ -40,6 +40,7 @@ import axios from 'axios';
 import utxolib from '@runonflux/utxo-lib';
 import { Buffer } from 'buffer';
 import { getLibId } from '../../lib/constructTx';
+import { applyZcashV5Prevouts, assertChainTxVersion } from '../../lib/zcashV5';
 
 import { useTranslation } from 'react-i18next';
 import { generateRequestId } from '../../lib/wkSign';
@@ -834,14 +835,39 @@ function EnterpriseVaultSignTx({
         network,
       );
 
+      assertChainTxVersion(chain as keyof cryptos, txb.tx);
+
+      const inputs = parsedInputDetails.map(
+        (detail) =>
+          detail as {
+            addressIndex?: number;
+            witnessScript?: string;
+            redeemScript?: string;
+            amount?: string;
+          },
+      );
+
+      // Zcash v5 (NU7, ZIP 244): every signature commits to the value and
+      // scriptPubKey of ALL inputs. Inputs may come from different vault
+      // addresses, so each scriptPubKey is derived from that input's own
+      // redeemScript/witnessScript (checked against the vault descriptor
+      // before signing is enabled). No-op for non-v5 transactions.
+      applyZcashV5Prevouts(
+        txb,
+        inputs.map((input) => ({
+          value: input.amount ? Number(input.amount) : 0,
+          redeemScript: input.redeemScript
+            ? Buffer.from(input.redeemScript, 'hex')
+            : undefined,
+          witnessScript: input.witnessScript
+            ? Buffer.from(input.witnessScript, 'hex')
+            : undefined,
+        })),
+      );
+
       // Sign each input with the correct per-address keypair
       for (let i = 0; i < inputCount; i++) {
-        const input = parsedInputDetails[i] as {
-          addressIndex?: number;
-          witnessScript?: string;
-          redeemScript?: string;
-          amount?: string;
-        };
+        const input = inputs[i];
         // Non-number / out-of-range indices are refused, never coerced to 0.
         const addressIndex = inputAddressIndex(input);
 
