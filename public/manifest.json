@@ -49,7 +49,10 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "extension@sspwallet.io",
-      "strict_min_version": "114.0"
+      "strict_min_version": "140.0"
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
     }
   }
 }
