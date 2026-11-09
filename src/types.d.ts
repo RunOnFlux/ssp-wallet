@@ -531,6 +531,9 @@ export type servicesSSPRelay = {
   onramp: boolean;
   offramp: boolean;
   swap: boolean;
+  // Per Onramper network (blockchainConfig.onramperNetwork): false when no
+  // provider sells it in the caller's country. Missing = unknown = available.
+  onrampNetworks?: Record<string, boolean>;
 };
 
 export type onramperSignatureSSPRelay = {
