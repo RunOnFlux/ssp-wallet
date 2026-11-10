@@ -1,6 +1,8 @@
 import { QRCode, Typography, Button, Space, Modal } from 'antd';
 import { useSspLogo } from '../../hooks/useSspLogo';
 import { explorerTxUrl } from '../../lib/explorerUrl';
+import { backends } from '@storage/backends';
+import { useAppSelector } from '../../hooks';
 const { Paragraph, Text } = Typography;
 import { useTranslation } from 'react-i18next';
 
@@ -12,7 +14,13 @@ function TxSent(props: {
 }) {
   const { t } = useTranslation(['home', 'common']);
   const sspLogo = useSspLogo();
-  const { open, openAction, chain } = props;
+  const { open, openAction } = props;
+  const { activeChain } = useAppSelector((state) => state.sspState);
+  // The chain reported with the txid can be empty or unknown to this wallet
+  // build (e.g. a newer SSP Key). Fall back to the active chain rather than
+  // throwing on the explorer lookup.
+  const chain =
+    props.chain && backends()[props.chain] ? props.chain : activeChain;
 
   const handleOk = () => {
     openAction(false);
