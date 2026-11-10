@@ -741,7 +741,8 @@
     "consent_info": "De aankoop en verkoop van cryptocurrencies worden mogelijk gemaakt via een externe service van Onramper. Hoewel SSP zich inzet voor de hoogste beveiligingsstandaarden voor zijn gebruikers, kunnen we de veiligheid en privacy van diensten van derden niet garanderen.",
     "consent_info_2": "Ik erken de bijbehorende risico's en wil doorgaan.",
     "not_available_later": "Cryptocurrency-transacties zijn momenteel niet beschikbaar. Probeer het later opnieuw.",
-    "coming_soon": "Binnenkort beschikbaar!"
+    "coming_soon": "Binnenkort beschikbaar!",
+    "not_available_region": "Not available to buy or sell in your region yet. Buy another coin and swap it instead."
   },
   "swap": {
     "swap_crypto": "Crypto ruilen",

@@ -741,7 +741,8 @@
     "consent_info": "Pembelian dan penjualan cryptocurrency difasilitasi melalui layanan pihak ketiga yang disediakan oleh Onramper. Meskipun SSP berkomitmen untuk memastikan tingkat keamanan tertinggi bagi penggunanya, kami tidak dapat menjamin keamanan dan privasi layanan pihak ketiga.",
     "consent_info_2": "Saya mengakui risiko yang terkait dan ingin melanjutkan.",
     "not_available_later": "Transaksi Cryptocurrency saat ini tidak tersedia. Silakan coba lagi nanti.",
-    "coming_soon": "Segera Hadir!"
+    "coming_soon": "Segera Hadir!",
+    "not_available_region": "Not available to buy or sell in your region yet. Buy another coin and swap it instead."
   },
   "swap": {
     "swap_crypto": "Tukar Crypto",
