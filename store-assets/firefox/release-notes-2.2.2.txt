@@ -1,0 +1,5 @@
+Fix update. Please update SSP Key to 2.2.3 as well.
+• Fixes Zcash sends after the NU7 network upgrade
+• Fixes EVM sends showing an earlier transaction as sent
+• Declares the data SSP Wallet sends (addresses, balances, transactions); needs Firefox 140+
+• Buy and Sell greyed out where no provider sells the coin
