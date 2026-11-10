@@ -26,7 +26,7 @@ function withSolanaCluster(url: string, chain: string): string {
 
 function explorerHost(chain: string): string {
   const cfg = backends()[chain];
-  return cfg.explorer ?? cfg.node ?? '';
+  return cfg?.explorer ?? cfg?.node ?? '';
 }
 
 /** Explorer URL for a transaction by signature/hash. */
