@@ -2,6 +2,7 @@
 - Full documentation is available: https://docs.sspwallet.io/
 - A written and video guide on how to setup SSP correctly is available on website: https://sspwallet.io/guide
 - The uploaded source archive is `git archive` of the release tag. The package itself is the deterministic build published on the GitHub release for that tag.
+- Data collection: the Firefox manifest declares data_collection_permissions required ["financialAndPaymentInfo"] (addresses, balances and transactions sent to our backends and the SSP relay), using Firefox's built-in consent, so strict_min_version is 140.0 (Android 142.0). This addresses the "Consent: Nonexistent" finding on 2.2.1.
 
 === REPRODUCIBLE BUILD VERIFICATION ===
 
@@ -16,16 +17,16 @@ To verify the submitted package matches source code exactly:
    cd ssp-wallet
 
 2. Checkout the exact version being reviewed:
-   git checkout v2.2.1
+   git checkout v2.2.2
 
 3. Build deterministically using Docker:
    bash scripts/deterministic-build.sh
    (the same as `yarn build:deterministic`; no local `yarn install` is needed)
 
 4. Verify the Firefox package hash matches the submission:
-   sha256sum ssp-wallet-firefox-v2.2.1.zip
+   sha256sum ssp-wallet-firefox-v2.2.2.zip
    # Compare with the hash of the submitted package and with SHA256SUMS on
-   # https://github.com/RunOnFlux/ssp-wallet/releases/tag/v2.2.1
+   # https://github.com/RunOnFlux/ssp-wallet/releases/tag/v2.2.2
    # The hashes should be identical, proving the submitted package
    # was built from the exact source code in the repository.
 
