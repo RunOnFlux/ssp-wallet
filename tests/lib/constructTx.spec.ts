@@ -158,6 +158,8 @@ import {
   describeErc20Transfer,
   assertBuiltUserOpMatches,
   verifyPickedUtxoValues,
+  getMaxUtxoInputs,
+  MAX_UTXO_INPUTS,
 } from '../../src/lib/constructTx';
 import { encodeFunctionData, parseAbi } from 'viem';
 import * as realAccountAbi from '@runonflux/aa-schnorr-multisig-sdk/dist/abi';
@@ -549,11 +551,62 @@ describe('ConstructTx Lib', () => {
       // It decodes back to a 1-input tx.
       const decoded = utxolib.Transaction.fromHex(res.signedTx, fluxNetwork);
       expect(decoded.ins).toHaveLength(1);
+      // Expiry = mocked tip 1500000 + 120 blocks (1 hour at 30 s blocks).
+      expect(decoded.expiryHeight).toBe(1500120);
       // utxos: exactly the one UTXO that was picked to fund the spend.
       expect(Array.isArray(res.utxos)).toBe(true);
       expect(res.utxos).toHaveLength(1);
       expect(res.utxos[0].txid).toBe(fluxUtxoTxid);
       expect(res.utxos[0].satoshis).toBe('100000000');
+    });
+
+    it('caps inputs at 1999 on every chain (4000-sigop standardness limit)', () => {
+      // 2-of-2 CHECKMULTISIG = 2 sigops per input, 2 reserved for outputs.
+      expect(MAX_UTXO_INPUTS).toBe(1999);
+      // Flux: 1.8 MB would allow 7142 inputs by size; sigops cap it.
+      expect(getMaxUtxoInputs(1800000, 'p2sh')).toBe(1999);
+      // 100 kB chains stay limited by size.
+      expect(getMaxUtxoInputs(100000, 'p2sh')).toBe(396);
+      expect(getMaxUtxoInputs(100000, 'p2wsh')).toBe(808);
+    });
+
+    it('refuses a Flux send that needs more than 1999 inputs', async () => {
+      // 2100 UTXOs of 0.01 FLUX; sending 20.5 FLUX needs 2050+ of them, which
+      // fluxd would reject with bad-txns-too-many-sigops after signing.
+      clearUtxoCache();
+      const manyUtxos = Array.from({ length: 2100 }, (_, i) => ({
+        ...fluxInsightUtxoResponse,
+        txid: i.toString(16).padStart(64, '0'),
+        vout: 0,
+        satoshis: 1000000,
+      }));
+      vi.spyOn(axios, 'get').mockImplementation((url: string) => {
+        if (url.includes('/utxo')) {
+          return Promise.resolve({ data: manyUtxos });
+        }
+        if (url.includes('/status')) {
+          return Promise.resolve({ data: { info: { blocks: 1500000 } } });
+        }
+        return Promise.reject(
+          new Error(`Unexpected offline GET leaked to network: ${url}`),
+        );
+      });
+
+      await expect(
+        getTransactionSize(
+          'flux',
+          fluxRecipient,
+          '2050000000',
+          '10000',
+          fluxMultisigSender,
+          fluxMultisigSender,
+          '',
+          fluxWif,
+          fluxRedeemScriptHex,
+          '',
+          '1000000000',
+        ),
+      ).rejects.toThrow(/more than 1999 inputs/);
     });
 
     it('should return broadcastTx data when value is valid', async () => {

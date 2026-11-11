@@ -49,7 +49,7 @@ const flux = {
   maxTxSize: 1800000, // 1,800,000 vbytes
   maxFee: 1000000000, // 10 FLUX
   rbf: false,
-  txExpiryHeight: 30, // 30 blocks, 1 hour
+  txExpiryHeight: 120, // 120 blocks x 30 s (PoN block time) = 1 hour
   onramperNetwork: 'flux',
 };
 
