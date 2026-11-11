@@ -440,19 +440,42 @@ export function buildUnsignedRawTx(
 // SSP has one sender, one receiver - usually known to sender. We can ensure higher overall fee by spending all the mandatory utxos in a case where fee rate is higher.
 // in normal scenario automatic fee would solve vast majority of cases.
 // use all utxos that are selected mandatory in pick, add another if not sufficient
-// Calculate max UTXO inputs based on chain's maxTxSize and scriptType
+// Nodes refuse to relay a transaction with more than 4000 signature
+// operations (fluxd/zcashd: MAX_STANDARD_TX_SIGOPS = MAX_BLOCK_SIGOPS / 5;
+// Bitcoin Core: MAX_STANDARD_TX_SIGOPS_COST 16000 with P2SH sigops weighted
+// x4), whatever the transaction's size. Every SSP input is a 2-of-2
+// OP_CHECKMULTISIG, which counts as 2 sigops, and outputs add up to 2 more
+// (a P2PKH recipient counts 1; P2SH change and OP_RETURN count 0). A Flux
+// send with 2300 inputs fits the 1.8 MB size limit but was rejected with
+// "bad-txns-too-many-sigops" (HTTP 400 from the explorer), so the input count
+// is capped on every chain, not only by size.
+const MAX_STANDARD_TX_SIGOPS = 4000;
+const SIGOPS_PER_INPUT = 2;
+const RESERVED_OUTPUT_SIGOPS = 2;
+export const MAX_UTXO_INPUTS = Math.floor(
+  (MAX_STANDARD_TX_SIGOPS - RESERVED_OUTPUT_SIGOPS) / SIGOPS_PER_INPUT,
+); // 1999
+
+// Calculate max UTXO inputs based on chain's maxTxSize and scriptType, never
+// above MAX_UTXO_INPUTS.
 // Uses the same size formulas as estimateUtxoTxSize (2-of-2 multisig, 2 outputs)
-function getMaxUtxoInputs(maxTxSize: number, scriptType: string): number {
+export function getMaxUtxoInputs(
+  maxTxSize: number,
+  scriptType: string,
+): number {
+  let bySize: number;
   if (scriptType === 'p2wsh') {
     // weight = (11 + 68*N + 43*2)*4 + 150*N → vSize ≈ 97 + 105.5*N, +18*N for 2nd sig
     const overhead = 97;
     const perInput = 123.5;
-    return Math.floor((maxTxSize - overhead) / perInput);
+    bySize = Math.floor((maxTxSize - overhead) / perInput);
+  } else {
+    // P2SH: 10 + 180*N + 34*2 + 72*N = 78 + 252*N bytes
+    const overhead = 78;
+    const perInput = 252;
+    bySize = Math.floor((maxTxSize - overhead) / perInput);
   }
-  // P2SH: 10 + 180*N + 34*2 + 72*N = 78 + 252*N bytes
-  const overhead = 78;
-  const perInput = 252;
-  return Math.floor((maxTxSize - overhead) / perInput);
+  return Math.min(bySize, MAX_UTXO_INPUTS);
 }
 
 function pickUtxos(
@@ -625,6 +648,13 @@ function pickUtxos(
   }
   if (selectedUtxos.length && selectedUtxos.length <= inputLimit) {
     return selectedUtxos;
+  }
+  if (selectedUtxos.length > inputLimit) {
+    // The balance covers the amount, but only with more inputs than one
+    // transaction may carry (size or sigop limit).
+    throw new Error(
+      `Transaction can not be constructed: it would need more than ${inputLimit} inputs. Send a smaller amount first, for example to yourself, to consolidate your balance.`,
+    );
   }
   throw new Error(
     'Transaction can not be constructed. Try changing the amount.',
