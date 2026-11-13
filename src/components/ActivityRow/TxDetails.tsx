@@ -40,12 +40,21 @@ function TxDetails({
   const chainConfig = blockchains[chain];
   const timestamp = new Date(tx.timestamp).getTime();
   const confirmed = !!tx.blockheight && tx.blockheight > 0;
+  // Kaspa rows carry the accepting block's blue score, which grows ~10 per
+  // second: a "tip − height" count would be a huge, meaningless number. An
+  // accepted Kaspa transaction is simply shown as confirmed.
+  const isKas = chainConfig.chainType === 'kas' || tx.type === 'kas';
   const confirmations =
-    confirmed && typeof tipHeight === 'number' && tipHeight >= tx.blockheight
+    !isKas &&
+    confirmed &&
+    typeof tipHeight === 'number' &&
+    tipHeight >= tx.blockheight
       ? tipHeight - tx.blockheight + 1
       : null;
 
-  const isUtxo = tx.type !== 'evm' && tx.type !== 'sol';
+  // Kaspa rows carry no byte size (fees are mass-based, sompi/gram), so they
+  // never get the sat/B suffix.
+  const isUtxo = tx.type !== 'evm' && tx.type !== 'sol' && tx.type !== 'kas';
   const feeAmount = new BigNumber(tx.fee || '0').dividedBy(
     10 ** chainConfig.decimals,
   );
@@ -97,7 +106,16 @@ function TxDetails({
           </span>
         </div>
       )}
-      {confirmations !== null ? (
+      {isKas ? (
+        confirmed && (
+          <div className="feed-detail-line">
+            <span className="feed-detail-label">
+              {t('home:transactionsTable.confirmations')}
+            </span>
+            <span>{t('home:transactionsTable.kas_accepted')}</span>
+          </div>
+        )
+      ) : confirmations !== null ? (
         <div className="feed-detail-line">
           <span className="feed-detail-label">
             {t('home:transactionsTable.confirmations')}

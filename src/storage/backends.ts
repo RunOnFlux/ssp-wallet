@@ -105,6 +105,14 @@ const assetBackends: backends = {
     api: 'node-solana.sspwallet.io',
     explorer: 'explorer.solana.com',
   },
+  kas: {
+    // kaspa-rest-server behind the ssp-backends-proxy Worker (our own
+    // instance first, api.kaspa.org as fallback). REST only: vault spends are
+    // plain version 0 transactions, which REST can submit.
+    node: 'api-kaspa.sspwallet.io',
+    api: 'api-kaspa.sspwallet.io',
+    explorer: 'explorer.kaspa.org',
+  },
 };
 
 export function backends() {

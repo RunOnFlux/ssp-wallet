@@ -455,6 +455,15 @@ export const SspConnectProvider = ({
           request.data.method === 'sspwid_sign_message' ||
           request.data.method === 'wk_sign_message'
         ) {
+          // Kaspa message signing is out of scope (contract §6): SignMessage
+          // is utxolib/WIF-based and would produce a meaningless signature.
+          if (
+            request.data.params.chain &&
+            blockchains[request.data.params.chain]?.chainType === 'kas'
+          ) {
+            rejectWith(t('home:sspConnect.kas_message_unsupported'));
+            return;
+          }
           if (
             blockchains[request.data.params.chain] ||
             !request.data.params.chain
@@ -477,6 +486,18 @@ export const SspConnectProvider = ({
             });
           }
         } else if (request.data.method === 'pay') {
+          // Kaspa vault spends carry no payload, so a payment message could
+          // not be attached. Reject instead of silently dropping it — a
+          // merchant may rely on the message to match the payment.
+          if (
+            request.data.params.chain &&
+            blockchains[request.data.params.chain]?.chainType === 'kas' &&
+            typeof request.data.params.message === 'string' &&
+            request.data.params.message.trim() !== ''
+          ) {
+            rejectWith(t('home:sspConnect.kas_pay_message_unsupported'));
+            return;
+          }
           if (blockchains[request.data.params.chain]) {
             // if the chain has tokens, set the contract
             if (blockchains[request.data.params.chain].tokens) {

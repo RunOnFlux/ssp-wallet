@@ -58,6 +58,8 @@ declare module '@storage/blockchains' {
     // non-zero value — base-fee-only transactions are deprioritised under
     // load and routinely dropped outright. Omitted/0 on devnet (uncontended).
     priorityFeeMicroLamports?: number;
+    // kas: chainType 'kas'; libid is the address prefix ('kaspa'); fee
+    // fields are sompi per gram of mass; maxTxSize is the mass cap.
   }
   type blockchains = Record<string, Blockchain>;
   let blockchains: blockchains;

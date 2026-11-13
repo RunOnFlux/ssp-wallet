@@ -4,6 +4,8 @@ import { useAppSelector } from '../../hooks';
 import './EnterpriseVaultSignTx.css';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { useSocket } from '../../hooks/useSocket';
+import { useKasLedgerRecovery } from '../../hooks/useKasLedgerRecovery';
+import { toast } from '../../lib/toast';
 import HandshakeAnimation from '../HandshakeAnimation/HandshakeAnimation';
 import { decrypt as passworderDecrypt } from '@metamask/browser-passworder';
 import secureLocalStorage from 'react-secure-storage';
@@ -34,6 +36,14 @@ import {
   buildDecodeMismatchWarning,
 } from '../../lib/simulationMismatch';
 import type { VaultSolDecodeResult } from '../../lib/vaultSolanaDecode';
+import {
+  decodeKasVaultProposal,
+  kasSignedAmountLedger,
+  signKasVaultBundle,
+  type KasVaultDecoded,
+  type KasDescribeWarning,
+} from '../../lib/kaspa';
+import { kasMaxFeeSompi } from '../../lib/sendStrategies/kas';
 import { blockchains } from '@storage/blockchains';
 import { sspConfig } from '@storage/ssp';
 import axios from 'axios';
@@ -161,6 +171,25 @@ interface Props {
   vaultDescriptorHash?: string;
 }
 
+/** kaspa-core describeTransaction warning code → English i18n key. */
+const KAS_WARNING_KEYS: Record<KasDescribeWarning, string> = {
+  'version-1': 'home:enterpriseVaultSignTx.kas_warn_version_1',
+  payload: 'home:enterpriseVaultSignTx.kas_warn_payload',
+  'non-native-subnetwork':
+    'home:enterpriseVaultSignTx.kas_warn_non_native_subnetwork',
+  'lock-time': 'home:enterpriseVaultSignTx.kas_warn_lock_time',
+  'non-zero-sequence': 'home:enterpriseVaultSignTx.kas_warn_non_zero_sequence',
+  'nonstandard-output':
+    'home:enterpriseVaultSignTx.kas_warn_nonstandard_output',
+  'burn-output': 'home:enterpriseVaultSignTx.kas_warn_burn_output',
+  'fee-above-threshold':
+    'home:enterpriseVaultSignTx.kas_warn_fee_above_threshold',
+  'fee-rate-above-threshold':
+    'home:enterpriseVaultSignTx.kas_warn_fee_rate_above_threshold',
+  'foreign-input': 'home:enterpriseVaultSignTx.kas_warn_foreign_input',
+  'covenant-output': 'home:enterpriseVaultSignTx.kas_warn_covenant_output',
+};
+
 /**
  * Format a base-unit amount to human-readable using chain decimals.
  */
@@ -221,6 +250,9 @@ function EnterpriseVaultSignTx({
   const { sspWalletKeyInternalIdentity: wkIdentity } = useAppSelector(
     (state) => state.sspState,
   );
+  const { cryptoRates, fiatRates } = useAppSelector(
+    (state) => state.fiatCryptoRates,
+  );
   const { createWkIdentityAuth, isAuthAvailable } = useRelayAuth();
   const {
     enterpriseVaultSigned,
@@ -238,6 +270,18 @@ function EnterpriseVaultSignTx({
   const [requestId, setRequestId] = useState<string | null>(null);
   const [waitingForKey, setWaitingForKey] = useState(false);
   const signingRef = useRef(false);
+  // Kaspa signed-amount ledger refusals (review KAS-2 / KAS-6): the same
+  // explicit, warned resets as the send flow (conflicts are first resolved by
+  // proof via getFundingTransaction inside signKasVaultBundle; only coins that
+  // cannot be proven, or an unreadable record, are offered a reset). Nothing
+  // is signed; after a reset the user signs again, which re-runs every check.
+  const kasLedgerRecovery = useKasLedgerRecovery({
+    notify: (type, content) => {
+      if (type === 'error') setError(content);
+      else void toast.success(content);
+    },
+    onReset: () => setError(null),
+  });
   // Store wallet's Schnorr challenge for wallet-only mode (Key returns empty challenge)
   const walletChallengeRef = useRef<string>('');
 
@@ -271,6 +315,7 @@ function EnterpriseVaultSignTx({
   const chainDecimals = chainConfig?.decimals ?? 8;
   const chainSymbol = chainConfig?.symbol ?? chain.toUpperCase();
   const isSolChain = chainConfig?.chainType === 'sol';
+  const isKasChain = chainConfig?.chainType === 'kas';
   const isEvmChain = chainConfig?.chainType === 'evm';
 
   // H-1 (defence in depth): enterprise derivation indices are re-checked on
@@ -347,6 +392,103 @@ function EnterpriseVaultSignTx({
     };
   }, [isSolChain, rawUnsignedTx, chain, parsedRecipients, tokenContract]);
 
+  // Kaspa trustless decode (contract §4): rawUnsignedTx is SigningBundle JSON
+  // (the unsigned proposal, or currentSignedHex with the partials so far). It
+  // is opened with THIS wallet's own REST lookup of the vault UTXOs, so the
+  // amounts and fee shown are independent of the proposer. Async → state;
+  // null = in progress (Sign stays disabled until it resolves).
+  const [kasDecodeState, setKasDecodeState] = useState<KasVaultDecoded | null>(
+    null,
+  );
+  // Bumped to re-run the decode (retry button / automatic backoff after a
+  // transient REST failure).
+  const [kasDecodeAttempt, setKasDecodeAttempt] = useState(0);
+  const kasAutoRetries = useRef(0);
+
+  // Fee ceiling for Kaspa co-signing: min($maxTxFeeUSD worth, 5 KAS) — the
+  // same rule as the consumer send path (contract §4.9). An unknown price
+  // leaves only the 5 KAS chain cap.
+  const kasUsdPrice =
+    (cryptoRates?.[chain as keyof typeof cryptoRates] ?? 0) *
+    (fiatRates?.USD ?? 0);
+  const kasMaxFee = useMemo(
+    () =>
+      isKasChain && chainConfig
+        ? kasMaxFeeSompi(
+            sspConfig().maxTxFeeUSD,
+            kasUsdPrice,
+            chainConfig.decimals,
+            chainConfig.maxFee,
+          )
+        : undefined,
+    [isKasChain, chainConfig, kasUsdPrice],
+  );
+
+  // The checks both the decode and the signer enforce (contract §4.7): the
+  // proposal's source address (when the payload carries it) must be the one
+  // vault script being spent, and the external outputs must equal the
+  // proposal's recipients.
+  const kasCheckOptions = useMemo(
+    () => ({
+      ...(sourceAddress ? { expectedSourceAddress: sourceAddress } : {}),
+      expectedRecipients: parsedRecipients,
+      ...(kasMaxFee !== undefined ? { maxFee: kasMaxFee } : {}),
+    }),
+    [sourceAddress, parsedRecipients, kasMaxFee],
+  );
+
+  useEffect(() => {
+    kasAutoRetries.current = 0;
+  }, [rawUnsignedTx, chain, parsedInputDetails]);
+
+  useEffect(() => {
+    if (!isKasChain || !rawUnsignedTx) {
+      setKasDecodeState(null);
+      return;
+    }
+    let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    setKasDecodeState(null);
+    void decodeKasVaultProposal(
+      rawUnsignedTx,
+      chain,
+      parsedInputDetails,
+      kasCheckOptions,
+    ).then((result) => {
+      if (cancelled) return;
+      setKasDecodeState(result);
+      // A transient REST failure retries by itself with backoff (2s, 4s, 8s);
+      // the Retry button covers anything past that.
+      if (result.error && result.transient && kasAutoRetries.current < 3) {
+        const delay = 2000 * 2 ** kasAutoRetries.current;
+        kasAutoRetries.current += 1;
+        retryTimer = setTimeout(() => {
+          if (!cancelled) setKasDecodeAttempt((n) => n + 1);
+        }, delay);
+      }
+    });
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [
+    isKasChain,
+    rawUnsignedTx,
+    chain,
+    parsedInputDetails,
+    kasCheckOptions,
+    kasDecodeAttempt,
+  ]);
+
+  const retryKasDecode = () => {
+    kasAutoRetries.current = 0;
+    setKasDecodeAttempt((n) => n + 1);
+  };
+
+  const kasDecodePending = isKasChain && !kasDecodeState;
+  const kasWarningText = (w: KasDescribeWarning): string =>
+    (t as unknown as (k: string) => string)(KAS_WARNING_KEYS[w]);
+
   // HARD BLOCK (fail closed, H-13): bytes that contradict the relay payload,
   // undecodable bytes, and approve-only transactions that could not be
   // verified against the on-chain proposal are never signed.
@@ -363,6 +505,7 @@ function EnterpriseVaultSignTx({
     !!chain &&
     !isEvmChain &&
     !isSolChain &&
+    !isKasChain &&
     !isMessageSign &&
     sighashOmitsInputAmounts(chain as keyof cryptos);
   const [prevoutCheck, setPrevoutCheck] = useState<
@@ -449,6 +592,17 @@ function EnterpriseVaultSignTx({
       if (!solDecodeState) return null;
       return solDecodeState.decoded;
     }
+    if (chainConfig?.chainType === 'kas') {
+      // Kaspa: bundle JSON, decoded against this wallet's own UTXO lookup
+      // (see the kasDecodeState effect above). Never hex-decoded.
+      if (!kasDecodeState) return null;
+      return {
+        sender: kasDecodeState.sender,
+        recipients: kasDecodeState.recipients,
+        fee: kasDecodeState.fee,
+        ...(kasDecodeState.error ? { error: kasDecodeState.error } : {}),
+      };
+    }
     // UTXO: decode from raw TX hex
     if (!rawUnsignedTx) return null;
     const inputAmounts = parsedInputDetails.map((input) => {
@@ -477,6 +631,7 @@ function EnterpriseVaultSignTx({
     parsedInputDetails,
     normalizedUserOp,
     solDecodeState,
+    kasDecodeState,
   ]);
 
   // VD-4: re-derive what this request spends from (UTXO input scripts and
@@ -583,6 +738,9 @@ function EnterpriseVaultSignTx({
         t('home:enterpriseVaultSignTx.sol_decode_mismatch_blocked')
       );
     }
+    // Kaspa: never sign before the trustless decode resolved (rendered as
+    // pending), nor after it refused the proposal (decodedTx.error below).
+    if (kasDecodePending) return null;
     if (isEvmChain && !decodedTx) {
       return t('home:enterpriseVaultSignTx.err_sign_unverifiable');
     }
@@ -596,6 +754,7 @@ function EnterpriseVaultSignTx({
   const signPending =
     vaultPending ||
     solDecodePending ||
+    kasDecodePending ||
     (needsPrevoutCheck && prevoutCheck.status === 'pending');
   const signDisabled = !!signBlockReason || signPending;
 
@@ -1329,12 +1488,28 @@ function EnterpriseVaultSignTx({
         signatures = [walletSigBase64];
         // sol_single skips Key entirely; sol_dual forwards to Key for ed25519 co-sign.
       } else if (vaultMode === 'key_only') {
-        // UTXO key-only: wallet doesn't sign, forward raw TX for Key to sign independently
+        // UTXO / Kaspa key-only: wallet doesn't sign, forward the raw TX (or
+        // the Kaspa bundle JSON) for Key to sign independently
         console.log(
           '[EnterpriseVaultSignTx] Key-only UTXO mode — skipping wallet signing',
         );
         commitVaultPin();
         signatures = [rawUnsignedTx];
+      } else if (isKasChain) {
+        // Kaspa (contract §3–§5): open the bundle with this wallet's own UTXO
+        // lookup, sign only the vault scripts named in inputDetails with the
+        // leaf key at vaultIndex/addressIndex of each input, and return the
+        // merged bundle JSON in place of the UTXO walletSignedHex.
+        const walletSignedBundle = await signKasVaultBundle({
+          bundleJson: rawUnsignedTx,
+          chain,
+          inputDetails: parsedInputDetails,
+          vaultXpriv,
+          vaultIndex,
+          signedAmounts: kasSignedAmountLedger(),
+          ...kasCheckOptions,
+        });
+        signatures = [walletSignedBundle];
       } else {
         // UTXO: SIGHASH-based signing via TransactionBuilder (proper ECDSA witness sigs)
         commitVaultPin();
@@ -1393,7 +1568,21 @@ function EnterpriseVaultSignTx({
       vaultXpriv = '';
       keypair = { pubKey: keypair?.pubKey ?? '', privKey: '' };
       console.error('[EnterpriseVaultSignTx] Error:', err);
-      const errMsg = err instanceof Error ? err.message : 'Unknown error';
+      let errMsg = err instanceof Error ? err.message : 'Unknown error';
+
+      if (isKasChain) {
+        const ledger = kasLedgerRecovery(err);
+        if (ledger?.kind === 'prompted') {
+          // A warned reset dialog is open: keep the request open so the user
+          // can sign again after the reset, or cancel (rejects as usual).
+          setLoading(false);
+          setError(ledger.message);
+          signingRef.current = false;
+          return;
+        }
+        // Refused with no reset on offer: reported like any signing error.
+        if (ledger?.kind === 'refused') errMsg = ledger.message;
+      }
 
       // Classify error for structured error code
       const isNonceError =
@@ -1553,7 +1742,24 @@ function EnterpriseVaultSignTx({
                       : chain}
                   </Text>
                 </div>
-                {decodedTx?.sender && (
+                {isKasChain &&
+                  (kasDecodeState?.senders ?? []).map((address) => (
+                    <div key={address || 'unknown'}>
+                      <Text type="secondary">
+                        {t('home:enterpriseVaultSignTx.source_address')}:{' '}
+                      </Text>
+                      <Text
+                        style={{
+                          fontFamily: 'var(--ssp-mono)',
+                          fontSize: '11px',
+                          wordBreak: 'break-all',
+                        }}
+                      >
+                        {address || t('home:enterpriseVaultSignTx.kas_unknown')}
+                      </Text>
+                    </div>
+                  ))}
+                {!isKasChain && decodedTx?.sender && (
                   <div>
                     <Text type="secondary">
                       {t('home:enterpriseVaultSignTx.source_address')}:{' '}
@@ -1676,6 +1882,13 @@ function EnterpriseVaultSignTx({
                   }
                   showIcon
                   style={{ textAlign: 'left' }}
+                  action={
+                    isKasChain ? (
+                      <Button size="small" onClick={retryKasDecode}>
+                        {t('home:enterpriseVaultSignTx.kas_retry_decode')}
+                      </Button>
+                    ) : undefined
+                  }
                 />
               )}
 
@@ -1787,6 +2000,27 @@ function EnterpriseVaultSignTx({
                   </Text>
                 </div>
               )}
+
+              {/* Kaspa describeTransaction warnings (foreign input, payload,
+            fee above threshold, …) — computed from this wallet's own UTXO
+            lookup; surfaced before approval (contract §4.4). */}
+              {isKasChain &&
+                !!kasDecodeState?.warnings?.length &&
+                !kasDecodeState.error && (
+                  <Alert
+                    type="warning"
+                    message={t('home:enterpriseVaultSignTx.kas_warnings')}
+                    description={
+                      <ul style={{ margin: 0, paddingLeft: 18 }}>
+                        {kasDecodeState.warnings.map((w) => (
+                          <li key={w}>{kasWarningText(w)}</li>
+                        ))}
+                      </ul>
+                    }
+                    showIcon
+                    style={{ textAlign: 'left' }}
+                  />
+                )}
 
               {/* Recipients — decoded from raw transaction (AUTHORITATIVE).
             This device's own trustless decode is the primary source of truth

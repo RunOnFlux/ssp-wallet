@@ -503,6 +503,7 @@ export interface cryptos {
   avax: number;
   solDevnet: number;
   solMainnet: number;
+  kas: number;
 }
 
 export interface externalIdentity {

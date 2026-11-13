@@ -53,10 +53,12 @@ import { parseAmount } from '../../lib/sendStrategies/amount';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
 import { toast } from '../../lib/toast';
 import { truncateAddress } from '../../lib/addressDisplay';
+import { addressFromScannedQr } from '../../lib/addressValidation';
 import type { SendStrategyView } from './types';
 import { useUtxoSendStrategy } from './useUtxoSendStrategy';
 import { useEvmSendStrategy } from './useEvmSendStrategy';
 import { useSolSendStrategy } from './useSolSendStrategy';
+import { useKasSendStrategy } from './useKasSendStrategy';
 import './SendFlow.css';
 
 interface contactOption {
@@ -70,10 +72,13 @@ interface contactsInterface {
   options: contactOption[];
 }
 
-const STRATEGY_HOOKS: Record<'utxo' | 'evm' | 'sol', () => SendStrategyView> = {
+type StrategyChainType = SendStrategyView['chainType'];
+
+const STRATEGY_HOOKS: Record<StrategyChainType, () => SendStrategyView> = {
   utxo: useUtxoSendStrategy,
   evm: useEvmSendStrategy,
   sol: useSolSendStrategy,
+  kas: useKasSendStrategy,
 };
 
 /**
@@ -116,10 +121,10 @@ const AMOUNT_ERROR_ID = 'send-amount-error';
 function SendFlow() {
   const { activeChain } = useAppSelector((state) => state.sspState);
   const { walletInUse } = useAppSelector((state) => state[activeChain]);
-  const chainType = (blockchains[activeChain].chainType ?? 'utxo') as
-    | 'utxo'
-    | 'evm'
-    | 'sol';
+  // UTXO chains carry no chainType; Kaspa ('kas') gets its own strategy and
+  // must never fall through to the utxolib one.
+  const chainType = (blockchains[activeChain].chainType ??
+    'utxo') as StrategyChainType;
   // Keying by chainType keeps the strategy hook identity stable per mount;
   // keying by walletInUse remounts the whole flow when the user switches the
   // sending wallet in place (the "From" row), so every strategy re-reads
@@ -129,7 +134,7 @@ function SendFlow() {
   );
 }
 
-function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
+function SendFlowInner({ chainType }: { chainType: StrategyChainType }) {
   const { token } = theme.useToken();
   const { isDark } = useThemeMode();
   const { t } = useTranslation(['send', 'common', 'home']);
@@ -277,6 +282,11 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
         slow: t('send:eta_sol_normal'),
         normal: t('send:eta_sol_normal'),
         fast: t('send:eta_sol_normal'),
+      },
+      kas: {
+        slow: t('send:eta_kas_slow'),
+        normal: t('send:eta_kas_normal'),
+        fast: t('send:eta_kas_fast'),
       },
     } as const;
     return etaKeys[chainType][key];
@@ -1050,14 +1060,9 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
         open={openQrScanner}
         onClose={() => setOpenQrScanner(false)}
         onResult={(value) => {
-          // QR payloads may be a bare address or a chain URI such as
-          // "bitcoin:<address>?amount=..." / "ethereum:<address>@1?value=..."
-          // — take the address portion only.
-          let scanned = value.trim();
-          const schemeMatch = scanned.match(/^[a-zA-Z]+:([^@?]+)/);
-          if (schemeMatch) {
-            scanned = schemeMatch[1];
-          }
+          // Bare address or chain URI; see addressFromScannedQr (Kaspa keeps
+          // its kaspa: prefix, which is part of the address).
+          const scanned = addressFromScannedQr(value, chainType);
           strategy.receiver.set(scanned);
           setOpenQrScanner(false);
         }}

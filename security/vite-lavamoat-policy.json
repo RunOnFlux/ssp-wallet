@@ -871,6 +871,23 @@
         "elliptic": true
       }
     },
+    "@runonflux/kaspa-core": {
+      "packages": {
+        "@runonflux/kaspa-core>@noble/curves": true,
+        "@runonflux/kaspa-core>@noble/hashes": true
+      }
+    },
+    "@runonflux/kaspa-core>@noble/curves": {
+      "packages": {
+        "@runonflux/kaspa-core>@noble/hashes": true
+      }
+    },
+    "@runonflux/kaspa-core>@noble/hashes": {
+      "globals": {
+        "TextEncoder": true,
+        "crypto": true
+      }
+    },
     "@runonflux/solana-multisig": {
       "globals": {
         "setTimeout": true
