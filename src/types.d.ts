@@ -536,8 +536,12 @@ export type servicesSSPRelay = {
   onrampNetworks?: Record<string, boolean>;
 };
 
-export type onramperSignatureSSPRelay = {
-  signature: string;
+// POST /v1/onramper/url on the SSP relay: the signed Onramper widget URL.
+export type onramperWidgetUrlSSPRelay = {
+  status: string;
+  data?: {
+    url?: string;
+  };
 };
 
 export interface confirmedNodeInsight {
