@@ -40,6 +40,7 @@ import TxSent from '../../components/TxSent/TxSent';
 import TxRejected from '../../components/TxRejected/TxRejected';
 import { fetchAddressTransactions } from '../../lib/transactions';
 import { validateReceiverAddress } from '../../lib/addressValidation';
+import { texToTransparentAddress } from '../../lib/zcashTex';
 import { formatFiatWithSymbol } from '../../lib/currency';
 import { sspConfig } from '@storage/ssp';
 import { useTranslation } from 'react-i18next';
@@ -823,6 +824,11 @@ export function useUtxoSendStrategy(): SendStrategyView {
     : { valid: true };
   const showReceiverError =
     !!txReceiver.trim() && !receiverValidation.valid && !state.swap;
+  // ZIP 320 TEX receiver → the t1 address SSP Key will display for the output.
+  const receiverTransparentEquivalent = texToTransparentAddress(
+    txReceiver,
+    blockchainConfig.libid,
+  );
 
   // Live fiat estimate under the amount field, using the same rate path as the
   // balance display (crypto rate * fiat rate).
@@ -975,6 +981,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
           : t('send:err_invalid_receiver')
         : null,
       qrEnabled: !state.swap,
+      transparentEquivalent: receiverTransparentEquivalent,
     },
     amount: {
       value: sendingAmount,

@@ -2,6 +2,7 @@ import utxolib from '@runonflux/utxo-lib';
 import { isAddress as isEvmAddress } from 'viem';
 import { blockchains } from '@storage/blockchains';
 import { cryptos } from '../types';
+import { texToTransparentAddress } from './zcashTex';
 
 export type AddressValidationResult = {
   valid: boolean;
@@ -42,6 +43,8 @@ export function isValidSolAddress(address: string): boolean {
  * Validate a UTXO receiver address for a specific chain using utxo-lib. The
  * library throws when an address does not decode to a valid output script for
  * the supplied network (covers base58check P2PKH/P2SH and bech32 SegWit).
+ * Zcash TEX addresses (ZIP 320, Bech32m) are resolved to their transparent
+ * P2PKH form first, since utxo-lib has no TEX encoding.
  */
 export function isValidUtxoAddress(
   address: string,
@@ -53,7 +56,9 @@ export function isValidUtxoAddress(
     if (!network) {
       return false;
     }
-    utxolib.address.toOutputScript(address, network);
+    const resolved =
+      texToTransparentAddress(address, blockchainConfig.libid) ?? address;
+    utxolib.address.toOutputScript(resolved, network);
     return true;
   } catch {
     return false;
