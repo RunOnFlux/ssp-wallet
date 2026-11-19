@@ -47,6 +47,12 @@ export interface SendStrategyView {
     showError: boolean;
     errorText: string | null;
     qrEnabled: boolean;
+    /**
+     * Zcash TEX (ZIP 320) receiver only: the transparent `t1…` address with
+     * the same key hash. The transaction pays that P2PKH script, so it is the
+     * address SSP Key shows when the user approves.
+     */
+    transparentEquivalent?: string | null;
   };
   amount: {
     value: string;

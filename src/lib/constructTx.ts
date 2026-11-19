@@ -47,6 +47,7 @@ import {
 } from './prevoutVerify';
 import { assertSolPaymasterFeeWithinCap } from './sendStrategies/sol';
 import { applyZcashV5Prevouts, assertChainTxVersion } from './zcashV5';
+import { texToTransparentAddress } from './zcashTex';
 
 const utxoCache = new LRUCache({
   max: 1000,
@@ -363,6 +364,10 @@ export function buildUnsignedRawTx(
       receiver = toLegacyAddress(receiver);
       change = toLegacyAddress(change);
     }
+    // ZIP 320: a Zcash TEX address pays the P2PKH script of its key hash. Its
+    // only extra rule — no shielded inputs — always holds, as SSP spends
+    // transparent UTXOs only. utxo-lib cannot decode Bech32m, so resolve it.
+    receiver = texToTransparentAddress(receiver, libID) ?? receiver;
     const recipients = [
       {
         address: receiver,

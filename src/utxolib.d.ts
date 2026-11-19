@@ -83,6 +83,11 @@ declare module '@runonflux/utxo-lib' {
         encode: (hash160: Buffer) => Uint8Array;
       };
     };
+    pubKeyHash: {
+      output: {
+        encode: (hash160: Buffer) => Uint8Array;
+      };
+    };
     nullData: {
       output: {
         encode: (data: Buffer) => string;

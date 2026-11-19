@@ -856,6 +856,28 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 >
                   {strategy.receiver.value}
                 </div>
+                {strategy.receiver.transparentEquivalent && (
+                  <div
+                    data-testid="send-review-tex-transparent"
+                    style={{
+                      marginTop: 6,
+                      fontSize: 12,
+                      color: token.colorTextSecondary,
+                    }}
+                  >
+                    {t('send:review_tex_transparent')}
+                    <div
+                      style={{
+                        fontFamily: 'var(--ssp-mono)',
+                        fontSize: 13,
+                        wordBreak: 'break-all',
+                        color: token.colorText,
+                      }}
+                    >
+                      {strategy.receiver.transparentEquivalent}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <div
