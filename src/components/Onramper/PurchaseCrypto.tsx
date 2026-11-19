@@ -9,14 +9,11 @@ import {
   TriangleAlert as TriangleAlertIcon,
 } from 'lucide-react';
 
-import axios from 'axios';
-
 import './PurchaseCrypto.css';
 
 import { sspConfig } from '@storage/ssp';
 import { useThemeMode } from '../../contexts/ThemeContext';
-
-import { onramperSignatureSSPRelay } from '../../types';
+import { fetchOnramperWidgetUrl } from '../../lib/onramper';
 
 function PurchaseCrypto(props: {
   open: boolean;
@@ -30,10 +27,12 @@ function PurchaseCrypto(props: {
   const { isDark } = useThemeMode();
   const [userConsentBuy, setUserConsentBuy] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [signature, setSignature] = useState('');
-  const [payloadToSign, setPayloadToSign] = useState(
-    `networkWallets=${props.cryptoNetwork}:${props.wInUse}`,
-  );
+  // Signed Onramper widget URL from the SSP relay. With Onramper Signature V2
+  // it is single-use (its nonce burns on first load) and expires after 15
+  // minutes, so a fresh one is requested for every load of the iframe:
+  // whenever the dialog opens or anything in the URL (network, asset,
+  // address, theme) changes. Never reuse one.
+  const [widgetUrl, setWidgetUrl] = useState('');
   const displayMessage = (type: NoticeType, content: string) => {
     void toast.open({
       type,
@@ -45,38 +44,47 @@ function PurchaseCrypto(props: {
   };
 
   useEffect(() => {
-    if (open) {
-      setLoading(true);
-      askForSignature();
-    } else {
-      setSignature('');
-    }
-  }, [open, payloadToSign]);
-
-  useEffect(() => {
-    setPayloadToSign(`networkWallets=${props.cryptoNetwork}:${props.wInUse}`);
-  }, [props.wInUse, props.cryptoAsset, props.cryptoNetwork]);
-
-  const askForSignature = async () => {
-    try {
-      // ask ssp-relay for signature
-      const signature = await axios.post<onramperSignatureSSPRelay>(
-        `https://${sspConfig().relay}/v1/sign/onramper`,
-        payloadToSign,
-      );
-      setSignature(signature.data.signature);
+    setWidgetUrl('');
+    if (!open || !userConsentBuy) {
       setLoading(false);
-    } catch (error) {
-      console.log(error);
-      // display error message todo
-      setLoading(false);
-      setSignature('');
-      displayMessage('error', t('home:buy_sell_crypto.not_available_later'));
-      setTimeout(() => {
-        openAction(false);
-      }, 100);
+      return;
     }
-  };
+    const controller = new AbortController();
+    setLoading(true);
+    // ask ssp-relay for the signed widget URL
+    fetchOnramperWidgetUrl(
+      sspConfig().relay,
+      {
+        network: props.cryptoNetwork ?? '',
+        asset: props.cryptoAsset,
+        address: props.wInUse,
+        theme: isDark ? 'dark' : 'light',
+      },
+      controller.signal,
+    )
+      .then((url) => {
+        setWidgetUrl(url);
+        setLoading(false);
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return; // superseded by a newer request
+        console.log(error);
+        setLoading(false);
+        setWidgetUrl('');
+        displayMessage('error', t('home:buy_sell_crypto.not_available_later'));
+        setTimeout(() => {
+          openAction(false);
+        }, 100);
+      });
+    return () => controller.abort();
+  }, [
+    open,
+    userConsentBuy,
+    props.cryptoNetwork,
+    props.cryptoAsset,
+    props.wInUse,
+    isDark,
+  ]);
 
   return (
     <>
@@ -92,17 +100,17 @@ function PurchaseCrypto(props: {
         // iframe. At this width the widget fills the iframe edge-to-edge.
         width="min(460px, calc(100vw - 16px))"
         footer={null}
-        className={`onramper-modal${userConsentBuy && signature && !loading ? ' onramper-iframe-active' : ''}`}
+        className={`onramper-modal${userConsentBuy && widgetUrl && !loading ? ' onramper-iframe-active' : ''}`}
         styles={{ container: { padding: 0, margin: 0 } }}
       >
-        {userConsentBuy && signature && !loading ? (
+        {userConsentBuy && widgetUrl && !loading ? (
           <div className="onramper-container">
             {/* Security note: allow-scripts + allow-same-origin allows sandbox escape,
                but is required for Onramper widget to load resources (CORS).
                We accept this risk as we already trust Onramper with payment processing.
                Mitigations: user consent, extension isolation, referrer policy, HTTPS-only. */}
             <iframe
-              src={`https://buy.onramper.com?onlyCryptoNetworks=${props.cryptoNetwork}&mode=buy,sell&defaultCrypto=${props.cryptoAsset}&sell_onlyCryptoNetworks=${props.cryptoNetwork}&sell_defaultCrypto=${props.cryptoAsset}&apiKey=pk_prod_01JDMCZ0ZRZ14VBRW20B4HC04V&successRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_success&failureRedirectUrl=https%3A%2F%2Fsspwallet.io%2Fcheckout_failure&themeName=${isDark ? 'dark' : 'light'}&containerColor=${isDark ? '1a1918' : 'ffffff'}&borderRadius=0&wgBorderRadius=0&${payloadToSign}&signature=${signature}`}
+              src={widgetUrl}
               title="Onramper"
               allow="accelerometer; autoplay; camera; gyroscope; payment; microphone"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
@@ -110,7 +118,7 @@ function PurchaseCrypto(props: {
               className="onramper-iframe"
             />
           </div>
-        ) : loading && userConsentBuy ? (
+        ) : userConsentBuy ? (
           <div className="onramper-loading">
             <Space direction="vertical" size={48}>
               <LoaderCircleIcon
