@@ -173,3 +173,41 @@ export function texToTransparentAddress(
     return null;
   }
 }
+
+/**
+ * Show Zcash TEX recipients the way they were entered. Each output whose key
+ * hash one of `named` encodes is shown as that TEX address (lower-cased),
+ * with its transparent form kept in `transparentAddress`; other outputs are
+ * returned as they are. `unpaid` lists the TEX addresses in `named` that no
+ * output pays: the transaction then pays someone other than was named.
+ */
+export function labelTexRecipients<T extends { address: string }>(
+  outputs: T[],
+  named: string[],
+  libid: string,
+): {
+  recipients: Array<T & { transparentAddress?: string }>;
+  unpaid: string[];
+} {
+  const texByTransparent = new Map<string, string>();
+  for (const address of named) {
+    const transparent = texToTransparentAddress(address, libid);
+    if (transparent) {
+      texByTransparent.set(transparent, address.trim().toLowerCase());
+    }
+  }
+  if (texByTransparent.size === 0) {
+    return { recipients: outputs, unpaid: [] };
+  }
+  const paid = new Set(outputs.map((output) => output.address));
+  const unpaid = [...texByTransparent.entries()]
+    .filter(([transparent]) => !paid.has(transparent))
+    .map(([, tex]) => tex);
+  const recipients = outputs.map((output) => {
+    const tex = texByTransparent.get(output.address);
+    return tex
+      ? { ...output, address: tex, transparentAddress: output.address }
+      : output;
+  });
+  return { recipients, unpaid };
+}

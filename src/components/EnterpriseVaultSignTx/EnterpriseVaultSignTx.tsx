@@ -24,6 +24,7 @@ import {
   type VaultDecodedTx,
 } from '../../lib/transactions';
 import VaultRiskStrip from './VaultRiskStrip';
+import { labelTexRecipients } from '../../lib/zcashTex';
 import {
   parseProposalSimulation,
   type ProposalSimulation,
@@ -537,11 +538,22 @@ function EnterpriseVaultSignTx({
   // UTXO: recipients and change as classified against the derived vault
   // addresses (falls back to the decoder's list until the vault verified,
   // while Sign is still disabled).
-  const displayRecipients = vaultUtxo
+  const decodedRecipients = vaultUtxo
     ? vaultUtxo.outputs
         .filter((output) => output.vaultAddressIndex === null)
         .map(({ address, amount }) => ({ address, amount }))
     : (decodedTx?.recipients ?? []);
+  // ZIP 320: an output paying a Zcash TEX recipient the proposal names is
+  // shown as that tex1… address (the decode names its t1 form). A named TEX
+  // recipient that no output pays blocks signing, as SSP Key does.
+  const texLabels = labelTexRecipients(
+    decodedRecipients,
+    parsedRecipients
+      .map((recipient) => recipient.address)
+      .filter((address): address is string => typeof address === 'string'),
+    chainConfig?.libid ?? '',
+  );
+  const displayRecipients = texLabels.recipients;
   const changeOutputs = vaultUtxo
     ? vaultUtxo.outputs.filter((output) => output.vaultAddressIndex !== null)
     : [];
@@ -587,6 +599,9 @@ function EnterpriseVaultSignTx({
       return t('home:enterpriseVaultSignTx.err_sign_unverifiable');
     }
     if (decodedTx?.error) return decodedTx.error;
+    if (texLabels.unpaid.length > 0) {
+      return t('home:enterpriseVaultSignTx.err_tex_not_paid');
+    }
     if (decodedTx && decodedTx.recipients.length === 0) {
       return t('home:enterpriseVaultSignTx.err_no_decoded_recipients');
     }
@@ -1812,6 +1827,22 @@ function EnterpriseVaultSignTx({
                     >
                       {recipient.address}
                     </Text>
+                    {recipient.transparentAddress && (
+                      <Text
+                        type="secondary"
+                        data-testid="vault-sign-tex-transparent"
+                        style={{
+                          fontSize: 12,
+                          wordBreak: 'break-all',
+                          display: 'block',
+                          marginTop: 4,
+                        }}
+                      >
+                        {t('home:enterpriseVaultSignTx.tex_address_note', {
+                          address: recipient.transparentAddress,
+                        })}
+                      </Text>
+                    )}
                     <Text
                       strong
                       style={{

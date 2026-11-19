@@ -20,6 +20,7 @@ import utxolib from '@runonflux/utxo-lib';
 import {
   decodeBech32m,
   decodeTexKeyHash,
+  labelTexRecipients,
   texToTransparentAddress,
 } from '../../src/lib/zcashTex';
 import {
@@ -228,5 +229,51 @@ describe('sending ZEC to a TEX address', () => {
     const decoded = decodeTransactionForApproval(signed, 'zec');
     expect(decoded.receiver).toBe(ZIP320_T1);
     expect(decoded.receiver).toBe(texToTransparentAddress(ZIP320_TEX, 'zcash'));
+  });
+});
+
+describe('labelTexRecipients (vault signing display)', () => {
+  const OTHER_T1 = utxolib.address.fromOutputScript(
+    utxolib.script.pubKeyHash.output.encode(Buffer.alloc(20, 7)),
+    zecNetwork,
+  );
+
+  it('shows the named TEX address for the output it encodes', () => {
+    const result = labelTexRecipients(
+      [
+        { address: ZIP320_T1, amount: '100000' },
+        { address: OTHER_T1, amount: '5' },
+      ],
+      [ZIP320_TEX.toUpperCase(), OTHER_T1],
+      'zcash',
+    );
+    expect(result.unpaid).toEqual([]);
+    expect(result.recipients).toEqual([
+      { address: ZIP320_TEX, amount: '100000', transparentAddress: ZIP320_T1 },
+      { address: OTHER_T1, amount: '5' },
+    ]);
+  });
+
+  it('reports a named TEX address that no output pays', () => {
+    const outputs = [{ address: OTHER_T1, amount: '100000' }];
+    const result = labelTexRecipients(outputs, [ZIP320_TEX], 'zcash');
+    expect(result.recipients).toEqual(outputs);
+    expect(result.unpaid).toEqual([ZIP320_TEX]);
+  });
+
+  it('changes nothing without TEX addresses for the network', () => {
+    const outputs = [{ address: ZIP320_T1, amount: '1' }];
+    expect(labelTexRecipients(outputs, [ZIP320_T1], 'zcash')).toEqual({
+      recipients: outputs,
+      unpaid: [],
+    });
+    expect(labelTexRecipients(outputs, [TESTNET_TEX], 'zcash')).toEqual({
+      recipients: outputs,
+      unpaid: [],
+    });
+    expect(labelTexRecipients(outputs, [ZIP320_TEX], '')).toEqual({
+      recipients: outputs,
+      unpaid: [],
+    });
   });
 });
