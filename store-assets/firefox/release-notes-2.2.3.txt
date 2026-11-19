@@ -1,0 +1,6 @@
+Update. Please update SSP Key to 2.2.4 as well.
+• Send ZEC to Zcash TEX addresses (tex1…)
+• SSP Key 2.2.4 shows the TEX address you entered and checks it against the transaction
+• Very large Flux sends stay within the network's input limit
+• Flux transactions stay valid for one hour again
+• Buy: Onramper links are built and signed by the SSP relay
