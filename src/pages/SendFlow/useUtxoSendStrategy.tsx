@@ -536,6 +536,7 @@ export function useUtxoSendStrategy(): SendStrategyView {
     path: string,
     wkIdentity: string,
     utxos: utxo[],
+    receiver?: string,
   ) => {
     const data: Record<string, unknown> = {
       action,
@@ -545,6 +546,12 @@ export function useUtxoSendStrategy(): SendStrategyView {
       wkIdentity,
       utxos,
     };
+    // ZIP 320: a Zcash TEX recipient is paid as the P2PKH output of its key
+    // hash. SSP Key shows the TEX address the user entered once it has
+    // checked that it encodes that output, instead of the t1 form.
+    if (receiver) {
+      data.receiver = receiver;
+    }
 
     // RA-2: /v1/action requires WK auth (hash of the request body included).
     // Throws instead of ever posting an unauthenticated signing request.
@@ -688,6 +695,9 @@ export function useUtxoSendStrategy(): SendStrategyView {
               wInUse,
               sspWalletKeyInternalIdentity,
               txInfo.utxos,
+              texToTransparentAddress(values.receiver, blockchainConfig.libid)
+                ? values.receiver.trim()
+                : undefined,
             );
             setTxHex(txInfo.signedTx);
             setSubmitting(false);
