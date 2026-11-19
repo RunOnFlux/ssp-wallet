@@ -479,8 +479,8 @@
   },
   "enterpriseVaultSignTx": {
     "title": "Penandatanganan Transaksi Brankas Enterprise",
-    "tex_address_note": "TEX address (transparent-only). Block explorers show it as {{address}}",
-    "err_tex_not_paid": "The TEX recipient named by the proposal is not paid by this transaction.",
+    "tex_address_note": "Alamat TEX (hanya transparan). Penjelajah blok menampilkannya sebagai {{address}}",
+    "err_tex_not_paid": "Penerima TEX yang disebutkan dalam proposal tersebut tidak menerima pembayaran melalui transaksi ini.",
     "description": "Permohonan untuk menandatangani transaksi brankas telah diterima. Silakan periksa rincian transaksi di bawah ini.",
     "vault_name": "Brankas",
     "org_name": "Organisasi",
