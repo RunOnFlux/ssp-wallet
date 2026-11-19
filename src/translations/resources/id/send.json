@@ -90,7 +90,7 @@
   "continue": "Lanjutkan",
   "back": "Kembali",
   "review_to": "Kepada",
-  "review_tex_transparent": "TEX address (transparent-only). Block explorers and older SSP Key versions show it in its transparent form:",
+  "review_tex_transparent": "Alamat TEX (hanya transparan). Penjelajah blok dan versi SSP Key yang lebih lama menampilkannya dalam bentuk transparan:",
   "review_amount": "Jumlah",
   "network_fee": "Biaya Jaringan",
   "network_fee_max": "Biaya Jaringan Maks",
