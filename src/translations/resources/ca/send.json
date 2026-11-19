@@ -90,6 +90,7 @@
   "continue": "Continue",
   "back": "Back",
   "review_to": "To",
+  "review_tex_transparent": "TEX address (transparent-only). Block explorers and older SSP Key versions show it in its transparent form:",
   "review_amount": "Amount",
   "network_fee": "Network Fee",
   "network_fee_max": "Max Network Fee",
