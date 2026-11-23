@@ -1080,6 +1080,18 @@ interface GasEstimate {
   verificationGasLimit: string;
 }
 
+/**
+ * Extra preVerificationGas for custom call data: bundlers charge 16 gas per
+ * non-zero byte (4 per zero byte) plus 4 per 32-byte word of the UserOp.
+ * Every byte, including ABI padding, is priced as non-zero, so this is an
+ * upper bound whatever the data contains.
+ */
+export function customDataPreVerificationGas(customData: string): number {
+  const hex = customData.startsWith('0x') ? customData.slice(2) : customData;
+  const words = Math.ceil(hex.length / 2 / 32);
+  return words * 32 * 16 + words * 4;
+}
+
 export async function estimateGas(
   chain: keyof cryptos,
   sender: string,
@@ -1174,6 +1186,11 @@ export async function estimateGas(
 
   // Dynamic gas scaling for complex DeFi operations
   if (customData && customData !== '0x') {
+    // Bundlers price preVerificationGas from the UserOp's calldata, and the
+    // baselines above cover a plain transfer only. Swap / WalletConnect
+    // payloads of a few KB would otherwise ship short and be refused with
+    // "preVerificationGas is X but must be at least Y".
+    preVerificationGas += customDataPreVerificationGas(customData);
     const dataLength = customData.length;
     if (dataLength > 1000) {
       // Complex DeFi operations
