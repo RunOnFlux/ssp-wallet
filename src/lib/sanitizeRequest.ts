@@ -91,6 +91,21 @@ export interface dataBgParams {
 /** Upper bound on a serialized vault descriptor (15 Solana members fit). */
 const MAX_VAULT_DESCRIPTOR_JSON_LENGTH = 200000;
 
+/** Upper bound on a string param a page sends. */
+const MAX_STRING_PARAM_LENGTH = 50000;
+
+/**
+ * enterprise_vault_sign_tx carries a whole vault transaction: rawUnsignedTx is
+ * the unsigned or partially signed tx hex, inputDetails its per-input redeem
+ * scripts. Every signature makes each input bigger, so a vault tx outgrows
+ * 50k characters quickly — a 41-input 3-of-4 Flux tx is ~50.7k once two
+ * signers have signed, and the last signer could not sign it. These two get
+ * the relay's wallet-to-Key payload limit (10M characters) instead. The method
+ * is only served to the SSP Enterprise origin, checked right after this.
+ */
+const MAX_ENTERPRISE_TX_PARAM_LENGTH = 10000000;
+const ENTERPRISE_TX_PARAMS = new Set(['rawUnsignedTx', 'inputDetails']);
+
 export interface dataBgRequest {
   method: string;
   params: dataBgParams;
@@ -106,6 +121,7 @@ export function sanitizeRequest(request: bgRequest): bgRequest | null {
   // must be an object of only data and origin, origin must be a string of max 50 characters
   // data must be an object of only method and params
   // params must be an object of only keys containing strings of max 50k characters
+  // (enterprise_vault_sign_tx's tx fields: 10M, see ENTERPRISE_TX_PARAMS)
   // method must be a string of max 50 characters
   // return sanitized request
   const sanitizedRequest = {
@@ -254,7 +270,12 @@ export function sanitizeRequest(request: bgRequest): bgRequest | null {
           console.log('Invalid param type ' + key);
           return null;
         }
-        if (paramValue.length > 50000) {
+        const maxLength =
+          sanitizedRequest.data.method === 'enterprise_vault_sign_tx' &&
+          ENTERPRISE_TX_PARAMS.has(key)
+            ? MAX_ENTERPRISE_TX_PARAM_LENGTH
+            : MAX_STRING_PARAM_LENGTH;
+        if (paramValue.length > maxLength) {
           console.log('Invalid param length ' + key);
           return null;
         }
