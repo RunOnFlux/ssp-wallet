@@ -17,16 +17,16 @@ To verify the submitted package matches source code exactly:
    cd ssp-wallet
 
 2. Checkout the exact version being reviewed:
-   git checkout v2.2.3
+   git checkout v2.3.0
 
 3. Build deterministically using Docker:
    bash scripts/deterministic-build.sh
    (the same as `yarn build:deterministic`; no local `yarn install` is needed)
 
 4. Verify the Firefox package hash matches the submission:
-   sha256sum ssp-wallet-firefox-v2.2.3.zip
+   sha256sum ssp-wallet-firefox-v2.3.0.zip
    # Compare with the hash of the submitted package and with SHA256SUMS on
-   # https://github.com/RunOnFlux/ssp-wallet/releases/tag/v2.2.3
+   # https://github.com/RunOnFlux/ssp-wallet/releases/tag/v2.3.0
    # The hashes should be identical, proving the submitted package
    # was built from the exact source code in the repository.
 
