@@ -109,5 +109,15 @@
   "eta_evm_fast": "~ 15 detik",
   "eta_sol_normal": "Tarif yang disarankan",
   "swap_awaiting_quote": "Menunggu nilai tukar — ini diperbarui secara otomatis.",
-  "view_pending_approval": "Lihat yang masih menunggu persetujuan"
+  "view_pending_approval": "Lihat yang masih menunggu persetujuan",
+  "preflight_checking": "Checking transaction…",
+  "preflight_checking_desc": "Simulating it with the network so you only sign what will go through.",
+  "preflight_ok": "Checked with the network — this transaction should go through.",
+  "preflight_would_fail": "This transaction would fail",
+  "preflight_would_fail_unknown": "The network refused it without a reason.",
+  "preflight_would_fail_desc": "Sending it anyway will most likely fail and can still cost a network fee.",
+  "preflight_sign_anyway": "Sign anyway",
+  "preflight_unavailable": "Couldn't check this transaction with the network",
+  "preflight_unavailable_desc": "You can still send it; the standard gas limits are used.",
+  "preflight_retry": "Check again"
 }
