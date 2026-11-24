@@ -22,6 +22,8 @@ import {
   Popover,
   Select,
   Segmented,
+  Spin,
+  Alert,
   theme,
 } from 'antd';
 import {
@@ -153,6 +155,28 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
   const senderAddress = wallets[walletInUse]?.address ?? '';
   const senderLabel =
     walletNames[walletInUse] || getDisplayName(activeChain, walletInUse);
+
+  // EVM: check the transaction with the bundler when review opens, and stop
+  // the check on going back to compose (re-entering review checks again).
+  useEffect(() => {
+    if (step === 'review') {
+      strategy.preflight?.start();
+    } else if (step === 'compose') {
+      strategy.preflight?.stop();
+    }
+  }, [step]);
+  // Show the "Checking" step only when the answer is not instant, so a fast
+  // bundler goes straight to the result without a flash.
+  const preflightStatus = strategy.preflight?.status ?? 'idle';
+  const [showChecking, setShowChecking] = useState(false);
+  useEffect(() => {
+    if (preflightStatus !== 'checking') {
+      setShowChecking(false);
+      return;
+    }
+    const timer = setTimeout(() => setShowChecking(true), 300);
+    return () => clearTimeout(timer);
+  }, [preflightStatus]);
 
   // Approve step tracks the ConfirmTxKey handshake modal.
   useEffect(() => {
@@ -992,6 +1016,85 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
             </div>
           )}
 
+          {strategy.preflight && preflightStatus !== 'idle' && (
+            <div style={{ marginTop: 16 }} aria-live="polite">
+              {preflightStatus === 'checking' && showChecking && (
+                <div
+                  className="send-preflight-checking"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '12px 8px',
+                  }}
+                >
+                  <Spin size="default" />
+                  <div style={{ fontWeight: 600 }}>
+                    {t('send:preflight_checking')}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: token.colorTextSecondary,
+                      maxWidth: 340,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {t('send:preflight_checking_desc')}
+                  </div>
+                  <Button type="link" size="small" onClick={handleBack}>
+                    {t('common:cancel')}
+                  </Button>
+                </div>
+              )}
+              {preflightStatus === 'ok' && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: token.colorSuccess,
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('send:preflight_ok')}
+                </div>
+              )}
+              {preflightStatus === 'would_fail' && (
+                <Alert
+                  type="error"
+                  showIcon
+                  style={{ textAlign: 'left' }}
+                  message={t('send:preflight_would_fail')}
+                  description={
+                    <>
+                      <div style={{ wordBreak: 'break-word' }}>
+                        {strategy.preflight.reason ||
+                          t('send:preflight_would_fail_unknown')}
+                      </div>
+                      <div style={{ marginTop: 6 }}>
+                        {t('send:preflight_would_fail_desc')}
+                      </div>
+                    </>
+                  }
+                />
+              )}
+              {preflightStatus === 'unavailable' && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  style={{ textAlign: 'left' }}
+                  message={t('send:preflight_unavailable')}
+                  description={t('send:preflight_unavailable_desc')}
+                  action={
+                    <Button size="small" onClick={strategy.preflight.retry}>
+                      {t('send:preflight_retry')}
+                    </Button>
+                  }
+                />
+              )}
+            </div>
+          )}
+
           <Form.Item style={{ marginTop: 24 }}>
             <Space direction="vertical" size="middle">
               {strategy.isRBF && (
@@ -1019,7 +1122,11 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                 // Never allow sending against a fee that is still being
                 // estimated ('---'/placeholder 0) — a real computed zero fee
                 // sets feeReady and stays sendable.
-                disabled={!strategy.feeReady}
+                disabled={
+                  !strategy.feeReady ||
+                  (preflightStatus === 'would_fail' &&
+                    !strategy.pendingApproval)
+                }
                 style={{
                   minWidth: 220,
                   maxWidth: '380px',
@@ -1045,6 +1152,18 @@ function SendFlowInner({ chainType }: { chainType: 'utxo' | 'evm' | 'sol' }) {
                   ? t('send:view_pending_approval')
                   : strategy.submitLabel}
               </Button>
+              {preflightStatus === 'would_fail' &&
+                !strategy.pendingApproval &&
+                strategy.preflight && (
+                  <Button
+                    danger
+                    size="middle"
+                    loading={strategy.submitting}
+                    onClick={strategy.preflight.signAnyway}
+                  >
+                    {t('send:preflight_sign_anyway')}
+                  </Button>
+                )}
               <div
                 style={{
                   fontSize: 12,

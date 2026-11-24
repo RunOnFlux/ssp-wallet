@@ -151,6 +151,7 @@ import {
   constructAndSignTransaction,
   broadcastTx,
   estimateGas,
+  customDataPreVerificationGas,
   constructAndSignEVMTransaction,
   estimateUtxoTxSize,
   parseUnsignedQuantity,
@@ -916,6 +917,31 @@ describe('ConstructTx Lib', () => {
       // The test shows "moderate complexity scaling" is applied, not Uniswap-specific scaling
       expect(callGasLimit).toBeGreaterThan(100000); // callGasLimit: 114380 with moderate scaling
       expect(preVerificationGas).toBeGreaterThan(75000); // preVerificationGas: 77133 (base value, no scaling applied)
+    });
+
+    it('prices custom call data into preVerificationGas', async () => {
+      // 4 KB swap payload: 128 words, priced as all non-zero.
+      expect(customDataPreVerificationGas('0x' + 'ab'.repeat(4096))).toBe(
+        128 * 32 * 16 + 128 * 4,
+      );
+      expect(customDataPreVerificationGas('0x' + 'ab'.repeat(33))).toBe(
+        2 * 32 * 16 + 2 * 4,
+      );
+
+      const plain = await estimateGas(
+        'sepolia',
+        '0x1234567890123456789012345678901234567890',
+        '',
+      );
+      const swap = await estimateGas(
+        'sepolia',
+        '0x1234567890123456789012345678901234567890',
+        '',
+        '0x' + 'ab'.repeat(4096),
+      );
+      expect(
+        parseInt(swap.preVerificationGas) - parseInt(plain.preVerificationGas),
+      ).toBe(128 * 32 * 16 + 128 * 4);
     });
 
     it('should apply moderate scaling for complex DeFi data', async () => {
