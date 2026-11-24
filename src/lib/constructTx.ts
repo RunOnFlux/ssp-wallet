@@ -17,6 +17,7 @@ import {
   createSmartAccountClient,
   deepHexlify,
   UserOperationRequest_v6,
+  type ClientMiddlewareFn,
 } from '@alchemy/aa-core';
 import {
   blockbookUtxo,
@@ -1348,6 +1349,96 @@ export function assertBuiltUserOpMatches(
 }
 
 // return stringified multisig user operation
+/** Builds the SSP 2-of-2 smart account (wallet + Key) for these public keys. */
+export async function createEvmSmartAccount(
+  chain: keyof cryptos,
+  publicKeys: InstanceType<typeof accountAbstraction.types.Key>[],
+) {
+  const blockchainConfig = blockchains[chain];
+  const backendConfig = backends()[chain];
+  const combinedAddresses =
+    accountAbstraction.helpers.SchnorrHelpers.getAllCombinedAddrFromKeys(
+      publicKeys,
+      2,
+    );
+  const rpcUrl = `https://${backendConfig.node}`;
+  const transport = viemHttp(rpcUrl);
+  const CHAIN = viemChains[blockchainConfig.libid as keyof typeof viemChains];
+  const multiSigSmartAccount =
+    await accountAbstraction.accountAbstraction.createMultiSigSmartAccount({
+      transport,
+      chain: CHAIN,
+      combinedAddress: combinedAddresses,
+      salt: accountAbstraction.helpers.create2Helpers.saltToHex(
+        blockchainConfig.accountSalt,
+      ),
+      entryPoint: getEntryPoint(CHAIN),
+    });
+  return { rpcUrl, transport, CHAIN, multiSigSmartAccount };
+}
+
+/**
+ * maxFeePerGas / maxPriorityFeePerGas in wei from the gwei inputs. BSC has no
+ * base fee, so both carry the whole gas price there.
+ */
+export function evmFeeFields(
+  chain: keyof cryptos,
+  baseGasPrice: string,
+  priorityGasPrice: string,
+): { maxFeePerGas: string; maxPriorityFeePerGas: string } {
+  const priorityGas = new BigNumber(priorityGasPrice)
+    .multipliedBy(10 ** 9)
+    .toFixed(0);
+  const baseGas = new BigNumber(baseGasPrice).multipliedBy(10 ** 9).toFixed(0);
+  const maxFeePerGas = new BigNumber(baseGas).plus(priorityGas).toFixed(0);
+  return {
+    maxFeePerGas,
+    maxPriorityFeePerGas: chain === 'bsc' ? maxFeePerGas : priorityGas,
+  };
+}
+
+/**
+ * The one call a send makes from the smart account.
+ *
+ * Supplied calldata is the authoritative description of what the transaction
+ * does: re-encoding a `transfer()` on top of it would throw the caller's real
+ * recipient and amount away and send a zero-amount transfer to the token
+ * contract instead. Custom data therefore always wins over the ERC-20 path.
+ */
+export function buildRequestedEvmCall(
+  chain: keyof cryptos,
+  receiver: `0x${string}`,
+  amount: string,
+  token: `0x${string}` | '' | undefined,
+  importedTokens: Token[] = [],
+  customData?: string,
+): { target: `0x${string}`; value: bigint; data: `0x${string}` } {
+  const blockchainConfig = blockchains[chain];
+  const hasCustomData = !!customData && customData !== '0x';
+  if (token && !hasCustomData) {
+    const tokenInfo = blockchainConfig.tokens
+      .concat(importedTokens)
+      .find((x) => x.contract === token);
+    if (!tokenInfo) {
+      throw new Error('Token specifications not found');
+    }
+    const data = encodeFunctionData({
+      abi: erc20Abi,
+      functionName: 'transfer',
+      args: [receiver, parseUnits(amount, tokenInfo.decimals)],
+    });
+    return { target: token, value: BigInt(0), data };
+  }
+  // Custom data for contract calls (like WalletConnect). With a token
+  // selected the amount is denominated in that token, so it must NOT be spent
+  // as native value on a calldata pass-through.
+  return {
+    target: receiver,
+    value: token ? BigInt(0) : parseUnits(amount, blockchainConfig.decimals),
+    data: (customData || '0x') as `0x${string}`,
+  };
+}
+
 export async function constructAndSignEVMTransaction(
   chain: keyof cryptos,
   receiver: `0x${string}`,
@@ -1366,11 +1457,12 @@ export async function constructAndSignEVMTransaction(
   token?: `0x${string}` | '',
   importedTokens: Token[] = [],
   customData?: string, // For WalletConnect and custom contract calls
+  // Sign with exactly these gas values (checked with the bundler before the
+  // user approved, see evmPreflight.ts) instead of letting the SDK estimate
+  // again and clamp the result to them.
+  exactGas = false,
 ): Promise<string> {
   try {
-    const blockchainConfig = blockchains[chain];
-    const backendConfig = backends()[chain];
-    const accountSalt = blockchainConfig.accountSalt;
     const schnorrSigner1 =
       accountAbstraction.helpers.SchnorrHelpers.createSchnorrSigner(privateKey);
     const publicKey1 = schnorrSigner1.getPubKey();
@@ -1388,24 +1480,8 @@ export async function constructAndSignEVMTransaction(
       ),
     };
     const publicKeys = [publicKey1, publicKey2];
-    const combinedAddresses =
-      accountAbstraction.helpers.SchnorrHelpers.getAllCombinedAddrFromKeys(
-        publicKeys,
-        2,
-      );
-
-    const rpcUrl = `https://${backendConfig.node}`;
-
-    const transport = viemHttp(rpcUrl);
-    const CHAIN = viemChains[blockchainConfig.libid as keyof typeof viemChains];
-    const multiSigSmartAccount =
-      await accountAbstraction.accountAbstraction.createMultiSigSmartAccount({
-        transport,
-        chain: CHAIN,
-        combinedAddress: combinedAddresses,
-        salt: accountAbstraction.helpers.create2Helpers.saltToHex(accountSalt),
-        entryPoint: getEntryPoint(CHAIN),
-      });
+    const { transport, CHAIN, multiSigSmartAccount } =
+      await createEvmSmartAccount(chain, publicKeys);
 
     // Use the provided gas values directly
     const gasPreVerification = Number(preVerificationGas);
@@ -1419,30 +1495,11 @@ export async function constructAndSignEVMTransaction(
       total: gasPreVerification + gasCallLimit + gasVerificationLimit,
     });
 
-    let priorityGas = new BigNumber(priorityGasPrice)
-      .multipliedBy(10 ** 9)
-      .toFixed(0);
-    const baseGas = new BigNumber(baseGasPrice)
-      .multipliedBy(10 ** 9)
-      .toFixed(0);
-
-    console.log('💰 BASE GAS:', baseGas);
-    console.log('💰 PRIORITY GAS:', priorityGas);
-
-    // Calculate total max fee per gas (base + priority)
-    // Special handling for BSC: BSC has zero base fee, so maxFeePerGas must equal maxPriorityFeePerGas
-    let maxFeePerGas: string;
-    if (chain === 'bsc') {
-      // On BSC, base fee is always 0, so maxFeePerGas = maxPriorityFeePerGas
-      // Both values must be equal to the total desired gas price
-      const totalFee = new BigNumber(baseGas).plus(priorityGas).toFixed(0);
-      maxFeePerGas = totalFee;
-      // Update priorityGas to match maxFeePerGas for BSC
-      priorityGas = totalFee;
-    } else {
-      // Standard EIP-1559 for other chains
-      maxFeePerGas = new BigNumber(baseGas).plus(priorityGas).toFixed(0);
-    }
+    const { maxFeePerGas, maxPriorityFeePerGas: priorityGas } = evmFeeFields(
+      chain,
+      baseGasPrice,
+      priorityGasPrice,
+    );
 
     console.log('💰 MAX FEE PER GAS:', maxFeePerGas);
     console.log('💰 PRIORITY GAS:', priorityGas);
@@ -1473,70 +1530,39 @@ export async function constructAndSignEVMTransaction(
       chain: CHAIN,
       account: multiSigSmartAccount,
       opts: CLIENT_OPT,
+      ...(exactGas
+        ? {
+            // The values were already checked with the bundler: no second
+            // estimate (which would also block "Sign anyway" on a call the
+            // bundler says reverts).
+            gasEstimator: ((struct) => {
+              struct.callGasLimit = BigInt(gasCallLimit);
+              struct.verificationGasLimit = BigInt(gasVerificationLimit);
+              struct.preVerificationGas = BigInt(gasPreVerification);
+              return Promise.resolve(struct);
+            }) satisfies ClientMiddlewareFn,
+          }
+        : {}),
     });
 
-    let uoStruct;
     // The single inner call this user operation must contain — checked
     // against the call-safety rules and against the built callData below.
-    let requestedCall: { target: string; value: bigint; data: `0x${string}` };
+    const requestedCall = buildRequestedEvmCall(
+      chain,
+      receiver,
+      amount,
+      token,
+      importedTokens,
+      customData,
+    );
+    // Upgrade selectors are refused before anything is built (the self-call
+    // rule needs the account address, checked after the build below).
+    assertEvmCallSafe(requestedCall, '');
 
-    // Supplied calldata is the authoritative description of what the
-    // transaction does: re-encoding a `transfer()` on top of it would throw
-    // the caller's real recipient and amount away and send a zero-amount
-    // transfer to the token contract instead. Custom data therefore always
-    // wins over the ERC-20 fast path.
-    const hasCustomData = !!customData && customData !== '0x';
-
-    if (token && !hasCustomData) {
-      const tokenInfo = blockchainConfig.tokens
-        .concat(importedTokens)
-        .find((x) => x.contract === token);
-      if (!tokenInfo) {
-        throw new Error('Token specifications not found');
-      }
-      const tokenDecimals = tokenInfo.decimals;
-      const erc20Decimals = tokenDecimals;
-      const erc20Amount = parseUnits(amount, erc20Decimals);
-      const uoCallData = encodeFunctionData({
-        abi: erc20Abi,
-        functionName: 'transfer',
-        args: [receiver, erc20Amount],
-      });
-      requestedCall = { target: token, value: BigInt(0), data: uoCallData };
-      // Upgrade selectors are refused before anything is built (the self-call
-      // rule needs the account address, checked after the build below).
-      assertEvmCallSafe(requestedCall, '');
-
-      uoStruct = await smartAccountClient.buildUserOperation({
-        account: multiSigSmartAccount,
-        uo: {
-          data: uoCallData,
-          target: token, // token contract address
-        },
-      });
-    } else {
-      // Handle custom data for contract calls (like WalletConnect)
-      const txData = (customData || '0x') as `0x${string}`;
-      // Parse the amount properly - use ETH value if provided, otherwise 0.
-      // With a token selected the amount is denominated in that token, so it
-      // must NOT be spent as native value on a calldata pass-through.
-      const txValue = token
-        ? BigInt(0)
-        : parseUnits(amount, blockchainConfig.decimals);
-      requestedCall = { target: receiver, value: txValue, data: txData };
-      // Non-empty calldata is a contract call whatever the value; the upgrade
-      // selectors are refused outright (C-4 / EVM-1).
-      assertEvmCallSafe(requestedCall, '');
-
-      uoStruct = await smartAccountClient.buildUserOperation({
-        account: multiSigSmartAccount,
-        uo: {
-          data: txData,
-          target: receiver,
-          value: txValue,
-        },
-      });
-    }
+    const uoStruct = await smartAccountClient.buildUserOperation({
+      account: multiSigSmartAccount,
+      uo: requestedCall,
+    });
 
     // @TODO: Override the SDK's estimated gas values with the user-provided values
     // This ensures manual fee settings are respected otherwise those are kept as max for our SDK which is optimizing it for now.

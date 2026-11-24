@@ -23,6 +23,27 @@ export interface FeePresetView {
   feeAmount: string | null;
 }
 
+/**
+ * EVM only: the bundler check run when the review step opens, before anything
+ * is signed (lib/evmPreflight.ts).
+ */
+export interface EvmPreflightView {
+  /**
+   * idle: not requested. checking: waiting for the bundler. ok: the gas shown
+   * is what gets signed. would_fail: the bundler refuses it (reason says why).
+   * unavailable: no answer in time — signing uses the fixed gas values.
+   */
+  status: 'idle' | 'checking' | 'ok' | 'would_fail' | 'unavailable';
+  reason: string | null;
+  /** Called when the review step opens. */
+  start: () => void;
+  /** Called when leaving review; aborts a running check. */
+  stop: () => void;
+  retry: () => void;
+  /** Submit despite a would_fail result. */
+  signAnyway: () => void;
+}
+
 export interface SendStrategyView {
   chainType: 'utxo' | 'evm' | 'sol';
   /** Page header title override (swap mode uses the swap title). */
@@ -93,6 +114,8 @@ export interface SendStrategyView {
    * computed zero fee and a user-entered Custom fee both count as ready.
    */
   feeReady: boolean;
+  /** EVM: the pre-signing bundler check. Absent on other chains. */
+  preflight?: EvmPreflightView;
   feeSymbol: string;
   feeFiat: string | null;
   /**

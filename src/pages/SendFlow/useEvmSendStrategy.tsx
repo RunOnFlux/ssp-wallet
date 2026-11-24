@@ -13,7 +13,7 @@
  * "normal" is bit-identical to the legacy automatic mode and "custom" is the
  * legacy manual mode exposing the exact same five gas inputs.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from '../../lib/toast';
 import { useNavigate, useLocation } from 'react-router';
 import { Form, Input, Divider, Collapse, Tooltip, Alert, theme } from 'antd';
@@ -23,6 +23,10 @@ import {
   constructAndSignEVMTransaction,
   estimateGas,
 } from '../../lib/constructTx';
+import {
+  preflightEVMTransaction,
+  type EvmCheckedGas,
+} from '../../lib/evmPreflight';
 import { useAppSelector, useAppDispatch } from '../../hooks';
 import { useRelayAuth } from '../../hooks/useRelayAuth';
 import { takePendingPayRequestId } from '../../components/SspConnect/pendingPayRequest';
@@ -84,7 +88,11 @@ import {
 } from '../../lib/sendStrategies/evm';
 import { parseAmount } from '../../lib/sendStrategies/amount';
 import type { FeePresetKey } from '../../lib/sendStrategies/utxo';
-import type { SendStrategyView, FeePresetView } from './types';
+import type {
+  SendStrategyView,
+  FeePresetView,
+  EvmPreflightView,
+} from './types';
 
 interface sendForm {
   receiver: string;
@@ -146,9 +154,8 @@ export function useEvmSendStrategy(): SendStrategyView {
     (state) => state.sspState,
   );
   const { createWkIdentityAuth } = useRelayAuth();
-  const { xpubKey, wallets, walletInUse, importedTokens } = useAppSelector(
-    (state) => state[activeChain],
-  );
+  const { xpubKey, xpubWallet, wallets, walletInUse, importedTokens } =
+    useAppSelector((state) => state[activeChain]);
   const transactions = wallets[walletInUse].transactions;
   const sender = wallets[walletInUse].address;
   const [spendableBalance, setSpendableBalance] = useState('0');
@@ -194,6 +201,18 @@ export function useEvmSendStrategy(): SendStrategyView {
   >('success');
   const [useMaximum, setUseMaximum] = useState(false);
   const [feePreset, setFeePreset] = useState<FeePresetKey>('normal');
+  // Pre-signing bundler check (lib/evmPreflight.ts). `inputs` records what was
+  // checked, so a result is only used while the send still matches it.
+  const [preflight, setPreflight] = useState<{
+    status: EvmPreflightView['status'];
+    reason?: string;
+    inputs?: string;
+    gas?: EvmCheckedGas;
+  }>({ status: 'idle' });
+  const [preflightRequested, setPreflightRequested] = useState(false);
+  // A ref, not state: "Sign anyway" submits in the same tick.
+  const signAnywayRef = useRef(false);
+  const preflightAbort = useRef<AbortController | null>(null);
   const [tokenItems, setTokenItems] = useState<tokenOption[]>([]);
   const { networkFees } = useAppSelector((state) => state.networkFees);
   const { contacts } = useAppSelector((state) => state.contacts);
@@ -385,6 +404,109 @@ export function useEvmSendStrategy(): SendStrategyView {
     calculateTxFee();
   }, [baseGasPrice, priorityGasPrice, manualFee, txToken, txData]);
 
+  // Helper function to get total gas from components
+  // What the check covered. The amount is left out on purpose: it is only
+  // edited on the compose step (entering review checks again) and Max can
+  // nudge it after the fee settles — evmPreflight cushions that.
+  const preflightInputs = JSON.stringify([
+    activeChain,
+    walletInUse,
+    txReceiver,
+    txToken,
+    txData,
+    baseGasPrice,
+    priorityGasPrice,
+  ]);
+  // Gas the bundler checked for exactly this send, unless the user set the
+  // gas by hand (Custom).
+  const checkedGas: EvmCheckedGas | null =
+    !manualFee &&
+    preflight.status === 'ok' &&
+    preflight.inputs === preflightInputs &&
+    preflight.gas
+      ? preflight.gas
+      : null;
+  const effectiveGas: EvmCheckedGas = checkedGas ?? {
+    preVerificationGas,
+    callGasLimit,
+    verificationGasLimit,
+  };
+
+  const getTotalGasFromComponents = () => {
+    return (
+      Number(effectiveGas.preVerificationGas) +
+      Number(effectiveGas.callGasLimit) +
+      Number(effectiveGas.verificationGasLimit)
+    );
+  };
+
+  const runPreflight = () => {
+    preflightAbort.current?.abort();
+    const controller = new AbortController();
+    preflightAbort.current = controller;
+    const inputs = preflightInputs;
+    signAnywayRef.current = false;
+    setPreflight({ status: 'checking', inputs });
+    const receiver = (form.getFieldValue('receiver') as string) || txReceiver;
+    const amount = new BigNumber(
+      (form.getFieldValue('amount') as string) || sendingAmount || '0',
+    ).toFixed();
+    void (async () => {
+      let result: Awaited<ReturnType<typeof preflightEVMTransaction>>;
+      try {
+        const [typeIndex, addressIndex] = walletInUse.split('-').map(Number);
+        result = await preflightEVMTransaction({
+          chain: activeChain,
+          sender,
+          receiver: receiver as `0x${string}`,
+          amount,
+          walletPublicKeyHex: deriveEVMPublicKey(
+            xpubWallet,
+            typeIndex,
+            addressIndex,
+            activeChain,
+          ),
+          keyPublicKeyHex: deriveEVMPublicKey(
+            xpubKey,
+            typeIndex,
+            addressIndex,
+            activeChain,
+          ),
+          baseGasPrice,
+          priorityGasPrice,
+          token: txToken as `0x${string}` | '',
+          importedTokens,
+          customData: txData,
+          signal: controller.signal,
+        });
+      } catch (error) {
+        // Call-safety refusals stop the send on submit with their own
+        // message; here they only mean there is nothing to check.
+        console.log('Transaction check skipped:', error);
+        result = { status: 'unavailable' };
+      }
+      if (controller.signal.aborted) {
+        return;
+      }
+      console.log('🔎 Transaction check:', result);
+      setPreflight(
+        result.status === 'ok'
+          ? { status: 'ok', inputs, gas: result.gas }
+          : { status: result.status, inputs, reason: result.reason },
+      );
+    })();
+  };
+
+  // Entering review requests the check; while on review it re-runs whenever
+  // the checked inputs (fee, gas price, call) change.
+  useEffect(() => {
+    if (preflightRequested) {
+      runPreflight();
+    }
+  }, [preflightRequested, preflightInputs]);
+
+  useEffect(() => () => preflightAbort.current?.abort(), []);
+
   // Always recalculate when gas components change
   useEffect(() => {
     calculateTxFee();
@@ -394,16 +516,10 @@ export function useEvmSendStrategy(): SendStrategyView {
     verificationGasLimit,
     baseGasPrice,
     priorityGasPrice,
+    checkedGas?.preVerificationGas,
+    checkedGas?.callGasLimit,
+    checkedGas?.verificationGasLimit,
   ]);
-
-  // Helper function to get total gas from components
-  const getTotalGasFromComponents = () => {
-    return (
-      Number(preVerificationGas) +
-      Number(callGasLimit) +
-      Number(verificationGasLimit)
-    );
-  };
 
   // Insufficient-balance predicate shared by the live red-border effect and
   // the compose → review gate, so the visual state and the affordance agree.
@@ -932,6 +1048,22 @@ export function useEvmSendStrategy(): SendStrategyView {
     if (submitting) {
       return;
     }
+    // A send the bundler said would fail is only signed after the user chose
+    // "Sign anyway"; while it is still being checked, nothing is signed.
+    if (preflight.status === 'checking') {
+      return;
+    }
+    if (preflight.status === 'would_fail' && !signAnywayRef.current) {
+      return;
+    }
+    // Checked: sign exactly the bundler's values. Signing anyway: the SDK's
+    // own estimate would fail the same way, so sign the fixed values as they
+    // are. Not checked: the SDK estimates and caps at the fixed values, as
+    // before.
+    const signGas: EvmCheckedGas = effectiveGas;
+    const signExactGas =
+      !!checkedGas ||
+      (preflight.status === 'would_fail' && signAnywayRef.current);
     setSubmitting(true);
     // get our password to decrypt xpriv from secure storage
     const fingerprint: string = getFingerprint();
@@ -1010,12 +1142,13 @@ export function useEvmSendStrategy(): SendStrategyView {
           publicNoncesSSP,
           baseGasPrice,
           priorityGasPrice,
-          preVerificationGas,
-          callGasLimit,
-          verificationGasLimit,
+          signGas.preVerificationGas,
+          signGas.callGasLimit,
+          signGas.verificationGasLimit,
           txToken as `0x${string}` | '',
           importedTokens,
           values.data, // Use form data instead of state.data
+          signExactGas,
         )
           .then(async (signedTx) => {
             console.log(signedTx);
@@ -1822,9 +1955,26 @@ export function useEvmSendStrategy(): SendStrategyView {
     // completed estimate, its failure fallback, or a WalletConnect prefill
     // yields non-zero components; manual mode is user-controlled.
     feeReady:
+      preflight.status !== 'checking' &&
       txFee !== '---' &&
       txFee !== '' &&
       (manualFee || getTotalGasFromComponents() > 0),
+    preflight: {
+      status: preflight.status,
+      reason: preflight.reason ?? null,
+      start: () => setPreflightRequested(true),
+      stop: () => {
+        preflightAbort.current?.abort();
+        setPreflightRequested(false);
+        signAnywayRef.current = false;
+        setPreflight({ status: 'idle' });
+      },
+      retry: runPreflight,
+      signAnyway: () => {
+        signAnywayRef.current = true;
+        form.submit();
+      },
+    },
     feeSymbol: blockchainConfig.symbol,
     feeFiat: txFee !== '---' ? toFiat(txFee) : null,
     feeRateDisplay: (() => {
