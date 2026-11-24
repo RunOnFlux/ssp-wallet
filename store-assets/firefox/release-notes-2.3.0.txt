@@ -1,0 +1,4 @@
+Update. Please update SSP Key to 2.3.0 as well.
+• Every EVM transaction is checked with the network before you sign, with the reason shown if it would fail
+• Correct gas on Base and for large swaps and WalletConnect requests
+• Large enterprise vault transactions can be signed by every signer
