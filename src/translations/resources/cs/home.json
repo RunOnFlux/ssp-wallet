@@ -479,6 +479,8 @@
   },
   "enterpriseVaultSignTx": {
     "title": "Podpis Transakce Enterprise Vaultu",
+    "tex_address_note": "TEX address (transparent-only). Block explorers show it as {{address}}",
+    "err_tex_not_paid": "The TEX recipient named by the proposal is not paid by this transaction.",
     "description": "Byl přijat požadavek na podepsání transakce vaultu. Zkontrolujte prosím níže uvedené údaje o transakci.",
     "vault_name": "Vault",
     "org_name": "Organizace",
