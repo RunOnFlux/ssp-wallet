@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { sanitizeRequest } from '../../src/lib/sanitizeRequest';
@@ -241,5 +241,82 @@ describe('sanitizeRequest — existing validation still holds', () => {
         stamped('enterprise_flux_node_start', { delegates: ['ab', 'cd'] }),
       ),
     ).not.toBeNull();
+  });
+});
+
+describe('sanitizeRequest — enterprise vault transaction size', () => {
+  // The 3-of-4 Flux vault tx the last signer could not sign: 41 inputs, two
+  // signers already in, 50,698 characters.
+  const partiallySignedFluxTx = 'ab'.repeat(25349);
+
+  // sanitizeRequest logs the whole request; keep megabytes out of the output.
+  beforeEach(() => {
+    vi.spyOn(console, 'log').mockImplementation(() => undefined);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('accepts a vault transaction over 50k characters', () => {
+    expect(
+      sanitizeRequest(
+        stamped('enterprise_vault_sign_tx', {
+          rawUnsignedTx: partiallySignedFluxTx,
+          inputDetails: JSON.stringify(
+            Array.from({ length: 2000 }, (_, index) => ({
+              index,
+              addressIndex: 0,
+              amount: '100000000',
+              redeemScript: 'ab'.repeat(275),
+            })),
+          ),
+        }),
+      ),
+    ).not.toBeNull();
+  });
+
+  it('accepts a tx up to 10M characters and rejects a longer one', () => {
+    expect(
+      sanitizeRequest(
+        stamped('enterprise_vault_sign_tx', {
+          rawUnsignedTx: 'a'.repeat(10000000),
+        }),
+      ),
+    ).not.toBeNull();
+    expect(
+      sanitizeRequest(
+        stamped('enterprise_vault_sign_tx', {
+          rawUnsignedTx: 'a'.repeat(10000001),
+        }),
+      ),
+    ).toBeNull();
+  });
+
+  it('keeps the 50k limit on every other param of the method', () => {
+    for (const key of ['memo', 'recipients', 'simulation', 'evmUserOp']) {
+      expect(
+        sanitizeRequest(
+          stamped('enterprise_vault_sign_tx', { [key]: 'x'.repeat(50001) }),
+        ),
+      ).toBeNull();
+    }
+  });
+
+  it('keeps the 50k limit on the same params for every other method', () => {
+    for (const method of [
+      'pay',
+      'sign_message',
+      'enterprise_vault_sign_message',
+      'enterprise_flux_node_start',
+    ]) {
+      expect(
+        sanitizeRequest(
+          stamped(method, { rawUnsignedTx: partiallySignedFluxTx }),
+        ),
+      ).toBeNull();
+      expect(
+        sanitizeRequest(stamped(method, { inputDetails: 'x'.repeat(50001) })),
+      ).toBeNull();
+    }
   });
 });
